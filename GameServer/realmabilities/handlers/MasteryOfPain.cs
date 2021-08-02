@@ -1,4 +1,4 @@
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.RealmAbilities
 {

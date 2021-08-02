@@ -24,7 +24,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Database.Transaction;
 using DOL.GS;
 using DOL.GS.PacketHandler;

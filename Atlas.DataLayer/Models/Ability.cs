@@ -11,7 +11,7 @@ namespace Atlas.DataLayer.Models
         public string KeyName { get; set; }
         public string Name { get; set; }
         public int InternalID { get; set; }
-        public string description { get; set; }
+        public string Description { get; set; }
         public int IconID { get; set; }
         public string Implementation { get; set; }
 

@@ -20,7 +20,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Linq;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using System.Collections;
 using System.Collections.Generic;
 using DOL.GS.Effects;

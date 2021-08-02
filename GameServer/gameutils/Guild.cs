@@ -20,7 +20,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using DOL.GS.Keeps;
 using log4net;

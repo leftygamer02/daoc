@@ -1,4 +1,4 @@
-﻿using DOL.Database;
+﻿using Atlas.DataLayer.Models;
 using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;

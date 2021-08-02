@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.Language;
 using DOL.GS.Quests;
@@ -130,12 +130,12 @@ namespace DOL.GS
 			set { m_CurrentRegion = value; }
 		}
 
-		protected string m_ownerID;
+		protected int m_ownerID;
 
 		/// <summary>
 		/// Gets or sets the owner ID for this object
 		/// </summary>
-		public virtual string OwnerID
+		public virtual int OwnerID
 		{
 			get { return m_ownerID; }
 			set
@@ -598,12 +598,6 @@ namespace DOL.GS
                     }
                 default:
                     {
-                        if (obj is GameNPC)
-                        {
-                            var translation = (DBLanguageNPC)LanguageMgr.GetTranslation(lang, obj);
-                            if (translation != null) return translation.Name;
-                        }
-
 						return GetName(article, firstLetterUppercase);;
                     }
             }
@@ -732,7 +726,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The internalID. This is the unique ID of the object in the DB!
 		/// </summary>
-		protected string m_InternalID;
+		protected int m_InternalID;
 
 		/// <summary>
 		/// Gets or Sets the current ObjectID of the Object
@@ -753,7 +747,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets or Sets the internal ID (DB ID) of the Object
 		/// </summary>
-		public virtual string InternalID
+		public virtual int InternalID
 		{
 			get { return m_InternalID; }
 			set { m_InternalID = value; }
@@ -779,9 +773,9 @@ namespace DOL.GS
 		/// 
 		/// </summary>
 		/// <param name="obj"></param>
-		public virtual void LoadFromDatabase(DataObject obj)
+		public virtual void LoadFromDatabase(DataObjectBase obj)
 		{
-			InternalID = obj.ObjectId;
+			InternalID = obj.Id;
 		}
 
 		/// <summary>
@@ -939,12 +933,12 @@ namespace DOL.GS
 		/// <summary>
 		/// A cache of every DBDataQuest object
 		/// </summary>
-		protected static ILookup<ushort, DBDataQuest> m_dataQuestCache = null;
+		protected static ILookup<ushort, Atlas.DataLayer.Models.DataQuest> m_dataQuestCache = null;
 
 		/// <summary>
 		/// List of DataQuests available for this object
 		/// </summary>
-		protected List<DataQuest> m_dataQuests = new List<DataQuest>();
+		protected List<DOL.GS.Quests.DataQuest> m_dataQuests = new List<DOL.GS.Quests.DataQuest>();
 
 		/// <summary>
 		/// Flag to prevent loading quests on every respawn
@@ -961,14 +955,13 @@ namespace DOL.GS
 				m_dataQuestCache = null;
 			}
 
-			m_dataQuestCache = GameServer.Database.SelectAllObjects<DBDataQuest>()
-				.ToLookup(k => k.StartRegionID);
+			m_dataQuestCache = GameServer.Database.DataQuests.ToLookup(k => (ushort)k.StartRegionID);
 		}
 
 		/// <summary>
 		/// Get a preloaded list of all data quests
 		/// </summary>
-		public static IList<DBDataQuest> DataQuestCache
+		public static IList<Atlas.DataLayer.Models.DataQuest> DataQuestCache
 		{
 			get { return m_dataQuestCache.SelectMany(k => k).ToList(); }
 		}
@@ -987,11 +980,11 @@ namespace DOL.GS
 			
 			try
 			{
-				foreach (DBDataQuest quest in m_dataQuestCache[CurrentRegionID])
+				foreach (Atlas.DataLayer.Models.DataQuest quest in m_dataQuestCache[CurrentRegionID])
 				{
 					if (quest.StartName == Name)
 					{
-						DataQuest dq = new DataQuest(quest, this);
+						var dq = new Quests.DataQuest(quest, this);
 						AddDataQuest(dq);
 	
 	                    // if a player forced the reload report any errors
@@ -1008,11 +1001,11 @@ namespace DOL.GS
 
 			try
 			{
-				foreach (DBDataQuest quest in m_dataQuestCache[0])
+				foreach (Atlas.DataLayer.Models.DataQuest quest in m_dataQuestCache[0])
 				{
 					if (quest.StartName == Name)
 					{
-						DataQuest dq = new DataQuest(quest, this);
+						var dq = new DOL.GS.Quests.DataQuest(quest, this);
 						AddDataQuest(dq);
 	
 	                    // if a player forced the reload report any errors
@@ -1028,13 +1021,13 @@ namespace DOL.GS
 			}
 		}
 
-		public void AddDataQuest(DataQuest quest)
+		public void AddDataQuest(DOL.GS.Quests.DataQuest quest)
 		{
 			if (m_dataQuests.Contains(quest) == false)
 				m_dataQuests.Add(quest);
 		}
 
-		public void RemoveDataQuest(DataQuest quest)
+		public void RemoveDataQuest(DOL.GS.Quests.DataQuest quest)
 		{
 			if (m_dataQuests.Contains(quest))
 				m_dataQuests.Remove(quest);
@@ -1043,7 +1036,7 @@ namespace DOL.GS
 		/// <summary>
 		/// All the data driven quests for this object
 		/// </summary>
-		public List<DataQuest> DataQuestList
+		public List<DOL.GS.Quests.DataQuest> DataQuestList
 		{
 			get { return m_dataQuests; }
 		}
@@ -1077,7 +1070,7 @@ namespace DOL.GS
 			Notify(GameObjectEvent.Interact, this, new InteractEventArgs(player));
 			player.Notify(GameObjectEvent.InteractWith, player, new InteractWithEventArgs(this));
 
-			foreach (DataQuest q in DataQuestList)
+			foreach (Quests.DataQuest q in DataQuestList)
 			{
 				// Notify all our potential quests of the interaction so we can check for quest offers
 				q.Notify(GameObjectEvent.Interact, this, new InteractEventArgs(player));
@@ -1419,12 +1412,12 @@ namespace DOL.GS
 		/// <returns>true if the item was successfully received</returns>
 		public virtual bool ReceiveItem(GameLiving source, InventoryItem item)
 		{
-			foreach (DataQuest quest in DataQuestList)
+			foreach (Quests.DataQuest quest in DataQuestList)
 			{
 				quest.Notify(GameLivingEvent.ReceiveItem, this, new ReceiveItemEventArgs(source, this, item));
 			}
 
-			if (item == null || item.OwnerID == null)
+			if (item == null || item.CharacterID == null)
 			{
 				// item was taken
 				return true;
@@ -1441,7 +1434,7 @@ namespace DOL.GS
 		/// <returns>true if the item was successfully received</returns>
 		public virtual bool ReceiveItem(GameLiving source, string templateID)
 		{
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(templateID);
+			ItemTemplate template = GameServer.Database.ItemTemplates.Find(templateID);
 			if (template == null)
 			{
 				if (log.IsErrorEnabled)

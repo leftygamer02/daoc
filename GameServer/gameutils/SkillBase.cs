@@ -25,11 +25,12 @@ using System.Text;
 using System.Linq;
 using System.Threading;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.RealmAbilities;
 using DOL.GS.Styles;
 using DOL.Language;
 using log4net;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS
 {
@@ -64,14 +65,14 @@ namespace DOL.GS
 		protected static readonly Dictionary<string, IList<Tuple<SpellLine, int>>> m_specsSpellLines = new Dictionary<string, IList<Tuple<SpellLine, int>>>();
 		
 		// global table for spec => List of styles, Dict <"string spec keyname", "Dict <"int classid", "List<"Tuple<"Style style", "byte requiredLevel"> Style Constraint" StyleByClass">
-		protected static readonly Dictionary<string, IDictionary<int, List<Tuple<Style, byte>>>> m_specsStyles = new Dictionary<string, IDictionary<int, List<Tuple<Style, byte>>>>();
+		protected static readonly Dictionary<string, IDictionary<int, List<Tuple<Styles.Style, byte>>>> m_specsStyles = new Dictionary<string, IDictionary<int, List<Tuple<Styles.Style, byte>>>>();
 		
 		// Specialization X Ability Cache Dict<"string spec keyname", "List<"Tuple<"string abilitykey", "byte speclevel", "int ab Level", "int class hint"> ab constraint"> list ab's>">
 		protected static readonly Dictionary<string, List<Tuple<string, byte, int, int>>> m_specsAbilities = new Dictionary<string, List<Tuple<string, byte, int, int>>>();
 
 		
 		// Ability Cache Dict KeyName => DBAbility Object (to instanciate)
-		protected static readonly Dictionary<string, DBAbility> m_abilityIndex = new Dictionary<string, DBAbility>();
+		protected static readonly Dictionary<string, Atlas.DataLayer.Models.Ability> m_abilityIndex = new Dictionary<string, Atlas.DataLayer.Models.Ability>();
 		
 		// class id => realm abilitykey list
 		protected static readonly Dictionary<int, IList<string>> m_classRealmAbilities = new Dictionary<int, IList<string>>();
@@ -86,11 +87,11 @@ namespace DOL.GS
 		// Spells Cache Dict SpellID => Spell
 		protected static readonly Dictionary<int, Spell> m_spellIndex = new Dictionary<int, Spell>();
 		// Spells Tooltip Dict ToolTipID => SpellID
-		protected static readonly Dictionary<ushort, int> m_spellToolTipIndex = new Dictionary<ushort, int>();
+		protected static readonly Dictionary<int, int> m_spellToolTipIndex = new Dictionary<int, int>();
 
 		
 		// lookup table for styles, faster access when invoking a char styleID with classID
-		protected static readonly Dictionary<KeyValuePair<int, int>, Style> m_styleIndex = new Dictionary<KeyValuePair<int, int>, Style>();
+		protected static readonly Dictionary<KeyValuePair<int, int>, Styles.Style> m_styleIndex = new Dictionary<KeyValuePair<int, int>, Styles.Style>();
 		
 		// Style X Spell Cache (Procs) Dict<"int StyleID", "Dict<"int classID", "Tuple<"Spell spell", "int Chance"> Proc Constraints"> list of procs">
 		protected static readonly Dictionary<int, IDictionary<int, Tuple<Spell, int>>> m_stylesProcs = new Dictionary<int, IDictionary<int, Tuple<Spell, int>>>();
@@ -151,8 +152,8 @@ namespace DOL.GS
 				//load all spells
 				if (log.IsInfoEnabled)
 					log.Info("Loading spells...");
-	
-				IList<DBSpell> spelldb = GameServer.Database.SelectAllObjects<DBSpell>();
+
+				var spelldb = GameServer.Database.Spells.ToList();
 
 				if (spelldb != null)
 				{
@@ -161,19 +162,19 @@ namespace DOL.GS
 					m_spellIndex.Clear();
 					m_spellToolTipIndex.Clear();
 		
-					foreach (DBSpell spell in spelldb)
+					foreach (var spell in spelldb)
 					{
 						try
 						{
-							m_spellIndex.Add(spell.SpellID, new Spell(spell, 1));
+							m_spellIndex.Add(spell.Id, new Spell(spell, 1));
 							// Update tooltip index.
-							if (spell.TooltipId != 0 && !m_spellToolTipIndex.ContainsKey(spell.TooltipId))
-								m_spellToolTipIndex.Add(spell.TooltipId, spell.SpellID);
+							if (spell.ToolTipId != 0 && !m_spellToolTipIndex.ContainsKey(spell.ToolTipId))
+								m_spellToolTipIndex.Add(spell.ToolTipId, spell.Id);
 						}
 						catch (Exception e)
 						{
 							if (log.IsErrorEnabled)
-								log.ErrorFormat("{0} with spellid = {1} spell.TS= {2}", e.Message, spell.SpellID, spell.ToString());
+								log.ErrorFormat("{0} with spellid = {1} spell.TS= {2}", e.Message, spell.Id, spell.ToString());
 						}
 					}
 					
@@ -201,20 +202,20 @@ namespace DOL.GS
 				//load all spellline
 				if (log.IsInfoEnabled)
 					log.Info("Loading Spell Lines...");
-	
+
 				// load all spell lines
-				IList<DBSpellLine> dbo = GameServer.Database.SelectAllObjects<DBSpellLine>();
+				var dbo = GameServer.Database.SpellLines.ToList();
 				
 				if (dbo != null)
 				{
 					// clean cache
 					m_spellLineIndex.Clear();
 					
-					foreach(DBSpellLine line in dbo)
+					foreach(var line in dbo)
 					{
 						try
 						{
-							m_spellLineIndex.Add(line.KeyName, new SpellLine(line.KeyName, line.Name, line.Spec, line.IsBaseLine));
+							m_spellLineIndex.Add(line.KeyName, new SpellLine(line.KeyName, line.Name, line.SpecKeyName, line.IsBaseLine));
 						}
 						catch (Exception e)
 						{
@@ -234,8 +235,8 @@ namespace DOL.GS
 				//load spell relation
 				if (log.IsInfoEnabled)
 					log.Info("Loading Spell Lines X Spells Relation...");
-				
-				IList<DBLineXSpell> dbox = GameServer.Database.SelectAllObjects<DBLineXSpell>();
+
+				var dbox = GameServer.Database.SpellLineSpells.Include(x => x.SpellLine).ToList();
 
 				int count = 0;
 
@@ -244,24 +245,24 @@ namespace DOL.GS
 					// Clean cache
 					m_lineSpells.Clear();
 										
-					foreach (DBLineXSpell lxs in dbox)
+					foreach (var lxs in dbox)
 					{
 						try
 						{
-							if (!m_lineSpells.ContainsKey(lxs.LineName))
-								m_lineSpells.Add(lxs.LineName, new List<Spell>());
+							if (!m_lineSpells.ContainsKey(lxs.SpellLine.Name))
+								m_lineSpells.Add(lxs.SpellLine.Name, new List<Spell>());
 													
 							Spell spl = (Spell)m_spellIndex[lxs.SpellID].Clone();
 							
 							spl.Level = Math.Max(1, lxs.Level);
 							
-							m_lineSpells[lxs.LineName].Add(spl);
+							m_lineSpells[lxs.SpellLine.Name].Add(spl);
 							count++;
 						}
 						catch (Exception e)
 						{
 							if (log.IsErrorEnabled)
-								log.ErrorFormat("LineXSpell Spell Adding Error : {0}, Line {1}, Spell {2}, Level {3}", e.Message, lxs.LineName, lxs.SpellID, lxs.Level);
+								log.ErrorFormat("LineXSpell Spell Adding Error : {0}, Line {1}, Spell {2}, Level {3}", e.Message, lxs.SpellLine.Name, lxs.SpellID, lxs.Level);
 								
 						}
 					}
@@ -297,35 +298,35 @@ namespace DOL.GS
 				if (log.IsInfoEnabled)
 					log.Info("Reloading DB spells...");
 	
-				IList<DBSpell> spelldb = GameServer.Database.SelectAllObjects<DBSpell>();
+				var spelldb = GameServer.Database.Spells.ToList();
 				
 				if (spelldb != null)
 				{
 		
 					int count = 0;
 		
-					foreach (DBSpell spell in spelldb)
+					foreach (var spell in spelldb)
 					{
-						if (m_spellIndex.ContainsKey(spell.SpellID) == false)
+						if (m_spellIndex.ContainsKey(spell.Id) == false)
 						{
 							// Add new spell
-							m_spellIndex.Add(spell.SpellID, new Spell(spell, 1));
+							m_spellIndex.Add(spell.Id, new Spell(spell, 1));
 							count++;
 						}
 						else
 						{
 							// Replace Spell
-							m_spellIndex[spell.SpellID] = new Spell(spell, 1);
+							m_spellIndex[spell.Id] = new Spell(spell, 1);
 						}
 						
 						// Update tooltip index
-						if (spell.TooltipId != 0)
+						if (spell.ToolTipId != 0)
 						{
-							if (m_spellToolTipIndex.ContainsKey(spell.TooltipId))
-								m_spellToolTipIndex[spell.TooltipId] = spell.SpellID;
+							if (m_spellToolTipIndex.ContainsKey(spell.ToolTipId))
+								m_spellToolTipIndex[spell.ToolTipId] = spell.Id;
 							else
 							{
-								m_spellToolTipIndex.Add(spell.TooltipId, spell.SpellID);
+								m_spellToolTipIndex.Add(spell.ToolTipId, spell.Id);
 								count++;
 							}
 						}
@@ -362,7 +363,7 @@ namespace DOL.GS
 				foreach (string lineName in m_spellLineIndex.Keys)
 				{
 					// Get SpellLine X Spell relation
-					var spells = DOLDB<DBLineXSpell>.SelectObjects(DB.Column("LineName").IsEqualTo(lineName));
+					var spells = GameServer.Database.SpellLineSpells.Include(x => x.SpellLine).Where(x => x.SpellLine.Name == lineName);
 					
 					// Load them if any records.
 					if (spells != null)
@@ -371,7 +372,7 @@ namespace DOL.GS
 							m_lineSpells.Add(lineName, new List<Spell>());
 	
 						
-						foreach (DBLineXSpell lxs in spells)
+						foreach (var lxs in spells)
 						{
 							try
 							{
@@ -404,7 +405,7 @@ namespace DOL.GS
 							catch (Exception e)
 							{
 								if (log.IsErrorEnabled)
-									log.ErrorFormat("LineXSpell Adding Error : {0}, Line {1}, Spell {2}, Level {3}", e.Message, lxs.LineName, lxs.SpellID, lxs.Level);
+									log.ErrorFormat("LineXSpell Adding Error : {0}, Line {1}, Spell {2}, Level {3}", e.Message, lxs.SpellLine.Name, lxs.SpellID, lxs.Level);
 									
 							}
 						}
@@ -434,15 +435,15 @@ namespace DOL.GS
 				// load Abilities
 				if (log.IsInfoEnabled)
 					log.Info("Loading Abilities...");
-	
-				IList<DBAbility> abilities = GameServer.Database.SelectAllObjects<DBAbility>();
+
+				var abilities = GameServer.Database.Abilities.ToList();
 								
 				if (abilities != null)
 				{
 					// Clean Cache
 					m_abilityIndex.Clear();
 
-					foreach (DBAbility dba in abilities)
+					foreach (var dba in abilities)
 					{
 						try
 						{
@@ -490,27 +491,27 @@ namespace DOL.GS
 				
 				if (log.IsInfoEnabled)
 					log.Info("Loading class to realm ability associations...");
-				
-				IList<ClassXRealmAbility> classxra = GameServer.Database.SelectAllObjects<ClassXRealmAbility>();
+
+				var classxra = GameServer.Database.ClassRealmAbilities.Include(x => x.Ability).ToList();
 	
 				if (classxra != null)
 				{
-					foreach (ClassXRealmAbility cxra in classxra)
+					foreach (var cxra in classxra)
 					{
-						if (!m_classRealmAbilities.ContainsKey(cxra.CharClass))
-							m_classRealmAbilities.Add(cxra.CharClass, new List<string>());
+						if (!m_classRealmAbilities.ContainsKey(cxra.ClassID))
+							m_classRealmAbilities.Add(cxra.ClassID, new List<string>());
 						
 						try
 						{
-							DBAbility dba = m_abilityIndex[cxra.AbilityKey];
+							var dba = m_abilityIndex[cxra.Ability.Name];
 							
-							if (!m_classRealmAbilities[cxra.CharClass].Contains(dba.KeyName))
-								m_classRealmAbilities[cxra.CharClass].Add(dba.KeyName);
+							if (!m_classRealmAbilities[cxra.ClassID].Contains(dba.KeyName))
+								m_classRealmAbilities[cxra.ClassID].Add(dba.KeyName);
 						}
 						catch (Exception e)
 						{
 							if (log.IsWarnEnabled)
-								log.WarnFormat("Error while Adding RealmAbility {0} to Class {1} : {2}", cxra.AbilityKey, cxra.CharClass, e);
+								log.WarnFormat("Error while Adding RealmAbility {0} to Class {1} : {2}", cxra.Ability.Name, cxra.ClassID, e);
 
 						}
 					}
@@ -540,7 +541,7 @@ namespace DOL.GS
 			m_syncLockUpdates.EnterWriteLock();
 			try
 			{
-				IList<DBSpecialization> specs = GameServer.Database.SelectAllObjects<DBSpecialization>();
+				var specs = GameServer.Database.Specializations.Include(x => x.SpellLines).ToList();
 				
 				int count = 0;
 				
@@ -564,7 +565,7 @@ namespace DOL.GS
 					// Clear Style X Spell Cache (Style Procs...)
 					m_stylesProcs.Clear();
 	
-					foreach (DBSpecialization spec in specs)
+					foreach (var spec in specs)
 					{
 						StringBuilder str = new StringBuilder("Specialization ");
 						str.AppendFormat("{0} - ", spec.KeyName);
@@ -572,40 +573,40 @@ namespace DOL.GS
 						Specialization gameSpec = null;
 						if (Util.IsEmpty(spec.Implementation, true) == false)
 						{
-							gameSpec = GetNewSpecializationInstance(spec.KeyName, spec.Implementation, spec.Name, spec.Icon, spec.SpecializationID);
+							gameSpec = GetNewSpecializationInstance(spec.KeyName, spec.Implementation, spec.Name, (ushort)spec.Icon, spec.Id);
 						}
 						else
 						{
-							gameSpec = new Specialization(spec.KeyName, spec.Name, spec.Icon, spec.SpecializationID);
+							gameSpec = new Specialization(spec.KeyName, spec.Name, (ushort)spec.Icon, spec.Id);
 						}
 						
 						if (log.IsDebugEnabled)
 							log.DebugFormat("Specialization {0} successfuly instanciated from {1} (expected {2})", spec.KeyName, gameSpec.GetType().FullName, spec.Implementation);
 						
-						Tuple<Type, string, ushort, int> entry = new Tuple<Type, string, ushort, int>(gameSpec.GetType(), spec.Name, spec.Icon, spec.SpecializationID);
+						Tuple<Type, string, ushort, int> entry = new Tuple<Type, string, ushort, int>(gameSpec.GetType(), spec.Name, (ushort)spec.Icon, spec.Id);
 						
 						// Now we have an instanciated Specialization, Cache their properties in Skillbase to prevent using too much memory
 						// As most skill objects are duplicated for every game object use...
 						
 						// Load SpecXAbility
 						count = 0;
-						if (spec.AbilityConstraints != null)
+						if (spec.Abilities.Any())
 						{
 							if (!m_specsAbilities.ContainsKey(spec.KeyName))
 								m_specsAbilities.Add(spec.KeyName, new List<Tuple<string, byte, int, int>>());
 
-							foreach (DBSpecXAbility specx in spec.AbilityConstraints)
+							foreach (var specx in spec.Abilities)
 							{
 								
 								try
 								{
-									m_specsAbilities[spec.KeyName].Add(new Tuple<string, byte, int, int>(m_abilityIndex[specx.AbilityKey].KeyName, (byte)specx.SpecLevel, specx.AbilityLevel, specx.ClassId));
+									m_specsAbilities[spec.KeyName].Add(new Tuple<string, byte, int, int>(m_abilityIndex[specx.Ability.KeyName].KeyName, (byte)specx.SpecLevel, specx.AbilityLevel, specx.ClassID));
 									count++;
 								}
 								catch (Exception e)
 								{
 									if (log.IsWarnEnabled)
-										log.WarnFormat("Specialization : {0} while adding Spec X Ability {1}, from Spec {2}({3}), Level {4}", e.Message, specx.AbilityKey, specx.Spec, specx.SpecLevel, specx.AbilityLevel);
+										log.WarnFormat("Specialization : {0} while adding Spec X Ability {1}, from Spec {2}({3}), Level {4}", e.Message, specx.Ability.KeyName, specx.Specialization.KeyName, specx.SpecLevel, specx.AbilityLevel);
 								}
 								
 							}
@@ -621,7 +622,7 @@ namespace DOL.GS
 						count = 0;
 						if (spec.SpellLines != null)
 						{
-							foreach (DBSpellLine line in spec.SpellLines)
+							foreach (var line in spec.SpellLines)
 							{
 								if (!m_specsSpellLines.ContainsKey(spec.KeyName))
 									m_specsSpellLines.Add(spec.KeyName, new List<Tuple<SpellLine, int>>());
@@ -634,7 +635,7 @@ namespace DOL.GS
 								catch (Exception e)
 								{
 									if (log.IsWarnEnabled)
-										log.WarnFormat("Specialization : {0} while adding Spec X SpellLine {1} from Spec {2}, ClassID {3}", e.Message, line.KeyName, line.Spec, line.ClassIDHint);
+										log.WarnFormat("Specialization : {0} while adding Spec X SpellLine {1} from Spec {2}, ClassID {3}", e.Message, line.KeyName, line.Specialization.KeyName, line.ClassIDHint);
 								}
 							}
 						}
@@ -645,26 +646,26 @@ namespace DOL.GS
 						count = 0;
 						if (spec.Styles != null)
 						{
-							foreach (DBStyle specStyle in spec.Styles)
+							foreach (var specStyle in spec.Styles)
 							{
 								// Update Style Career
 								if (!m_specsStyles.ContainsKey(spec.KeyName))
 								{
-									m_specsStyles.Add(spec.KeyName, new Dictionary<int, List<Tuple<Style, byte>>>());
+									m_specsStyles.Add(spec.KeyName, new Dictionary<int, List<Tuple<Styles.Style, byte>>>());
 								}
 								
-								if (!m_specsStyles[spec.KeyName].ContainsKey(specStyle.ClassId))
+								if (!m_specsStyles[spec.KeyName].ContainsKey(specStyle.ClassID))
 								{
-									m_specsStyles[spec.KeyName].Add(specStyle.ClassId, new List<Tuple<Style, byte>>());
+									m_specsStyles[spec.KeyName].Add(specStyle.ClassID, new List<Tuple<Styles.Style, byte>>());
 								}
 								
-								Style newStyle = new Style(specStyle);
+								Styles.Style newStyle = new Styles.Style(specStyle);
 								
-								m_specsStyles[spec.KeyName][specStyle.ClassId].Add(new Tuple<Style, byte>(newStyle, (byte)specStyle.SpecLevelRequirement));
+								m_specsStyles[spec.KeyName][specStyle.ClassID].Add(new Tuple<Styles.Style, byte>(newStyle, (byte)specStyle.SpecLevelRequirement));
 								
 								// Update Style Index.
 								
-								KeyValuePair<int, int> styleKey = new KeyValuePair<int, int>(newStyle.ID, specStyle.ClassId);
+								KeyValuePair<int, int> styleKey = new KeyValuePair<int, int>(newStyle.ID, specStyle.ClassID);
 								
 								if (!m_styleIndex.ContainsKey(styleKey))
 								{
@@ -674,23 +675,23 @@ namespace DOL.GS
 								else
 								{
 									if (log.IsWarnEnabled)
-										log.WarnFormat("Specialization {0} - Duplicate Style Key, StyleID {1} : ClassID {2}, Ignored...", spec.KeyName, newStyle.ID, specStyle.ClassId);
+										log.WarnFormat("Specialization {0} - Duplicate Style Key, StyleID {1} : ClassID {2}, Ignored...", spec.KeyName, newStyle.ID, specStyle.ClassID);
 								}
 								
 								// load Procs
-								if (specStyle.AttachedProcs != null)
+								if (specStyle.Spells != null)
 								{
-									foreach (DBStyleXSpell styleProc in specStyle.AttachedProcs)
+									foreach (var styleProc in specStyle.Spells)
 									{
 										if (m_spellIndex.ContainsKey(styleProc.SpellID))
 										{
-											if (!m_stylesProcs.ContainsKey(specStyle.ID))
+											if (!m_stylesProcs.ContainsKey(specStyle.Id))
 											{
-												m_stylesProcs.Add(specStyle.ID, new Dictionary<int, Tuple<Spell, int>>());
+												m_stylesProcs.Add(specStyle.Id, new Dictionary<int, Tuple<Spell, int>>());
 											}
 											
-											if (!m_stylesProcs[specStyle.ID].ContainsKey(styleProc.ClassID))
-												m_stylesProcs[specStyle.ID].Add(styleProc.ClassID, new Tuple<Spell, int>(m_spellIndex[styleProc.SpellID], styleProc.Chance));
+											if (!m_stylesProcs[specStyle.Id].ContainsKey(styleProc.ClassID))
+												m_stylesProcs[specStyle.Id].Add(styleProc.ClassID, new Tuple<Spell, int>(m_spellIndex[styleProc.SpellID], styleProc.Chance));
 										}
 									}
 								}
@@ -749,9 +750,9 @@ namespace DOL.GS
 			{
 				if (log.IsInfoEnabled)
 					log.Info("Loading Class Specialization's Career...");
-				
+
 				//Retrieve from DB
-				IList<ClassXSpecialization> dbo = GameServer.Database.SelectAllObjects<ClassXSpecialization>();
+				IList<ClassSpecialization> dbo = GameServer.Database.ClassSpecializations.Include(x => x.Specialization).ToList();
 				Dictionary<int, StringBuilder> summary = new Dictionary<int, StringBuilder>();
 				
 				if (dbo != null)
@@ -759,7 +760,7 @@ namespace DOL.GS
 					// clear
 					m_specsByClass.Clear();
 					
-					foreach (ClassXSpecialization career in dbo)
+					foreach (var career in dbo)
 					{
 						if (!m_specsByClass.ContainsKey(career.ClassID))
 						{
@@ -768,15 +769,15 @@ namespace DOL.GS
 							summary[career.ClassID].AppendFormat("Career for Class {0} - ", career.ClassID);
 						}
 						
-						if (!m_specsByClass[career.ClassID].ContainsKey(career.SpecKeyName))
+						if (!m_specsByClass[career.ClassID].ContainsKey(career.Specialization.KeyName))
 						{
-							m_specsByClass[career.ClassID].Add(career.SpecKeyName, career.LevelAcquired);
-							summary[career.ClassID].AppendFormat("{0}({1}), ", career.SpecKeyName, career.LevelAcquired);
+							m_specsByClass[career.ClassID].Add(career.Specialization.KeyName, career.LevelAcquired);
+							summary[career.ClassID].AppendFormat("{0}({1}), ", career.Specialization.KeyName, career.LevelAcquired);
 						}
 						else
 						{
 							if (log.IsWarnEnabled)
-								log.WarnFormat("Duplicate Sepcialization Key {0} for Class Career : {1}", career.SpecKeyName, career.ClassID);
+								log.WarnFormat("Duplicate Sepcialization Key {0} for Class Career : {1}", career.Specialization.KeyName, career.ClassID);
 						}
 					}
 				}
@@ -1459,7 +1460,7 @@ namespace DOL.GS
 	
 				try
 				{
-					races = GameServer.Database.SelectAllObjects<Race>();
+					races = GameServer.Database.Races.ToList();
 				}
 				catch
 				{
@@ -1474,17 +1475,17 @@ namespace DOL.GS
 		
 					foreach (Race race in races)
 					{
-						m_raceResists.Add(race.ID, new int[10]);
-						m_raceResists[race.ID][0] = race.ResistBody;
-						m_raceResists[race.ID][1] = race.ResistCold;
-						m_raceResists[race.ID][2] = race.ResistCrush;
-						m_raceResists[race.ID][3] = race.ResistEnergy;
-						m_raceResists[race.ID][4] = race.ResistHeat;
-						m_raceResists[race.ID][5] = race.ResistMatter;
-						m_raceResists[race.ID][6] = race.ResistSlash;
-						m_raceResists[race.ID][7] = race.ResistSpirit;
-						m_raceResists[race.ID][8] = race.ResistThrust;
-						m_raceResists[race.ID][9] = race.ResistNatural;
+						m_raceResists.Add(race.Id, new int[10]);
+						m_raceResists[race.Id][0] = race.ResistBody;
+						m_raceResists[race.Id][1] = race.ResistCold;
+						m_raceResists[race.Id][2] = race.ResistCrush;
+						m_raceResists[race.Id][3] = race.ResistEnergy;
+						m_raceResists[race.Id][4] = race.ResistHeat;
+						m_raceResists[race.Id][5] = race.ResistMatter;
+						m_raceResists[race.Id][6] = race.ResistSlash;
+						m_raceResists[race.Id][7] = race.ResistSpirit;
+						m_raceResists[race.Id][8] = race.ResistThrust;
+						m_raceResists[race.Id][9] = race.ResistNatural;
 					}
 					
 					races = null;
@@ -2000,8 +2001,8 @@ namespace DOL.GS
 		public static int GetArmorResist(InventoryItem armor, eDamageType damageType)
 		{
 			if (armor == null) return 0;
-			int realm = armor.Template.Realm - (int)eRealm._First;
-			int armorType = armor.Template.Object_Type - (int)eObjectType._FirstArmor;
+			int realm = armor.ItemTemplate.Realm - (int)eRealm._First;
+			int armorType = armor.ItemTemplate.ObjectType - (int)eObjectType._FirstArmor;
 			int damage = damageType - eDamageType._FirstResist;
 			if (realm < 0 || realm > eRealm._LastPlayerRealm - eRealm._First) return 0;
 			if (armorType < 0 || armorType > eObjectType._LastArmor - eObjectType._FirstArmor) return 0;
@@ -2198,22 +2199,22 @@ namespace DOL.GS
 		/// After adding all styles call SortStyles to sort the list by level
 		/// </summary>
 		/// <param name="style"></param>
-		public static void AddScriptedStyle(Specialization spec, DBStyle style)
+		public static void AddScriptedStyle(Specialization spec, Atlas.DataLayer.Models.Style style)
 		{
 			m_syncLockUpdates.EnterWriteLock();
 			try
 			{
 				if (!m_specsStyles.ContainsKey(spec.KeyName))
-					m_specsStyles.Add(spec.KeyName, new Dictionary<int, List<Tuple<Style, byte>>>());
+					m_specsStyles.Add(spec.KeyName, new Dictionary<int, List<Tuple<Styles.Style, byte>>>());
 				
-				if (!m_specsStyles[spec.KeyName].ContainsKey(style.ClassId))
-					m_specsStyles[spec.KeyName].Add(style.ClassId, new List<Tuple<Style, byte>>());
+				if (!m_specsStyles[spec.KeyName].ContainsKey(style.ClassID))
+					m_specsStyles[spec.KeyName].Add(style.ClassID, new List<Tuple<Styles.Style, byte>>());
 			
-				Style st = new Style(style);
+				var st = new Styles.Style(style);
 				
-				m_specsStyles[spec.KeyName][style.ClassId].Add(new Tuple<Style, byte>(st, (byte)style.SpecLevelRequirement));
+				m_specsStyles[spec.KeyName][style.ClassID].Add(new Tuple<Styles.Style, byte>(st, (byte)style.SpecLevelRequirement));
 	
-				KeyValuePair<int, int> styleKey = new KeyValuePair<int, int>(st.ID, style.ClassId);
+				KeyValuePair<int, int> styleKey = new KeyValuePair<int, int>(st.ID, style.ClassID);
 				if (!m_styleIndex.ContainsKey(styleKey))
 					m_styleIndex.Add(styleKey, st);
 	
@@ -2273,7 +2274,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static List<RealmAbility> GetClassRealmAbilities(int classID)
 		{
-			List<DBAbility> ras = new List<DBAbility>();
+			var ras = new List<Atlas.DataLayer.Models.Ability>();
 			m_syncLockUpdates.EnterReadLock();
 			try
 			{
@@ -2354,7 +2355,7 @@ namespace DOL.GS
 			string ability = null;
 			try
 			{
-				ability = m_abilityIndex.Where(it => it.Value.AbilityID == databaseID).FirstOrDefault().Value.KeyName;
+				ability = m_abilityIndex.Where(it => it.Value.Id == databaseID).FirstOrDefault().Value.KeyName;
 			}
 			finally
 			{
@@ -2376,7 +2377,7 @@ namespace DOL.GS
 		public static Ability GetAbility(string keyname, int level)
 		{
 			m_syncLockUpdates.EnterReadLock();
-			DBAbility dbab = null;
+			Atlas.DataLayer.Models.Ability dbab = null;
 			try
 			{
 				if (m_abilityIndex.ContainsKey(keyname))
@@ -2439,7 +2440,7 @@ namespace DOL.GS
 			m_syncLockUpdates.EnterWriteLock();
 			try
 			{
-				var dbSpell = DOLDB<DBSpell>.SelectObject(DB.Column("SpellID").IsEqualTo(spellID));
+				var dbSpell = GameServer.Database.Spells.FirstOrDefault(x => x.Id == spellID);
 	
 				if (dbSpell != null)
 				{
@@ -2845,15 +2846,15 @@ namespace DOL.GS
 		/// <param name="specID">KeyName of spec</param>
 		/// <param name="classId">ClassID for which style list is requested</param>
 		/// <returns>list of styles, never null</returns>
-		public static List<Style> GetStyleList(string specID, int classId)
+		public static List<DOL.GS.Styles.Style> GetStyleList(string specID, int classId)
 		{
 			m_syncLockUpdates.EnterReadLock();
-			List<Tuple<Style, byte>> entries = new List<Tuple<Style, byte>>();
+			var entries = new List<Tuple<Styles.Style, byte>>();
 			try
 			{
 				if(m_specsStyles.ContainsKey(specID) && m_specsStyles[specID].ContainsKey(classId))
 				{
-					entries = new List<Tuple<Style, byte>>(m_specsStyles[specID][classId]);
+					entries = new List<Tuple<Styles.Style, byte>>(m_specsStyles[specID][classId]);
 				}
 			}
 			finally
@@ -2861,10 +2862,10 @@ namespace DOL.GS
 				m_syncLockUpdates.ExitReadLock();
 			}
 			
-			List<Style> styleRes = new List<Style>();
+			var styleRes = new List<DOL.GS.Styles.Style>();
 				
-			foreach(Tuple<Style, byte> constraint in entries)
-				styleRes.Add((Style)constraint.Item1.Clone());
+			foreach(Tuple<Styles.Style, byte> constraint in entries)
+				styleRes.Add((Styles.Style)constraint.Item1.Clone());
 				
 			return styleRes;
 		}
@@ -2910,9 +2911,9 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="internalID"></param>
 		/// <returns></returns>
-		public static Style GetStyleByInternalID(int internalID)
+		public static Styles.Style GetStyleByInternalID(int internalID)
 		{
-			Style style = null;
+			Styles.Style style = null;
 			m_syncLockUpdates.EnterReadLock();
 			try
 			{
@@ -2924,7 +2925,7 @@ namespace DOL.GS
 			}
 			
 			if (style != null)
-				return (Style)style.Clone();
+				return (Styles.Style)style.Clone();
 			
 			return style;
 		}
@@ -2935,10 +2936,10 @@ namespace DOL.GS
 		/// <param name="styleID">id of style</param>
 		/// <param name="classId">ClassID for which style list is requested</param>
 		/// <returns>style or null if not found</returns>
-		public static Style GetStyleByID(int styleID, int classId)
+		public static Styles.Style GetStyleByID(int styleID, int classId)
 		{
 			KeyValuePair<int, int> styleKey = new KeyValuePair<int, int>(styleID, classId);
-			Style style;
+			Styles.Style style;
 			m_syncLockUpdates.EnterReadLock();
 			try
 			{
@@ -2950,7 +2951,7 @@ namespace DOL.GS
 			}
 			
 			if (style != null)
-				return (Style)style.Clone();
+				return (Styles.Style)style.Clone();
 			
 			return style;
 		}
@@ -2960,7 +2961,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="style"></param>
 		/// <returns></returns>
-		public static IList<Tuple<Spell, int, int>> GetStyleProcsByID(Style style)
+		public static IList<Tuple<Spell, int, int>> GetStyleProcsByID(Styles.Style style)
 		{
 			List<Tuple<Spell, int, int>> procres = new List<Tuple<Spell, int, int>>();
 			m_syncLockUpdates.EnterReadLock();
@@ -3208,7 +3209,7 @@ namespace DOL.GS
 		private static Ability GetNewAbilityInstance(string keyname, int level)
 		{
 			Ability ab = null;
-			DBAbility dba = null;
+			Atlas.DataLayer.Models.Ability dba = null;
 			m_syncLockUpdates.EnterReadLock();
 			try
 			{
@@ -3231,7 +3232,7 @@ namespace DOL.GS
 			return ab;
 		}
 		
-		private static Ability GetNewAbilityInstance(DBAbility dba)
+		private static Ability GetNewAbilityInstance(Atlas.DataLayer.Models.Ability dba)
 		{
 			// try instanciating ability
 			Ability ab = null;

@@ -17,7 +17,7 @@
  *
  */
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using System;
 using System.Collections.Generic;

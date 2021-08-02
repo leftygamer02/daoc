@@ -26,7 +26,7 @@ using System.Reflection;
 using System.Threading;
 using Timer=System.Threading.Timer;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.Utils;
 using DOL.Config;
@@ -111,7 +111,7 @@ namespace DOL.GS
 		private static object m_syncTeleport = new object();
 
 		// this is used to hold the player ids with timestamp of ld, that ld near an enemy keep structure, to allow grace period relog
-		public static Dictionary<string, DateTime> RvRLinkDeadPlayers = new Dictionary<string, DateTime>();
+		public static Dictionary<int, DateTime> RvRLinkDeadPlayers = new Dictionary<int, DateTime>();
 
 		/// <summary>
 		/// Returns the teleport given an ID and a realm
@@ -1519,7 +1519,7 @@ namespace DOL.GS
 		/// <param name="exactMatch">true if AccountName match exactly</param>
 		/// <param name="activeRequired"></param>
 		/// <returns>The found GameClient or null</returns>
-		public static GameClient GetClientByPlayerID(string playerID, bool exactMatch, bool activeRequired)
+		public static GameClient GetClientByPlayerID(int playerID, bool exactMatch, bool activeRequired)
 		{
 			foreach (GameClient client in WorldMgr.GetAllPlayingClients())
 			{

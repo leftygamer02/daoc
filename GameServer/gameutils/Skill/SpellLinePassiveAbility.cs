@@ -19,7 +19,7 @@
 using System;
 
 using DOL.GS.Spells;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {

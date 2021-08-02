@@ -17,13 +17,15 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS;
 using log4net;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
+using Atlas.DataLayer;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.Language;
@@ -41,7 +43,7 @@ namespace DOL.GS
 		/// </summary>
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private String m_artifactID;
+		private int m_artifactID;
 		private int m_artifactLevel;
 		private int[] m_levelRequirements;
 
@@ -59,19 +61,23 @@ namespace DOL.GS
 			: base(template)
 			
 		{
-			Template = Template.Clone() as ItemTemplate;
-			ArtifactID = ArtifactMgr.GetArtifactIDFromItemID(template.Id_nb);
+			ItemTemplate = ItemTemplate.Clone() as ItemTemplate;
+			ArtifactID = ArtifactMgr.GetArtifactIDFromItemID(template.Id) ?? 0;
 			ArtifactLevel = 0;
-			m_levelRequirements = ArtifactMgr.GetLevelRequirements(ArtifactID);
+			m_levelRequirements = ArtifactMgr.GetLevelRequirements(ArtifactID);			
 
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.Min; bonusID <= ArtifactBonus.ID.Max; ++bonusID)
+			for (var bonusID = eArtifactBonus.Min; bonusID <= eArtifactBonus.Max; ++bonusID)
 			{
 				// Clear all bonuses except the base (L0) bonuses.
 
 				if (m_levelRequirements[(int)bonusID] > 0)
 				{
-					Template.SetBonusType(bonusID, 0);
-					Template.SetBonusAmount(bonusID, 0);
+					var bonus = ItemTemplate.Bonuses.FirstOrDefault(x => x.BonusOrder == (int)bonusID);
+					
+					if (bonus != null)
+                    {
+						ItemTemplate.Bonuses.Remove(bonus);
+                    }
 				}
 			}
 		}
@@ -86,19 +92,19 @@ namespace DOL.GS
 			if (item != null)
 			{
 				// We want a new copy from the DB to avoid everyone sharing the same template
-				var template = item.Template != null ? item.Template.Clone() as ItemTemplate : item.Template;
+				var template = item.ItemTemplate != null ? item.ItemTemplate.Clone() as ItemTemplate : item.ItemTemplate;
 
 				if (template == null)
 				{
-					log.ErrorFormat("Artifact: Error loading artifact for owner {0} holding item {1} with an id_nb of {2}", item.OwnerID, item.Name, item.Id_nb);
+					log.ErrorFormat("Artifact: Error loading artifact for owner {0} holding item {1} with an id_nb of {2}", item.CharacterID, item.Name, item.Id);
 					return;
 				}
 
-				this.Template = template;
-				this.ObjectId = item.ObjectId;	// This is the key for the 'inventoryitem' table
-				this.OwnerID = item.OwnerID;
-				CanUseEvery = ArtifactMgr.GetReuseTimer(this);
-				ArtifactID = ArtifactMgr.GetArtifactIDFromItemID(Id_nb);
+				this.ItemTemplate = template;
+				this.Id = item.Id;	// This is the key for the 'inventoryitem' table
+				this.CharacterID = item.CharacterID;
+				ItemTemplate.CanUseEvery = ArtifactMgr.GetReuseTimer(this);
+				ArtifactID = ArtifactMgr.GetArtifactIDFromItemID(item.Id) ?? 0;
 				ArtifactLevel = ArtifactMgr.GetCurrentLevel(this);
 				m_levelRequirements = ArtifactMgr.GetLevelRequirements(ArtifactID);
 				UpdateAbilities(template);
@@ -109,7 +115,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The ID of this artifact.
 		/// </summary>
-		public String ArtifactID
+		public int ArtifactID
 		{
 			get { return m_artifactID; }
 			protected set { m_artifactID = value; }
@@ -146,7 +152,7 @@ namespace DOL.GS
 		{
 			get
 			{
-				return (MaxCondition - Condition) / 100;
+				return (ItemTemplate.MaxCondition - Condition) / 100;
 			}
 		}
 
@@ -158,17 +164,33 @@ namespace DOL.GS
 			if (template == null)
 				return;
 
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.Min; bonusID <= ArtifactBonus.ID.Max; ++bonusID)
+			for (var bonusID = eArtifactBonus.Min; bonusID <= eArtifactBonus.Max; ++bonusID)
 			{
+				var bonus = this.Bonuses.FirstOrDefault(x => x.BonusOrder == (int)bonusID);
+
 				if (m_levelRequirements[(int)bonusID] <= ArtifactLevel)
 				{
-					Template.SetBonusType(bonusID, template.GetBonusType(bonusID));
-					Template.SetBonusAmount(bonusID, template.GetBonusAmount(bonusID));
+					if (bonus == null)
+                    {
+						var templateBonus = template.Bonuses.FirstOrDefault(x => x.BonusOrder == (int)bonusID);
+						if (templateBonus == null)
+							continue;
+
+						this.Bonuses.Add(new ItemBonus()
+						{
+							BonusOrder = (int)bonusID,
+							BonusType = templateBonus.BonusType,
+							BonusValue = templateBonus.BonusValue,
+							
+						});
+                    }					
 				}
 				else
 				{
-					Template.SetBonusType(bonusID, 0);
-					Template.SetBonusAmount(bonusID, 0);
+					if (bonus != null)
+                    {
+						template.Bonuses.Remove(bonus);
+                    }
 				}
 			}
 		}
@@ -181,7 +203,7 @@ namespace DOL.GS
 		/// <returns>True, if artifact gained 1 or more abilities, else false.</returns>
 		private bool AddAbilities(GamePlayer player, int artifactLevel)
 		{
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(Id_nb);
+			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(this.Id);
 
 			if (template == null)
 			{
@@ -191,17 +213,29 @@ namespace DOL.GS
 
 			bool abilityGained = false;
 
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.Min; bonusID <= ArtifactBonus.ID.Max; ++bonusID)
+			for (var bonusID = eArtifactBonus.Min; bonusID <= eArtifactBonus.Max; ++bonusID)
 			{
 				if (m_levelRequirements[(int)bonusID] == artifactLevel)
 				{
-					Template.SetBonusType(bonusID, template.GetBonusType(bonusID));
-					Template.SetBonusAmount(bonusID, template.GetBonusAmount(bonusID));
+					var bonus = this.Bonuses.FirstOrDefault(x => x.BonusOrder == (int)bonusID);
+					var templateBonus = template.Bonuses.FirstOrDefault(x => x.BonusOrder == (int)bonusID);
+					if (bonus == null && templateBonus != null)
+					{
+						bonus = new ItemBonus()
+						{
+							BonusOrder = (int)bonusID,
+							BonusType = templateBonus.BonusType,
+							BonusValue = templateBonus.BonusValue,
 
-					if (bonusID <= ArtifactBonus.ID.MaxStat)
-						player.Notify(PlayerInventoryEvent.ItemBonusChanged, this, new ItemBonusChangedEventArgs(Template.GetBonusType(bonusID), Template.GetBonusAmount(bonusID)));
+						};
 
-					abilityGained = true;
+						this.Bonuses.Add(bonus);
+
+						if (bonusID <= eArtifactBonus.MaxStat)
+							player.Notify(PlayerInventoryEvent.ItemBonusChanged, this, new ItemBonusChangedEventArgs(bonus.BonusType, bonus.BonusValue));
+
+						abilityGained = true;
+					}
 				}
 			}
 
@@ -241,34 +275,40 @@ namespace DOL.GS
 			delve.Add("");
 			delve.Add("Magical Bonuses:");
 
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.MinStat; bonusID <= ArtifactBonus.ID.MaxStat; ++bonusID)
-				DelveMagicalBonus(delve, Template.GetBonusAmount(bonusID), Template.GetBonusType(bonusID), m_levelRequirements[(int)bonusID]);
+			foreach (var bonus in this.Bonuses.OrderBy(x => x.BonusOrder))
+            {
+				DelveMagicalBonus(delve, bonus.BonusValue, bonus.BonusType, m_levelRequirements[bonus.BonusOrder]);
+			}
 
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.MinStat; bonusID <= ArtifactBonus.ID.MaxStat; ++bonusID)
-				DelveFocusBonus(delve, Template.GetBonusAmount(bonusID), Template.GetBonusType(bonusID), m_levelRequirements[(int)bonusID]);
+			foreach (var bonus in this.Bonuses.OrderBy(x => x.BonusOrder))
+			{
+				DelveFocusBonus(delve, bonus.BonusValue, bonus.BonusType, m_levelRequirements[bonus.BonusOrder]);
+			}
 
 			delve.Add("");
 
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.MinStat; bonusID <= ArtifactBonus.ID.MaxStat; ++bonusID)
-				DelveBonus(delve, Template.GetBonusAmount(bonusID), Template.GetBonusType(bonusID), m_levelRequirements[(int)bonusID]);
+			foreach (var bonus in this.Bonuses.OrderBy(x => x.BonusOrder))
+			{
+				DelveBonus(delve, bonus.BonusValue, bonus.BonusType, m_levelRequirements[bonus.BonusOrder]);
+			}
 
 			// Spells & Procs
 
-			DelveMagicalAbility(delve, ArtifactBonus.ID.Spell, m_levelRequirements[(int)ArtifactBonus.ID.Spell]);
-			DelveMagicalAbility(delve, ArtifactBonus.ID.ProcSpell, m_levelRequirements[(int)ArtifactBonus.ID.ProcSpell]);
-			DelveMagicalAbility(delve, ArtifactBonus.ID.Spell1, m_levelRequirements[(int)ArtifactBonus.ID.Spell1]);
-			DelveMagicalAbility(delve, ArtifactBonus.ID.ProcSpell1, m_levelRequirements[(int)ArtifactBonus.ID.ProcSpell1]);
+			foreach (var spell in this.Spells)
+            {
+				DelveMagicalAbility(delve, spell, m_levelRequirements[(int)eArtifactBonus.Spell]);
+			}
 
 			delve.Add("");
 
 			// Weapon & Armor Stats.
 
-			if ((Object_Type >= (int)eObjectType.GenericWeapon) &&
-			    (Object_Type <= (int)eObjectType.MaulerStaff) ||
-			    (Object_Type == (int)eObjectType.Instrument))
+			if ((ItemTemplate.ObjectType >= (int)eObjectType.GenericWeapon) &&
+			    (ItemTemplate.ObjectType <= (int)eObjectType.MaulerStaff) ||
+			    (ItemTemplate.ObjectType == (int)eObjectType.Instrument))
 				DelveWeaponStats(delve, player);
-			else if (Object_Type >= (int)eObjectType.Cloth &&
-			         Object_Type <= (int)eObjectType.Scale)
+			else if (ItemTemplate.ObjectType >= (int)eObjectType.Cloth &&
+					 ItemTemplate.ObjectType <= (int)eObjectType.Scale)
 				DelveArmorStats(delve, player);
 
 			// Reuse Timer
@@ -384,59 +424,30 @@ namespace DOL.GS
 		/// <param name="delve"></param>
 		/// <param name="bonusID"></param>
 		/// <param name="levelRequirement"></param>
-		public virtual void DelveMagicalAbility(List<String> delve, ArtifactBonus.ID bonusID, int levelRequirement)
+		public virtual void DelveMagicalAbility(List<String> delve, InventoryItemSpell ability, int levelRequirement)
 		{
 			String levelTag = (levelRequirement > 0)
 				? String.Format("[L{0}]: ", levelRequirement)
-				: "";
+				: "";		
 
-			bool isProc = false;
-			bool isSecondary = false;
-			int spellID = 0;
-
-			switch (bonusID)
-			{
-				case ArtifactBonus.ID.Spell:
-					spellID = SpellID;
-					isProc = false;
-					isSecondary = false;
-					break;
-				case ArtifactBonus.ID.Spell1:
-					spellID = SpellID1;
-					isProc = false;
-					isSecondary = true;
-					break;
-				case ArtifactBonus.ID.ProcSpell:
-					spellID = ProcSpellID;
-					isProc = true;
-					isSecondary = false;
-					break;
-				case ArtifactBonus.ID.ProcSpell1:
-					spellID = ProcSpellID1;
-					isProc = true;
-					isSecondary = true;
-					break;
-			}
-
-			if (spellID == 0)
+			if (ability == null || ability.SpellID <= 0)
 				return;
 
 			delve.Add("");
-			delve.Add(String.Format("{0}{1}Magical Ability:", levelTag,
-			                        (isSecondary) ? "Secondary " : ""));
+			delve.Add($"{levelTag}Magical Ability:");
 
 			SpellLine spellLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
 			if (spellLine != null)
 			{
 				List<Spell> spells = SkillBase.GetSpellList(spellLine.KeyName);
 				foreach (Spell spell in spells)
-					if (spell.ID == spellID)
+					if (spell.ID == ability.SpellID)
 						spell.Delve(delve);
 			}
 
-			if (isProc)
+			if (ability.ProcChance > 0)
 				delve.Add(String.Format("- Spell has a chance of casting when this {0} enemy.",
-				                        (GlobalConstants.IsWeapon(Object_Type))
+				                        (GlobalConstants.IsWeapon(ItemTemplate.ObjectType))
 				                        ? "weapon strikes an" : "armor is hit by"));
 			else
 				delve.Add("- This spell is cast when the item is used.");
@@ -449,10 +460,10 @@ namespace DOL.GS
 		/// <param name="player"></param>
 		protected override void DelveWeaponStats(List<String> delve, GamePlayer player)
 		{
-			double itemDPS = DPS_AF / 10.0;
+			double itemDPS = ItemTemplate.DPS_AF / 10.0;
 			double clampedDPS = Math.Min(itemDPS, 1.2 + 0.3 * player.Level);
-			double itemSPD = SPD_ABS / 10.0;
-			double effectiveDPS = itemDPS * Quality / 100.0 * Condition / MaxCondition;
+			double itemSPD = ItemTemplate.SPD_ABS / 10.0;
+			double effectiveDPS = itemDPS * ItemTemplate.Quality / 100.0 * Condition / ItemTemplate.MaxCondition;
 
 			delve.Add("Damage Modifiers:");
 
@@ -464,13 +475,13 @@ namespace DOL.GS
 				                                     "DetailDisplayHandler.WriteClassicWeaponInfos.ClampDPS", clampedDPS.ToString("0.0")));
 			}
 
-			if (SPD_ABS >= 0)
+			if (ItemTemplate.SPD_ABS >= 0)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
 				                                     "DetailDisplayHandler.WriteClassicWeaponInfos.SPD", itemSPD.ToString("0.0")));
 
-			if (Quality != 0)
+			if (ItemTemplate.Quality != 0)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
-				                                     "DetailDisplayHandler.WriteClassicWeaponInfos.Quality", Quality));
+				                                     "DetailDisplayHandler.WriteClassicWeaponInfos.Quality", ItemTemplate.Quality));
 
 			if (Condition != 0)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
@@ -478,7 +489,7 @@ namespace DOL.GS
 
 			delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
 			                                     "DetailDisplayHandler.WriteClassicWeaponInfos.DamageType",
-			                                     (Type_Damage == 0 ? "None" : GlobalConstants.WeaponDamageTypeToName(Type_Damage))));
+			                                     (ItemTemplate.TypeDamage == 0 ? "None" : GlobalConstants.WeaponDamageTypeToName(ItemTemplate.TypeDamage))));
 			delve.Add(" ");
 
 			delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
@@ -501,27 +512,27 @@ namespace DOL.GS
 			int afCap = player.Level;
 			double effectiveAF = 0;
 
-			if (DPS_AF != 0)
+			if (ItemTemplate.DPS_AF != 0)
 			{
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
-				                                     "DetailDisplayHandler.WriteClassicArmorInfos.BaseFactor", DPS_AF));
+				                                     "DetailDisplayHandler.WriteClassicArmorInfos.BaseFactor", ItemTemplate.DPS_AF));
 
-				if (Object_Type != (int)eObjectType.Cloth)
+				if (ItemTemplate.ObjectType != (int)eObjectType.Cloth)
 					afCap *= 2;
 
-				af = Math.Min(afCap, DPS_AF);
+				af = Math.Min(afCap, ItemTemplate.DPS_AF);
 
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
 				                                     "DetailDisplayHandler.WriteClassicArmorInfos.ClampFact", (int)af));
 			}
 
-			if (SPD_ABS >= 0)
+			if (ItemTemplate.SPD_ABS >= 0)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
-				                                     "DetailDisplayHandler.WriteClassicArmorInfos.Absorption", SPD_ABS));
+				                                     "DetailDisplayHandler.WriteClassicArmorInfos.Absorption", ItemTemplate.SPD_ABS));
 
-			if (Quality != 0)
+			if (ItemTemplate.Quality != 0)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
-				                                     "DetailDisplayHandler.WriteClassicArmorInfos.Quality", Quality));
+				                                     "DetailDisplayHandler.WriteClassicArmorInfos.Quality", ItemTemplate.Quality));
 
 			if (Condition != 0)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
@@ -531,9 +542,9 @@ namespace DOL.GS
 			delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
 			                                     "DetailDisplayHandler.WriteClassicArmorInfos.EffArmor"));
 
-			if (DPS_AF != 0)
+			if (ItemTemplate.DPS_AF != 0)
 			{
-				effectiveAF = af * Quality / 100.0 * Condition / MaxCondition * (1 + SPD_ABS / 100.0);
+				effectiveAF = af * ItemTemplate.Quality / 100.0 * Condition / ItemTemplate.MaxCondition * (1 + ItemTemplate.SPD_ABS / 100.0);
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
 				                                     "DetailDisplayHandler.WriteClassicArmorInfos.Factor", (int)effectiveAF));
 			}
@@ -549,64 +560,75 @@ namespace DOL.GS
 			delve.Add(" ");
 			delve.Add("--- Artifact/Item technical information ---");
 			delve.Add(" ");
-			delve.Add("Item Template: " + Id_nb);
+			delve.Add("Item Template: " + ItemTemplate.Id);
 			delve.Add("         Name: " + Name);
 			delve.Add("   Experience: " + Experience);
-			delve.Add("       Object: " + GlobalConstants.ObjectTypeToName(Object_Type) + " (" + Object_Type + ")");
-			delve.Add("         Type: " + GlobalConstants.SlotToName(Item_Type) + " (" + Item_Type + ")");
+			delve.Add("       Object: " + GlobalConstants.ObjectTypeToName(ItemTemplate.ObjectType) + " (" + ItemTemplate.ObjectType + ")");
+			delve.Add("         Type: " + GlobalConstants.SlotToName(ItemTemplate.ItemType) + " (" + ItemTemplate.ItemType + ")");
 			delve.Add("    Extension: " + Extension);
-			delve.Add("        Model: " + Model);
+			delve.Add("        Model: " + ItemTemplate.Model);
 			delve.Add("        Color: " + Color);
 			delve.Add("       Emblem: " + Emblem);
-			delve.Add("       Effect: " + Effect);
-			delve.Add("  Value/Price: " + Money.GetShortString(Price));
-			delve.Add("       Weight: " + (Weight / 10.0f) + "lbs");
-			delve.Add("      Quality: " + Quality + "%");
-			delve.Add("   Durability: " + Durability + "/" + MaxDurability + "(max)");
-			delve.Add("    Condition: " + Condition + "/" + MaxCondition + "(max)");
-			delve.Add("        Realm: " + Realm);
-			delve.Add("  Is dropable: " + (IsDropable ? "yes" : "no"));
-			delve.Add("  Is pickable: " + (IsPickable ? "yes" : "no"));
-			delve.Add(" Is stackable: " + (IsStackable ? "yes" : "no"));
-			delve.Add(" Is tradeable: " + (IsTradable ? "yes" : "no"));
-			delve.Add("  ProcSpellID: " + ProcSpellID);
-			delve.Add(" ProcSpellID1: " + ProcSpellID1);
-			delve.Add("      SpellID: " + SpellID + " (" + Charges + "/" + MaxCharges + ")");
-			delve.Add("     SpellID1: " + SpellID1 + " (" + Charges1 + "/" + MaxCharges1 + ")");
-			delve.Add("PoisonSpellID: " + PoisonSpellID + " (" + PoisonCharges + "/" + PoisonMaxCharges + ") ");
+			delve.Add("       Effect: " + ItemTemplate.Effect);
+			delve.Add("  Value/Price: " + Money.GetShortString(ItemTemplate.Price));
+			delve.Add("       Weight: " + (ItemTemplate.Weight / 10.0f) + "lbs");
+			delve.Add("      Quality: " + ItemTemplate.Quality + "%");
+			delve.Add("   Durability: " + Durability + "/" + ItemTemplate.MaxDurability + "(max)");
+			delve.Add("    Condition: " + Condition + "/" + ItemTemplate.MaxCondition + "(max)");
+			delve.Add("        Realm: " + ItemTemplate.Realm);
+			delve.Add("  Is dropable: " + (ItemTemplate.IsDropable ? "yes" : "no"));
+			delve.Add("  Is pickable: " + (ItemTemplate.IsPickable ? "yes" : "no"));
+			delve.Add(" Is stackable: " + (ItemTemplate.IsStackable ? "yes" : "no"));
+			delve.Add(" Is tradeable: " + (ItemTemplate.IsTradable ? "yes" : "no"));
 
-			if (GlobalConstants.IsWeapon(Object_Type))
+			foreach (var spell in Spells)
+            {
+				if (spell.IsPoison)
+                {
+					delve.Add("PoisonSpellID: " + spell.SpellID + " (" + spell.Charges + "/" + spell.MaxCharges + ") ");
+				}
+				else if (spell.ProcChance > 0)
+                {
+					delve.Add("  ProcSpellID: " + spell.SpellID + " (Chance " + spell.ProcChance + "%) ");
+				}
+				else
+                {
+					delve.Add("      SpellID: " + spell.SpellID + " (" + spell.Charges + "/" + spell.MaxCharges + ")");
+				}
+            }
+
+			if (GlobalConstants.IsWeapon(ItemTemplate.ObjectType))
 			{
-				delve.Add("         Hand: " + GlobalConstants.ItemHandToName(Hand) + " (" + Hand + ")");
-				delve.Add("Damage/Second: " + (DPS_AF / 10.0f));
-				delve.Add("        Speed: " + (SPD_ABS / 10.0f));
-				delve.Add("  Damage type: " + GlobalConstants.WeaponDamageTypeToName(Type_Damage) + " (" + Type_Damage + ")");
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add("         Hand: " + GlobalConstants.ItemHandToName(ItemTemplate.Hand) + " (" + ItemTemplate.Hand + ")");
+				delve.Add("Damage/Second: " + (ItemTemplate.DPS_AF / 10.0f));
+				delve.Add("        Speed: " + (ItemTemplate.SPD_ABS / 10.0f));
+				delve.Add("  Damage type: " + GlobalConstants.WeaponDamageTypeToName(ItemTemplate.TypeDamage) + " (" + ItemTemplate.TypeDamage + ")");
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (GlobalConstants.IsArmor(Object_Type))
+			else if (GlobalConstants.IsArmor(ItemTemplate.ObjectType))
 			{
-				delve.Add("  Armorfactor: " + DPS_AF);
-				delve.Add("   Absorption: " + SPD_ABS);
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add("  Armorfactor: " + ItemTemplate.DPS_AF);
+				delve.Add("   Absorption: " + ItemTemplate.SPD_ABS);
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (Object_Type == (int)eObjectType.Shield)
+			else if (ItemTemplate.ObjectType == (int)eObjectType.Shield)
 			{
-				delve.Add("Damage/Second: " + (DPS_AF / 10.0f));
-				delve.Add("        Speed: " + (SPD_ABS / 10.0f));
-				delve.Add("  Shield type: " + GlobalConstants.ShieldTypeToName(Type_Damage) + " (" + Type_Damage + ")");
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add("Damage/Second: " + (ItemTemplate.DPS_AF / 10.0f));
+				delve.Add("        Speed: " + (ItemTemplate.SPD_ABS / 10.0f));
+				delve.Add("  Shield type: " + GlobalConstants.ShieldTypeToName(ItemTemplate.TypeDamage) + " (" + ItemTemplate.TypeDamage + ")");
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (Object_Type == (int)eObjectType.Arrow || Object_Type == (int)eObjectType.Bolt)
+			else if (ItemTemplate.ObjectType == (int)eObjectType.Arrow || ItemTemplate.ObjectType == (int)eObjectType.Bolt)
 			{
-				delve.Add(" Ammunition #: " + DPS_AF);
-				delve.Add("       Damage: " + GlobalConstants.AmmunitionTypeToDamageName(SPD_ABS));
-				delve.Add("        Range: " + GlobalConstants.AmmunitionTypeToRangeName(SPD_ABS));
-				delve.Add("     Accuracy: " + GlobalConstants.AmmunitionTypeToAccuracyName(SPD_ABS));
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add(" Ammunition #: " + ItemTemplate.DPS_AF);
+				delve.Add("       Damage: " + GlobalConstants.AmmunitionTypeToDamageName(ItemTemplate.SPD_ABS));
+				delve.Add("        Range: " + GlobalConstants.AmmunitionTypeToRangeName(ItemTemplate.SPD_ABS));
+				delve.Add("     Accuracy: " + GlobalConstants.AmmunitionTypeToAccuracyName(ItemTemplate.SPD_ABS));
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (Object_Type == (int)eObjectType.Instrument)
+			else if (ItemTemplate.ObjectType == (int)eObjectType.Instrument)
 			{
-				delve.Add("   Instrument: " + GlobalConstants.InstrumentTypeToName(DPS_AF));
+				delve.Add("   Instrument: " + GlobalConstants.InstrumentTypeToName(ItemTemplate.DPS_AF));
 			}
 		}
 
@@ -617,7 +639,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		private int GainsNewAbilityAtLevel()
 		{
-			for (ArtifactBonus.ID bonusID = ArtifactBonus.ID.Min; bonusID <= ArtifactBonus.ID.Max; ++bonusID)
+			for (eArtifactBonus bonusID = eArtifactBonus.Min; bonusID <= eArtifactBonus.Max; ++bonusID)
 				if (m_levelRequirements[(int)bonusID] > ArtifactLevel)
 					return m_levelRequirements[(int)bonusID];
 

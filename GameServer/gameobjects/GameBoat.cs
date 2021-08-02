@@ -22,7 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using DOL.GS;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using DOL.GS.Movement;
 using DOL.GS.PacketHandler;
@@ -34,9 +34,9 @@ namespace DOL.GS
 	public class GameBoat : GameMovingObject
 	{
         private byte m_boatType = 0;
-        protected DBBoat m_dbBoat;
-        private string m_boatID;
-        private string m_boatOwner;
+        protected PlayerBoat m_dbBoat;
+        private int m_boatID;
+        private int m_boatOwner;
         private string m_boatName;
         private ushort m_boatModel;
         private short m_boatMaxSpeedBase;
@@ -68,13 +68,13 @@ namespace DOL.GS
         /// <summary>
         /// Gets or sets the boats db
         /// </summary>
-        public DBBoat theBoatDB
+        public PlayerBoat theBoatDB
         {
             get { return m_dbBoat; }
             set { m_dbBoat = value; }
         }
 
-        public string BoatID
+        public int BoatID
         {
             get
             {
@@ -122,7 +122,7 @@ namespace DOL.GS
             }
         }
 
-        public string BoatOwner
+        public int BoatOwner
         {
             get
             {
@@ -238,7 +238,7 @@ namespace DOL.GS
         /// <returns></returns>
         public override bool Interact(GamePlayer player)
         {
-            if (this.OwnerID != "")            
+            if (this.OwnerID > 0)            
                 return false;
               
  	        return base.Interact(player);
@@ -248,17 +248,17 @@ namespace DOL.GS
         /// Loads this boat from a boat table
         /// </summary>
         /// <param name="obj"></param>
-        public override void LoadFromDatabase(DataObject obj)
+        public override void LoadFromDatabase(DataObjectBase obj)
         {
-            if (!(obj is DBBoat))
+            if (!(obj is PlayerBoat))
                 return;
 
-            m_dbBoat = (DBBoat)obj;
-            m_boatID = m_dbBoat.ObjectId;
+            m_dbBoat = (PlayerBoat)obj;
+            m_boatID = m_dbBoat.Id;
             m_boatName = m_dbBoat.BoatName;
-            m_boatMaxSpeedBase = m_dbBoat.BoatMaxSpeedBase;
-            m_boatModel = m_dbBoat.BoatModel;
-            m_boatOwner = m_dbBoat.BoatOwner;
+            m_boatMaxSpeedBase = (short)m_dbBoat.BoatMaxSpeed;
+            m_boatModel = (ushort)m_dbBoat.BoatModel;
+            m_boatOwner = m_dbBoat.BoatOwnerID;
             switch (m_boatModel)
             {
                 case 1616: m_boatType = 0; break;
@@ -277,7 +277,7 @@ namespace DOL.GS
 
         public override void SaveIntoDatabase()
         {
-            GameServer.Database.SaveObject(theBoatDB);
+            GameServer.Instance.SaveDataObject(theBoatDB);
         }
     }
 }

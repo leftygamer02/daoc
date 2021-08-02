@@ -23,7 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.Events;

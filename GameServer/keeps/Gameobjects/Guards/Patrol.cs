@@ -6,7 +6,7 @@ using System.Threading;
 using DOL.GS;
 using DOL.GS.Movement;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Keeps
 {

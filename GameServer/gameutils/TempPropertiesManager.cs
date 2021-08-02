@@ -18,7 +18,7 @@
  */
 using System.Collections.Generic;
 using System.Linq;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {
@@ -49,7 +49,7 @@ namespace DOL.GS
                 get { return m_value; }
                 set { m_value = value; }
             }
-            public TempPropContainer(string ownerid, string tempropstring, string value)
+            public TempPropContainer(int ownerid, string tempropstring, string value)
             {
                 m_ownerid = ownerid;
                 m_tempropstring = tempropstring;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class PlayerBoats : DataObjectBase
+    public class PlayerBoat : DataObjectBase
     {
         public int BoatOwnerID { get; set; }
         public string BoatName { get; set; }

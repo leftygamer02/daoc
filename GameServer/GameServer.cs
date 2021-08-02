@@ -27,9 +27,7 @@ using System.Reflection;
 using System.Threading;
 
 using DOL.Config;
-using DOL.Database;
-using DOL.Database.Attributes;
-using DOL.Database.Connection;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.Behaviour;
 using DOL.GS.DatabaseUpdate;
@@ -84,7 +82,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Database instance
 		/// </summary>
-		protected IObjectDatabase m_database;
+		protected Atlas.DataLayer.AtlasContext m_database;
 
 		/// <summary>
 		/// The textwrite for log operations
@@ -233,7 +231,7 @@ namespace DOL.GS
 			}
 		}
 
-		protected virtual IObjectDatabase DataBaseImpl
+		protected virtual Atlas.DataLayer.AtlasContext DataBaseImpl
 		{
 			get
 			{
@@ -244,12 +242,12 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets the database instance
 		/// </summary>
-		public static IObjectDatabase Database => m_instance.DataBaseImpl;
+		public static Atlas.DataLayer.AtlasContext Database => m_instance.DataBaseImpl;
 
 		/// <summary>
 		/// Gets this Instance's Database
 		/// </summary>
-		public IObjectDatabase IDatabase
+		public Atlas.DataLayer.AtlasContext IDatabase
 		{
 			get { return m_database; }
 		}
@@ -846,7 +844,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public bool CompileScripts()
 		{
-			string scriptDirectory = Path.Combine(Configuration.RootDirectory, "scripts");
+			string scriptDirectory = System.IO.Path.Combine(Configuration.RootDirectory, "scripts");
 			if (!Directory.Exists(scriptDirectory))
 				Directory.CreateDirectory(scriptDirectory);
 
@@ -888,21 +886,21 @@ namespace DOL.GS
 						// Walk through each type in the assembly
 						foreach (Type type in asm.GetTypes())
 						{
-							if (type.IsClass != true || !typeof(DataObject).IsAssignableFrom(type))
+							if (type.IsClass != true || !typeof(DataObjectBase).IsAssignableFrom(type))
 								continue;
 
-							object[] attrib = type.GetCustomAttributes(typeof(DataTable), false);
-							if (attrib.Length > 0)
-							{
-								if (log.IsInfoEnabled)
-									log.Info("Registering Scripts table: " + type.FullName);
+							//object[] attrib = type.GetCustomAttributes(typeof(DataTable), false);
+							//if (attrib.Length > 0)
+							//{
+							//	if (log.IsInfoEnabled)
+							//		log.Info("Registering Scripts table: " + type.FullName);
 
-								GameServer.Database.RegisterDataObject(type);
-							}
+							//	GameServer.Database.RegisterDataObject(type);
+							//}
 						}
 					}
 				}
-				catch (DatabaseException dbex)
+				catch (Exception dbex)
 				{
 					if (log.IsErrorEnabled)
 						log.Error("Error while registering Script Tables", dbex);
@@ -1412,51 +1410,30 @@ namespace DOL.GS
 		/// Initializes the database
 		/// </summary>
 		/// <returns>True if the database was successfully initialized</returns>
+		/// 
 		public bool InitDB()
-		{
+        {
 			if (m_database == null)
-			{
-				m_database = ObjectDatabase.GetObjectDatabase(Configuration.DBType, Configuration.DBConnectionString);
+            {
+                try
+                {
+					m_database = new Atlas.DataLayer.AtlasContext(Configuration.DBType, Configuration.DBConnectionString);
 
-				try
-				{
-					//We will search our assemblies for DataTables by reflection so
-					//it is not neccessary anymore to register new tables with the
-					//server, it is done automatically!
-					foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-					{
-						// Walk through each type in the assembly
-						assembly.GetTypes().AsParallel().ForAll(type =>
-						{
-							if (!type.IsClass || type.IsAbstract)
-							{
-								return;
-							}
-
-							var attrib = type.GetCustomAttributes<DataTable>(false);
-							if (attrib.Any())
-							{
-								if (log.IsInfoEnabled)
-								{
-									log.InfoFormat("Registering table: {0}", type.FullName);
-								}
-
-								m_database.RegisterDataObject(type);
-							}
-						});
-					}
+					m_database.Database.EnsureCreated();
 				}
-				catch (DatabaseException e)
-				{
+				catch (Exception ex)
+                {
 					if (log.IsErrorEnabled)
-						log.Error("Error registering Tables", e);
+						log.Error("Error registering Tables", ex);
 					return false;
 				}
+
+				if (log.IsInfoEnabled)
+					log.Info("Database Initialization: true");
 			}
-			if (log.IsInfoEnabled)
-				log.Info("Database Initialization: true");
+
 			return true;
-		}
+        }
 
 		/// <summary>
 		/// Function called at X interval to write the database to disk
@@ -1478,16 +1455,18 @@ namespace DOL.GS
 					Thread.CurrentThread.Priority = ThreadPriority.Lowest;
 
 					//Only save the players, NOT any other object!
-					saveCount = WorldMgr.SavePlayers();
+					//saveCount = WorldMgr.SavePlayers();
 
-					//The following line goes through EACH region and EACH object
-					//is tested for savability. A real waste of time, so it is commented out
-					//WorldMgr.SaveToDatabase();
+					////The following line goes through EACH region and EACH object
+					////is tested for savability. A real waste of time, so it is commented out
+					////WorldMgr.SaveToDatabase();
 
-					GuildMgr.SaveAllGuilds();
-					BoatMgr.SaveAllBoats();
+					//GuildMgr.SaveAllGuilds();
+					//BoatMgr.SaveAllBoats();
 
-					FactionMgr.SaveAllAggroToFaction();
+					//FactionMgr.SaveAllAggroToFaction();
+
+					m_database.SaveChanges();
 
 					// 2008-01-29 Kakuri - Obsolete
 					//m_database.WriteDatabaseTables();
@@ -1509,6 +1488,62 @@ namespace DOL.GS
 				if (m_timer != null)
 					m_timer.Change(SaveInterval * MINUTE_CONV, Timeout.Infinite);
 				GameEventMgr.Notify(GameServerEvent.WorldSave);
+			}
+		}
+
+		/// <summary>
+		/// Creates and returns a new, empty database context to use for short, independent reads/writes.
+		/// Use within a Using {} block to ensure the context is properly disposed.
+		/// </summary>
+		/// <returns></returns>
+		public Atlas.DataLayer.AtlasContext GetNewDbContext()
+        {
+			return new Atlas.DataLayer.AtlasContext(Configuration.DBType, Configuration.DBConnectionString);
+		}
+
+		public T SaveDataObject<T>(T obj) where T : class, IDataObject
+        {
+			using (var db = GetNewDbContext())
+            {
+				var entity = db.Set<T>().Find(obj.Id);
+
+				if (entity != null)
+                {
+					foreach (var prop in typeof(T).GetProperties())
+					{
+						if (prop.Name == "Id")
+							continue;
+						prop.SetValue(entity, prop.GetValue(obj));
+					}
+
+					entity.ModifyDate = DateTime.Now;
+				}
+                else
+                {
+					obj.CreateDate = DateTime.Now;
+					obj.ModifyDate = DateTime.Now;
+					db.Set<T>().Add(obj);
+
+					entity = obj;
+                }
+				
+				db.SaveChanges();
+
+				return entity;
+            }
+        }
+
+		public void DeleteDataObject<T>(T obj) where T : class, IDataObject
+		{
+			using (var db = GetNewDbContext())
+			{
+				var entity = db.Set<T>().Find(obj.Id);
+
+				if (entity != null)
+				{
+					db.Set<T>().Remove(entity);
+					db.SaveChanges();
+				}
 			}
 		}
 

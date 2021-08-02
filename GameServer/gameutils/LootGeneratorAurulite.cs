@@ -20,7 +20,7 @@ using System;
 
 using DOL.GS;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {

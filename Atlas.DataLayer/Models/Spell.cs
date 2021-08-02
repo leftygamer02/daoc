@@ -18,7 +18,7 @@ namespace Atlas.DataLayer.Models
         public double CastTime { get; set; }
         public double Damage { get; set; }
         public int DamageType { get; set; }
-        public string Text { get; set; }
+        public string Type { get; set; }
         public int Duration { get; set; }
         public int Frequency { get; set; }
         public int Pulse { get; set; }
@@ -52,9 +52,15 @@ namespace Atlas.DataLayer.Models
         public virtual Spell SubSpell { get; set; }
         public virtual ICollection<SpellCustomValues> CustomValues { get; set; }
 
+        public virtual ICollection<SpellEffect> SpellEffects { get; set; }
+
+        public virtual ICollection<SpellLineSpell> SpellLineSpells { get; set; }
+
         public Spell()
         {
             CustomValues = new HashSet<SpellCustomValues>();
+            SpellEffects = new HashSet<SpellEffect>();
+            SpellLineSpells = new HashSet<SpellLineSpell>();
         }
     }
 }

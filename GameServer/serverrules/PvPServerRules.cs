@@ -19,7 +19,7 @@
 using System;
 using System.Collections;
 using DOL;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using DOL.AI.Brain;
 using DOL.Events;

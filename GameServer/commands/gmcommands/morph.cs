@@ -18,7 +18,7 @@
  */
 using System;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 
 namespace DOL.GS.Commands

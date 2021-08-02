@@ -38,7 +38,7 @@ using System.Reflection;
 using System.Collections;
 
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using DOL.GS;
 using DOL.GS.Spells;

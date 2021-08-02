@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 using DOL;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS;
 using DOL.GS.Commands;
 using DOL.GS.PacketHandler;

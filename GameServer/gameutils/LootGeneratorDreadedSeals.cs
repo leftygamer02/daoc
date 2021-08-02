@@ -20,7 +20,7 @@ using System;
 using System.Reflection;
 using DOL.GS;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Keeps;
 using log4net;
 

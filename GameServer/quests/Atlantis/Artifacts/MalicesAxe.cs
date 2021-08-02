@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
 using DOL.GS.Quests;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using System.Collections;
 using log4net;

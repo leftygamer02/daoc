@@ -22,7 +22,7 @@
 using System.Text;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Commands;
 using DOL.GS.PacketHandler;
 

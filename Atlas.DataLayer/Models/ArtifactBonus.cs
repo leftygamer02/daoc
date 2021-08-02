@@ -9,7 +9,7 @@ namespace Atlas.DataLayer.Models
     public class ArtifactBonus :DataObjectBase
     {
         public int ArtifactID { get; set; }
-        public int BonusID { get; set; }
+        public eArtifactBonus BonusID { get; set; }
         public int Level { get; set; }
 
         public virtual Artifact Artifact { get; set; }

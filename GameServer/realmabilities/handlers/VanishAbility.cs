@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.GS.PropertyCalc;

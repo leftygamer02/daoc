@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Styles;
 
 namespace DOL.GS
@@ -335,7 +335,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="living"></param>
 		/// <returns></returns>
-		public virtual List<Style> GetStylesForLiving(GameLiving living)
+		public virtual List<DOL.GS.Styles.Style> GetStylesForLiving(GameLiving living)
 		{
 			return GetStylesForLiving(living, GetSpecLevelForLiving(living));
 		}
@@ -347,7 +347,7 @@ namespace DOL.GS
 		/// <param name="living"></param>
 		/// <param name="step">step is only used when called for pretending some level (for trainer display)</param>
 		/// <returns></returns>
-		public virtual List<Style> PretendStylesForLiving(GameLiving living, int step)	
+		public virtual List<DOL.GS.Styles.Style> PretendStylesForLiving(GameLiving living, int step)	
 		{
 			return GetStylesForLiving(living, step);
 		}		
@@ -359,7 +359,7 @@ namespace DOL.GS
 		/// <param name="living"></param>
 		/// <param name="level">level is only used when called for pretending some level (for trainer display)</param>
 		/// <returns></returns>
-		protected virtual List<Style> GetStylesForLiving(GameLiving living, int level)
+		protected virtual List<DOL.GS.Styles.Style> GetStylesForLiving(GameLiving living, int level)
 		{
 			// Try with Class ID 0 if no class id styles
 			int classid = 0;
@@ -368,7 +368,7 @@ namespace DOL.GS
 				classid = ((GamePlayer)living).CharacterClass.ID;
 			}
 			
-			List<Style> styles = null;
+			List<DOL.GS.Styles.Style> styles = null;
 			if (classid == 0)
 			{
 				 styles = SkillBase.GetStyleList(KeyName, classid);

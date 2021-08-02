@@ -18,7 +18,7 @@
  */
 using System;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.SkillHandler
 {

@@ -29,7 +29,7 @@ using DOL.GS.PacketHandler;
 using DOL.GS.Quests;
 
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOLGameServerConsole
 {
@@ -98,7 +98,7 @@ namespace DOLGameServerConsole
 		public void SendUDPInitReply() { }
 		public void SendTime() { }
 		public void SendPlayerCreate(GamePlayer playerToCreate) { }
-		public void SendObjectGuildID(GameObject obj, Guild guild) { }
+		public void SendObjectGuildID(GameObject obj, DOL.GS.Guild guild) { }
 		public void SendPlayerQuit(bool totalOut) { }
 		public void SendDebugMode(bool on) { }
 		public void SendModelChange(GameObject obj, ushort newModel) { }
@@ -126,8 +126,8 @@ namespace DOLGameServerConsole
 		public void SendQuestSubscribeCommand(GameNPC invitingNPC, ushort questid, string inviteMessage) { }
 		public void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, RewardQuest quest) { }
 		public void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, RewardQuest quest) { }
-		public void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, DataQuest quest) { }
-		public void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, DataQuest quest) { }
+		public void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, DOL.GS.Quests.DataQuest quest) { }
+		public void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, DOL.GS.Quests.DataQuest quest) { }
 		public void SendQuestAbortCommand(GameNPC abortingNPC, ushort questid, string abortMessage) { }
 		public void SendGroupWindowUpdate() { }
 		public void SendGroupMemberUpdate(bool updateIcons, bool updateMap, GameLiving living) { }
@@ -137,7 +137,7 @@ namespace DOLGameServerConsole
 		public void SendInventoryItemsUpdate(eInventoryWindowType windowType, ICollection<InventoryItem> itemsToUpdate) { }
 		public void SendInventoryItemsUpdate(IDictionary<int, InventoryItem> updateItems, eInventoryWindowType windowType) { }
 		public void SendInventoryItemsPartialUpdate(IDictionary<int, InventoryItem> items, eInventoryWindowType windowType) { }
-		public void SendDoorState(Region region, IDoor door) { }
+		public void SendDoorState(DOL.GS.Region region, IDoor door) { }
 		public void SendMerchantWindow(MerchantTradeItems itemlist, eMerchantWindowType windowType) { }
 		public void SendTradeWindow() { }
 		public void SendCloseTradeWindow() { }
@@ -154,7 +154,7 @@ namespace DOLGameServerConsole
 		public void SendTimerWindow(string title, int seconds) { }
 		public void SendCloseTimerWindow() { }
 		public void SendTrainerWindow() { }
-        public void SendCustomTrainerWindow(int type, List<Tuple<Specialization, List<Tuple<Skill, byte>>>> tree) { }
+        public void SendCustomTrainerWindow(int type, List<Tuple<DOL.GS.Specialization, List<Tuple<Skill, byte>>>> tree) { }
         public void SendChampionTrainerWindow(int type) { }
 		public void SendInterruptAnimation(GameLiving living) { }
 		public void SendDisableSkill(ICollection<Tuple<Skill, int>> skills) { }

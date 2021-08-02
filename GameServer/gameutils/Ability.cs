@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 using log4net;
 
@@ -57,18 +57,18 @@ namespace DOL.GS
 		protected GameLiving m_activeLiving = null;
 
 
-		public Ability(DBAbility dba)
+		public Ability(Atlas.DataLayer.Models.Ability dba)
 			: this(dba, 0)
 		{
 		}
 
-		public Ability(DBAbility dba, int level)
-			: this(dba.KeyName, dba.Name, dba.Description, dba.AbilityID, (ushort)dba.IconID, level, dba.InternalID)
+		public Ability(Atlas.DataLayer.Models.Ability dba, int level)
+			: this(dba.KeyName, dba.Name, dba.Description, dba.Id, (ushort)dba.IconID, level, dba.InternalID)
 		{
 		}
 
-		public Ability(DBAbility dba, int level, string spec, int speclevel)
-			: this(dba.KeyName, dba.Name, dba.Description, dba.AbilityID, (ushort)dba.IconID, level, spec, speclevel, dba.InternalID)
+		public Ability(Atlas.DataLayer.Models.Ability dba, int level, string spec, int speclevel)
+			: this(dba.KeyName, dba.Name, dba.Description, dba.Id, (ushort)dba.IconID, level, spec, speclevel, dba.InternalID)
 		{
 		}
 

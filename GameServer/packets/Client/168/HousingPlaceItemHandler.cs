@@ -19,7 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Housing;
 using DOL.GS.ServerProperties;
 using DOL.GS.Utils;

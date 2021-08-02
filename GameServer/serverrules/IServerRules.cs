@@ -19,7 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Styles;
 using DOL.GS.Keeps;
 
@@ -395,7 +395,7 @@ namespace DOL.GS.ServerRules
 		/// </summary>
 		/// <param name="player">The player</param>
 		/// <returns>True if the player can use /level</returns>
-		bool CountsTowardsSlashLevel(DOLCharacters player);
+		bool CountsTowardsSlashLevel(Character player);
 		
 		/// <summary>
 		/// Gets the NPC name based on server type

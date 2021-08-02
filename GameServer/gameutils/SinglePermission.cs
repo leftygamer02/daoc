@@ -17,7 +17,7 @@
  *
  */
 using System.Linq;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {

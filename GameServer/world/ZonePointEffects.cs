@@ -21,7 +21,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.GameEvents
 {

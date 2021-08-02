@@ -26,7 +26,7 @@ using System.Text;
 
 using DOL.AI;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.Effects;
 using DOL.GS.Housing;
@@ -69,7 +69,7 @@ namespace DOL.GS
 		/// based on!
 		/// (renamed and private, cause if derive is needed overwrite PlayerCharacter)
 		/// </summary>
-		protected DOLCharacters m_dbCharacter;
+		protected Character m_dbCharacter;
 		
 		/// <summary>
 		/// The guild id this character belong to
@@ -186,7 +186,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The character the player is based on
 		/// </summary>
-		internal DOLCharacters DBCharacter
+		internal Character DBCharacter
 		{
 			get { return m_dbCharacter; }
 		}
@@ -311,10 +311,10 @@ namespace DOL.GS
 		/// Gets or sets the Database ObjectId for this player
 		/// (delegate to property in DBCharacter)
 		/// </summary>
-		public string ObjectId
+		public int ObjectId
 		{
-			get { return DBCharacter != null ? DBCharacter.ObjectId : InternalID; }
-			set { if (DBCharacter != null) DBCharacter.ObjectId = value; }
+			get { return DBCharacter != null ? DBCharacter.Id : InternalID; }
+			set { if (DBCharacter != null) DBCharacter.Id = value; }
 		}
 		
 		/// <summary>
@@ -395,25 +395,15 @@ namespace DOL.GS
 		{
 			get { return DBCharacter != null ? DBCharacter.Advisor : false; }
 			set { if (DBCharacter != null) DBCharacter.Advisor = value; }
-		}
-
-		/// <summary>
-		/// Gets or sets the SerializedFriendsList for this player
-		/// (delegate to property in DBCharacter)
-		/// </summary>
-		public string[] SerializedFriendsList
-		{
-			get { return DBCharacter != null ? DBCharacter.SerializedFriendsList.Split(',').Select(name => name.Trim()).Where(name => !string.IsNullOrEmpty(name)).ToArray() : new string[0]; }
-			set { if (DBCharacter != null) DBCharacter.SerializedFriendsList = string.Join(",", value.Select(name => name.Trim()).Where(name => !string.IsNullOrEmpty(name))); }
-		}
+		}		
 		
 		/// <summary>
 		/// Gets or sets the NotDisplayedInHerald for this player
 		/// (delegate to property in DBCharacter)
 		/// </summary>
-		public byte NotDisplayedInHerald
+		public bool NotDisplayedInHerald
 		{
-			get { return DBCharacter != null ? DBCharacter.NotDisplayedInHerald : (byte)0; }
+			get { return DBCharacter != null ? DBCharacter.NotDisplayedInHerald : false; }
 			set { if (DBCharacter != null) DBCharacter.NotDisplayedInHerald = value; }
 		}
 		
@@ -433,19 +423,9 @@ namespace DOL.GS
 		/// </summary>
 		public DateTime LastFreeLeveled
 		{
-			get { return DBCharacter != null ? DBCharacter.LastFreeLeveled : DateTime.MinValue; }
+			get { return DBCharacter?.LastFreeLeveled != null ? DBCharacter.LastFreeLeveled.Value : DateTime.MinValue; }
 			set { if (DBCharacter != null) DBCharacter.LastFreeLeveled = value; }
-		}
-		
-		/// <summary>
-		/// Gets or sets the SerializedIgnoreList for this player
-		/// (delegate to property in DBCharacter)
-		/// </summary>
-		public string[] SerializedIgnoreList
-		{
-			get { return DBCharacter != null ? DBCharacter.SerializedIgnoreList.Split(',').Select(name => name.Trim()).Where(name => !string.IsNullOrEmpty(name)).ToArray() : new string[0]; }
-			set { if (DBCharacter != null) DBCharacter.SerializedIgnoreList = string.Join(",", value.Select(name => name.Trim()).Where(name => !string.IsNullOrEmpty(name))); }
-		}
+		}		
 
 		/// <summary>
 		/// Gets or sets the UsedLevelCommand for this player
@@ -511,9 +491,9 @@ namespace DOL.GS
 		/// Gets or sets the CustomisationStep for this player
 		/// (delegate to property in DBCharacter)
 		/// </summary>
-		public byte CustomisationStep
+		public bool CustomisationStep
 		{
-			get { return DBCharacter != null ? DBCharacter.CustomisationStep : (byte)0; }
+			get { return DBCharacter != null ? DBCharacter.CustomisationStep : false; }
 			set { if (DBCharacter != null) DBCharacter.CustomisationStep = value; }
 		}
 		
@@ -613,7 +593,7 @@ namespace DOL.GS
 		/// </summary>
 		public string AccountName
 		{
-			get { return DBCharacter != null ? DBCharacter.AccountName : string.Empty; }
+			get { return DBCharacter != null ? DBCharacter.Account.Name : string.Empty; }
 		}
 
 		/// <summary>
@@ -622,7 +602,7 @@ namespace DOL.GS
 		/// </summary>
 		public DateTime CreationDate
 		{
-			get { return DBCharacter != null ? DBCharacter.CreationDate : DateTime.MinValue; }
+			get { return DBCharacter?.CreateDate != null ? DBCharacter.CreateDate.Value : DateTime.MinValue; }
 		}
 		
 		/// <summary>
@@ -631,16 +611,16 @@ namespace DOL.GS
 		/// </summary>
 		public DateTime LastPlayed
 		{
-			get { return DBCharacter != null ? DBCharacter.LastPlayed : DateTime.MinValue; }
+			get { return DBCharacter?.LastPlayed != null ? DBCharacter.LastPlayed.Value : DateTime.MinValue; }
 		}
 		
 		/// <summary>
 		/// Gets or sets the BindYpos for this player
 		/// (delegate to property in DBCharacter)
 		/// </summary>
-		public byte DeathCount
+		public int DeathCount
 		{
-			get { return DBCharacter != null ? DBCharacter.DeathCount : (byte)0; }
+			get { return DBCharacter != null ? DBCharacter.DeathCount : 0; }
 			set { if (DBCharacter != null) DBCharacter.DeathCount = value; }
 		}
 
@@ -655,7 +635,7 @@ namespace DOL.GS
         /// </summary>
         public DateTime LastLevelUp
         {
-            get { return DBCharacter != null ? DBCharacter.LastLevelUp : DateTime.MinValue; }
+            get { return DBCharacter?.LastLevelUp != null ? DBCharacter.LastLevelUp.Value : DateTime.MinValue; }
             set { if (DBCharacter != null) DBCharacter.LastLevelUp = value; }
         }
 		#endregion
@@ -921,7 +901,7 @@ namespace DOL.GS
 			// DamienOphyr: Overwrite current position with Bind position in database, MoveTo() is inoperant
 			if (CurrentRegion.IsInstance)
 			{
-				DBCharacter.Region = BindRegion;
+				DBCharacter.RegionID = BindRegion;
 				DBCharacter.Xpos = BindXpos;
 				DBCharacter.Ypos =  BindYpos;
 				DBCharacter.Zpos = BindZpos;
@@ -988,7 +968,7 @@ namespace DOL.GS
 							if (ServerProperties.Properties.ACTIVATE_TEMP_PROPERTIES_MANAGER_CHECKUP_DEBUG)
 								log.Debug("On Disconnection found and was saved: " + p + " with value: " + v.ToString() + " for player: " + Name);
 
-							TempPropertiesManager.TempPropContainerList.Add(new TempPropertiesManager.TempPropContainer(DBCharacter.ObjectId, p, v.ToString()));
+							TempPropertiesManager.TempPropContainerList.Add(new TempPropertiesManager.TempPropContainer(DBCharacter.Id, p, v.ToString()));
 							TempProperties.removeProperty(p);
 						}
 						else
@@ -1191,7 +1171,10 @@ namespace DOL.GS
 				BindYpos = Y;
 				BindZpos = Z;
 				if (DBCharacter != null)
-					GameServer.Database.SaveObject(DBCharacter);
+                {
+					GameServer.Instance.SaveDataObject<Character>(DBCharacter);
+				}
+					
 				return;
 			}
 			
@@ -1225,7 +1208,7 @@ namespace DOL.GS
 				BindYpos = Y;
 				BindZpos = Z;
 				if (DBCharacter != null)
-					GameServer.Database.SaveObject(DBCharacter);
+					GameServer.Instance.SaveDataObject(DBCharacter);
 			}
 			
 			//if we are not bound yet lets check if we are in a house where we can bind
@@ -1263,7 +1246,7 @@ namespace DOL.GS
 						BindHouseYpos = outsideY;
 						BindHouseZpos = house.Z;
 						if (DBCharacter != null)
-							GameServer.Database.SaveObject(DBCharacter);
+							GameServer.Instance.SaveDataObject(DBCharacter);
 					}
 				}
 			}
@@ -1397,7 +1380,7 @@ namespace DOL.GS
 		/// <param name="forced">if true, will release even if not dead</param>
 		public virtual void Release(eReleaseType releaseCommand, bool forced)
 		{
-			DOLCharacters character = DBCharacter;
+			var character = DBCharacter;
 			if (character == null) return;
 			
 			// check if valid housebind
@@ -1478,7 +1461,7 @@ namespace DOL.GS
 			{
 				case eReleaseType.Duel:
 					{
-						relRegion = (ushort)character.Region;
+						relRegion = (ushort)character.RegionID;
 						relX = character.Xpos;
 						relY = character.Ypos;
 						relZ = character.Zpos;
@@ -2234,7 +2217,7 @@ namespace DOL.GS
 			int oldstat = GetBaseStat(stat);
 			base.ChangeBaseStat(stat, val);
 			int newstat = GetBaseStat(stat);
-			DOLCharacters character = DBCharacter; // to call it only once, if in future there will be some special code to get the character
+			var character = DBCharacter; // to call it only once, if in future there will be some special code to get the character
 			// Graveen: always positive and not null. This allows /player stats to substract values safely
 			if (newstat < 1) newstat = 1;
 			if (character != null && oldstat != newstat)
@@ -2899,7 +2882,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Holds all styles of the player
 		/// </summary>
-		protected readonly Dictionary<int, Style> m_styles = new Dictionary<int, Style>();
+		protected readonly Dictionary<int, DOL.GS.Styles.Style> m_styles = new Dictionary<int, DOL.GS.Styles.Style>();
 
 		/// <summary>
 		/// Used to lock the style list
@@ -3452,7 +3435,7 @@ namespace DOL.GS
 			}
 		}
 
-		public virtual void AddStyle(Style st, bool notify)
+		public virtual void AddStyle(DOL.GS.Styles.Style st, bool notify)
 		{
 			lock (lockStyleList)
 			{
@@ -3467,19 +3450,19 @@ namespace DOL.GS
 					// Verbose
 					if (notify)
 					{
-						Style style = st;
+						DOL.GS.Styles.Style style = st;
 						Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.YouLearn", style.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 	
 						string message = null;
 						
-						if (Style.eOpening.Offensive == style.OpeningRequirementType)
+						if (DOL.GS.Styles.Style.eOpening.Offensive == style.OpeningRequirementType)
 						{
 							switch (style.AttackResultRequirement)
 							{
-								case Style.eAttackResultRequirement.Style:
-								case Style.eAttackResultRequirement.Hit: // TODO: make own message for hit after styles DB is updated
-	
-									Style reqStyle = SkillBase.GetStyleByID(style.OpeningRequirementValue, CharacterClass.ID);
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Style:
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Hit: // TODO: make own message for hit after styles DB is updated
+
+									DOL.GS.Styles.Style reqStyle = SkillBase.GetStyleByID(style.OpeningRequirementValue, CharacterClass.ID);
 									
 									if (reqStyle == null)
 										message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterStyle", "(style " + style.OpeningRequirementValue + " not found)");
@@ -3487,35 +3470,35 @@ namespace DOL.GS
 									else message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterStyle", reqStyle.Name);
 	
 								break;
-								case Style.eAttackResultRequirement.Miss: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterMissed");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Miss: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterMissed");
 								break;
-								case Style.eAttackResultRequirement.Parry: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterParried");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Parry: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterParried");
 								break;
-								case Style.eAttackResultRequirement.Block: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterBlocked");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Block: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterBlocked");
 								break;
-								case Style.eAttackResultRequirement.Evade: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterEvaded");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Evade: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterEvaded");
 								break;
-								case Style.eAttackResultRequirement.Fumble: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterFumbles");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Fumble: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.AfterFumbles");
 								break;
 							}
 						}
-						else if (Style.eOpening.Defensive == style.OpeningRequirementType)
+						else if (DOL.GS.Styles.Style.eOpening.Defensive == style.OpeningRequirementType)
 						{
 							switch (style.AttackResultRequirement)
 							{
-								case Style.eAttackResultRequirement.Miss: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetMisses");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Miss: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetMisses");
 								break;
-								case Style.eAttackResultRequirement.Hit: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetHits");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Hit: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetHits");
 								break;
-								case Style.eAttackResultRequirement.Parry: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetParried");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Parry: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetParried");
 								break;
-								case Style.eAttackResultRequirement.Block: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetBlocked");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Block: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetBlocked");
 								break;
-								case Style.eAttackResultRequirement.Evade: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetEvaded");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Evade: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetEvaded");
 								break;
-								case Style.eAttackResultRequirement.Fumble: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetFumbles");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Fumble: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetFumbles");
 								break;
-								case Style.eAttackResultRequirement.Style: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetStyle");
+								case DOL.GS.Styles.Style.eAttackResultRequirement.Style: message = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.RefreshSpec.TargetStyle");
 								break;
 							}
 						}
@@ -3587,8 +3570,8 @@ namespace DOL.GS
 			InventoryItem attackWeapon = AttackWeapon;
 			InventoryItem leftWeapon = (Inventory == null) ? null : Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 			if (specLevel > 0 && ActiveWeaponSlot == eActiveWeaponSlot.Standard
-			    && attackWeapon != null && attackWeapon.Object_Type == (int)eObjectType.HandToHand &&
-			    leftWeapon != null && leftWeapon.Object_Type == (int)eObjectType.HandToHand)
+			    && attackWeapon != null && attackWeapon.ItemTemplate.ObjectType == (int)eObjectType.HandToHand &&
+			    leftWeapon != null && leftWeapon.ItemTemplate.ObjectType == (int)eObjectType.HandToHand)
 			{
 				specLevel--;
 				int randomChance = Util.Random(99);
@@ -3618,8 +3601,8 @@ namespace DOL.GS
 		{
 			double effectiveness = 1.0;
 
-			if (CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type == (int)eObjectType.LeftAxe && mainWeapon != null &&
-			    (mainWeapon.Item_Type == Slot.RIGHTHAND || mainWeapon.Item_Type == Slot.LEFTHAND))
+			if (CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ItemTemplate.ObjectType == (int)eObjectType.LeftAxe && mainWeapon != null &&
+			    (mainWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || mainWeapon.ItemTemplate.ItemType == Slot.LEFTHAND))
 			{
 				int LASpec = GetModifiedSpecLevel(Specs.Left_Axe);
 				if (LASpec > 0)
@@ -3640,8 +3623,8 @@ namespace DOL.GS
 		{
 			double effectiveness = 1.0;
 
-			if (CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type == (int)eObjectType.LeftAxe && mainWeapon != null &&
-			    (mainWeapon.Item_Type == Slot.RIGHTHAND || mainWeapon.Item_Type == Slot.LEFTHAND))
+			if (CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ItemTemplate.ObjectType == (int)eObjectType.LeftAxe && mainWeapon != null &&
+			    (mainWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || mainWeapon.ItemTemplate.ItemType == Slot.LEFTHAND))
 			{
 				int LASpec = GetModifiedSpecLevel(Specs.Left_Axe);
 				if (LASpec > 0)
@@ -3797,7 +3780,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual IList GetStyleList()
 		{
-			List<Style> list = new List<Style>();
+			var list = new List<DOL.GS.Styles.Style>();
 			lock (lockStyleList)
 			{
 				list = m_styles.Values.OrderBy(x => x.SpecLevelRequirement).ThenBy(y => y.ID).ToList();
@@ -3913,18 +3896,19 @@ namespace DOL.GS
 				if (results.Count > 0)
 					return results;
 			}
-			
+
 			// need to lock for all update.
-			m_usableSkills.FreezeWhile(innerList => {
+			m_usableSkills.FreezeWhile(innerList =>
+			{
 
 				IList<Specialization> specs = GetSpecList();
 				List<Tuple<Skill, Skill>> copylist = new List<Tuple<Skill, Skill>>(innerList);
-								
+
 				// Add Spec
 				foreach (Specialization spec in specs.Where(item => item.Trainable))
 				{
 					int index = innerList.FindIndex(e => (e.Item1 is Specialization) && ((Specialization)e.Item1).KeyName == spec.KeyName);
-					
+
 					if (index < 0)
 					{
 						// Specs must be appended to spec list
@@ -3937,7 +3921,7 @@ namespace DOL.GS
 						innerList[index] = new Tuple<Skill, Skill>(spec, spec);
 					}
 				}
-								
+
 				// Add Abilities (Realm ability should be a custom spec)
 				// Abilities order should be saved to db and loaded each time								
 				foreach (Specialization spec in specs)
@@ -3946,12 +3930,12 @@ namespace DOL.GS
 					{
 						// We need the Instantiated Ability Object for Displaying Correctly According to Player "Activation" Method (if Available)
 						Ability ab = GetAbility(abv.KeyName);
-						
+
 						if (ab == null)
 							ab = abv;
-						
+
 						int index = innerList.FindIndex(k => (k.Item1 is Ability) && ((Ability)k.Item1).KeyName == ab.KeyName);
-						
+
 						if (index < 0)
 						{
 							// add
@@ -3970,13 +3954,13 @@ namespace DOL.GS
 				foreach (Specialization spec in specs.Where(item => item.HybridSpellList))
 				{
 					int index = -1;
-					foreach(KeyValuePair<SpellLine, List<Skill>> sl in spec.GetLinesSpellsForLiving(this))
+					foreach (KeyValuePair<SpellLine, List<Skill>> sl in spec.GetLinesSpellsForLiving(this))
 					{
 						foreach (Spell sp in sl.Value.Where(it => (it is Spell) && !((Spell)it).NeedInstrument).Cast<Spell>())
 						{
 							if (index < innerList.Count)
 								index = innerList.FindIndex(index + 1, e => ((e.Item2 is SpellLine) && ((SpellLine)e.Item2).Spec == sl.Key.Spec) && (e.Item1 is Spell) && !((Spell)e.Item1).NeedInstrument);
-							
+
 							if (index < 0 || index >= innerList.Count)
 							{
 								// add
@@ -3993,18 +3977,18 @@ namespace DOL.GS
 						}
 					}
 				}
-				
+
 				// Add Songs
 				int songIndex = -1;
 				foreach (Specialization spec in specs.Where(item => item.HybridSpellList))
-				{					
-					foreach(KeyValuePair<SpellLine, List<Skill>> sl in spec.GetLinesSpellsForLiving(this))
+				{
+					foreach (KeyValuePair<SpellLine, List<Skill>> sl in spec.GetLinesSpellsForLiving(this))
 					{
 						foreach (Spell sp in sl.Value.Where(it => (it is Spell) && ((Spell)it).NeedInstrument).Cast<Spell>())
 						{
 							if (songIndex < innerList.Count)
 								songIndex = innerList.FindIndex(songIndex + 1, e => (e.Item1 is Spell) && ((Spell)e.Item1).NeedInstrument);
-							
+
 							if (songIndex < 0 || songIndex >= innerList.Count)
 							{
 								// add
@@ -4021,13 +4005,13 @@ namespace DOL.GS
 						}
 					}
 				}
-				
+
 				// Add Styles
 				foreach (Specialization spec in specs)
 				{
-					foreach(Style st in spec.GetStylesForLiving(this))
+					foreach (DOL.GS.Styles.Style st in spec.GetStylesForLiving(this))
 					{
-						int index = innerList.FindIndex(e => (e.Item1 is Style) && e.Item1.ID == st.ID);
+						int index = innerList.FindIndex(e => (e.Item1 is DOL.GS.Styles.Style) && e.Item1.ID == st.ID);
 						if (index < 0)
 						{
 							// add
@@ -4047,10 +4031,10 @@ namespace DOL.GS
 				{
 					innerList.Remove(item);
 				}
-				
+
 				foreach (Tuple<Skill, Skill> el in innerList)
 					results.Add(el);
-			                           });
+			});
 			
 			return results;
 		}
@@ -4077,7 +4061,7 @@ namespace DOL.GS
 					}
 					
 					// check for new Styles
-					foreach (Style st in spec.GetStylesForLiving(this))
+					foreach (Styles.Style st in spec.GetStylesForLiving(this))
 					{
 						AddStyle(st, sendMessages);
 					}
@@ -5454,7 +5438,7 @@ namespace DOL.GS
 		/// Decides which style living will use in this moment
 		/// </summary>
 		/// <returns>Style to use or null if none</returns>
-		protected override Style GetStyleToUse()
+		protected override Styles.Style GetStyleToUse()
 		{
 			InventoryItem weapon;
 			if (NextCombatStyle == null) return null;
@@ -10320,18 +10304,23 @@ namespace DOL.GS
 				//now ban him
 				if (ServerProperties.Properties.BAN_HACKERS)
 				{
-					DBBannedAccount b = new DBBannedAccount();
-					b.Author = "SERVER";
-					b.Ip = Client.TcpEndpointAddress;
-					b.Account = Client.Account.Name;
-					b.DateBan = DateTime.Now;
-					b.Type = "B";
-					b.Reason = "X/Y/Zone : " + X + "/" + Y + "/" + CurrentRegion.ID;
-					GameServer.Database.AddObject(b);
-					GameServer.Database.SaveObject(b);
-					string message = "Unknown bind point, your account is banned, contact a GM.";
-					Client.Out.SendMessage(message, eChatType.CT_Help, eChatLoc.CL_SystemWindow);
-					Client.Out.SendMessage(message, eChatType.CT_Help, eChatLoc.CL_ChatWindow);
+					using (var db = GameServer.Instance.GetNewDbContext())
+                    {
+						var b = new Ban();
+						b.Author = "SERVER";
+						b.Ip = Client.TcpEndpointAddress;
+						b.Account = Client.Account;
+						b.AccountID = Client.Account.Id;
+						b.DateBan = DateTime.Now;
+						b.Type = "B";
+						b.Reason = "X/Y/Zone : " + X + "/" + Y + "/" + CurrentRegion.ID;
+						db.Bans.Add(b);
+						db.SaveChanges();
+						string message = "Unknown bind point, your account is banned, contact a GM.";
+						Client.Out.SendMessage(message, eChatType.CT_Help, eChatLoc.CL_SystemWindow);
+						Client.Out.SendMessage(message, eChatType.CT_Help, eChatLoc.CL_ChatWindow);
+					}
+					
 				}
 				return false;
 			}
@@ -13427,7 +13416,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Get the player ID used for quests.  Usually InternalID, provided for customization
 		/// </summary>
-		public virtual string QuestPlayerID
+		public virtual int QuestPlayerID
 		{
 			get { return InternalID; }
 		}
@@ -13455,13 +13444,13 @@ namespace DOL.GS
 			}
 
 			// Data driven quests for this player
-			var dataQuests = DOLDB<CharacterXDataQuest>.SelectObjects(DB.Column("Character_ID").IsEqualTo(QuestPlayerID));
-			foreach (CharacterXDataQuest quest in dataQuests)
+			var dataQuests = DOLDB<CharacterDataQuest>.SelectObjects(DB.Column("Character_ID").IsEqualTo(QuestPlayerID));
+			foreach (var quest in dataQuests)
 			{
-				DBDataQuest dbDataQuest = GameServer.Database.FindObjectByKey<DBDataQuest>(quest.DataQuestID);
-				if (dbDataQuest != null && dbDataQuest.StartType != (byte)DataQuest.eStartType.Collection)
+				Atlas.DataLayer.Models.DataQuest dbDataQuest = GameServer.Database.FindObjectByKey<Atlas.DataLayer.Models.DataQuest>(quest.DataQuestID);
+				if (dbDataQuest != null && dbDataQuest.StartType != (byte)DOL.GS.Quests.DataQuest.eStartType.Collection)
 				{
-					DataQuest dataQuest = new DataQuest(this, dbDataQuest, quest);
+					var dataQuest = new DOL.GS.Quests.DataQuest(this, dbDataQuest, quest);
 
 					if (quest.Step > 0)
 					{
@@ -15623,7 +15612,7 @@ namespace DOL.GS
 			// Check current registered steps in case of previous GM rollback command
 			if (m_mlSteps != null)
 			{
-				foreach (DBCharacterXMasterLevel mlStep in m_mlSteps)
+				foreach (CharacterMasterLevel mlStep in m_mlSteps)
 				{
 					if (mlStep.MLLevel == mlLevel && mlStep.MLStep == step)
 					{
@@ -15636,8 +15625,8 @@ namespace DOL.GS
 			if (setFinished)
 			{
 				// Register new step
-				DBCharacterXMasterLevel newStep = new DBCharacterXMasterLevel();
-				newStep.Character_ID = QuestPlayerID;
+				var newStep = new CharacterMasterLevel();
+				newStep.CharacterID = QuestPlayerID;
 				newStep.MLLevel = mlLevel;
 				newStep.MLStep = step;
 				newStep.StepCompleted = true;
@@ -15647,7 +15636,11 @@ namespace DOL.GS
 				// Add it in DB
 				try
 				{
-					GameServer.Database.AddObject(newStep);
+					using (var db = GameServer.Instance.GetNewDbContext())
+                    {
+						db.CharacterMasterLevels.Add(newStep);
+						db.SaveChanges();
+                    }
 				}
 				catch (Exception e)
 				{
@@ -15728,7 +15721,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="artifactID"></param>
 		/// <returns>True when at least one version exists, false when no versions are available.</returns>
-		public bool CanReceiveArtifact(string artifactID)
+		public bool CanReceiveArtifact(int artifactID)
 		{
 			Dictionary<String, ItemTemplate> possibleVersions = ArtifactMgr.GetArtifactVersions(artifactID, (eCharacterClass)CharacterClass.ID, Realm);
 

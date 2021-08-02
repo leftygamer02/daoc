@@ -21,7 +21,7 @@ using log4net;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.PacketHandler
 {

@@ -21,10 +21,13 @@ namespace Atlas.DataLayer.Models
 
         public virtual ICollection<Zone> Zones { get; set; }
         public virtual ICollection<SpawnGroup> SpawnGroups { get; set; }
+        public virtual ICollection<Character> Characters { get; set; }
+
         public Region()
         {
             Zones = new HashSet<Zone>();
             SpawnGroups = new HashSet<SpawnGroup>();
+            Characters = new HashSet<Character>();
         }
     }
 }

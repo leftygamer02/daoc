@@ -7,7 +7,7 @@ using DOL.GS;
 using DOL.GS.PacketHandler;
 using log4net;
 using System.Collections;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using DOL.GS.Spells;
 

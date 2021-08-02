@@ -26,7 +26,7 @@ using DOL.GS;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.Language;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Styles;
 
 namespace DOL.GS.Spells

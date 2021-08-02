@@ -16,7 +16,7 @@ namespace Atlas.DataLayer.Models
         public int Icon { get; set; }
         public int EnduranceCost { get; set; }
         public bool StealthRequirement { get; set; }
-        public int OpeningRequirement { get; set; }
+        public int OpeningRequirementType { get; set; }
         public int OpeningRequirementValue { get; set; }
         public int AttackResultRequirement { get; set; }
         public int WeaponTypeRequirement { get; set; }
@@ -29,5 +29,12 @@ namespace Atlas.DataLayer.Models
         public double GrowthOffset { get; set; }
 
         public virtual Specialization Specialization { get; set; }
+
+        public virtual ICollection<StyleSpell> Spells { get; set; }
+        
+        public Style()
+        {
+            Spells = new HashSet<StyleSpell>();
+        }
     }
 }

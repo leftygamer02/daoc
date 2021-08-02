@@ -28,7 +28,7 @@ using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL;
 using System.Collections;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using log4net;
 
 namespace DOL.GS.Commands

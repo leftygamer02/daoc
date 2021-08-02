@@ -10,7 +10,7 @@ namespace Atlas.DataLayerTest
         {
             Console.WriteLine("Hello World!");
 
-            var db = new AtlasContext("mysql", "server=localhost;port=3306;database={database};user id=root;password={password};treattinyasboolean=False");
+            var db = new AtlasContext("mysql", "server=localhost;port=3306;database=newatlas;user id=root;password=d4WqNsWsGTzCCea0Lb1H;treattinyasboolean=False");
 
             Console.Write("Deleting database...");
             db.Database.EnsureDeleted();

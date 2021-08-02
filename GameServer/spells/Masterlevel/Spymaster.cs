@@ -25,7 +25,7 @@ using DOL.GS.PacketHandler;
 using DOL.GS;
 using DOL.Events;
 using DOL.GS.Spells;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.AI.Brain;
 
 namespace DOL.GS.Spells

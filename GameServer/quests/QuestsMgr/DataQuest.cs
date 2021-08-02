@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.Language;
 using DOL.GS.Behaviour;
@@ -139,8 +139,8 @@ namespace DOL.GS.Quests
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 		protected int m_step = 1;
-		protected DBDataQuest m_dataQuest = null;
-		protected CharacterXDataQuest m_charQuest = null;
+		protected Atlas.DataLayer.Models.DataQuest m_dataQuest = null;
+		protected CharacterDataQuest m_charQuest = null;
 		protected GameObject m_startObject = null;
 		protected GameNPC m_startNPC = null;
 		protected IDataQuestStep m_customQuestStep = null;
@@ -280,7 +280,7 @@ namespace DOL.GS.Quests
         /// DataQuest object used for delving RewardItems or other information
         /// </summary>
         /// <param name="dataQuest"></param>
-        public DataQuest(DBDataQuest dataQuest)
+        public DataQuest(Atlas.DataLayer.Models.DataQuest dataQuest)
         {
             m_questPlayer = null;
             m_step = 1;
@@ -292,7 +292,7 @@ namespace DOL.GS.Quests
 		/// DataQuest object assigned to an object or NPC that is used to start or offer the quest
 		/// </summary>
 		/// <param name="dbQuest"></param>
-		public DataQuest(DBDataQuest dataQuest, GameObject startingObject)
+		public DataQuest(Atlas.DataLayer.Models.DataQuest dataQuest, GameObject startingObject)
 		{
 			m_questPlayer = null;
 			m_step = 1;
@@ -309,7 +309,7 @@ namespace DOL.GS.Quests
 		/// <param name="questingPlayer"></param>
 		/// <param name="dataQuest"></param>
 		/// <param name="charQuest"></param>
-		public DataQuest(GamePlayer questingPlayer, DBDataQuest dataQuest, CharacterXDataQuest charQuest)
+		public DataQuest(GamePlayer questingPlayer, Atlas.DataLayer.Models.DataQuest dataQuest, CharacterDataQuest charQuest)
 			: this(questingPlayer, null, dataQuest, charQuest)
 		{
 		}
@@ -320,7 +320,7 @@ namespace DOL.GS.Quests
 		/// <param name="questingPlayer"></param>
 		/// <param name="dbQuest"></param>
 		/// <param name="charQuest"></param>
-		public DataQuest(GamePlayer questingPlayer, GameObject sourceObject, DBDataQuest dataQuest, CharacterXDataQuest charQuest)
+		public DataQuest(GamePlayer questingPlayer, GameObject sourceObject, Atlas.DataLayer.Models.DataQuest dataQuest, CharacterDataQuest charQuest)
 		{
 			m_questPlayer = questingPlayer;
 			m_step = 1;
@@ -539,7 +539,7 @@ namespace DOL.GS.Quests
 					{
 						if (!string.IsNullOrEmpty(str))
 						{
-							ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(str);
+							ItemTemplate item = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == str || x.Name == str);
 							if (item != null)
 							{
 								m_optionalRewards.Add(item);
@@ -560,7 +560,7 @@ namespace DOL.GS.Quests
 					parse1 = lastParse.Split('|');
 					foreach (string str in parse1)
 					{
-						ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(str);
+						ItemTemplate item = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == str || x.Name == str);
 						if (item != null)
 						{
 							m_finalRewards.Add(item);
@@ -609,7 +609,7 @@ namespace DOL.GS.Quests
 
 			catch (Exception ex)
 			{
-                string errorText = "Error parsing quest data for " + m_dataQuest.Name + " (" + m_dataQuest.ID + "), last string to parse = '" + lastParse + "'.";
+                string errorText = "Error parsing quest data for " + m_dataQuest.Name + " (" + m_dataQuest.Id + "), last string to parse = '" + lastParse + "'.";
 				log.Error(errorText, ex);
                 m_lastErrorText += " " + errorText + " " + ex.Message;
 			}
@@ -664,7 +664,7 @@ namespace DOL.GS.Quests
             }
             catch (Exception ex)
             {
-                log.Error("Error parsing quest data for " + m_dataQuest.Name + " (" + m_dataQuest.ID + "), last string to parse = '" + lastParse + "'.", ex);
+                log.Error("Error parsing quest data for " + m_dataQuest.Name + " (" + m_dataQuest.Id + "), last string to parse = '" + lastParse + "'.", ex);
                 m_lastErrorText += " " +lastParse + " " + ex.Message;
             }
         }
@@ -701,7 +701,7 @@ namespace DOL.GS.Quests
             }
             catch
             {
-                string error = "Error creating search area for " + m_dataQuest.Name + " (" + m_dataQuest.ID + "), area str = '" + areaStr + "'";
+                string error = "Error creating search area for " + m_dataQuest.Name + " (" + m_dataQuest.Id + "), area str = '" + areaStr + "'";
                 log.Error(error);
                 m_lastErrorText += error;
             }
@@ -797,7 +797,7 @@ namespace DOL.GS.Quests
 		/// <summary>
 		/// The DBDataQuest for this quest
 		/// </summary>
-		public virtual DBDataQuest DBDataQuest
+		public virtual Atlas.DataLayer.Models.DataQuest DBDataQuest
 		{
 			get { return m_dataQuest; }
 		}
@@ -806,7 +806,7 @@ namespace DOL.GS.Quests
 		/// <summary>
 		/// The CharacterXDataQuest entry for the player doing this quest
 		/// </summary>
-		public virtual CharacterXDataQuest CharDataQuest
+		public virtual CharacterDataQuest CharDataQuest
 		{
 			get { return m_charQuest; }
 		}
@@ -816,7 +816,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual int ID
 		{
-			get { return m_dataQuest.ID; }
+			get { return m_dataQuest.Id; }
 		}
 
 		/// <summary>
@@ -824,7 +824,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual ushort ClientQuestID
 		{
-			get { return (ushort)(m_dataQuest.ID + DATAQUEST_CLIENTOFFSET); }
+			get { return (ushort)(m_dataQuest.Id + DATAQUEST_CLIENTOFFSET); }
 		}
 
 
@@ -860,18 +860,18 @@ namespace DOL.GS.Quests
 			{
 				if (m_charQuest != null)
 				{
-					return m_charQuest.Count;
+					return (short)m_charQuest.Count;
 				}
 
 				return 0; 
 			}
 			set
 			{
-				short oldCount = m_charQuest.Count;
+				short oldCount = (short)m_charQuest.Count;
 				m_charQuest.Count = value;
 				if (m_charQuest.Count != oldCount)
 				{
-					GameServer.Database.SaveObject(m_charQuest);
+					GameServer.Instance.SaveDataObject(m_charQuest);
 				}
 			}
 		}
@@ -957,7 +957,7 @@ namespace DOL.GS.Quests
 					m_charQuest.Step = (short)value;
 					if (m_charQuest.Step != oldStep)
 					{
-						GameServer.Database.SaveObject(m_charQuest);
+						GameServer.Instance.SaveDataObject(m_charQuest);
 					}
 				}
 			}
@@ -980,16 +980,16 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="player"></param>
 		/// <returns></returns>
-		public static CharacterXDataQuest GetCharacterQuest(GamePlayer player, int ID, bool create)
+		public static CharacterDataQuest GetCharacterQuest(GamePlayer player, int ID, bool create)
 		{
-			CharacterXDataQuest charQuest = DOLDB<CharacterXDataQuest>.SelectObject(DB.Column("Character_ID").IsEqualTo(player.QuestPlayerID).And(DB.Column("DataQuestID").IsEqualTo(ID)));
+			var charQuest = GameServer.Database.CharacterDataQuests.FirstOrDefault(x => x.CharacterID == player.QuestPlayerID && x.DataQuestID == ID);
 
 			if (charQuest == null && create)
 			{
-				charQuest = new CharacterXDataQuest(player.QuestPlayerID, ID);
+				charQuest = new CharacterDataQuest(player.QuestPlayerID, ID);
 				charQuest.Count = 0;
 				charQuest.Step = 0;
-				GameServer.Database.AddObject(charQuest);
+				GameServer.Instance.SaveDataObject(charQuest);
 			}
 
 			return charQuest;
@@ -1018,7 +1018,7 @@ namespace DOL.GS.Quests
 
 			if (StartType == eStartType.Collection)
 			{
-				CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, false);
+				var charQuest = GetCharacterQuest(player, ID, false);
 				if (charQuest != null && charQuest.Count >= MaxQuestCount)
 				{
 					return false;
@@ -1662,7 +1662,7 @@ namespace DOL.GS.Quests
 							{
 								foreach (string template in stepTemplates)
 								{
-									ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(template);
+									ItemTemplate item = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == template || x.Name == template);
 									if (item == null)
 									{
 										string errorMsg = string.Format("StepItemTemplate {0} not found in DB!", template);
@@ -1952,11 +1952,11 @@ namespace DOL.GS.Quests
 				GamePlayer player = qargs.Player;
 				GameLiving giver = qargs.Source;
 
-				foreach (DBDataQuest quest in GameObject.DataQuestCache)
+				foreach (Atlas.DataLayer.Models.DataQuest quest in GameObject.DataQuestCache)
 				{
-					if ((quest.ID + DATAQUEST_CLIENTOFFSET) == qargs.QuestID)
+					if ((quest.Id + DATAQUEST_CLIENTOFFSET) == qargs.QuestID)
 					{
-						CharacterXDataQuest charQuest = GetCharacterQuest(player, quest.ID, true);
+						CharacterDataQuest charQuest = GetCharacterQuest(player, quest.Id, true);
 						DataQuest dq = new DataQuest(player, giver, quest, charQuest);
 						dq.Step = 1;
 						player.AddQuest(dq);
@@ -1994,7 +1994,7 @@ namespace DOL.GS.Quests
 				{
 					// This quest finishes with the interaction
 
-					CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
+					var charQuest = GetCharacterQuest(player, ID, true);
 
 					if (charQuest.Count < MaxQuestCount)
 					{
@@ -2056,7 +2056,7 @@ namespace DOL.GS.Quests
 							}
 
 							charQuest.Count++;
-							GameServer.Database.SaveObject(charQuest);
+							GameServer.Instance.SaveDataObject(charQuest);
 
 							bool add = true;
 							lock (player.QuestListFinished)
@@ -2087,7 +2087,7 @@ namespace DOL.GS.Quests
 
 				if (StartType == eStartType.AutoStart)
 				{
-					CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
+					var charQuest = GetCharacterQuest(player, ID, true);
 					DataQuest dq = new DataQuest(player, obj, DBDataQuest, charQuest);
 					dq.Step = 1;
 					player.AddQuest(dq);
@@ -2119,7 +2119,7 @@ namespace DOL.GS.Quests
                         {
                             if (player.Inventory.IsSlotsFree(1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
                             {
-                                ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(m_searchStartItemTemplate.Trim());
+								ItemTemplate item = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == m_searchStartItemTemplate.Trim());
                                 if (item == null)
                                 {
                                     string errorMsg = string.Format("SearchStart Item Template {0} not found in DB!", m_searchStartItemTemplate);
@@ -2139,7 +2139,7 @@ namespace DOL.GS.Quests
 
                     }
 
-                    CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
+                    var charQuest = GetCharacterQuest(player, ID, true);
                     DataQuest dq = new DataQuest(player, obj, DBDataQuest, charQuest);
                     dq.Step = 1;
                     player.AddQuest(dq);
@@ -2183,7 +2183,7 @@ namespace DOL.GS.Quests
 				}
 				if (StartType == eStartType.Collection)
 				{
-					CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, false);
+					var charQuest = GetCharacterQuest(player, ID, false);
 					
 					if (charQuest != null && charQuest.Count >= 1 && charQuest.Count < MaxQuestCount)
 					{
@@ -2232,9 +2232,9 @@ namespace DOL.GS.Quests
 
 			// check to see if this object has a collection quest and if so accept the item and generate the reward
 			// collection quests do not go into the GamePlayer quest lists
-			if (StartType == eStartType.Collection && item.Id_nb == DBDataQuest.CollectItemTemplate)
+			if (StartType == eStartType.Collection && item.Id.ToString() == DBDataQuest.CollectItemTemplate)
 			{
-				CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
+				var charQuest = GetCharacterQuest(player, ID, true);
 
 				if (charQuest.Count < MaxQuestCount && player.Level <= MaxLevel && player.Level >= Level)
 				{
@@ -2245,7 +2245,7 @@ namespace DOL.GS.Quests
 						RemoveItem(obj, player, item, false);
 						charQuest.Count++;
 						charQuest.Step = 0;
-						GameServer.Database.SaveObject(charQuest);
+						GameServer.Instance.SaveDataObject(charQuest);
 						long rewardXP = 0;
 						if (long.TryParse(DBDataQuest.RewardXP, out rewardXP))
 						{
@@ -2299,7 +2299,7 @@ namespace DOL.GS.Quests
 			{
 				TryTurnTo(living, player);
 
-				CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
+				var charQuest = GetCharacterQuest(player, ID, true);
 				DataQuest dq = new DataQuest(player, living, DBDataQuest, charQuest);
 				dq.Step = 1;
 				player.AddQuest(dq);
@@ -2393,7 +2393,7 @@ namespace DOL.GS.Quests
 		/// <param name="item"></param>
 		protected virtual void OnPlayerGiveItem(GamePlayer player, GameObject obj, InventoryItem item)
 		{
-			if (item == null || item.OwnerID == null || m_collectItems.Count == 0)
+			if (item == null || item.CharacterID <= 0 || m_collectItems.Count == 0)
 				return;
 
 			if (TargetName == obj.Name && (TargetRegion == obj.CurrentRegionID || TargetRegion == 0)
@@ -2401,7 +2401,7 @@ namespace DOL.GS.Quests
 			{
 				if (m_collectItems.Count >= Step &&
 					!string.IsNullOrEmpty(m_collectItems[Step - 1]) &&
-					item.Id_nb.ToLower().Contains(m_collectItems[Step - 1].ToLower()) &&
+					item.Id.ToString().ToLower().Contains(m_collectItems[Step - 1].ToLower()) &&
 					ExecuteCustomQuestStep(player, Step, eStepCheckType.GiveItem))
 				{
 					switch (StepType)
@@ -2444,7 +2444,7 @@ namespace DOL.GS.Quests
 				}
 				else if (m_stepItemTemplates.Count >= Step &&
 					!string.IsNullOrEmpty(m_stepItemTemplates[Step - 1]) &&
-					item.Id_nb.ToLower().Contains(m_stepItemTemplates[Step - 1].ToLower()) &&
+					item.Id.ToString().ToLower().Contains(m_stepItemTemplates[Step - 1].ToLower()) &&
 					ExecuteCustomQuestStep(player, Step, eStepCheckType.GiveItem))
 				{
 					// Current step must be a delivery so take the item and advance the quest
@@ -2598,7 +2598,7 @@ namespace DOL.GS.Quests
 				{
 					if (CheckQuestQualification(player))
 					{
-						CharacterXDataQuest charQuest = GetCharacterQuest(player, ID, true);
+						var charQuest = GetCharacterQuest(player, ID, true);
 
 						if (charQuest.Count < MaxQuestCount)
 						{
@@ -2658,7 +2658,7 @@ namespace DOL.GS.Quests
 								}
 
 								charQuest.Count++;
-								GameServer.Database.SaveObject(charQuest);
+								GameServer.Instance.SaveDataObject(charQuest);
 
 								bool add = true;
 								lock (player.QuestListFinished)
@@ -2819,7 +2819,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual bool FinishQuest(GameObject obj, bool checkCustomStep)
 		{
-			if (m_questPlayer == null || m_charQuest == null || m_charQuest.IsPersisted == false)
+			if (m_questPlayer == null || m_charQuest == null || m_charQuest.Id <= 0)
 				return false;
 
 			int lastStep = Step;
@@ -3019,7 +3019,7 @@ namespace DOL.GS.Quests
 
 			m_charQuest.Step = 0;
 			m_charQuest.Count++;
-			GameServer.Database.SaveObject(m_charQuest);
+			GameServer.Instance.SaveDataObject(m_charQuest);
 
 			// Now that quest is finished do any post finished custom steps
 			ExecuteCustomQuestStep(QuestPlayer, Step, eStepCheckType.PostFinish);
@@ -3114,7 +3114,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public override void AbortQuest()
 		{
-			if (m_questPlayer == null || m_charQuest == null || m_charQuest.IsPersisted == false) return;
+			if (m_questPlayer == null || m_charQuest == null || m_charQuest.Id <= 0) return;
 
 			if (m_questPlayer.QuestList.Contains(this))
 			{
@@ -3153,12 +3153,12 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public override void DeleteFromDatabase()
 		{
-			if (m_charQuest == null || m_charQuest.IsPersisted == false) return;
+			if (m_charQuest == null || m_charQuest.Id <= 0) return;
 
-			CharacterXDataQuest charQuest = GameServer.Database.FindObjectByKey<CharacterXDataQuest>(m_charQuest.ID);
+			var charQuest = GameServer.Database.CharacterDataQuests.Find(m_charQuest.Id);
 			if (charQuest != null)
 			{
-				GameServer.Database.DeleteObject(charQuest);
+				GameServer.Instance.DeleteDataObject(charQuest);
 			}
 		}
 

@@ -18,7 +18,7 @@
  */
 using System;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.Language;
 using DOL.GS.PacketHandler;

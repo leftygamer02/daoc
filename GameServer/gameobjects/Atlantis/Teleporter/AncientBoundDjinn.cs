@@ -20,7 +20,7 @@ using System;
 using log4net;
 using System.Reflection;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.Housing;
 

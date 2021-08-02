@@ -24,7 +24,7 @@ using System.Linq;
 using System.Reflection;
 
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.Effects;
 using DOL.GS.Keeps;
@@ -793,7 +793,7 @@ namespace DOL.GS
 		/// Decides which style living will use in this moment
 		/// </summary>
 		/// <returns>Style to use or null if none</returns>
-		protected virtual Style GetStyleToUse()
+		protected virtual Styles.Style GetStyleToUse()
 		{
 			InventoryItem weapon;
 			if (NextCombatStyle == null) return null;
@@ -812,16 +812,16 @@ namespace DOL.GS
 		/// <summary>
 		/// Holds the Style that this living should use next
 		/// </summary>
-		protected Style m_nextCombatStyle;
+		protected Styles.Style m_nextCombatStyle;
 		/// <summary>
 		/// Holds the backup style for the style that the living should use next
 		/// </summary>
-		protected Style m_nextCombatBackupStyle;
+		protected Styles.Style m_nextCombatBackupStyle;
 		
 		/// <summary>
 		/// Gets or Sets the next combat style to use
 		/// </summary>
-		public Style NextCombatStyle
+		public Styles.Style NextCombatStyle
 		{
 			get { return m_nextCombatStyle; }
 			set { m_nextCombatStyle = value; }
@@ -829,7 +829,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets or Sets the next combat backup style to use
 		/// </summary>
-		public Style NextCombatBackupStyle
+		public Styles.Style NextCombatBackupStyle
 		{
 			get { return m_nextCombatBackupStyle; }
 			set { m_nextCombatBackupStyle = value; }
@@ -871,12 +871,12 @@ namespace DOL.GS
 			double effectiveness = 1.00;
 			//double effectiveness = Effectiveness;
 			double damage = (1.0 + Level / 3.7 + Level * Level / 175.0) * AttackSpeed(weapon) * 0.001;
-			if (weapon == null || weapon.Item_Type == Slot.RIGHTHAND || weapon.Item_Type == Slot.LEFTHAND || weapon.Item_Type == Slot.TWOHAND)
+			if (weapon == null || weapon.ItemTemplate.ItemType == Slot.RIGHTHAND || weapon.ItemTemplate.ItemType == Slot.LEFTHAND || weapon.ItemTemplate.ItemType == Slot.TWOHAND)
 			{
 				//Melee damage buff,debuff,RA
 				effectiveness += GetModified(eProperty.MeleeDamage) * 0.01;
 			}
-			else if (weapon.Item_Type == Slot.RANGED && (weapon.Object_Type == (int)eObjectType.Longbow || weapon.Object_Type == (int)eObjectType.RecurvedBow || weapon.Object_Type == (int)eObjectType.CompositeBow))
+			else if (weapon.ItemTemplate.ItemType == Slot.RANGED && (weapon.ItemTemplate.ObjectType == (int)eObjectType.Longbow || weapon.ItemTemplate.ObjectType == (int)eObjectType.RecurvedBow || weapon.ItemTemplate.ObjectType == (int)eObjectType.CompositeBow))
 			{
 				// RDSandersJR: Check to see if we are using old archery if so, use RangedDamge
 				if (ServerProperties.Properties.ALLOW_OLD_ARCHERY == true)
@@ -889,7 +889,7 @@ namespace DOL.GS
 					effectiveness += GetModified(eProperty.SpellDamage) * 0.01;
 				}
 			}
-			else if (weapon.Item_Type == Slot.RANGED)
+			else if (weapon.ItemTemplate.ItemType == Slot.RANGED)
 			{
 				effectiveness += GetModified(eProperty.RangedDamage) * 0.01;
 			}
@@ -1632,13 +1632,13 @@ namespace DOL.GS
 		/// <param name="interruptDuration">the interrupt duration</param>
 		/// <param name="dualWield">indicates if both weapons are used for attack</param>
 		/// <returns>the object where we collect and modifiy all parameters about the attack</returns>
-		protected virtual AttackData MakeAttack(GameObject target, InventoryItem weapon, Style style, double effectiveness, int interruptDuration, bool dualWield)
+		protected virtual AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield)
 		{
 			return MakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield, false);
 		}
 
 
-		protected virtual AttackData MakeAttack(GameObject target, InventoryItem weapon, Style style, double effectiveness, int interruptDuration, bool dualWield, bool ignoreLOS)
+		protected virtual AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield, bool ignoreLOS)
 		{
 			AttackData ad = new AttackData();
 			ad.Attacker = this;
@@ -1650,14 +1650,14 @@ namespace DOL.GS
 			ad.DamageType = AttackDamageType(weapon);
 			ad.ArmorHitLocation = eArmorSlot.NOTSET;
 			ad.Weapon = weapon;
-			ad.IsOffHand = weapon == null ? false : weapon.Hand == 2;
+			ad.IsOffHand = weapon == null ? false : weapon.ItemTemplate.Hand == 2;
 
 
 			if (dualWield)
 				ad.AttackType = AttackData.eAttackType.MeleeDualWield;
 			else if (weapon == null)
 				ad.AttackType = AttackData.eAttackType.MeleeOneHand;
-			else switch (weapon.Item_Type)
+			else switch (weapon.ItemTemplate.ItemType)
 			{
 				default:
 				case Slot.RIGHTHAND:
@@ -1769,26 +1769,26 @@ namespace DOL.GS
 				if (weapon != null)
 				{
 					weaponTypeToUse = new InventoryItem();
-					weaponTypeToUse.Object_Type = weapon.Object_Type;
+					weaponTypeToUse.ItemTemplate.ObjectType = weapon.ItemTemplate.ObjectType;
 					weaponTypeToUse.SlotPosition = weapon.SlotPosition;
 
 					if ((this is GamePlayer) && Realm == eRealm.Albion
-						&& (GameServer.ServerRules.IsObjectTypesEqual((eObjectType)weapon.Object_Type, eObjectType.TwoHandedWeapon) 
-						|| GameServer.ServerRules.IsObjectTypesEqual((eObjectType)weapon.Object_Type, eObjectType.PolearmWeapon))
+						&& (GameServer.ServerRules.IsObjectTypesEqual((eObjectType)weapon.ItemTemplate.ObjectType, eObjectType.TwoHandedWeapon) 
+						|| GameServer.ServerRules.IsObjectTypesEqual((eObjectType)weapon.ItemTemplate.ObjectType, eObjectType.PolearmWeapon))
 						&& ServerProperties.Properties.ENABLE_ALBION_ADVANCED_WEAPON_SPEC)
 					{
 						// Albion dual spec penalty, which sets minimum damage to the base damage spec
-						if (weapon.Type_Damage == (int)eDamageType.Crush)
+						if (weapon.ItemTemplate.TypeDamage == (int)eDamageType.Crush)
 						{
-							weaponTypeToUse.Object_Type = (int)eObjectType.CrushingWeapon;
+							weaponTypeToUse.ItemTemplate.ObjectType = (int)eObjectType.CrushingWeapon;
 						}
-						else if (weapon.Type_Damage == (int)eDamageType.Slash)
+						else if (weapon.ItemTemplate.TypeDamage == (int)eDamageType.Slash)
 						{
-							weaponTypeToUse.Object_Type = (int)eObjectType.SlashingWeapon;
+							weaponTypeToUse.ItemTemplate.ObjectType = (int)eObjectType.SlashingWeapon;
 						}
 						else
 						{
-							weaponTypeToUse.Object_Type = (int)eObjectType.ThrustWeapon;
+							weaponTypeToUse.ItemTemplate.ObjectType = (int)eObjectType.ThrustWeapon;
 						}
 					}
 				}
@@ -2385,7 +2385,7 @@ namespace DOL.GS
 				int ticksToTarget = 1;
 				int interruptDuration = 0;
 				int leftHandSwingCount = 0;
-				Style combatStyle = null;
+				Styles.Style combatStyle = null;
 				InventoryItem attackWeapon = owner.AttackWeapon;
 				InventoryItem leftWeapon = (owner.Inventory == null) ? null : owner.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 				GameObject attackTarget = null;
@@ -2406,7 +2406,7 @@ namespace DOL.GS
 						return;
 					}
 
-					int model = (attackWeapon == null ? 0 : attackWeapon.Model);
+					int model = (attackWeapon == null ? 0 : attackWeapon.ItemTemplate.Model);
 					foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 					{
 						if (player == null) continue;
@@ -2645,7 +2645,7 @@ namespace DOL.GS
 
 						int speed = owner.AttackSpeed(attackWeapon);
 						byte attackSpeed = (byte)(speed / 100);
-						int model = (attackWeapon == null ? 0 : attackWeapon.Model);
+						int model = (attackWeapon == null ? 0 : attackWeapon.ItemTemplate.Model);
 						foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 						{
 							player.Out.SendCombatAnimation(owner, null, (ushort)model, 0x00, player.Out.BowPrepare, attackSpeed, 0x00, 0x00);
@@ -2707,7 +2707,7 @@ namespace DOL.GS
 			/// <summary>
 			/// The combat style of the attack
 			/// </summary>
-			protected readonly Style m_combatStyle;
+			protected readonly Styles.Style m_combatStyle;
 
 			/// <summary>
 			/// Constructs a new attack action
@@ -2720,7 +2720,7 @@ namespace DOL.GS
 			/// <param name="leftHandSwingCount">the left hand swing count</param>
 			/// <param name="leftWeapon">the left hand weapon used to attack</param>
 			/// <param name="target">the target of the attack</param>
-			public WeaponOnTargetAction(GameLiving owner, GameObject target, InventoryItem attackWeapon, InventoryItem leftWeapon, double effectiveness, int interruptDuration, Style combatStyle)
+			public WeaponOnTargetAction(GameLiving owner, GameObject target, InventoryItem attackWeapon, InventoryItem leftWeapon, double effectiveness, int interruptDuration, Styles.Style combatStyle)
 				: base(owner)
 			{
 				m_target = target;
@@ -2737,7 +2737,7 @@ namespace DOL.GS
 			protected override void OnTick()
 			{
 				GameLiving owner = (GameLiving)m_actionSource;
-				Style style = m_combatStyle;
+				Styles.Style style = m_combatStyle;
 				int leftHandSwingCount = 0;
 				AttackData mainHandAD = null;
 				AttackData leftHandAD = null;
@@ -2754,8 +2754,8 @@ namespace DOL.GS
 				{
 					leftHandSwingCount = owner.CalculateLeftHandSwingCount();
 				}
-				else if (owner.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type != (int)eObjectType.Shield
-				    && mainWeapon != null && (mainWeapon.Item_Type == Slot.RIGHTHAND || mainWeapon.Item_Type == Slot.LEFTHAND))
+				else if (owner.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ItemTemplate.ObjectType != (int)eObjectType.Shield
+				    && mainWeapon != null && (mainWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || mainWeapon.ItemTemplate.ItemType == Slot.LEFTHAND))
 				{
 					leftHandSwingCount = owner.CalculateLeftHandSwingCount();
 				}
@@ -2856,7 +2856,7 @@ namespace DOL.GS
 					{
 						if( mainHandAD.Target is GamePlayer )
 						{
-							GameClient targetClient = WorldMgr.GetClientByPlayerID( mainHandAD.Target.InternalID, false, false );
+							GameClient targetClient = WorldMgr.GetClientByPlayerID(mainHandAD.Target.InternalID, false, false );
 							if( targetClient != null )
 							{
 								targetClient.Out.SendChangeTarget( mainHandAD.Attacker );
@@ -3000,7 +3000,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public virtual bool AllowWeaponMagicalEffect(AttackData ad, InventoryItem weapon, Spell weaponSpell)
 		{
-			if (weapon.Flags == 10) //Itemtemplates with "Flags" set to 10 will not proc on living (ex. Bruiser)
+			if (weapon.ItemTemplate.Flags == 10) //Itemtemplates with "Flags" set to 10 will not proc on living (ex. Bruiser)
 				return false;
 			else return true;
 		}
@@ -3017,44 +3017,36 @@ namespace DOL.GS
 
 			// Proc chance is 2.5% per SPD, i.e. 10% for a 3.5 SPD weapon. - Tolakram, changed average speed to 3.5
 
-			int procChance = (int)Math.Ceiling(((weapon.ProcChance > 0 ? weapon.ProcChance : 10) * (weapon.SPD_ABS / 35.0)));
+			var maxProc = weapon.Spells.Max(x => x.ProcChance);
+
+			int procChance = (int)Math.Ceiling(((maxProc > 0 ? maxProc : 10) * (weapon.ItemTemplate.SPD_ABS / 35.0)));
 
             //Error protection and log for Item Proc's
-            Spell procSpell = null;
-            Spell procSpell1 = null;
             if (this is GamePlayer)
             {
                 SpellLine line = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
                 if (line != null)
                 {
-                    procSpell = SkillBase.FindSpell(weapon.ProcSpellID, line);
-                    procSpell1 = SkillBase.FindSpell(weapon.ProcSpellID1, line);
+					//attempt to fire any weapon procs
+					foreach (var itemSpell in weapon.Spells.Where(x => x.ProcChance > 0))
+					{
+						var procSpell = SkillBase.FindSpell(itemSpell.SpellID, line);
 
-                    if (procSpell == null && weapon.ProcSpellID != 0)
-                    {
-                        log.ErrorFormat("- Proc ID {0} Not Found on item: {1} ", weapon.ProcSpellID, weapon.Template.Id_nb);
-                    }
-                    if (procSpell1 == null && weapon.ProcSpellID1 != 0)
-                    {
-                        log.ErrorFormat("- Proc1 ID {0} Not Found on item: {1} ", weapon.ProcSpellID1, weapon.Template.Id_nb);
-                    }
+						if (procSpell != null && Util.Chance(procChance))
+                        {
+							StartWeaponMagicalEffect(weapon, ad, SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects), itemSpell.SpellID, false);
+						}
+                        else
+                        {
+							log.ErrorFormat("- Proc ID {0} Not Found on item: {1} ", itemSpell.SpellID, weapon.ItemTemplate.Id);
+						}						
+					}
                 }
             }
-
-            // Proc #1
-            if (procSpell != null && Util.Chance(procChance))
-
-                StartWeaponMagicalEffect(weapon, ad, SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects), weapon.ProcSpellID, false);
-
-            // Proc #2
-            if (procSpell1 != null && Util.Chance(procChance))
-
-                StartWeaponMagicalEffect(weapon, ad, SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects), weapon.ProcSpellID1, false);
-
 			// Poison
 
-			if (weapon.PoisonSpellID != 0)
-			{
+			foreach (var poison in weapon.Spells.Where(x => x.IsPoison))
+            {
 				if (ad.Target.EffectList.GetOfType<RemedyEffect>() != null)
 				{
 					if (this is GamePlayer)
@@ -3062,7 +3054,7 @@ namespace DOL.GS
 					return;
 				}
 
-				StartWeaponMagicalEffect(weapon, ad, SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons), weapon.PoisonSpellID, true);
+				StartWeaponMagicalEffect(weapon, ad, SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons), poison.SpellID, true);
 
 				// Spymaster Enduring Poison
 
@@ -3072,8 +3064,8 @@ namespace DOL.GS
 					if (PlayerAttacker.GetSpellLine("Spymaster") != null)
 						if (Util.ChanceDouble((double)(15 * 0.0001))) return;
 				}
-				weapon.PoisonCharges--;
-				if (weapon.PoisonCharges <= 0) { weapon.PoisonMaxCharges = 0; weapon.PoisonSpellID = 0; }
+				poison.Charges--;
+				if (poison.Charges <= 0) { weapon.Spells.Remove(poison); }
 			}
 		}
 
@@ -3103,7 +3095,7 @@ namespace DOL.GS
 					{
 						if (ignoreLevel == false)
 						{
-							int requiredLevel = weapon.Template.LevelRequirement > 0 ? weapon.Template.LevelRequirement : Math.Min(50, weapon.Level);
+							int requiredLevel = weapon.ItemTemplate.LevelRequirement > 0 ? weapon.ItemTemplate.LevelRequirement : Math.Min(50, weapon.ItemTemplate.Level);
 
 							if (requiredLevel > Level)
 							{
@@ -3159,7 +3151,7 @@ namespace DOL.GS
 						RangedAttackState = eRangedAttackState.Aim;
 
 						foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-							player.Out.SendCombatAnimation(this, null, (ushort)(AttackWeapon == null ? 0 : AttackWeapon.Model),
+							player.Out.SendCombatAnimation(this, null, (ushort)(AttackWeapon == null ? 0 : AttackWeapon.ItemTemplate.Model),
 							                               0x00, player.Out.BowPrepare, (byte)(speed / 100), 0x00, 0x00);
 
 						m_attackAction.Start((RangedAttackType == eRangedAttackType.RapidFire) ? speed / 2 : speed);
@@ -3523,7 +3515,7 @@ namespace DOL.GS
 					// check player is wearing shield and NO two handed weapon
 					InventoryItem leftHand = guard.GuardSource.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 					InventoryItem rightHand = guard.GuardSource.AttackWeapon;
-					if (((rightHand == null || rightHand.Hand != 1) && leftHand != null && leftHand.Object_Type == (int)eObjectType.Shield) || guard.GuardSource is GameNPC)
+					if (((rightHand == null || rightHand.ItemTemplate.Hand != 1) && leftHand != null && leftHand.ItemTemplate.ObjectType == (int)eObjectType.Shield) || guard.GuardSource is GameNPC)
 					{
 						// TODO
 						// insert actual formula for guarding here, this is just a guessed one based on block.
@@ -3532,12 +3524,12 @@ namespace DOL.GS
 						if (guard.GuardSource is GameNPC)
 							guardchance = guard.GuardSource.GetModified(eProperty.BlockChance) * 0.001;
 						else
-							guardchance = guard.GuardSource.GetModified(eProperty.BlockChance) * leftHand.Quality * 0.00001;
+							guardchance = guard.GuardSource.GetModified(eProperty.BlockChance) * leftHand.ItemTemplate.Quality * 0.00001;
 						guardchance *= guardLevel * 0.3 + 0.05;
 						guardchance += attackerConLevel * 0.05;
 						int shieldSize = 0;
 						if (leftHand != null)
-							shieldSize = leftHand.Type_Damage;
+							shieldSize = leftHand.ItemTemplate.TypeDamage;
 						if (guard.GuardSource is GameNPC)
 							shieldSize = 1;
 
@@ -3578,10 +3570,10 @@ namespace DOL.GS
 					InventoryItem leftHand = dashing.GuardSource.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 					InventoryItem rightHand = dashing.GuardSource.AttackWeapon;
 					InventoryItem twoHand = dashing.GuardSource.Inventory.GetItem(eInventorySlot.TwoHandWeapon);
-					if ((rightHand == null || rightHand.Hand != 1) && leftHand != null && leftHand.Object_Type == (int)eObjectType.Shield)
+					if ((rightHand == null || rightHand.ItemTemplate.Hand != 1) && leftHand != null && leftHand.ItemTemplate.ObjectType == (int)eObjectType.Shield)
 					{
 						int guardLevel = dashing.GuardSource.GetAbilityLevel(Abilities.Guard); // multiply by 3 to be a bit qorse than block (block woudl be 5 since you get guard I with shield 5, guard II with shield 10 and guard III with shield 15)
-						double guardchance = dashing.GuardSource.GetModified(eProperty.BlockChance) * leftHand.Quality * 0.00001;
+						double guardchance = dashing.GuardSource.GetModified(eProperty.BlockChance) * leftHand.ItemTemplate.Quality * 0.00001;
 						guardchance *= guardLevel * 0.25 + 0.05;
 						guardchance += attackerConLevel * 0.05;
 
@@ -3590,7 +3582,7 @@ namespace DOL.GS
 
 						int shieldSize = 0;
 						if (leftHand != null)
-							shieldSize = leftHand.Type_Damage;
+							shieldSize = leftHand.ItemTemplate.TypeDamage;
 						if (m_attackers.Count > shieldSize)
 							guardchance /= (m_attackers.Count - shieldSize + 1);
 						if (ad.AttackType == AttackData.eAttackType.MeleeDualWield) guardchance /= 2;
@@ -3670,11 +3662,11 @@ namespace DOL.GS
 				if (ad.Target.Inventory != null)
 					armor = ad.Target.Inventory.GetItem((eInventorySlot)ad.ArmorHitLocation);
 				if (armor != null)
-					armorBonus = armor.Bonus;
+					armorBonus = armor.ItemTemplate.ItemBonus;
 			}
 			if (weapon != null)
 			{
-				armorBonus -= weapon.Bonus;
+				armorBonus -= weapon.ItemTemplate.ItemBonus;
 			}
 			if (ad.Target is GamePlayer && ad.Attacker is GamePlayer)
 			{
@@ -3701,7 +3693,7 @@ namespace DOL.GS
 			{
 				InventoryItem ammo = RangeAttackAmmo;
 				if (ammo != null)
-					switch ((ammo.SPD_ABS >> 4) & 0x3)
+					switch ((ammo.ItemTemplate.SPD_ABS >> 4) & 0x3)
 				{
 						// http://rothwellhome.org/guides/archery.htm
 						case 0: missrate += 15; break; // Rough
@@ -3964,10 +3956,10 @@ namespace DOL.GS
 			if( this is GamePlayer && player != null && IsObjectInFront( ad.Attacker, 120 ) && player.HasAbility( Abilities.Shield ) )
 			{
 				lefthand = Inventory.GetItem( eInventorySlot.LeftHandWeapon );
-				if( lefthand != null && ( player.AttackWeapon == null || player.AttackWeapon.Item_Type == Slot.RIGHTHAND || player.AttackWeapon.Item_Type == Slot.LEFTHAND ) )
+				if( lefthand != null && ( player.AttackWeapon == null || player.AttackWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || player.AttackWeapon.ItemTemplate.ItemType == Slot.LEFTHAND ) )
 				{
-					if( lefthand.Object_Type == (int)eObjectType.Shield && IsObjectInFront( ad.Attacker, 120 ) )
-						blockChance = GetModified( eProperty.BlockChance ) * lefthand.Quality * 0.01;
+					if( lefthand.ItemTemplate.ObjectType == (int)eObjectType.Shield && IsObjectInFront( ad.Attacker, 120 ) )
+						blockChance = GetModified( eProperty.BlockChance ) * lefthand.ItemTemplate.Quality * 0.01;
 				}
 			}
 			else if( this is GameNPC && IsObjectInFront( ad.Attacker, 120 ) )
@@ -3981,7 +3973,7 @@ namespace DOL.GS
 				// Reduce block chance if the shield used is too small (valable only for player because npc inventory does not store the shield size but only the model of item)
 				int shieldSize = 0;
 				if( lefthand != null )
-					shieldSize = lefthand.Type_Damage;
+					shieldSize = lefthand.ItemTemplate.TypeDamage;
 				if( player != null && attackerCount > shieldSize )
 					blockChance *= (shieldSize / attackerCount);
 
@@ -4230,7 +4222,7 @@ namespace DOL.GS
 			{
 				//http://dolserver.sourceforge.net/forum/showthread.php?s=&threadid=836
 				byte resultByte = 0;
-				int attackersWeapon = (weapon == null) ? 0 : weapon.Model;
+				int attackersWeapon = (weapon == null) ? 0 : weapon.ItemTemplate.Model;
 				int defendersWeapon = 0;
 
 				switch (ad.AttackResult)
@@ -4245,7 +4237,7 @@ namespace DOL.GS
 						resultByte = 1;
 						if (ad.Target != null && ad.Target.AttackWeapon != null)
 						{
-							defendersWeapon = ad.Target.AttackWeapon.Model;
+							defendersWeapon = ad.Target.AttackWeapon.ItemTemplate.Model;
 						}
 						break;
 
@@ -4254,9 +4246,9 @@ namespace DOL.GS
 						if (ad.Target != null && ad.Target.Inventory != null)
 						{
 							InventoryItem lefthand = ad.Target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-							if (lefthand != null && lefthand.Object_Type == (int)eObjectType.Shield)
+							if (lefthand != null && lefthand.ItemTemplate.ObjectType == (int)eObjectType.Shield)
 							{
-								defendersWeapon = lefthand.Model;
+								defendersWeapon = lefthand.ItemTemplate.Model;
 							}
 						}
 						break;

@@ -21,7 +21,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.AI.Brain;
 
 namespace DOL.GS
@@ -385,13 +385,13 @@ namespace DOL.GS
 				.ToString();
 		}
 
-        public Spell(DBSpell dbspell, int requiredLevel)
+        public Spell(Atlas.DataLayer.Models.Spell dbspell, int requiredLevel)
             : this(dbspell, requiredLevel, false)
         {
         }
 
-        public Spell(DBSpell dbspell, int requiredLevel, bool minotaur)
-			: base(dbspell.Name, dbspell.SpellID, (ushort)dbspell.Icon, requiredLevel, dbspell.TooltipId)
+        public Spell(Atlas.DataLayer.Models.Spell dbspell, int requiredLevel, bool minotaur)
+			: base(dbspell.Name, dbspell.Id, (ushort)dbspell.Icon, requiredLevel, dbspell.ToolTipId)
 		{
 			m_description = dbspell.Description;
 			m_target = dbspell.Target;
@@ -432,7 +432,7 @@ namespace DOL.GS
             m_sharedtimergroup = dbspell.SharedTimerGroup;
             m_minotaurspell = minotaur;
             // Params
-            this.InitFromCollection<DBSpellXCustomValues>(dbspell.CustomValues, param => param.KeyName, param => param.Value);
+            this.InitFromCollection<SpellCustomValues>(dbspell.CustomValues, param => param.KeyName, param => param.Value);
 		}
 
 		/// <summary>

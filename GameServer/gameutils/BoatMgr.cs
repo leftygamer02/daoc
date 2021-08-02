@@ -18,10 +18,11 @@
  */
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using log4net;
@@ -128,17 +129,17 @@ namespace DOL.GS
 
 
                 //create table of GameBoat
-                boat.theBoatDB = new DBBoat();
-                boat.theBoatDB.BoatOwner = creator.InternalID;
-                boat.theBoatDB.BoatID = boat.BoatID;
-                boat.theBoatDB.BoatMaxSpeedBase = boat.MaxSpeedBase;
+                boat.theBoatDB = new PlayerBoat();
+                boat.theBoatDB.BoatOwnerID = creator.InternalID;
+                boat.theBoatDB.Id = boat.BoatID;
+                boat.theBoatDB.BoatMaxSpeed = boat.MaxSpeedBase;
                 boat.theBoatDB.BoatModel = boat.Model;
                 boat.theBoatDB.BoatName = boat.Name;
                 boat.OwnerID = creator.InternalID;
                 boat.Flags ^= GameNPC.eFlags.PEACE;
 
                 AddBoat(boat);
-                GameServer.Database.AddObject(boat.theBoatDB);
+                GameServer.Instance.SaveDataObject(boat.theBoatDB);
                 return boat;
             }
             catch (Exception e)
@@ -164,8 +165,8 @@ namespace DOL.GS
                     return false;
                 }
 
-                var boats = GameServer.Database.FindObjectByKey<DBBoat>(boatName);
-                GameServer.Database.DeleteObject(boats);
+                var boats = GameServer.Database.PlayerBoats.FirstOrDefault(x => x.BoatName == boatName);
+                GameServer.Instance.DeleteDataObject(boats);
 
                 RemoveBoat(removeBoat);
 
@@ -215,11 +216,11 @@ namespace DOL.GS
         /// Returns a database ID for a matching boat name.
         /// </summary>
         /// <returns>Boat</returns>
-        public static string BoatNameToBoatID(string boatName)
+        public static int BoatNameToBoatID(string boatName)
         {
             GameBoat b = GetBoatByName(boatName);
             if (b == null)
-                return "";
+                return 0;
             return b.BoatID;
         }
 
@@ -227,9 +228,9 @@ namespace DOL.GS
         /// Returns a boat according to the matching database boat Owner.
         /// </summary>
         /// <returns>Boat</returns>
-        public static GameBoat GetBoatByOwner(string owner)
+        public static GameBoat GetBoatByOwner(int owner)
         {
-            if (owner == null) return null;
+            if (owner <= 0) return null;
 
             lock (m_boatids.SyncRoot)
             {
@@ -262,7 +263,7 @@ namespace DOL.GS
             }
 
             //load boats
-            var objs = GameServer.Database.SelectAllObjects<DBBoat>();
+            var objs = GameServer.Database.PlayerBoats.ToList();
             foreach (var obj in objs)
             {
                 GameBoat myboat = new GameBoat();
@@ -310,15 +311,12 @@ namespace DOL.GS
             return boats;
         }
 
-        public static bool IsBoatOwner(string playerstrID, GameBoat boat)
+        public static bool IsBoatOwner(int playerID, GameBoat boat)
         {
-            if (playerstrID == null || boat == null)
+            if (playerID <= 0 || boat == null)
                 return false;
 
-            if (playerstrID == boat.OwnerID)
-                return true;
-            else
-                return false;
+            return (playerID == boat.OwnerID);
         }
     }
 }

@@ -18,5 +18,6 @@ namespace Atlas.DataLayer.Models
         public int ResistSlash { get; set; }
         public int ResistSpirit { get; set; }
         public int ResistThrust { get; set; }
+        public int ResistNatural { get; set; }
     }
 }

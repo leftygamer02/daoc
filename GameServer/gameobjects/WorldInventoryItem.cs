@@ -19,7 +19,7 @@
 using System;
 using System.Reflection;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using log4net;
 
 namespace DOL.GS
@@ -43,10 +43,10 @@ namespace DOL.GS
 		/// </summary>
 		private bool m_isRemoved = false;
 
-        public override LanguageDataObject.eTranslationIdentifier TranslationIdentifier
-        {
-            get { return LanguageDataObject.eTranslationIdentifier.eItem; }
-        }
+        //public override LanguageDataObject.eTranslationIdentifier TranslationIdentifier
+        //{
+        //    get { return LanguageDataObject.eTranslationIdentifier.eItem; }
+        //}
 
 
 		/// <summary>
@@ -67,16 +67,16 @@ namespace DOL.GS
 		{
 			m_item = item;
 			m_item.SlotPosition = 0;
-			m_item.OwnerID = null;
+			m_item.CharacterID = null;
 			m_item.AllowAdd = true;
-			this.Level = (byte)item.Level;
-			this.Model = (ushort)item.Model;
+			this.Level = (byte)(item.ItemTemplate.Level);
+			this.Model = (ushort)item.ItemTemplate.Model;
 			this.Emblem = item.Emblem;
 			this.Name = item.Name;
 
-			if (item.Template is ItemUnique && item.Template.IsPersisted == false)
+			if (item.ItemTemplate is ItemUnique && item.ItemTemplate.IsPersisted == false)
 			{
-				GameServer.Database.AddObject(item.Template as ItemUnique);
+				GameServer.Database.AddObject(item.ItemTemplate as ItemUnique);
 			}
 		}
 
@@ -89,7 +89,7 @@ namespace DOL.GS
 		/// <returns>Found item or null</returns>
 		public static WorldInventoryItem CreateFromTemplate(InventoryItem item)
 		{
-			if (item.Template is ItemUnique)
+			if (item.ItemTemplate is ItemUnique)
 				return null;
 			
 			return CreateFromTemplate(item.Id_nb);

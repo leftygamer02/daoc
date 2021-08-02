@@ -19,7 +19,7 @@
 using System;
 using DOL.GS.PacketHandler;
 using System.Collections;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.AI.Brain;
 using log4net;

@@ -18,9 +18,8 @@
  */
 using System;
 using System.Collections.Generic;
-using DOL.Database.Attributes;
 using DOL.GS;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Styles
 {
@@ -128,21 +127,21 @@ namespace DOL.GS.Styles
 		/// <summary>
 		/// The database style object, used to retrieve information for this object
 		/// </summary>
-		protected DBStyle baseStyle = null;
+		protected Atlas.DataLayer.Models.Style baseStyle = null;
 
 		/// <summary>
 		/// Constructs a new Style object based on a database Style object
 		/// </summary>
 		/// <param name="style">The database style object this object is based on</param>
-		public Style(DBStyle style)
-			: base(style.Name, style.ID, (ushort)style.Icon, style.SpecLevelRequirement, style.StyleID)
+		public Style(Atlas.DataLayer.Models.Style style)
+			: base(style.Name, style.Id, (ushort)style.Icon, style.SpecLevelRequirement, style.Id)
 		{
 			baseStyle = style;
 		}
 
         public int ClassID
         {
-            get { return baseStyle.ClassId; }
+            get { return baseStyle.ClassID; }
         }
 
 		/// <summary>

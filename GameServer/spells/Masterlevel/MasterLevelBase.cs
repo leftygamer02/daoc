@@ -23,7 +23,7 @@ using System.Collections;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Spells
 {

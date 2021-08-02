@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Movement;
 using DOL.Events;
 using DOL.GS.Quests;

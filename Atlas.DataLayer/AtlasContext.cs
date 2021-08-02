@@ -13,28 +13,28 @@ namespace Atlas.DataLayer
     public class AtlasContext : DbContext
     {
         private readonly string connectionString;
-        private readonly string engine;
+        private readonly eConnectionType engine;
 
-        public AtlasContext(string engine, string connectionString) : base()
+        public AtlasContext(eConnectionType connectionType, string connectionString) : base()
         {
             this.connectionString = connectionString;
-            this.engine = engine;
+            this.engine = connectionType;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            switch (engine.ToLower())
+            switch (engine)
             {
-                case "postresql":
+                case eConnectionType.POSTGRESQL:
                     optionsBuilder.UseNpgsql(connectionString);
                     break;
-                case "mysql":
+                case eConnectionType.MYSQL:
                     optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
                     break;
-                case "sqlserver":
+                case eConnectionType.SQLSERVER:
                     optionsBuilder.UseSqlServer(connectionString);
                     break;
-                case "sqlite":
+                case eConnectionType.SQLITE:
                     optionsBuilder.UseSqlite(connectionString);
                     break;
             }
@@ -115,7 +115,7 @@ namespace Atlas.DataLayer
         public DbSet<NpcTemplate> NpcTemplates { get; set; }
         public DbSet<Path> Paths { get; set; }
         public DbSet<PathPoints> PathPoints { get; set; }
-        public DbSet<PlayerBoats> PlayerBoats { get; set; }
+        public DbSet<PlayerBoat> PlayerBoats { get; set; }
         public DbSet<PlayerEffect> PlayerEffects { get; set; }
         public DbSet<PvpKillsLog> PvpKillsLog { get; set; }
         public DbSet<Quest> Quests { get; set; }
@@ -135,7 +135,9 @@ namespace Atlas.DataLayer
         public DbSet<SpecializationAbility> SpecializationAbilities { get; set; }
         public DbSet<Spell> Spells { get; set; }
         public DbSet<SpellCustomValues> SpellCustomValues { get; set; }
+        public DbSet<SpellEffect> SpellEffects { get; set; }
         public DbSet<SpellLine> SpellLines { get; set; }
+        public DbSet<SpellLineSpell> SpellLineSpells { get; set; }
         public DbSet<StarterEquipment> StartEquipments { get; set; }
         public DbSet<StartupLocation> StartupLocations { get; set; }
         public DbSet<Style> Styles { get; set; }

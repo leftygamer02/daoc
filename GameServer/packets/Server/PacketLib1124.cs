@@ -24,7 +24,7 @@ using System.Net;
 using System.IO;
 using System.Reflection;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using DOL.AI.Brain;
 using DOL.GS.Behaviour;

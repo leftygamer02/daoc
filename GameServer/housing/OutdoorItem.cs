@@ -20,7 +20,7 @@
  * Last modified by Schaf on 10.12.2004 20:09
  */
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 //yeah for the DBOutdoorItem class!
 

@@ -24,7 +24,7 @@ using System.Reflection;
 using System.Linq;
 
 using DOL.Config;
-using DOL.Database.Connection;
+using Atlas.DataLayer;
 
 namespace DOL.GS
 {
@@ -123,7 +123,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Type database type
 		/// </summary>
-		protected ConnectionType m_dbType;
+		protected eConnectionType m_dbType;
 
 		/// <summary>
 		/// True if the server shall autosave the db
@@ -191,27 +191,21 @@ namespace DOL.GS
 
 			string db = root["Server"]["DBType"].GetString("XML");
 			switch (db.ToLower())
-			{
-				case "xml":
-					m_dbType = ConnectionType.DATABASE_XML;
-					break;
+			{				
 				case "mysql":
-					m_dbType = ConnectionType.DATABASE_MYSQL;
+					m_dbType = eConnectionType.MYSQL;
 					break;
 				case "sqlite":
-					m_dbType = ConnectionType.DATABASE_SQLITE;
+					m_dbType = eConnectionType.SQLITE;
 					break;
 				case "mssql":
-					m_dbType = ConnectionType.DATABASE_MSSQL;
+					m_dbType = eConnectionType.SQLSERVER;
 					break;
-				case "odbc":
-					m_dbType = ConnectionType.DATABASE_ODBC;
-					break;
-				case "oledb":
-					m_dbType = ConnectionType.DATABASE_OLEDB;
+				case "postgresql":
+					m_dbType = eConnectionType.POSTGRESQL;
 					break;
 				default:
-					m_dbType = ConnectionType.DATABASE_XML;
+					m_dbType = eConnectionType.SQLITE;
 					break;
 			}
 			m_dbConnectionString = root["Server"]["DBConnectionString"].GetString(m_dbConnectionString);
@@ -292,29 +286,23 @@ namespace DOL.GS
 			root["Server"]["InvalidNamesFile"].Set(m_invalidNamesFile);
 
 			string db = "XML";
-			
+
 			switch (m_dbType)
 			{
-			case ConnectionType.DATABASE_XML:
-				db = "XML";
+				case eConnectionType.POSTGRESQL:
+					db = "POSTGRESQL";
 					break;
-			case ConnectionType.DATABASE_MYSQL:
-				db = "MYSQL";
+				case eConnectionType.MYSQL:
+					db = "MYSQL";
 					break;
-			case ConnectionType.DATABASE_SQLITE:
-				db = "SQLITE";
+				case eConnectionType.SQLITE:
+					db = "SQLITE";
 					break;
-			case ConnectionType.DATABASE_MSSQL:
-				db = "MSSQL";
-					break;
-			case ConnectionType.DATABASE_ODBC:
-				db = "ODBC";
-					break;
-			case ConnectionType.DATABASE_OLEDB:
-				db = "OLEDB";
+				case eConnectionType.SQLSERVER:
+					db = "MSSQL";
 					break;
 				default:
-					m_dbType = ConnectionType.DATABASE_XML;
+					m_dbType = eConnectionType.SQLITE;
 					break;
 			}
 			root["Server"]["DBType"].Set(db);
@@ -337,8 +325,8 @@ namespace DOL.GS
 		/// </summary>
 		public GameServerConfiguration() : base()
 		{
-			m_ServerName = "Dawn Of Light";
-			m_ServerNameShort = "DOLSERVER";
+			m_ServerName = "Atlas Server";
+			m_ServerNameShort = "ATLASSERVER";
 			
 			if (Assembly.GetEntryAssembly() != null)
 				m_rootDirectory = new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName;
@@ -358,7 +346,7 @@ namespace DOL.GS
 		    InventoryLoggerName = "inventories";
 		    m_invalidNamesFile = Path.Combine(Path.Combine(".", "config"), "invalidnames.txt");
 
-			m_dbType = ConnectionType.DATABASE_SQLITE;
+			m_dbType = eConnectionType.SQLITE;
 			m_dbConnectionString = string.Format("Data Source={0};Version=3;Pooling=False;Cache Size=1073741824;Journal Mode=Off;Synchronous=Off;Foreign Keys=True;Default Timeout=60",
 			                                     Path.Combine(m_rootDirectory, "dol.sqlite3.db"));
 			m_autoSave = true;
@@ -533,7 +521,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets or sets the DB type
 		/// </summary>
-		public ConnectionType DBType
+		public eConnectionType DBType
 		{
 			get { return m_dbType; }
 			set { m_dbType = value; }

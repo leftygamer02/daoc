@@ -5,7 +5,7 @@ using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 
 namespace DOL.GS.RealmAbilities

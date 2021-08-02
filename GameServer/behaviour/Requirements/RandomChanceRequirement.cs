@@ -19,7 +19,7 @@
 using System;
 using System.Text;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using log4net;
 using System.Reflection;
 using DOL.GS.Behaviour.Attributes;

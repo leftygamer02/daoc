@@ -14,6 +14,9 @@ namespace Atlas.DataLayer.Models
 
         public int AccountSlot { get; set; }
 
+        public string Name { get; set; }
+        public string LastName { get; set; }
+
         public DateTime? LastPlayed { get; set; }
 
         public bool HasGravestone { get; set; }
@@ -49,6 +52,7 @@ namespace Atlas.DataLayer.Models
 
         public int ActiveWeaponSlot { get; set; }
         
+        public int RegionID { get; set; }
         public int Xpos { get; set; }
         public int Ypos { get; set; }
         public int Zpos { get; set; }
@@ -144,8 +148,9 @@ namespace Atlas.DataLayer.Models
         public long MLExperience { get; set; }
         public int MLLevel { get; set; }
         public bool MLGranted { get; set; }
+        public bool RPFlag { get; set; }
         public bool IgnoreStatistics { get; set; }
-        public int NotDisplayedInHerald { get; set; }
+        public bool NotDisplayedInHerald { get; set; }
         public int ActiveSaddleBags { get; set; }
         public DateTime? LastLevelUp { get; set; }
         public long PlayedTimeSinceLevel { get; set; }
@@ -153,6 +158,7 @@ namespace Atlas.DataLayer.Models
 
         public virtual Account Account { get; set; }
         public virtual Guild Guild { get; set; }
+        public virtual Region Region { get; set; }
 
         public virtual ICollection<CharacterCustomParam> CustomParams { get; set; }
         public virtual ICollection<CharacterSpec> Specs { get; set; }

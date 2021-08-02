@@ -22,7 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.RealmAbilities;
 using DOL.GS.Styles;
 

@@ -6,7 +6,7 @@ using DOL;
 using DOL.GS;
 using DOL.GS.GameEvents;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.Housing;
 

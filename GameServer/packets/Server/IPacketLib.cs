@@ -21,10 +21,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 using DOL.AI.Brain;
-using DOL.Database;
 using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.GS.Quests;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.PacketHandler
 {
@@ -693,8 +693,8 @@ namespace DOL.GS.PacketHandler
 		void SendGuildInviteCommand(GamePlayer invitingPlayer, string inviteMessage);
 		void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, RewardQuest quest);
 		void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, RewardQuest quest);
-		void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, DataQuest quest);
-		void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, DataQuest quest);
+		void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest);
+		void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest);
 		void SendQuestSubscribeCommand(GameNPC invitingNPC, ushort questid, string inviteMessage);
 		void SendQuestAbortCommand(GameNPC abortingNPC, ushort questid, string abortMessage);
 		void SendGroupWindowUpdate();

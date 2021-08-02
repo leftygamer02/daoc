@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class InventoryItem : DataObjectBase
+    public partial class InventoryItem : DataObjectBase
     {
-        public int CharacterID { get; set; }
+        public int? CharacterID { get; set; }
         public int ItemTemplateID { get; set; }
+        public int ItemUniqueID { get; set; }
         public int OwnerLot { get; set; }
         public bool IsCrafted { get; set; }
         public string Creator { get; set; }
@@ -23,9 +24,11 @@ namespace Atlas.DataLayer.Models
         public int Condition { get; set; }
         public int Durability { get; set; }
         public int Cooldown { get; set; }
+        public int ItemBonus { get; set; }
 
         public virtual Character Character { get; set; }
         public virtual ItemTemplate ItemTemplate { get; set; }
+        public virtual ItemUnique ItemUnique { get; set; }
         public virtual ICollection<InventoryItemSpell> Spells { get; set; }
 
         public InventoryItem()

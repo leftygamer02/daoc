@@ -22,7 +22,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Database.Attributes;
 using DOL.Events;
 using DOL.GS;

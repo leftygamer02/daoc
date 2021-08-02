@@ -8,7 +8,7 @@ using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.GS.SkillHandler;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.RealmAbilities;
 
 namespace DOL.GS.Spells

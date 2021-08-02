@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.ServerProperties;

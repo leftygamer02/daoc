@@ -2,7 +2,7 @@ using System.Reflection;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.RealmAbilities
 {

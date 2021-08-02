@@ -24,7 +24,7 @@ using System.Text;
 using System.Threading;
 
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 using DOL.GS.Effects;
 using log4net;

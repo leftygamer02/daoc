@@ -20,7 +20,7 @@ using System;
 using System.Reflection;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 
 using log4net;

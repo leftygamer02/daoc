@@ -26,7 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.AI.Brain;
 using DOL.GS.Utils;
 

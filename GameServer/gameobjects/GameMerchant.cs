@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using DOL.GS.Movement;
 using DOL.GS.PacketHandler;

@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using DOL.Language;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {

@@ -21,7 +21,7 @@ using System;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using System.Collections;
 using System.Collections.Generic;

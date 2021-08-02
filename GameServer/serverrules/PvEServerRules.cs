@@ -19,7 +19,7 @@
 using System;
 using DOL.AI.Brain;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.ServerRules
 {

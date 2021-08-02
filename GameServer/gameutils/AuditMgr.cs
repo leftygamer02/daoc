@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Timers;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Database.Attributes;
 
 namespace DOL.GS

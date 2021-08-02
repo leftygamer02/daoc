@@ -17,12 +17,13 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
 using DOL.Language;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 
 using log4net;
@@ -32,7 +33,7 @@ namespace DOL.GS
 	/// <summary>
 	/// This class represents an inventory item
 	/// </summary>
-	public class GameInventoryItem : InventoryItem, IGameInventoryItem, ITranslatableObject
+	public class GameInventoryItem : InventoryItem, IGameInventoryItem
 	{
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -56,19 +57,14 @@ namespace DOL.GS
 		public GameInventoryItem(InventoryItem item)
 			: base(item)
 		{
-			OwnerID = item.OwnerID;
-			ObjectId = item.ObjectId;
+			CharacterID = item.CharacterID;
+			this.Id = item.Id;
 		}
 
-		public virtual LanguageDataObject.eTranslationIdentifier TranslationIdentifier
-		{
-			get { return LanguageDataObject.eTranslationIdentifier.eItem; }
-		}
-
-		/// <summary>
-		/// Holds the translation id.
-		/// </summary>
-		protected string m_translationId = "";
+        /// <summary>
+        /// Holds the translation id.
+        /// </summary>
+        protected string m_translationId = "";
 
 		/// <summary>
 		/// Gets or sets the translation id.
@@ -97,7 +93,7 @@ namespace DOL.GS
 		{
 			get 
 			{
-				if (Id_nb == InventoryItem.BLANK_ITEM)
+				if (this.Id <= 0)
 					return false;
 
 				return true;
@@ -111,7 +107,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public virtual bool CanEquip(GamePlayer player)
 		{
-			return GameServer.ServerRules.CheckAbilityToUseItem(player, Template);
+			return GameServer.ServerRules.CheckAbilityToUseItem(player, ItemTemplate);
 		}
 
 		#region Create From Object Source
@@ -182,7 +178,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static GameInventoryItem Create(InventoryItem item)
 		{
-			string classType = item.Template.ClassType;
+			string classType = item.ItemTemplate.ClassType;
 			
 			if (!string.IsNullOrEmpty(classType))
 			{
@@ -289,7 +285,7 @@ namespace DOL.GS
 				if (ConditionPercent > 70 && Util.Chance(ServerProperties.Properties.ITEM_CONDITION_LOSS_CHANCE))
 				{
 					int oldPercent = ConditionPercent;
-					double con = GamePlayer.GetConLevel(player.Level, Level);
+					double con = GamePlayer.GetConLevel(player.Level, this.ItemTemplate.Level);
 					if (con < -3.0)
 						con = -3.0;
 					int sub = (int)(con + 4);
@@ -333,7 +329,7 @@ namespace DOL.GS
 				if (ConditionPercent > 70 && Util.Chance(ServerProperties.Properties.ITEM_CONDITION_LOSS_CHANCE))
 				{
 					int oldPercent = ConditionPercent;
-					double con = GamePlayer.GetConLevel(player.Level, Level);
+					double con = GamePlayer.GetConLevel(player.Level, ItemTemplate.Level);
 					if (con < -3.0)
 						con = -3.0;
 					int sub = (int)(con + 4);
@@ -403,35 +399,35 @@ namespace DOL.GS
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.CrafterName", Creator));
 				delve.Add(" ");
 			}
-			else if (Description != null && Description != "")
+			else if (ItemTemplate.Description != null && ItemTemplate.Description != "")
 			{
-				delve.Add(Description);
+				delve.Add(ItemTemplate.Description);
 				delve.Add(" ");
 			}
 
-			if ((Object_Type >= (int)eObjectType.GenericWeapon) && (Object_Type <= (int)eObjectType._LastWeapon) ||
-			    Object_Type == (int)eObjectType.Instrument)
+			if ((ItemTemplate.ObjectType >= (int)eObjectType.GenericWeapon) && (ItemTemplate.ObjectType <= (int)eObjectType._LastWeapon) ||
+				ItemTemplate.ObjectType == (int)eObjectType.Instrument)
 			{
 				WriteUsableClasses(delve, player.Client);
 				WriteMagicalBonuses(delve, player.Client, false);
 				DelveWeaponStats(delve, player);
 			}
 
-			if (Object_Type >= (int)eObjectType.Cloth && Object_Type <= (int)eObjectType.Scale)
+			if (ItemTemplate.ObjectType >= (int)eObjectType.Cloth && ItemTemplate.ObjectType <= (int)eObjectType.Scale)
 			{
 				WriteUsableClasses(delve, player.Client);
 				WriteMagicalBonuses(delve, player.Client, false);
 				DelveArmorStats(delve, player);
 			}
 
-			if (Object_Type == (int)eObjectType.Shield)
+			if (ItemTemplate.ObjectType == (int)eObjectType.Shield)
 			{
 				WriteUsableClasses(delve, player.Client);
 				WriteMagicalBonuses(delve, player.Client, false);
 				DelveShieldStats(delve, player.Client);
 			}
 
-            if (Object_Type == (int)eObjectType.Magical || Object_Type == (int)eObjectType.AlchemyTincture || Object_Type == (int)eObjectType.SpellcraftGem)
+            if (ItemTemplate.ObjectType == (int)eObjectType.Magical || ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture || ItemTemplate.ObjectType == (int)eObjectType.SpellcraftGem)
             {
                 WriteMagicalBonuses(delve, player.Client, false);
             }
@@ -439,22 +435,22 @@ namespace DOL.GS
 			//***********************************
 			//shows info for Poison Potions
 			//***********************************
-			if (Object_Type == (int)eObjectType.Poison)
+			if (ItemTemplate.ObjectType == (int)eObjectType.Poison)
 			{
 				WritePoisonInfo(delve, player.Client);
 			}
 
-			if (Object_Type == (int)eObjectType.Magical && Item_Type == (int)eInventorySlot.FirstBackpack) // potion
+			if (ItemTemplate.ObjectType == (int)eObjectType.Magical && ItemTemplate.ItemType == (int)eInventorySlot.FirstBackpack) // potion
 			{
 				WritePotionInfo(delve, player.Client);
 			}
-			else if (CanUseEvery > 0)
+			else if (ItemTemplate.CanUseEvery > 0)
 			{
 				// Items with a reuse timer (aka cooldown).
 				delve.Add(" ");
 
-				int minutes = CanUseEvery / 60;
-				int seconds = CanUseEvery % 60;
+				int minutes = ItemTemplate.CanUseEvery / 60;
+				int seconds = ItemTemplate.CanUseEvery % 60;
 
 				if (minutes == 0)
 				{
@@ -485,22 +481,22 @@ namespace DOL.GS
 				}
 			}
 
-			if (!IsDropable || !IsPickable || IsIndestructible)
+			if (!ItemTemplate.IsDropable || !ItemTemplate.IsPickable || ItemTemplate.IsIndestructible)
 				delve.Add(" ");
 
-			if (!IsPickable)
+			if (!ItemTemplate.IsPickable)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.CannotTraded"));
 
-			if (!IsDropable)
+			if (!ItemTemplate.IsDropable)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.CannotSold"));
 
-			if (IsIndestructible)
+			if (ItemTemplate.IsIndestructible)
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.CannotDestroyed"));
 
-			if (BonusLevel > 0)
+			if (ItemTemplate.BonusLevel > 0)
 			{
 				delve.Add(" ");
-				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.BonusLevel", BonusLevel));
+				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.BonusLevel", ItemTemplate.BonusLevel));
 			}
 
 			//Add admin info
@@ -512,12 +508,12 @@ namespace DOL.GS
 
 		protected virtual void WriteUsableClasses(IList<string> output, GameClient client)
 		{
-			if (Util.IsEmpty(AllowedClasses, true))
+			if (Util.IsEmpty(ItemTemplate.AllowedClasses, true))
 				return;
 
             output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteUsableClasses.UsableBy"));
 
-			foreach (string allowed in Util.SplitCSV(AllowedClasses, true))
+			foreach (string allowed in Util.SplitCSV(ItemTemplate.AllowedClasses, true))
 			{
 				int classID = -1;
 				if (int.TryParse(allowed, out classID))
@@ -526,7 +522,7 @@ namespace DOL.GS
 				}
 				else
 				{
-					log.Error(Id_nb + " has an invalid entry for allowed classes '" + allowed + "'");
+					log.Error("Item Template " + ItemTemplate.Id + " has an invalid entry for allowed classes '" + allowed + "'");
 				}
 			}
 		}
@@ -536,17 +532,10 @@ namespace DOL.GS
 		{
 			int oldCount = output.Count;
 
-            WriteBonusLine(output, client, Bonus1Type, Bonus1);
-            WriteBonusLine(output, client, Bonus2Type, Bonus2);
-            WriteBonusLine(output, client, Bonus3Type, Bonus3);
-            WriteBonusLine(output, client, Bonus4Type, Bonus4);
-            WriteBonusLine(output, client, Bonus5Type, Bonus5);
-            WriteBonusLine(output, client, Bonus6Type, Bonus6);
-            WriteBonusLine(output, client, Bonus7Type, Bonus7);
-            WriteBonusLine(output, client, Bonus8Type, Bonus8);
-            WriteBonusLine(output, client, Bonus9Type, Bonus9);
-            WriteBonusLine(output, client, Bonus10Type, Bonus10);
-            WriteBonusLine(output, client, ExtraBonusType, ExtraBonus);
+			foreach (var bonus in ItemTemplate.Bonuses.OrderBy(x => x.BonusOrder))
+			{
+				WriteBonusLine(output, client, bonus.BonusType, bonus.BonusValue);
+			}
 
 			if (output.Count > oldCount)
 			{
@@ -557,17 +546,10 @@ namespace DOL.GS
 
 			oldCount = output.Count;
 
-			WriteFocusLine(output, Bonus1Type, Bonus1);
-			WriteFocusLine(output, Bonus2Type, Bonus2);
-			WriteFocusLine(output, Bonus3Type, Bonus3);
-			WriteFocusLine(output, Bonus4Type, Bonus4);
-			WriteFocusLine(output, Bonus5Type, Bonus5);
-			WriteFocusLine(output, Bonus6Type, Bonus6);
-			WriteFocusLine(output, Bonus7Type, Bonus7);
-			WriteFocusLine(output, Bonus8Type, Bonus8);
-			WriteFocusLine(output, Bonus9Type, Bonus9);
-			WriteFocusLine(output, Bonus10Type, Bonus10);
-			WriteFocusLine(output, ExtraBonusType, ExtraBonus);
+			foreach (var bonus in ItemTemplate.Bonuses.OrderBy(x => x.BonusOrder))
+			{
+				WriteFocusLine(output, bonus.BonusType, bonus.BonusValue);
+			}
 
 			if (output.Count > oldCount)
 			{
@@ -578,60 +560,71 @@ namespace DOL.GS
 
 			if (!shortInfo)
 			{
-				if (ProcSpellID != 0 || ProcSpellID1 != 0 || SpellID != 0 || SpellID1 != 0)
-				{
-					int requiredLevel = LevelRequirement > 0 ? LevelRequirement : Math.Min(50, Level);
+				if (Spells.Any(x=> !x.IsPoison))
+                {
+					int requiredLevel = ItemTemplate.LevelRequirement > 0 ? ItemTemplate.LevelRequirement : Math.Min(50, ItemTemplate.Level);
 					if (requiredLevel > 1)
 					{
-                        output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.LevelRequired2", requiredLevel));
+						output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.LevelRequired2", requiredLevel));
 						output.Add(" ");
 					}
-				}
+				}				
 
-				if (Object_Type == (int)eObjectType.Magical && Item_Type == (int)eInventorySlot.FirstBackpack) // potion
+				if (ItemTemplate.ObjectType == (int)eObjectType.Magical && ItemTemplate.ItemType == (int)eInventorySlot.FirstBackpack) // potion
 				{
 					// let WritePotion handle the rest of the display
 					return;
 				}
 
-
-				#region Proc1
-				if (ProcSpellID != 0)
+				foreach (var itemSpell in Spells.Where(x => !x.IsPoison).OrderByDescending(x => x.ProcChance))
 				{
 					string spellNote = "";
-                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MagicAbility"));
-					if (GlobalConstants.IsWeapon(Object_Type))
+					output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MagicAbility"));
+					if (GlobalConstants.IsWeapon(ItemTemplate.ObjectType))
 					{
-                        spellNote = LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.StrikeEnemy");
+						spellNote = LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.StrikeEnemy");
 					}
-					else if (GlobalConstants.IsArmor(Object_Type))
+					else if (GlobalConstants.IsArmor(ItemTemplate.ObjectType))
 					{
-                        spellNote = LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.StrikeArmor");
+						spellNote = LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.StrikeArmor");
 					}
 
 					SpellLine line = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
 					if (line != null)
 					{
-						Spell procSpell = SkillBase.FindSpell(ProcSpellID, line);
+						Spell spell = SkillBase.FindSpell(itemSpell.SpellID, line);
 
-						if (procSpell != null)
+						if (spell != null)
 						{
-							ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, procSpell, line);
+							ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, spell, line);
 							if (spellHandler != null)
 							{
+								if (itemSpell.MaxCharges > 0)
+								{
+									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.ChargedMagic"));
+									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", itemSpell.Charges));
+									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", itemSpell.MaxCharges));
+									output.Add(" ");
+								}
+
 								Util.AddRange(output, spellHandler.DelveInfo);
 								output.Add(" ");
+
+								if (itemSpell.ProcChance <= 0)
+                                {
+									output.Add("- This spell is cast when the item is used.");
+								}
 							}
 							else
 							{
-								output.Add("-" + procSpell.Name + " (Spell Handler Not Implemented)");
+								output.Add("-" + spell.Name + " (Spell Handler Not Implemented)");
 							}
 
 							output.Add(spellNote);
 						}
 						else
 						{
-							output.Add("- Spell Not Found: " + ProcSpellID);
+							output.Add("- Spell Not Found: " + itemSpell.SpellID);
 						}
 					}
 					else
@@ -641,136 +634,11 @@ namespace DOL.GS
 
 					output.Add(" ");
 				}
-				#endregion
-				#region Proc2
-				if (ProcSpellID1 != 0)
-				{
-					string spellNote = "";
-                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MagicAbility"));
-					if (GlobalConstants.IsWeapon(Object_Type))
-					{
-                        spellNote = LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.StrikeEnemy");
-					}
-					else if (GlobalConstants.IsArmor(Object_Type))
-					{
-                        spellNote = LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.StrikeArmor");
-					}
 
-					SpellLine line = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (line != null)
-					{
-						Spell procSpell = SkillBase.FindSpell(ProcSpellID1, line);
-
-						if (procSpell != null)
-						{
-							ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, procSpell, line);
-							if (spellHandler != null)
-							{
-								Util.AddRange(output, spellHandler.DelveInfo);
-								output.Add(" ");
-							}
-							else
-							{
-								output.Add("-" + procSpell.Name + " (Spell Handler Not Implemented)");
-							}
-
-							output.Add(spellNote);
-						}
-						else
-						{
-							output.Add("- Spell Not Found: " + ProcSpellID1);
-						}
-					}
-					else
-					{
-						output.Add("- Item_Effects Spell Line Missing");
-					}
-
-					output.Add(" ");
-				}
-				#endregion
-				#region Charge1
-				if (SpellID != 0)
-				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
-					{
-						Spell spell = SkillBase.FindSpell(SpellID, chargeEffectsLine);
-						if (spell != null)
-						{
-							ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, spell, chargeEffectsLine);
-
-							if (spellHandler != null)
-							{
-								if (MaxCharges > 0)
-								{
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.ChargedMagic"));
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", Charges));
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", MaxCharges));
-									output.Add(" ");
-								}
-
-								Util.AddRange(output, spellHandler.DelveInfo);
-								output.Add(" ");
-                                output.Add("- This spell is cast when the item is used.");
-							}
-							else
-							{
-								output.Add("- Item_Effects Spell Line Missing");
-							}
-						}
-						else
-						{
-							output.Add("- Spell Not Found: " + SpellID);
-						}
-					}
-
-					output.Add(" ");
-				}
-				#endregion
-				#region Charge2
-				if (SpellID1 != 0)
-				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
-					{
-						Spell spell = SkillBase.FindSpell(SpellID1, chargeEffectsLine);
-						if (spell != null)
-						{
-							ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, spell, chargeEffectsLine);
-
-							if (spellHandler != null)
-							{
-								if (MaxCharges > 0)
-								{
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.ChargedMagic"));
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", Charges1));
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", MaxCharges1));
-									output.Add(" ");
-								}
-
-								Util.AddRange(output, spellHandler.DelveInfo);
-								output.Add(" ");
-                                output.Add("- This spell is cast when the item is used.");
-							}
-							else
-							{
-								output.Add("- Item_Effects Spell Line Missing");
-							}
-						}
-						else
-						{
-							output.Add("- Spell Not Found: " + SpellID1);
-						}
-					}
-
-					output.Add(" ");
-				}
-				#endregion
 				#region Poison
-				if (PoisonSpellID != 0)
+				foreach (var itemSpell in Spells.Where(x => x.IsPoison))
 				{
-					if (GlobalConstants.IsWeapon(Object_Type))// Poisoned Weapon
+					if (GlobalConstants.IsWeapon(ItemTemplate.ObjectType))// Poisoned Weapon
 					{
 						SpellLine poisonLine = SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons);
 						if (poisonLine != null)
@@ -778,15 +646,15 @@ namespace DOL.GS
 							List<Spell> spells = SkillBase.GetSpellList(poisonLine.KeyName);
 							foreach (Spell spl in spells)
 							{
-								if (spl.ID == PoisonSpellID)
+								if (spl.ID == itemSpell.SpellID)
 								{
 									output.Add(" ");
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.LevelRequired"));
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Level", spl.Level));
 									output.Add(" ");
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.ChargedMagic"));
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", PoisonCharges));
-                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", PoisonMaxCharges));
+                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", itemSpell.Charges));
+                                    output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", itemSpell.MaxCharges));
 									output.Add(" ");
 
 									ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, spl, poisonLine);
@@ -812,17 +680,17 @@ namespace DOL.GS
 						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
 						foreach (Spell spl in spells)
 						{
-							if (spl.ID == SpellID)
+							if (spl.ID == itemSpell.SpellID)
 							{
 								output.Add(" ");
                                 output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.LevelRequired"));
                                 output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Level", spl.Level));
 								output.Add(" ");
-								if (MaxCharges > 0)
+								if (itemSpell.MaxCharges > 0)
 								{
 									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.ChargedMagic"));
-									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", Charges));
-									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", MaxCharges));
+									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", itemSpell.Charges));
+									output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", itemSpell.MaxCharges));
 								}
 								else
 								{
@@ -934,7 +802,7 @@ namespace DOL.GS
 
 		protected virtual void WritePoisonInfo(IList<string> list, GameClient client)
 		{
-			if (PoisonSpellID != 0)
+			foreach (var itemSpell in Spells.Where(x => x.IsPoison))
 			{
 				SpellLine poisonLine = SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons);
 				if (poisonLine != null)
@@ -943,15 +811,15 @@ namespace DOL.GS
 
 					foreach (Spell spl in spells)
 					{
-						if (spl.ID == PoisonSpellID)
+						if (spl.ID == itemSpell.SpellID)
 						{
 							list.Add(" ");
 							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.LevelRequired"));
 							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.Level", spl.Level));
 							list.Add(" ");
 							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.ProcAbility"));
-							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.Charges", PoisonCharges));
-							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.MaxCharges", PoisonMaxCharges));
+							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.Charges", itemSpell.Charges));
+							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePoisonInfo.MaxCharges", itemSpell.MaxCharges));
 							list.Add(" ");
 
 							ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(client.Player, spl, poisonLine);
@@ -973,7 +841,7 @@ namespace DOL.GS
 
 		protected virtual void WritePotionInfo(IList<string> list, GameClient client)
 		{
-			if (SpellID != 0)
+			foreach (var itemSpell in Spells)
 			{
 				SpellLine potionLine = SkillBase.GetSpellLine(GlobalSpellsLines.Potions_Effects);
 				if (potionLine != null)
@@ -982,11 +850,11 @@ namespace DOL.GS
 
 					foreach (Spell spl in spells)
 					{
-						if (spl.ID == SpellID)
+						if (spl.ID == itemSpell.SpellID)
 						{
 							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.ChargedMagic"));
-							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.Charges", Charges));
-							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.MaxCharges", MaxCharges));
+							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.Charges", itemSpell.Charges));
+							list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.MaxCharges", itemSpell.MaxCharges));
 							list.Add(" ");
 							WritePotionSpellsInfos(list, client, spl, potionLine);
 							list.Add(" ");
@@ -999,8 +867,8 @@ namespace DOL.GS
 							}
 							else
 							{
-								int minutes = CanUseEvery / 60;
-								int seconds = CanUseEvery % 60;
+								int minutes = ItemTemplate.CanUseEvery / 60;
+								int seconds = ItemTemplate.CanUseEvery % 60;
 
 								if (minutes == 0)
 								{
@@ -1063,9 +931,9 @@ namespace DOL.GS
 
 		protected virtual void DelveShieldStats(IList<string> output, GameClient client)
 		{
-			double itemDPS = DPS_AF / 10.0;
+			double itemDPS = ItemTemplate.DPS_AF / 10.0;
 			double clampedDPS = Math.Min(itemDPS, 1.2 + 0.3 * client.Player.Level);
-			double itemSPD = SPD_ABS / 10.0;
+			double itemSPD = ItemTemplate.SPD_ABS / 10.0;
 
 			output.Add(" ");
 			output.Add(" ");
@@ -1075,14 +943,14 @@ namespace DOL.GS
 				output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteClassicShieldInfos.BaseDPS", itemDPS.ToString("0.0")));
 				output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteClassicShieldInfos.ClampDPS", clampedDPS.ToString("0.0")));
 			}
-			if (SPD_ABS >= 0)
+			if (ItemTemplate.SPD_ABS >= 0)
 			{
 				output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteClassicShieldInfos.SPD", itemSPD.ToString("0.0")));
 			}
 
 			output.Add(" ");
 
-			switch (Type_Damage)
+			switch (ItemTemplate.TypeDamage)
 			{
 					case 1: output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteClassicShieldInfos.Small")); break;
 					case 2: output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteClassicShieldInfos.Medium")); break;
@@ -1093,10 +961,10 @@ namespace DOL.GS
 
 		protected virtual void DelveWeaponStats(List<String> delve, GamePlayer player)
 		{
-			double itemDPS = DPS_AF / 10.0;
+			double itemDPS = ItemTemplate.DPS_AF / 10.0;
 			double clampedDPS = Math.Min(itemDPS, 1.2 + 0.3 * player.Level);
-			double itemSPD = SPD_ABS / 10.0;
-			double effectiveDPS = clampedDPS * Quality / 100.0 * Condition / MaxCondition;
+			double itemSPD = ItemTemplate.SPD_ABS / 10.0;
+			double effectiveDPS = clampedDPS * ItemTemplate.Quality / 100.0 * Condition / ItemTemplate.MaxCondition;
 
 			delve.Add(" ");
 			delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicWeaponInfos.DamageMod"));
@@ -1107,14 +975,14 @@ namespace DOL.GS
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicWeaponInfos.ClampDPS", clampedDPS.ToString("0.0")));
 			}
 
-			if (SPD_ABS >= 0)
+			if (ItemTemplate.SPD_ABS >= 0)
 			{
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicWeaponInfos.SPD", itemSPD.ToString("0.0")));
 			}
 
-			if (Quality != 0)
+			if (ItemTemplate.Quality != 0)
 			{
-				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicWeaponInfos.Quality", Quality));
+				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicWeaponInfos.Quality", ItemTemplate.Quality));
 			}
 
 			if (Condition != 0)
@@ -1124,7 +992,7 @@ namespace DOL.GS
 
 			delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
 			                                     "DetailDisplayHandler.WriteClassicWeaponInfos.DamageType",
-			                                     (Type_Damage == 0 ? "None" : GlobalConstants.WeaponDamageTypeToName(Type_Damage))));
+			                                     (ItemTemplate.TypeDamage == 0 ? "None" : GlobalConstants.WeaponDamageTypeToName(ItemTemplate.TypeDamage))));
 
 			delve.Add(" ");
 
@@ -1144,28 +1012,28 @@ namespace DOL.GS
 			int afCap = player.Level + (player.RealmLevel > 39 ? 1 : 0);
 			double effectiveAF = 0;
 
-			if (DPS_AF != 0)
+			if (ItemTemplate.DPS_AF != 0)
 			{
-				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.BaseFactor", DPS_AF));
+				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.BaseFactor", ItemTemplate.DPS_AF));
 
-				if (Object_Type != (int)eObjectType.Cloth)
+				if (ItemTemplate.ObjectType != (int)eObjectType.Cloth)
 				{
 					afCap *= 2;
 				}
 
-				af = Math.Min(afCap, DPS_AF);
+				af = Math.Min(afCap, ItemTemplate.DPS_AF);
 
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.ClampFact", (int)af));
 			}
 
-			if (SPD_ABS >= 0)
+			if (ItemTemplate.SPD_ABS >= 0)
 			{
-				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.Absorption", SPD_ABS));
+				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.Absorption", ItemTemplate.SPD_ABS));
 			}
 
-			if (Quality != 0)
+			if (ItemTemplate.Quality != 0)
 			{
-				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.Quality", Quality));
+				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.Quality", ItemTemplate.Quality));
 			}
 
 			if (Condition != 0)
@@ -1176,9 +1044,9 @@ namespace DOL.GS
 			delve.Add(" ");
 			delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.EffArmor"));
 
-			if (DPS_AF != 0)
+			if (ItemTemplate.DPS_AF != 0)
 			{
-				effectiveAF = af * Quality / 100.0 * Condition / MaxCondition * (1 + SPD_ABS / 100.0);
+				effectiveAF = af * ItemTemplate.Quality / 100.0 * Condition / ItemTemplate.MaxCondition * (1 + ItemTemplate.SPD_ABS / 100.0);
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WriteClassicArmorInfos.Factor", (int)effectiveAF));
 			}
 		}
@@ -1194,14 +1062,14 @@ namespace DOL.GS
 			delve.Add("--- Technical Information ---");
 			delve.Add("");
 
-			if (Template is ItemUnique)
+			if (ItemTemplate is ItemUnique)
 			{
-				delve.Add("  Item Unique: " + Id_nb);
+				delve.Add("  Item Unique: " + ItemTemplate.Id);
 			}
 			else
 			{
-				delve.Add("Item Template: " + Id_nb);
-				delve.Add("Allow Updates: " + (Template as ItemTemplate).AllowUpdate);
+				delve.Add("Item Template: " + ItemTemplate.Id);
+				delve.Add("Allow Updates: " + (ItemTemplate as ItemTemplate).AllowUpdate);
 			}
 
 			delve.Add("");
@@ -1216,59 +1084,59 @@ namespace DOL.GS
 				delve.Add("   Sell Price: " + SellPrice);
 			}
 			delve.Add("");
-			delve.Add("        Level: " + Level);
-			delve.Add("       Object: " + GlobalConstants.ObjectTypeToName(Object_Type) + " (" + Object_Type + ")");
-			delve.Add("         Type: " + GlobalConstants.SlotToName(Item_Type) + " (" + Item_Type + ")");
+			delve.Add("        Level: " + ItemTemplate.Level);
+			delve.Add("       Object: " + GlobalConstants.ObjectTypeToName(ItemTemplate.ObjectType) + " (" + ItemTemplate.ObjectType + ")");
+			delve.Add("         Type: " + GlobalConstants.SlotToName(ItemTemplate.ItemType) + " (" + ItemTemplate.ItemType + ")");
 			delve.Add("");
-			delve.Add("        Model: " + Model);
+			delve.Add("        Model: " + ItemTemplate.Model);
 			delve.Add("    Extension: " + Extension);
 			delve.Add("        Color: " + Color);
 			delve.Add("       Emblem: " + Emblem);
-			delve.Add("       Effect: " + Effect);
+			delve.Add("       Effect: " + ItemTemplate.Effect);
 			delve.Add("");
-			delve.Add("       DPS_AF: " + DPS_AF);
-			delve.Add("      SPD_ABS: " + SPD_ABS);
-			delve.Add("         Hand: " + Hand);
-			delve.Add("  Type_Damage: " + Type_Damage);
-			delve.Add("        Bonus: " + Bonus);
+			delve.Add("       DPS_AF: " + ItemTemplate.DPS_AF);
+			delve.Add("      SPD_ABS: " + ItemTemplate.SPD_ABS);
+			delve.Add("         Hand: " + ItemTemplate.Hand);
+			delve.Add("  Type_Damage: " + ItemTemplate.TypeDamage);
+			delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 
-			if (GlobalConstants.IsWeapon(Object_Type))
+			if (GlobalConstants.IsWeapon(ItemTemplate.ObjectType))
 			{
 				delve.Add("");
-				delve.Add("         Hand: " + GlobalConstants.ItemHandToName(Hand) + " (" + Hand + ")");
-				delve.Add("Damage/Second: " + (DPS_AF / 10.0f));
-				delve.Add("        Speed: " + (SPD_ABS / 10.0f));
-				delve.Add("  Damage type: " + GlobalConstants.WeaponDamageTypeToName(Type_Damage) + " (" + Type_Damage + ")");
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add("         Hand: " + GlobalConstants.ItemHandToName(ItemTemplate.Hand) + " (" + ItemTemplate.Hand + ")");
+				delve.Add("Damage/Second: " + (ItemTemplate.DPS_AF / 10.0f));
+				delve.Add("        Speed: " + (ItemTemplate.SPD_ABS / 10.0f));
+				delve.Add("  Damage type: " + GlobalConstants.WeaponDamageTypeToName(ItemTemplate.TypeDamage) + " (" + ItemTemplate.TypeDamage + ")");
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (GlobalConstants.IsArmor(Object_Type))
+			else if (GlobalConstants.IsArmor(ItemTemplate.ObjectType))
 			{
 				delve.Add("");
-				delve.Add("  Armorfactor: " + DPS_AF);
-				delve.Add("   Absorption: " + SPD_ABS);
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add("  Armorfactor: " + ItemTemplate.DPS_AF);
+				delve.Add("   Absorption: " + ItemTemplate.SPD_ABS);
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (Object_Type == (int)eObjectType.Shield)
+			else if (ItemTemplate.ObjectType == (int)eObjectType.Shield)
 			{
 				delve.Add("");
-				delve.Add("Damage/Second: " + (DPS_AF / 10.0f));
-				delve.Add("        Speed: " + (SPD_ABS / 10.0f));
-				delve.Add("  Shield type: " + GlobalConstants.ShieldTypeToName(Type_Damage) + " (" + Type_Damage + ")");
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add("Damage/Second: " + (ItemTemplate.DPS_AF / 10.0f));
+				delve.Add("        Speed: " + (ItemTemplate.SPD_ABS / 10.0f));
+				delve.Add("  Shield type: " + GlobalConstants.ShieldTypeToName(ItemTemplate.TypeDamage) + " (" + ItemTemplate.TypeDamage + ")");
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (Object_Type == (int)eObjectType.Arrow || Object_Type == (int)eObjectType.Bolt)
+			else if (ItemTemplate.ObjectType == (int)eObjectType.Arrow || ItemTemplate.ObjectType == (int)eObjectType.Bolt)
 			{
 				delve.Add("");
-				delve.Add(" Ammunition #: " + DPS_AF);
-				delve.Add("       Damage: " + GlobalConstants.AmmunitionTypeToDamageName(SPD_ABS));
-				delve.Add("        Range: " + GlobalConstants.AmmunitionTypeToRangeName(SPD_ABS));
-				delve.Add("     Accuracy: " + GlobalConstants.AmmunitionTypeToAccuracyName(SPD_ABS));
-				delve.Add("        Bonus: " + Bonus);
+				delve.Add(" Ammunition #: " + ItemTemplate.DPS_AF);
+				delve.Add("       Damage: " + GlobalConstants.AmmunitionTypeToDamageName(ItemTemplate.SPD_ABS));
+				delve.Add("        Range: " + GlobalConstants.AmmunitionTypeToRangeName(ItemTemplate.SPD_ABS));
+				delve.Add("     Accuracy: " + GlobalConstants.AmmunitionTypeToAccuracyName(ItemTemplate.SPD_ABS));
+				delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 			}
-			else if (Object_Type == (int)eObjectType.Instrument)
+			else if (ItemTemplate.ObjectType == (int)eObjectType.Instrument)
 			{
 				delve.Add("");
-				delve.Add("   Instrument: " + GlobalConstants.InstrumentTypeToName(DPS_AF));
+				delve.Add("   Instrument: " + GlobalConstants.InstrumentTypeToName(ItemTemplate.DPS_AF));
 			}
 
 			if (OwnerLot != 0)
@@ -1279,36 +1147,47 @@ namespace DOL.GS
 			}
 
 			delve.Add("");
-            delve.Add("   Value/Price: " + Money.GetShortString(Price) + " / " + Money.GetShortString((long)(Price * (long)ServerProperties.Properties.ITEM_SELL_RATIO * .01)));
-			delve.Add("Count/MaxCount: " + Count + " / " + MaxCount);
-			delve.Add("        Weight: " + (Weight / 10.0f) + "lbs");
-			delve.Add("       Quality: " + Quality + "%");
-			delve.Add("    Durability: " + Durability + "/" + MaxDurability);
-			delve.Add("     Condition: " + Condition + "/" + MaxCondition);
-			delve.Add("         Realm: " + Realm);
+            delve.Add("   Value/Price: " + Money.GetShortString(ItemTemplate.Price) + " / " + Money.GetShortString((long)(ItemTemplate.Price * (long)ServerProperties.Properties.ITEM_SELL_RATIO * .01)));
+			delve.Add("Count/MaxCount: " + Count + " / " + ItemTemplate.MaxCount);
+			delve.Add("        Weight: " + (ItemTemplate.Weight / 10.0f) + "lbs");
+			delve.Add("       Quality: " + ItemTemplate.Quality + "%");
+			delve.Add("    Durability: " + Durability + "/" + ItemTemplate.MaxDurability);
+			delve.Add("     Condition: " + Condition + "/" + ItemTemplate.MaxCondition);
+			delve.Add("         Realm: " + ItemTemplate.Realm);
 			delve.Add("");
-			delve.Add("   Is dropable: " + (IsDropable ? "yes" : "no"));
-			delve.Add("   Is pickable: " + (IsPickable ? "yes" : "no"));
-			delve.Add("   Is tradable: " + (IsTradable ? "yes" : "no"));
-			delve.Add("  Is alwaysDUR: " + (IsNotLosingDur ? "yes" : "no"));
-			delve.Add(" Is Indestruct: " + (IsIndestructible ? "yes" : "no"));
-			delve.Add("  Is stackable: " + (IsStackable ? "yes (" + MaxCount + ")" : "no"));
+			delve.Add("   Is dropable: " + (ItemTemplate.IsDropable ? "yes" : "no"));
+			delve.Add("   Is pickable: " + (ItemTemplate.IsPickable ? "yes" : "no"));
+			delve.Add("   Is tradable: " + (ItemTemplate.IsTradable ? "yes" : "no"));
+			delve.Add("  Is alwaysDUR: " + (ItemTemplate.IsNotLosingDur ? "yes" : "no"));
+			delve.Add(" Is Indestruct: " + (ItemTemplate.IsIndestructible ? "yes" : "no"));
+			delve.Add("  Is stackable: " + (ItemTemplate.IsStackable ? "yes (" + ItemTemplate.MaxCount + ")" : "no"));
 			delve.Add("");
-			delve.Add("   ProcSpellID: " + ProcSpellID);
-			delve.Add("  ProcSpellID1: " + ProcSpellID1);
-			delve.Add("    ProcChance: " + ProcChance);
-			delve.Add("       SpellID: " + SpellID + " (" + Charges + "/" + MaxCharges + ")");
-			delve.Add("      SpellID1: " + SpellID1 + " (" + Charges1 + "/" + MaxCharges1 + ")");
-			delve.Add(" PoisonSpellID: " + PoisonSpellID + " (" + PoisonCharges + "/" + PoisonMaxCharges + ") ");
+
+			foreach (var spell in Spells.Where(x => !x.IsPoison && x.ProcChance > 0))
+			{
+				delve.Add("   ProcSpellID: " + spell.SpellID);
+				delve.Add("    ProcChance: " + spell.ProcChance);
+			}
+
+			foreach (var spell in Spells.Where(x => !x.IsPoison && x.ProcChance <= 0))
+			{
+				delve.Add("       SpellID: " + spell.SpellID + " (" + spell.Charges + "/" + spell.MaxCharges + ")");
+			}
+
+			foreach (var spell in Spells.Where(x => x.IsPoison))
+			{
+				delve.Add(" PoisonSpellID: " + spell.SpellID + " (" + spell.Charges + "/" + spell.MaxCharges + ") ");
+			}
+
 			delve.Add("");
-			delve.Add("AllowedClasses: " + AllowedClasses);
-			delve.Add(" LevelRequired: " + LevelRequirement);
-			delve.Add("    BonusLevel: " + BonusLevel);
+			delve.Add("AllowedClasses: " + ItemTemplate.AllowedClasses);
+			delve.Add(" LevelRequired: " + ItemTemplate.LevelRequirement);
+			delve.Add("    BonusLevel: " + ItemTemplate.BonusLevel);
 			delve.Add(" ");
-			delve.Add("              Flags: " + Flags);
-			delve.Add("     SalvageYieldID: " + SalvageYieldID);
-			delve.Add("          PackageID: " + PackageID);
-			delve.Add("Requested ClassType: " + ClassType);
+			delve.Add("              Flags: " + ItemTemplate.Flags);
+			delve.Add("     SalvageYieldID: " + ItemTemplate.SalvageYieldID);
+			delve.Add("          PackageID: " + ItemTemplate.PackageID);
+			delve.Add("Requested ClassType: " + ItemTemplate.ClassType);
 		}
 	}
 }

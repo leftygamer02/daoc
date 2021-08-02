@@ -23,7 +23,7 @@ using System.Reflection;
 using System.Text;
 using DOL.Language;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;

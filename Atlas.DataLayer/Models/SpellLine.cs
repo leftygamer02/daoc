@@ -17,5 +17,12 @@ namespace Atlas.DataLayer.Models
         public int ClassIDHint { get; set; }
 
         public virtual Specialization Specialization { get; set; }
+
+        public virtual ICollection<SpellLineSpell> SpellLineSpells { get; set; }
+
+        public SpellLine()
+        {
+            SpellLineSpells = new HashSet<SpellLineSpell>();
+        }
     }
 }

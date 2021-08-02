@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DOL.GS;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 
 namespace DOL.GS.RealmAbilities

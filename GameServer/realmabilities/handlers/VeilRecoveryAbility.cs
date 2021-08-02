@@ -1,5 +1,5 @@
 using System;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PropertyCalc;
 
 namespace DOL.GS.RealmAbilities

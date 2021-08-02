@@ -22,7 +22,7 @@ using System.Reflection;
 using System.Threading;
 
 using DOL.GS;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 using log4net;
 

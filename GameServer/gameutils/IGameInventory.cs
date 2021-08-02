@@ -19,7 +19,7 @@
 
 using System;
 using System.Collections;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using System.Collections.Generic;
 
 namespace DOL.GS

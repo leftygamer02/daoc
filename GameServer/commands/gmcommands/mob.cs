@@ -24,7 +24,7 @@ using System.Reflection;
 
 using DOL.AI;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using DOL.GS.Housing;
 using DOL.GS.Movement;

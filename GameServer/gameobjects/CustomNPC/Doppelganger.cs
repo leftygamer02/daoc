@@ -17,7 +17,7 @@
  *
  */
 using DOL.AI;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Keeps;
 using DOL.GS.PlayerClass;
 using DOL.GS.ServerProperties;

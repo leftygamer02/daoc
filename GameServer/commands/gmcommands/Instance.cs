@@ -20,7 +20,7 @@ using System;
 using DOL.GS.PacketHandler;
 using System.Reflection;
 using System.Collections;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 //By dinberg - so its him who you blame ;)
 namespace DOL.GS.Commands

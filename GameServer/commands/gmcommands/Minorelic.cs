@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using DOL.GS.PacketHandler;
 using DOL.GS;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Utils;
 using System.Collections;
 using DOL.Language;

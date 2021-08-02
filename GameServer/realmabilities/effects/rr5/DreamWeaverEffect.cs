@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using DOL;
 using DOL.GS;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Effects

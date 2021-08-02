@@ -20,7 +20,7 @@
 using System;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 
 namespace DOL.GS.Commands

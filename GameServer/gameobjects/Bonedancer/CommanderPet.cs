@@ -19,7 +19,7 @@
 using System;
 using System.Collections.Generic;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
 using DOL.Language;

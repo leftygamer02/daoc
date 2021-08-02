@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.Events;

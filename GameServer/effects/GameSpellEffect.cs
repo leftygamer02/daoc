@@ -19,7 +19,7 @@
 using System;
 using System.Reflection;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 using DOL.GS.PacketHandler;
 using DOL.Language;

@@ -27,7 +27,7 @@ using log4net;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Appeal
 {

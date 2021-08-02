@@ -24,7 +24,7 @@ using System.Net;
 using System.Reflection;
 
 using DOL.Language;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using DOL.GS.Keeps;
 using DOL.GS.Quests;

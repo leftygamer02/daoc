@@ -19,7 +19,7 @@
 using System;
 using DOL.GS.PacketHandler;
 using DOL.Language;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Trainer
 {

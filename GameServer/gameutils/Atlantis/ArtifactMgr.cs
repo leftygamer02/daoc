@@ -17,10 +17,12 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using DOL.Database;
+using Atlas.DataLayer;
+using Atlas.DataLayer.Models;
 using System.Reflection;
 using log4net;
 using DOL.GS.PacketHandler;
@@ -40,8 +42,8 @@ namespace DOL.GS
 		/// </summary>
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private static Dictionary<String, Artifact> m_artifacts;
-		private static Dictionary<String, List<ArtifactXItem>> m_artifactVersions;
+		private static Dictionary<int, Artifact> m_artifacts;
+		private static Dictionary<int, List<ArtifactItem>> m_artifactVersions;
 		private static List<ArtifactBonus> m_artifactBonuses;
 
 		public enum Book { NoPage = 0x0, Page1 = 0x1, Page2 = 0x2, Page3 = 0x4, AllPages = 0x7 };
@@ -61,22 +63,22 @@ namespace DOL.GS
 			// Load artifacts and books.
 
 			var artifactDbos = GameServer.Database.SelectAllObjects<Artifact>();
-			m_artifacts = new Dictionary<String, Artifact>();
+			m_artifacts = new Dictionary<int, Artifact>();
 			foreach (Artifact artifact in artifactDbos)
-				m_artifacts.Add(artifact.ArtifactID, artifact);
+				m_artifacts.Add(artifact.Id, artifact);
 
 			// Load artifact versions.
 
-			var artifactItemDbos = GameServer.Database.SelectAllObjects<ArtifactXItem>();
-			m_artifactVersions = new Dictionary<String, List<ArtifactXItem>>();
-			List<ArtifactXItem> versionList;
-			foreach (ArtifactXItem artifactVersion in artifactItemDbos)
+			var artifactItemDbos = GameServer.Database.SelectAllObjects<ArtifactItem>();
+			m_artifactVersions = new Dictionary<int, List<ArtifactItem>>();
+			List<ArtifactItem> versionList;
+			foreach (var artifactVersion in artifactItemDbos)
 			{
 				if (m_artifactVersions.ContainsKey(artifactVersion.ArtifactID))
 					versionList = m_artifactVersions[artifactVersion.ArtifactID];
 				else
 				{
-					versionList = new List<ArtifactXItem>();
+					versionList = new List<ArtifactItem>();
 					m_artifactVersions.Add(artifactVersion.ArtifactID, versionList);
 				}
 				versionList.Add(artifactVersion);
@@ -102,19 +104,19 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="itemID"></param>
 		/// <returns></returns>
-		public static String GetArtifactIDFromItemID(String itemID)
+		public static int? GetArtifactIDFromItemID(int itemID)
 		{
-			if (itemID == null)
+			if (itemID <= 0)
 				return null;
 
-			String artifactID = null;
+			int? artifactID = null;
 			lock (m_artifactVersions)
 			{
-				foreach (List<ArtifactXItem> list in m_artifactVersions.Values)
+				foreach (List<ArtifactItem> list in m_artifactVersions.Values)
 				{
-					foreach (ArtifactXItem AxI in list)
+					foreach (ArtifactItem AxI in list)
 					{
-						if (AxI.ItemID == itemID)
+						if (AxI.ItemTemplateID == itemID)
 						{
 							artifactID = AxI.ArtifactID;
 							break;
@@ -153,11 +155,11 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="zone"></param>
 		/// <returns></returns>
-		public static List<Artifact> GetArtifacts(String zone)
+		public static List<Artifact> GetArtifacts(int zone)
 		{
 			List<Artifact> artifacts = new List<Artifact>();
 
-			if (zone != null)
+			if (zone >= 0)
 			{
 				lock (m_artifacts)
 				{
@@ -183,16 +185,20 @@ namespace DOL.GS
 			if (item == null)
 				return 0;
 
-			String artifactID = GetArtifactIDFromItemID(item.Id_nb);
+			int? artifactID = GetArtifactIDFromItemID(item.Id);
+
+			if (!artifactID.HasValue)
+				return 0;
+
 			lock (m_artifacts)
 			{
-				if (!m_artifacts.ContainsKey(artifactID))
+				if (!m_artifacts.ContainsKey(artifactID.Value))
 				{
 					log.Warn(String.Format("Can't find artifact for ID '{0}'", artifactID));
 					return 0;
 				}
 
-				Artifact artifact = m_artifacts[artifactID];
+				Artifact artifact = m_artifacts[artifactID.Value];
 				return artifact.ReuseTimer;
 			}
 		}
@@ -202,12 +208,12 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="artifactID"></param>
 		/// <returns></returns>
-		public static String[] GetScholars(String artifactID)
+		public static int[] GetScholars(int artifactID)
 		{
-			if (artifactID != null)
+			if (artifactID > 0)
 				lock (m_artifacts)
 					if (m_artifacts.ContainsKey(artifactID))
-						return Util.SplitCSV(m_artifacts[artifactID].ScholarID).ToArray();
+						return Util.SplitCSV(m_artifacts[artifactID].ScholarID.ToString()).Select(x => Int32.Parse(x)).ToArray();
 
 			return null;
 		}
@@ -226,9 +232,9 @@ namespace DOL.GS
 				return true;
 
 			lock (m_artifactVersions)
-				foreach (List<ArtifactXItem> versions in m_artifactVersions.Values)
-					foreach (ArtifactXItem version in versions)
-						if (version.ItemID == item.Id_nb)
+				foreach (var versions in m_artifactVersions.Values)
+					foreach (var version in versions)
+						if (version.Id == item.Id)
 							return true;
 			return false;
 		}
@@ -291,14 +297,14 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="artifactID"></param>
 		/// <returns></returns>
-		public static int[] GetLevelRequirements(String artifactID)
+		public static int[] GetLevelRequirements(int artifactID)
 		{
-			int[] requirements = new int[ArtifactBonus.ID.Max - ArtifactBonus.ID.Min + 1];
+			int[] requirements = new int[eArtifactBonus.Max - eArtifactBonus.Min + 1];
 
 			lock (m_artifactBonuses)
-				foreach (ArtifactBonus bonus in m_artifactBonuses)
+				foreach (var bonus in m_artifactBonuses)
 					if (bonus.ArtifactID == artifactID)
-						requirements[bonus.BonusID] = bonus.Level;
+						requirements[(int)bonus.BonusID] = bonus.Level;
 
 			return requirements;
 		}
@@ -344,7 +350,7 @@ namespace DOL.GS
 
 			lock (player.Inventory)
 			{
-				foreach (InventoryItem item in player.Inventory.EquippedItems)
+				foreach (var item in player.Inventory.EquippedItems)
 				{
 					if (item != null && item is InventoryArtifact)
 					{
@@ -430,17 +436,17 @@ namespace DOL.GS
 		/// <param name="artifactID"></param>
 		/// <param name="realm"></param>
 		/// <returns></returns>
-		private static List<ArtifactXItem> GetArtifactVersions(String artifactID, eRealm realm)
+		private static List<ArtifactItem> GetArtifactVersions(int artifactID, eRealm realm)
 		{
-			List<ArtifactXItem> versions = new List<ArtifactXItem>();
-			if (artifactID != null)
+			List<ArtifactItem> versions = new List<ArtifactItem>();
+			if (artifactID > 0)
 			{
 				lock (m_artifactVersions)
 				{
 					if (m_artifactVersions.ContainsKey(artifactID))
 					{
-						List<ArtifactXItem> allVersions = m_artifactVersions[artifactID];
-						foreach (ArtifactXItem version in allVersions)
+						List<ArtifactItem> allVersions = m_artifactVersions[artifactID];
+						foreach (var version in allVersions)
 							if (version.Realm == 0 || version.Realm == (int)realm)
 								versions.Add(version);
 					}
@@ -458,24 +464,24 @@ namespace DOL.GS
 		/// <param name="charClass"></param>
 		/// <param name="realm"></param>
 		/// <returns></returns>
-		public static Dictionary<String, ItemTemplate> GetArtifactVersions(String artifactID, eCharacterClass charClass, eRealm realm)
+		public static Dictionary<int, ItemTemplate> GetArtifactVersions(int artifactID, eCharacterClass charClass, eRealm realm)
 		{
-			if (artifactID == null)
+			if (artifactID <= 0)
 				return null;
 
-			List<ArtifactXItem> allVersions = GetArtifactVersions(artifactID, realm);
-			Dictionary<String, ItemTemplate> classVersions = new Dictionary<String, ItemTemplate>();
+			var allVersions = GetArtifactVersions(artifactID, realm);
+			var classVersions = new Dictionary<int, ItemTemplate>();
 
 			lock (allVersions)
 			{
 				ItemTemplate itemTemplate;
-				foreach (ArtifactXItem version in allVersions)
+				foreach (var version in allVersions)
 				{
-					itemTemplate = GameServer.Database.FindObjectByKey<ItemTemplate>(version.ItemID);
+					itemTemplate = GameServer.Database.FindObjectByKey<ItemTemplate>(version.ItemTemplateID);
 
 					if (itemTemplate == null)
 					{
-						log.Warn(String.Format("Artifact item template '{0}' is missing", version.ItemID));
+						log.Warn(String.Format("Artifact item template '{0}' is missing", version.ItemTemplateID));
 					}
 					else
 					{
@@ -491,7 +497,7 @@ namespace DOL.GS
 							}
 							catch (Exception ex)
 							{
-								log.Error(String.Format("Invalid class ID '{0}' for item template '{1}', checked by class '{2}'", classID, itemTemplate.Id_nb, (int)charClass));
+								log.Error(String.Format("Invalid class ID '{0}' for item template '{1}', checked by class '{2}'", classID, itemTemplate.Id, (int)charClass));
 								log.Error(ex.Message);
 							}
 						}
@@ -532,9 +538,9 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="artifactID"></param>
 		/// <returns></returns>
-		public static Type GetEncounterType(String artifactID)
+		public static Type GetEncounterType(int artifactID)
 		{
-			if (artifactID != null)
+			if (artifactID > 0)
 				lock (m_artifacts)
 					if (m_artifacts.ContainsKey(artifactID))
 						return GetQuestType(m_artifacts[artifactID].EncounterID);
@@ -553,7 +559,7 @@ namespace DOL.GS
 			lock (m_artifacts)
 				foreach (Artifact artifact in m_artifacts.Values)
 					if (artifact.Credit == bountyCredit)
-						return GrantArtifactCredit(player, artifact.ArtifactID);
+						return GrantArtifactCredit(player, artifact.Id);
 
 			return false;
 		}
@@ -564,9 +570,9 @@ namespace DOL.GS
 		/// <param name="player"></param>
 		/// <param name="artifactID"></param>
 		/// <returns></returns>
-		public static bool GrantArtifactCredit(GamePlayer player, String artifactID)
+		public static bool GrantArtifactCredit(GamePlayer player, int artifactID)
 		{
-			if (player == null || artifactID == null)
+			if (player == null || artifactID > 0)
 				return false;
 
 			if (!player.CanReceiveArtifact(artifactID))
@@ -614,15 +620,15 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="bookID"></param>
 		/// <returns></returns>
-		public static String GetArtifactID(String bookID)
+		public static int GetArtifactID(String bookID)
 		{
 			if (bookID != null)
 				lock (m_artifacts)
 					foreach (Artifact artifact in m_artifacts.Values)
 						if (artifact.BookID == bookID)
-							return artifact.ArtifactID;
+							return artifact.Id;
 
-			return null;
+			return 0;
 		}
 
 		/// <summary>
@@ -633,12 +639,12 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static bool CanCombine(InventoryItem item1, InventoryItem item2)
 		{
-			String artifactID1 = null;
+			int artifactID1 = 0;
 			Book pageNumbers1 = GetPageNumbers(item1, ref artifactID1);
 			if (pageNumbers1 == Book.NoPage || pageNumbers1 == Book.AllPages)
 				return false;
 
-			String artifactID2 = null;
+			int artifactID2 = 0;
 			Book pageNumbers2 = GetPageNumbers(item2, ref artifactID2);
 			if (pageNumbers2 == Book.NoPage || pageNumbers2 == Book.AllPages)
 				return false;
@@ -656,17 +662,17 @@ namespace DOL.GS
 		/// <param name="item"></param>
 		/// <param name="artifactID"></param>
 		/// <returns></returns>
-		public static Book GetPageNumbers(InventoryItem item, ref String artifactID)
+		public static Book GetPageNumbers(InventoryItem item, ref int artifactID)
 		{
-			if (item == null || item.Object_Type != (int)eObjectType.Magical
-			    || item.Item_Type != (int)eInventorySlot.FirstBackpack)
+			if (item == null || item.ItemTemplate.ObjectType != (int)eObjectType.Magical
+			    || item.ItemTemplate.ItemType != (int)eInventorySlot.FirstBackpack)
 				return Book.NoPage;
 
 			lock (m_artifacts)
 			{
-				foreach (Artifact artifact in m_artifacts.Values)
+				foreach (var artifact in m_artifacts.Values)
 				{
-					artifactID = artifact.ArtifactID;
+					artifactID = artifact.Id;
 					if (item.Name == artifact.Scroll1)
 						return Book.Page1;
 					else if (item.Name == artifact.Scroll2)
@@ -692,15 +698,15 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="player"></param>
 		/// <returns></returns>
-		public static List<String> GetArtifacts(GamePlayer player)
+		public static List<int> GetArtifacts(GamePlayer player)
 		{
-			List<String> artifacts = new List<String>();
+			var artifacts = new List<int>();
 			lock (player.Inventory.AllItems)
 			{
 				foreach (InventoryItem item in player.Inventory.AllItems)
 				{
-					String artifactID = GetArtifactIDFromItemID(item.Id_nb);
-					if (artifactID != null)
+					int artifactID = GetArtifactIDFromItemID(item.Id) ?? 0;
+					if (artifactID > 0)
 						artifacts.Add(artifactID);
 				}
 			}
@@ -714,7 +720,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static Artifact GetArtifact(InventoryItem item)
 		{
-			String artifactID = "";
+			int artifactID = 0;
 			if (GetPageNumbers(item, ref artifactID) == Book.NoPage)
 				return null;
 
@@ -729,9 +735,9 @@ namespace DOL.GS
 		/// <param name="player"></param>
 		/// <param name="artifactID"></param>
 		/// <returns></returns>
-		public static bool HasBook(GamePlayer player, String artifactID)
+		public static bool HasBook(GamePlayer player, int artifactID)
 		{
-			if (player == null || artifactID == null)
+			if (player == null || artifactID <= 0)
 				return false;
 
 			// Find out which book is needed.
@@ -753,8 +759,8 @@ namespace DOL.GS
 			var backpack = player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 			foreach (InventoryItem item in backpack)
 			{
-				if (item.Object_Type == (int)eObjectType.Magical &&
-				    item.Item_Type == (int)eInventorySlot.FirstBackpack &&
+				if (item.ItemTemplate.ObjectType == (int)eObjectType.Magical &&
+				    item.ItemTemplate.ItemType == (int)eInventorySlot.FirstBackpack &&
 				    item.Name == bookID)
 					return true;
 			}
@@ -769,7 +775,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static bool IsArtifactScroll(InventoryItem item)
 		{
-			String artifactID = null;
+			int artifactID = 0;
 			Book pageNumbers = GetPageNumbers(item, ref artifactID);
 			return (pageNumbers != Book.NoPage && pageNumbers != Book.AllPages);
 		}
@@ -787,7 +793,7 @@ namespace DOL.GS
 			if (!CanCombine(scroll1, scroll2))
 				return null;
 
-			String artifactID = null;
+			int artifactID = 0;
 			Book combinedPages = (Book)((int)GetPageNumbers(scroll1, ref artifactID) |
 			                            (int)GetPageNumbers(scroll2, ref artifactID));
 
@@ -801,7 +807,7 @@ namespace DOL.GS
 		/// <param name="artifactID"></param>
 		/// <param name="pageNumbers"></param>
 		/// <returns></returns>
-		private static WorldInventoryItem CreatePages(String artifactID, Book pageNumbers)
+		private static WorldInventoryItem CreatePages(int artifactID, Book pageNumbers)
 		{
 			if (artifactID == null || pageNumbers == Book.NoPage)
 				return null;
@@ -858,13 +864,13 @@ namespace DOL.GS
 			scroll.Name = scrollTitle;
 			scroll.Item.Name = scrollTitle;
 			scroll.Model = (ushort)scrollModel;
-			scroll.Item.Model = (ushort)scrollModel;
+			scroll.Item.ItemTemplate.Model = (ushort)scrollModel;
 
 			// Correct for possible errors in generic scroll template (artifact_scroll)
-			scroll.Item.Price = Money.GetMoney(0,0,gold,0,0);
-			scroll.Item.IsDropable = true;
-			scroll.Item.IsPickable = true;
-			scroll.Item.IsTradable = true;
+			scroll.Item.ItemTemplate.Price = Money.GetMoney(0,0,gold,0,0);
+			scroll.Item.ItemTemplate.IsDropable = true;
+			scroll.Item.ItemTemplate.IsPickable = true;
+			scroll.Item.ItemTemplate.IsTradable = true;
 
 			return scroll;
 		}
@@ -875,7 +881,7 @@ namespace DOL.GS
 		/// <param name="artifactID">The artifact's ID.</param>
 		/// <param name="pageNumber">Scroll page number (1-3).</param>
 		/// <returns>An item that can be picked up by a player (or null).</returns>
-		public static WorldInventoryItem CreateScroll(String artifactID, int pageNumber)
+		public static WorldInventoryItem CreateScroll(int artifactID, int pageNumber)
 		{
 			if (pageNumber < 1 || pageNumber > 3)
 				return null;

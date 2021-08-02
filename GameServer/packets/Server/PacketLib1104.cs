@@ -21,7 +21,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 using log4net;
 

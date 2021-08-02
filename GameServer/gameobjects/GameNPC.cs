@@ -24,7 +24,7 @@ using System.Reflection;
 
 using DOL.AI;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.Effects;
@@ -45,7 +45,7 @@ namespace DOL.GS
 	/// This class is the baseclass for all Non Player Characters like
 	/// Monsters, Merchants, Guards, Steeds ...
 	/// </summary>
-	public class GameNPC : GameLiving, ITranslatableObject
+	public class GameNPC : GameLiving
 	{
 		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -136,11 +136,6 @@ namespace DOL.GS
 					//					BroadcastUpdate();
 				}
 			}
-		}
-
-		public virtual LanguageDataObject.eTranslationIdentifier TranslationIdentifier
-		{
-			get { return LanguageDataObject.eTranslationIdentifier.eNPC; }
 		}
 
 		/// <summary>
@@ -237,7 +232,7 @@ namespace DOL.GS
 		/// Auto set stats based on DB entry, npcTemplate, and level.
 		/// </summary>
 		/// <param name="dbMob">Mob DB entry to load stats from, retrieved from DB if null</param>
-		public virtual void AutoSetStats(Mob dbMob = null)
+		public virtual void AutoSetStats(NpcTemplate dbMob = null)
 		{
 			// Don't set stats for mobs until their level is set
 			if (Level < 1)

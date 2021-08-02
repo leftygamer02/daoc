@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using DOL.Language;

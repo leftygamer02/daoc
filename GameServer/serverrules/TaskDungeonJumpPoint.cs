@@ -17,7 +17,7 @@
  *
  */
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.Quests;
 

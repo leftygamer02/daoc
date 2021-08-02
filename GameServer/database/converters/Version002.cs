@@ -18,7 +18,7 @@
  */
 using System;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.DatabaseConverters
 {

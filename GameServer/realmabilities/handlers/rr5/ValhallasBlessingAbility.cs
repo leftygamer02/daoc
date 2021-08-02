@@ -25,7 +25,7 @@
 
 using System;
 using System.Collections;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using System.Collections.Generic;
 

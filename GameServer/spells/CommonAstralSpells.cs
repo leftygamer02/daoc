@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.Effects;

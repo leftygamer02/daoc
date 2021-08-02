@@ -23,7 +23,7 @@ using System.Reflection;
 using System.Linq;
 using DOL.GS.Commands;
 using DOL.GS.Effects;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.RealmAbilities;
 using DOL.GS.Styles;
 using log4net;

@@ -19,7 +19,7 @@
 using System;
 using System.Reflection;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Effects;
 using DOL.Events;
 using log4net;

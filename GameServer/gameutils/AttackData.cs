@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Text;
 using DOL.GS.Spells;
 using DOL.GS.Styles;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {

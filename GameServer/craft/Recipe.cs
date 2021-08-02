@@ -22,7 +22,7 @@ using System.Reflection;
 
 using log4net;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.ServerProperties;
 
 namespace DOL.GS

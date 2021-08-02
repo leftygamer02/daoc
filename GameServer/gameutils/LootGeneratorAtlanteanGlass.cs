@@ -21,7 +21,7 @@ using System.Reflection;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Language;
 using log4net;
 

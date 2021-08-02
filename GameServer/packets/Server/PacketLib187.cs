@@ -20,7 +20,7 @@ using System;
 using log4net;
 using DOL.GS.Quests;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using System.Collections.Generic;
 
 namespace DOL.GS.PacketHandler

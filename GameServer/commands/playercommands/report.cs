@@ -21,7 +21,7 @@ using System;
 
 using DOL.GS.PacketHandler;
 using DOL.GS.GameEvents;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Commands
 {

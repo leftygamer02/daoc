@@ -17,7 +17,7 @@
  *
  */
 using System;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Housing;
 
 namespace DOL.GS.PacketHandler.Client.v168

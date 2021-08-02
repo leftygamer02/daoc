@@ -23,7 +23,7 @@ using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL.GS.Behaviour.Attributes;
 using DOL.GS.Behaviour;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using System.Collections;
 using DOL.Language;
 

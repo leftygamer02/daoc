@@ -18,7 +18,7 @@
  */
 using System.Collections;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Keeps
