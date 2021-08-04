@@ -189,6 +189,23 @@ namespace Atlas.DataLayer
                 .WithMany(ga => ga.Guilds)
                 .HasForeignKey(g => g.GuildAllianceID);
 
+            modelBuilder.Entity<Guild>()
+                .HasMany(c => c.Characters)
+                .WithOne(g => g.Guild)
+                .HasForeignKey(g => g.GuildID)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Guild>()
+                .HasMany(g => g.GuildRanks)
+                .WithOne(r => r.Guild)
+                .HasForeignKey(r => r.GuildID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ItemTemplate>()
+                .HasOne(s => s.SalvageYield)
+                .WithOne(s => s.ItemTemplate)
+                .HasForeignKey<SalvageYield>(x => x.ItemTemplateID);
+
         }
     }
 }

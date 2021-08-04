@@ -17,6 +17,7 @@ namespace Atlas.DataLayer.Models
         public string KillerRealm { get; set; }
         public int RPReward { get; set; }
         public int SameIP { get; set; }
+        public string RegionName { get; set; }
         public bool IsInstance { get; set; }
     }
 }

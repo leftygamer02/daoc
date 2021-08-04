@@ -33,10 +33,12 @@ namespace Atlas.DataLayer.Models
         public virtual GuildAlliance GuildAlliance { get; set; }
 
         public virtual ICollection<Character> Characters { get; set; }
+        public virtual ICollection<GuildRank> GuildRanks { get; set; }
 
         public Guild()
         {
             Characters = new HashSet<Character>();
+            GuildRanks = new HashSet<GuildRank>();
         }
         
 

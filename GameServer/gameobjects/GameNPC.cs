@@ -24,6 +24,7 @@ using System.Reflection;
 
 using DOL.AI;
 using DOL.AI.Brain;
+using Atlas.DataLayer;
 using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
@@ -232,7 +233,7 @@ namespace DOL.GS
 		/// Auto set stats based on DB entry, npcTemplate, and level.
 		/// </summary>
 		/// <param name="dbMob">Mob DB entry to load stats from, retrieved from DB if null</param>
-		public virtual void AutoSetStats(NpcTemplate dbMob = null)
+		public virtual void AutoSetStats(Atlas.DataLayer.Models.NpcTemplate dbMob = null)
 		{
 			// Don't set stats for mobs until their level is set
 			if (Level < 1)
@@ -253,9 +254,9 @@ namespace DOL.GS
 			}
 			else
 			{
-				Mob mob = dbMob;
+				var mob = dbMob;
 
-				if (mob == null && !String.IsNullOrEmpty(InternalID))
+				if (mob == null && InternalID > 0)
 					// This should only happen when a GM command changes level on a mob with no npcTemplate,
 					mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
 
@@ -1061,8 +1062,8 @@ namespace DOL.GS
 		/// </summary>
 		protected const int MINHEALTHPERCENTFORRANGEDATTACK = 70;
 
-		private string m_pathID;
-		public string PathID
+		private int m_pathID;
+		public int PathID
 		{
 			get { return m_pathID; }
 			set { m_pathID = value; }
@@ -1960,10 +1961,10 @@ namespace DOL.GS
 		/// Loads the equipment template of this npc
 		/// </summary>
 		/// <param name="equipmentTemplateID">The template id</param>
-		public virtual void LoadEquipmentTemplateFromDatabase(string equipmentTemplateID)
+		public virtual void LoadEquipmentTemplateFromDatabase(int equipmentTemplateID)
 		{
 			EquipmentTemplateID = equipmentTemplateID;
-			if (EquipmentTemplateID != null && EquipmentTemplateID.Length > 0)
+			if (EquipmentTemplateID > 0)
 			{
 				GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
 				if (template.LoadFromDatabase(EquipmentTemplateID))
@@ -2014,40 +2015,45 @@ namespace DOL.GS
 		/// Load a npc from the npc template
 		/// </summary>
 		/// <param name="obj">template to load from</param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
 			if (obj == null) return;
 			base.LoadFromDatabase(obj);
-			if (!(obj is Mob)) return;
+			if (!(obj is SpawnPoint)) return;
 			m_loadedFromScript = false;
-			Mob dbMob = (Mob)obj;
-			NPCTemplate = NpcTemplateMgr.GetTemplate(dbMob.NPCTemplateID);
+			var dbMobPoint = (SpawnPoint)obj;
+			var dbNpc = dbMobPoint.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplate;
+			NPCTemplate = NpcTemplateMgr.GetTemplate(dbNpc.Id);
 
-			TranslationId = dbMob.TranslationId;
-			Name = dbMob.Name;
-			Suffix = dbMob.Suffix;
-			GuildName = dbMob.Guild;
-			ExamineArticle = dbMob.ExamineArticle;
-			MessageArticle = dbMob.MessageArticle;
-			m_x = dbMob.X;
-			m_y = dbMob.Y;
-			m_z = dbMob.Z;
-			m_Heading = (ushort)(dbMob.Heading & 0xFFF);
-			m_maxSpeedBase = (short)dbMob.Speed;
+			Name = dbNpc.Name;
+			Suffix = dbNpc.Suffix;
+			GuildName = dbNpc.GuildName;
+			ExamineArticle = dbNpc.ExamineArticle;
+			MessageArticle = dbNpc.MessageArticle;
+			m_x = dbMobPoint.X;
+			m_y = dbMobPoint.Y;
+			m_z = dbMobPoint.Z;
+			m_Heading = (ushort)(dbMobPoint.Heading & 0xFFF);
+			m_maxSpeedBase = (short)NPCTemplate.MaxSpeed;
 			m_currentSpeed = 0;
-			CurrentRegionID = dbMob.Region;
-			Realm = (eRealm)dbMob.Realm;
-			Model = dbMob.Model;
-			Size = dbMob.Size;
-			Flags = (eFlags)dbMob.Flags;
-			m_packageID = dbMob.PackageID;
+			CurrentRegionID = (ushort)dbMobPoint.RegionID;
+			Realm = (eRealm)NPCTemplate.Realm;			
+			Flags = (eFlags)NPCTemplate.Flags;
+			m_packageID = dbNpc.PackageID;
+
+			var models = Util.SplitCSV(NPCTemplate.Model);
+			Model = (ushort)Int16.Parse(models[Util.Random(models.Count - 1)]);
+
+			var sizes = Util.SplitCSV(NPCTemplate.Size);
+			Size = (byte)Int16.Parse(sizes[Util.Random(sizes.Count - 1)]);
 
 			// Skip Level.set calling AutoSetStats() so it doesn't load the DB entry we already have
-			m_level = dbMob.Level;
-			AutoSetStats(dbMob);
-			Level = dbMob.Level;
+			var levels = Util.SplitCSV(dbNpc.Level);
+			m_level = (byte)Int16.Parse(levels[Util.Random(levels.Count - 1)]); ;
+			AutoSetStats(dbNpc);
+			Level = m_level;
 
-			MeleeDamageType = (eDamageType)dbMob.MeleeDamageType;
+			MeleeDamageType = (eDamageType)dbNpc.MeleeDamageType;
 			if (MeleeDamageType == 0)
 			{
 				MeleeDamageType = eDamageType.Slash;
@@ -2055,25 +2061,25 @@ namespace DOL.GS
 			m_activeWeaponSlot = eActiveWeaponSlot.Standard;
 			ActiveQuiverSlot = eActiveQuiverSlot.None;
 
-			m_faction = FactionMgr.GetFactionByID(dbMob.FactionID);
-			LoadEquipmentTemplateFromDatabase(dbMob.EquipmentTemplateID);
+			m_faction = FactionMgr.GetFactionByID(dbNpc.FactionID);
+			LoadEquipmentTemplateFromDatabase(dbNpc.EquipmentTemplateID);
 
-			if (dbMob.RespawnInterval == -1)
+			if (dbMobPoint.RespawnInterval == -1)
 			{
-				dbMob.RespawnInterval = 0;
+				dbMobPoint.RespawnInterval = 0;
 			}
-			m_respawnInterval = dbMob.RespawnInterval * 1000;
+			m_respawnInterval = dbMobPoint.RespawnInterval * 1000;
 
-			m_pathID = dbMob.PathID;
+			m_pathID = dbMobPoint.PathID;
 
-			if (dbMob.Brain != "")
+			if (dbNpc.Brain != "")
 			{
 				try
 				{
 					ABrain brain = null;
 					foreach (Assembly asm in ScriptMgr.GameServerScripts)
 					{
-						brain = (ABrain)asm.CreateInstance(dbMob.Brain, false);
+						brain = (ABrain)asm.CreateInstance(dbNpc.Brain, false);
 						if (brain != null)
 							break;
 					}
@@ -2082,7 +2088,7 @@ namespace DOL.GS
 				}
 				catch
 				{
-					log.ErrorFormat("GameNPC error in LoadFromDatabase: can not instantiate brain of type {0} for npc {1}, name = {2}.", dbMob.Brain, dbMob.ClassType, dbMob.Name);
+					log.ErrorFormat("GameNPC error in LoadFromDatabase: can not instantiate brain of type {0} for npc {1}, name = {2}.", dbNpc.Brain, dbNpc.ClassType, dbNpc.Name);
 				}
 			}
 
@@ -2156,11 +2162,11 @@ namespace DOL.GS
 				return;
 			}
 
-			if (InternalID != null)
+			if (InternalID > 0)
 			{
 				Mob mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
 				if (mob != null)
-					GameServer.Database.DeleteObject(mob);
+					GameServer.Instance.DeleteDataObject(mob);
 			}
 		}
 
@@ -2268,15 +2274,7 @@ namespace DOL.GS
 			mob.PackageID = PackageID;
 			mob.OwnerID = OwnerID;
 
-			if (InternalID == null)
-			{
-				GameServer.Database.AddObject(mob);
-				InternalID = mob.ObjectId;
-			}
-			else
-			{
-				GameServer.Database.SaveObject(mob);
-			}
+			GameServer.Instance.SaveDataObject(mob);
 		}
 
 		/// <summary>
@@ -2487,11 +2485,11 @@ namespace DOL.GS
 		/// <summary>
 		/// Equipment templateID
 		/// </summary>
-		protected string m_equipmentTemplateID;
+		protected int m_equipmentTemplateID;
 		/// <summary>
 		/// The equipment template id of this npc
 		/// </summary>
-		public string EquipmentTemplateID
+		public int EquipmentTemplateID
 		{
 			get { return m_equipmentTemplateID; }
 			set { m_equipmentTemplateID = value; }
@@ -3510,9 +3508,9 @@ namespace DOL.GS
 					{
 						IList list = new ArrayList(4);
 						list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameObject.GetExamineMessages.YouTarget",
-															GetName(0, false, player.Client.Account.Language, this)));
+															GetName(0, false)));
 						list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetExamineMessages.YouExamine",
-															GetName(0, false, player.Client.Account.Language, this),
+															GetName(0, false),
 															GetPronoun(0, true, player.Client.Account.Language), GetAggroLevelString(player, false)));
 						return list;
 					}
@@ -3586,7 +3584,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The ambient texts
 		/// </summary>
-		public IList<MobXAmbientBehaviour> ambientTexts;
+		public IList<MobBehavior> ambientTexts;
 
 		/// <summary>
 		/// This function is called from the ObjectInteractRequestHandler
@@ -3600,7 +3598,7 @@ namespace DOL.GS
 			if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction != null && Faction.GetAggroToFaction(player) > 25)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
-					GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 				Notify(GameObjectEvent.InteractFailed, this, new InteractEventArgs(player));
 				return false;
@@ -3703,14 +3701,14 @@ namespace DOL.GS
 				return;
 
 			TurnTo(target);
-			string resultText = LanguageMgr.GetTranslation(target.Client.Account.Language, "GameNPC.SayTo.Says", GetName(0, true, target.Client.Account.Language, this), message);
+			string resultText = LanguageMgr.GetTranslation(target.Client.Account.Language, "GameNPC.SayTo.Says", GetName(0, true), message);
 			switch (loc)
 			{
 				case eChatLoc.CL_PopupWindow:
 					target.Out.SendMessage(resultText, eChatType.CT_System, eChatLoc.CL_PopupWindow);
 					if (announce)
 					{
-						Message.ChatToArea(this, LanguageMgr.GetTranslation(target.Client.Account.Language, "GameNPC.SayTo.SpeaksTo", GetName(0, true, target.Client.Account.Language, this), target.GetName(0, false)), eChatType.CT_System, WorldMgr.SAY_DISTANCE, target);
+						Message.ChatToArea(this, LanguageMgr.GetTranslation(target.Client.Account.Language, "GameNPC.SayTo.SpeaksTo", GetName(0, true), target.GetName(0, false)), eChatType.CT_System, WorldMgr.SAY_DISTANCE, target);
 					}
 					break;
 				case eChatLoc.CL_ChatWindow:
@@ -4665,7 +4663,7 @@ namespace DOL.GS
 
 						if (scrollData.Length >= 3)
 						{
-							String artifactID = scrollData[1];
+							int artifactID = Int32.Parse(scrollData[1]);
 							int pageNumber = UInt16.Parse(scrollData[2]);
 							loot = ArtifactMgr.CreateScroll(artifactID, pageNumber);
 						}
@@ -4692,7 +4690,7 @@ namespace DOL.GS
 
 						if (lootTemplate is ItemUnique)
 						{
-							GameServer.Database.AddObject(lootTemplate);
+							GameServer.Instance.SaveDataObject(lootTemplate);
 							invitem = GameInventoryItem.Create(lootTemplate as ItemUnique);
 						}
 						else
@@ -4711,9 +4709,9 @@ namespace DOL.GS
 						// is dealing strictly with ItemTemplate objects, while you need the InventoryItem in order
 						// to be able to set the Count property.
 						// Converts single drops of loot with PackSize > 1 (and MaxCount >= PackSize) to stacks of Count = PackSize
-						if (((WorldInventoryItem)loot).Item.PackSize > 1 && ((WorldInventoryItem)loot).Item.MaxCount >= ((WorldInventoryItem)loot).Item.PackSize)
+						if (((WorldInventoryItem)loot).Item.ItemTemplate.PackSize > 1 && ((WorldInventoryItem)loot).Item.ItemTemplate.MaxCount >= ((WorldInventoryItem)loot).Item.ItemTemplate.PackSize)
 						{
-							((WorldInventoryItem)loot).Item.Count = ((WorldInventoryItem)loot).Item.PackSize;
+							((WorldInventoryItem)loot).Item.Count = ((WorldInventoryItem)loot).Item.ItemTemplate.PackSize;
 						}
 					}
 
@@ -5010,7 +5008,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Styles for this NPC
 		/// </summary>
-		private IList m_styles = new List<Style>(0);
+		private IList m_styles = new List<Styles.Style>(0);
 		public IList Styles
 		{
 			get { return m_styles; }
@@ -5024,32 +5022,32 @@ namespace DOL.GS
 		/// <summary>
 		/// Chain styles for this NPC
 		/// </summary>
-		public List<Style> StylesChain { get; protected set; } = null;
+		public List<Styles.Style> StylesChain { get; protected set; } = null;
 
 		/// <summary>
 		/// Defensive styles for this NPC
 		/// </summary>
-		public List<Style> StylesDefensive { get; protected set; } = null;
+		public List<Styles.Style> StylesDefensive { get; protected set; } = null;
 
 		/// <summary>
 		/// Back positional styles for this NPC
 		/// </summary>
-		public List<Style> StylesBack { get; protected set; } = null;
+		public List<Styles.Style> StylesBack { get; protected set; } = null;
 
 		/// <summary>
 		/// Side positional styles for this NPC
 		/// </summary>
-		public List<Style> StylesSide { get; protected set; } = null;
+		public List<Styles.Style> StylesSide { get; protected set; } = null;
 
 		/// <summary>
 		/// Front positional styles for this NPC
 		/// </summary>
-		public List<Style> StylesFront { get; protected set; } = null;
+		public List<Styles.Style> StylesFront { get; protected set; } = null;
 
 		/// <summary>
 		/// Anytime styles for this NPC
 		/// </summary>
-		public List<Style> StylesAnytime { get; protected set; } = null;
+		public List<Styles.Style> StylesAnytime { get; protected set; } = null;
 
 		/// <summary>
 		/// Sorts styles by type for more efficient style selection later
@@ -5077,14 +5075,14 @@ namespace DOL.GS
 			if (m_styles == null)
 				return;
 
-			foreach (Style s in m_styles)
+			foreach (Styles.Style s in m_styles)
 			{
 				if (s == null)
 				{
 					if (log.IsWarnEnabled)
 					{
 						String sError = $"GameNPC.SortStyles(): NULL style for NPC named {Name}";
-						if (m_InternalID != null)
+						if (m_InternalID > 0)
 							sError += $", InternalID {this.m_InternalID}";
 						if (m_npcTemplate != null)
 							sError += $", NPCTemplateID {m_npcTemplate.TemplateId}";
@@ -5095,27 +5093,27 @@ namespace DOL.GS
 
 				switch (s.OpeningRequirementType)
 				{
-					case Style.eOpening.Defensive:
+					case GS.Styles.Style.eOpening.Defensive:
 						if (StylesDefensive == null)
-							StylesDefensive = new List<Style>(1);
+							StylesDefensive = new List<Styles.Style>(1);
 						StylesDefensive.Add(s);
 						break;
-					case Style.eOpening.Positional:
-						switch ((Style.eOpeningPosition)s.OpeningRequirementValue)
+					case GS.Styles.Style.eOpening.Positional:
+						switch ((Styles.Style.eOpeningPosition)s.OpeningRequirementValue)
 						{
-							case Style.eOpeningPosition.Back:
+							case GS.Styles.Style.eOpeningPosition.Back:
 								if (StylesBack == null)
-									StylesBack = new List<Style>(1);
+									StylesBack = new List<Styles.Style>(1);
 								StylesBack.Add(s);
 								break;
-							case Style.eOpeningPosition.Side:
+							case GS.Styles.Style.eOpeningPosition.Side:
 								if (StylesSide == null)
-									StylesSide = new List<Style>(1);
+									StylesSide = new List<Styles.Style>(1);
 								StylesSide.Add(s);
 								break;
-							case Style.eOpeningPosition.Front:
+							case GS.Styles.Style.eOpeningPosition.Front:
 								if (StylesFront == null)
-									StylesFront = new List<Style>(1);
+									StylesFront = new List<Styles.Style>(1);
 								StylesFront.Add(s);
 								break;
 							default:
@@ -5127,13 +5125,13 @@ namespace DOL.GS
 						if (s.OpeningRequirementValue > 0)
 						{
 							if (StylesChain == null)
-								StylesChain = new List<Style>(1);
+								StylesChain = new List<Styles.Style>(1);
 							StylesChain.Add(s);
 						}
 						else
 						{
 							if (StylesAnytime == null)
-								StylesAnytime = new List<Style>(1);
+								StylesAnytime = new List<Styles.Style>(1);
 							StylesAnytime.Add(s);
 						}
 						break;
@@ -5146,7 +5144,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="style">The style to check.</param>
 		/// <returns>True if we should use the style, false if it would be spamming a stun effect.</returns>
-		protected bool CheckStyleStun(Style style)
+		protected bool CheckStyleStun(Styles.Style style)
 		{
 			if (TargetObject is GameLiving living && style.Procs.Count > 0)
 				foreach (Tuple<Spell, int, int> t in style.Procs)
@@ -5161,7 +5159,7 @@ namespace DOL.GS
 		/// Picks a style, prioritizing reactives an	d chains over positionals and anytimes
 		/// </summary>
 		/// <returns>Selected style</returns>
-		protected override Style GetStyleToUse()
+		protected override Styles.Style GetStyleToUse()
 		{
 			if (m_styles == null || m_styles.Count < 1 || TargetObject == null)
 				return null;
@@ -5171,12 +5169,12 @@ namespace DOL.GS
 			//	default 20% style chance means the defensive style only happens
 			//	2% of the time, and a chain from it only happens 0.4% of the time.
 			if (StylesChain != null && StylesChain.Count > 0)
-				foreach (Style s in StylesChain)
+				foreach (var s in StylesChain)
 					if (StyleProcessor.CanUseStyle(this, s, AttackWeapon))
 						return s;
 
 			if (StylesDefensive != null && StylesDefensive.Count > 0)
-				foreach (Style s in StylesDefensive)
+				foreach (var s in StylesDefensive)
 					if (StyleProcessor.CanUseStyle(this, s, AttackWeapon)
 						&& CheckStyleStun(s)) // Make sure we don't spam stun styles like Brutalize
 						return s;
@@ -5188,21 +5186,21 @@ namespace DOL.GS
 				//	e.g. a mob with both Pincer and Ice Storm side styles will use both of them.
 				if (StylesBack != null && StylesBack.Count > 0)
 				{
-					Style s = StylesBack[Util.Random(0, StylesBack.Count - 1)];
+					var s = StylesBack[Util.Random(0, StylesBack.Count - 1)];
 					if (StyleProcessor.CanUseStyle(this, s, AttackWeapon))
 						return s;
 				}
 
 				if (StylesSide != null && StylesSide.Count > 0)
 				{
-					Style s = StylesSide[Util.Random(0, StylesSide.Count - 1)];
+					var s = StylesSide[Util.Random(0, StylesSide.Count - 1)];
 					if (StyleProcessor.CanUseStyle(this, s, AttackWeapon))
 						return s;
 				}
 
 				if (StylesFront != null && StylesFront.Count > 0)
 				{
-					Style s = StylesFront[Util.Random(0, StylesFront.Count - 1)];
+					var s = StylesFront[Util.Random(0, StylesFront.Count - 1)];
 					if (StyleProcessor.CanUseStyle(this, s, AttackWeapon))
 						return s;
 				}
@@ -5525,7 +5523,7 @@ namespace DOL.GS
 		{
 			if (IsSilent || ambientTexts == null || ambientTexts.Count == 0) return;
 			if (trigger == eAmbientTrigger.interact && living == null) return;
-			List<MobXAmbientBehaviour> mxa = (from i in ambientTexts where i.Trigger == trigger.ToString() select i).ToList();
+			List<MobBehavior> mxa = (from i in ambientTexts where i.Trigger == trigger.ToString() select i).ToList();
 			if (mxa.Count == 0) return;
 
 			// grab random sentence
@@ -5679,7 +5677,7 @@ namespace DOL.GS
 						if (str != lastloot)
 						{
 							player.Out.SendMessage(String.Format(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.DropLoot.Drops",
-								GetName(0, true, player.Client.Account.Language, this), str)), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
+								GetName(0, true), str)), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
 							lastloot = str;
 						}
 					}
@@ -5846,7 +5844,7 @@ namespace DOL.GS
 			m_flags = 0;
 			m_maxdistance = 0;
 			m_roamingRange = 0; // default to non roaming - tolakram
-			m_ownerID = "";
+			m_ownerID = 0;
 
 			if (m_spawnPoint == null)
 				m_spawnPoint = new Point3D();

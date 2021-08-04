@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -71,8 +72,8 @@ namespace DOL.GS.ServerRules
 				return false;
 
 			// Ban account
-			IList<DBBannedAccount> objs;
-			objs = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("A").Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Account").IsEqualTo(username)));
+			IList<Ban> objs;
+			objs = GameServer.Database.Bans.Where(x => (x.Type == "A" || x.Type == "B") && x.Account.Name == username).ToList();
 			if (objs.Count > 0)
 			{
 				client.IsConnected = false;
@@ -82,8 +83,8 @@ namespace DOL.GS.ServerRules
 			}
 
 			// Ban IP Address or range (example: 5.5.5.%)
-			string accip = client.TcpEndpointAddress;
-			objs = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("I").Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Ip").IsLike(accip)));
+			string accip = client.TcpEndpointAddress;			
+			objs = GameServer.Database.Bans.Where(x => (x.Type == "I" || x.Type == "B") && x.Ip == accip).ToList();
 			if (objs.Count > 0)
 			{
 				client.IsConnected = false;
@@ -147,7 +148,7 @@ namespace DOL.GS.ServerRules
 			}
 			 */
 
-			Account account = GameServer.Database.FindObjectByKey<Account>(username);
+			Account account = GameServer.Database.Accounts.FirstOrDefault(x=>x.Name == username);
 
 			if (Properties.MAX_PLAYERS > 0)
 			{
@@ -296,7 +297,7 @@ namespace DOL.GS.ServerRules
 			return true;
 		}
 
-		public virtual bool CountsTowardsSlashLevel(DOLCharacters player)
+		public virtual bool CountsTowardsSlashLevel(Character player)
 		{
 			return true;
 		}
@@ -663,7 +664,7 @@ namespace DOL.GS.ServerRules
 				return true;
 
 			// allow usage of all house items
-			if ((item.Object_Type == 0 || item.Object_Type >= (int)eObjectType._FirstHouse) && item.Object_Type <= (int)eObjectType._LastHouse)
+			if ((item.ObjectType == 0 || item.ObjectType >= (int)eObjectType._FirstHouse) && item.ObjectType <= (int)eObjectType._LastHouse)
 				return true;
 
 			// on some servers we may wish for dropped items to be used by all realms regardless of what is set in the db
@@ -681,11 +682,11 @@ namespace DOL.GS.ServerRules
 			}
 
 			//armor
-			if (item.Object_Type >= (int)eObjectType._FirstArmor && item.Object_Type <= (int)eObjectType._LastArmor)
+			if (item.ObjectType >= (int)eObjectType._FirstArmor && item.ObjectType <= (int)eObjectType._LastArmor)
 			{
 				int armorAbility = -1;
 
-				if (ServerProperties.Properties.ALLOW_CROSS_REALM_ITEMS && item.Item_Type != (int)eEquipmentItems.HEAD)
+				if (ServerProperties.Properties.ALLOW_CROSS_REALM_ITEMS && item.ItemType != (int)eEquipmentItems.HEAD)
 				{
 					switch (player.Realm) // Choose based on player rather than item region
 					{
@@ -709,7 +710,7 @@ namespace DOL.GS.ServerRules
 							break;
 					}
 				}
-				switch ((eObjectType)item.Object_Type)
+				switch ((eObjectType)item.ObjectType)
 				{
 					case eObjectType.GenericArmor: return armorAbility >= ArmorLevel.GenericArmor;
 					case eObjectType.Cloth: return armorAbility >= ArmorLevel.Cloth;
@@ -728,7 +729,7 @@ namespace DOL.GS.ServerRules
 			string[] otherCheck = new string[0];
 
 			//http://dol.kitchenhost.de/files/dol/Info/itemtable.txt
-			switch ((eObjectType)item.Object_Type)
+			switch ((eObjectType)item.ObjectType)
 			{
 				case eObjectType.GenericItem: return true;
 				case eObjectType.GenericArmor: return true;
@@ -892,7 +893,7 @@ namespace DOL.GS.ServerRules
 
 				//misc
 				case eObjectType.Magical: return true;
-				case eObjectType.Shield: return living.GetAbilityLevel(Abilities.Shield) >= item.Type_Damage;
+				case eObjectType.Shield: return living.GetAbilityLevel(Abilities.Shield) >= item.TypeDamage;
 				case eObjectType.Bolt: abilityCheck = Abilities.Weapon_Crossbow; break;
 				case eObjectType.Arrow: otherCheck = new string[] { Abilities.Weapon_CompositeBows, Abilities.Weapon_Longbows, Abilities.Weapon_RecurvedBows, Abilities.Weapon_Shortbows }; break;
 				case eObjectType.Poison: return living.GetModifiedSpecLevel(Specs.Envenom) > 0;
@@ -1724,7 +1725,7 @@ namespace DOL.GS.ServerRules
 						foreach (KeyValuePair<GamePlayer, int> pair in playerKillers)
 						{
 
-							DOL.Database.PvPKillsLog killLog = new DOL.Database.PvPKillsLog();
+							var killLog = new PvpKillsLog();
 							killLog.KilledIP = killedPlayer.Client.TcpEndpointAddress;
 							killLog.KilledName = killedPlayer.Name;
 							killLog.KilledRealm = GlobalConstants.RealmToName(killedPlayer.Realm);
@@ -1738,7 +1739,7 @@ namespace DOL.GS.ServerRules
 							if (killedPlayer.Client.TcpEndpointAddress == pair.Key.Client.TcpEndpointAddress)
 								killLog.SameIP = 1;
 
-							GameServer.Database.AddObject(killLog);
+							GameServer.Instance.SaveDataObject(killLog);
 						}
 					}
 					catch (System.Exception ex)
@@ -2207,7 +2208,7 @@ namespace DOL.GS.ServerRules
 		/// <returns></returns>
 		public virtual GameNPC PlaceHousingNPC(DOL.GS.Housing.House house, ItemTemplate item, IPoint3D location, ushort heading)
 		{
-			NpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(item.Bonus);
+			NpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(item.ItemBonus);
 
 			try
 			{
@@ -2274,7 +2275,7 @@ namespace DOL.GS.ServerRules
 				npc.Name = item.Name;
 				npc.CurrentHouse = house;
 				npc.InHouse = true;
-				npc.OwnerID = item.Id_nb;
+				npc.OwnerID = item.Id;
 				npc.X = location.X;
 				npc.Y = location.Y;
 				npc.Z = location.Z;
@@ -2289,7 +2290,7 @@ namespace DOL.GS.ServerRules
 			}
 			catch (Exception ex)
 			{
-				log.Error("Error filling housing hookpoint using npc template ID " + item.Bonus, ex);
+				log.Error("Error filling housing hookpoint using npc template ID " + item.ItemBonus, ex);
 			}
 
 			return null;
@@ -2301,7 +2302,7 @@ namespace DOL.GS.ServerRules
 			GameStaticItem hookpointObject = new GameStaticItem();
 			hookpointObject.CurrentHouse = house;
 			hookpointObject.InHouse = true;
-			hookpointObject.OwnerID = item.Id_nb;
+			hookpointObject.OwnerID = item.Id;
 			hookpointObject.X = location.X;
 			hookpointObject.Y = location.Y;
 			hookpointObject.Z = location.Z;

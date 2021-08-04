@@ -19,6 +19,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using System.Reflection;
 using Atlas.DataLayer.Models;
 using DOL.Language;
@@ -103,7 +104,7 @@ namespace DOL.GS
 		/// <summary>
 		/// This holds all players inside the guild (InternalID, GamePlayer)
 		/// </summary>
-		protected readonly Dictionary<string, GamePlayer> m_onlineGuildPlayers = new Dictionary<string, GamePlayer>();
+		protected readonly Dictionary<int, GamePlayer> m_onlineGuildPlayers = new Dictionary<int, GamePlayer>();
 
 		/// <summary>
 		/// Use this object to lock the guild member list
@@ -118,7 +119,7 @@ namespace DOL.GS
 		/// <summary>
 		/// This holds the DB instance of the guild
 		/// </summary>
-		protected DBGuild m_DBguild;
+		protected Atlas.DataLayer.Models.Guild m_DBguild;
 
 		/// <summary>
 		/// the runtime ID of the guild
@@ -154,15 +155,15 @@ namespace DOL.GS
 			}
 		}
 
-		public DBRank[] Ranks
+		public GuildRank[] Ranks
 		{
 			get
 			{
-				return this.m_DBguild.Ranks;
+				return this.m_DBguild.GuildRanks.ToArray();
 			}
 			set
 			{
-				this.m_DBguild.Ranks = value;
+				this.m_DBguild.GuildRanks = value.ToList();
 			}
 		}
 
@@ -298,7 +299,7 @@ namespace DOL.GS
 		/// Creates an empty Guild. Don't use this, use
 		/// GuildMgr.CreateGuild() to create a guild
 		/// </summary>
-		public Guild(DBGuild dbGuild)
+		public Guild(Atlas.DataLayer.Models.Guild dbGuild)
 		{
 			this.m_DBguild = dbGuild;
 			bannerStatus = "None";
@@ -330,7 +331,7 @@ namespace DOL.GS
 			}
 		}
 
-		public DateTime GuildBannerLostTime
+		public DateTime? GuildBannerLostTime
 		{
 			get
 			{
@@ -374,15 +375,15 @@ namespace DOL.GS
 			}
 		}
 
-		public string AllianceId
+		public int AllianceId
 		{
 			get
 			{
-				return this.m_DBguild.AllianceID;
+				return this.m_DBguild.GuildAllianceID;
 			}
 			set
 			{
-				this.m_DBguild.AllianceID = value;
+				this.m_DBguild.GuildAllianceID = value;
 				this.SaveIntoDatabase();
 			}
 		}
@@ -405,15 +406,15 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets or sets the guild id
 		/// </summary>
-		public string GuildID
+		public int GuildID
 		{
 			get 
 			{ 
-				return m_DBguild.GuildID; 
+				return m_DBguild.Id; 
 			}
 			set 
 			{
-				m_DBguild.GuildID = value;
+				m_DBguild.Id = value;
 				this.SaveIntoDatabase();
 			}
 		}
@@ -544,7 +545,7 @@ namespace DOL.GS
 					m_onlineGuildPlayers.Remove(player.InternalID);
 
 					// now update the all member list to display lastonline time instead of zone
-					Dictionary<string, GuildMgr.GuildMemberDisplay> memberList = GuildMgr.GetAllGuildMembers(player.GuildID);
+					Dictionary<int, GuildMgr.GuildMemberDisplay> memberList = GuildMgr.GetAllGuildMembers(player.GuildID);
 
 					if (memberList != null && memberList.ContainsKey(player.InternalID))
 					{
@@ -572,7 +573,7 @@ namespace DOL.GS
 		/// Returns a player according to the matching membername
 		/// </summary>
 		/// <returns>GuildMemberEntry</returns>
-		public GamePlayer GetOnlineMemberByID(string memberID)
+		public GamePlayer GetOnlineMemberByID(int memberID)
 		{
 			lock (m_memberListLock)
 			{
@@ -599,7 +600,7 @@ namespace DOL.GS
 		/// <param name="addPlayer"></param>
 		/// <param name="rank"></param>
 		/// <returns></returns>
-		public bool AddPlayer(GamePlayer addPlayer, DBRank rank)
+		public bool AddPlayer(GamePlayer addPlayer, GuildRank rank)
 		{
 			if (addPlayer == null || addPlayer.Guild != null)
 				return false;
@@ -644,7 +645,7 @@ namespace DOL.GS
 				RemoveOnlineMember(member);
 				member.GuildName = "";
 				member.GuildNote = "";
-				member.GuildID = "";
+				member.GuildID = 0;
 				member.GuildRank = null;
 				member.Guild = null;
 				member.SaveIntoDatabase();
@@ -799,11 +800,11 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="index">the index of rank</param>
 		/// <returns>the dbrank</returns>
-		public DBRank GetRankByID(int index)
+		public GuildRank GetRankByID(int index)
 		{
 			try
 			{
-				foreach (DBRank rank in this.Ranks)
+				foreach (var rank in this.Ranks)
 				{
 					if (rank.RankLevel == index)
 						return rank;
@@ -920,7 +921,7 @@ namespace DOL.GS
 					return new DateTime(2010, 1, 1);
 				}
 
-				return this.m_DBguild.BonusStartTime; 
+				return this.m_DBguild.BonusStartTime.Value; 
 			}
 			set 
 			{
@@ -966,14 +967,16 @@ namespace DOL.GS
 
 		public bool AddToDatabase()
 		{
-			return GameServer.Database.AddObject(this.m_DBguild);
+			var result = GameServer.Instance.SaveDataObject(this.m_DBguild);
+			return result.Id > 0;
 		}
 		/// <summary>
 		/// Saves this guild to database
 		/// </summary>
 		public bool SaveIntoDatabase()
 		{
-			return GameServer.Database.SaveObject(m_DBguild);
+			var result = GameServer.Instance.SaveDataObject(this.m_DBguild);
+			return result.Id > 0;
 		}
 
 		private string bannerStatus;

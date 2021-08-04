@@ -12,7 +12,7 @@ namespace Atlas.DataLayer.Models
         public int Model { get; set; }
         public int Color { get; set; }
         public int Effect { get; set; }
-        public int Expansion { get; set; }
+        public int Extension { get; set; }
         public int Emblem { get; set; }
 
         public virtual ICollection<NpcTemplate> Npcs { get; set; }

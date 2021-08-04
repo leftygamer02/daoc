@@ -111,7 +111,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		public virtual bool LoadFromDatabase(string id)
+		public virtual bool LoadFromDatabase(int id)
 		{
 			return false;
 		}
@@ -120,7 +120,7 @@ namespace DOL.GS
 		/// SaveIntoDatabase
 		/// </summary>
 		/// <returns></returns>
-		public virtual bool SaveIntoDatabase(string id)
+		public virtual bool SaveIntoDatabase(int id)
 		{
 			return false;
 		}
@@ -175,7 +175,7 @@ namespace DOL.GS
 		/// <param name="minSlot">first slot</param>
 		/// <param name="maxSlot">last slot</param>
 		/// <returns>number of matched items found</returns>
-		public int CountItemTemplate(string itemtemplateID, eInventorySlot minSlot, eInventorySlot maxSlot)
+		public int CountItemTemplate(int itemtemplateID, eInventorySlot minSlot, eInventorySlot maxSlot)
 		{
 			lock (m_items) // Mannen 10:56 PM 10/30/2006 - Fixing every lock(this)
 			{
@@ -193,7 +193,7 @@ namespace DOL.GS
 
 				for (eInventorySlot i = minSlot; i <= maxSlot; i++)
 				{
-					if (m_items.TryGetValue(i, out item) && item.Id_nb == itemtemplateID)
+					if (m_items.TryGetValue(i, out item) && item.Id == itemtemplateID)
 					{
 						count += item.Count;
 					}
@@ -401,7 +401,7 @@ namespace DOL.GS
 		/// <param name="minSlot">fist slot for search</param>
 		/// <param name="maxSlot">last slot for search</param>
 		/// <returns>found item or null</returns>
-		public InventoryItem GetFirstItemByID(string uniqueID, eInventorySlot minSlot, eInventorySlot maxSlot)
+		public InventoryItem GetFirstItemByID(int uniqueID, eInventorySlot minSlot, eInventorySlot maxSlot)
 		{
 			minSlot = GetValidInventorySlot(minSlot);
 			maxSlot = GetValidInventorySlot(maxSlot);
@@ -424,7 +424,7 @@ namespace DOL.GS
 				{
 					if (m_items.TryGetValue(i, out item))
 					{
-						if (item.Id_nb == uniqueID)
+						if (item.Id == uniqueID)
 							return item;
 					}
 				}
@@ -464,7 +464,7 @@ namespace DOL.GS
 				{
 					if (m_items.TryGetValue(i, out item))
 					{
-						if (item.Object_Type == objectType)
+						if (item.ItemTemplate.ObjectType == objectType)
 							return item;
 					}
 				}
@@ -545,9 +545,9 @@ namespace DOL.GS
 
 				item.SlotPosition = (int)slot;
 
-				if (item.OwnerID != null)
+				if (item.CharacterID != null)
 				{
-					item.OwnerID = null; // owner ID for NPC
+					item.CharacterID = null; // owner ID for NPC
 				}
 
 				if (!m_changedSlots.Contains(slot))
@@ -604,7 +604,7 @@ namespace DOL.GS
 					if (!m_changedSlots.Contains(slot))
 						m_changedSlots.Add(slot);
 
-					item.OwnerID = null;
+					item.CharacterID = null;
 					item.SlotPosition = (int) eInventorySlot.Invalid;
 
 					if (m_changesCounter <= 0)
@@ -643,7 +643,7 @@ namespace DOL.GS
 
 				if (m_items.ContainsKey(slot))
 				{
-					if (item.Count + count > item.MaxCount) return false;
+					if (item.Count + count > item.ItemTemplate.MaxCount) return false;
 
 					item.Count += count;
 
@@ -886,15 +886,15 @@ namespace DOL.GS
 						continue;
 
 					// If slot isn't of the same type as our template, we can't stack, so skip.
-					if (curItem.Id_nb != sourceItem.Id_nb)
+					if (curItem.Id != sourceItem.Id)
 						continue;
 
 					// Can't add to an already maxed-out stack.
-					if (curItem.Count >= curItem.MaxCount)
+					if (curItem.Count >= curItem.ItemTemplate.MaxCount)
 						continue;
 
 					// Get the number of free spaces left in the given stack.
-					int countFree = curItem.MaxCount - curItem.Count;
+					int countFree = curItem.ItemTemplate.MaxCount - curItem.Count;
 
 					// See if we can fit all our items in the given stack.  If not, fit what we can.
 					int countAdd = count;
@@ -943,8 +943,8 @@ namespace DOL.GS
 						// If the max stack count is less than remaining items to add, we can only add the max
 						// stack count and must find remaining slots to allocate the rest of the items to.
 						int countAdd = count;
-						if (countAdd > sourceItem.MaxCount)
-							countAdd = sourceItem.MaxCount;
+						if (countAdd > sourceItem.ItemTemplate.MaxCount)
+							countAdd = sourceItem.ItemTemplate.MaxCount;
 
 						// Set the number of items to add to the given slot. (negative amount indicates we're adding a new item, not stacking)
 						changedSlots[curSlot] = -countAdd;
@@ -991,13 +991,13 @@ namespace DOL.GS
 						}
 						else if (itemCount < 0) // new item should be added
 						{
-							if (sourceItem.Template is ItemUnique)
+							if (sourceItem.ItemTemplate is ItemUnique)
 							{
 								item = GameInventoryItem.Create(sourceItem);
 							}
 							else
 							{
-								item = GameInventoryItem.Create(sourceItem.Template);
+								item = GameInventoryItem.Create(sourceItem.ItemTemplate);
 							}
 
 							item.Count = -itemCount;
@@ -1023,9 +1023,9 @@ namespace DOL.GS
 		/// <param name="minSlot">The first slot</param>
 		/// <param name="maxSlot">The last slot</param>
 		/// <returns>True if all items were added</returns>
-		public virtual bool RemoveTemplate(string templateID, int count, eInventorySlot minSlot, eInventorySlot maxSlot)
+		public virtual bool RemoveTemplate(int templateID, int count, eInventorySlot minSlot, eInventorySlot maxSlot)
 		{
-			if (templateID == null)
+			if (templateID <= 0)
 				return false;
 
 			if (count <= 0)
@@ -1054,7 +1054,7 @@ namespace DOL.GS
 					if (!m_items.TryGetValue(slot, out item))
 						continue;
 
-					if (item.Id_nb != templateID)
+					if (item.Id != templateID)
 						continue;
 
 					if (count >= item.Count)
@@ -1207,7 +1207,7 @@ namespace DOL.GS
 					{
 						if (m_items.TryGetValue(slot, out item))
 						{
-							weight += item.Weight;
+							weight += item.ItemTemplate.Weight;
 						}
 					}
 				}

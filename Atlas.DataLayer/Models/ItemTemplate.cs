@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class ItemTemplate : DataObjectBase
+    public partial class ItemTemplate : DataObjectBase
     {
         public string TranslationId { get; set; }
         public string Name { get; set; }        

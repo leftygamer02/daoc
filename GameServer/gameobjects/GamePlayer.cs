@@ -74,7 +74,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The guild id this character belong to
 		/// </summary>
-		protected string m_guildId;
+		protected int? m_guildId;
 		
 		/// <summary>
 		/// Char spec points checked on load
@@ -5756,7 +5756,7 @@ namespace DOL.GS
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.StartAttack.CannotWithoutWeapon"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 				return;
 			}
-			if (AttackWeapon.Object_Type == (int)eObjectType.Instrument)
+			if (AttackWeapon.ItemTemplate.ObjectType == (int)eObjectType.Instrument)
 			{
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.StartAttack.CannotMelee"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 				return;
@@ -5843,7 +5843,7 @@ namespace DOL.GS
                     if (attackTarget is GameNPC)
                     {
                         Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.StartAttack.CombatTarget",
-                            attackTarget.GetName(0, false, Client.Account.Language, (attackTarget as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                            attackTarget.GetName(0, false)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                     }
                     else
                     {
@@ -5885,7 +5885,7 @@ namespace DOL.GS
 				TempProperties.setProperty(RANGE_ATTACK_HOLD_START, 0L);
 
 				string typeMsg = "shot";
-				if (AttackWeapon.Object_Type == (int)eObjectType.Thrown)
+				if (AttackWeapon.ItemTemplate.ObjectType == (int)eObjectType.Thrown)
 					typeMsg = "throw";
 
 				string targetMsg = "";
@@ -5941,7 +5941,7 @@ namespace DOL.GS
 				{
 					ActiveQuiverSlot = slot;
 					//GamePlayer.SwitchQuiver.ShootWith:		You will shoot with: {0}.
-					Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.SwitchQuiver.ShootWith", Inventory.GetItem(updatedSlot).GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.SwitchQuiver.ShootWith", Inventory.GetItem(updatedSlot).ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				else
 				{
@@ -5979,7 +5979,7 @@ namespace DOL.GS
 			InventoryItem weapon = AttackWeapon;
 			if (weapon != null)
 			{
-				switch ((eObjectType)weapon.Object_Type)
+				switch ((eObjectType)weapon.ItemTemplate.ObjectType)
 				{
 					case eObjectType.Crossbow:
 					case eObjectType.Longbow:
@@ -6000,9 +6000,9 @@ namespace DOL.GS
 
 								if (ammo == null) return false;
 
-								if (weapon.Object_Type == (int)eObjectType.Crossbow)
-									return ammo.Object_Type == (int)eObjectType.Bolt;
-								return ammo.Object_Type == (int)eObjectType.Arrow;
+								if (weapon.ItemTemplate.ObjectType == (int)eObjectType.Crossbow)
+									return ammo.ItemTemplate.ObjectType == (int)eObjectType.Bolt;
+								return ammo.ItemTemplate.ObjectType == (int)eObjectType.Arrow;
 							}
 						} break;
 				}
@@ -6029,7 +6029,7 @@ namespace DOL.GS
 				InventoryItem weapon = AttackWeapon;
 				if (weapon != null)
 				{
-					switch (weapon.Object_Type)
+					switch (weapon.ItemTemplate.ObjectType)
 					{
 							case (int)eObjectType.Thrown: ammo = Inventory.GetItem(eInventorySlot.DistanceWeapon); break;
 						case (int)eObjectType.Crossbow:
@@ -6046,7 +6046,7 @@ namespace DOL.GS
 										case eActiveQuiverSlot.Fourth: ammo = Inventory.GetItem(eInventorySlot.FourthQuiver); break;
 									case eActiveQuiverSlot.None:
 										eObjectType findType = eObjectType.Arrow;
-										if (weapon.Object_Type == (int)eObjectType.Crossbow)
+										if (weapon.ItemTemplate.ObjectType == (int)eObjectType.Crossbow)
 											findType = eObjectType.Bolt;
 
 										ammo = Inventory.GetFirstItemByObjectType((int)findType, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
@@ -6097,7 +6097,7 @@ namespace DOL.GS
 				TempProperties.setProperty(RANGE_ATTACK_HOLD_START, holdStart);
 			}
 			//DOLConsole.WriteLine("Holding.... ("+holdStart+") "+(Environment.TickCount - holdStart));
-			if ((CurrentRegion.Time - holdStart) > 15000 && AttackWeapon.Object_Type != (int)eObjectType.Crossbow)
+			if ((CurrentRegion.Time - holdStart) > 15000 && AttackWeapon.ItemTemplate.ObjectType != (int)eObjectType.Crossbow)
 			{
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.TooTired"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return eCheckRangeAttackStateResult.Stop; //Stop the attack
@@ -6203,17 +6203,17 @@ namespace DOL.GS
                 switch (ad.AttackResult)
                 {
                     case eAttackResult.TargetNotVisible: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.NotInView",
-                        ad.Target.GetName(0, true, Client.Account.Language, (ad.Target as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.OutOfRange: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.TooFarAway",
-                        ad.Target.GetName(0, true, Client.Account.Language, (ad.Target as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.TargetDead: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.AlreadyDead",
-                        ad.Target.GetName(0, true, Client.Account.Language, (ad.Target as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.Blocked: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Blocked",
-                        ad.Target.GetName(0, true, Client.Account.Language, (ad.Target as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.Parried: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Parried",
-                        ad.Target.GetName(0, true, Client.Account.Language, (ad.Target as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.Evaded: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Evaded",
-                        ad.Target.GetName(0, true, Client.Account.Language, (ad.Target as GameNPC))), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.NoTarget: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.NeedTarget"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.NoValidTarget: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.CantBeAttacked"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                     case eAttackResult.Missed: Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Miss"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
@@ -6253,12 +6253,12 @@ namespace DOL.GS
                         }
                         else
                             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.InterceptHit", attackTypeMsg,
-                                ad.Target.GetName(0, false, Client.Account.Language, (ad.Target as GameNPC)), hitWeapon, ad.Damage, modmessage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                                ad.Target.GetName(0, false), hitWeapon, ad.Damage, modmessage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 
                         // critical hit
                         if (ad.CriticalDamage > 0)
                             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Critical",
-                                ad.Target.GetName(0, false, Client.Account.Language, (ad.Target as GameNPC)), ad.CriticalDamage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                                ad.Target.GetName(0, false), ad.CriticalDamage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                         break;
                 }
             }
@@ -6330,7 +6330,7 @@ namespace DOL.GS
 		/// <param name="interruptDuration"></param>
 		/// <param name="dualWield"></param>
 		/// <returns></returns>
-		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Style style, double effectiveness, int interruptDuration, bool dualWield)
+		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield)
 		{
 			if (IsCrafting)
 			{
@@ -6515,7 +6515,7 @@ namespace DOL.GS
 		/// Try and execute a weapon style
 		/// </summary>
 		/// <param name="style"></param>
-		public virtual void ExecuteWeaponStyle(Style style)
+		public virtual void ExecuteWeaponStyle(Styles.Style style)
 		{
 			StyleProcessor.TryToUseStyle(this, style);
 		}
@@ -6584,19 +6584,19 @@ namespace DOL.GS
 				//case eAttackResult.Blocked : Out.SendMessage(ad.Attacker.GetName(0, true) + " attacks you and you block the blow!", eChatType.CT_Missed, eChatLoc.CL_SystemWindow); break;
 				case eAttackResult.Parried:
                     if (ad.Attacker is GameNPC)
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Parry", ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC))), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Parry", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     else
                         Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Parry", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     break;
 				case eAttackResult.Evaded:
                     if (ad.Attacker is GameNPC)
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Evade", ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC))), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Evade", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     else
                         Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Evade", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     break;
 				case eAttackResult.Fumbled:
                     if (ad.Attacker is GameNPC)                    
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Fumbled", ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC))), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Fumbled", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     else
                         Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Fumbled", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     break;
@@ -6604,7 +6604,7 @@ namespace DOL.GS
 					if (ad.AttackType == AttackData.eAttackType.Spell)
 						break;
                     if (ad.Attacker is GameNPC)
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Missed", ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC))), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Missed", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                     else
                         Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Missed", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
 					break;
@@ -6639,14 +6639,14 @@ namespace DOL.GS
                         {
                             if (hitLocName != null)
                                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.HitsYour",
-                                    ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC)), hitLocName, ad.Damage, modmessage), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
+                                    ad.Attacker.GetName(0, true), hitLocName, ad.Damage, modmessage), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
                             else
                                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.HitsYou",
-                                    ad.Attacker.IsAlive ? ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC)) : "A dead enemy", ad.Damage, modmessage), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
+                                    ad.Attacker.IsAlive ? ad.Attacker.GetName(0, true) : "A dead enemy", ad.Damage, modmessage), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
 
                             if (ad.CriticalDamage > 0)
                                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.HitsYouCritical",
-                                    ad.Attacker.GetName(0, true, Client.Account.Language, (ad.Attacker as GameNPC)), ad.CriticalDamage), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
+                                    ad.Attacker.GetName(0, true), ad.CriticalDamage), eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
                         }
                         else
                         {
@@ -6682,7 +6682,7 @@ namespace DOL.GS
 				case eAttackResult.Blocked:
 					{
 						InventoryItem reactiveItem = Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-						if (reactiveItem != null && reactiveItem.Object_Type == (int)eObjectType.Shield)
+						if (reactiveItem != null && reactiveItem.ItemTemplate.ObjectType == (int)eObjectType.Shield)
 						{
 							TryReactiveEffect(reactiveItem, ad.Attacker);
 
@@ -6721,7 +6721,7 @@ namespace DOL.GS
 		{
 			if (reactiveItem != null)
 			{
-				int requiredLevel = reactiveItem.Template.LevelRequirement > 0 ? reactiveItem.Template.LevelRequirement : Math.Min(MaxLevel, reactiveItem.Level);
+				int requiredLevel = reactiveItem.ItemTemplate.LevelRequirement > 0 ? reactiveItem.ItemTemplate.LevelRequirement : Math.Min(MaxLevel, reactiveItem.ItemTemplate.Level);
 
 				if (requiredLevel <= Level)
 				{
@@ -6729,32 +6729,13 @@ namespace DOL.GS
 
 					if (reactiveEffectLine != null)
 					{
-						if (reactiveItem.ProcSpellID != 0)
+						foreach (var itemSpell in reactiveItem.Spells.Where(x=> x.ProcChance > 0))
 						{
-							Spell spell = SkillBase.FindSpell(reactiveItem.ProcSpellID, reactiveEffectLine);
+							Spell spell = SkillBase.FindSpell(itemSpell.SpellID, reactiveEffectLine);
 
 							if (spell != null)
 							{
-								int chance = reactiveItem.ProcChance > 0 ? reactiveItem.ProcChance : 10;
-
-								if (Util.Chance(chance))
-								{
-									ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(this, spell, reactiveEffectLine);
-									if (spellHandler != null)
-									{
-										spellHandler.StartSpell(target, reactiveItem);
-									}
-								}
-							}
-						}
-
-						if (reactiveItem.ProcSpellID1 != 0)
-						{
-							Spell spell = SkillBase.FindSpell(reactiveItem.ProcSpellID1, reactiveEffectLine);
-
-							if (spell != null)
-							{
-								int chance = reactiveItem.ProcChance > 0 ? reactiveItem.ProcChance : 10;
+								int chance = itemSpell.ProcChance > 0 ? itemSpell.ProcChance : 10;
 
 								if (Util.Chance(chance))
 								{
@@ -6784,10 +6765,10 @@ namespace DOL.GS
 				if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 				{
 					string attackTypeMsg = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Type.Shot");
-					if (AttackWeapon != null && AttackWeapon.Object_Type == (int)eObjectType.Thrown)
+					if (AttackWeapon != null && AttackWeapon.ItemTemplate.ObjectType == (int)eObjectType.Thrown)
 						attackTypeMsg = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Type.Throw");
                     if (attacker is GameNPC)
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Interrupted", attacker.GetName(0, true, Client.Account.Language, (attacker as GameNPC)), attackTypeMsg), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Interrupted", attacker.GetName(0, true), attackTypeMsg), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                     else
                         Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.Interrupted", attacker.GetName(0, true), attackTypeMsg), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 				}
@@ -6829,7 +6810,7 @@ namespace DOL.GS
 				foreach (InventoryItem item in Inventory.VisibleItems)
 				{
 					double factor = 0;
-					switch (item.Item_Type)
+					switch (item.ItemTemplate.ItemType)
 					{
 						case Slot.TORSO:
 							factor = 2.2;
@@ -6854,7 +6835,7 @@ namespace DOL.GS
 					int itemAFCap = Level << 1;
 					if (RealmLevel > 39)
 						itemAFCap += 2;
-					switch ((eObjectType)item.Object_Type)
+					switch ((eObjectType)item.ItemTemplate.ObjectType)
 					{
 						case eObjectType.Cloth:
 							abs = 0;
@@ -6882,10 +6863,10 @@ namespace DOL.GS
 
 					if (factor > 0)
 					{
-						int af = item.DPS_AF;
+						int af = item.ItemTemplate.DPS_AF;
 						if (af > itemAFCap)
 							af = itemAFCap;
-						double piece_eaf = af * item.Quality / 100.0 * item.ConditionPercent / 100.0 * (1 + abs / 100.0);
+						double piece_eaf = af * item.ItemTemplate.Quality / 100.0 * item.ConditionPercent / 100.0 * (1 + abs / 100.0);
 						eaf += (int)(piece_eaf * factor);
 					}
 				}
@@ -6965,15 +6946,15 @@ namespace DOL.GS
 			if (weapon == null)
 				return 0;
 			// use axe spec if left hand axe is not in the left hand slot
-			if (weapon.Object_Type == (int)eObjectType.LeftAxe && weapon.SlotPosition != Slot.LEFTHAND)
+			if (weapon.ItemTemplate.ObjectType == (int)eObjectType.LeftAxe && weapon.SlotPosition != Slot.LEFTHAND)
 				return GameServer.ServerRules.GetObjectSpecLevel(this, eObjectType.Axe);
 			// use left axe spec if axe is in the left hand slot
 			if (weapon.SlotPosition == Slot.LEFTHAND
-			    && (weapon.Object_Type == (int)eObjectType.Axe
-			        || weapon.Object_Type == (int)eObjectType.Sword
-			        || weapon.Object_Type == (int)eObjectType.Hammer))
+			    && (weapon.ItemTemplate.ObjectType == (int)eObjectType.Axe
+			        || weapon.ItemTemplate.ObjectType == (int)eObjectType.Sword
+			        || weapon.ItemTemplate.ObjectType == (int)eObjectType.Hammer))
 				return GameServer.ServerRules.GetObjectSpecLevel(this, eObjectType.LeftAxe);
-			return GameServer.ServerRules.GetObjectSpecLevel(this, (eObjectType)weapon.Object_Type);
+			return GameServer.ServerRules.GetObjectSpecLevel(this, (eObjectType)weapon.ItemTemplate.ObjectType);
 		}
 
 		public virtual String GetWeaponSpec(InventoryItem weapon)
@@ -6981,15 +6962,15 @@ namespace DOL.GS
 			if (weapon == null)
 				return null;
 			// use axe spec if left hand axe is not in the left hand slot
-			if (weapon.Object_Type == (int)eObjectType.LeftAxe && weapon.SlotPosition != Slot.LEFTHAND)
+			if (weapon.ItemTemplate.ObjectType == (int)eObjectType.LeftAxe && weapon.SlotPosition != Slot.LEFTHAND)
 				return SkillBase.ObjectTypeToSpec(eObjectType.Axe);
 			// use left axe spec if axe is in the left hand slot
 			if (weapon.SlotPosition == Slot.LEFTHAND
-			    && (weapon.Object_Type == (int)eObjectType.Axe
-			        || weapon.Object_Type == (int)eObjectType.Sword
-			        || weapon.Object_Type == (int)eObjectType.Hammer))
+			    && (weapon.ItemTemplate.ObjectType == (int)eObjectType.Axe
+			        || weapon.ItemTemplate.ObjectType == (int)eObjectType.Sword
+			        || weapon.ItemTemplate.ObjectType == (int)eObjectType.Hammer))
 				return SkillBase.ObjectTypeToSpec(eObjectType.LeftAxe);
-			return SkillBase.ObjectTypeToSpec((eObjectType)weapon.Object_Type);
+			return SkillBase.ObjectTypeToSpec((eObjectType)weapon.ItemTemplate.ObjectType);
 		}
 
 		/// <summary>
@@ -7000,15 +6981,15 @@ namespace DOL.GS
 			if (weapon == null)
 				return 0;
 			// use axe spec if left hand axe is not in the left hand slot
-			if (weapon.Object_Type == (int)eObjectType.LeftAxe && weapon.SlotPosition != Slot.LEFTHAND)
+			if (weapon.ItemTemplate.ObjectType == (int)eObjectType.LeftAxe && weapon.SlotPosition != Slot.LEFTHAND)
 				return GameServer.ServerRules.GetBaseObjectSpecLevel(this, eObjectType.Axe);
 			// use left axe spec if axe is in the left hand slot
 			if (weapon.SlotPosition == Slot.LEFTHAND
-			    && (weapon.Object_Type == (int)eObjectType.Axe
-			        || weapon.Object_Type == (int)eObjectType.Sword
-			        || weapon.Object_Type == (int)eObjectType.Hammer))
+			    && (weapon.ItemTemplate.ObjectType == (int)eObjectType.Axe
+			        || weapon.ItemTemplate.ObjectType == (int)eObjectType.Sword
+			        || weapon.ItemTemplate.ObjectType == (int)eObjectType.Hammer))
 				return GameServer.ServerRules.GetBaseObjectSpecLevel(this, eObjectType.LeftAxe);
-			return GameServer.ServerRules.GetBaseObjectSpecLevel(this, (eObjectType)weapon.Object_Type);
+			return GameServer.ServerRules.GetBaseObjectSpecLevel(this, (eObjectType)weapon.ItemTemplate.ObjectType);
 		}
 
 		/// <summary>
@@ -7042,7 +7023,7 @@ namespace DOL.GS
 		{
 			if (weapon != null)
 			{
-				switch ((eObjectType)weapon.Object_Type)
+				switch ((eObjectType)weapon.ItemTemplate.ObjectType)
 				{
 						// DEX modifier
 					case eObjectType.Staff:
@@ -7078,12 +7059,12 @@ namespace DOL.GS
 			if (slot == eArmorSlot.NOTSET) return 0;
 			InventoryItem item = Inventory.GetItem((eInventorySlot)slot);
 			if (item == null) return 0;
-			double eaf = item.DPS_AF + BaseBuffBonusCategory[(int)eProperty.ArmorFactor]; // base AF buff
+			double eaf = item.ItemTemplate.DPS_AF + BaseBuffBonusCategory[(int)eProperty.ArmorFactor]; // base AF buff
 
 			int itemAFcap = Level;
 			if (RealmLevel > 39)
 				itemAFcap++;
-			if (item.Object_Type != (int)eObjectType.Cloth)
+			if (item.ItemTemplate.ObjectType != (int)eObjectType.Cloth)
 			{
 				itemAFcap <<= 1;
 			}
@@ -7092,7 +7073,7 @@ namespace DOL.GS
 			eaf *= 4.67; // compensate *4.67 in damage formula
 
 			// my test shows that qual is added after AF buff
-			eaf *= item.Quality * 0.01 * item.Condition / item.MaxCondition;
+			eaf *= item.ItemTemplate.Quality * 0.01 * item.Condition / item.ItemTemplate.MaxCondition;
 
 			eaf += GetModified(eProperty.ArmorFactor);
 
@@ -7115,7 +7096,7 @@ namespace DOL.GS
 			InventoryItem item = Inventory.GetItem((eInventorySlot)slot);
 			if (item == null) return 0;
 			// vampiir random armor debuff change ~
-			double eaf = (item.SPD_ABS + GetModified(eProperty.ArmorAbsorption)) * 0.01;
+			double eaf = (item.ItemTemplate.SPD_ABS + GetModified(eProperty.ArmorAbsorption)) * 0.01;
 			return eaf;
 		}
 
@@ -7143,7 +7124,7 @@ namespace DOL.GS
 			if (weapon != null)
 			{
 				//TODO if attackweapon is ranged -> attackdamage is arrow damage
-				int DPS = weapon.DPS_AF;
+				int DPS = weapon.ItemTemplate.DPS_AF;
 
 				// apply relic bonus prior to cap
 				DPS = (int)((double)DPS * (1.0 + RelicMgr.GetRelicBonusModifier(Realm, eRelicType.Strength)));
@@ -7162,7 +7143,7 @@ namespace DOL.GS
 				DPS = (int)(DPS * (1 + (GetModified(eProperty.DPS) * 0.01)));
 				// beware to use always ConditionPercent, because Condition is abolute value
 				//				return (int) ((DPS/10.0)*(weapon.Quality/100.0)*(weapon.Condition/(double)weapon.MaxCondition)*100.0);
-				double wdamage = (0.001 * DPS * weapon.Quality * weapon.Condition) / weapon.MaxCondition;
+				double wdamage = (0.001 * DPS * weapon.ItemTemplate.Quality * weapon.Condition) / weapon.ItemTemplate.MaxCondition;
 				return wdamage;
 			}
 			else
@@ -7179,26 +7160,26 @@ namespace DOL.GS
 		{
 			if (weapon != null)
 			{
-				int DPS = weapon.DPS_AF;
+				int DPS = weapon.ItemTemplate.DPS_AF;
 				int cap = 12 + 3 * Level;
 				if (RealmLevel > 39)
 					cap += 3;
 				if (DPS > cap)
 					DPS = cap;
 
-				double result = DPS * weapon.SPD_ABS * 0.03 * (0.94 + 0.003 * weapon.SPD_ABS);
+				double result = DPS * weapon.ItemTemplate.SPD_ABS * 0.03 * (0.94 + 0.003 * weapon.ItemTemplate.SPD_ABS);
 
-				if (weapon.Hand == 1) //2h
+				if (weapon.ItemTemplate.Hand == 1) //2h
 				{
 					result *= 1.1 + (WeaponSpecLevel(weapon) - 1) * 0.005;
-					if (weapon.Item_Type == Slot.RANGED)
+					if (weapon.ItemTemplate.ItemType == Slot.RANGED)
 					{
 						// http://home.comcast.net/~shadowspawn3/bowdmg.html
 						//ammo damage bonus
 						double ammoDamageBonus = 1;
 						if (RangeAttackAmmo != null)
 						{
-							switch ((RangeAttackAmmo.SPD_ABS) & 0x3)
+							switch ((RangeAttackAmmo.ItemTemplate.SPD_ABS) & 0x3)
 							{
 									case 0: ammoDamageBonus = 0.85; break; 	//Blunt       (light) -15%
 									case 1: ammoDamageBonus = 1; break; 	//Bodkin     (medium)   0%
@@ -7210,7 +7191,7 @@ namespace DOL.GS
 					}
 				}
 				
-				if (weapon.Item_Type == Slot.RANGED && (weapon.Object_Type == (int)eObjectType.Longbow || weapon.Object_Type == (int)eObjectType.RecurvedBow || weapon.Object_Type == (int)eObjectType.CompositeBow))
+				if (weapon.ItemTemplate.ItemType == Slot.RANGED && (weapon.ItemTemplate.ObjectType == (int)eObjectType.Longbow || weapon.ItemTemplate.ObjectType == (int)eObjectType.RecurvedBow || weapon.ItemTemplate.ObjectType == (int)eObjectType.CompositeBow))
 				{
 					if (ServerProperties.Properties.ALLOW_OLD_ARCHERY == true)
 					{
@@ -7222,12 +7203,12 @@ namespace DOL.GS
 						result += GetModified(eProperty.RangedDamage) * 0.01;
 					}
 				}
-				else if (weapon.Item_Type == Slot.RANGED)
+				else if (weapon.ItemTemplate.ItemType == Slot.RANGED)
 				{
 					//Ranged damage buff,debuff,Relic,RA
 					result += GetModified(eProperty.RangedDamage) * 0.01;
 				}
-				else if (weapon.Item_Type == Slot.RIGHTHAND || weapon.Item_Type == Slot.LEFTHAND || weapon.Item_Type == Slot.TWOHAND)
+				else if (weapon.ItemTemplate.ItemType == Slot.RIGHTHAND || weapon.ItemTemplate.ItemType == Slot.LEFTHAND || weapon.ItemTemplate.ItemType == Slot.TWOHAND)
 				{
 					result += GetModified(eProperty.MeleeDamage) * 0.01;
 				}
@@ -7268,17 +7249,17 @@ namespace DOL.GS
 		/// <param name="weapon">attack weapon</param>
 		public override int AttackCriticalChance(InventoryItem weapon)
 		{
-			if (weapon != null && weapon.Item_Type == Slot.RANGED && RangedAttackType == eRangedAttackType.Critical)
+			if (weapon != null && weapon.ItemTemplate.ItemType == Slot.RANGED && RangedAttackType == eRangedAttackType.Critical)
 				return 0; // no crit damage for crit shots
 
 			// check for melee attack
-			if (weapon != null && weapon.Item_Type != Slot.RANGED)
+			if (weapon != null && weapon.ItemTemplate.ItemType != Slot.RANGED)
 			{
 				return GetModified(eProperty.CriticalMeleeHitChance);
 			}
 
 			// check for ranged attack
-			if (weapon != null && weapon.Item_Type == Slot.RANGED)
+			if (weapon != null && weapon.ItemTemplate.ItemType == Slot.RANGED)
 			{
 				return GetModified(eProperty.CriticalArcheryHitChance);
 			}
@@ -7295,7 +7276,7 @@ namespace DOL.GS
 		{
 			if (weapon == null)
 				return eDamageType.Natural;
-			switch ((eObjectType)weapon.Object_Type)
+			switch ((eObjectType)weapon.ItemTemplate.ObjectType)
 			{
 				case eObjectType.Crossbow:
 				case eObjectType.Longbow:
@@ -7304,12 +7285,12 @@ namespace DOL.GS
 				case eObjectType.Fired:
 					InventoryItem ammo = RangeAttackAmmo;
 					if (ammo == null)
-						return (eDamageType)weapon.Type_Damage;
-					return (eDamageType)ammo.Type_Damage;
+						return (eDamageType)weapon.ItemTemplate.TypeDamage;
+					return (eDamageType)ammo.ItemTemplate.TypeDamage;
 				case eObjectType.Shield:
 					return eDamageType.Crush; // TODO: shields do crush damage (!) best is if Type_Damage is used properly
 				default:
-					return (eDamageType)weapon.Type_Damage;
+					return (eDamageType)weapon.ItemTemplate.TypeDamage;
 			}
 		}
 
@@ -7341,7 +7322,7 @@ namespace DOL.GS
 					double range;
 					InventoryItem ammo = RangeAttackAmmo;
 
-					switch ((eObjectType)weapon.Object_Type)
+					switch ((eObjectType)weapon.ItemTemplate.ObjectType)
 					{
 							case eObjectType.Longbow: range = 1760; break;
 							case eObjectType.RecurvedBow: range = 1680; break;
@@ -7352,7 +7333,7 @@ namespace DOL.GS
 					range = Math.Max(32, range * GetModified(eProperty.ArcheryRange) * 0.01);
 
 					if (ammo != null)
-						switch ((ammo.SPD_ABS >> 2) & 0x3)
+						switch ((ammo.ItemTemplate.SPD_ABS >> 2) & 0x3)
 					{
 							case 0: range *= 0.85; break; //Clout -15%
 							//						case 1:                break; //(none) 0%
@@ -7399,10 +7380,10 @@ namespace DOL.GS
 			{
 				if (weapons[i] != null)
 				{
-					speed += weapons[i].SPD_ABS;
+					speed += weapons[i].ItemTemplate.SPD_ABS;
 					count++;
 
-					switch (weapons[i].Object_Type)
+					switch (weapons[i].ItemTemplate.ObjectType)
 					{
 						case (int)eObjectType.Fired:
 						case (int)eObjectType.Longbow:
@@ -7477,21 +7458,21 @@ namespace DOL.GS
 				return 0;
 
 			double effectiveness = 1.00;
-			double damage = WeaponDamage(weapon) * weapon.SPD_ABS * 0.1;
+			double damage = WeaponDamage(weapon) * weapon.ItemTemplate.SPD_ABS * 0.1;
 
-			if (weapon.Hand == 1) // two-hand
+			if (weapon.ItemTemplate.Hand == 1) // two-hand
 			{
 				// twohanded used weapons get 2H-Bonus = 10% + (Skill / 2)%
 				int spec = WeaponSpecLevel(weapon) - 1;
 				damage *= 1.1 + spec * 0.005;
 			}
 
-			if (weapon.Item_Type == Slot.RANGED)
+			if (weapon.ItemTemplate.ItemType == Slot.RANGED)
 			{
 				//ammo damage bonus
 				if (RangeAttackAmmo != null)
 				{
-					switch ((RangeAttackAmmo.SPD_ABS) & 0x3)
+					switch ((RangeAttackAmmo.ItemTemplate.SPD_ABS) & 0x3)
 					{
 							case 0: damage *= 0.85; break; //Blunt       (light) -15%
 							//case 1: damage *= 1;	break; //Bodkin     (medium)   0%
@@ -7502,7 +7483,7 @@ namespace DOL.GS
 				//Ranged damage buff,debuff,Relic,RA
 				effectiveness += GetModified(eProperty.RangedDamage) * 0.01;
 			}
-			else if (weapon.Item_Type == Slot.RIGHTHAND || weapon.Item_Type == Slot.LEFTHAND || weapon.Item_Type == Slot.TWOHAND)
+			else if (weapon.ItemTemplate.ItemType == Slot.RIGHTHAND || weapon.ItemTemplate.ItemType == Slot.LEFTHAND || weapon.ItemTemplate.ItemType == Slot.TWOHAND)
 			{
 				//Melee damage buff,debuff,Relic,RA
 				effectiveness += GetModified(eProperty.MeleeDamage) * 0.01;
@@ -7997,7 +7978,7 @@ namespace DOL.GS
 			{
 				if (handler.StartReuseTimer)
 				{
-					lastUsedItem.CanUseAgainIn = lastUsedItem.CanUseEvery;
+					lastUsedItem.CanUseAgainIn = lastUsedItem.ItemTemplate.CanUseEvery;
 				}
 
 				TempProperties.removeProperty(LAST_USED_ITEM_SPELL);
@@ -8062,7 +8043,7 @@ namespace DOL.GS
 
 			if (spell.SpellType == "StyleHandler" || spell.SpellType == "MLStyleHandler")
 			{
-				Style style = SkillBase.GetStyleByID((int)spell.Value, CharacterClass.ID);
+				Styles.Style style = SkillBase.GetStyleByID((int)spell.Value, CharacterClass.ID);
 				//Andraste - Vico : try to use classID=0 (easy way to implement CL Styles)
 				if (style == null) style = SkillBase.GetStyleByID((int)spell.Value, 0);
 				if (style != null)
@@ -8525,7 +8506,7 @@ namespace DOL.GS
 						}
 						return false;
 					}
-					if (item.IsTradable == false && source.CanTradeAnyItem == false && TradeWindow.Partner.CanTradeAnyItem == false)
+					if (item.ItemTemplate.IsTradable == false && source.CanTradeAnyItem == false && TradeWindow.Partner.CanTradeAnyItem == false)
 					{
 						source.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ReceiveTradeItem.CantTrade"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return false;
@@ -8784,15 +8765,15 @@ namespace DOL.GS
 					}
 				}
 
-				if (useItem.Item_Type >= (int)eInventorySlot.LeftFrontSaddleBag && useItem.Item_Type <= (int)eInventorySlot.RightRearSaddleBag)
+				if (useItem.ItemTemplate.ItemType >= (int)eInventorySlot.LeftFrontSaddleBag && useItem.ItemTemplate.ItemType <= (int)eInventorySlot.RightRearSaddleBag)
 				{
 					UseSaddleBag(useItem);
 					return;
 				}
 
-				if (useItem.Item_Type != Slot.RANGED && (slot != Slot.HORSE || type != 0))
+				if (useItem.ItemTemplate.ItemType != Slot.RANGED && (slot != Slot.HORSE || type != 0))
 				{
-					Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.AttemptToUse", useItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.AttemptToUse", useItem.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 
 				#region Non-backpack/vault slots
@@ -8809,9 +8790,9 @@ namespace DOL.GS
 								IsOnHorse = false;
 							else
 							{
-								if (Level < useItem.Level)
+								if (Level < useItem.ItemTemplate.Level)
 								{
-									Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.SummonHorseLevel", useItem.Level), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.SummonHorseLevel", useItem.ItemTemplate.Level), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 									return;
 								}
 								
@@ -8932,7 +8913,7 @@ namespace DOL.GS
 
 				#endregion
 
-				if (useItem.SpellID != 0 || useItem.SpellID1 != 0 || useItem.PoisonSpellID != 0) // don't return without firing events
+				foreach (var itemSpell in useItem.Spells.Where(x => x.ProcChance <= 0 || x.IsPoison)) // don't return without firing events				
 				{
 					if (IsSitting)
 					{
@@ -8942,10 +8923,10 @@ namespace DOL.GS
 
 					// Item with a non-charge ability.
 
-					if (useItem.Object_Type == (int)eObjectType.Magical
-					    && useItem.Item_Type == (int)eInventorySlot.FirstBackpack
-					    && useItem.SpellID > 0
-					    && useItem.MaxCharges == 0)
+					if (useItem.ItemTemplate.ObjectType == (int)eObjectType.Magical
+					    && useItem.ItemTemplate.ItemType == (int)eInventorySlot.FirstBackpack
+					    && itemSpell.SpellID > 0
+					    && itemSpell.MaxCharges == 0)
 					{
 						UseMagicalItem(useItem, type);
 						return;
@@ -8953,38 +8934,36 @@ namespace DOL.GS
 
 					// Artifacts don't require charges.
 
-					if ((type < 2 && useItem.SpellID > 0 && useItem.Charges < 1 && useItem.MaxCharges > -1 && !(useItem is InventoryArtifact)) ||
-					    (type == 2 && useItem.SpellID1 > 0 && useItem.Charges1 < 1 && useItem.MaxCharges1 > -1 && !(useItem is InventoryArtifact)) ||
-					    (useItem.PoisonSpellID > 0 && useItem.PoisonCharges < 1))
+					if (type < 2 && itemSpell.SpellID > 0 && itemSpell.Charges < 1 && itemSpell.MaxCharges > -1 && !(useItem is InventoryArtifact))
 					{
 						Out.SendMessage("The " + useItem.Name + " is out of charges.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return;
 					}
 					else
 					{
-						if (useItem.Object_Type == (int)eObjectType.Poison)
+						if (useItem.ItemTemplate.ObjectType == (int)eObjectType.Poison)
 						{
 							InventoryItem mainHand = AttackWeapon;
 							InventoryItem leftHand = Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-							if (mainHand != null && mainHand.PoisonSpellID == 0)
+							if (mainHand != null && mainHand.Spells.Any(x => x.IsPoison))
 							{
 								ApplyPoison(useItem, mainHand);
 							}
-							else if (leftHand != null && leftHand.PoisonSpellID == 0)
+							else if (leftHand != null && leftHand.Spells.Any(x => x.IsPoison))
 							{
 								ApplyPoison(useItem, leftHand);
 							}
 						}
-						else if (useItem.SpellID > 0 && useItem.Charges > 0 && useItem.Object_Type == (int)eObjectType.Magical && (useItem.Item_Type == (int)eInventorySlot.FirstBackpack || useItem.Item_Type == 41))
+						else if (itemSpell.SpellID > 0 && itemSpell.Charges > 0 && useItem.ItemTemplate.ObjectType == (int)eObjectType.Magical && (useItem.ItemTemplate.ItemType == (int)eInventorySlot.FirstBackpack || useItem.ItemTemplate.ItemType == 41))
 						{
 							SpellLine potionEffectLine = SkillBase.GetSpellLine(GlobalSpellsLines.Potions_Effects);
 
-							if (useItem.Item_Type == 41)
+							if (useItem.ItemTemplate.ItemType == 41)
 							{
 								potionEffectLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
 							}
 
-							Spell spell = SkillBase.FindSpell(useItem.SpellID, potionEffectLine);
+							Spell spell = SkillBase.FindSpell(itemSpell.SpellID, potionEffectLine);
 
 							if (spell != null)
 							{
@@ -9001,7 +8980,7 @@ namespace DOL.GS
 								{
 									if (potionEffectLine != null)
 									{
-										int requiredLevel = useItem.Template.LevelRequirement > 0 ? useItem.Template.LevelRequirement : Math.Min(MaxLevel, useItem.Level);
+										int requiredLevel = useItem.ItemTemplate.LevelRequirement > 0 ? useItem.ItemTemplate.LevelRequirement : Math.Min(MaxLevel, useItem.ItemTemplate.Level);
 
 										if (requiredLevel <= Level)
 										{
@@ -9012,11 +8991,11 @@ namespace DOL.GS
 											//Eden
 											else if ((IsStunned && !(Steed != null && Steed.Name == "Forceful Zephyr")) || IsMezzed || !IsAlive)
 											{
-												Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.CantUseState", useItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+												Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.CantUseState", useItem.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 											}
 											else if (spell.CastTime > 0 && IsCasting)
 											{
-												Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.CantUseCast", useItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+												Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.CantUseCast", useItem.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 											}
 											else
 											{
@@ -9040,7 +9019,7 @@ namespace DOL.GS
 
 													Stealth(false);
 
-													if (useItem.Item_Type == (int)eInventorySlot.FirstBackpack)
+													if (useItem.ItemTemplate.ItemType == (int)eInventorySlot.FirstBackpack)
 													{
 														Emote(eEmote.Drink);
 
@@ -9054,20 +9033,20 @@ namespace DOL.GS
 														if (useItem.Count > 1)
 														{
 															Inventory.RemoveCountFromStack(useItem, 1);
-															InventoryLogging.LogInventoryAction(this, "(potion)", eInventoryActionType.Other, useItem.Template);
+															InventoryLogging.LogInventoryAction(this, "(potion)", eInventoryActionType.Other, useItem.ItemTemplate);
 														}
 														else
 														{
-															useItem.Charges--;
-															if (useItem.Charges < 1)
+															itemSpell.Charges--;
+															if (itemSpell.Charges < 1)
 															{
 																Inventory.RemoveCountFromStack(useItem, 1);
-																InventoryLogging.LogInventoryAction(this, "(potion)", eInventoryActionType.Other, useItem.Template);
+																InventoryLogging.LogInventoryAction(this, "(potion)", eInventoryActionType.Other, useItem.ItemTemplate);
 															}
 														}
-														Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.Used", useItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+														Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.Used", useItem.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-														TempProperties.setProperty(NEXT_POTION_AVAIL_TIME + "_Type" + (spell.SharedTimerGroup), useItem.CanUseEvery * 1000 + CurrentRegion.Time);
+														TempProperties.setProperty(NEXT_POTION_AVAIL_TIME + "_Type" + (spell.SharedTimerGroup), useItem.ItemTemplate.CanUseEvery * 1000 + CurrentRegion.Time);
 													}
 													else
 													{
@@ -9093,7 +9072,7 @@ namespace DOL.GS
 							}
 							else
 							{
-								Out.SendMessage("Potion effect spell ID " + useItem.SpellID + " not found.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								Out.SendMessage("Potion effect spell ID " + itemSpell.SpellID + " not found.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							}
 						}
 						else if (type > 0)
@@ -9107,8 +9086,8 @@ namespace DOL.GS
 								long lastChargedItemUseTick = TempProperties.getProperty<long>(LAST_CHARGED_ITEM_USE_TICK);
 								long changeTime = CurrentRegion.Time - lastChargedItemUseTick;
 								long delay = TempProperties.getProperty<long>(ITEM_USE_DELAY, 0L);
-								long itemdelay = TempProperties.getProperty<long>("ITEMREUSEDELAY" + useItem.Id_nb);
-								long itemreuse = (long)useItem.CanUseEvery * 1000;
+								long itemdelay = TempProperties.getProperty<long>("ITEMREUSEDELAY" + useItem.ItemTemplate.Id);
+								long itemreuse = (long)useItem.ItemTemplate.CanUseEvery * 1000;
 								if (itemdelay == 0) itemdelay = CurrentRegion.Time - itemreuse;
 
 								if ((IsStunned && !(Steed != null && Steed.Name == "Forceful Zephyr")) || IsMezzed || !IsAlive)
@@ -9129,20 +9108,7 @@ namespace DOL.GS
 								}
 								else
 								{
-									if (type == 1) //use1
-									{
-										if (useItem.SpellID == 0)
-											return;
-
-										UseItemCharge(useItem, type);
-									}
-									else if (type == 2) //use2
-									{
-										if (useItem.SpellID1 == 0)
-											return;
-
-										UseItemCharge(useItem, type);
-									}
+									UseItemCharge(useItem, type);
 								}
 							}
 						}
@@ -9161,7 +9127,7 @@ namespace DOL.GS
 		{
 			eHorseSaddleBag bag = eHorseSaddleBag.None;
 
-			switch ((eInventorySlot)useItem.Item_Type)
+			switch ((eInventorySlot)useItem.ItemTemplate.ItemType)
 			{
 				case eInventorySlot.LeftFrontSaddleBag:
 					if (ChampionLevel >= 2)
@@ -9211,7 +9177,7 @@ namespace DOL.GS
 				{
 					if (Inventory.RemoveItem(useItem))
 					{
-						InventoryLogging.LogInventoryAction(this, "(HorseSaddleBag)", eInventoryActionType.Other, useItem.Template, useItem.Count);
+						InventoryLogging.LogInventoryAction(this, "(HorseSaddleBag)", eInventoryActionType.Other, useItem.ItemTemplate, useItem.Count);
 						ActiveSaddleBags |= (byte)bag;
 						Out.SendSetControlledHorse(this);
 						Out.SendMessage("You've activated a saddlebag!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -9300,7 +9266,7 @@ namespace DOL.GS
 		/// <param name="type">1 == use1, 2 == use2</param>
 		protected virtual void UseItemCharge(InventoryItem useItem, int type)
 		{
-			int requiredLevel = useItem.Template.LevelRequirement > 0 ? useItem.Template.LevelRequirement : Math.Min(MaxLevel, useItem.Level);
+			int requiredLevel = useItem.ItemTemplate.LevelRequirement > 0 ? useItem.ItemTemplate.LevelRequirement : Math.Min(MaxLevel, useItem.ItemTemplate.Level);
 
 			if (requiredLevel > Level)
 			{
@@ -9311,14 +9277,15 @@ namespace DOL.GS
 			SpellLine chargeEffectLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
 			Spell spell = null;
 
-			if (type == 1)
-			{
-				spell = SkillBase.FindSpell(useItem.SpellID, chargeEffectLine);
-			}
-			else
-			{
-				spell = SkillBase.FindSpell(useItem.SpellID1, chargeEffectLine);
-			}
+			var itemSpell = useItem.Spells.Where(x => x.ProcChance <= 0 && !x.IsPoison)
+										  .OrderBy(x => x.Id)
+										  .Skip(type - 1)
+										  .FirstOrDefault();
+
+			if (itemSpell == null)
+				return;
+
+			spell = SkillBase.FindSpell(itemSpell.SpellID, chargeEffectLine);
 
 			if (spell != null)
 			{
@@ -9346,16 +9313,16 @@ namespace DOL.GS
 								}
 							}
 						}
-						if (useItem.MaxCharges > 0)
+						if (itemSpell.MaxCharges > 0)
 						{
-							useItem.Charges--;
+							itemSpell.Charges--;
 						}
 
 						if (castOk)
 						{
 							TempProperties.setProperty(LAST_CHARGED_ITEM_USE_TICK, CurrentRegion.Time);
 							TempProperties.setProperty(ITEM_USE_DELAY, (long)(60000 * 2));
-							TempProperties.setProperty("ITEMREUSEDELAY" + useItem.Id_nb, CurrentRegion.Time);
+							TempProperties.setProperty("ITEMREUSEDELAY" + useItem.ItemTemplate.Id, CurrentRegion.Time);
 						}
 					}
 				}
@@ -9366,14 +9333,7 @@ namespace DOL.GS
 			}
 			else
 			{
-				if (type == 1)
-				{
-					Out.SendMessage("Charge effect ID " + useItem.SpellID + " not found.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				}
-				else
-				{
-					Out.SendMessage("Charge effect ID " + useItem.SpellID1 + " not found.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				}
+				Out.SendMessage("Charge effect ID " + itemSpell.SpellID + " not found.", eChatType.CT_System, eChatLoc.CL_SystemWindow);				
 			}
 		}
 
@@ -9424,11 +9384,18 @@ namespace DOL.GS
 
 			if (type == 1 || type == 0)
 			{
-				Spell spell = SkillBase.FindSpell(item.SpellID, itemSpellLine);
+				var itemSpell = item.Spells.OrderBy(x => x.Id).FirstOrDefault(x => x.ProcChance <= 0 && !x.IsPoison);
+				if (itemSpell == null)
+                {
+					Out.SendMessage("No spell found on this item.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					return false;
+				}
+
+				Spell spell = SkillBase.FindSpell(itemSpell.SpellID, itemSpellLine);
 
 				if (spell != null)
 				{
-					int requiredLevel = item.Template.LevelRequirement > 0 ? item.Template.LevelRequirement : Math.Min(MaxLevel, item.Level);
+					int requiredLevel = item.ItemTemplate.LevelRequirement > 0 ? item.ItemTemplate.LevelRequirement : Math.Min(MaxLevel, item.ItemTemplate.Level);
 
 					if (requiredLevel > Level)
 					{
@@ -9436,7 +9403,7 @@ namespace DOL.GS
 						return false;
 					}
 
-					Out.SendMessage(String.Format("You use {0}.", item.GetName(0, false)), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(String.Format("You use {0}.", item.ItemTemplate.GetName(0, false)), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 
 					ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(this, spell, itemSpellLine);
 					if (spellHandler == null)
@@ -9475,17 +9442,17 @@ namespace DOL.GS
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantUsePoisons"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
 			}
-			if (!GlobalConstants.IsWeapon(toItem.Object_Type))
+			if (!GlobalConstants.IsWeapon(toItem.ItemTemplate.ObjectType))
 			{
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.PoisonsAppliedWeapons"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
 			}
-			if (!HasAbilityToUseItem(toItem.Template))
+			if (!HasAbilityToUseItem(toItem.ItemTemplate))
 			{
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantPoisonWeapon"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
 			}
-			if (envenomSpec < poisonPotion.Level)
+			if (envenomSpec < poisonPotion.ItemTemplate.Level)
 			{
 				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ApplyPoison.CantUsePoison"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
@@ -9496,7 +9463,8 @@ namespace DOL.GS
 				return false;
 			}
 
-			if (toItem.PoisonSpellID != 0)
+			var poisonSpell = toItem.Spells.FirstOrDefault(x => x.IsPoison);
+			if (poisonSpell != null)
 			{
 				bool canApply = false;
 				SpellLine poisonLine = SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons);
@@ -9505,7 +9473,7 @@ namespace DOL.GS
 					List<Spell> spells = SkillBase.GetSpellList(poisonLine.KeyName);
 					foreach (Spell spl in spells)
 					{
-						if (spl.ID == toItem.PoisonSpellID)
+						if (spl.ID == poisonSpell.SpellID)
 						{
 							canApply = true;
 							break;
@@ -9514,27 +9482,39 @@ namespace DOL.GS
 				}
 				if (canApply == false)
 				{
-					Out.SendMessage(string.Format("You can't poison your {0}!", toItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format("You can't poison your {0}!", toItem.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return false;
 				}
 			}
 
 			// Apply poison effect to weapon
-			if (poisonPotion.PoisonSpellID != 0)
+			poisonSpell = poisonPotion.Spells.FirstOrDefault(x => x.IsPoison);
+			var templatePoisonSpell = poisonPotion.ItemTemplate.Spells.FirstOrDefault(x => x.IsPoison);
+
+			if (poisonSpell != null)
 			{
-				toItem.PoisonCharges = poisonPotion.PoisonCharges;
-				toItem.PoisonMaxCharges = poisonPotion.PoisonMaxCharges;
-				toItem.PoisonSpellID = poisonPotion.PoisonSpellID;
+				toItem.Spells.Add(new InventoryItemSpell()
+				{
+					SpellID = poisonSpell.SpellID,
+					Charges = poisonSpell.Charges,
+					IsPoison = poisonSpell.IsPoison,
+					MaxCharges = poisonSpell.MaxCharges,
+				});
 			}
-			else
-			{
-				toItem.PoisonCharges = poisonPotion.Template.PoisonCharges;
-				toItem.PoisonMaxCharges = poisonPotion.Template.PoisonMaxCharges;
-				toItem.PoisonSpellID = poisonPotion.Template.PoisonSpellID;
+			else if (templatePoisonSpell != null)
+            {
+				toItem.Spells.Add(new InventoryItemSpell()
+				{
+					SpellID = templatePoisonSpell.SpellID,
+					Charges = templatePoisonSpell.Charges,
+					IsPoison = templatePoisonSpell.IsPoison,
+					MaxCharges = templatePoisonSpell.MaxCharges,
+				});
 			}
+			
 			Inventory.RemoveCountFromStack(poisonPotion, 1);
-			InventoryLogging.LogInventoryAction(this, "(poison)", eInventoryActionType.Other, poisonPotion.Template);
-			Out.SendMessage(string.Format("You apply {0} to {1}.", poisonPotion.GetName(0, false), toItem.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			InventoryLogging.LogInventoryAction(this, "(poison)", eInventoryActionType.Other, poisonPotion.ItemTemplate);
+			Out.SendMessage(string.Format("You apply {0} to {1}.", poisonPotion.ItemTemplate.GetName(0, false), toItem.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			return true;
 		}
 
@@ -10336,7 +10316,7 @@ namespace DOL.GS
 		#region Group/Friendlist/guild
 
 		private Guild m_guild;
-		private DBRank m_guildRank;
+		private Atlas.DataLayer.Models.GuildRank m_guildRank;
 
 		/// <summary>
 		/// Gets or sets the player's guild
@@ -10375,7 +10355,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets or sets the player's guild rank
 		/// </summary>
-		public DBRank GuildRank
+		public Atlas.DataLayer.Models.GuildRank GuildRank
 		{
 			get { return m_guildRank; }
 			set
@@ -10390,9 +10370,9 @@ namespace DOL.GS
 		/// Gets or sets the database guildid of this player
 		/// (delegate to DBCharacter)
 		/// </summary>
-		public string GuildID
+		public int GuildID
 		{
-			get { return DBCharacter != null ? DBCharacter.GuildID : string.Empty; }
+			get { return DBCharacter != null ? DBCharacter.GuildID : 0; }
 			set { if (DBCharacter != null) DBCharacter.GuildID = value; }
 		}
 
@@ -10583,7 +10563,7 @@ namespace DOL.GS
 			set
 			{
 				base.CurrentRegion = value;
-				if (DBCharacter != null) DBCharacter.Region = CurrentRegionID;
+				if (DBCharacter != null) DBCharacter.RegionID = CurrentRegionID;
 			}
 		}
 
@@ -10905,7 +10885,7 @@ namespace DOL.GS
 					if (AttackState && ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 					{
 						string attackTypeMsg = "shot";
-						if (AttackWeapon.Object_Type == (int)eObjectType.Thrown)
+						if (AttackWeapon.ItemTemplate.ObjectType == (int)eObjectType.Thrown)
 							attackTypeMsg = "throw";
 						Out.SendMessage("You move and interrupt your " + attackTypeMsg + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 						StopAttack();
@@ -11044,7 +11024,7 @@ namespace DOL.GS
 			{
 				if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 				{
-					string attackTypeMsg = (AttackWeapon.Object_Type == (int)eObjectType.Thrown ? "throw" : "shot");
+					string attackTypeMsg = (AttackWeapon.ItemTemplate.ObjectType == (int)eObjectType.Thrown ? "throw" : "shot");
 					Out.SendMessage("You move and interrupt your " + attackTypeMsg + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					StopAttack();
 				}
@@ -11338,124 +11318,65 @@ namespace DOL.GS
 				(item as IGameInventoryItem).OnEquipped(this);
 			}
 
-			if (item.Item_Type >= Slot.RIGHTHAND && item.Item_Type <= Slot.RANGED)
+			if (item.ItemTemplate.ItemType >= Slot.RIGHTHAND && item.ItemTemplate.ItemType <= Slot.RANGED)
 			{
-				if (item.Hand == 1) // 2h
+				if (item.ItemTemplate.Hand == 1) // 2h
 				{
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.WieldBothHands", item.GetName(0, false))), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.WieldBothHands", item.ItemTemplate.GetName(0, false))), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				else if (item.SlotPosition == Slot.LEFTHAND)
 				{
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.WieldLeftHand", item.GetName(0, false))), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.WieldLeftHand", item.ItemTemplate.GetName(0, false))), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				else
 				{
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.WieldRightHand", item.GetName(0, false))), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.WieldRightHand", item.ItemTemplate.GetName(0, false))), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 			}
 
-			if (item.Item_Type == (int)eInventorySlot.Horse)
+			if (item.ItemTemplate.ItemType == (int)eInventorySlot.Horse)
 			{
 				if (item.SlotPosition == Slot.HORSE)
 				{
-					ActiveHorse.ID = (byte)(item.SPD_ABS == 0 ? 1 : item.SPD_ABS);
+					ActiveHorse.ID = (byte)(item.ItemTemplate.SPD_ABS == 0 ? 1 : item.ItemTemplate.SPD_ABS);
 					ActiveHorse.Name = item.Creator;
 				}
 				return;
 			}
-			else if (item.Item_Type == (int)eInventorySlot.HorseArmor)
+			else if (item.ItemTemplate.ItemType == (int)eInventorySlot.HorseArmor)
 			{
 				if (item.SlotPosition == Slot.HORSEARMOR)
 				{
 					//					Out.SendDebugMessage("Try apply horse armor.");
-					ActiveHorse.Saddle = (byte)(item.DPS_AF);
+					ActiveHorse.Saddle = (byte)(item.ItemTemplate.DPS_AF);
 				}
 				return;
 			}
-			else if (item.Item_Type == (int)eInventorySlot.HorseBarding)
+			else if (item.ItemTemplate.ItemType == (int)eInventorySlot.HorseBarding)
 			{
 				if (item.SlotPosition == Slot.HORSEBARDING)
 				{
 					//					Out.SendDebugMessage("Try apply horse barding.");
-					ActiveHorse.Barding = (byte)(item.DPS_AF);
+					ActiveHorse.Barding = (byte)(item.ItemTemplate.DPS_AF);
 				}
 				return;
 			}
 
-			if (!item.IsMagical) return;
+			if (!item.ItemTemplate.Bonuses.Any()) return;
 
-			Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Magic", item.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+			Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Magic", item.ItemTemplate.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 
-			if (item.Bonus1 != 0)
-			{
-				ItemBonus[item.Bonus1Type] += item.Bonus1;
-				if (item.Bonus1Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus1Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+			foreach (var bonus in item.ItemTemplate.Bonuses)
+            {
+				ItemBonus[bonus.BonusType] += bonus.BonusValue;
+				if (bonus.BonusType < 20)
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(bonus.BonusType))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 			}
-			if (item.Bonus2 != 0)
-			{
-				ItemBonus[item.Bonus2Type] += item.Bonus2;
-				if (item.Bonus2Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus2Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus3 != 0)
-			{
-				ItemBonus[item.Bonus3Type] += item.Bonus3;
-				if (item.Bonus3Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus3Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus4 != 0)
-			{
-				ItemBonus[item.Bonus4Type] += item.Bonus4;
-				if (item.Bonus4Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus4Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus5 != 0)
-			{
-				ItemBonus[item.Bonus5Type] += item.Bonus5;
-				if (item.Bonus5Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus5Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus6 != 0)
-			{
-				ItemBonus[item.Bonus6Type] += item.Bonus6;
-				if (item.Bonus6Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus6Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus7 != 0)
-			{
-				ItemBonus[item.Bonus7Type] += item.Bonus7;
-				if (item.Bonus7Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus7Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus8 != 0)
-			{
-				ItemBonus[item.Bonus8Type] += item.Bonus8;
-				if (item.Bonus8Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus8Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus9 != 0)
-			{
-				ItemBonus[item.Bonus9Type] += item.Bonus9;
-				if (item.Bonus9Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus9Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus10 != 0)
-			{
-				ItemBonus[item.Bonus10Type] += item.Bonus10;
-				if (item.Bonus10Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.Bonus10Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.ExtraBonus != 0)
-			{
-				ItemBonus[item.ExtraBonusType] += item.ExtraBonus;
-				//if (item.ExtraBonusType < 20)
-				//Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemEquipped.Increased", ItemBonusName(item.ExtraBonusType))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
+
 			//Check null on client.player bypass region change
 			if (Client.Account.PrivLevel == (uint)ePrivLevel.Player && Client.Player != null && Client.Player.ObjectState == eObjectState.Active)
-				if (item.SpellID > 0 || item.SpellID1 > 0)
-					TempProperties.setProperty("ITEMREUSEDELAY" + item.Id_nb, CurrentRegion.Time);
+				if (item.Spells.Any(x=> x.ProcChance <=0 && !x.IsPoison))
+					TempProperties.setProperty("ITEMREUSEDELAY" + item.Id, CurrentRegion.Time);
 
 			if (ObjectState == eObjectState.Active)
 			{
@@ -11496,28 +11417,28 @@ namespace DOL.GS
 			int prevSlot = (int)((ItemUnequippedArgs)arguments).PreviousSlotPosition;
 			if (item == null) return;
 
-			if (item.Item_Type >= Slot.RIGHTHAND && item.Item_Type <= Slot.RANGED)
+			if (item.ItemTemplate.ItemType >= Slot.RIGHTHAND && item.ItemTemplate.ItemType <= Slot.RANGED)
 			{
-				if (item.Hand == 1) // 2h
+				if (item.ItemTemplate.Hand == 1) // 2h
 				{
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.BothHandsFree", item.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.BothHandsFree", item.ItemTemplate.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 				}
 				else if (prevSlot == Slot.LEFTHAND)
 				{
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.LeftHandFree", item.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.LeftHandFree", item.ItemTemplate.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 				}
 				else
 				{
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.RightHandFree", item.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.RightHandFree", item.ItemTemplate.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 				}
 			}
 
-			if (prevSlot == Slot.MYTHICAL && item.Item_Type == (int)eInventorySlot.Mythical && item is GameMythirian)
+			if (prevSlot == Slot.MYTHICAL && item.ItemTemplate.ItemType == (int)eInventorySlot.Mythical && item is GameMythirian)
 			{
 				(item as GameMythirian).OnUnEquipped(this);
 			}
 
-			if (item.Item_Type == (int)eInventorySlot.Horse)
+			if (item.ItemTemplate.ItemType == (int)eInventorySlot.Horse)
 			{
 				if (IsOnHorse)
 					IsOnHorse = false;
@@ -11526,86 +11447,26 @@ namespace DOL.GS
 				//				Out.SendDebugMessage("Try unapply horse.");
 				return;
 			}
-			else if (item.Item_Type == (int)eInventorySlot.HorseArmor)
+			else if (item.ItemTemplate.ItemType == (int)eInventorySlot.HorseArmor)
 			{
 				ActiveHorse.Saddle = 0;
 				//				Out.SendDebugMessage("Try unapply saddle.");
 				return;
 			}
-			else if (item.Item_Type == (int)eInventorySlot.HorseBarding)
+			else if (item.ItemTemplate.ItemType == (int)eInventorySlot.HorseBarding)
 			{
 				ActiveHorse.Barding = 0;
 				//				Out.SendDebugMessage("Try unapply barding.");
 				return;
 			}
 
-			if (!item.IsMagical) return;
+			if (!item.ItemTemplate.Bonuses.Any()) return;
 
-			if (item.Bonus1 != 0)
-			{
-				ItemBonus[item.Bonus1Type] -= item.Bonus1;
-				if (item.Bonus1Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus1Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus2 != 0)
-			{
-				ItemBonus[item.Bonus2Type] -= item.Bonus2;
-				if (item.Bonus2Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus2Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus3 != 0)
-			{
-				ItemBonus[item.Bonus3Type] -= item.Bonus3;
-				if (item.Bonus3Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus3Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus4 != 0)
-			{
-				ItemBonus[item.Bonus4Type] -= item.Bonus4;
-				if (item.Bonus4Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus4Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus5 != 0)
-			{
-				ItemBonus[item.Bonus5Type] -= item.Bonus5;
-				if (item.Bonus5Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus5Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus6 != 0)
-			{
-				ItemBonus[item.Bonus6Type] -= item.Bonus6;
-				if (item.Bonus6Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus6Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus7 != 0)
-			{
-				ItemBonus[item.Bonus7Type] -= item.Bonus7;
-				if (item.Bonus7Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus7Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus8 != 0)
-			{
-				ItemBonus[item.Bonus8Type] -= item.Bonus8;
-				if (item.Bonus8Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus8Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus9 != 0)
-			{
-				ItemBonus[item.Bonus9Type] -= item.Bonus9;
-				if (item.Bonus9Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus9Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.Bonus10 != 0)
-			{
-				ItemBonus[item.Bonus10Type] -= item.Bonus10;
-				if (item.Bonus10Type < 20)
-					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.Bonus10Type))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-			}
-			if (item.ExtraBonus != 0)
-			{
-				ItemBonus[item.ExtraBonusType] -= item.ExtraBonus;
-				//if (item.ExtraBonusType < 20)
-				//Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(item.ExtraBonusType))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+			foreach (var bonus in item.ItemTemplate.Bonuses)
+            {
+				ItemBonus[bonus.BonusType] -= bonus.BonusValue;
+				if (bonus.BonusType < 20)
+					Out.SendMessage(string.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnItemUnequipped.Decreased", ItemBonusName(bonus.BonusType))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 			}
 
 			if (item is IGameInventoryItem)
@@ -11702,52 +11563,12 @@ namespace DOL.GS
 					(item as IGameInventoryItem).CheckValid(this);
 				}
 
-				if (item.IsMagical)
+				if (item.ItemTemplate.Bonuses.Any())
 				{
-					if (item.Bonus1 != 0)
-					{
-						ItemBonus[item.Bonus1Type] += item.Bonus1;
-					}
-					if (item.Bonus2 != 0)
-					{
-						ItemBonus[item.Bonus2Type] += item.Bonus2;
-					}
-					if (item.Bonus3 != 0)
-					{
-						ItemBonus[item.Bonus3Type] += item.Bonus3;
-					}
-					if (item.Bonus4 != 0)
-					{
-						ItemBonus[item.Bonus4Type] += item.Bonus4;
-					}
-					if (item.Bonus5 != 0)
-					{
-						ItemBonus[item.Bonus5Type] += item.Bonus5;
-					}
-					if (item.Bonus6 != 0)
-					{
-						ItemBonus[item.Bonus6Type] += item.Bonus6;
-					}
-					if (item.Bonus7 != 0)
-					{
-						ItemBonus[item.Bonus7Type] += item.Bonus7;
-					}
-					if (item.Bonus8 != 0)
-					{
-						ItemBonus[item.Bonus8Type] += item.Bonus8;
-					}
-					if (item.Bonus9 != 0)
-					{
-						ItemBonus[item.Bonus9Type] += item.Bonus9;
-					}
-					if (item.Bonus10 != 0)
-					{
-						ItemBonus[item.Bonus10Type] += item.Bonus10;
-					}
-					if (item.ExtraBonus != 0)
-					{
-						ItemBonus[item.ExtraBonusType] += item.ExtraBonus;
-					}
+					foreach (var bonus in item.ItemTemplate.Bonuses)
+                    {
+						ItemBonus[bonus.BonusType] += bonus.BonusValue;
+                    }					
 				}
 			}
 		}
@@ -11803,18 +11624,15 @@ namespace DOL.GS
 
 			if (!Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item))
 				return false;
-			InventoryLogging.LogInventoryAction(source, this, eInventoryActionType.Trade, item.Template, item.Count);
+			InventoryLogging.LogInventoryAction(source, this, eInventoryActionType.Trade, item.ItemTemplate, item.Count);
 
 			if (source == null)
 			{
-				Out.SendMessage(String.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ReceiveItem.Receive", item.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+				Out.SendMessage(String.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ReceiveItem.Receive", item.ItemTemplate.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 			}
 			else
 			{
-                if (source is GameNPC)
-                    Out.SendMessage(String.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ReceiveItem.ReceiveFrom", item.GetName(0, false), source.GetName(0, false, Client.Account.Language, (source as GameNPC)))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
-                else
-                    Out.SendMessage(String.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ReceiveItem.ReceiveFrom", item.GetName(0, false), source.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
+				Out.SendMessage(String.Format(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.ReceiveItem.ReceiveFrom", item.ItemTemplate.GetName(0, false), source.GetName(0, false))), eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 			}
 
 			if (source is GamePlayer)
@@ -11822,13 +11640,13 @@ namespace DOL.GS
 				GamePlayer sourcePlayer = source as GamePlayer;
 				if (sourcePlayer != null)
 				{
-					uint privLevel1 = Client.Account.PrivLevel;
-					uint privLevel2 = sourcePlayer.Client.Account.PrivLevel;
+					int privLevel1 = Client.Account.PrivLevel;
+					int privLevel2 = sourcePlayer.Client.Account.PrivLevel;
 					if (privLevel1 != privLevel2
 					    && (privLevel1 > 1 || privLevel2 > 1)
 					    && (privLevel1 == 1 || privLevel2 == 1))
 					{
-						GameServer.Instance.LogGMAction("   Item: " + source.Name + "(" + sourcePlayer.Client.Account.Name + ") -> " + Name + "(" + Client.Account.Name + ") : " + item.Name + "(" + item.Id_nb + ")");
+						GameServer.Instance.LogGMAction("   Item: " + source.Name + "(" + sourcePlayer.Client.Account.Name + ") -> " + Name + "(" + Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
 					}
 				}
 			}
@@ -11861,14 +11679,14 @@ namespace DOL.GS
 				lock (Inventory)
 				{
 					InventoryItem item = Inventory.GetItem(slot_pos);
-					if (!item.IsDropable)
+					if (!item.ItemTemplate.IsDropable)
 					{
-						Out.SendMessage(item.GetName(0, true) + " can not be dropped!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						Out.SendMessage(item.ItemTemplate.GetName(0, true) + " can not be dropped!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return false;
 					}
 
 					if (!Inventory.RemoveItem(item)) return false;
-					InventoryLogging.LogInventoryAction(this, "(ground)", eInventoryActionType.Other, item.Template, item.Count);
+					InventoryLogging.LogInventoryAction(this, "(ground)", eInventoryActionType.Other, item.ItemTemplate, item.Count);
 
 					droppedItem = CreateItemOnTheGround(item);
 
@@ -11960,7 +11778,7 @@ namespace DOL.GS
 					if (floorItem.ObjectState != eObjectState.Active)
 						return false;
 
-					if (floorItem.Item == null || floorItem.Item.IsPickable == false)
+					if (floorItem.Item == null || floorItem.Item.ItemTemplate.IsPickable == false)
 					{
 						Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.CantGetThat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return false;
@@ -11979,7 +11797,7 @@ namespace DOL.GS
 						if (theTreasurer.CanSeeObject(floorObject))
 						{
 							bool good = false;
-							if (floorItem.Item.IsStackable)
+							if (floorItem.Item.ItemTemplate.IsStackable)
 								good = theTreasurer.Inventory.AddTemplate(floorItem.Item, floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 							else
 								good = theTreasurer.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, floorItem.Item);
@@ -11989,9 +11807,9 @@ namespace DOL.GS
 								theTreasurer.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.BackpackFull"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return false;
 							}
-							theTreasurer.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.YouGet", floorItem.Item.GetName(1, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-							Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.GetName(1, false)), eChatType.CT_System);
-							InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.Template, floorItem.Item.IsStackable ? floorItem.Item.Count : 1);
+							theTreasurer.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.YouGet", floorItem.Item.ItemTemplate.GetName(1, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.ItemTemplate.GetName(1, false)), eChatType.CT_System);
+							InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.ItemTemplate, floorItem.Item.ItemTemplate.IsStackable ? floorItem.Item.Count : 1);
 						}
 						else
 						{
@@ -12027,7 +11845,7 @@ namespace DOL.GS
 						if (eligibleMember != null)
 						{
 							bool good = false;
-							if (floorItem.Item.IsStackable) // poison ID is lost here
+							if (floorItem.Item.ItemTemplate.IsStackable) // poison ID is lost here
 								good = eligibleMember.Inventory.AddTemplate(floorItem.Item, floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 							else
 								good = eligibleMember.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, floorItem.Item);
@@ -12037,15 +11855,15 @@ namespace DOL.GS
 								eligibleMember.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.BackpackFull"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return false;
 							}
-							Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.GetName(1, false)), eChatType.CT_System);
-							group.SendMessageToGroupMembers(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.Autosplit", floorItem.Item.GetName(1, true), eligibleMember.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-							InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.Template, floorItem.Item.IsStackable ? floorItem.Item.Count : 1);
+							Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.ItemTemplate.GetName(1, false)), eChatType.CT_System);
+							group.SendMessageToGroupMembers(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.Autosplit", floorItem.Item.ItemTemplate.GetName(1, true), eligibleMember.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.ItemTemplate, floorItem.Item.ItemTemplate.IsStackable ? floorItem.Item.Count : 1);
 						}
 					}
 					else
 					{
 						bool good = false;
-						if (floorItem.Item.IsStackable)
+						if (floorItem.Item.ItemTemplate.IsStackable)
 							good = Inventory.AddTemplate(GameInventoryItem.Create(floorItem.Item), floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 						else
 							good = Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, floorItem.Item);
@@ -12055,9 +11873,9 @@ namespace DOL.GS
 							Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.BackpackFull"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							return false;
 						}
-						Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.YouGet", floorItem.Item.GetName(1, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.GetName(1, false)), eChatType.CT_System);
-						InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.Template, floorItem.Item.IsStackable ? floorItem.Item.Count : 1);
+						Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.YouGet", floorItem.Item.ItemTemplate.GetName(1, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.ItemTemplate.GetName(1, false)), eChatType.CT_System);
+						InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.ItemTemplate, floorItem.Item.ItemTemplate.IsStackable ? floorItem.Item.Count : 1);
 					}
 					floorItem.RemoveFromWorld();
 				}
@@ -12149,7 +11967,7 @@ namespace DOL.GS
 				GameHouseVault houseVault = floorObject as GameHouseVault;
 				if (houseVault.Detach(this))
 				{
-					ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(houseVault.TemplateID);
+					ItemTemplate template = GameServer.Database.ItemTemplates.Find(houseVault.TemplateID);
 					Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, GameInventoryItem.Create(template));
 					InventoryLogging.LogInventoryAction("(HOUSE;" + floorObject.CurrentHouse.HouseNumber + ")", this, eInventoryActionType.Other, template);
 				}
@@ -12330,7 +12148,7 @@ namespace DOL.GS
 		/// </summary>
 		protected virtual void LoadSkillsFromCharacter()
 		{
-			DOLCharacters character = DBCharacter; // if its derived and filled with some code
+			var character = DBCharacter; // if its derived and filled with some code
 			if (character == null) return; // no character => exit
 
 			#region load class spec
@@ -12583,12 +12401,12 @@ namespace DOL.GS
 		/// Loads this player from a character table slot
 		/// </summary>
 		/// <param name="obj">DOLCharacter</param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
 			base.LoadFromDatabase(obj);
-			if (!(obj is DOLCharacters))
+			if (!(obj is Character))
 				return;
-			m_dbCharacter = (DOLCharacters)obj;
+			m_dbCharacter = (Character)obj;
 
 			// Money
 			m_Copper = DBCharacter.Copper;
@@ -12599,13 +12417,13 @@ namespace DOL.GS
 			
 			Model = (ushort)DBCharacter.CurrentModel;
 
-			m_customFaceAttributes[(int)eCharFacePart.EyeSize] = DBCharacter.EyeSize;
-			m_customFaceAttributes[(int)eCharFacePart.LipSize] = DBCharacter.LipSize;
-			m_customFaceAttributes[(int)eCharFacePart.EyeColor] = DBCharacter.EyeColor;
-			m_customFaceAttributes[(int)eCharFacePart.HairColor] = DBCharacter.HairColor;
-			m_customFaceAttributes[(int)eCharFacePart.FaceType] = DBCharacter.FaceType;
-			m_customFaceAttributes[(int)eCharFacePart.HairStyle] = DBCharacter.HairStyle;
-			m_customFaceAttributes[(int)eCharFacePart.MoodType] = DBCharacter.MoodType;
+			m_customFaceAttributes[(int)eCharFacePart.EyeSize] = (byte)DBCharacter.EyeSize;
+			m_customFaceAttributes[(int)eCharFacePart.LipSize] = (byte)DBCharacter.LipSize;
+			m_customFaceAttributes[(int)eCharFacePart.EyeColor] = (byte)DBCharacter.EyeColor;
+			m_customFaceAttributes[(int)eCharFacePart.HairColor] = (byte)DBCharacter.HairColor;
+			m_customFaceAttributes[(int)eCharFacePart.FaceType] = (byte)DBCharacter.FaceType;
+			m_customFaceAttributes[(int)eCharFacePart.HairStyle] = (byte)DBCharacter.HairStyle;
+			m_customFaceAttributes[(int)eCharFacePart.MoodType] = (byte)DBCharacter.MoodType;
 
 			#region guild handling
 			//TODO: overwork guild handling (VaNaTiC)
@@ -12617,7 +12435,7 @@ namespace DOL.GS
 
 			if (m_guild != null)
 			{
-				foreach (DBRank rank in m_guild.Ranks)
+				foreach (GuildRank rank in m_guild.Ranks)
 				{
 					if (rank == null) continue;
 					if (rank.RankLevel == DBCharacter.GuildRank)
@@ -12639,10 +12457,10 @@ namespace DOL.GS
 			m_Heading = (ushort)DBCharacter.Direction;
 			//important, use CurrentRegion property
 			//instead because it sets the Region too
-			CurrentRegionID = (ushort)DBCharacter.Region;
+			CurrentRegionID = (ushort)DBCharacter.RegionID;
 			if (CurrentRegion == null || CurrentRegion.GetZone(m_x, m_y) == null)
 			{
-				log.WarnFormat("Invalid region/zone on char load ({0}): x={1} y={2} z={3} reg={4}; moving to bind point.", DBCharacter.Name, X, Y, Z, DBCharacter.Region);
+				log.WarnFormat("Invalid region/zone on char load ({0}): x={1} y={2} z={3} reg={4}; moving to bind point.", DBCharacter.Name, X, Y, Z, DBCharacter.RegionID);
 				m_x = DBCharacter.BindXpos;
 				m_y = DBCharacter.BindYpos;
 				m_z = DBCharacter.BindZpos;
@@ -12711,7 +12529,7 @@ namespace DOL.GS
 			LoadQuests();
 
 			// Load Task object of player ...
-			var tasks = DOLDB<DBTask>.SelectObjects(DB.Column("Character_ID").IsEqualTo(InternalID));
+			var tasks = GameServer.Database.CharacterTasks.Where(x=>x.CharacterID == InternalID).ToList();
 			if (tasks.Count == 1)
 			{
 				m_task = AbstractTask.LoadFromDatabase(this, tasks[0]);
@@ -12723,14 +12541,14 @@ namespace DOL.GS
 			}
 
 			// Load ML steps of player ...
-			var mlsteps = DOLDB<DBCharacterXMasterLevel>.SelectObjects(DB.Column("Character_ID").IsEqualTo(QuestPlayerID));
+			var mlsteps = GameServer.Database.CharacterMasterLevels.Where(x=> x.CharacterID == QuestPlayerID).ToList();
 			if (mlsteps.Count > 0)
 			{
-				foreach (DBCharacterXMasterLevel mlstep in mlsteps)
+				foreach (var mlstep in mlsteps)
 					m_mlSteps.Add(mlstep);
 			}
 
-			m_previousLoginDate = DBCharacter.LastPlayed;
+			m_previousLoginDate = DBCharacter.LastPlayed ?? DateTime.Now;
 
 			// Has to be updated on load to ensure time offline isn't added to character /played.
 			DBCharacter.LastPlayed = DateTime.Now;
@@ -12748,7 +12566,7 @@ namespace DOL.GS
 			//this is nice because i want to check the property often for the new catacombs classes
 
 			//find all characters in the database
-			foreach (DOLCharacters plr in Client.Account.Characters)
+			foreach (var plr in Client.Account.Characters)
 			{
 				//where the level of one of the characters if 50
 				if (plr.Level == ServerProperties.Properties.SLASH_LEVEL_REQUIREMENT && GameServer.ServerRules.CountsTowardsSlashLevel(plr))
@@ -12792,18 +12610,18 @@ namespace DOL.GS
 						DBCharacter.Xpos = loc.X;
 						DBCharacter.Ypos = loc.Y;
 						DBCharacter.Zpos = loc.Z;
-						DBCharacter.Region = loc.RegionID;
+						DBCharacter.RegionID = loc.RegionID;
 						DBCharacter.Direction = loc.Heading;
 					}
 				}
-				GameServer.Database.SaveObject(DBCharacter);
+				GameServer.Instance.SaveDataObject(DBCharacter);
 				Inventory.SaveIntoDatabase(InternalID);
 
-				DOLCharacters cachedCharacter = null;
+				Character cachedCharacter = null;
 
-				foreach (DOLCharacters accountChar in Client.Account.Characters)
+				foreach (var accountChar in Client.Account.Characters)
 				{
-					if (accountChar.ObjectId == InternalID)
+					if (accountChar.Id == InternalID)
 					{
 						cachedCharacter = accountChar;
 						break;
@@ -12817,7 +12635,7 @@ namespace DOL.GS
 
 
 				if (m_mlSteps != null)
-					GameServer.Database.SaveObject(m_mlSteps.OfType<DBCharacterXMasterLevel>());
+					GameServer.Instance.SaveDataObject<CharacterMasterLevel>((CharacterMasterLevel)m_mlSteps.OfType<CharacterMasterLevel>());
 
 				if (log.IsInfoEnabled)
 					log.InfoFormat("{0} saved!", DBCharacter.Name);
@@ -13430,8 +13248,8 @@ namespace DOL.GS
 			m_questListFinished.Clear();
 
 			// Scripted quests
-			var quests = DOLDB<DBQuest>.SelectObjects(DB.Column("Character_ID").IsEqualTo(QuestPlayerID));
-			foreach (DBQuest dbquest in quests)
+			var quests = GameServer.Database.Quests.Where(x=>x.CharacterID == QuestPlayerID);
+			foreach (var dbquest in quests)
 			{
 				AbstractQuest quest = AbstractQuest.LoadFromDatabase(this, dbquest);
 				if (quest != null)

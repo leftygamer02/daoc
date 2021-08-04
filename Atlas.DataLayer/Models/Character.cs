@@ -10,7 +10,7 @@ namespace Atlas.DataLayer.Models
     public class Character : DataObjectBase
     {
         public int AccountID { get; set; }
-        public int GuildID { get; set; }
+        public int? GuildID { get; set; }
 
         public int AccountSlot { get; set; }
 
@@ -170,6 +170,7 @@ namespace Atlas.DataLayer.Models
         public virtual ICollection<CharacterDataQuest> DataQuests { get; set; }
         public virtual ICollection<CharacterOneTimeDrop> OneTimeDrops { get; set; }
         public virtual ICollection<CharacterMasterLevel> MasterLevels { get; set; }
+        public virtual ICollection<CharacterTask> CharacterTasks { get; set; }
 
         public Character()
         {
@@ -183,6 +184,7 @@ namespace Atlas.DataLayer.Models
             DataQuests = new HashSet<CharacterDataQuest>();
             OneTimeDrops = new HashSet<CharacterOneTimeDrop>();
             MasterLevels = new HashSet<CharacterMasterLevel>();
+            CharacterTasks = new HashSet<CharacterTask>();
         }
 
     }

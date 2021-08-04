@@ -14,5 +14,7 @@ namespace Atlas.DataLayer.Models
         public int Count { get; set; }
         public int Realm { get; set; }
         public string PackageID { get; set; }
+
+        public virtual ItemTemplate ItemTemplate { get; set; }
     }
 }

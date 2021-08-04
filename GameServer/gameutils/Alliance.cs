@@ -19,7 +19,9 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System;
+using System.Linq;
 using Atlas.DataLayer.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS
 {
@@ -29,7 +31,7 @@ namespace DOL.GS
 	public class Alliance
 	{
 		protected ArrayList m_guilds;
-		protected DBAlliance m_dballiance;
+		protected GuildAlliance m_dballiance;
 		public Alliance()
 		{
 			m_dballiance = null;
@@ -46,7 +48,7 @@ namespace DOL.GS
 				m_guilds = value;
 			}
 		}
-		public DBAlliance Dballiance
+		public GuildAlliance Dballiance
 		{
 			get
 			{
@@ -65,11 +67,13 @@ namespace DOL.GS
 			{
 				myguild.alliance = this;
 				Guilds.Add(myguild);
-				myguild.AllianceId = m_dballiance.ObjectId;
-				m_dballiance.DBguilds = null;
+				myguild.AllianceId = m_dballiance.Id;
+				m_dballiance.Guilds = null;
 				//sirru 23.12.06 Add the new object instead of trying to save it
-				GameServer.Database.AddObject(m_dballiance);
-				GameServer.Database.FillObjectRelations(m_dballiance);
+				GameServer.Instance.SaveDataObject(m_dballiance);
+
+				m_dballiance = GameServer.Database.GuildAlliances.Include(x => x.Guilds).FirstOrDefault(x => x.Id == m_dballiance.Id);
+
 				//sirru 23.12.06 save changes to db for each guild
 				SaveIntoDatabase();
 				SendMessageToAllianceMembers(myguild.Name + " has joined the alliance of " + m_dballiance.AllianceName, PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
@@ -80,9 +84,9 @@ namespace DOL.GS
 			lock (Guilds.SyncRoot)
 			{
 				myguild.alliance = null;
-				myguild.AllianceId = "";
+				myguild.AllianceId = 0;
                 Guilds.Remove(myguild);
-                if (myguild.GuildID == m_dballiance.DBguildleader.GuildID)
+                if (myguild.GuildID == m_dballiance.LeaderGuildID)
                 {
                     SendMessageToAllianceMembers(myguild.Name + " has disbanded the alliance of " + m_dballiance.AllianceName, PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
                     ArrayList mgl = new ArrayList(Guilds);
@@ -96,14 +100,15 @@ namespace DOL.GS
                         {
                         }
                     }
-                    GameServer.Database.DeleteObject(m_dballiance);
+                    GameServer.Instance.DeleteDataObject(m_dballiance);
                 }
                 else
                 {
-                    m_dballiance.DBguilds = null;
-                    GameServer.Database.SaveObject(m_dballiance);
-                    GameServer.Database.FillObjectRelations(m_dballiance);
-                }
+                    m_dballiance.Guilds = null;
+                    GameServer.Instance.SaveDataObject(m_dballiance);
+
+					m_dballiance = GameServer.Database.GuildAlliances.Include(x => x.Guilds).FirstOrDefault(x => x.Id == m_dballiance.Id);
+				}
 				//sirru 23.12.06 save changes to db for each guild
 				myguild.SaveIntoDatabase();
                 myguild.SendMessageToGuildMembers(myguild.Name + " has left the alliance of " + m_dballiance.AllianceName, PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
@@ -117,7 +122,7 @@ namespace DOL.GS
 				foreach (Guild guild in Guilds)
 				{
 					guild.alliance = null;
-					guild.AllianceId = "";
+					guild.AllianceId = 0;
 					//sirru 23.12.06 save changes to db
 					guild.SaveIntoDatabase();
 				}
@@ -152,12 +157,12 @@ namespace DOL.GS
 		/// Loads this alliance from an alliance table
 		/// </summary>
 		/// <param name="obj"></param>
-		public void LoadFromDatabase(DataObject obj)
+		public void LoadFromDatabase(DataObjectBase obj)
 		{
-			if (!(obj is DBAlliance))
+			if (!(obj is GuildAlliance))
 				return;
 
-			m_dballiance = (DBAlliance)obj;
+			m_dballiance = (GuildAlliance)obj;
 		}
 
 		/// <summary>
@@ -165,7 +170,7 @@ namespace DOL.GS
 		/// </summary>
 		public void SaveIntoDatabase()
 		{
-			GameServer.Database.SaveObject(m_dballiance);
+			GameServer.Instance.SaveDataObject(m_dballiance);
 			lock (Guilds.SyncRoot)
 			{
 				foreach (Guild guild in Guilds)

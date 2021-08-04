@@ -15,10 +15,11 @@ namespace Atlas.DataLayer.Models
         public virtual Region Region { get; set; }
 
         public virtual ICollection<PathPoints> PathPoints { get; set; }
-
+        public virtual ICollection<SpawnPoint> SpawnPoints { get; set; }
         public Path()
         {
             PathPoints = new HashSet<PathPoints>();
+            SpawnPoints = new HashSet<SpawnPoint>();
         }
     }
 }

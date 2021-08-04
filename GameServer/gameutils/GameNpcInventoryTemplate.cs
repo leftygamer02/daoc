@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -159,11 +160,10 @@ namespace DOL.GS
 					if (!m_usedInventoryItems.ContainsKey(itemID))
 					{
 						item = new GameInventoryItem();
-						item.Template = new ItemTemplate();
-						item.Template.Id_nb = itemID;
-						item.Model = model;
+						item.ItemTemplate = new ItemTemplate();
+						item.ItemTemplate.Model = model;
 						item.Color = color;
-						item.Effect = effect;
+						item.ItemTemplate.Effect = effect;
 						item.Extension = (byte)extension;
 						item.Emblem = emblem;
 						item.SlotPosition = (int)slot;
@@ -222,7 +222,7 @@ namespace DOL.GS
 						{
 							if (templateID.Length > 0)
 								templateID.Append(";");
-							templateID.Append(item.Id_nb);
+							templateID.Append(item.Id);
 						}
 
 						GameNpcInventoryTemplate finalTemplate = m_usedInventoryTemplates[templateID.ToString()] as GameNpcInventoryTemplate;
@@ -260,11 +260,11 @@ namespace DOL.GS
 					InventoryItem oldItem = de.Value;
 
 					InventoryItem item = new GameInventoryItem();
-					item.Template = new ItemTemplate();
-					item.Template.Id_nb = oldItem.Id_nb;
-					item.Model = oldItem.Model;
+					item.ItemTemplate = new ItemTemplate();
+					item.ItemTemplate.Id = oldItem.ItemTemplate.Id;
+					item.ItemTemplate.Model = oldItem.ItemTemplate.Model;
 					item.Color = oldItem.Color;
-					item.Effect = oldItem.Effect;
+					item.ItemTemplate.Effect = oldItem.ItemTemplate.Effect;
 					item.Extension = oldItem.Extension;
 					item.Emblem = oldItem.Emblem;
 					item.SlotPosition = oldItem.SlotPosition;
@@ -284,25 +284,25 @@ namespace DOL.GS
 		/// <summary>
 		/// Cache for fast loading of npc equipment
 		/// </summary>
-		protected static Dictionary<string, List<NPCEquipment>> m_npcEquipmentCache = null;
+		protected static Dictionary<int, List<NpcEquipment>> m_npcEquipmentCache = null;
 
 		/// <summary>
 		/// Loads the inventory template from the Database
 		/// </summary>
 		/// <returns>success</returns>
-		public override bool LoadFromDatabase(string templateID)
+		public override bool LoadFromDatabase(int templateID)
 		{
-			if (Util.IsEmpty(templateID, true))
+			if (templateID <= 0)
 				return false;
 
 			lock (m_items)
 			{
-				IList<NPCEquipment> npcEquip;
-				
+				IList<NpcEquipment> npcEquip;
+
 				if (m_npcEquipmentCache.ContainsKey(templateID))
 					npcEquip = m_npcEquipmentCache[templateID];
 				else
-					npcEquip = DOLDB<NPCEquipment>.SelectObjects(DB.Column("templateID").IsEqualTo(templateID));
+					npcEquip = GameServer.Database.NpcEquipments.Where(x => x.Id == templateID).ToList();
 
 				if (npcEquip == null || npcEquip.Count == 0)
 				{
@@ -311,7 +311,7 @@ namespace DOL.GS
 					return false;
 				}
 				
-				foreach (NPCEquipment npcItem in npcEquip)
+				foreach (var npcItem in npcEquip)
 				{
 					if (!AddNPCEquipment((eInventorySlot)npcItem.Slot, npcItem.Model, npcItem.Color, npcItem.Effect, npcItem.Extension, npcItem.Emblem))
 					{
@@ -330,18 +330,18 @@ namespace DOL.GS
 		{
 			try
 			{
-				m_npcEquipmentCache = new Dictionary<string, List<NPCEquipment>>(1000);
-				foreach (NPCEquipment equip in GameServer.Database.SelectAllObjects<NPCEquipment>())
+				m_npcEquipmentCache = new Dictionary<int, List<NpcEquipment>>(1000);
+				foreach (NpcEquipment equip in GameServer.Database.NpcEquipments.ToList())
 				{
-					List<NPCEquipment> list;
-					if (m_npcEquipmentCache.ContainsKey(equip.TemplateID))
+					List<NpcEquipment> list;
+					if (m_npcEquipmentCache.ContainsKey(equip.Id))
 					{
-						list = m_npcEquipmentCache[equip.TemplateID];
+						list = m_npcEquipmentCache[equip.Id];
 					}
 					else
 					{
-						list = new List<NPCEquipment>();
-						m_npcEquipmentCache[equip.TemplateID] = list;
+						list = new List<NpcEquipment>();
+						m_npcEquipmentCache[equip.Id] = list;
 					}
 
 					list.Add(equip);
@@ -359,41 +359,41 @@ namespace DOL.GS
 		/// Save the inventory template to Database
 		/// </summary>
 		/// <returns>success</returns>
-		public override bool SaveIntoDatabase(string templateID)
+		public override bool SaveIntoDatabase(int templateID)
 		{
 			lock (m_items)
 			{
 				try
 				{
-					if (templateID == null)
+					if (templateID <= 0)
 						throw new ArgumentNullException("templateID");
 
-					var npcEquipment = DOLDB<NPCEquipment>.SelectObjects(DB.Column("templateID").IsEqualTo(templateID));
+					var npcEquipment = GameServer.Database.NpcEquipments.Where(x => x.Id == templateID);
 
 					// delete removed item templates
-					foreach (NPCEquipment npcItem in npcEquipment)
+					foreach (var npcItem in npcEquipment)
 					{
 						if (!m_items.ContainsKey((eInventorySlot)npcItem.Slot))
-							GameServer.Database.DeleteObject(npcItem);
+							GameServer.Instance.DeleteDataObject(npcItem);
 					}
 
 					// save changed item templates
 					foreach (InventoryItem item in m_items.Values)
 					{
 						bool foundInDB = false;
-						foreach (NPCEquipment npcItem in npcEquipment)
+						foreach (var npcItem in npcEquipment)
 						{
 							if (item.SlotPosition != npcItem.Slot)
 								continue;
 
-							if (item.Model != npcItem.Model || item.Color != npcItem.Color || item.Effect != npcItem.Effect || item.Emblem != npcItem.Emblem)
+							if (item.ItemTemplate.Model != npcItem.Model || item.Color != npcItem.Color || item.ItemTemplate.Effect != npcItem.Effect || item.Emblem != npcItem.Emblem)
 							{
-								npcItem.Model = item.Model;
+								npcItem.Model = item.ItemTemplate.Model;
 								npcItem.Color = item.Color;
-								npcItem.Effect = item.Effect;
+								npcItem.Effect = item.ItemTemplate.Effect;
 								npcItem.Extension = item.Extension;
 								npcItem.Emblem = item.Emblem;
-								GameServer.Database.SaveObject(npcItem);
+								GameServer.Instance.SaveDataObject(npcItem);
 							}
 
 							foundInDB = true;
@@ -403,15 +403,15 @@ namespace DOL.GS
 
 						if (!foundInDB)
 						{
-							NPCEquipment npcItem = new NPCEquipment();
+							var npcItem = new NpcEquipment();
 							npcItem.Slot = item.SlotPosition;
-							npcItem.Model = item.Model;
+							npcItem.Model = item.ItemTemplate.Model;
 							npcItem.Color = item.Color;
-							npcItem.Effect = item.Effect;
-							npcItem.TemplateID = templateID;
+							npcItem.Effect = item.ItemTemplate.Effect;
+							npcItem.Id = templateID;
 							npcItem.Extension = item.Extension;
 							npcItem.Emblem = item.Emblem;
-							GameServer.Database.AddObject(npcItem);
+							GameServer.Instance.SaveDataObject(npcItem);
 						}
 					}
 
@@ -541,7 +541,7 @@ namespace DOL.GS
 		/// <param name="minSlot">The first slot</param>
 		/// <param name="maxSlot">The last slot</param>
 		/// <returns>false</returns>
-		public override bool RemoveTemplate(string templateID, int count, eInventorySlot minSlot, eInventorySlot maxSlot)
+		public override bool RemoveTemplate(int templateID, int count, eInventorySlot minSlot, eInventorySlot maxSlot)
 		{
 			return false;
 		}

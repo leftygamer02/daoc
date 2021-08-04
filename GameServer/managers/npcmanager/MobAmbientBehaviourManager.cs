@@ -31,38 +31,38 @@ namespace DOL.GS
         /// <summary>
         /// Mob X Ambient Behaviour Cache indexed by Mob Name
         /// </summary>
-        private Dictionary<string, MobXAmbientBehaviour[]> AmbientBehaviour { get; }
+        private Dictionary<string, MobBehavior[]> AmbientBehaviour { get; }
 
         /// <summary>
         /// Retrieve MobXambiemtBehaviour Objects from Mob Name
         /// </summary>
-        public MobXAmbientBehaviour[] this[string index]
+        public MobBehavior[] this[string index]
         {
             get
             {
                 if (string.IsNullOrEmpty(index))
                 {
-                    return new MobXAmbientBehaviour[0];
+                    return new MobBehavior[0];
                 }
 
                 var lower = index.ToLower();
                 return AmbientBehaviour.ContainsKey(lower)
                     ? AmbientBehaviour[lower]
-                    : new MobXAmbientBehaviour[0];
+                    : new MobBehavior[0];
             }
         }
 
         /// <summary>
         /// Create a new Instance of <see cref="MobAmbientBehaviourManager"/>
         /// </summary>
-        public MobAmbientBehaviourManager(IObjectDatabase database)
+        public MobAmbientBehaviourManager(Atlas.DataLayer.AtlasContext database)
         {
             if (database == null)
             {
                 throw new ArgumentNullException(nameof(database));
             }
 
-            AmbientBehaviour = database.SelectAllObjects<MobXAmbientBehaviour>()
+            AmbientBehaviour = database.MobBehaviors
                 .GroupBy(x => x.Source)
                 .ToDictionary(key => key.Key.ToLower(), value => value.ToArray());
         }

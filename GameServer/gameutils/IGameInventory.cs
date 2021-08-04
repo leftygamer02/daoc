@@ -134,8 +134,8 @@ namespace DOL.GS
 	/// </summary>		
 	public interface IGameInventory
 	{
-		bool            LoadFromDatabase(string inventoryID);
-		bool            SaveIntoDatabase(string inventoryID);
+		bool            LoadFromDatabase(int inventoryID);
+		bool            SaveIntoDatabase(int inventoryID);
 
 		bool			AddItem(eInventorySlot slot, InventoryItem item);
 						/// <summary>
@@ -156,7 +156,7 @@ namespace DOL.GS
 						/// <returns></returns>
 		bool            RemoveTradeItem(InventoryItem item);
 		bool			RemoveCountFromStack(InventoryItem item, int count);
-		bool			RemoveTemplate(string templateID, int count, eInventorySlot minSlot, eInventorySlot maxSlot);
+		bool			RemoveTemplate(int templateID, int count, eInventorySlot minSlot, eInventorySlot maxSlot);
 		bool            MoveItem(eInventorySlot fromSlot, eInventorySlot toSlot, int itemCount);
 		InventoryItem   GetItem(eInventorySlot slot);
 		ICollection<InventoryItem> GetItemRange(eInventorySlot minSlot, eInventorySlot maxSlot);
@@ -166,7 +166,7 @@ namespace DOL.GS
 		void			ClearInventory();
 
 		int				CountSlots(bool countUsed, eInventorySlot minSlot, eInventorySlot maxSlot);
-		int				CountItemTemplate(string itemtemplateID, eInventorySlot minSlot, eInventorySlot maxSlot);
+		int				CountItemTemplate(int itemtemplateID, eInventorySlot minSlot, eInventorySlot maxSlot);
 		bool			IsSlotsFree(int count, eInventorySlot minSlot, eInventorySlot maxSlot);
 		
 		eInventorySlot	FindFirstEmptySlot(eInventorySlot first, eInventorySlot last);
@@ -174,7 +174,7 @@ namespace DOL.GS
 		eInventorySlot	FindFirstFullSlot(eInventorySlot first, eInventorySlot last);
 		eInventorySlot	FindLastFullSlot(eInventorySlot first, eInventorySlot last);
 
-		InventoryItem	GetFirstItemByID(string uniqueID, eInventorySlot minSlot, eInventorySlot maxSlot);
+		InventoryItem	GetFirstItemByID(int uniqueID, eInventorySlot minSlot, eInventorySlot maxSlot);
 		InventoryItem	GetFirstItemByObjectType(int objectType, eInventorySlot minSlot, eInventorySlot maxSlot);
 		InventoryItem   GetFirstItemByName(string name ,eInventorySlot minSlot, eInventorySlot maxSlot);
 

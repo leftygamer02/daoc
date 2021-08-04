@@ -40,6 +40,7 @@ namespace Atlas.DataLayer.Models
         public int Empathy { get; set; }
         public string Abilities { get; set; }
         public int AggroLevel { get; set; }
+        public int AggroRange { get; set; }
         public int RaceID { get; set; }
         public int BodyType { get; set; }
         public int MaxDistance { get; set; }
@@ -47,6 +48,8 @@ namespace Atlas.DataLayer.Models
         public int VisibleWeaponSlots { get; set; }
         public string PackageID { get; set; }
         public int LootTableID { get; set; }
+        public string Brain { get; set; }
+        public int FactionID { get; set; }
 
         public virtual NpcEquipment EquipmentTemplate { get; set; }
         public virtual MerchantItem ItemListTemplate { get; set; }

@@ -26,6 +26,7 @@ using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using log4net;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS
 {
@@ -55,18 +56,18 @@ namespace DOL.GS
 		/// Keys are GuildID and player InternalID
 		/// </summary>
 		/// <remarks>For each guild stored a dictionary of all players in guikd, unsorted</remarks>
-		private static readonly Dictionary<string, Dictionary<string, GuildMemberDisplay>> m_guildXAllMembers = new Dictionary<string, Dictionary<string, GuildMemberDisplay>>();
+		private static readonly Dictionary<int, Dictionary<int, GuildMemberDisplay>> m_guildXAllMembers = new Dictionary<int, Dictionary<int, GuildMemberDisplay>>();
 
 		/// <summary>
 		/// Gets a copy of a dictionary of all guild members of a given guild, indexed on player InternalID
 		/// </summary>
 		/// <param name="guildID">The guild id for a player</param>
 		/// <returns>Copy of a dictionary of all guild members for the guild or null if guild is not found</returns>
-		public static Dictionary<string, GuildMemberDisplay> GetAllGuildMembers(string guildID)
+		public static Dictionary<int, GuildMemberDisplay> GetAllGuildMembers(int guildID)
 		{
 			if (m_guildXAllMembers.ContainsKey(guildID))
 			{
-				return new Dictionary<string, GuildMemberDisplay>(m_guildXAllMembers[guildID]);
+				return new Dictionary<int, GuildMemberDisplay>(m_guildXAllMembers[guildID]);
 			}
 
 			return null;
@@ -82,7 +83,7 @@ namespace DOL.GS
 			{
 				if (!m_guildXAllMembers[player.GuildID].ContainsKey(player.InternalID))
 				{
-					Dictionary<string, GuildMemberDisplay> guildMemberList = m_guildXAllMembers[player.GuildID];
+					var guildMemberList = m_guildXAllMembers[player.GuildID];
 					GuildMemberDisplay member = new GuildMemberDisplay(	player.InternalID, 
 																		player.Name, 
 																		player.Level.ToString(), 
@@ -186,9 +187,8 @@ namespace DOL.GS
 
             try
 			{
-				DBGuild dbGuild = new DBGuild();
+				var dbGuild = new Atlas.DataLayer.Models.Guild();
 				dbGuild.GuildName = guildName;
-				dbGuild.GuildID = System.Guid.NewGuid().ToString();
 				dbGuild.Realm = (byte)realm;
 				Guild newguild = new Guild(dbGuild);
                 if (newguild.AddToDatabase() == false)
@@ -216,24 +216,24 @@ namespace DOL.GS
 
 		public static void CreateRanks(Guild guild)
 		{
-			DBRank rank;
+			GuildRank rank;
 			for (int i = 0; i < 10; i++)
 			{
 				rank = CreateRank(guild, i);
 
-				GameServer.Database.AddObject(rank);
+				GameServer.Instance.SaveDataObject(rank);
 				guild.Ranks[i] = rank;
 			}
 		}
 
 		public static void RepairRanks(Guild guild)
 		{
-			DBRank rank;
+			GuildRank rank;
 			for (int i = 0; i < 10; i++)
 			{
 				bool foundRank = false;
 
-				foreach (DBRank r in guild.Ranks)
+				foreach (var r in guild.Ranks)
 				{
 					if (r == null)
 					{
@@ -252,14 +252,14 @@ namespace DOL.GS
 				{
 					rank = CreateRank(guild, i);
 					rank.Title = rank.Title.Replace("Rank", "Repaired Rank");
-					GameServer.Database.AddObject(rank);
+					GameServer.Instance.SaveDataObject(rank);
 				}
 			}
 		}
 
-		private static DBRank CreateRank(Guild guild, int rankLevel)
+		private static GuildRank CreateRank(Guild guild, int rankLevel)
 		{
-			DBRank rank = new DBRank();
+			var rank = new GuildRank();
 			rank.AcHear = false;
 			rank.AcSpeak = false;
 			rank.Alli = false;
@@ -351,24 +351,18 @@ namespace DOL.GS
 				if (removeGuild == null)
 					return false;
 
-				var guilds = DOLDB<DBGuild>.SelectObjects(DB.Column("GuildID").IsEqualTo(removeGuild.GuildID));
+				var guilds = GameServer.Database.Guilds.Where(x => x.Id == removeGuild.ID).Include(x => x.Characters).ToList();
 				foreach (var guild in guilds)
-				{
-					foreach (var cha in DOLDB<DOLCharacters>.SelectObjects(DB.Column("GuildID").IsEqualTo(guild.GuildID)))
-						cha.GuildID = "";
+				{					
+					GameServer.Instance.DeleteDataObject(guild);
 				}
-				GameServer.Database.DeleteObject(guilds);
-
-				//[StephenxPimentel] We need to delete the guild specific ranks aswell!
-				var ranks = DOLDB<DBRank>.SelectObjects(DB.Column("GuildID").IsEqualTo(removeGuild.GuildID));
-				GameServer.Database.DeleteObject(ranks);
 
 				lock (removeGuild.GetListOfOnlineMembers())
 				{
 					foreach (GamePlayer ply in removeGuild.GetListOfOnlineMembers())
 					{
 						ply.Guild = null;
-						ply.GuildID = "";
+						ply.GuildID = 0;
 						ply.GuildName = "";
 						ply.GuildRank = null;
 					}
@@ -403,9 +397,9 @@ namespace DOL.GS
 		/// Returns a guild according to the matching database ID.
 		/// </summary>
 		/// <returns>Guild</returns>
-		public static Guild GetGuildByGuildID(string guildid)
+		public static Guild GetGuildByGuildID(int? guildid)
 		{
-			if(guildid == null) return null;
+			if(!guildid.HasValue || guildid <= 0) return null;
 			
 			lock (m_guildids.SyncRoot)
 			{
@@ -422,11 +416,11 @@ namespace DOL.GS
 		/// Returns a database ID for a matching guild name.
 		/// </summary>
 		/// <returns>Guild</returns>
-		public static string GuildNameToGuildID(string guildName)
+		public static int GuildNameToGuildID(string guildName)
 		{
 			Guild g = GetGuildByName(guildName);
 			if (g == null)
-				return "";
+				return 0;
 			return g.GuildID;
 		}
 
@@ -442,63 +436,52 @@ namespace DOL.GS
 			m_lastID = 0;
 
 			//load guilds
-			var guildObjs = GameServer.Database.SelectAllObjects<DBGuild>();
+			var guildObjs = GameServer.Database.Guilds.Include(x => x.Characters).ToList();
 			foreach(var obj in guildObjs)
 			{
 				var myguild = new Guild(obj);
 
-				if (obj.Ranks == null ||
-				    obj.Ranks.Length < 10 ||
-				    obj.Ranks[0] == null ||
-				    obj.Ranks[1] == null ||
-				    obj.Ranks[2] == null ||
-				    obj.Ranks[3] == null ||
-				    obj.Ranks[4] == null ||
-				    obj.Ranks[5] == null ||
-				    obj.Ranks[6] == null ||
-				    obj.Ranks[7] == null ||
-				    obj.Ranks[8] == null ||
-				    obj.Ranks[9] == null)
+				if (obj.GuildRanks == null || obj.GuildRanks.Count < 10)
 				{
 					log.ErrorFormat("GuildMgr: Ranks missing for {0}, creating new ones!", myguild.Name);
 
 					RepairRanks(myguild);
 
 					// now reload the guild to fix the relations
-					myguild = new Guild(DOLDB<DBGuild>.SelectObjects(DB.Column("GuildID").IsEqualTo(obj.GuildID)).FirstOrDefault());
+					myguild = new Guild(GameServer.Database.Guilds.Find(obj.Id));
 				}
 
 				AddGuild(myguild);
 
-				var guildCharacters = DOLDB<DOLCharacters>.SelectObjects(DB.Column("GuildID").IsEqualTo(myguild.GuildID));
-				var tempList = new Dictionary<string, GuildMemberDisplay>(guildCharacters.Count);
+				var guildCharacters = obj.Characters;
+				var tempList = new Dictionary<int, GuildMemberDisplay>(guildCharacters.Count);
 
-				foreach (DOLCharacters ch in guildCharacters)
+				foreach (var ch in guildCharacters)
 				{
-					var member = new GuildMemberDisplay(ch.ObjectId, 
+					var member = new GuildMemberDisplay(ch.Id, 
 														ch.Name, 
 														ch.Level.ToString(), 
 														ch.Class.ToString(), 
 														ch.GuildRank.ToString(), 
 														"0", 
-														ch.LastPlayed.ToShortDateString(), 
+														ch.LastPlayed?.ToShortDateString() ?? string.Empty, 
 														ch.GuildNote);
-					tempList.Add(ch.ObjectId, member);
+					tempList.Add(ch.Id, member);
 				}
 
 				m_guildXAllMembers.Add(myguild.GuildID, tempList);
 			}
 
 			//load alliances
-			var allianceObjs = GameServer.Database.SelectAllObjects<DBAlliance>();
-			foreach (DBAlliance dball in allianceObjs)
+			var allianceObjs = GameServer.Database.GuildAlliances.Include(x => x.Guilds).ToList();
+			foreach (var dball in allianceObjs)
 			{
 				var myalliance = new Alliance();
 				myalliance.LoadFromDatabase(dball);
 
-				if (dball != null && dball.DBguilds != null)
+				if (dball != null && dball.Guilds != null)
 				{
-					foreach (DBGuild mydbgui in dball.DBguilds)
+					foreach (var mydbgui in dball.Guilds)
 					{
 						var gui = GetGuildByName(mydbgui.GuildName);
 						myalliance.Guilds.Add(gui);
@@ -565,13 +548,13 @@ namespace DOL.GS
 			{
 				player.RemoveMoney(COST_RE_EMBLEM, null);
                 InventoryLogging.LogInventoryAction(player, "(GUILD;" + player.GuildName + ")", eInventoryActionType.Other, COST_RE_EMBLEM);
-                var objs = DOLDB<InventoryItem>.SelectObjects(DB.Column("Emblem").IsEqualTo(oldemblem));
+				var objs = GameServer.Database.InventoryItems.Where(x => x.Emblem == oldemblem);
 				
 				foreach (InventoryItem item in objs)
 				{
 					item.Emblem = newemblem;
 				}
-				GameServer.Database.SaveObject(objs);
+				GameServer.Database.SaveChanges();
 				
 				// change guild house emblem
 
@@ -615,8 +598,8 @@ namespace DOL.GS
 		{
 			#region Members
 
-			string m_internalID;
-			public string InternalID
+			int m_internalID;
+			public int InternalID
 			{
 				get { return m_internalID; }
 			}
@@ -697,7 +680,7 @@ namespace DOL.GS
 				}
 			}
 
-			public GuildMemberDisplay(string internalID, string name, string level, string classID, string rank, string group, string zoneOrOnline, string note)
+			public GuildMemberDisplay(int internalID, string name, string level, string classID, string rank, string group, string zoneOrOnline, string note)
 			{
 				m_internalID = internalID;
 				m_name = name;

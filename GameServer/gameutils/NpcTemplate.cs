@@ -49,15 +49,15 @@ namespace DOL.GS
 		protected ushort m_gender;
 		protected string m_size;
 		protected string m_level;
-		protected string m_equipmentTemplateID;
-		protected string m_itemsListTemplateID;
+		protected int m_equipmentTemplateID;
+		protected int m_itemsListTemplateID;
 		protected short m_maxSpeed;
 		protected byte m_parryChance;
 		protected byte m_evadeChance;
 		protected byte m_blockChance;
 		protected byte m_leftHandSwingChance;
 		protected ushort m_flags;
-		protected string m_inventory;
+		protected int m_inventory;
 		protected eDamageType m_meleeDamageType;
 		protected short m_strength;
 		protected short m_constitution;
@@ -84,13 +84,12 @@ namespace DOL.GS
 		/// Constructs a new NpcTemplate
 		/// </summary>
 		/// <param name="data">The source npc template data</param>
-		public NpcTemplate(DBNpcTemplate data)
+		public NpcTemplate(Atlas.DataLayer.Models.NpcTemplate data)
 		{
 			if (data == null)
 				throw new ArgumentNullException("data");
 
-			m_templateId = data.TemplateId;
-            m_translationId = data.TranslationId;
+			m_templateId = data.Id;
 			m_name = data.Name;
             m_suffix = data.Suffix;
 			m_classType = data.ClassType;
@@ -98,7 +97,7 @@ namespace DOL.GS
             m_examineArticle = data.ExamineArticle;
             m_messageArticle = data.MessageArticle;
 			m_model = data.Model;
-			m_gender = data.Gender;
+			m_gender = (ushort)data.Gender;
 			m_size = data.Size;
 			if (m_size == null)
 				m_size = "50";
@@ -107,19 +106,19 @@ namespace DOL.GS
 				m_level = "0";
 			m_equipmentTemplateID = data.EquipmentTemplateID;
 			m_itemsListTemplateID = data.ItemsListTemplateID;
-			m_maxSpeed = data.MaxSpeed;
-			m_parryChance = data.ParryChance;
-			m_evadeChance = data.EvadeChance;
-			m_blockChance = data.BlockChance;
-			m_leftHandSwingChance = data.LeftHandSwingChance;
-			m_strength = data.Strength;
-			m_constitution = data.Constitution;
-			m_dexterity = data.Dexterity;
-			m_quickness = data.Quickness;
-			m_intelligence = data.Intelligence;
-			m_piety = data.Piety;
-			m_charisma = data.Charisma;
-			m_empathy = data.Empathy;
+			m_maxSpeed = (short)data.MaxSpeed;
+			m_parryChance = (byte)data.ParryChance;
+			m_evadeChance = (byte)data.EvadeChance;
+			m_blockChance = (byte)data.BlockChance;
+			m_leftHandSwingChance = (byte)data.LeftHandSwingChance;
+			m_strength = (short)data.Strength;
+			m_constitution = (short)data.Constitution;
+			m_dexterity = (short)data.Dexterity;
+			m_quickness = (short)data.Quickness;
+			m_intelligence = (short)data.Intelligence;
+			m_piety = (short)data.Piety;
+			m_charisma = (short)data.Charisma;
+			m_empathy = (short)data.Empathy;
 
 			//Time to add Spells/Styles and Abilties to the templates
 			m_abilities = new ArrayList();
@@ -154,7 +153,7 @@ namespace DOL.GS
 					if (stylePart.Length == 0 || classPart.Length == 0) continue;
 					int styleID = int.Parse(stylePart);
 					int classID = int.Parse(classPart);
-					Style style = SkillBase.GetStyleByID(styleID, classID);
+					Styles.Style style = SkillBase.GetStyleByID(styleID, classID);
 					m_styles.Add(style);
 				}
 			}
@@ -176,22 +175,20 @@ namespace DOL.GS
 				}
 			}
 
-			m_flags = data.Flags;
+			m_flags = (ushort)data.Flags;
 
 			m_meleeDamageType = (eDamageType)data.MeleeDamageType;
 			if (data.MeleeDamageType == 0)
 				m_meleeDamageType = eDamageType.Slash;
 
 			m_inventory = data.EquipmentTemplateID;
-			m_aggroLevel = data.AggroLevel;
+			m_aggroLevel = (byte)data.AggroLevel;
 			m_aggroRange = data.AggroRange;
-			m_race = (ushort)data.Race;
+			m_race = (ushort)data.RaceID;
 			m_bodyType = (ushort)data.BodyType;
 			m_maxdistance = data.MaxDistance;
 			m_tetherRange = data.TetherRange;
-			m_visibleActiveWeaponSlot = data.VisibleWeaponSlots;
-			
-			m_replaceMobValues = data.ReplaceMobValues;
+			m_visibleActiveWeaponSlot = (byte)data.VisibleWeaponSlots;			
 		}
 
 
@@ -229,7 +226,7 @@ namespace DOL.GS
 			m_quickness = mob.Quickness;
 			m_strength = mob.Strength;
 			m_size = mob.Size.ToString();
-			m_templateId = GetNextFreeTemplateId();
+			m_templateId = 0;
 			m_tetherRange = mob.TetherRange;
 			m_visibleActiveWeaponSlot = mob.VisibleActiveWeaponSlots;
 			
@@ -276,7 +273,7 @@ namespace DOL.GS
 					if (m_styles == null)
 						m_styles = new ArrayList(mob.Styles.Count);
 
-					foreach (Style mobStyle in mob.Styles)
+					foreach (Styles.Style mobStyle in mob.Styles)
 					{
 						m_styles.Add(mobStyle);
 					}
@@ -294,7 +291,7 @@ namespace DOL.GS
 				m_aggroRange = brain.AggroRange;
 			}
 
-			if (string.IsNullOrEmpty(ItemsListTemplateID) == false)
+			if (ItemsListTemplateID > 0)
 			{
 				GameMerchant merchant = mob as GameMerchant;
 
@@ -305,29 +302,29 @@ namespace DOL.GS
 			}
 		}
 
-		protected int GetNextFreeTemplateId()
-		{
-			var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
-			int free_id = 1;
-			int doubleidcheck = 0;
-			foreach (DBNpcTemplate dbtemplate in objs.OrderBy(x => x.TemplateId))
-			{
-				if (dbtemplate.TemplateId == free_id)
-				{
-					doubleidcheck = dbtemplate.TemplateId;
-					free_id++;
-				}
-				else
-				{
-					if (dbtemplate.TemplateId == doubleidcheck)
-						continue;
-					else
-						break;
-				}
-			}
+		//protected int GetNextFreeTemplateId()
+		//{
+		//	var objs =  GameServer.Database.SelectAllObjects<DBNpcTemplate>();
+		//	int free_id = 1;
+		//	int doubleidcheck = 0;
+		//	foreach (var dbtemplate in objs.OrderBy(x => x.TemplateId))
+		//	{
+		//		if (dbtemplate.TemplateId == free_id)
+		//		{
+		//			doubleidcheck = dbtemplate.TemplateId;
+		//			free_id++;
+		//		}
+		//		else
+		//		{
+		//			if (dbtemplate.TemplateId == doubleidcheck)
+		//				continue;
+		//			else
+		//				break;
+		//		}
+		//	}
 
-			return free_id;
-		}
+		//	return free_id;
+		//}
 
 
 		public NpcTemplate()
@@ -439,13 +436,13 @@ namespace DOL.GS
 			set { m_level = value; }
 		}
 
-		public string EquipmentTemplateID
+		public int EquipmentTemplateID
 		{
 			get { return m_equipmentTemplateID; }
 			set { m_equipmentTemplateID = value; }
 		}
 
-		public string ItemsListTemplateID
+		public int ItemsListTemplateID
 		{
 			get { return m_itemsListTemplateID; }
 			set { m_itemsListTemplateID = value; }
@@ -470,7 +467,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets the template npc inventory
 		/// </summary>
-		public string Inventory
+		public int Inventory
 		{
 			get { return m_inventory; }
 			set { m_inventory = value; }
@@ -663,21 +660,15 @@ namespace DOL.GS
 
 		public virtual void SaveIntoDatabase()
 		{
-			DBNpcTemplate tmp = GameServer.Database.FindObjectByKey<DBNpcTemplate>(TemplateId);
-			bool add = false;
+			var tmp = GameServer.Database.NpcTemplates.Find(TemplateId);
 
 			if (tmp == null)
 			{
-				tmp = new DBNpcTemplate();
-				add = true;
+				tmp = new Atlas.DataLayer.Models.NpcTemplate();
 			}
 
-			if (TemplateId == 0)
-				tmp.TemplateId = GetNextFreeTemplateId();
-			else
-				tmp.TemplateId = TemplateId;
 
-            tmp.TranslationId = TranslationId;
+			tmp.Id = TemplateId;
 			tmp.AggroLevel = AggroLevel;
 			tmp.AggroRange = AggroRange;
 			tmp.BlockChance = BlockChance;
@@ -746,7 +737,7 @@ namespace DOL.GS
 			{
 				string serializedStyles = "";
 
-				foreach ( Style npcStyle in m_styles )
+				foreach ( Styles.Style npcStyle in m_styles )
 				{
 					if ( npcStyle != null )
 						if ( serializedStyles.Length > 0 )
@@ -758,10 +749,7 @@ namespace DOL.GS
 				tmp.Styles = serializedStyles;
 			}
 
-			if (add)
-				GameServer.Database.AddObject(tmp);
-			else
-				GameServer.Database.SaveObject(tmp);
+			GameServer.Instance.SaveDataObject(tmp);
 		}
 	}
 }

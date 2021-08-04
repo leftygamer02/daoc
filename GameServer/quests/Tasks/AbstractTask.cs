@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Reflection;
@@ -71,7 +72,7 @@ namespace DOL.GS.Quests
 		/// The quest database object, storing the information for the player
 		/// and the quest. Eg. QuestStep etc.
 		/// </summary>
-		private DBTask m_dbTask = null;
+		private CharacterTask m_dbTask = null;
 
 		/// <summary>
 		/// Constructs a new Quest
@@ -81,7 +82,7 @@ namespace DOL.GS.Quests
 		{
 			m_taskPlayer = taskPlayer;
 
-			DBTask dbTask=null;
+			CharacterTask dbTask=null;
 
 			// Check if player already has a task
 			// if yes reuse dbtask object to keep TasksDone from old dbtask object.
@@ -92,7 +93,7 @@ namespace DOL.GS.Quests
 			else // if player has no active task, load dbtask an use tasksdone
 			{
 				// Load Task object of player ...
-				var tasks = GameServer.Database.FindObjectByKey<DBTask>(taskPlayer.QuestPlayerID);
+				var tasks = GameServer.Database.CharacterTasks.FirstOrDefault(x => x.CharacterID == taskPlayer.QuestPlayerID);
 				if (tasks != null)
 					dbTask = tasks;
 			}
@@ -100,8 +101,8 @@ namespace DOL.GS.Quests
 			// this should happen only if player never did a task and has no entry in DBTask.
 			if (dbTask==null)
 			{
-				dbTask = new DBTask();
-				dbTask.Character_ID = taskPlayer.QuestPlayerID;
+				dbTask = new CharacterTask();
+				dbTask.CharacterID = taskPlayer.QuestPlayerID;
 			}
 
 			dbTask.TaskType = GetType().FullName;
@@ -117,7 +118,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="taskPlayer">The player doing the quest</param>
 		/// <param name="dbTask">The database object</param>
-		public AbstractTask(GamePlayer taskPlayer, DBTask dbTask)
+		public AbstractTask(GamePlayer taskPlayer, CharacterTask dbTask)
 		{
 			m_taskPlayer = taskPlayer;
 			m_dbTask = dbTask;
@@ -136,7 +137,7 @@ namespace DOL.GS.Quests
 			}
 		}
 
-		public DateTime TimeOut
+		public DateTime? TimeOut
 		{
 			get { return m_dbTask.TimeOut;}
 			set{ m_dbTask.TimeOut = value;}
@@ -199,7 +200,7 @@ namespace DOL.GS.Quests
 		/// <param name="targetPlayer">Player to assign the loaded quest</param>
 		/// <param name="dbTask">Quest to load</param>
 		/// <returns>The created quest</returns>
-		public static AbstractTask LoadFromDatabase(GamePlayer targetPlayer, DBTask dbTask)
+		public static AbstractTask LoadFromDatabase(GamePlayer targetPlayer, CharacterTask dbTask)
 		{
 			// if we have a active task load it, else the taksdone will be updated on creation of first task instance in AbstractTask(GamePlayer) constructor
 			if (dbTask.TaskType!=null && dbTask.TaskType!= "")
@@ -232,10 +233,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual void SaveIntoDatabase()
 		{
-			if(m_dbTask.IsPersisted)
-				GameServer.Database.SaveObject(m_dbTask);
-			else
-				GameServer.Database.AddObject(m_dbTask);
+			GameServer.Instance.SaveDataObject(m_dbTask);
 		}
 
 		/// <summary>
@@ -243,11 +241,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual void DeleteFromDatabase()
 		{
-			if(!m_dbTask.IsPersisted) return;
-
-			DBTask dbTask = (DBTask) GameServer.Database.FindObjectByKey<DBTask>(m_dbTask.ObjectId);
-			if(dbTask!=null)
-				GameServer.Database.DeleteObject(dbTask);
+			GameServer.Instance.DeleteDataObject(m_dbTask);
 		}
 		/// <summary>
 		/// Retrieves the name of the quest
@@ -385,7 +379,7 @@ namespace DOL.GS.Quests
 				foreach (InventoryItem item in RewardItems)
 				{
                     if (m_taskPlayer.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item))
-                        InventoryLogging.LogInventoryAction("(TASK;" + m_dbTask.TaskType + ")", m_taskPlayer, eInventoryActionType.Quest, item.Template, item.Count);
+                        InventoryLogging.LogInventoryAction("(TASK;" + m_dbTask.TaskType + ")", m_taskPlayer, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 				}
 				m_taskPlayer.Inventory.CommitChanges();
 			}
@@ -407,11 +401,11 @@ namespace DOL.GS.Quests
 			{
 				lock (m_taskPlayer.Inventory)
 				{
-					InventoryItem item = m_taskPlayer.Inventory.GetFirstItemByID(ItemName, eInventorySlot.Min_Inv, eInventorySlot.Max_Inv);
+					InventoryItem item = m_taskPlayer.Inventory.GetFirstItemByName(ItemName, eInventorySlot.Min_Inv, eInventorySlot.Max_Inv);
                     if (item != null)
                     {
                         m_taskPlayer.Inventory.RemoveItem(item);
-                        InventoryLogging.LogInventoryAction(m_taskPlayer, "(TASK;" + m_dbTask.TaskType + ")", eInventoryActionType.Quest, item.Template, item.Count);
+                        InventoryLogging.LogInventoryAction(m_taskPlayer, "(TASK;" + m_dbTask.TaskType + ")", eInventoryActionType.Quest, item.ItemTemplate, item.Count);
                     }
 				}
 				m_taskPlayer.Out.SendMessage("Your task related item has been removed from your inventory.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -443,7 +437,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public bool CheckTaskExpired()
 		{
-			if(TaskActive && DateTime.Compare(TimeOut, DateTime.Now) < 0)
+			if(TaskActive && DateTime.Compare(TimeOut.Value, DateTime.Now) < 0)
 			{
 				//DOLConsole.WriteError("TimeOut: "+m_Tasks[i].TimeOut+" - Now: "+DateTime.Now);
 				ExpireTask();
@@ -476,8 +470,8 @@ namespace DOL.GS.Quests
 			TaskItems.SPD_ABS = 0;
 			TaskItems.Hand = 0;
 			//TaskItems.Type_Damage = 0;
-			TaskItems.Object_Type = 0;
-			TaskItems.Item_Type = 1;
+			TaskItems.ObjectType = 0;
+			TaskItems.ItemType = 1;
 			TaskItems.Weight = 1;
 			TaskItems.Model = Model;
 			TaskItems.Price = 0;
@@ -488,7 +482,7 @@ namespace DOL.GS.Quests
 			TaskItems.Quality = 80+ItemLevel;
 			TaskItems.MaxCondition = 90;
 			TaskItems.MaxDurability = 1000;
-			GameServer.Database.AddObject(TaskItems);
+			GameServer.Instance.SaveDataObject(TaskItems);
 			InventoryItem InvTaskItems = GameInventoryItem.Create(TaskItems);
 			return InvTaskItems;
 		}

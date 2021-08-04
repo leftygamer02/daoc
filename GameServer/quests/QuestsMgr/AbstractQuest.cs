@@ -61,7 +61,7 @@ namespace DOL.GS.Quests
 		/// The quest database object, storing the information for the player
 		/// and the quest. Eg. QuestStep etc.
 		/// </summary>
-		private DBQuest m_dbQuest = null;
+		private Quest m_dbQuest = null;
 
 		/// <summary>
 		/// List of all QuestParts that can be fired on notify method of quest.
@@ -104,8 +104,8 @@ namespace DOL.GS.Quests
 		{
 			m_questPlayer = questingPlayer;
 			
-			DBQuest dbQuest = new DBQuest();
-			dbQuest.Character_ID = questingPlayer.QuestPlayerID;
+			var dbQuest = new Quest();
+			dbQuest.CharacterID = questingPlayer.QuestPlayerID;
 			dbQuest.Name = GetType().FullName;
 			dbQuest.Step = step;
 			m_dbQuest = dbQuest;
@@ -117,7 +117,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="questingPlayer">The player doing the quest</param>
 		/// <param name="dbQuest">The database object</param>
-		public AbstractQuest(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AbstractQuest(GamePlayer questingPlayer, Quest dbQuest)
 		{
 			m_questPlayer = questingPlayer;
 			m_dbQuest = dbQuest;
@@ -131,7 +131,7 @@ namespace DOL.GS.Quests
 		/// <param name="targetPlayer">Player to assign the loaded quest</param>
 		/// <param name="dbQuest">Quest to load</param>
 		/// <returns>The created quest</returns>
-		public static AbstractQuest LoadFromDatabase(GamePlayer targetPlayer, DBQuest dbQuest)
+		public static AbstractQuest LoadFromDatabase(GamePlayer targetPlayer, Quest dbQuest)
 		{
 			Type questType = null;
 			foreach (Assembly asm in ScriptMgr.Scripts)
@@ -156,10 +156,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual void SaveIntoDatabase()
 		{
-			if(m_dbQuest.IsPersisted)
-				GameServer.Database.SaveObject(m_dbQuest);
-			else
-				GameServer.Database.AddObject(m_dbQuest);
+			GameServer.Instance.SaveDataObject(m_dbQuest);
 		}
 		  
 		/// <summary>
@@ -167,11 +164,11 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual void DeleteFromDatabase()
 		{
-			if(!m_dbQuest.IsPersisted) return;
+			if(m_dbQuest.Id <=0) return;
 
-			DBQuest dbQuest = (DBQuest) GameServer.Database.FindObjectByKey<DBQuest>(m_dbQuest.ObjectId);
+			var dbQuest = GameServer.Database.Quests.Find(m_dbQuest.Id);;
 			if(dbQuest!=null)
-				GameServer.Database.DeleteObject(dbQuest);
+				GameServer.Instance.DeleteDataObject(dbQuest);
 		}
 
 		/// <summary>
@@ -191,7 +188,7 @@ namespace DOL.GS.Quests
 			set	
 			{ 
 				m_questPlayer = value;
-				m_dbQuest.Character_ID = QuestPlayer.QuestPlayerID;
+				m_dbQuest.CharacterID = QuestPlayer.QuestPlayerID;
 			}
 		}
 
@@ -510,11 +507,11 @@ namespace DOL.GS.Quests
 			}
 			lock (player.Inventory)
 			{
-				InventoryItem item = player.Inventory.GetFirstItemByID(itemTemplate.Id_nb, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+				InventoryItem item = player.Inventory.GetFirstItemByID(itemTemplate.Id, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				if (item != null)
 				{
 					player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 					if (target != null)
 					{
 						player.Out.SendMessage("You give the " + itemTemplate.Name + " to " + target.GetName(0, false), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -539,7 +536,7 @@ namespace DOL.GS.Quests
 				if (item != null)
 				{
 					player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 					if (target != null)
 					{
 						player.Out.SendMessage("You give the " + item.Name + " to " + target.GetName(0, false), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -563,14 +560,14 @@ namespace DOL.GS.Quests
 			}
 			lock (player.Inventory)
 			{
-				InventoryItem item = player.Inventory.GetFirstItemByID(itemTemplate.Id_nb, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+				InventoryItem item = player.Inventory.GetFirstItemByID(itemTemplate.Id, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 
 				while (item != null)
 				{
 					player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 					itemsRemoved++;
-					item = player.Inventory.GetFirstItemByID(itemTemplate.Id_nb, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+					item = player.Inventory.GetFirstItemByID(itemTemplate.Id, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				}
 
 				if (notify)
@@ -709,7 +706,7 @@ namespace DOL.GS.Quests
 
 			if (itemTemplate is ItemUnique)
 			{
-				GameServer.Database.AddObject(itemTemplate as ItemUnique);
+				GameServer.Instance.SaveDataObject(itemTemplate as ItemUnique);
 				item = GameInventoryItem.Create(itemTemplate as ItemUnique);
 			}
 			else
@@ -734,9 +731,9 @@ namespace DOL.GS.Quests
 			return true;
 		}
 
-		protected static ItemTemplate CreateTicketTo(String destination, String ticket_Id)
+		protected static ItemTemplate CreateTicketTo(String destination, int ticket_Id)
 		{
-			ItemTemplate ticket = GameServer.Database.FindObjectByKey<ItemTemplate>(GameServer.Database.Escape(ticket_Id.ToLower()));
+			ItemTemplate ticket = GameServer.Database.ItemTemplates.Find(ticket_Id);
 			if (ticket == null)
 			{
 				if (log.IsWarnEnabled)
@@ -745,12 +742,12 @@ namespace DOL.GS.Quests
 				ticket = new ItemTemplate();
 				ticket.Name = "ticket to " + destination;
 
-				ticket.Id_nb = ticket_Id.ToLower();
+				ticket.Id = ticket_Id;
 
 				ticket.Model = 499;
 
-				ticket.Object_Type = (int)eObjectType.GenericItem;
-				ticket.Item_Type = 40;
+				ticket.ObjectType = (int)eObjectType.GenericItem;
+				ticket.ItemType = 40;
 
 				ticket.IsPickable = true;
 				ticket.IsDropable = true;
@@ -760,7 +757,7 @@ namespace DOL.GS.Quests
 				ticket.PackSize = 1;
 				ticket.Weight = 0;
 
-				GameServer.Database.AddObject(ticket);
+				GameServer.Instance.SaveDataObject(ticket);
 			}
 			return ticket;
 		}

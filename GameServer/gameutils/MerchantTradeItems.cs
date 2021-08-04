@@ -23,6 +23,7 @@ using System.Collections.Specialized;
 using System.Reflection;
 
 using Atlas.DataLayer.Models;
+using Microsoft.EntityFrameworkCore;
 
 using log4net;
 
@@ -69,7 +70,7 @@ namespace DOL.GS
 		/// Constructor
 		/// </summary>
 		/// <param name="itemsListId"></param>
-		public MerchantTradeItems(string itemsListId)
+		public MerchantTradeItems(int itemsListId)
 		{
 			m_itemsListID = itemsListId;
 		}
@@ -77,12 +78,12 @@ namespace DOL.GS
 		/// <summary>
 		/// Item list id
 		/// </summary>
-		protected string m_itemsListID;
+		protected int m_itemsListID;
 
 		/// <summary>
 		/// Item list id
 		/// </summary>
-		public string ItemsListID
+		public int ItemsListID
 		{
 			get { return m_itemsListID; }
 		}
@@ -155,13 +156,14 @@ namespace DOL.GS
 			try
 			{
 				HybridDictionary itemsInPage = new HybridDictionary(MAX_ITEM_IN_TRADEWINDOWS);
-				if (m_itemsListID != null && m_itemsListID.Length > 0)
+				if (m_itemsListID > 0)
 				{
-					var itemList = DOLDB<MerchantItem>.SelectObjects(DB.Column("ItemListID").IsEqualTo(m_itemsListID).And(DB.Column("PageNumber").IsEqualTo(page)));
+					var itemList = GameServer.Database.MerchantItems.Include(x => x.ItemTemplate).Where(x => x.ItemListID == m_itemsListID && x.PageNumber == page).ToList();
 					foreach (MerchantItem merchantitem in itemList)
 					{
-						ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(merchantitem.ItemTemplateID);
-                        if (item != null)
+						ItemTemplate item = merchantitem.ItemTemplate;
+
+						if (item != null)
                         {
                             ItemTemplate slotItem = (ItemTemplate)itemsInPage[merchantitem.SlotPosition];
                             if (slotItem == null)
@@ -218,12 +220,16 @@ namespace DOL.GS
 					if (item != null) return item;
 				}
 
-				if (m_itemsListID != null && m_itemsListID.Length > 0)
+				if (m_itemsListID > 0)
 				{
-					var itemToFind = DOLDB<MerchantItem>.SelectObject(DB.Column("ItemListID").IsEqualTo(m_itemsListID).And(DB.Column("PageNumber").IsEqualTo(page)).And(DB.Column("SlotPosition").IsEqualTo((int)slot)));
+					var itemToFind = GameServer.Database.MerchantItems
+											.Include(x => x.ItemTemplate)
+											.FirstOrDefault(x => x.ItemListID == m_itemsListID && 
+																 x.PageNumber == page && 
+																 x.SlotPosition == (int)slot);
 					if (itemToFind != null)
 					{
-						item = GameServer.Database.FindObjectByKey<ItemTemplate>(itemToFind.ItemTemplateID);
+						item = itemToFind.ItemTemplate;
 					}
 				}
 				return item;
@@ -245,12 +251,14 @@ namespace DOL.GS
 			try
 			{
 				Hashtable allItems = new Hashtable();
-				if (m_itemsListID != null && m_itemsListID.Length > 0)
+				if (m_itemsListID > 0)
 				{
-					var itemList = DOLDB<MerchantItem>.SelectObjects(DB.Column("ItemListID").IsEqualTo(m_itemsListID));
+					var itemList = GameServer.Database.MerchantItems
+											.Include(x => x.ItemTemplate)
+											.Where(x => x.ItemListID == m_itemsListID);
 					foreach (MerchantItem merchantitem in itemList)
 					{
-						ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(merchantitem.ItemTemplateID);
+						ItemTemplate item = merchantitem.ItemTemplate;
 						if (item != null)
 						{
 							ItemTemplate slotItem = (ItemTemplate)allItems[merchantitem.SlotPosition];

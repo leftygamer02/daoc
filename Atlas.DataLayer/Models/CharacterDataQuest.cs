@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class CharacterDataQuest : DataObjectBase
+    public partial class CharacterDataQuest : DataObjectBase
     {
         public int CharacterID { get; set; }
         public int DataQuestID { get; set; }
