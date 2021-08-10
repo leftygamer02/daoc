@@ -14,5 +14,7 @@ namespace Atlas.DataLayer.Models
         public int Radius { get; set; }
         public int RegionID { get; set; }
         public int Realm { get; set; }
+
+        public virtual Region Region { get; set; }
     }
 }

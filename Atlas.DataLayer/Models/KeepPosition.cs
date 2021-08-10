@@ -10,7 +10,7 @@ namespace Atlas.DataLayer.Models
     {
         public int ComponentSkin { get; set; }
         public int ComponentRotation { get; set; }
-        public string TemplateID { get; set; }
+        public int TemplateID { get; set; }
         public int Height { get; set; }
         public int XOff { get; set; }
         public int YOff { get; set; }

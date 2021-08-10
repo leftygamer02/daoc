@@ -22,12 +22,22 @@ namespace Atlas.DataLayer.Models
         public virtual ICollection<Zone> Zones { get; set; }
         public virtual ICollection<SpawnGroup> SpawnGroups { get; set; }
         public virtual ICollection<Character> Characters { get; set; }
+        public virtual ICollection<Area> Areas { get; set; }
+        public virtual ICollection<Battleground> Battlegrounds { get; set; }
+        public virtual ICollection<BindPoint> BindPoints { get; set; }
+        public virtual ICollection<ZonePoint> ZonePointSources { get; set; }
+        public virtual ICollection<ZonePoint> ZonePointTargets { get; set; }
 
         public Region()
         {
+            Areas = new HashSet<Area>();
             Zones = new HashSet<Zone>();
             SpawnGroups = new HashSet<SpawnGroup>();
             Characters = new HashSet<Character>();
+            Battlegrounds = new HashSet<Battleground>();
+            BindPoints = new HashSet<BindPoint>();
+            ZonePointSources = new HashSet<ZonePoint>();
+            ZonePointTargets = new HashSet<ZonePoint>();
         }
     }
 }

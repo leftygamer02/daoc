@@ -20,5 +20,7 @@ namespace Atlas.DataLayer.Models
         public short Sound { get; set; }
         public bool CheckLOS { get; set; }
         public string Points { get; set; }
+
+        public virtual Region Region { get; set; }
     }
 }

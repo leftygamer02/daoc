@@ -102,7 +102,7 @@ namespace Atlas.DataLayer.Models
         public int PrimaryCraftingSkill { get; set; }
         public bool CancelStyle { get; set; }
         public bool IsAnonymous { get; set; }
-        public bool CustomisationStep { get; set; }
+        public int CustomisationStep { get; set; }
         public int EyeSize { get; set; }
         public int LipSize { get; set; }
         public int EyeColor { get; set; }

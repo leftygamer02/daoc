@@ -12,5 +12,7 @@ namespace Atlas.DataLayer.Models
         public int MinLevel { get; set; }
         public int MaxLevel { get; set; }
         public int MaxRealmLevel { get; set; }
+
+        public virtual Region Region { get; set; }
     }
 }

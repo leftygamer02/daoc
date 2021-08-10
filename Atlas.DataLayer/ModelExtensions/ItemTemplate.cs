@@ -53,5 +53,21 @@ namespace Atlas.DataLayer.Models
 				}
 			}
 		}
+
+		public virtual byte BaseDurabilityPercent
+		{
+			get
+			{
+				return (byte)((MaxDurability > 0) ? Durability * 100 / MaxDurability : 0);
+			}
+		}
+
+		public virtual byte BaseConditionPercent
+		{
+			get
+			{
+				return (byte)Math.Round((MaxCondition > 0) ? (double)Condition / MaxCondition * 100 : 0);
+			}
+		}
 	}
 }

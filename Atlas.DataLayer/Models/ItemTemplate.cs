@@ -9,7 +9,8 @@ namespace Atlas.DataLayer.Models
     public partial class ItemTemplate : DataObjectBase
     {
         public string TranslationId { get; set; }
-        public string Name { get; set; }        
+        public string KeyName { get; set; }
+        public string Name { get; set; }
         public int Level { get; set; }
         public int Durability { get; set; }
         public int MaxDurability { get; set; }

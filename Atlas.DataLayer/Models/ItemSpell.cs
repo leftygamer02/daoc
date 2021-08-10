@@ -16,5 +16,6 @@ namespace Atlas.DataLayer.Models
         public bool IsPoison { get; set; }
 
         public virtual ItemTemplate ItemTemplate { get; set; }
+        public virtual Spell Spell { get; set; }
     }
 }

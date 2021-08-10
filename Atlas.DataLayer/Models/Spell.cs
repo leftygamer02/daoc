@@ -55,12 +55,15 @@ namespace Atlas.DataLayer.Models
         public virtual ICollection<SpellEffect> SpellEffects { get; set; }
 
         public virtual ICollection<SpellLineSpell> SpellLineSpells { get; set; }
-
+        public virtual ICollection<ItemSpell> ItemSpells { get; set; }
+        public virtual ICollection<InventoryItemSpell> InventoryItemSpells { get; set; }
         public Spell()
         {
             CustomValues = new HashSet<SpellCustomValues>();
             SpellEffects = new HashSet<SpellEffect>();
             SpellLineSpells = new HashSet<SpellLineSpell>();
+            ItemSpells = new HashSet<ItemSpell>();
+            InventoryItemSpells = new HashSet<InventoryItemSpell>();
         }
     }
 }

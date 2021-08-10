@@ -113,6 +113,15 @@ namespace Atlas.DataLayer.Models
 			}
 		}
 
+		[NotMapped]
+		public virtual byte DurabilityPercent
+		{
+			get
+			{
+				return (byte)Math.Round((ItemTemplate.MaxDurability > 0) ? (double)Durability / ItemTemplate.MaxDurability * 100 : 0);
+			}
+		}
+
 		private DateTime _lastUsedDateTime;
 		[NotMapped]
 		public virtual int CanUseAgainIn

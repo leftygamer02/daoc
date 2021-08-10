@@ -50,6 +50,9 @@ namespace Atlas.DataLayer.Models
         public int LootTableID { get; set; }
         public string Brain { get; set; }
         public int FactionID { get; set; }
+        public int HouseNumber { get; set; }
+        public int Realm { get; set; }
+        public string Guild { get; set; }
 
         public virtual NpcEquipment EquipmentTemplate { get; set; }
         public virtual MerchantItem ItemListTemplate { get; set; }

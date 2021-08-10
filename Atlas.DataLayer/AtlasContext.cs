@@ -144,6 +144,7 @@ namespace Atlas.DataLayer
         public DbSet<StyleSpell> StyleSpells { get; set; }
         public DbSet<Teleport> Teleports { get; set; }
         public DbSet<WorldObject> WorldObjects { get; set; }
+        public DbSet<ZonePoint> ZonePoints { get; set; }
         public DbSet<Zone> Zones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -205,6 +206,18 @@ namespace Atlas.DataLayer
                 .HasOne(s => s.SalvageYield)
                 .WithOne(s => s.ItemTemplate)
                 .HasForeignKey<SalvageYield>(x => x.ItemTemplateID);
+
+            modelBuilder.Entity<Region>()
+                .HasMany(r => r.ZonePointSources)
+                .WithOne(z => z.SourceRegion)
+                .HasForeignKey(z => z.SourceRegionID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Region>()
+                .HasMany(r => r.ZonePointTargets)
+                .WithOne(z => z.TargetRegion)
+                .HasForeignKey(z => z.SourceTargetID)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

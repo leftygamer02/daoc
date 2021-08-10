@@ -8,8 +8,10 @@ namespace Atlas.DataLayer.Models
 {
     public class HouseHookpointItem : DataObjectBase
     {
+        
         public int HouseID { get; set; }
-        public int ItemTemplateID { get; set; }
+        public int HookpointID { get; set; }
+        public int ItemTemplateID { get; set; }        
         public int HouseNumber { get; set; }
         public int Heading { get; set; }
         public int Index { get; set; }

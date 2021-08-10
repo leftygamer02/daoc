@@ -10,6 +10,7 @@ namespace Atlas.DataLayer.Models
     {
         public string EncounterID { get; set; }
         public string QuestID { get; set; }
+        public string Name { get; set; }
         public int Zone { get; set; }
         public int ScholarID { get; set; }
         public int ReuseTimer { get; set; }
