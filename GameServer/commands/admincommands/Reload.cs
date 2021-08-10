@@ -181,7 +181,7 @@ namespace DOL.GS.Commands
 
 			if (args[1].ToLower() == "spells")
 			{
-				SkillBase.ReloadDBSpells();
+				SkillBase.ReloadAtlas.DataLayer.Models.Spells();
 				int loaded = SkillBase.ReloadSpellLines();
 				if (client != null) ChatUtil.SendSystemMessage(client, string.Format("Reloaded db spells and {0} spells for all lines !", loaded));
 				log.Info(string.Format("Reloaded db spells and {0} spells for all spell lines !", loaded));

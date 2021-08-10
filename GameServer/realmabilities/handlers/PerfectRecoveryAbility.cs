@@ -13,7 +13,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class PerfectRecoveryAbility : TimedRealmAbility
 	{
-		public PerfectRecoveryAbility(DBAbility dba, int level) : base(dba, level) { }
+		public PerfectRecoveryAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 		private Int32 m_resurrectValue = 5;
 		private const String RESURRECT_CASTER_PROPERTY = "RESURRECT_CASTER";
         protected readonly ListDictionary m_resTimersByLiving = new ListDictionary();

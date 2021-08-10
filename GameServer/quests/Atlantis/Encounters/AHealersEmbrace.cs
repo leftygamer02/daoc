@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public AHealersEmbrace(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public AHealersEmbrace(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AHealersEmbrace(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

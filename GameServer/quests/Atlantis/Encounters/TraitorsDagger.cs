@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public TraitorsDagger(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public TraitorsDagger(GamePlayer questingPlayer, DBQuest dbQuest)
+        public TraitorsDagger(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

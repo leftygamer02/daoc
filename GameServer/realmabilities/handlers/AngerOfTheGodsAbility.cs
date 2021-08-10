@@ -10,16 +10,16 @@ namespace DOL.GS.RealmAbilities
 {
 	public class AngerOfTheGodsAbility : TimedRealmAbility
 	{
-        private DBSpell m_dbspell;
+        private Atlas.DataLayer.Models.Spell m_dbspell;
         private Spell m_spell = null;
         private SpellLine m_spellline;
         private double m_damage = 0;
         private GamePlayer m_player;
 
-        public AngerOfTheGodsAbility(DBAbility dba, int level) : base(dba, level) {}
+        public AngerOfTheGodsAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) {}
         public virtual void CreateSpell(double damage)
         {
-            m_dbspell = new DBSpell();
+            m_dbspell = new Atlas.DataLayer.Models.Spell();
             m_dbspell.Name = "Anger of the Gods";
             m_dbspell.Icon = 7023;
             m_dbspell.ClientEffect = 7023;

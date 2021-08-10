@@ -24,6 +24,7 @@ using DOL.GS.ServerProperties;
 using DOL.Language;
 using log4net;
 using System.Reflection;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -48,7 +49,7 @@ namespace DOL.GS
 
         static Doppelganger()
         {
-           DBNpcTemplate chthonian = DOLDB<DBNpcTemplate>.SelectObject(DB.Column("Name").IsEqualTo("chthonian crawler"));
+            var chthonian = GameServer.Database.NpcTemplates.FirstOrDefault(x => x.Name == "chthonian crawler");
             if (chthonian != null)
                 m_petTemplate = new NpcTemplate(chthonian);
         }
@@ -100,7 +101,7 @@ namespace DOL.GS
         /// Load a npc from the npc template
         /// </summary>
         /// <param name="obj">template to load from</param>
-        public override void LoadFromDatabase(DataObject obj)
+        public override void LoadFromDatabase(DataObjectBase obj)
         {
             base.LoadFromDatabase(obj);
 

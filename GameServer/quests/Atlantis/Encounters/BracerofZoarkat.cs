@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public BraceletofZoarkat(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public BraceletofZoarkat(GamePlayer questingPlayer, DBQuest dbQuest)
+        public BraceletofZoarkat(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

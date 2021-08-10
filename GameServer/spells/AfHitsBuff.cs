@@ -47,7 +47,7 @@ namespace DOL.GS.Spells
 
             foreach (InventoryItem item in effect.Owner.Inventory.EquippedItems)
             {
-                if (item.Object_Type >= (int)eObjectType._FirstArmor && item.Object_Type <= (int)eObjectType._LastArmor)
+                if (item.ObjectType >= (int)eObjectType._FirstArmor && item.ObjectType <= (int)eObjectType._LastArmor)
                 {
                     playerAF += item.DPS_AF;
                 }

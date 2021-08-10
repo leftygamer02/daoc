@@ -1097,7 +1097,7 @@ namespace DOL.GS
 			delve.Add("       DPS_AF: " + ItemTemplate.DPS_AF);
 			delve.Add("      SPD_ABS: " + ItemTemplate.SPD_ABS);
 			delve.Add("         Hand: " + ItemTemplate.Hand);
-			delve.Add("  Type_Damage: " + ItemTemplate.TypeDamage);
+			delve.Add("  TypeDamage: " + ItemTemplate.TypeDamage);
 			delve.Add("        Bonus: " + ItemTemplate.ItemBonus);
 
 			if (GlobalConstants.IsWeapon(ItemTemplate.ObjectType))

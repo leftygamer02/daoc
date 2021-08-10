@@ -493,7 +493,7 @@ namespace DOL.GS
 					if (item == null)
 						continue;
 
-					if (item.Id_nb.Equals(product.Id_nb) == false)
+					if (item.Id.Equals(product.Id) == false)
 						continue;
 
 					if (item.Count >= product.MaxCount)
@@ -554,7 +554,7 @@ namespace DOL.GS
 					else
 					{
 						ItemUnique unique = new ItemUnique(product);
-						GameServer.Database.AddObject(unique);
+						GameServer.Instance.SaveDataObject(unique);
 						newItem = GameInventoryItem.Create(unique);
 						newItem.Quality = GetQuality(player, recipe.Level);
 					}

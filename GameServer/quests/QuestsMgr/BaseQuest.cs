@@ -117,7 +117,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="questingPlayer">The player doing the quest</param>
 		/// <param name="dbQuest">The database object</param>
-		public BaseQuest(GamePlayer questingPlayer, DBQuest dbQuest)
+		public BaseQuest(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest)
 		{
 		}

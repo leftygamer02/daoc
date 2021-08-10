@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public Battler(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public Battler(GamePlayer questingPlayer, DBQuest dbQuest)
+		public Battler(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

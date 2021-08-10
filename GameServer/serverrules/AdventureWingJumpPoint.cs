@@ -90,7 +90,7 @@ namespace DOL.GS.ServerRules
             if(previousInstance != null) 
             {
             	// We should check if we can go in !
-            	if(previousInstance.Skin != targetPoint.TargetRegion) 
+            	if(previousInstance.Skin != targetPoint.TargetRegionID) 
             	{
             		//we're trying to enter in an other instance and we still have one !
             		//check if previous one is empty
@@ -114,10 +114,10 @@ namespace DOL.GS.ServerRules
            if(previousInstance == null) 
            {
             	// I have no instance to go to, create one !
-            	previousInstance = (AdventureWingInstance)WorldMgr.CreateInstance(targetPoint.TargetRegion, typeof(AdventureWingInstance));
-            	if(targetPoint.SourceRegion != 0 && targetPoint.SourceRegion == player.CurrentRegionID) {
+            	previousInstance = (AdventureWingInstance)WorldMgr.CreateInstance((ushort)targetPoint.TargetRegionID, typeof(AdventureWingInstance));
+            	if(targetPoint.SourceRegionID != 0 && targetPoint.SourceRegionID == player.CurrentRegionID) {
             		//source loc seems legit...
-            		previousInstance.SourceEntrance = new GameLocation("source", targetPoint.SourceRegion, targetPoint.SourceX, targetPoint.SourceY, targetPoint.SourceZ);
+            		previousInstance.SourceEntrance = new GameLocation("source", (ushort)targetPoint.SourceRegionID, targetPoint.SourceX, targetPoint.SourceY, targetPoint.SourceZ);
             	}
             	
         		if(player.Group != null) 
@@ -193,7 +193,7 @@ namespace DOL.GS.ServerRules
         	//get loc of instance
         	if(previousInstance != null) 
         	{
-        		loc = new GameLocation(previousInstance.Description + " (instance)", previousInstance.ID, targetPoint.TargetX,  targetPoint.TargetY,  targetPoint.TargetZ,  targetPoint.TargetHeading);
+        		loc = new GameLocation(previousInstance.Description + " (instance)", previousInstance.ID, targetPoint.TargetX,  targetPoint.TargetY,  targetPoint.TargetZ, (ushort)targetPoint.TargetHeading);
         	}
 
 

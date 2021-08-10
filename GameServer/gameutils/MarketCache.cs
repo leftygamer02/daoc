@@ -20,11 +20,11 @@
 // MarketCache by Tolakram.  Donated from Storm
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
 using Atlas.DataLayer.Models;
-using DOL.Database.Transaction;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.Events;
@@ -37,7 +37,7 @@ namespace DOL.GS
 	{
 		private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private static Dictionary<string, InventoryItem> m_itemCache = null;
+		private static Dictionary<int, InventoryItem> m_itemCache = null;
 
 		private static object CacheLock = new object();
 
@@ -58,15 +58,17 @@ namespace DOL.GS
 			log.Info("Building Market Cache ....");
 			try
 			{
-				m_itemCache = new Dictionary<string, InventoryItem>();
+				m_itemCache = new Dictionary<int, InventoryItem>();
 
-				var filterBySlot = DB.Column("SlotPosition").IsGreaterOrEqualTo((int)eInventorySlot.Consignment_First).And(DB.Column("SlotPosition").IsLessOrEqualTo((int)eInventorySlot.Consignment_Last));
-				var list = DOLDB<InventoryItem>.SelectObjects(filterBySlot.And(DB.Column("OwnerLot").IsGreatherThan(0)));
+				var list = GameServer.Database.InventoryItems
+											  .Where(x => x.SlotPosition >= (int)eInventorySlot.Consignment_First &&
+														  x.SlotPosition <= (int)eInventorySlot.Consignment_Last &&
+														  x.OwnerLot > 0);
 
 				foreach (InventoryItem item in list)
 				{
 					GameInventoryItem playerItem = GameInventoryItem.Create(item);
-					m_itemCache.Add(item.ObjectId, playerItem);
+					m_itemCache.Add(item.Id, playerItem);
 				}
 
 				log.Info("Market Cache initialized with " + m_itemCache.Count + " items.");
@@ -88,18 +90,18 @@ namespace DOL.GS
 		{
 			bool added = false;
 
-			if (item != null && item.OwnerID != null)
+			if (item != null && item.CharacterID != null)
 			{
 				lock (CacheLock)
 				{
-					if (m_itemCache.ContainsKey(item.ObjectId) == false)
+					if (m_itemCache.ContainsKey(item.Id) == false)
 					{
-						m_itemCache.Add(item.ObjectId, item);
+						m_itemCache.Add(item.Id, item);
 						added = true;
 					}
 					else
 					{
-						log.Error("Attempted to add duplicate item to Market Cache " + item.ObjectId);
+						log.Error("Attempted to add duplicate item to Market Cache " + item.Id);
 					}
 				}
 			}
@@ -120,9 +122,9 @@ namespace DOL.GS
 			{
 				lock (CacheLock)
 				{
-					if (m_itemCache.ContainsKey(item.ObjectId))
+					if (m_itemCache.ContainsKey(item.Id))
 					{
-						m_itemCache.Remove(item.ObjectId);
+						m_itemCache.Remove(item.Id);
 						removed = true;
 					}
 				}

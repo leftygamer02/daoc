@@ -49,10 +49,10 @@ namespace DOL.GS
 		/// load faction from DB
 		/// </summary>
 		/// <param name="dbfaction"></param>
-		public void LoadFromDatabase(DBFaction dbfaction)
+		public void LoadFromDatabase(Atlas.DataLayer.Models.Faction dbfaction)
 		{
 			m_name = dbfaction.Name;
-			m_id = dbfaction.ID;
+			m_id = dbfaction.Id;
 			m_baseAggroLevel = dbfaction.BaseAggroLevel;
 		}
 
@@ -61,7 +61,7 @@ namespace DOL.GS
 		{
 			lock ( m_updatePlayer.SyncRoot )
 			{
-				foreach ( string charID in m_updatePlayer )
+				foreach ( int charID in m_updatePlayer )
 				{
 					SaveAggroToFaction( charID );
 				}
@@ -71,21 +71,22 @@ namespace DOL.GS
 		}
 
 
-		public void SaveAggroToFaction(string charID)
+		public void SaveAggroToFaction(int charID)
 		{
-			var dbfactionAggroLevel = DOLDB<DBFactionAggroLevel>.SelectObject(DB.Column("CharacterID").IsEqualTo(charID).And(DB.Column("FactionID").IsEqualTo(ID)));
+			var dbfactionAggroLevel = GameServer.Database.FactionAggroLevels
+														 .FirstOrDefault(x => x.CharacterID == charID && x.FactionID == ID);
 			if (dbfactionAggroLevel == null)
 			{
-				dbfactionAggroLevel = new DBFactionAggroLevel();
+				dbfactionAggroLevel = new Atlas.DataLayer.Models.FactionAggroLevel();
 				dbfactionAggroLevel.AggroLevel = (int)m_playerxFaction[charID];
 				dbfactionAggroLevel.CharacterID = charID;
 				dbfactionAggroLevel.FactionID = this.ID;
-				GameServer.Database.AddObject(dbfactionAggroLevel);
+				GameServer.Instance.SaveDataObject(dbfactionAggroLevel);
 			}
 			else
 			{
 				dbfactionAggroLevel.AggroLevel = (int)m_playerxFaction[charID];
-				GameServer.Database.SaveObject(dbfactionAggroLevel);
+				GameServer.Instance.SaveDataObject(dbfactionAggroLevel);
 			}
 		}
 		#endregion

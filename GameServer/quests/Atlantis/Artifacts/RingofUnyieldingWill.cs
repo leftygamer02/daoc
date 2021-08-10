@@ -81,7 +81,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// </summary>
 		/// <param name="questingPlayer"></param>
 		/// <param name="dbQuest"></param>
-        public RingofUnyieldingWill(GamePlayer questingPlayer, DBQuest dbQuest)
+        public RingofUnyieldingWill(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

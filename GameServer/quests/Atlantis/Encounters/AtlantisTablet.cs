@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public AtlantisTablet(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public AtlantisTablet(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AtlantisTablet(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

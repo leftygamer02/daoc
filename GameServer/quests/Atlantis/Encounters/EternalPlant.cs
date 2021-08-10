@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public EternalPlant(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public EternalPlant(GamePlayer questingPlayer, DBQuest dbQuest)
+        public EternalPlant(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

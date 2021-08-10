@@ -36,7 +36,7 @@ namespace DOL.GS
 		#region constructor
 		public MinotaurRelic() : base() { m_saveInDB = true; }
 
-		public MinotaurRelic(DBMinotaurRelic obj)
+		public MinotaurRelic(Atlas.DataLayer.Models.MinotaurRelic obj)
 			: this()
 		{
 			LoadFromDatabase(obj);
@@ -44,7 +44,7 @@ namespace DOL.GS
 		#endregion
 
 		#region Declarations
-		DBMinotaurRelic m_dbRelic;
+		Atlas.DataLayer.Models.MinotaurRelic m_dbRelic;
 		Timer timer = null;
 		public RegionTimer respawntimer = null;
 		protected int m_spawny;
@@ -168,11 +168,11 @@ namespace DOL.GS
 		/// Loads the GameRelic from Database
 		/// </summary>
 		/// <param name="obj">The DBRelic-object for this relic</param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
-			InternalID = obj.ObjectId;
-			m_dbRelic = obj as DBMinotaurRelic;
-			RelicID = m_dbRelic.RelicID;
+			InternalID = obj.Id;
+			m_dbRelic = obj as Atlas.DataLayer.Models.MinotaurRelic;
+			RelicID = m_dbRelic.Id;
 
 			Heading = (ushort)m_dbRelic.SpawnHeading;
 			CurrentRegionID = (ushort)m_dbRelic.SpawnRegion;
@@ -187,12 +187,12 @@ namespace DOL.GS
 			SpawnY = m_dbRelic.SpawnY;
 			SpawnZ = m_dbRelic.SpawnZ;
 
-			RelicSpellID = m_dbRelic.relicSpell;
-			RelicSpell = SkillBase.GetSpellByID(m_dbRelic.relicSpell);
-			RelicTarget = m_dbRelic.relicTarget;
+			RelicSpellID = m_dbRelic.RelicSpell;
+			RelicSpell = SkillBase.GetSpellByID(m_dbRelic.RelicSpell);
+			RelicTarget = m_dbRelic.RelicTarget;
 
 			Name = m_dbRelic.Name;
-			Model = m_dbRelic.Model;
+			Model = (ushort)m_dbRelic.Model;
 
 			XP = MinotaurRelicManager.MAX_RELIC_EXP;
 
@@ -219,17 +219,12 @@ namespace DOL.GS
 
 			m_dbRelic.Name = Name;
 			m_dbRelic.Model = Model;
-			m_dbRelic.relicSpell = RelicSpellID;
+			m_dbRelic.RelicSpell = RelicSpellID;
             m_dbRelic.ProtectorClassType = ProtectorClassType;
             m_dbRelic.SpawnLocked = SpawnLocked;
 
-			if (InternalID == null)
-			{
-				GameServer.Database.AddObject(m_dbRelic);
-				InternalID = m_dbRelic.ObjectId;
-			}
-			else
-				GameServer.Database.SaveObject(m_dbRelic);
+			GameServer.Instance.SaveDataObject(m_dbRelic);
+			InternalID = m_dbRelic.Id;
 		}
 		#endregion
 

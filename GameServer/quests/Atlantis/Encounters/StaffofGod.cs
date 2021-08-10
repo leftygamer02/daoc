@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public StaffofGod(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public StaffofGod(GamePlayer questingPlayer, DBQuest dbQuest)
+        public StaffofGod(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

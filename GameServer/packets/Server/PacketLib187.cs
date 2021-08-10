@@ -137,7 +137,7 @@ namespace DOL.GS.PacketHandler
 			int value1;
 			int value2;
 
-			switch (template.Object_Type)
+			switch (template.ObjectType)
 			{
 				case (int)eObjectType.Arrow:
 				case (int)eObjectType.Bolt:
@@ -155,7 +155,7 @@ namespace DOL.GS.PacketHandler
 					value2 = 0;
 					break;
 				case (int)eObjectType.Shield:
-					value1 = template.Type_Damage;
+					value1 = template.TypeDamage;
 					value2 = template.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
@@ -185,13 +185,13 @@ namespace DOL.GS.PacketHandler
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (template.Object_Type == (int)eObjectType.GardenObject)
+			if (template.ObjectType == (int)eObjectType.GardenObject)
 				pak.WriteByte((byte)(template.DPS_AF));
 			else
 				pak.WriteByte((byte)(template.Hand << 6));
-			pak.WriteByte((byte)((template.Type_Damage > 3
+			pak.WriteByte((byte)((template.TypeDamage > 3
 				? 0
-				: template.Type_Damage << 6) | template.Object_Type));
+				: template.TypeDamage << 6) | template.ObjectType));
 			pak.WriteShort((ushort)template.Weight);
 			pak.WriteByte(template.BaseConditionPercent);
 			pak.WriteByte(template.BaseDurabilityPercent);

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Reflection;
@@ -79,7 +80,7 @@ namespace DOL.GS
 			IList<LootGenerator> m_lootGenerators;
 			try
 			{
-				m_lootGenerators = GameServer.Database.SelectAllObjects<LootGenerator>();
+				m_lootGenerators = GameServer.Database.LootGenerators.ToList();
 			}
 			catch (Exception e)
 			{

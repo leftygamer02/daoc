@@ -261,7 +261,7 @@ namespace DOL.GS.PacketHandler
 	
 						int value1; // some object types use this field to display count
 						int value2; // some object types use this field to display count
-						switch (item.Object_Type)
+						switch (item.ObjectType)
 						{
 							case (int)eObjectType.Arrow:
 							case (int)eObjectType.Bolt:
@@ -279,7 +279,7 @@ namespace DOL.GS.PacketHandler
 								value2 = 0;
 								break; // unused
 							case (int)eObjectType.Shield:
-								value1 = item.Type_Damage;
+								value1 = item.TypeDamage;
 								value2 = item.DPS_AF;
 								break;
 							case (int)eObjectType.AlchemyTincture:
@@ -309,11 +309,11 @@ namespace DOL.GS.PacketHandler
 						pak.WriteByte((byte)value1);
 						pak.WriteByte((byte)value2);
 	
-						if (item.Object_Type == (int)eObjectType.GardenObject)
+						if (item.ObjectType == (int)eObjectType.GardenObject)
 							pak.WriteByte((byte)(item.DPS_AF));
 						else
 							pak.WriteByte((byte)(item.Hand << 6));
-						pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+						pak.WriteByte((byte)((item.TypeDamage > 3 ? 0 : item.TypeDamage << 6) | item.ObjectType));
 						pak.WriteShort((ushort)item.Weight);
 						pak.WriteByte(item.ConditionPercent); // % of con
 						pak.WriteByte(item.DurabilityPercent); // % of dur
@@ -452,7 +452,7 @@ namespace DOL.GS.PacketHandler
 							pak.WriteByte((byte)item.DPS_AF); // dps_af
 							pak.WriteByte((byte)item.SPD_ABS); //spd_abs
 							pak.WriteByte((byte)(item.Hand << 6));
-							pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+							pak.WriteByte((byte)((item.TypeDamage > 3 ? 0 : item.TypeDamage << 6) | item.ObjectType));
 							pak.WriteShort((ushort)item.Weight); // weight
 							pak.WriteByte(item.ConditionPercent); // con %
 							pak.WriteByte(item.DurabilityPercent); // dur %

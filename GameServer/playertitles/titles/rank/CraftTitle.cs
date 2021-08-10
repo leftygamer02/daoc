@@ -45,16 +45,16 @@ namespace DOL.GS.PlayerTitles
 		/// <returns>The title value.</returns>
 		public override string GetValue(GamePlayer source, GamePlayer player)
 		{
-			if (player.CraftingPrimarySkill == eCraftingSkill.NoCrafting || !player.CraftingSkills.ContainsKey(player.CraftingPrimarySkill))
+			if (player.PrimaryCraftingSkill == eCraftingSkill.NoCrafting || !player.CraftingSkills.ContainsKey(player.PrimaryCraftingSkill))
 				return string.Format(LanguageMgr.TryTranslateOrDefault(source, "!BasicCrafting!", "Crafting.Name.BasicCrafting"));
 			
-			var craftingSkill = CraftingMgr.getSkillbyEnum(player.CraftingPrimarySkill);
+			var craftingSkill = CraftingMgr.getSkillbyEnum(player.PrimaryCraftingSkill);
 			var profession = craftingSkill as AbstractProfession;
 			
 			if (profession == null)
 				return craftingSkill.Name;
 			
-			return profession.GetTitle(source, player.CraftingSkills[player.CraftingPrimarySkill]);
+			return profession.GetTitle(source, player.CraftingSkills[player.PrimaryCraftingSkill]);
 		}
 		
 		/// <summary>
@@ -64,7 +64,7 @@ namespace DOL.GS.PlayerTitles
 		/// <returns>true if the player is suitable for this title.</returns>
 		public override bool IsSuitable(GamePlayer player)
 		{
-			if (player.CraftingPrimarySkill != eCraftingSkill.NoCrafting)
+			if (player.PrimaryCraftingSkill != eCraftingSkill.NoCrafting)
 			{
 				return true;
 			}

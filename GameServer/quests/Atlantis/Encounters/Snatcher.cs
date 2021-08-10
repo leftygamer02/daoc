@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public Snatcher(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public Snatcher(GamePlayer questingPlayer, DBQuest dbQuest)
+		public Snatcher(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

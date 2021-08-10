@@ -43,8 +43,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 				try
 				{
 					// find the cached character and force it to update with the latest saved character
-					DOLCharacters cachedCharacter = null;
-					foreach (DOLCharacters accountChar in client.Account.Characters)
+					Character cachedCharacter = null;
+					foreach (Character accountChar in client.Account.Characters)
 					{
 						if (accountChar.ObjectId == client.Player.InternalID)
 						{
@@ -116,7 +116,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					{
 						// save the choice
 						client.Account.Realm = (int)chosenRealm;
-						GameServer.Database.SaveObject(client.Account);
+						GameServer.Instance.SaveDataObject(client.Account);
 						// 2008-01-29 Kakuri - Obsolete
 						//GameServer.Database.WriteDatabaseTable( typeof( Account ) );
 					}
@@ -140,8 +140,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 				try
 				{
 					// find the cached character and force it to update with the latest saved character
-					DOLCharacters cachedCharacter = null;
-					foreach (DOLCharacters accountChar in client.Account.Characters)
+					Character cachedCharacter = null;
+					foreach (Character accountChar in client.Account.Characters)
 					{
 						if (accountChar.ObjectId == client.Player.InternalID)
 						{

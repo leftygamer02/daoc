@@ -157,7 +157,7 @@ namespace DOL.GS
 
 	public class Song : Spell
 	{
-		public Song(DBSpell spell, int requiredLevel)
+		public Song(Atlas.DataLayer.Models.Spell spell, int requiredLevel)
 			: base(spell, requiredLevel)
 		{
 		}

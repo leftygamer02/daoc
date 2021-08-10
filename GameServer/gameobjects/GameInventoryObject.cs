@@ -127,7 +127,7 @@ namespace DOL.GS
 					toItem.SlotPosition = fromItem.SlotPosition;
 					toItem.OwnerID = thisObject.GetOwner(player);
 					thisObject.OnAddItem(player, toItem);
-					GameServer.Database.SaveObject(toItem);
+					GameServer.Instance.SaveDataObject(toItem);
 				}
 
 				thisObject.OnRemoveItem(player, fromItem);
@@ -177,7 +177,7 @@ namespace DOL.GS
 				fromItem.OwnerID = thisObject.GetOwner(player);
 				fromItem.SlotPosition = (int)(toClientSlot) - (int)(thisObject.FirstClientSlot) + thisObject.FirstDBSlot;
 				thisObject.OnAddItem(player, fromItem);
-				GameServer.Database.SaveObject(fromItem);
+				GameServer.Instance.SaveDataObject(fromItem);
 
 				var updateItems = new Dictionary<int, InventoryItem>(1);
 				updateItems.Add((int)toClientSlot, fromItem);
@@ -211,11 +211,11 @@ namespace DOL.GS
 					toItem = inventory[(int)toSlot];
 					toItem.SlotPosition = fromItem.SlotPosition;
 
-					GameServer.Database.SaveObject(toItem);
+					GameServer.Instance.SaveDataObject(toItem);
 				}
 
 				fromItem.SlotPosition = (int)toSlot - (int)(thisObject.FirstClientSlot) + thisObject.FirstDBSlot;
-				GameServer.Database.SaveObject(fromItem);
+				GameServer.Instance.SaveDataObject(fromItem);
 
 				updateItems.Add((int)fromSlot, toItem);
 				updateItems.Add((int)toSlot, fromItem);

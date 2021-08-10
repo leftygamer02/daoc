@@ -299,7 +299,7 @@ namespace DOL.GS.Commands
 							GameInventoryItem invItem = GameInventoryItem.Create(obj);
 							var objectInfo = new List<string>();
                             invItem.WriteTechnicalInfo(objectInfo, client);
-							client.Out.SendCustomTextWindow(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Info.Informations", obj.Id_nb), objectInfo);
+							client.Out.SendCustomTextWindow(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Info.Informations", obj.Id), objectInfo);
 							break;
 						}
 						#endregion Info
@@ -448,7 +448,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Item_Type = Convert.ToInt32(args[2]);
+							item.ItemType = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -474,7 +474,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Object_Type = Convert.ToInt32(args[2]);
+							item.ObjectType = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -526,7 +526,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Type_Damage = Convert.ToInt32(args[2]);
+							item.TypeDamage = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1572,7 +1572,7 @@ namespace DOL.GS.Commands
 
 							if (item.SalvageYieldID == 0)
 							{
-								whereClause = DB.Column("ObjectType").IsEqualTo(item.Object_Type).And(DB.Column("SalvageLevel").IsEqualTo(salvageLevel));
+								whereClause = DB.Column("ObjectType").IsEqualTo(item.ObjectType).And(DB.Column("SalvageLevel").IsEqualTo(salvageLevel));
 							}
 							else
 							{
@@ -1721,9 +1721,9 @@ namespace DOL.GS.Commands
 							if (item.Template is ItemUnique)
 							{
 								ItemUnique itemUnique = item.Template as ItemUnique;
-								Log.Debug("update ItemUnique " + item.Template.Id_nb);
-								GameServer.Database.SaveObject(itemUnique);
-								client.Out.SendMessage(string.Format("ItemUnique {0} updated!", itemUnique.Id_nb), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								Log.Debug("update ItemUnique " + item.Template.Id);
+								GameServer.Instance.SaveDataObject(itemUnique);
+								client.Out.SendMessage(string.Format("ItemUnique {0} updated!", itemUnique.Id), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							}
 							else
 							{
@@ -1778,7 +1778,7 @@ namespace DOL.GS.Commands
 							}
 
 							// if a blank item was created then AllowAdd will be false here
-							if (idnb == string.Empty && (item.AllowAdd == false || item.Id_nb == InventoryItem.BLANK_ITEM || args[1].ToLower() == "addunique"))
+							if (idnb == string.Empty && (item.AllowAdd == false || item.Id == InventoryItem.BLANK_ITEM || args[1].ToLower() == "addunique"))
 							{
 								DisplayMessage(client, "You need to provide a new id_nb for this item.");
 								return;
@@ -1791,7 +1791,7 @@ namespace DOL.GS.Commands
 									return;
 								}
 
-								idnb = item.Id_nb;
+								idnb = item.Id;
 							}
 
 							ItemTemplate temp = null;
@@ -1813,9 +1813,9 @@ namespace DOL.GS.Commands
                                         {
                                             Id_nb = idnb
                                         };
-                                        GameServer.Database.AddObject(itemTemplate);
-										Log.Debug("Added New Item Template: " + itemTemplate.Id_nb);
-										DisplayMessage(client, "Added New Item Template: " + itemTemplate.Id_nb);
+                                        GameServer.Instance.SaveDataObject(itemTemplate);
+										Log.Debug("Added New Item Template: " + itemTemplate.Id);
+										DisplayMessage(client, "Added New Item Template: " + itemTemplate.Id);
 										GameInventoryItem newItem = GameInventoryItem.Create(itemTemplate);
 										if (client.Player.Inventory.AddItem((eInventorySlot)slot, newItem))
 											InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, newItem.Template, newItem.Count);
@@ -1835,9 +1835,9 @@ namespace DOL.GS.Commands
                                         {
                                             Id_nb = idnb
                                         };
-                                        GameServer.Database.AddObject(unique);
-										Log.Debug("Added New ItemUnique: " + unique.Id_nb + " (" + unique.ObjectId + ")");
-										DisplayMessage(client, "Added New ItemUnique: " + unique.Id_nb + " (" + unique.ObjectId + ")");
+                                        GameServer.Instance.SaveDataObject(unique);
+										Log.Debug("Added New ItemUnique: " + unique.Id + " (" + unique.ObjectId + ")");
+										DisplayMessage(client, "Added New ItemUnique: " + unique.Id + " (" + unique.ObjectId + ")");
 										GameInventoryItem newItem = GameInventoryItem.Create(unique);
 										if (client.Player.Inventory.AddItem((eInventorySlot)slot, newItem))
 											InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, newItem.Template, newItem.Count);
@@ -1852,13 +1852,13 @@ namespace DOL.GS.Commands
 							else // update the item
 							{
 								item.Template.Dirty = true;
-								GameServer.Database.SaveObject(item.Template);
-								GameServer.Database.UpdateInCache<ItemTemplate>(item.Template.Id_nb);
-								DisplayMessage(client, "Updated Inventory Item: " + item.Id_nb);
+								GameServer.Instance.SaveDataObject(item.Template);
+								GameServer.Database.UpdateInCache<ItemTemplate>(item.Template.Id);
+								DisplayMessage(client, "Updated Inventory Item: " + item.Id);
 
 								if (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate)
 								{
-									Log.Debug("Updated ItemTemplate: " + item.Template.Id_nb);
+									Log.Debug("Updated ItemTemplate: " + item.Template.Id);
 									DisplayMessage(client, "++ Source ItemTemplate Updated!");
 								}
 							}
@@ -1876,7 +1876,7 @@ namespace DOL.GS.Commands
 								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.FindID.MatchingIDsForX", name, items.Count), new object[] { });
 								foreach (ItemTemplate item in items)
 								{
-									DisplayMessage(client, item.Id_nb + " (" + item.Name + ")", new object[] { });
+									DisplayMessage(client, item.Id + " (" + item.Name + ")", new object[] { });
 								}
 							}
 							break;
@@ -1892,7 +1892,7 @@ namespace DOL.GS.Commands
 								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.FindName.MatchingNamesForX", name, items.Count), new object[] { });
 								foreach (ItemTemplate item in items)
 								{
-									DisplayMessage(client, item.Name + "  (" + item.Id_nb + ")", new object[] { });
+									DisplayMessage(client, item.Name + "  (" + item.Id + ")", new object[] { });
 								}
 							}
 							break;
@@ -1929,7 +1929,7 @@ namespace DOL.GS.Commands
 
 									foreach (ItemTemplate item in packageItems)
 									{
-										if (GameServer.Database.UpdateInCache<ItemTemplate>(item.Id_nb))
+										if (GameServer.Database.UpdateInCache<ItemTemplate>(item.Id))
 										{
 											count++;
 										}
@@ -2000,8 +2000,8 @@ namespace DOL.GS.Commands
 			else
 			{
 				(item.Template as ItemTemplate).AllowUpdate = true;
-				client.Out.SendMessage("** When this item is saved all changes will also be made to the source ItemTemplate: " + item.Template.Id_nb, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
-				DisplayMessage(client, "** When this item is saved all changes will also be made to the source ItemTemplate: " + item.Template.Id_nb);
+				client.Out.SendMessage("** When this item is saved all changes will also be made to the source ItemTemplate: " + item.Template.Id, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+				DisplayMessage(client, "** When this item is saved all changes will also be made to the source ItemTemplate: " + item.Template.Id);
 			}
 		}
 		

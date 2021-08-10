@@ -228,7 +228,7 @@ namespace DOL.GS.Commands
                 }
             }
 
-            foreach (DOLCharacters character in client.Account.Characters)
+            foreach (Character character in client.Account.Characters)
             {
                 if (slots.ContainsKey(character.AccountSlot))
                     slots[character.AccountSlot] = character.Name;
@@ -252,10 +252,10 @@ namespace DOL.GS.Commands
         #region SetSlot
         private void SetSlot(GameClient client, int sourceSlot, int targetSlot)
         {
-            DOLCharacters source = null;
-            DOLCharacters target = null;
+            Character source = null;
+            Character target = null;
 
-            foreach (DOLCharacters character in client.Account.Characters)
+            foreach (Character character in client.Account.Characters)
             {
                 if (source == null)
                 {
@@ -281,16 +281,16 @@ namespace DOL.GS.Commands
 
             // It's important that we create a backup of each character before we start. If an error
             // occurs and / or the server crashes, we always have an character backup.
-            DOLCharactersBackup sourceBackup = new DOLCharactersBackup(source);
-            sourceBackup.DOLCharacters_ID += "-Rearranged"; // Easier for admins to find it.
-            GameServer.Database.AddObject(sourceBackup);
+            CharacterBackup sourceBackup = new CharacterBackup(source);
+            sourceBackup.Character_ID += "-Rearranged"; // Easier for admins to find it.
+            GameServer.Instance.SaveDataObject(sourceBackup);
 
-            DOLCharactersBackup targetBackup = null;
+            CharacterBackup targetBackup = null;
             if (target != null)
             {
-                targetBackup = new DOLCharactersBackup(target);
-                targetBackup.DOLCharacters_ID += "-Rearranged"; // Easier for admins to find it.
-                GameServer.Database.AddObject(targetBackup);
+                targetBackup = new CharacterBackup(target);
+                targetBackup.Character_ID += "-Rearranged"; // Easier for admins to find it.
+                GameServer.Instance.SaveDataObject(targetBackup);
             }
 
             // Time to modify the slots.
@@ -304,9 +304,9 @@ namespace DOL.GS.Commands
                 if (target != null)
                     target.AccountSlot = sourceSlot;
 
-                GameServer.Database.AddObject(source);
+                GameServer.Instance.SaveDataObject(source);
                 if (target != null)
-                    GameServer.Database.AddObject(target);
+                    GameServer.Instance.SaveDataObject(target);
             }
 
             GameServer.Database.DeleteObject(sourceBackup);

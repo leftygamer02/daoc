@@ -204,7 +204,7 @@ namespace DOL.GS.Spells
                     InventoryItem leftWeapon = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
                     // if we can use left weapon, we have currently a weapon in left hand and we still have endurance,
                     // we can assume that we are using the two weapons.
-                    if (player.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type != (int)eObjectType.Shield)
+                    if (player.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ObjectType != (int)eObjectType.Shield)
                     {
                         baseChance /= 2;
                     }
@@ -268,7 +268,7 @@ namespace DOL.GS.Spells
             {
                 if (Disarm_Weapon == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.Uninterruptible = true;
@@ -376,7 +376,7 @@ namespace DOL.GS.Spells
                         if (ad.Target != null && ad.Target.Inventory != null)
                         {
                             InventoryItem lefthand = ad.Target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-                            if (lefthand != null && lefthand.Object_Type == (int)eObjectType.Shield)
+                            if (lefthand != null && lefthand.ObjectType == (int)eObjectType.Shield)
                             {
                                 defendersWeapon = lefthand.Model;
                             }
@@ -548,7 +548,7 @@ namespace DOL.GS.Spells
             ad.IsOffHand = weapon.Hand == 2;
             //we need to figure out which armor piece they are going to hit.
             //figure out the attacktype
-            switch (weapon.Item_Type)
+            switch (weapon.ItemType)
             {
                 default:
                 case Slot.RIGHTHAND:

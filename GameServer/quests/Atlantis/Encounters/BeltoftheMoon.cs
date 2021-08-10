@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public BeltoftheMoon(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public BeltoftheMoon(GamePlayer questingPlayer, DBQuest dbQuest)
+        public BeltoftheMoon(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

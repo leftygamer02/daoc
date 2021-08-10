@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public GoldenScarabVest(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public GoldenScarabVest(GamePlayer questingPlayer, DBQuest dbQuest)
+        public GoldenScarabVest(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

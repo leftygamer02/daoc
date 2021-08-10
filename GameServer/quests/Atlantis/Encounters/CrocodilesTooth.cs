@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public CrocodilesTooth(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public CrocodilesTooth(GamePlayer questingPlayer, DBQuest dbQuest)
+        public CrocodilesTooth(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

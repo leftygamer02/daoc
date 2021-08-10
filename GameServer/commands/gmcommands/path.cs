@@ -361,7 +361,7 @@ namespace DOL.GS.Commands
 			bool ticketFound = false;
 			string ticket = "Ticket to " + target;
 			// Most //
-			// With the new horse system, the stablemasters are using the item.Id_nb to find the horse route in the database
+			// With the new horse system, the stablemasters are using the item.Id to find the horse route in the database
 			// So we have to save a path in the database with the Id_nb as a PathID
 			// The following string will contain the item Id_nb if it is found in the merchant list
 			string pathname = "";
@@ -372,7 +372,7 @@ namespace DOL.GS.Commands
 					if (template != null && template.Name.ToLower() == ticket.ToLower())
 					{
 						ticketFound = true;
-						pathname = template.Id_nb;
+						pathname = template.Id;
 						break;
 					}
 

@@ -32,7 +32,7 @@ namespace DOL.GS.Quests.Catacombs.Obelisks
 		public InconnuCrypt(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public InconnuCrypt(GamePlayer questingPlayer, DBQuest dbQuest)
+		public InconnuCrypt(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

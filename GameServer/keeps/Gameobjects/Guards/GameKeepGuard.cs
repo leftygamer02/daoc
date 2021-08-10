@@ -44,8 +44,8 @@ namespace DOL.GS.Keeps
 			set { m_Patrol = value; }
 		}
 
-		private string m_templateID = "";
-		public string TemplateID
+		private int m_templateID = 0;
+		public int TemplateID
 		{
 			get { return m_templateID; }
 			set { m_templateID = value; }
@@ -58,8 +58,8 @@ namespace DOL.GS.Keeps
 			set { m_component = value; }
 		}
 
-		private DBKeepPosition m_position;
-		public DBKeepPosition Position
+		private KeepPosition m_position;
+		public KeepPosition Position
 		{
 			get { return m_position; }
 			set { m_position = value; }
@@ -862,24 +862,24 @@ namespace DOL.GS.Keeps
 
 		#region Database
 
-		string m_dataObjectID = "";
+		int m_dataObjectID = 0;
 
 		/// <summary>
 		/// Load the guard from the database
 		/// </summary>
 		/// <param name="mobobject">The database mobobject</param>
-		public override void LoadFromDatabase(DataObject mobobject)
+		public override void LoadFromDatabase(DataObjectBase mobobject)
 		{
 			if (mobobject == null) return;
 			base.LoadFromDatabase(mobobject);
-			string sKey = mobobject.ObjectId;
+			int sKey = mobobject.Id;
 			foreach (AbstractArea area in this.CurrentAreas)
 			{
 				if (area is KeepArea keepArea)
 				{
 					Component = new GameKeepComponent();
 					Component.Keep = keepArea.Keep;
-					m_dataObjectID = mobobject.ObjectId;
+					m_dataObjectID = mobobject.Id;
 					// mob reload command might be reloading guard, so check to make sure it isn't already added
 					if (Component.Keep.Guards.ContainsKey(sKey) == false)
 						Component.Keep.Guards.Add(sKey, this);
@@ -896,7 +896,7 @@ namespace DOL.GS.Keeps
 			{
 				if (Component.Keep != null)
 				{
-					string skey = m_dataObjectID;
+					int skey = m_dataObjectID;
 					if (Component.Keep.Guards.ContainsKey(skey))
 						Component.Keep.Guards.Remove(skey);
 					else if (log.IsWarnEnabled)
@@ -949,7 +949,7 @@ namespace DOL.GS.Keeps
 			base.DeleteFromDatabase();
 		}
 
-		public void LoadFromPosition(DBKeepPosition pos, GameKeepComponent component)
+		public void LoadFromPosition(KeepPosition pos, GameKeepComponent component)
 		{
 			m_templateID = pos.TemplateID;
 			m_component = component;
@@ -963,7 +963,7 @@ namespace DOL.GS.Keeps
 		/// Move a guard to a position
 		/// </summary>
 		/// <param name="position">The new position for the guard</param>
-		public void MoveToPosition(DBKeepPosition position)
+		public void MoveToPosition(KeepPosition position)
 		{
 			PositionMgr.LoadGuardPosition(position, this);
 			if (!InCombat)
@@ -1248,12 +1248,12 @@ namespace DOL.GS.Keeps
 		private static Spell m_midLordHealSpell;
 		private static Spell m_hibLordHealSpell;
 
-		private static DBSpell BaseHealSpell
+		private static Atlas.DataLayer.Models.Spell BaseHealSpell
         {
 			get
             {
-				DBSpell spell = new DBSpell();
-				spell.AllowAdd = false;
+				Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
+				//spell.AllowAdd = false;
 				spell.CastTime = 2;
 				spell.Name = "Guard Heal";
 				spell.Range = WorldMgr.VISIBILITY_DISTANCE;
@@ -1262,11 +1262,11 @@ namespace DOL.GS.Keeps
 			}
         }
 
-		private static DBSpell LordBaseHealSpell
+		private static Atlas.DataLayer.Models.Spell LordBaseHealSpell
 		{
 			get
 			{
-				DBSpell spell = BaseHealSpell;
+				Atlas.DataLayer.Models.Spell spell = BaseHealSpell;
 				spell.CastTime = 2;
 				spell.Target = "Self";
 				spell.Value = 225;
@@ -1276,11 +1276,11 @@ namespace DOL.GS.Keeps
 			}
 		}
 
-		private static DBSpell GuardBaseHealSpell
+		private static Atlas.DataLayer.Models.Spell GuardBaseHealSpell
 		{
 			get
 			{
-				DBSpell spell = BaseHealSpell;
+				Atlas.DataLayer.Models.Spell spell = BaseHealSpell;
 				spell.CastTime = 2;
 				spell.Value = 200;
 				spell.Target = "Realm";
@@ -1294,9 +1294,9 @@ namespace DOL.GS.Keeps
 			{
 				if (m_albLordHealSpell == null)
 				{
-					DBSpell spell = LordBaseHealSpell;
+					Atlas.DataLayer.Models.Spell spell = LordBaseHealSpell;
 					spell.ClientEffect = 1340;
-					spell.SpellID = 90001;
+					spell.Id = 90001;
 					m_albLordHealSpell = new Spell(spell, 50);
 				}
 				return m_albLordHealSpell;
@@ -1309,9 +1309,9 @@ namespace DOL.GS.Keeps
 			{
 				if (m_midLordHealSpell == null)
 				{
-					DBSpell spell = LordBaseHealSpell;
+					Atlas.DataLayer.Models.Spell spell = LordBaseHealSpell;
 					spell.ClientEffect = 3011;
-					spell.SpellID = 90002;
+					spell.Id = 90002;
 					m_midLordHealSpell = new Spell(spell, 50);
 				}
 				return m_midLordHealSpell;
@@ -1324,9 +1324,9 @@ namespace DOL.GS.Keeps
 			{
 				if (m_hibLordHealSpell == null)
 				{
-					DBSpell spell = LordBaseHealSpell;
+					Atlas.DataLayer.Models.Spell spell = LordBaseHealSpell;
 					spell.ClientEffect = 3030;
-					spell.SpellID = 90003;
+					spell.Id = 90003;
 					m_hibLordHealSpell = new Spell(spell, 50);
 				}
 				return m_hibLordHealSpell;
@@ -1343,9 +1343,9 @@ namespace DOL.GS.Keeps
 			{
 				if (m_albGuardHealSmallSpell == null)
 				{
-					DBSpell spell = GuardBaseHealSpell;
+					Atlas.DataLayer.Models.Spell spell = GuardBaseHealSpell;
 					spell.ClientEffect = 1340;
-					spell.SpellID = 90004;
+					spell.Id = 90004;
 					m_albGuardHealSmallSpell = new Spell(spell, 50);
 				}
 				return m_albGuardHealSmallSpell;
@@ -1358,9 +1358,9 @@ namespace DOL.GS.Keeps
 			{
 				if (m_midGuardHealSmallSpell == null)
 				{
-					DBSpell spell = GuardBaseHealSpell;
+					Atlas.DataLayer.Models.Spell spell = GuardBaseHealSpell;
 					spell.ClientEffect = 3011;
-					spell.SpellID = 90005;
+					spell.Id = 90005;
 					m_midGuardHealSmallSpell = new Spell(spell, 50);
 				}
 				return m_midGuardHealSmallSpell;
@@ -1373,9 +1373,9 @@ namespace DOL.GS.Keeps
 			{
 				if (m_hibGuardHealSmallSpell == null)
 				{
-					DBSpell spell = GuardBaseHealSpell;
+					Atlas.DataLayer.Models.Spell spell = GuardBaseHealSpell;
 					spell.ClientEffect = 3030;
-					spell.SpellID = 90006;
+					spell.Id = 90006;
 					m_hibGuardHealSmallSpell = new Spell(spell, 50);
 				}
 				return m_hibGuardHealSmallSpell;

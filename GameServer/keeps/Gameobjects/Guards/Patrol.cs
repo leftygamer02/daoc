@@ -22,11 +22,11 @@ namespace DOL.GS.Keeps
 			m_component = component;
 		}
 
-		private DBKeepPosition m_spawnPosition = null;
+		private KeepPosition m_spawnPosition = null;
 		/// <summary>
 		/// The Position object the guards are assigned to
 		/// </summary>
-		public DBKeepPosition SpawnPosition
+		public KeepPosition SpawnPosition
 		{
 			get { return m_spawnPosition; }
 			set { m_spawnPosition = value; }

@@ -19,7 +19,8 @@
 namespace DOL.GS.Spells
 {
 	using System;
-	using Database;
+    using System.Linq;
+    using Atlas.DataLayer.Models;
 	using Events;
     using DOL.GS.PacketHandler;
     using DOL.GS.Utils;
@@ -33,37 +34,37 @@ namespace DOL.GS.Spells
 		private ItemTemplate m_MoonMace;
         private ItemTemplate m_MoonStaff;
     
-        public BeltOfMoon(GameLiving caster, Spell spell, SpellLine line)
+        public BeltOfMoon(GameLiving caster, GS.Spell spell, GS.SpellLine line)
 			: base(caster, spell, line)
         {
             if (caster.CurrentRegion.IsNightTime)
             {
                 if (caster.Realm == eRealm.Albion)
                 {
-                    m_MoonMace = GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Mace") ?? Mace;
+                    m_MoonMace = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Mace") ?? Mace;
                     items.Add(GameInventoryItem.Create(m_MoonMace));
 
-                    m_MoonStaff = GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Staff") ?? Staff;
+                    m_MoonStaff = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Staff") ?? Staff;
                     items.Add(GameInventoryItem.Create(m_MoonStaff));
                     return;
                 }
 
                 if (caster.Realm == eRealm.Midgard)
                 {
-                    m_MoonMace = GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_MaceM") ?? MaceM;
+                    m_MoonMace = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_MaceM") ?? MaceM;
                     items.Add(GameInventoryItem.Create(m_MoonMace));
 
-                    m_MoonStaff = GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Staff") ?? Staff;
+                    m_MoonStaff = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Staff") ?? Staff;
                     items.Add(GameInventoryItem.Create(m_MoonStaff));
                     return;
                 }
 
                 if (caster.Realm == eRealm.Hibernia)
                 {
-                    m_MoonMace = GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_MaceH") ?? MaceH;
+                    m_MoonMace = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_MaceH") ?? MaceH;
                     items.Add(GameInventoryItem.Create(m_MoonMace));
 
-                    m_MoonStaff = GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Staff") ?? Staff;
+                    m_MoonStaff = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Staff") ?? Staff;
                     items.Add(GameInventoryItem.Create(m_MoonStaff));
                     return;
                 }
@@ -81,12 +82,12 @@ namespace DOL.GS.Spells
 		{
 			get
 			{
-				m_MoonMace = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Mace");
+				m_MoonMace = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Mace");
 				if (m_MoonMace == null)
 				{
 					if (log.IsWarnEnabled) log.Warn("Could not find Moon_Mace, loading it ...");
 					m_MoonMace = new ItemTemplate();
-                    m_MoonMace.Id_nb = "Moon_Mace";
+                    m_MoonMace.KeyName = "Moon_Mace";
                     m_MoonMace.Name = "Moon Mace";
 					m_MoonMace.Level = 50;
 					m_MoonMace.Durability = 50000;
@@ -96,31 +97,26 @@ namespace DOL.GS.Spells
 					m_MoonMace.Quality = 100;
 					m_MoonMace.DPS_AF = 150;
 					m_MoonMace.SPD_ABS = 35;
-					m_MoonMace.Type_Damage = 0;
-					m_MoonMace.Object_Type = 2;
-					m_MoonMace.Item_Type = 10;
+					m_MoonMace.TypeDamage = 0;
+					m_MoonMace.ObjectType = 2;
+					m_MoonMace.ItemType = 10;
 					m_MoonMace.Color = 43;
 					m_MoonMace.Effect = 45;
 					m_MoonMace.Model = 647;
-					m_MoonMace.Bonus1 = 24;
-					m_MoonMace.Bonus2 = 3;
-					m_MoonMace.Bonus3 = 10;
-					m_MoonMace.Bonus4 = 4;
-					m_MoonMace.Bonus1Type = 156;
-					m_MoonMace.Bonus2Type = 163;
-					m_MoonMace.Bonus3Type = 196;
-					m_MoonMace.Bonus4Type = 191;
 					m_MoonMace.IsPickable = false;
 					m_MoonMace.IsDropable = false;
 					m_MoonMace.CanDropAsLoot = false;
 					m_MoonMace.IsTradable = false;
 					m_MoonMace.MaxCount = 1;
 					m_MoonMace.PackSize = 1;
-                    m_MoonMace.SpellID = 65511;
-                    m_MoonMace.Charges = 5;
-                    m_MoonMace.MaxCharges = 5;
 
-				}
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = 156, BonusValue = 24, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = 163, BonusValue = 3, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = 196, BonusValue = 10, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = 191, BonusValue = 4, });
+                    m_MoonMace.Spells.Add(new ItemSpell() { SpellID = 65511, ProcChance = 0, MaxCharges = 5, Charges = 5 });
+
+                }
 				return m_MoonMace;
 			}
 		}
@@ -129,12 +125,12 @@ namespace DOL.GS.Spells
 		{
             get
             {
-                m_MoonMace = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Mace");
+                m_MoonMace = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Mace");
                 if (m_MoonMace == null)
                 {
                     if (log.IsWarnEnabled) log.Warn("Could not find Moon_Mace, loading it ...");
                     m_MoonMace = new ItemTemplate();
-                    m_MoonMace.Id_nb = "Moon_Mace";
+                    m_MoonMace.KeyName = "Moon_Mace";
                     m_MoonMace.Name = "Moon Warhammer";
                     m_MoonMace.Level = 50;
                     m_MoonMace.Durability = 50000;
@@ -144,29 +140,24 @@ namespace DOL.GS.Spells
                     m_MoonMace.Quality = 100;
                     m_MoonMace.DPS_AF = 150;
                     m_MoonMace.SPD_ABS = 35;
-                    m_MoonMace.Type_Damage = 0;
-                    m_MoonMace.Object_Type = 12;
-                    m_MoonMace.Item_Type = 10;
+                    m_MoonMace.TypeDamage = 0;
+                    m_MoonMace.ObjectType = 12;
+                    m_MoonMace.ItemType = 10;
                     m_MoonMace.Color = 43;
                     m_MoonMace.Effect = 45;
                     m_MoonMace.Model = 320;
-                    m_MoonMace.Bonus1 = 24;
-                    m_MoonMace.Bonus2 = 3;
-                    m_MoonMace.Bonus3 = 10;
-                    m_MoonMace.Bonus4 = 4;
-                    m_MoonMace.Bonus1Type = 156;
-                    m_MoonMace.Bonus2Type = 163;
-                    m_MoonMace.Bonus3Type = 196;
-                    m_MoonMace.Bonus4Type = 191;
                     m_MoonMace.IsPickable = false;
                     m_MoonMace.IsDropable = false;
                     m_MoonMace.CanDropAsLoot = false;
                     m_MoonMace.IsTradable = false;
                     m_MoonMace.MaxCount = 1;
                     m_MoonMace.PackSize = 1;
-                    m_MoonMace.SpellID = 65511;
-                    m_MoonMace.Charges = 5;
-                    m_MoonMace.MaxCharges = 5;
+
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = 156, BonusValue = 24, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = 163, BonusValue = 3, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = 196, BonusValue = 10, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = 191, BonusValue = 4, });
+                    m_MoonMace.Spells.Add(new ItemSpell() { SpellID = 65511, ProcChance = 0, MaxCharges = 5, Charges = 5 });
 
                 }
                 return m_MoonMace;
@@ -177,12 +168,12 @@ namespace DOL.GS.Spells
 		{
             get
             {
-                m_MoonMace = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Mace");
+                m_MoonMace = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Mace");
                 if (m_MoonMace == null)
                 {
                     if (log.IsWarnEnabled) log.Warn("Could not find Moon_Mace, loading it ...");
                     m_MoonMace = new ItemTemplate();
-                    m_MoonMace.Id_nb = "Moon_Mace";
+                    m_MoonMace.KeyName = "Moon_Mace";
                     m_MoonMace.Name = "Moon Hammer";
                     m_MoonMace.Level = 50;
                     m_MoonMace.Durability = 50000;
@@ -192,29 +183,24 @@ namespace DOL.GS.Spells
                     m_MoonMace.Quality = 100;
                     m_MoonMace.DPS_AF = 150;
                     m_MoonMace.SPD_ABS = 35;
-                    m_MoonMace.Type_Damage = 0;
-                    m_MoonMace.Object_Type = 20;
-                    m_MoonMace.Item_Type = 10;
+                    m_MoonMace.TypeDamage = 0;
+                    m_MoonMace.ObjectType = 20;
+                    m_MoonMace.ItemType = 10;
                     m_MoonMace.Color = 43;
                     m_MoonMace.Effect = 45;
                     m_MoonMace.Model = 461;
-                    m_MoonMace.Bonus1 = 24;
-                    m_MoonMace.Bonus2 = 3;
-                    m_MoonMace.Bonus3 = 10;
-                    m_MoonMace.Bonus4 = 4;
-                    m_MoonMace.Bonus1Type = 156;
-                    m_MoonMace.Bonus2Type = 163;
-                    m_MoonMace.Bonus3Type = 196;
-                    m_MoonMace.Bonus4Type = 191;
                     m_MoonMace.IsPickable = false;
                     m_MoonMace.IsDropable = false;
                     m_MoonMace.CanDropAsLoot = false;
                     m_MoonMace.IsTradable = false;
                     m_MoonMace.MaxCount = 1;
                     m_MoonMace.PackSize = 1;
-                    m_MoonMace.SpellID = 65511;
-                    m_MoonMace.Charges = 5;
-                    m_MoonMace.MaxCharges = 5;
+
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = 156, BonusValue = 24, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = 163, BonusValue = 3, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = 196, BonusValue = 10, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = 191, BonusValue = 4, });
+                    m_MoonMace.Spells.Add(new ItemSpell() { SpellID = 65511, ProcChance = 0, MaxCharges = 5, Charges = 5 });
 
                 }
                 return m_MoonMace;
@@ -227,12 +213,12 @@ namespace DOL.GS.Spells
         {
             get
             {
-                m_MoonStaff = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Moon_Staff");
+                m_MoonStaff = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moon_Staff");
                 if (m_MoonStaff == null)
                 {
                     if (log.IsWarnEnabled) log.Warn("Could not find Moon_Staff, loading it ...");
                     m_MoonStaff = new ItemTemplate();
-                    m_MoonStaff.Id_nb = "Moon_Staff";
+                    m_MoonStaff.KeyName = "Moon_Staff";
                     m_MoonStaff.Name = "Moon Staff";
                     m_MoonStaff.Level = 50;
                     m_MoonStaff.Durability = 50000;
@@ -242,29 +228,24 @@ namespace DOL.GS.Spells
                     m_MoonStaff.Quality = 100;
                     m_MoonStaff.DPS_AF = 150;
                     m_MoonStaff.SPD_ABS = 35;
-                    m_MoonStaff.Type_Damage = 0;
-                    m_MoonStaff.Object_Type = 8;
-                    m_MoonStaff.Item_Type = 12;
+                    m_MoonStaff.TypeDamage = 0;
+                    m_MoonStaff.ObjectType = 8;
+                    m_MoonStaff.ItemType = 12;
                     m_MoonStaff.Hand = 1;
                     m_MoonStaff.Color = 43;
                     m_MoonStaff.Effect = 45;
                     m_MoonStaff.Model = 566;
-                    m_MoonStaff.Bonus1 = 24;
-                    m_MoonStaff.Bonus2 = 3;
-                    m_MoonStaff.Bonus3 = 10;
-                    m_MoonStaff.Bonus4 = 4;
-                    m_MoonStaff.Bonus1Type = 156;
-                    m_MoonStaff.Bonus2Type = 163;
-                    m_MoonStaff.Bonus3Type = 196;
-                    m_MoonStaff.Bonus4Type = 191;
                     m_MoonStaff.IsPickable = false;
                     m_MoonStaff.IsDropable = false;
                     m_MoonStaff.CanDropAsLoot = false;
                     m_MoonStaff.IsTradable = false;
                     m_MoonStaff.MaxCount = 1;
-                    m_MoonStaff.SpellID = 65511;
-                    m_MoonStaff.Charges = 5;
-                    m_MoonStaff.MaxCharges = 5;
+
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = 156, BonusValue = 24, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = 163, BonusValue = 3, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = 196, BonusValue = 10, });
+                    m_MoonMace.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = 191, BonusValue = 4, });
+                    m_MoonMace.Spells.Add(new ItemSpell() { SpellID = 65511, ProcChance = 0, MaxCharges = 5, Charges = 5 });
 
                 }
                 return m_MoonStaff;
@@ -298,16 +279,16 @@ namespace DOL.GS.Spells
                         return;
                     }
 
-                    if (invItem.Id_nb.Equals("Moon_Mace"))
+                    if (invItem.Id.Equals("Moon_Mace"))
                         player.Inventory.RemoveItem(invItem);
 
-                    if (invItem.Id_nb.Equals("Moon_MaceM"))
+                    if (invItem.Id.Equals("Moon_MaceM"))
                         player.Inventory.RemoveItem(invItem);
 
-                    if (invItem.Id_nb.Equals("Moon_MaceH"))
+                    if (invItem.Id.Equals("Moon_MaceH"))
                         player.Inventory.RemoveItem(invItem);
 
-                    if (invItem.Id_nb.Equals("Moon_Staff"))
+                    if (invItem.Id.Equals("Moon_Staff"))
                         player.Inventory.RemoveItem(invItem);
                     
                     player.Out.SendMessage("The Power of Belt of Moon, has left you!",eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -328,16 +309,16 @@ namespace DOL.GS.Spells
                 var items = player.Inventory.GetItemRange(eInventorySlot.MinEquipable, eInventorySlot.LastBackpack);
 				foreach (InventoryItem invItem in items)
 				{
-                    if (invItem.Id_nb.Equals("Moon_Mace"))
+                    if (invItem.Id.Equals("Moon_Mace"))
 						player.Inventory.RemoveItem(invItem);
 
-                    if (invItem.Id_nb.Equals("Moon_MaceM"))
+                    if (invItem.Id.Equals("Moon_MaceM"))
 						player.Inventory.RemoveItem(invItem);
 
-                    if (invItem.Id_nb.Equals("Moon_MaceH"))
+                    if (invItem.Id.Equals("Moon_MaceH"))
 						player.Inventory.RemoveItem(invItem);
 
-                    if (invItem.Id_nb.Equals("Moon_Staff"))
+                    if (invItem.Id.Equals("Moon_Staff"))
                         player.Inventory.RemoveItem(invItem);
 
 				}

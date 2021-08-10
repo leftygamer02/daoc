@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public MaddeningScalars(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public MaddeningScalars(GamePlayer questingPlayer, DBQuest dbQuest)
+        public MaddeningScalars(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

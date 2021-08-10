@@ -67,7 +67,7 @@ namespace DOL.GS
 				if (m_PetSpecLine == null && Brain is IControlledBrain brain && brain.GetPlayerOwner() is GamePlayer player)
 				{
 					// Get the spell that summoned this pet
-					DBSpell dbSummoningSpell = DOLDB<DBSpell>.SelectObject(DB.Column("LifeDrainReturn").IsEqualTo(NPCTemplate.TemplateId));
+					Atlas.DataLayer.Models.Spell dbSummoningSpell = DOLDB<Atlas.DataLayer.Models.Spell>.SelectObject(DB.Column("LifeDrainReturn").IsEqualTo(NPCTemplate.TemplateId));
 					if (dbSummoningSpell != null)
 					{
 						// Figure out which spell line the summoning spell is from
@@ -119,9 +119,9 @@ namespace DOL.GS
 				if (Inventory == null)
 					Inventory = new GameNPCInventory(new GameNpcInventoryTemplate());
 				else
-					Inventory.RemoveItem(Inventory.GetItem((eInventorySlot)weapon.Item_Type));
+					Inventory.RemoveItem(Inventory.GetItem((eInventorySlot)weapon.ItemType));
 
-				Inventory.AddItem((eInventorySlot)weapon.Item_Type, weapon);
+				Inventory.AddItem((eInventorySlot)weapon.ItemType, weapon);
 				SwitchWeapon((eActiveWeaponSlot)weapon.Hand);
 			}
 		}

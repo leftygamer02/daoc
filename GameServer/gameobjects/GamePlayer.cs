@@ -491,9 +491,9 @@ namespace DOL.GS
 		/// Gets or sets the CustomisationStep for this player
 		/// (delegate to property in DBCharacter)
 		/// </summary>
-		public bool CustomisationStep
+		public int CustomisationStep
 		{
-			get { return DBCharacter != null ? DBCharacter.CustomisationStep : false; }
+			get { return DBCharacter != null ? DBCharacter.CustomisationStep : 0; }
 			set { if (DBCharacter != null) DBCharacter.CustomisationStep = value; }
 		}
 		
@@ -1581,7 +1581,7 @@ namespace DOL.GS
 									{
 										if (keep.DBKeep.BaseLevel < cap)
 										{
-											cap = keep.DBKeep.BaseLevel;
+											cap =(byte)keep.DBKeep.BaseLevel;
 											break;
 										}
 									}
@@ -7288,7 +7288,7 @@ namespace DOL.GS
 						return (eDamageType)weapon.ItemTemplate.TypeDamage;
 					return (eDamageType)ammo.ItemTemplate.TypeDamage;
 				case eObjectType.Shield:
-					return eDamageType.Crush; // TODO: shields do crush damage (!) best is if Type_Damage is used properly
+					return eDamageType.Crush; // TODO: shields do crush damage (!) best is if TypeDamage is used properly
 				default:
 					return (eDamageType)weapon.ItemTemplate.TypeDamage;
 			}
@@ -10372,7 +10372,7 @@ namespace DOL.GS
 		/// </summary>
 		public int GuildID
 		{
-			get { return DBCharacter != null ? DBCharacter.GuildID : 0; }
+			get { return DBCharacter?.GuildID != null ? DBCharacter.GuildID.Value : 0; }
 			set { if (DBCharacter != null) DBCharacter.GuildID = value; }
 		}
 
@@ -10432,7 +10432,7 @@ namespace DOL.GS
 					SerializedIgnoreList = value.OfType<string>().ToArray();
 				
 				if (DBCharacter != null)
-					GameServer.Database.SaveObject(DBCharacter);
+					GameServer.Instance.SaveDataObject(DBCharacter);
 			}
 		}
 
@@ -13262,10 +13262,10 @@ namespace DOL.GS
 			}
 
 			// Data driven quests for this player
-			var dataQuests = DOLDB<CharacterDataQuest>.SelectObjects(DB.Column("Character_ID").IsEqualTo(QuestPlayerID));
+			var dataQuests = GameServer.Database.CharacterDataQuests.Where(x => x.CharacterID == QuestPlayerID);
 			foreach (var quest in dataQuests)
 			{
-				Atlas.DataLayer.Models.DataQuest dbDataQuest = GameServer.Database.FindObjectByKey<Atlas.DataLayer.Models.DataQuest>(quest.DataQuestID);
+				var dbDataQuest = GameServer.Database.DataQuests.Find(quest.DataQuestID);
 				if (dbDataQuest != null && dbDataQuest.StartType != (byte)DOL.GS.Quests.DataQuest.eStartType.Collection)
 				{
 					var dataQuest = new DOL.GS.Quests.DataQuest(this, dbDataQuest, quest);
@@ -13363,7 +13363,7 @@ namespace DOL.GS
 			{
 				foreach (AbstractQuest q in m_questListFinished)
 				{
-					if (q is DataQuest == false)
+					if (q is Quests.DataQuest == false)
 					{
 						if (q.GetType().Equals(questType) && q.Step == -1)
 						{
@@ -13392,7 +13392,7 @@ namespace DOL.GS
 			{
 				foreach (AbstractQuest q in m_questListFinished)
 				{
-					if (q is DataQuest == false)
+					if (q is Quests.DataQuest == false)
 					{
 						if (q.GetType().Equals(questType))
 							counter++;
@@ -13434,7 +13434,7 @@ namespace DOL.GS
 			{
 				foreach (AbstractQuest q in m_questList)
 				{
-					if (q is DataQuest == false)
+					if (q is Quests.DataQuest == false)
 					{
 						if (q.GetType().Equals(questType))
 							return q;
@@ -13731,9 +13731,7 @@ namespace DOL.GS
 			if (DBCharacter == null)
 				return;
 			
-			DBCharacter.CraftingPrimarySkill = (byte)CraftingPrimarySkill;
-
-			string cs = "";
+			DBCharacter.PrimaryCraftingSkill = (byte)CraftingPrimarySkill;
 
 			if (CraftingPrimarySkill != eCraftingSkill.NoCrafting)
 			{
@@ -13741,14 +13739,28 @@ namespace DOL.GS
 				{
 					foreach (KeyValuePair<eCraftingSkill, int> de in m_craftingSkills)
 					{
-						if (cs.Length > 0) cs += ";";
+						var craft = DBCharacter.CraftingSkills.FirstOrDefault(x => x.CraftingSkill == Convert.ToInt32(de.Key));
 
-						cs += Convert.ToInt32(de.Key) + "|" + Convert.ToInt32(de.Value);
+						if (craft == null)
+                        {
+							craft = new CharacterCraftingSkill()
+							{
+								CharacterID = DBCharacter.Id,
+								CraftingSkill = Convert.ToInt32(de.Key),
+								SkillLevel = Convert.ToInt32(de.Value),
+								CreateDate = DateTime.Now,
+								ModifyDate = DateTime.Now
+							};
+							DBCharacter.CraftingSkills.Add(craft);
+                        }
+                        else
+                        {
+							craft.SkillLevel = de.Value;
+							craft.ModifyDate = DateTime.Now;
+                        }
 					}
 				}
 			}
-
-			DBCharacter.SerializedCraftingSkills = cs;
 		}
 
 		/// <summary>
@@ -13759,7 +13771,7 @@ namespace DOL.GS
 			if (DBCharacter == null)
 				return;
 
-			if (DBCharacter.SerializedCraftingSkills == "" || DBCharacter.CraftingPrimarySkill == 0)
+			if (!DBCharacter.CraftingSkills.Any() || DBCharacter.PrimaryCraftingSkill <= 0)
 			{
 				AddCraftingSkill(eCraftingSkill.BasicCrafting, 1);
 				SaveCraftingSkills();
@@ -13768,63 +13780,25 @@ namespace DOL.GS
 			}
 			try
 			{
-				CraftingPrimarySkill = (eCraftingSkill)DBCharacter.CraftingPrimarySkill;
+				CraftingPrimarySkill = (eCraftingSkill)DBCharacter.PrimaryCraftingSkill;
 
 				lock (CraftingLock)
 				{
-					foreach (string skill in Util.SplitCSV(DBCharacter.SerializedCraftingSkills))
+					foreach (var skill in DBCharacter.CraftingSkills)
 					{
-						string[] values = skill.Split('|');
-						//Load by crafting skill name
-						if (values[0].Length > 3)
-						{
-							int i = 0;
-							switch (values[0])
-							{
-									case "WeaponCrafting": i = 1; break;
-									case "ArmorCrafting": i = 2; break;
-									case "SiegeCrafting": i = 3; break;
-									case "Alchemy": i = 4; break;
-									case "MetalWorking": i = 6; break;
-									case "LeatherCrafting": i = 7; break;
-									case "ClothWorking": i = 8; break;
-									case "GemCutting": i = 9; break;
-									case "HerbalCrafting": i = 10; break;
-									case "Tailoring": i = 11; break;
-									case "Fletching": i = 12; break;
-									case "SpellCrafting": i = 13; break;
-									case "WoodWorking": i = 14; break;
-									case "BasicCrafting": i = 15; break;
-
-							}
-							if (!m_craftingSkills.ContainsKey((eCraftingSkill)i))
-							{
-								if (IsCraftingSkillDefined(Convert.ToInt32(values[0])))
-								{
-									if (DOL.GS.ServerProperties.Properties.CRAFTING_MAX_SKILLS)
-										m_craftingSkills.Add((eCraftingSkill)i, AbstractCraftingSkill.subSkillCap);
-									else
-										m_craftingSkills.Add((eCraftingSkill)i, Convert.ToInt32(values[1]));
-								}
-								else
-								{
-									log.Error("Tried to load invalid CraftingSkill :" + values[0]);
-								}
-							}
-						}
 						//Load by number
-						else if (!m_craftingSkills.ContainsKey((eCraftingSkill)Convert.ToInt32(values[0])))
+						if (!m_craftingSkills.ContainsKey((eCraftingSkill)skill.CraftingSkill))
 						{
-							if(IsCraftingSkillDefined(Convert.ToInt32(values[0])))
+							if(IsCraftingSkillDefined(skill.CraftingSkill))
 							{
 								if (DOL.GS.ServerProperties.Properties.CRAFTING_MAX_SKILLS)
-									m_craftingSkills.Add((eCraftingSkill)Convert.ToInt32(values[0]), AbstractCraftingSkill.subSkillCap);
+									m_craftingSkills.Add((eCraftingSkill)skill.CraftingSkill, AbstractCraftingSkill.subSkillCap);
 								else
-									m_craftingSkills.Add((eCraftingSkill)Convert.ToInt32(values[0]), Convert.ToInt32(values[1]));
+									m_craftingSkills.Add((eCraftingSkill)skill.CraftingSkill, skill.SkillLevel);
 							}
 							else
 							{
-								log.Error("Tried to load invalid CraftingSkill :"+values[0]);
+								log.Error("Tried to load invalid CraftingSkill :" + (eCraftingSkill)skill.CraftingSkill);
 							}
 						}
 					}
@@ -13833,7 +13807,7 @@ namespace DOL.GS
 			catch (Exception e)
 			{
 				if (log.IsErrorEnabled)
-					log.Error(Name + ": error in loading playerCraftingSkills => " + DBCharacter.SerializedCraftingSkills, e);
+					log.Error(Name + ": error in loading playerCraftingSkills => " + DBCharacter.Id, e);
 			}
 		}
 
@@ -14225,7 +14199,7 @@ namespace DOL.GS
 		{
 			get
 			{
-				return (ushort)m_client.Account.Characters[m_client.ActiveCharIndex].CreationModel;
+				return (ushort)m_client.Account.Characters.ElementAt(m_client.ActiveCharIndex).CreationModel;
 			}
 		}
 
@@ -14811,7 +14785,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual byte ActiveSaddleBags
 		{
-			get { return DBCharacter != null ? DBCharacter.ActiveSaddleBags : (byte)0; }
+			get { return DBCharacter != null ? (byte)DBCharacter.ActiveSaddleBags : (byte)0; }
 			set { if (DBCharacter != null) DBCharacter.ActiveSaddleBags = value; }
 		}
 
@@ -14847,7 +14821,7 @@ namespace DOL.GS
 					m_id = value;
 					InventoryItem item = m_player.Inventory.GetItem(eInventorySlot.Horse);
 					if (item != null)
-						m_level = item.Level;
+						m_level = item.ItemTemplate.Level;
 					else
 						m_level = 35;//base horse by default
 					m_player.Out.SendSetControlledHorse(m_player);
@@ -14860,7 +14834,7 @@ namespace DOL.GS
 				{
 					InventoryItem barding = m_player.Inventory.GetItem(eInventorySlot.HorseBarding);
 					if (barding != null)
-						return (byte)barding.DPS_AF;
+						return (byte)barding.ItemTemplate.DPS_AF;
 					return m_bardingId;
 				}
 				set
@@ -14892,7 +14866,7 @@ namespace DOL.GS
 				{
 					InventoryItem armor = m_player.Inventory.GetItem(eInventorySlot.HorseArmor);
 					if (armor != null)
-						return (byte)armor.DPS_AF;
+						return (byte)armor.ItemTemplate.DPS_AF;
 					return m_saddleId;
 				}
 				set
@@ -15351,7 +15325,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual byte MLLine
 		{
-			get { return DBCharacter != null ? DBCharacter.ML : (byte)0; }
+			get { return DBCharacter != null ? (byte)DBCharacter.ML : (byte)0; }
 			set { if (DBCharacter != null) DBCharacter.ML = value; }
 		}
 
@@ -15408,7 +15382,7 @@ namespace DOL.GS
 			if (MLLevel >= mlLevel) return true;
 
 			// Check current registered steps
-			foreach (DBCharacterXMasterLevel mlStep in m_mlSteps)
+			foreach (CharacterMasterLevel mlStep in m_mlSteps)
 			{
 				// Found so return value
 				if (mlStep.MLLevel == mlLevel && mlStep.MLStep == step)
@@ -15541,7 +15515,7 @@ namespace DOL.GS
 		/// <returns>True when at least one version exists, false when no versions are available.</returns>
 		public bool CanReceiveArtifact(int artifactID)
 		{
-			Dictionary<String, ItemTemplate> possibleVersions = ArtifactMgr.GetArtifactVersions(artifactID, (eCharacterClass)CharacterClass.ID, Realm);
+			Dictionary<int, ItemTemplate> possibleVersions = ArtifactMgr.GetArtifactVersions(artifactID, (eCharacterClass)CharacterClass.ID, Realm);
 
 			if (possibleVersions.Count == 0)
 				return false;
@@ -15578,7 +15552,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="client">The GameClient for this player</param>
 		/// <param name="dbChar">The character for this player</param>
-		public GamePlayer(GameClient client, DOLCharacters dbChar)
+		public GamePlayer(GameClient client, Character dbChar)
 			: base()
 		{
 			IsJumping = false;
@@ -15675,7 +15649,7 @@ namespace DOL.GS
 		/// <param name="delveInfo"></param>
 		/// <param name="style"></param>
 		/// <returns></returns>
-		public virtual void DelveWeaponStyle(IList<string> delveInfo, Style style)
+		public virtual void DelveWeaponStyle(IList<string> delveInfo, Styles.Style style)
 		{
 			StyleProcessor.DelveWeaponStyle(delveInfo, style, this);
 		}
@@ -15725,10 +15699,10 @@ namespace DOL.GS
 			if (HasAbility(Abilities.Shield))
 			{
 				lefthand = Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-				if (lefthand != null && (AttackWeapon == null || AttackWeapon.Item_Type == Slot.RIGHTHAND || AttackWeapon.Item_Type == Slot.LEFTHAND))
+				if (lefthand != null && (AttackWeapon == null || AttackWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || AttackWeapon.ItemTemplate.ItemType == Slot.LEFTHAND))
 				{
-					if (lefthand.Object_Type == (int)eObjectType.Shield)
-						blockChance = GetModified(eProperty.BlockChance) * lefthand.Quality * 0.01;
+					if (lefthand.ItemTemplate.ObjectType == (int)eObjectType.Shield)
+						blockChance = GetModified(eProperty.BlockChance) * lefthand.ItemTemplate.Quality * 0.01;
 				}
 			}
 			if (blockChance > 0)
@@ -15739,7 +15713,7 @@ namespace DOL.GS
 
 				int shieldSize = 0;
 				if (lefthand != null)
-					shieldSize = lefthand.Type_Damage;
+					shieldSize = lefthand.ItemTemplate.TypeDamage;
 			}
 
 			return Math.Round(blockChance*10000)/100;

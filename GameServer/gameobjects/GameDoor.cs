@@ -74,10 +74,10 @@ namespace DOL.GS
 		/// Loads this door from a door table slot
 		/// </summary>
 		/// <param name="obj">DBDoor</param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
 			base.LoadFromDatabase(obj);
-			DBDoor m_dbdoor = obj as DBDoor;
+			var m_dbdoor = obj as Door;
 			if (m_dbdoor == null) return;
 			Zone curZone = WorldMgr.GetZone((ushort)(m_dbdoor.InternalID / 1000000));
 			if (curZone == null) return;
@@ -92,11 +92,11 @@ namespace DOL.GS
 			m_doorID = m_dbdoor.InternalID;
 			m_guildName = m_dbdoor.Guild;
 			m_Realm = (eRealm)m_dbdoor.Realm;
-			m_level = m_dbdoor.Level;
+			m_level = (byte)m_dbdoor.Level;
 			m_health = m_dbdoor.MaxHealth;
 			m_maxHealth = m_dbdoor.MaxHealth;
 			m_locked = m_dbdoor.Locked;
-			m_flags = m_dbdoor.Flags;
+			m_flags = (uint)m_dbdoor.Flags;
 
 			// Open mile gates on PVE and PVP server types
 			if (CurrentRegion.IsFrontier && (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_PvE
@@ -110,28 +110,23 @@ namespace DOL.GS
 		/// </summary>
 		public override void SaveIntoDatabase()
 		{
-			DBDoor obj = null;
-			if (InternalID != null)
-				obj = GameServer.Database.FindObjectByKey<DBDoor>(InternalID);
+			Door obj = null;
+			if (InternalID > 0)
+				obj = GameServer.Database.Doors.Find(InternalID);
 			if (obj == null)
-				obj = new DBDoor();
+				obj = new Door();
 			obj.Name = this.Name;
 			obj.InternalID = this.DoorID;
 			obj.Type = DoorID / 100000000;
 			obj.Guild = this.GuildName;
-			obj.Flags = this.Flag;
+			obj.Flags = (int)this.Flag;
 			obj.Realm = (byte)this.Realm;
 			obj.Level = this.Level;
 			obj.MaxHealth = this.MaxHealth;
 			obj.Health = this.MaxHealth;
 			obj.Locked = this.Locked;
-			if (InternalID == null)
-			{
-				GameServer.Database.AddObject(obj);
-				InternalID = obj.ObjectId;
-			}
-			else
-				GameServer.Database.SaveObject(obj);
+
+			GameServer.Instance.SaveDataObject(obj);
 		}
 
 		#region Properties

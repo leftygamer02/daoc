@@ -254,22 +254,22 @@ namespace DOL.GS
 			}
 			else
 			{
-				var mob = dbMob;
+				var npc = dbMob;
 
-				if (mob == null && InternalID > 0)
+				if (npc == null && InternalID > 0)
 					// This should only happen when a GM command changes level on a mob with no npcTemplate,
-					mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
+					npc = GameServer.Database.NpcTemplates.Find(InternalID);
 
-				if (mob != null)
+				if (npc != null)
 				{
-					Strength = mob.Strength;
-					Constitution = mob.Constitution;
-					Quickness = mob.Quickness;
-					Dexterity = mob.Dexterity;
-					Intelligence = mob.Intelligence;
-					Empathy = mob.Empathy;
-					Piety = mob.Piety;
-					Charisma = mob.Charisma;
+					Strength = (short)npc.Strength;
+					Constitution = (short)npc.Constitution;
+					Quickness = (short)npc.Quickness;
+					Dexterity = (short)npc.Dexterity;
+					Intelligence = (short)npc.Intelligence;
+					Empathy = (short)npc.Empathy;
+					Piety = (short)npc.Piety;
+					Charisma = (short)npc.Charisma;
 				}
 				else
 				{
@@ -2037,7 +2037,7 @@ namespace DOL.GS
 			m_maxSpeedBase = (short)NPCTemplate.MaxSpeed;
 			m_currentSpeed = 0;
 			CurrentRegionID = (ushort)dbMobPoint.RegionID;
-			Realm = (eRealm)NPCTemplate.Realm;			
+			Realm = (eRealm)dbNpc.Realm;			
 			Flags = (eFlags)NPCTemplate.Flags;
 			m_packageID = dbNpc.PackageID;
 
@@ -2095,8 +2095,8 @@ namespace DOL.GS
 			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
 			if (aggroBrain != null)
 			{
-				aggroBrain.AggroLevel = dbMob.AggroLevel;
-				aggroBrain.AggroRange = dbMob.AggroRange;
+				aggroBrain.AggroLevel = dbNpc.AggroLevel;
+				aggroBrain.AggroRange = dbNpc.AggroRange;
 				if (aggroBrain.AggroRange == Constants.USE_AUTOVALUES)
 				{
 					if (Realm == eRealm.None)
@@ -2134,16 +2134,17 @@ namespace DOL.GS
 				}
 			}
 
-			m_race = (short)dbMob.Race;
-			m_bodyType = (ushort)dbMob.BodyType;
-			m_houseNumber = (ushort)dbMob.HouseNumber;
-			m_maxdistance = dbMob.MaxDistance;
-			m_roamingRange = dbMob.RoamingRange;
-			m_isCloakHoodUp = dbMob.IsCloakHoodUp;
-			m_visibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
+			m_race = (short)dbNpc.RaceID;
+			m_bodyType = (ushort)dbNpc.BodyType;
+			m_houseNumber = (ushort)dbNpc.HouseNumber;
+			m_maxdistance = dbNpc.MaxDistance;
+			m_roamingRange = dbMobPoint.RoamingRange;
+			m_isCloakHoodUp = dbMobPoint.IsCloakHoodUp;
+			m_visibleActiveWeaponSlots = (byte)dbNpc.VisibleWeaponSlots;
+			m_lootTableID = dbNpc.LootTableID;
 
-			Gender = (eGender)dbMob.Gender;
-			OwnerID = dbMob.OwnerID;
+			Gender = (eGender)dbNpc.Gender;
+			OwnerID = dbMobPoint.OwnerID ?? 0;
 
 			LoadTemplate(NPCTemplate);
 			/*
@@ -2164,7 +2165,7 @@ namespace DOL.GS
 
 			if (InternalID > 0)
 			{
-				Mob mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
+				var mob = GameServer.Database.NpcTemplates.Find(InternalID);
 				if (mob != null)
 					GameServer.Instance.DeleteDataObject(mob);
 			}
@@ -2189,89 +2190,88 @@ namespace DOL.GS
 				return;
 			}
 
-			Mob mob = null;
-			if (InternalID != null)
+			SpawnPoint mob = null;
+			if (InternalID > 0)
 			{
-				mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
+				mob = GameServer.Database.SpawnPoints.Find(InternalID);
 			}
 
 			if (mob == null)
 			{
 				if (LoadedFromScript == false)
 				{
-					mob = new Mob();
+					mob = new SpawnPoint();
 				}
 				else
 				{
 					return;
 				}
 			}
-
-			mob.TranslationId = TranslationId;
-			mob.Name = Name;
-			mob.Suffix = Suffix;
-			mob.Guild = GuildName;
-			mob.ExamineArticle = ExamineArticle;
-			mob.MessageArticle = MessageArticle;
+			var npc = new Atlas.DataLayer.Models.NpcTemplate();
+			npc.Name = Name;
+			npc.Suffix = Suffix;
+			npc.GuildName = GuildName;
+			npc.ExamineArticle = ExamineArticle;
+			npc.MessageArticle = MessageArticle;
 			mob.X = X;
 			mob.Y = Y;
 			mob.Z = Z;
 			mob.Heading = Heading;
-			mob.Speed = MaxSpeedBase;
-			mob.Region = CurrentRegionID;
-			mob.Realm = (byte)Realm;
-			mob.Model = Model;
-			mob.Size = Size;
-			mob.Level = Level;
+			npc.MaxSpeed = MaxSpeedBase;
+			mob.RegionID = CurrentRegionID;
+			npc.Realm = (byte)Realm;
+			npc.Model = Model.ToString();
+			npc.Size = Size.ToString();
+			npc.Level = Level.ToString();
 
 			// Stats
-			mob.Constitution = Constitution;
-			mob.Dexterity = Dexterity;
-			mob.Strength = Strength;
-			mob.Quickness = Quickness;
-			mob.Intelligence = Intelligence;
-			mob.Piety = Piety;
-			mob.Empathy = Empathy;
-			mob.Charisma = Charisma;
+			npc.Constitution = Constitution;
+			npc.Dexterity = Dexterity;
+			npc.Strength = Strength;
+			npc.Quickness = Quickness;
+			npc.Intelligence = Intelligence;
+			npc.Piety = Piety;
+			npc.Empathy = Empathy;
+			npc.Charisma = Charisma;
 
-			mob.ClassType = this.GetType().ToString();
-			mob.Flags = (uint)Flags;
-			mob.Speed = MaxSpeedBase;
+			npc.ClassType = this.GetType().ToString();
+			npc.Flags = (int)Flags;
+			npc.MaxSpeed = MaxSpeedBase;
 			mob.RespawnInterval = m_respawnInterval / 1000;
-			mob.HouseNumber = HouseNumber;
+			npc.HouseNumber = HouseNumber;
 			mob.RoamingRange = RoamingRange;
 			if (Brain.GetType().FullName != typeof(StandardMobBrain).FullName)
-				mob.Brain = Brain.GetType().FullName;
+				npc.Brain = Brain.GetType().FullName;
 			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
 			if (aggroBrain != null)
 			{
 				mob.AggroLevel = aggroBrain.AggroLevel;
 				mob.AggroRange = aggroBrain.AggroRange;
 			}
-			mob.EquipmentTemplateID = EquipmentTemplateID;
+			npc.EquipmentTemplateID = EquipmentTemplateID;
 
 			if (m_faction != null)
-				mob.FactionID = m_faction.ID;
+				npc.FactionID = m_faction.ID;
 
-			mob.MeleeDamageType = (int)MeleeDamageType;
+			npc.MeleeDamageType = (int)MeleeDamageType;
 
 			if (NPCTemplate != null)
 			{
-				mob.NPCTemplateID = NPCTemplate.TemplateId;
+				npc.Id = NPCTemplate.TemplateId;
 			}
 			else
 			{
-				mob.NPCTemplateID = -1;
+				npc.Id = 0;
 			}
 
-			mob.Race = Race;
-			mob.BodyType = BodyType;
+			npc.RaceID = Race;
+			npc.BodyType = BodyType;
 			mob.PathID = PathID;
 			mob.MaxDistance = m_maxdistance;
 			mob.IsCloakHoodUp = m_isCloakHoodUp;
-			mob.Gender = (byte)Gender;
-			mob.VisibleWeaponSlots = this.m_visibleActiveWeaponSlots;
-			mob.PackageID = PackageID;
+			npc.Gender = (byte)Gender;
+			npc.VisibleWeaponSlots = this.m_visibleActiveWeaponSlots;
+			npc.PackageID = PackageID;
 			mob.OwnerID = OwnerID;
 
 			GameServer.Instance.SaveDataObject(mob);
@@ -2371,7 +2371,7 @@ namespace DOL.GS
 
 			#region Inventory
 			//Ok lets start loading the npc equipment - only if there is a value!
-			if (!Util.IsEmpty(template.Inventory))
+			if (template.Inventory > 0)
 			{
 				bool equipHasItems = false;
 				GameNpcInventoryTemplate equip = new GameNpcInventoryTemplate();
@@ -2386,7 +2386,7 @@ namespace DOL.GS
 						m_templatedInventory.Add(str);
 					}
 
-					string equipid = "";
+					int equipid = 0;
 
 					if (m_templatedInventory.Count > 0)
 					{
@@ -2639,7 +2639,7 @@ namespace DOL.GS
 			// Data driven quests
 			lock (m_dataQuests)
 			{
-				foreach (DataQuest quest in DataQuestList)
+				foreach (Quests.DataQuest quest in DataQuestList)
 				{
 					if (quest.ShowIndicator &&
 						quest.CheckQuestQualification(player))
@@ -2671,21 +2671,21 @@ namespace DOL.GS
 			{
 				// Handle Data Quest here.
 
-				DataQuest quest = null;
-				if (q is DataQuest)
+				Quests.DataQuest quest = null;
+				if (q is Quests.DataQuest)
 				{
-					quest = (DataQuest)q;
+					quest = (Quests.DataQuest)q;
 				}
 
 				if (quest != null && (quest.TargetName == Name && (quest.TargetRegion == 0 || quest.TargetRegion == CurrentRegionID)))
 				{
 					switch (quest.StepType)
 					{
-						case DataQuest.eStepType.DeliverFinish:
-						case DataQuest.eStepType.InteractFinish:
-						case DataQuest.eStepType.KillFinish:
-						case DataQuest.eStepType.WhisperFinish:
-						case DataQuest.eStepType.CollectFinish:
+						case Quests.DataQuest.eStepType.DeliverFinish:
+						case Quests.DataQuest.eStepType.InteractFinish:
+						case Quests.DataQuest.eStepType.KillFinish:
+						case Quests.DataQuest.eStepType.WhisperFinish:
+						case Quests.DataQuest.eStepType.CollectFinish:
 							return true;
 					}
 				}
@@ -3007,7 +3007,7 @@ namespace DOL.GS
 			if (MaxSpeedBase > 0 && CurrentSpellHandler == null && !IsMoving
 				&& !AttackState && !InCombat && !IsMovingOnPath && !IsReturningHome
 				//Check everything otherwise the Server will crash
-				&& PathID != null && PathID != "" && PathID != "NULL")
+				&& PathID > 0)
 			{
 				PathPoint path = MovementMgr.LoadPath(PathID);
 				if (path != null)

@@ -208,9 +208,9 @@ namespace DOL.GS.Spells
 				{ // mobs left out yet
 					GamePlayer player = (GamePlayer)target;
 					InventoryItem lefthand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-					if (lefthand!=null && (player.AttackWeapon==null || player.AttackWeapon.Item_Type==Slot.RIGHTHAND || player.AttackWeapon.Item_Type==Slot.LEFTHAND)) 
+					if (lefthand!=null && (player.AttackWeapon==null || player.AttackWeapon.ItemType==Slot.RIGHTHAND || player.AttackWeapon.ItemType==Slot.LEFTHAND)) 
 					{
-						if (target.IsObjectInFront(caster, 180) && lefthand.Object_Type == (int)eObjectType.Shield) 
+						if (target.IsObjectInFront(caster, 180) && lefthand.ObjectType == (int)eObjectType.Shield) 
 						{
 							double shield = 0.5 * player.GetModifiedSpecLevel(Specs.Shields);
 							double blockchance = ((player.Dexterity*2)-100)/40.0 + shield + 5;

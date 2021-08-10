@@ -465,7 +465,7 @@ namespace DOL.GS
 		{
 			if (weapon != null)
 			{
-				switch ((eWeaponDamageType)weapon.Type_Damage)
+				switch ((eWeaponDamageType)weapon.TypeDamage)
 				{
 						case eWeaponDamageType.Crush: return eDamageType.Crush;
 						case eWeaponDamageType.Slash: return eDamageType.Slash;

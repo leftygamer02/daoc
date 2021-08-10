@@ -1009,7 +1009,7 @@ namespace DOL.GS.Spells
     public class FontSpellHandler : DoTSpellHandler
     {
         protected GameFont font;
-        protected DBSpell dbs;
+        protected Atlas.DataLayer.Models.Spell dbs;
         protected Spell s;
         protected SpellLine sl;
         protected ISpellHandler heal;
@@ -1081,7 +1081,7 @@ namespace DOL.GS.Spells
         protected GameMine mine;
         protected ISpellHandler trap;
         protected GameSpellEffect m_effect;
-        protected DBSpell dbs;
+        protected Atlas.DataLayer.Models.Spell dbs;
         protected Spell s;
         protected SpellLine sl;
         protected bool Unstealth = true;
@@ -1144,7 +1144,7 @@ namespace DOL.GS.Spells
     public class StormSpellHandler : SpellHandler
     {
         protected GameStorm storm;
-        protected DBSpell dbs;
+        protected Atlas.DataLayer.Models.Spell dbs;
         protected Spell s;
         protected SpellLine sl;
         protected ISpellHandler tempest;

@@ -127,12 +127,12 @@ namespace DOL.GS
                 }
 
                 float bpMultiplier = 0;
-                if (m_BPMultipliers.ContainsKey(item.Id_nb))
-                    bpMultiplier = m_BPMultipliers[item.Id_nb];
+                if (m_BPMultipliers.ContainsKey(item.Id))
+                    bpMultiplier = m_BPMultipliers[item.Id];
 
                 float rpMultiplier = 0;
-                if (m_RPMultipliers.ContainsKey(item.Id_nb))
-                    rpMultiplier = m_RPMultipliers[item.Id_nb];
+                if (m_RPMultipliers.ContainsKey(item.Id))
+                    rpMultiplier = m_RPMultipliers[item.Id];
 
                 if (bpMultiplier < 1 && rpMultiplier < 1)
                 {

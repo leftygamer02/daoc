@@ -64,8 +64,8 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public const ushort HiberniaGuildModel = 680;
 
-		protected string m_templateID = "";
-		public string TemplateID
+		protected int m_templateID = 0;
+		public int TemplateID
 		{
 			get { return m_templateID; }
 		}
@@ -77,8 +77,8 @@ namespace DOL.GS.Keeps
 			set { m_component = value; }
 		}
 
-		protected DBKeepPosition m_position;
-		public DBKeepPosition Position
+		protected KeepPosition m_position;
+		public KeepPosition Position
 		{
 			get { return m_position; }
 			set { m_position = value; }
@@ -90,7 +90,7 @@ namespace DOL.GS.Keeps
 			{
 				if (Component.Keep != null)
 				{
-					Component.Keep.Banners.Remove(ObjectID.ToString());
+					Component.Keep.Banners.Remove(ObjectID);
 				}
 
 				Component.Delete();
@@ -103,12 +103,12 @@ namespace DOL.GS.Keeps
 			CurrentRegion = null;
 		}
 
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
 			if (obj == null) return;
 			
 			base.LoadFromDatabase(obj);
-			string sKey = this.InternalID; // InternalID is set to obj.ObjectID by base.LoadFromDatabase()
+			int sKey = this.InternalID; // InternalID is set to obj.ObjectID by base.LoadFromDatabase()
 
 			foreach (AbstractArea area in this.CurrentAreas)
 			{
@@ -136,7 +136,7 @@ namespace DOL.GS.Keeps
 
 		public override void DeleteFromDatabase()
 		{
-			string sKey = this.InternalID;
+			int sKey = this.InternalID;
 			foreach (AbstractArea area in this.CurrentAreas)
 			{
 				if (area is KeepArea)
@@ -148,7 +148,7 @@ namespace DOL.GS.Keeps
 			base.DeleteFromDatabase();
 		}
 
-		public virtual void LoadFromPosition(DBKeepPosition pos, GameKeepComponent component)
+		public virtual void LoadFromPosition(KeepPosition pos, GameKeepComponent component)
 		{
 			if (pos == null || component == null) return;
 			
@@ -157,7 +157,7 @@ namespace DOL.GS.Keeps
 			BannerType = (eBannerType)pos.TemplateType;
 
 			PositionMgr.LoadKeepItemPosition(pos, this);
-			string sKey = this.TemplateID;
+			int sKey = this.TemplateID;
 			if (component.Keep.Banners.ContainsKey(sKey) == false)
 			{
 				component.Keep.Banners.Add(sKey, this);
@@ -179,10 +179,10 @@ namespace DOL.GS.Keeps
 				}
 			}
 			else if (log.IsWarnEnabled)
-				log.Warn($"LoadFromPosition(): There is already a Banner with TemplateID {this.TemplateID} on KeepID {component.Keep.KeepID}, not adding Banner for KeepPosition_ID {pos.ObjectId} on KeepComponent_ID {component.InternalID}");
+				log.Warn($"LoadFromPosition(): There is already a Banner with TemplateID {this.TemplateID} on KeepID {component.Keep.KeepID}, not adding Banner for KeepPosition_ID {pos.Id} on KeepComponent_ID {component.InternalID}");
 		}
 
-		public void MoveToPosition(DBKeepPosition position)
+		public void MoveToPosition(KeepPosition position)
 		{
 			PositionMgr.LoadKeepItemPosition(position, this);
 			int zAdd = 1000;

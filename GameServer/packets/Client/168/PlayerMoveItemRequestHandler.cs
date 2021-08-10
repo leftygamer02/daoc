@@ -288,8 +288,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (item == null) return;
 
 				toClientSlot = 0;
-				if (item.Item_Type >= (int)eInventorySlot.MinEquipable && item.Item_Type <= (int)eInventorySlot.MaxEquipable)
-					toClientSlot = (ushort)item.Item_Type;
+				if (item.ItemType >= (int)eInventorySlot.MinEquipable && item.ItemType <= (int)eInventorySlot.MaxEquipable)
+					toClientSlot = (ushort)item.ItemType;
 				if (toClientSlot == 0)
 				{
 					client.Out.SendInventorySlotsUpdate(new int[] { fromClientSlot });

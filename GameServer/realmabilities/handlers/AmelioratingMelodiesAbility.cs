@@ -17,7 +17,7 @@ namespace DOL.GS.RealmAbilities
 		/// <summary>
 		/// Constructs the Ameliorating Melodies handler
 		/// </summary>
-		public AmelioratingMelodiesAbility(DBAbility dba, int level) : base(dba, level) { }
+		public AmelioratingMelodiesAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

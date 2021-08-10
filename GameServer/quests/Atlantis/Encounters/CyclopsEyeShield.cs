@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public CyclopsEyeShield(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public CyclopsEyeShield(GamePlayer questingPlayer, DBQuest dbQuest)
+        public CyclopsEyeShield(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

@@ -251,13 +251,13 @@ namespace DOL.GS
                 // --------------------------------------------------------------
                 // Luhz Crafting Update:
                 // Players may now have any, and all, "primary" crafting skills.
-                // AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(m_owner.CraftingPrimarySkill);
+                // AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(m_owner.PrimaryCraftingSkill);
                 AbstractCraftingSkill skill = null;
                 lock (m_owner.TradeWindow.Sync)
                 {
                     foreach (InventoryItem i in (ArrayList)m_owner.TradeWindow.TradeItems.Clone())
                     {
-                        if (i.Object_Type == (int)eObjectType.AlchemyTincture)
+                        if (i.ObjectType == (int)eObjectType.AlchemyTincture)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                             {
@@ -265,7 +265,7 @@ namespace DOL.GS
                                 break;
                             }
                         }
-                        else if (i.Object_Type == (int)eObjectType.SpellcraftGem)
+                        else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
                             {
@@ -305,13 +305,13 @@ namespace DOL.GS
                 // --------------------------------------------------------------
                 // Luhz Crafting Update:
                 // Players may now have any, and all, "primary" crafting skills.
-                // AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(m_owner.CraftingPrimarySkill);
+                // AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(m_owner.PrimaryCraftingSkill);
                 AbstractCraftingSkill skill = null;
                 lock (m_owner.TradeWindow.Sync)
                 {
                     foreach (InventoryItem i in (ArrayList)m_owner.TradeWindow.TradeItems.Clone())
                     {
-                        if (i.Object_Type == (int)eObjectType.AlchemyTincture)
+                        if (i.ObjectType == (int)eObjectType.AlchemyTincture)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                             {
@@ -319,7 +319,7 @@ namespace DOL.GS
                                 break;
                             }
                         }
-                        else if (i.Object_Type == (int)eObjectType.SpellcraftGem)
+                        else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
                             {

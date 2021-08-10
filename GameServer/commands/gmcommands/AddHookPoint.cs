@@ -57,7 +57,7 @@ namespace DOL.GS.Commands
 				dbkeephp.Y = client.Player.Y - comp.Y;
 				dbkeephp.Z = client.Player.Z - comp.Z;
 				dbkeephp.Heading = client.Player.Heading - comp.Heading;
-				GameServer.Database.AddObject(dbkeephp);
+				GameServer.Instance.SaveDataObject(dbkeephp);
 			}
 			catch (Exception e)
 			{

@@ -34,7 +34,7 @@ namespace DOL.GS
 
 		private readonly string _templateID;
 		private readonly object _vaultLock = new object();
-		private DBHouseHookpointItem _hookedItem;
+		private Atlas.DataLayer.Models.HouseHookpointItem _hookedItem;
 
 		/// <summary>
 		/// Create a new house vault.
@@ -47,7 +47,7 @@ namespace DOL.GS
 
 			Name = itemTemplate.Name;
 			Model = (ushort) (itemTemplate.Model);
-			_templateID = itemTemplate.Id_nb;
+			_templateID = itemTemplate.Id;
 			Index = vaultIndex;
 		}
 
@@ -78,7 +78,7 @@ namespace DOL.GS
                 return false;
 
             // register vault in the DB.
-            var hookedItem = new DBHouseHookpointItem
+            var hookedItem = new Atlas.DataLayer.Models.HouseHookpointItem
             {
                 HouseNumber = house.HouseNumber,
                 HookpointID = hookpointID,
@@ -87,12 +87,12 @@ namespace DOL.GS
                 Index = (byte)Index
             };
 
-            var hpitem = DOLDB<DBHouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber).And(DB.Column("HookpointID").IsEqualTo(hookpointID)));
+            var hpitem = DOLDB<Atlas.DataLayer.Models.HouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber).And(DB.Column("HookpointID").IsEqualTo(hookpointID)));
 
 			// if there isn't anything already on this hookpoint then add it to the DB
 			if (hpitem.Count == 0)
 			{
-				GameServer.Database.AddObject(hookedItem);
+				GameServer.Instance.SaveDataObject(hookedItem);
 			}
 
             // now add the vault to the house.
@@ -105,7 +105,7 @@ namespace DOL.GS
 		/// <param name="house"></param>
 		/// <param name="hookedItem"></param>
 		/// <returns></returns>
-		public bool Attach(House house, DBHouseHookpointItem hookedItem)
+		public bool Attach(House house, Atlas.DataLayer.Models.HouseHookpointItem hookedItem)
 		{
 			if (house == null || hookedItem == null)
 				return false;

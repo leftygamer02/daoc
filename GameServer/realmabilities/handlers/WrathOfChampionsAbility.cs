@@ -12,7 +12,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class WrathofChampionsAbility : TimedRealmAbility
 	{
-        public WrathofChampionsAbility(DBAbility dba, int level) : base(dba, level) { }
+        public WrathofChampionsAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		public override void Execute(GameLiving living)
 		{

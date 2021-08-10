@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public MariashasSharkskinGloves(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public MariashasSharkskinGloves(GamePlayer questingPlayer, DBQuest dbQuest)
+        public MariashasSharkskinGloves(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

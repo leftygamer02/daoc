@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Timers;
 using Atlas.DataLayer.Models;
-using DOL.Database.Attributes;
 
 namespace DOL.GS
 {
@@ -113,7 +112,7 @@ namespace DOL.GS
 					// build query string and execute
 					string queryString = queryBuilder.ToString();
 
-					// Graveen: if AuditMgr is debuggued one day, this should be in ORM format: GS.Database.AddObject<AuditEntry> ...
+					// Graveen: if AuditMgr is debuggued one day, this should be in ORM format: GS.Instance.SaveDataObject<AuditEntry> ...
 					//GameServer.Database.ExecuteNonQuery(queryString);
 
 					// get new query builder
@@ -121,7 +120,7 @@ namespace DOL.GS
 				}
 
 				// add entry to the query
-				queryBuilder.AppendFormat("({0},{1},{2},{3},{4},{5},{6},{7}),", entry.ObjectId, entry.AuditTime,
+				queryBuilder.AppendFormat("({0},{1},{2},{3},{4},{5},{6},{7}),", entry.Id, entry.AuditTime,
 				                          entry.AccountID, entry.RemoteHost, entry.AuditType, entry.AuditSubtype,
 				                          entry.OldValue, entry.NewValue);
 
@@ -132,7 +131,7 @@ namespace DOL.GS
 			queryBuilder.Remove(queryBuilder.Length - 1, 1);
 			queryBuilder.Append(';');
 
-			/* Graveen: if AuditMgr is debuggued one day, this should be in ORM format: GS.Database.AddObject<AuditEntry> ...
+			/* Graveen: if AuditMgr is debuggued one day, this should be in ORM format: GS.Instance.SaveDataObject<AuditEntry> ...
 			
 			// build query string and execute
 			string entryQuery = queryBuilder.ToString();
@@ -149,18 +148,8 @@ namespace DOL.GS
 			var queryBuilder = new StringBuilder();
 
 			// generate insert query
-			queryBuilder.Append("INSERT INTO ");
+			queryBuilder.Append("INSERT INTO AuditEntry ");
 
-			// get proper table name
-			string tableName = AttributesUtils.GetTableOrViewName(typeof (AuditEntry));
-
-			if (string.IsNullOrEmpty(tableName))
-			{
-				// this should never, ever happen.
-				throw new DatabaseException("Audit table does not exist!");
-			}
-
-			queryBuilder.Append(tableName);
 			queryBuilder.Append(
 				" (`AuditEntry_ID`,`AuditTime`,`AccountID`,`RemoteHost`,`AuditType`,`AuditSubtype`,`OldValue`,`NewValue`) VALUES");
 
@@ -218,7 +207,7 @@ namespace DOL.GS
 			// make sure account isn't null (no idea why it'd be)
 			if (client.Account != null)
 			{
-				transactionHistory.AccountID = client.Account.ObjectId;
+				transactionHistory.AccountID = client.Account.Id;
 			}
 
 			// set the remote host

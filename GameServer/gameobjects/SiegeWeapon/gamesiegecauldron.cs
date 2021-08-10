@@ -75,7 +75,7 @@ namespace DOL.GS
 			{
 				if (m_OilSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 2;
 					spell.ClientEffect = 2209; //2209? 5909? 7086? 7091?

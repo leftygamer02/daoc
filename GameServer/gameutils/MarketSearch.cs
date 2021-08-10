@@ -25,7 +25,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 using Atlas.DataLayer.Models;
-using DOL.Database.Transaction;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.Events;
@@ -175,25 +174,25 @@ namespace DOL.GS
 			{
 				switch (slot)
 				{
-					case 0: return item.Item_Type == (int)eInventorySlot.HandsArmor;
-					case 1: return item.Item_Type == (int)eInventorySlot.FeetArmor;
-					case 2: return item.Item_Type == (int)eInventorySlot.HeadArmor;
-					case 3: return item.Item_Type == (int)eInventorySlot.ArmsArmor;
-					case 4: return item.Item_Type == (int)eInventorySlot.LegsArmor;
-					case 5: return item.Item_Type == (int)eInventorySlot.TorsoArmor;
-					case 6: return item.Object_Type == (int)eObjectType.Magical && (item.Item_Type == (int)eInventorySlot.RightRing || item.Item_Type == (int)eInventorySlot.LeftRing);
-					case 7: return item.Object_Type == (int)eObjectType.Magical && (item.Item_Type == (int)eInventorySlot.RightBracer || item.Item_Type == (int)eInventorySlot.LeftBracer);
-					case 8: return item.Object_Type == (int)eObjectType.Magical && item.Item_Type == (int)eInventorySlot.Waist;
-					case 9: return item.Object_Type == (int)eObjectType.Magical && item.Item_Type == (int)eInventorySlot.Neck;
-					case 10: return item.Object_Type == (int)eObjectType.Magical && item.Item_Type == (int)eInventorySlot.Cloak;
-					case 11: return item.Object_Type == (int)eObjectType.Magical && item.Item_Type == (int)eInventorySlot.Jewellery;
-					case 12: return item.Item_Type == (int)eInventorySlot.RightHandWeapon || item.Item_Type == (int)eInventorySlot.LeftHandWeapon || item.Item_Type == (int)eInventorySlot.TwoHandWeapon;
-					case 13: return item.Object_Type == (int)eObjectType.Shield && item.Item_Type == (int)eInventorySlot.LeftHandWeapon;
-					case 14: return item.Item_Type == (int)eInventorySlot.TwoHandWeapon;
-					case 15: return item.Item_Type == (int)eInventorySlot.DistanceWeapon;
-					case 16: return item.Item_Type == (int)eInventorySlot.LeftHandWeapon;
-					case 17: return item.Object_Type == (int)eObjectType.Instrument && item.Item_Type == (int)eInventorySlot.RightHandWeapon;
-					case 18: return item.Object_Type == (int)eObjectType.GenericItem;
+					case 0: return item.ItemType == (int)eInventorySlot.HandsArmor;
+					case 1: return item.ItemType == (int)eInventorySlot.FeetArmor;
+					case 2: return item.ItemType == (int)eInventorySlot.HeadArmor;
+					case 3: return item.ItemType == (int)eInventorySlot.ArmsArmor;
+					case 4: return item.ItemType == (int)eInventorySlot.LegsArmor;
+					case 5: return item.ItemType == (int)eInventorySlot.TorsoArmor;
+					case 6: return item.ObjectType == (int)eObjectType.Magical && (item.ItemType == (int)eInventorySlot.RightRing || item.ItemType == (int)eInventorySlot.LeftRing);
+					case 7: return item.ObjectType == (int)eObjectType.Magical && (item.ItemType == (int)eInventorySlot.RightBracer || item.ItemType == (int)eInventorySlot.LeftBracer);
+					case 8: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Waist;
+					case 9: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Neck;
+					case 10: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Cloak;
+					case 11: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Jewellery;
+					case 12: return item.ItemType == (int)eInventorySlot.RightHandWeapon || item.ItemType == (int)eInventorySlot.LeftHandWeapon || item.ItemType == (int)eInventorySlot.TwoHandWeapon;
+					case 13: return item.ObjectType == (int)eObjectType.Shield && item.ItemType == (int)eInventorySlot.LeftHandWeapon;
+					case 14: return item.ItemType == (int)eInventorySlot.TwoHandWeapon;
+					case 15: return item.ItemType == (int)eInventorySlot.DistanceWeapon;
+					case 16: return item.ItemType == (int)eInventorySlot.LeftHandWeapon;
+					case 17: return item.ObjectType == (int)eObjectType.Instrument && item.ItemType == (int)eInventorySlot.RightHandWeapon;
+					case 18: return item.ObjectType == (int)eObjectType.GenericItem;
 
 					default:
 
@@ -256,31 +255,31 @@ namespace DOL.GS
 			{
 				case 1:
 
-					return item.Object_Type == (int)eObjectType.Cloth;
+					return item.ObjectType == (int)eObjectType.Cloth;
 
 				case 2:
 
-					return item.Object_Type == (int)eObjectType.Leather;
+					return item.ObjectType == (int)eObjectType.Leather;
 
 				case 3:
 
-					return item.Object_Type == (int)eObjectType.Studded;
+					return item.ObjectType == (int)eObjectType.Studded;
 
 				case 4:
 
-					return item.Object_Type == (int)eObjectType.Chain;
+					return item.ObjectType == (int)eObjectType.Chain;
 
 				case 5:
 
-					return item.Object_Type == (int)eObjectType.Plate;
+					return item.ObjectType == (int)eObjectType.Plate;
 
 				case 6:
 
-					return item.Object_Type == (int)eObjectType.Reinforced;
+					return item.ObjectType == (int)eObjectType.Reinforced;
 
 				case 7:
 
-					return item.Object_Type == (int)eObjectType.Scale;
+					return item.ObjectType == (int)eObjectType.Scale;
 
 				default:
 
@@ -612,11 +611,11 @@ namespace DOL.GS
 
 		protected virtual bool CheckForDamageType(InventoryItem item, int damageType)
 		{
-			if (GlobalConstants.IsWeapon(item.Object_Type))
+			if (GlobalConstants.IsWeapon(item.ObjectType))
 			{
 				if (damageType >= 1 && damageType <= 3)
 				{
-					return damageType == item.Type_Damage;
+					return damageType == item.TypeDamage;
 				}
 				else
 				{

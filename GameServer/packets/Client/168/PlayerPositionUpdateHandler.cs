@@ -273,8 +273,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 								b.DateBan = DateTime.Now;
 								b.Type = "B";
 								b.Reason = string.Format("Autoban MOVEHACK:(CPS:{0}, JT:{1}) on player:{2}", coordsPerSec, jumpDetect, client.Player.Name);
-								GameServer.Database.AddObject(b);
-								GameServer.Database.SaveObject(b);
+								GameServer.Instance.SaveDataObject(b);
+								GameServer.Instance.SaveDataObject(b);
 
 								string message = "";
 								
@@ -426,8 +426,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 									b.DateBan = DateTime.Now;
 									b.Type = "B";
 									b.Reason = string.Format("Autoban SH:({0},{1}) on player:{2}", SHcount, environmentTick - SHlastTick, client.Player.Name);
-									GameServer.Database.AddObject(b);
-									GameServer.Database.SaveObject(b);
+									GameServer.Instance.SaveDataObject(b);
+									GameServer.Instance.SaveDataObject(b);
 
 									string message = "";
 									
@@ -498,8 +498,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 						b.DateBan = DateTime.Now;
 						b.Type = "B";
 						b.Reason = string.Format("Autoban flying hack: on player:{0}", client.Player.Name);
-						GameServer.Database.AddObject(b);
-						GameServer.Database.SaveObject(b);
+						GameServer.Instance.SaveDataObject(b);
+						GameServer.Instance.SaveDataObject(b);
 					}
 					string message = "";
 					
@@ -960,8 +960,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 								b.DateBan = DateTime.Now;
 								b.Type = "B";
 								b.Reason = string.Format("Autoban MOVEHACK:(CPS:{0}, JT:{1}) on player:{2}", coordsPerSec, jumpDetect, client.Player.Name);
-								GameServer.Database.AddObject(b);
-								GameServer.Database.SaveObject(b);
+								GameServer.Instance.SaveDataObject(b);
+								GameServer.Instance.SaveDataObject(b);
 
 								string message = "";
 
@@ -1087,8 +1087,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 						b.DateBan = DateTime.Now;
 						b.Type = "B";
 						b.Reason = string.Format("Autoban flying hack: on player:{0}", client.Player.Name);
-						GameServer.Database.AddObject(b);
-						GameServer.Database.SaveObject(b);
+						GameServer.Instance.SaveDataObject(b);
+						GameServer.Instance.SaveDataObject(b);
 					}
 					string message = "";
 

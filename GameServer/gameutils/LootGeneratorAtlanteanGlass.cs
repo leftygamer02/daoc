@@ -55,7 +55,7 @@ namespace DOL.GS
 				if (player == null)
 					return loot;			
 			
-				ItemTemplate atlanteanGlass = GameServer.Database.FindObjectByKey<ItemTemplate>(m_atlanteanglass.Id_nb);
+				ItemTemplate atlanteanGlass = GameServer.Database.FindObjectByKey<ItemTemplate>(m_atlanteanglass.Id);
 				// ItemTemplate atlanteanGlass = new ItemTemplate(m_atlanteanglass);  Creating a new ItemTemplate throws an exception later
 
 				int killedcon = (int)player.GetConLevel(mob)+3;

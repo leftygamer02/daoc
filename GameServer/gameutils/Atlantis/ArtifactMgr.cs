@@ -62,14 +62,14 @@ namespace DOL.GS
 		{
 			// Load artifacts and books.
 
-			var artifactDbos = GameServer.Database.SelectAllObjects<Artifact>();
+			var artifactDbos = GameServer.Database.Artifacts.ToList();
 			m_artifacts = new Dictionary<int, Artifact>();
 			foreach (Artifact artifact in artifactDbos)
 				m_artifacts.Add(artifact.Id, artifact);
 
 			// Load artifact versions.
 
-			var artifactItemDbos = GameServer.Database.SelectAllObjects<ArtifactItem>();
+			var artifactItemDbos = GameServer.Database.ArtifactItems.ToList();
 			m_artifactVersions = new Dictionary<int, List<ArtifactItem>>();
 			List<ArtifactItem> versionList;
 			foreach (var artifactVersion in artifactItemDbos)
@@ -86,7 +86,7 @@ namespace DOL.GS
 
 			// Load artifact bonuses.
 
-			var artifactBonusDbos = GameServer.Database.SelectAllObjects<ArtifactBonus>();
+			var artifactBonusDbos = GameServer.Database.ArtifactBonuses.ToList();
 			m_artifactBonuses = new List<ArtifactBonus>();
 			foreach (ArtifactBonus artifactBonus in artifactBonusDbos)
 				m_artifactBonuses.Add(artifactBonus);
@@ -477,7 +477,7 @@ namespace DOL.GS
 				ItemTemplate itemTemplate;
 				foreach (var version in allVersions)
 				{
-					itemTemplate = GameServer.Database.FindObjectByKey<ItemTemplate>(version.ItemTemplateID);
+					itemTemplate = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id == version.ItemTemplateID);
 
 					if (itemTemplate == null)
 					{
@@ -629,6 +629,22 @@ namespace DOL.GS
 							return artifact.Id;
 
 			return 0;
+		}
+
+		/// <summary>
+		/// Find the matching artifact for this book.
+		/// </summary>
+		/// <param name="bookID"></param>
+		/// <returns></returns>
+		public static Artifact GetArtifactForBook(String bookID)
+		{
+			if (bookID != null)
+				lock (m_artifacts)
+					foreach (Artifact artifact in m_artifacts.Values)
+						if (artifact.BookID == bookID)
+							return artifact;
+
+			return null;
 		}
 
 		/// <summary>

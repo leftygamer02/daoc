@@ -32,7 +32,7 @@ namespace DOL.GS.Quests.Catacombs.Obelisks
 		public SharLabyrinth(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public SharLabyrinth(GamePlayer questingPlayer, DBQuest dbQuest)
+		public SharLabyrinth(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

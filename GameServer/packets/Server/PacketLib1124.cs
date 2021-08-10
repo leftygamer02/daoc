@@ -233,8 +233,8 @@ namespace DOL.GS.PacketHandler
 				}
 				else
 				{
-					Dictionary<int, DOLCharacters> charsBySlot = new Dictionary<int, DOLCharacters>();
-					foreach (DOLCharacters c in m_gameClient.Account.Characters)
+					Dictionary<int, Character> charsBySlot = new Dictionary<int, Character>();
+					foreach (Character c in m_gameClient.Account.Characters)
 					{
 						try
 						{
@@ -242,36 +242,37 @@ namespace DOL.GS.PacketHandler
 						}
 						catch (Exception ex)
 						{
-							log.Error("SendCharacterOverview - Duplicate char in slot? Slot: " + c.AccountSlot + ", Account: " + c.AccountName, ex);
+							log.Error("SendCharacterOverview - Duplicate char in slot? Slot: " + c.AccountSlot + ", Account: " + c.Account.Name, ex);
 						}
 					}
-					var itemsByOwnerID = new Dictionary<string, Dictionary<eInventorySlot, InventoryItem>>();
+					var itemsByOwnerID = new Dictionary<int, Dictionary<eInventorySlot, InventoryItem>>();
 
 					if (charsBySlot.Any())
 					{
-						var filterBySlotPosition = DB.Column("SlotPosition").IsGreaterOrEqualTo((int)eInventorySlot.MinEquipable)
-							.And(DB.Column("SlotPosition").IsLessOrEqualTo((int)eInventorySlot.MaxEquipable));
-						var allItems = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsIn(charsBySlot.Values.Select(c => c.ObjectId)).And(filterBySlotPosition));
+						var allItems = GameServer.Database.InventoryItems.Where(x => x.CharacterID.HasValue &&
+																					charsBySlot.Values.Select(c => c.Id).Contains(x.CharacterID.Value) &&
+																					x.SlotPosition >= (int)eInventorySlot.MinEquipable &&
+																					x.SlotPosition <= (int)eInventorySlot.MaxEquipable);
 
 						foreach (InventoryItem item in allItems)
 						{
 							try
 							{
-								if (!itemsByOwnerID.ContainsKey(item.OwnerID))
-									itemsByOwnerID.Add(item.OwnerID, new Dictionary<eInventorySlot, InventoryItem>());
+								if (!itemsByOwnerID.ContainsKey(item.CharacterID.Value))
+									itemsByOwnerID.Add(item.CharacterID.Value, new Dictionary<eInventorySlot, InventoryItem>());
 
-								itemsByOwnerID[item.OwnerID].Add((eInventorySlot)item.SlotPosition, item);
+								itemsByOwnerID[item.CharacterID.Value].Add((eInventorySlot)item.SlotPosition, item);
 							}
 							catch (Exception ex)
 							{
-								log.Error("SendCharacterOverview - Duplicate item on character? OwnerID: " + item.OwnerID + ", SlotPosition: " + item.SlotPosition + ", Account: " + m_gameClient.Account.Name, ex);
+								log.Error("SendCharacterOverview - Duplicate item on character? OwnerID: " + item.CharacterID + ", SlotPosition: " + item.SlotPosition + ", Account: " + m_gameClient.Account.Name, ex);
 							}
 						}
 					}
 
 					for (int i = firstSlot; i < (firstSlot + 10); i++)
 					{
-						DOLCharacters c = null;
+						Character c = null;
 						if (!charsBySlot.TryGetValue(i, out c))
 						{
 							pak.Fill(0x0, 188);
@@ -280,7 +281,7 @@ namespace DOL.GS.PacketHandler
 						{
 							Dictionary<eInventorySlot, InventoryItem> charItems = null;
 
-							if (!itemsByOwnerID.TryGetValue(c.ObjectId, out charItems))
+							if (!itemsByOwnerID.TryGetValue(c.Id, out charItems))
 								charItems = new Dictionary<eInventorySlot, InventoryItem>();
 
 							byte extensionTorso = 0;
@@ -290,13 +291,13 @@ namespace DOL.GS.PacketHandler
 							InventoryItem item = null;
 
 							if (charItems.TryGetValue(eInventorySlot.TorsoArmor, out item))
-								extensionTorso = item.Extension;
+								extensionTorso = (byte)item.Extension;
 
 							if (charItems.TryGetValue(eInventorySlot.HandsArmor, out item))
-								extensionGloves = item.Extension;
+								extensionGloves = (byte)item.Extension;
 
 							if (charItems.TryGetValue(eInventorySlot.FeetArmor, out item))
-								extensionBoots = item.Extension;
+								extensionBoots = (byte)item.Extension;
 
 							pak.Fill(0x00, 4);//new heading bytes in from 1.99 relocated in 1.104
 							pak.FillString(c.Name, 24);
@@ -314,7 +315,7 @@ namespace DOL.GS.PacketHandler
 							pak.Fill(0x0, 13); //0 String
 
 							string locationDescription = string.Empty;
-							Region region = WorldMgr.GetRegion((ushort)c.Region);
+							Region region = WorldMgr.GetRegion((ushort)c.RegionID);
 							if (region != null)
 							{
 								locationDescription = m_gameClient.GetTranslatedSpotDescription(region, c.Xpos, c.Ypos, c.Zpos);
@@ -334,7 +335,7 @@ namespace DOL.GS.PacketHandler
 							pak.WriteByte((byte)c.Realm);
 							pak.WriteByte((byte)((((c.Race & 0x10) << 2) + (c.Race & 0x0F)) | (c.Gender << 4))); // race max value can be 0x1F
 							pak.WriteShortLowEndian((ushort)c.CurrentModel);
-							pak.WriteByte((byte)c.Region);
+							pak.WriteByte((byte)c.RegionID);
 							if (region == null || (int)m_gameClient.ClientType > region.Expansion)
 								pak.WriteByte(0x00);
 							else
@@ -373,9 +374,9 @@ namespace DOL.GS.PacketHandler
 							InventoryItem arms = null;
 							charItems.TryGetValue(eInventorySlot.ArmsArmor, out arms);
 
-							pak.WriteShortLowEndian((ushort)(helmet != null ? helmet.Model : 0));
-							pak.WriteShortLowEndian((ushort)(gloves != null ? gloves.Model : 0));
-							pak.WriteShortLowEndian((ushort)(boots != null ? boots.Model : 0));
+							pak.WriteShortLowEndian((ushort)(helmet != null ? helmet.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(gloves != null ? gloves.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(boots != null ? boots.ItemTemplate.Model : 0));
 
 							ushort rightHandColor = 0;
 							if (rightHandWeapon != null)
@@ -384,10 +385,10 @@ namespace DOL.GS.PacketHandler
 							}
 							pak.WriteShortLowEndian(rightHandColor);
 
-							pak.WriteShortLowEndian((ushort)(torso != null ? torso.Model : 0));
-							pak.WriteShortLowEndian((ushort)(cloak != null ? cloak.Model : 0));
-							pak.WriteShortLowEndian((ushort)(legs != null ? legs.Model : 0));
-							pak.WriteShortLowEndian((ushort)(arms != null ? arms.Model : 0));
+							pak.WriteShortLowEndian((ushort)(torso != null ? torso.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(cloak != null ? cloak.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(legs != null ? legs.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(arms != null ? arms.ItemTemplate.Model : 0));
 
 							ushort helmetColor = 0;
 							if (helmet != null)
@@ -447,10 +448,10 @@ namespace DOL.GS.PacketHandler
 
 							//weapon models
 
-							pak.WriteShortLowEndian((ushort)(rightHandWeapon != null ? rightHandWeapon.Model : 0));
-							pak.WriteShortLowEndian((ushort)(leftHandWeapon != null ? leftHandWeapon.Model : 0));
-							pak.WriteShortLowEndian((ushort)(twoHandWeapon != null ? twoHandWeapon.Model : 0));
-							pak.WriteShortLowEndian((ushort)(distanceWeapon != null ? distanceWeapon.Model : 0));
+							pak.WriteShortLowEndian((ushort)(rightHandWeapon != null ? rightHandWeapon.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(leftHandWeapon != null ? leftHandWeapon.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(twoHandWeapon != null ? twoHandWeapon.ItemTemplate.Model : 0));
+							pak.WriteShortLowEndian((ushort)(distanceWeapon != null ? distanceWeapon.ItemTemplate.Model : 0));
 
 							if (c.ActiveWeaponSlot == (byte)DOL.GS.GameLiving.eActiveWeaponSlot.TwoHanded)
 							{
@@ -1543,7 +1544,7 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte((byte)items.Count);
 					foreach (InventoryItem item in items)
 					{
-						ushort model = (ushort)(item.Model & 0x1FFF);
+						ushort model = (ushort)(item.ItemTemplate.Model & 0x1FFF);
 						int slot = item.SlotPosition;
 						//model = GetModifiedModel(model);
 						int texture = item.Emblem != 0 ? item.Emblem : item.Color;
@@ -1554,7 +1555,7 @@ namespace DOL.GS.PacketHandler
 							model |= 0x8000;
 						else if ((texture & 0xFF) != 0)
 							model |= 0x4000;
-						if (item.Effect != 0)
+						if (item.ItemTemplate.Effect != 0)
 							model |= 0x2000;
 
 						pak.WriteShort(model);
@@ -1566,8 +1567,8 @@ namespace DOL.GS.PacketHandler
 							pak.WriteShort((ushort)texture);
 						else if ((texture & 0xFF) != 0)
 							pak.WriteByte((byte)texture);
-						if (item.Effect != 0)
-							pak.WriteShort((ushort)item.Effect); // effect changed to short
+						if (item.ItemTemplate.Effect != 0)
+							pak.WriteShort((ushort)item.ItemTemplate.Effect); // effect changed to short
 					}
 				}
 				else
@@ -1671,55 +1672,55 @@ namespace DOL.GS.PacketHandler
 				foreach (InventoryItem item in items)
 				{
 					pak.WriteByte((byte)items.IndexOf(item));
-					pak.WriteByte((byte)item.Level);
+					pak.WriteByte((byte)item.ItemTemplate.Level);
 					int value1; // some object types use this field to display count
 					int value2; // some object types use this field to display count
-					switch (item.Object_Type)
+					switch (item.ItemTemplate.ObjectType)
 					{
 						case (int)eObjectType.Arrow:
 						case (int)eObjectType.Bolt:
 						case (int)eObjectType.Poison:
 						case (int)eObjectType.GenericItem:
-							value1 = item.PackSize;
-							value2 = item.SPD_ABS; break;
+							value1 = item.ItemTemplate.PackSize;
+							value2 = item.ItemTemplate.SPD_ABS; break;
 						case (int)eObjectType.Thrown:
-							value1 = item.DPS_AF;
-							value2 = item.PackSize; break;
+							value1 = item.ItemTemplate.DPS_AF;
+							value2 = item.ItemTemplate.PackSize; break;
 						case (int)eObjectType.Instrument:
-							value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF); // 0x00 = Lute ; 0x01 = Drum ; 0x03 = Flute
+							value1 = (item.ItemTemplate.DPS_AF == 2 ? 0 : item.ItemTemplate.DPS_AF); // 0x00 = Lute ; 0x01 = Drum ; 0x03 = Flute
 							value2 = 0; break; // unused
 						case (int)eObjectType.Shield:
-							value1 = item.Type_Damage;
-							value2 = item.DPS_AF; break;
+							value1 = item.ItemTemplate.TypeDamage;
+							value2 = item.ItemTemplate.DPS_AF; break;
 						case (int)eObjectType.GardenObject:
 						case (int)eObjectType.HouseWallObject:
 						case (int)eObjectType.HouseFloorObject:
 							value1 = 0;
-							value2 = item.SPD_ABS; break;
+							value2 = item.ItemTemplate.SPD_ABS; break;
 						default:
-							value1 = item.DPS_AF;
-							value2 = item.SPD_ABS; break;
+							value1 = item.ItemTemplate.DPS_AF;
+							value2 = item.ItemTemplate.SPD_ABS; break;
 					}
 					pak.WriteByte((byte)value1);
 					pak.WriteByte((byte)value2);
-					if (item.Object_Type == (int)eObjectType.GardenObject)
-						pak.WriteByte((byte)(item.DPS_AF));
+					if (item.ItemTemplate.ObjectType == (int)eObjectType.GardenObject)
+						pak.WriteByte((byte)(item.ItemTemplate.DPS_AF));
 					else
-						pak.WriteByte((byte)(item.Hand << 6));
-					pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
-					pak.WriteByte((byte)(m_gameClient.Player.HasAbilityToUseItem(item.Template) ? 0 : 1));
-					pak.WriteShort((ushort)(item.PackSize > 1 ? item.Weight * item.PackSize : item.Weight));
+						pak.WriteByte((byte)(item.ItemTemplate.Hand << 6));
+					pak.WriteByte((byte)((item.ItemTemplate.TypeDamage > 3 ? 0 : item.ItemTemplate.TypeDamage << 6) | item.ItemTemplate.ObjectType));
+					pak.WriteByte((byte)(m_gameClient.Player.HasAbilityToUseItem(item.ItemTemplate) ? 0 : 1));
+					pak.WriteShort((ushort)(item.ItemTemplate.PackSize > 1 ? item.ItemTemplate.Weight * item.ItemTemplate.PackSize : item.ItemTemplate.Weight));
 					pak.WriteByte((byte)item.ConditionPercent);
 					pak.WriteByte((byte)item.DurabilityPercent);
-					pak.WriteByte((byte)item.Quality);
-					pak.WriteByte((byte)item.Bonus);
-					pak.WriteShort((ushort)item.Model);
+					pak.WriteByte((byte)item.ItemTemplate.Quality);
+					pak.WriteByte((byte)item.ItemTemplate.ItemBonus);
+					pak.WriteShort((ushort)item.ItemTemplate.Model);
 					if (item.Emblem != 0)
 						pak.WriteShort((ushort)item.Emblem);
 					else
 						pak.WriteShort((ushort)item.Color);
-					pak.WriteShort((byte)item.Effect);
-					pak.WriteShort(item.OwnerLot);//lot
+					pak.WriteShort((byte)item.ItemTemplate.Effect);
+					pak.WriteShort((ushort)item.OwnerLot);//lot
 					pak.WriteInt((uint)item.SellPrice);
 
 					if (ServerProperties.Properties.CONSIGNMENT_USE_BP)
@@ -1730,8 +1731,8 @@ namespace DOL.GS.PacketHandler
 
 						if (item.Count > 1)
 							pak.WritePascalString(item.Count + " " + item.Name);
-						else if (item.PackSize > 1)
-							pak.WritePascalString(item.PackSize + " " + item.Name + bpPrice);
+						else if (item.ItemTemplate.PackSize > 1)
+							pak.WritePascalString(item.ItemTemplate.PackSize + " " + item.Name + bpPrice);
 						else
 							pak.WritePascalString(item.Name + bpPrice);
 					}
@@ -1739,8 +1740,8 @@ namespace DOL.GS.PacketHandler
 					{
 						if (item.Count > 1)
 							pak.WritePascalString(item.Count + " " + item.Name);
-						else if (item.PackSize > 1)
-							pak.WritePascalString(item.PackSize + " " + item.Name);
+						else if (item.ItemTemplate.PackSize > 1)
+							pak.WritePascalString(item.ItemTemplate.PackSize + " " + item.Name);
 						else
 							pak.WritePascalString(item.Name);
 					}
@@ -1926,12 +1927,12 @@ namespace DOL.GS.PacketHandler
 						else
 						{
 							int reqLevel = 1;
-							if (sk is Style)
-								reqLevel = ((Style)sk).SpecLevelRequirement;
+							if (sk is Styles.Style)
+								reqLevel = ((Styles.Style)sk).SpecLevelRequirement;
 							else if (sk is Ability)
 								reqLevel = ((Ability)sk).SpecLevelRequirement;
 
-							pak.WriteShortLowEndian((ushort)((byte)reqLevel + (sk is Style ? 512 : 256)));
+							pak.WriteShortLowEndian((ushort)((byte)reqLevel + (sk is Styles.Style ? 512 : 256)));
 							pak.WriteShort((ushort)sk.InternalID); //new 1.112
 							pak.WriteShort(sk.Icon);
 							pak.WritePascalString(sk.Name);
@@ -2061,16 +2062,6 @@ namespace DOL.GS.PacketHandler
 				string name = npc.Name;
 				string guildName = npc.GuildName;
 
-				LanguageDataObject translation = LanguageMgr.GetTranslation(m_gameClient, npc);
-				if (translation != null)
-				{
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).Name))
-						name = ((DBLanguageNPC)translation).Name;
-
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).GuildName))
-						guildName = ((DBLanguageNPC)translation).GuildName;
-				}
-
 				if (name.Length + add.Length + 2 > 47) // clients crash with too long names
 					name = name.Substring(0, 47 - add.Length - 2);
 				if (add.Length > 0)
@@ -2151,24 +2142,6 @@ namespace DOL.GS.PacketHandler
 				else pak.WriteInt(0);
 
 				string name = obj.Name;
-				LanguageDataObject translation = null;
-				if (obj is GameStaticItem)
-				{
-					translation = LanguageMgr.GetTranslation(m_gameClient, (GameStaticItem)obj);
-					if (translation != null)
-					{
-						if (obj is WorldInventoryItem)
-						{
-							//if (!Util.IsEmpty(((DBLanguageItem)translation).Name))
-							//    name = ((DBLanguageItem)translation).Name;
-						}
-						else
-						{
-							if (!Util.IsEmpty(((DBLanguageGameObject)translation).Name))
-								name = ((DBLanguageGameObject)translation).Name;
-						}
-					}
-				}
 				pak.WritePascalString(name.Length > 48 ? name.Substring(0, 48) : name);
 
 				if (obj is IDoor)
@@ -2852,7 +2825,7 @@ namespace DOL.GS.PacketHandler
 			}
 		}
 
-		public virtual void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, DataQuest quest)
+		public virtual void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest)
 		{
 			SendQuestWindow(questNPC, player, quest, true);
 		}
@@ -2861,7 +2834,7 @@ namespace DOL.GS.PacketHandler
 		{
 			SendQuestWindow(questNPC, player, quest, true);
 		}
-		public virtual void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, DataQuest quest)
+		public virtual void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest)
 		{
 			SendQuestWindow(questNPC, player, quest, false);
 		}
@@ -2871,7 +2844,7 @@ namespace DOL.GS.PacketHandler
 			SendQuestWindow(questNPC, player, quest, false);
 		}
 
-		protected virtual void SendQuestWindow(GameNPC questNPC, GamePlayer player, DataQuest quest, bool offer)
+		protected virtual void SendQuestWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest, bool offer)
 		{
 			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.Dialog)))
 			{
@@ -3363,13 +3336,6 @@ namespace DOL.GS.PacketHandler
 
 				string name = siegeWeapon.Name;
 
-				LanguageDataObject translation = LanguageMgr.GetTranslation(m_gameClient, siegeWeapon);
-				if (translation != null)
-				{
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).Name))
-						name = ((DBLanguageNPC)translation).Name;
-				}
-
 				//pak.WritePascalString(name + " (" + siegeWeapon.CurrentState.ToString() + ")");
 				foreach (InventoryItem item in siegeWeapon.Ammo)
 				{
@@ -3380,23 +3346,23 @@ namespace DOL.GS.PacketHandler
 					}
 					pak.WriteByte((byte)siegeWeapon.Ammo.IndexOf(item));
 					pak.WriteShort(0); // unique objectID , can probably be 0
-					pak.WriteByte((byte)item.Level);
+					pak.WriteByte((byte)item.ItemTemplate.Level);
 					pak.WriteByte(0); // value1
 					pak.WriteByte(0); //value2
 					pak.WriteByte(0); // unknown
-					pak.WriteByte((byte)item.Object_Type);
+					pak.WriteByte((byte)item.ItemTemplate.ObjectType);
 					pak.WriteByte(1); // unknown
 					pak.WriteByte(0);//
 					pak.WriteByte((byte)item.Count);
 					//pak.WriteByte((byte)(item.Hand * 64));
-					//pak.WriteByte((byte)((item.Type_Damage * 64) + item.Object_Type));
+					//pak.WriteByte((byte)((item.TypeDamage * 64) + item.ObjectType));
 					//pak.WriteShort((ushort)item.Weight);
 					pak.WriteByte(item.ConditionPercent); // % of con
 					pak.WriteByte(item.DurabilityPercent); // % of dur
-					pak.WriteByte((byte)item.Quality); // % of qua
-					pak.WriteByte((byte)item.Bonus); // % bonus
-					pak.WriteByte((byte)item.BonusLevel); // guessing
-					pak.WriteShort((ushort)item.Model);
+					pak.WriteByte((byte)item.ItemTemplate.Quality); // % of qua
+					pak.WriteByte((byte)item.ItemTemplate.ItemBonus); // % bonus
+					pak.WriteByte((byte)item.ItemTemplate.BonusLevel); // guessing
+					pak.WriteShort((ushort)item.ItemTemplate.Model);
 					pak.WriteByte((byte)item.Extension);
 					pak.WriteShort(0); // unknown
 					pak.WriteByte(4); // unknown flags?
@@ -3625,12 +3591,12 @@ namespace DOL.GS.PacketHandler
 						}
 					}
 
-					foreach (Style st in spec.PretendStylesForLiving(player, player.MaxLevel))
+					foreach (Styles.Style st in spec.PretendStylesForLiving(player, player.MaxLevel))
 					{
 						toAdd.Add(new Tuple<int, int, Skill>((int)st.SkillType, st.InternalID, st));
 					}
 
-					skillDictCache.Add(new Tuple<Specialization, List<Tuple<int, int, Skill>>>(spec, toAdd.OrderBy(e => (e.Item3 is Ability) ? ((Ability)e.Item3).SpecLevelRequirement : (((e.Item3 is Style) ? ((Style)e.Item3).SpecLevelRequirement : e.Item3.Level))).ToList()));
+					skillDictCache.Add(new Tuple<Specialization, List<Tuple<int, int, Skill>>>(spec, toAdd.OrderBy(e => (e.Item3 is Ability) ? ((Ability)e.Item3).SpecLevelRequirement : (((e.Item3 is Styles.Style) ? ((Styles.Style)e.Item3).SpecLevelRequirement : e.Item3.Level))).ToList()));
 				}
 
 
@@ -3747,9 +3713,9 @@ namespace DOL.GS.PacketHandler
 							pakskill.WriteByte((byte)(sp.SkillType == eSkillPage.Songs ? 0xFF : 0xFE)); // line
 							pakskill.WriteShort((ushort)sk.Item2); // ID
 						}
-						else if (sk.Item3 is Style)
+						else if (sk.Item3 is Styles.Style)
 						{
-							Style st = (Style)sk.Item3;
+							Styles.Style st = (Styles.Style)sk.Item3;
 							pakskill.WriteByte((byte)Math.Min(player.MaxLevel, st.SpecLevelRequirement));
 							// tooltip
 							pakskill.WriteShort((ushort)st.Icon);
@@ -3826,9 +3792,9 @@ namespace DOL.GS.PacketHandler
 					if (m_gameClient.CanSendTooltip(28, t.InternalID))
 						SendDelveInfo(DetailDisplayHandler.DelveAbility(m_gameClient, t.InternalID));
 				}
-				else if (t is Style)
+				else if (t is Styles.Style)
 				{
-                    Style s = (Style)t;
+                    Styles.Style s = (Styles.Style)t;
                     if (m_gameClient.CanSendTooltip(25, t.InternalID))
                     {
                         if (s.Procs != null && s.Procs.Count > 0)
@@ -4152,9 +4118,9 @@ namespace DOL.GS.PacketHandler
 							pak.WriteShort(spell.InternalIconID > 0 ? spell.InternalIconID : spell.Icon); // icon
 							pak.WritePascalString(spell.Name);
 						}
-						else if (skill is Style)
+						else if (skill is Styles.Style)
 						{
-							Style style = (Style)skill;
+							Styles.Style style = (Styles.Style)skill;
 							pak.WriteByte((byte)style.SpecLevelRequirement);
 							pak.WriteShort((ushort)style.InternalID); //new 1.112
 							pak.WriteByte((byte)style.SkillType);
@@ -4164,20 +4130,20 @@ namespace DOL.GS.PacketHandler
 
 							switch (style.OpeningRequirementType)
 							{
-								case Style.eOpening.Offensive:
+								case Styles.Style.eOpening.Offensive:
 									pre = (int)style.AttackResultRequirement; // last result of our attack against enemy hit, miss, target blocked, target parried, ...
-									if (style.AttackResultRequirement == Style.eAttackResultRequirement.Style)
+									if (style.AttackResultRequirement == Styles.Style.eAttackResultRequirement.Style)
 									{
 										// get style requirement value... find prerequisite style index from specs beginning...
-										int styleindex = Math.Max(0, usableSkills.FindIndex(it => (it.Item1 is Style) && it.Item1.ID == style.OpeningRequirementValue));
+										int styleindex = Math.Max(0, usableSkills.FindIndex(it => (it.Item1 is Styles.Style) && it.Item1.ID == style.OpeningRequirementValue));
 										int speccount = Math.Max(0, usableSkills.FindIndex(it => (it.Item1 is Specialization) == false));
 										pre |= ((byte)(100 + styleindex - speccount)) << 8;
 									}
 									break;
-								case Style.eOpening.Defensive:
+								case Styles.Style.eOpening.Defensive:
 									pre = 100 + (int)style.AttackResultRequirement; // last result of enemies attack against us hit, miss, you block, you parry, ...
 									break;
-								case Style.eOpening.Positional:
+								case Styles.Style.eOpening.Positional:
 									pre = 200 + style.OpeningRequirementValue;
 									break;
 							}
@@ -4814,11 +4780,11 @@ namespace DOL.GS.PacketHandler
 				return;
 			}
 			pak.WriteShort((ushort)0); // item uniqueID
-			pak.WriteByte((byte)item.Level);
+			pak.WriteByte((byte)item.ItemTemplate.Level);
 
 			int value1; // some object types use this field to display count
 			int value2; // some object types use this field to display count
-			switch (item.Object_Type)
+			switch (item.ItemTemplate.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 					value1 = item.Count & 0xFF;
@@ -4828,19 +4794,19 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.Bolt:
 				case (int)eObjectType.Poison:
 					value1 = item.Count;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 				case (int)eObjectType.Thrown:
-					value1 = item.DPS_AF;
+					value1 = item.ItemTemplate.DPS_AF;
 					value2 = item.Count;
 					break;
 				case (int)eObjectType.Instrument:
-					value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF);
+					value1 = (item.ItemTemplate.DPS_AF == 2 ? 0 : item.ItemTemplate.DPS_AF);
 					value2 = 0;
 					break; // unused
 				case (int)eObjectType.Shield:
-					value1 = item.Type_Damage;
-					value2 = item.DPS_AF;
+					value1 = item.ItemTemplate.TypeDamage;
+					value2 = item.ItemTemplate.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
 				case (int)eObjectType.SpellcraftGem:
@@ -4854,7 +4820,7 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.HouseFloorObject:
 				case (int)eObjectType.GardenObject:
 					value1 = 0;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					/*
 					Value2 byte sets the width, only lower 4 bits 'seem' to be used (so 1-15 only)
 
@@ -4864,27 +4830,27 @@ namespace DOL.GS.PacketHandler
 					break;
 
 				default:
-					value1 = item.DPS_AF;
-					value2 = item.SPD_ABS;
+					value1 = item.ItemTemplate.DPS_AF;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 			}
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (item.Object_Type == (int)eObjectType.GardenObject)
-				pak.WriteByte((byte)(item.DPS_AF));
+			if (item.ItemTemplate.ObjectType == (int)eObjectType.GardenObject)
+				pak.WriteByte((byte)(item.ItemTemplate.DPS_AF));
 			else
-				pak.WriteByte((byte)(item.Hand << 6));
+				pak.WriteByte((byte)(item.ItemTemplate.Hand << 6));
 
-			pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+			pak.WriteByte((byte)((item.ItemTemplate.TypeDamage > 3 ? 0 : item.ItemTemplate.TypeDamage << 6) | item.ItemTemplate.ObjectType));
 			pak.WriteByte(0x00); //unk 1.112
-			pak.WriteShort((ushort)item.Weight);
+			pak.WriteShort((ushort)item.ItemTemplate.Weight);
 			pak.WriteByte(item.ConditionPercent); // % of con
 			pak.WriteByte(item.DurabilityPercent); // % of dur
-			pak.WriteByte((byte)item.Quality); // % of qua
-			pak.WriteByte((byte)item.Bonus); // % bonus
-			pak.WriteByte((byte)item.BonusLevel); // 1.109
-			pak.WriteShort((ushort)item.Model);
+			pak.WriteByte((byte)item.ItemTemplate.Quality); // % of qua
+			pak.WriteByte((byte)item.ItemTemplate.ItemBonus); // % bonus
+			pak.WriteByte((byte)item.ItemTemplate.BonusLevel); // 1.109
+			pak.WriteShort((ushort)item.ItemTemplate.Model);
 			pak.WriteByte((byte)item.Extension);
 			int flag = 0;
 			int emblem = item.Emblem;
@@ -4907,42 +4873,26 @@ namespace DOL.GS.PacketHandler
 			ushort icon2 = 0;
 			string spell_name1 = "";
 			string spell_name2 = "";
-			if (item.Object_Type != (int)eObjectType.AlchemyTincture)
-			{
-				if (item.SpellID > 0/* && item.Charges > 0*/)
+			if (item.ItemTemplate.ObjectType != (int)eObjectType.AlchemyTincture)
+			{				
+				if (item.Spells.Count > 0/* && item.Charges > 0*/)
 				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
+					var spell = item.Spells.FirstOrDefault();
+					if (spell != null)
 					{
-						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
-						foreach (Spell spl in spells)
-						{
-							if (spl.ID == item.SpellID)
-							{
-								flag |= 0x08;
-								icon1 = spl.Icon;
-								spell_name1 = spl.Name; // or best spl.Name ?
-								break;
-							}
-						}
+						flag |= 0x08;
+						icon2 = (ushort)spell.Spell.Icon;
+						spell_name2 = spell.Spell.Name; // or best spl.Name ?
 					}
 				}
-				if (item.SpellID1 > 0/* && item.Charges > 0*/)
+				if (item.Spells.Count > 1/* && item.Charges > 0*/)
 				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
+					var spell = item.Spells.Skip(1).FirstOrDefault();
+					if (spell != null)
 					{
-						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
-						foreach (Spell spl in spells)
-						{
-							if (spl.ID == item.SpellID1)
-							{
-								flag |= 0x10;
-								icon2 = spl.Icon;
-								spell_name2 = spl.Name; // or best spl.Name ?
-								break;
-							}
-						}
+						flag |= 0x10;
+						icon2 = (ushort)spell.Spell.Icon;
+						spell_name2 = spell.Spell.Name; // or best spl.Name ?
 					}
 				}
 			}
@@ -4957,7 +4907,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)icon2);
 				pak.WritePascalString(spell_name2);
 			}
-			pak.WriteShort((ushort)item.Effect); // item effect changed to short
+			pak.WriteShort((ushort)item.ItemTemplate.Effect); // item effect changed to short
 			string name = item.Name;
 			if (item.Count > 1)
 				name = item.Count + " " + name;
@@ -4986,11 +4936,11 @@ namespace DOL.GS.PacketHandler
 			}
 
 			pak.WriteShort((ushort)questID); // need to send an objectID for reward quest delve to work 1.115+
-			pak.WriteByte((byte)item.Level);
+			pak.WriteByte((byte)item.ItemTemplate.Level);
 
 			int value1; // some object types use this field to display count
 			int value2; // some object types use this field to display count
-			switch (item.Object_Type)
+			switch (item.ItemTemplate.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 					value1 = item.Count & 0xFF;
@@ -5000,19 +4950,19 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.Bolt:
 				case (int)eObjectType.Poison:
 					value1 = item.Count;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 				case (int)eObjectType.Thrown:
-					value1 = item.DPS_AF;
+					value1 = item.ItemTemplate.DPS_AF;
 					value2 = item.Count;
 					break;
 				case (int)eObjectType.Instrument:
-					value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF);
+					value1 = (item.ItemTemplate.DPS_AF == 2 ? 0 : item.ItemTemplate.DPS_AF);
 					value2 = 0;
 					break; // unused
 				case (int)eObjectType.Shield:
-					value1 = item.Type_Damage;
-					value2 = item.DPS_AF;
+					value1 = item.ItemTemplate.TypeDamage;
+					value2 = item.ItemTemplate.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
 				case (int)eObjectType.SpellcraftGem:
@@ -5026,7 +4976,7 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.HouseFloorObject:
 				case (int)eObjectType.GardenObject:
 					value1 = 0;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					/*
 					Value2 byte sets the width, only lower 4 bits 'seem' to be used (so 1-15 only)
 
@@ -5036,27 +4986,27 @@ namespace DOL.GS.PacketHandler
 					break;
 
 				default:
-					value1 = item.DPS_AF;
-					value2 = item.SPD_ABS;
+					value1 = item.ItemTemplate.DPS_AF;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 			}
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (item.Object_Type == (int)eObjectType.GardenObject)
-				pak.WriteByte((byte)(item.DPS_AF));
+			if (item.ItemTemplate.ObjectType == (int)eObjectType.GardenObject)
+				pak.WriteByte((byte)(item.ItemTemplate.DPS_AF));
 			else
-				pak.WriteByte((byte)(item.Hand << 6));
+				pak.WriteByte((byte)(item.ItemTemplate.Hand << 6));
 
-			pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+			pak.WriteByte((byte)((item.ItemTemplate.TypeDamage > 3 ? 0 : item.ItemTemplate.TypeDamage << 6) | item.ItemTemplate.ObjectType));
 			pak.WriteByte(0x00); //unk 1.112
-			pak.WriteShort((ushort)item.Weight);
+			pak.WriteShort((ushort)item.ItemTemplate.Weight);
 			pak.WriteByte(item.ConditionPercent); // % of con
 			pak.WriteByte(item.DurabilityPercent); // % of dur
-			pak.WriteByte((byte)item.Quality); // % of qua
-			pak.WriteByte((byte)item.Bonus); // % bonus
-			pak.WriteByte((byte)item.BonusLevel); // 1.109
-			pak.WriteShort((ushort)item.Model);
+			pak.WriteByte((byte)item.ItemTemplate.Quality); // % of qua
+			pak.WriteByte((byte)item.ItemTemplate.ItemBonus); // % bonus
+			pak.WriteByte((byte)item.ItemTemplate.BonusLevel); // 1.109
+			pak.WriteShort((ushort)item.ItemTemplate.Model);
 			pak.WriteByte((byte)item.Extension);
 			int flag = 0;
 			int emblem = item.Emblem;
@@ -5094,43 +5044,22 @@ namespace DOL.GS.PacketHandler
 			ushort icon2 = 0;
 			string spell_name1 = "";
 			string spell_name2 = "";
-			if (item.Object_Type != (int)eObjectType.AlchemyTincture)
-			{
-				if (item.SpellID > 0/* && item.Charges > 0*/)
+			if (item.ItemTemplate.ObjectType != (int)eObjectType.AlchemyTincture)
+			{				
+				if (item.Spells.Count > 0)
 				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
-					{
-						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
-						foreach (Spell spl in spells)
-						{
-							if (spl.ID == item.SpellID)
-							{
-								flag |= 0x08;
-								icon1 = spl.Icon;
-								spell_name1 = spl.Name; // or best spl.Name ?
-								break;
-							}
-						}
-					}
+					var itemSpell = item.Spells.ElementAt(0);
+					flag |= 0x08;
+					icon1 = (ushort)itemSpell.Spell.Icon;
+					spell_name1 = itemSpell.Spell.Name; // or best spl.Name ?
 				}
-				if (item.SpellID1 > 0/* && item.Charges > 0*/)
+
+				if (item.Spells.Count > 1)
 				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
-					{
-						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
-						foreach (Spell spl in spells)
-						{
-							if (spl.ID == item.SpellID1)
-							{
-								flag |= 0x10;
-								icon2 = spl.Icon;
-								spell_name2 = spl.Name; // or best spl.Name ?
-								break;
-							}
-						}
-					}
+					var itemSpell = item.Spells.ElementAt(1);
+					flag |= 0x10;
+					icon2 = (ushort)itemSpell.Spell.Icon;
+					spell_name2 = itemSpell.Spell.Name; // or best spl.Name ?
 				}
 			}
 			pak.WriteByte((byte)flag);
@@ -5144,7 +5073,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)icon2);
 				pak.WritePascalString(spell_name2);
 			}
-			pak.WriteShort((ushort)item.Effect); // changed to short 1.119
+			pak.WriteShort((ushort)item.ItemTemplate.Effect); // changed to short 1.119
 			string name = item.Name;
 			if (item.Count > 1)
 				name = item.Count + " " + name;
@@ -5174,7 +5103,7 @@ namespace DOL.GS.PacketHandler
 			int value1;
 			int value2;
 
-			switch (template.Object_Type)
+			switch (template.ObjectType)
 			{
 				case (int)eObjectType.Arrow:
 				case (int)eObjectType.Bolt:
@@ -5192,7 +5121,7 @@ namespace DOL.GS.PacketHandler
 					value2 = 0;
 					break;
 				case (int)eObjectType.Shield:
-					value1 = template.Type_Damage;
+					value1 = template.TypeDamage;
 					value2 = template.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
@@ -5222,19 +5151,19 @@ namespace DOL.GS.PacketHandler
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (template.Object_Type == (int)eObjectType.GardenObject)
+			if (template.ObjectType == (int)eObjectType.GardenObject)
 				pak.WriteByte((byte)(template.DPS_AF));
 			else
 				pak.WriteByte((byte)(template.Hand << 6));
-			pak.WriteByte((byte)((template.Type_Damage > 3
+			pak.WriteByte((byte)((template.TypeDamage > 3
 				? 0
-				: template.Type_Damage << 6) | template.Object_Type));
+				: template.TypeDamage << 6) | template.ObjectType));
 			pak.Fill(0x00, 1); // 1.109, +1 byte, no clue what this is  - Tolakram
 			pak.WriteShort((ushort)template.Weight);
 			pak.WriteByte(template.BaseConditionPercent);
 			pak.WriteByte(template.BaseDurabilityPercent);
 			pak.WriteByte((byte)template.Quality);
-			pak.WriteByte((byte)template.Bonus);
+			pak.WriteByte((byte)template.ItemBonus);
 			pak.WriteByte((byte)template.BonusLevel); // 1.109
 			pak.WriteShort((ushort)template.Model);
 			pak.WriteByte((byte)template.Extension);
@@ -5801,7 +5730,7 @@ namespace DOL.GS.PacketHandler
 								// some objects use this for count
 								int value1;
 								int value2;
-								switch (item.Object_Type)
+								switch (item.ObjectType)
 								{
 									case (int)eObjectType.Arrow:
 									case (int)eObjectType.Bolt:
@@ -5820,7 +5749,7 @@ namespace DOL.GS.PacketHandler
 										}
 									case (int)eObjectType.Shield:
 										{
-											value1 = item.Type_Damage;
+											value1 = item.TypeDamage;
 											value2 = item.Weight;
 											break;
 										}
@@ -5839,11 +5768,11 @@ namespace DOL.GS.PacketHandler
 								}
 								pak.WriteByte((byte)value1);
 								pak.WriteByte((byte)item.SPD_ABS);
-								if (item.Object_Type == (int)eObjectType.GardenObject)
+								if (item.ObjectType == (int)eObjectType.GardenObject)
 									pak.WriteByte((byte)(item.DPS_AF));
 								else
 									pak.WriteByte((byte)(item.Hand << 6));
-								pak.WriteByte((byte)((item.Type_Damage << 6) | item.Object_Type));
+								pak.WriteByte((byte)((item.TypeDamage << 6) | item.ObjectType));
 								//1 if item cannot be used by your class (greyed out)
 								if (m_gameClient.Player != null && m_gameClient.Player.HasAbilityToUseItem(item))
 									pak.WriteByte(0x00);
@@ -6064,7 +5993,7 @@ namespace DOL.GS.PacketHandler
 							{
 								pak.WriteByte((byte)(itemIndex + 1));
 
-								if (sk is Style)
+								if (sk is Styles.Style)
 								{
 									pak.WriteByte(2);
 								}
@@ -6152,7 +6081,7 @@ namespace DOL.GS.PacketHandler
 							{
 								pak.WriteByte((byte)(itemIndex + 1));
 
-								if (sk is Style)
+								if (sk is Styles.Style)
 								{
 									pak.WriteByte(2);
 								}
@@ -6595,13 +6524,6 @@ namespace DOL.GS.PacketHandler
 
 				string name = obj.Name;
 
-				LanguageDataObject translation = LanguageMgr.GetTranslation(m_gameClient, obj);
-				if (translation != null)
-				{
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).Name))
-						name = ((DBLanguageNPC)translation).Name;
-				}
-
 				pak.WritePascalString(name);/*pak.WritePascalString(obj.Name);*/
 				pak.WriteByte(0); // trailing ?
 				SendTCP(pak);
@@ -6734,16 +6656,6 @@ namespace DOL.GS.PacketHandler
 
 				string name = npc.Name;
 				string guildName = npc.GuildName;
-
-				LanguageDataObject translation = LanguageMgr.GetTranslation(m_gameClient, npc);
-				if (translation != null)
-				{
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).Name))
-						name = ((DBLanguageNPC)translation).Name;
-
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).GuildName))
-						guildName = ((DBLanguageNPC)translation).GuildName;
-				}
 
 				if (name.Length + add.Length + 2 > 47) // clients crash with too long names
 					name = name.Substring(0, 47 - add.Length - 2);

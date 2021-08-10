@@ -118,7 +118,7 @@ namespace DOL.GS.Commands
                         if (player == null)
                             player = client.Player;
 
-                        var character = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(args[2]));
+                        var character = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(args[2]));
 
                         if (character != null)
                         {
@@ -2135,7 +2135,7 @@ namespace DOL.GS.Commands
                         {
                             string characterNames = string.Empty;
 
-                            foreach (DOLCharacters acctChar in targetClient.Account.Characters)
+                            foreach (Character acctChar in targetClient.Account.Characters)
                             {
                                 if (acctChar != null)
                                     characterNames += acctChar.Name + " " + acctChar.LastName + "\n";
@@ -2277,7 +2277,7 @@ namespace DOL.GS.Commands
 
 				foreach (InventoryItem item in player.Inventory.EquippedItems)
 				{
-					text.Add("     [" + GlobalConstants.SlotToName(item.Item_Type) + "] " + item.Name + " (" + item.Id_nb + ")");
+					text.Add("     [" + GlobalConstants.SlotToName(item.ItemType) + "] " + item.Name + " (" + item.Id + ")");
 				}
 				text.Add(" ");
 			}
@@ -2291,7 +2291,7 @@ namespace DOL.GS.Commands
 					if (item.SlotPosition >= (int)eInventorySlot.FirstBackpack &&
 						item.SlotPosition <= (int)eInventorySlot.LastBackpack)
 					{
-						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id_nb + ")");
+						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id + ")");
 					}
 				}
 			}
@@ -2304,7 +2304,7 @@ namespace DOL.GS.Commands
 				{
 					if (item.SlotPosition >= (int)eInventorySlot.FirstVault && item.SlotPosition <= (int)eInventorySlot.LastVault)
 					{
-						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id_nb + ")");
+						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id + ")");
 					}
 				}
 			}
@@ -2318,7 +2318,7 @@ namespace DOL.GS.Commands
 					if (item.SlotPosition >= (int)eInventorySlot.HouseVault_First &&
 						item.SlotPosition <= (int)eInventorySlot.HouseVault_Last)
 					{
-						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id_nb + ")");
+						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id + ")");
 					}
 				}
 			}
@@ -2332,7 +2332,7 @@ namespace DOL.GS.Commands
 					if (item.SlotPosition >= (int)eInventorySlot.Consignment_First &&
 						item.SlotPosition <= (int)eInventorySlot.Consignment_Last)
 					{
-						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id_nb + ")");
+						text.Add(item.Count.ToString("000") + " " + item.Name + " (" + item.Id + ")");
 					}
 				}
 			}
@@ -2419,7 +2419,7 @@ namespace DOL.GS.Commands
 			{
 				text.Add("  - Master Levels :  Not Started");
 			}
-			text.Add("  - Craftingskill : " + player.CraftingPrimarySkill + "");
+			text.Add("  - Craftingskill : " + player.PrimaryCraftingSkill + "");
 			text.Add("  - Money : " + Money.GetString(player.GetCurrentMoney()) + "");
 			text.Add("  - Model ID : " + player.Model);
 			text.Add("  - Region OID : " + player.ObjectID);

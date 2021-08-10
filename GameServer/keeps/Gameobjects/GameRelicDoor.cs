@@ -233,9 +233,9 @@ namespace DOL.GS.Keeps
 		/// load the keep door object from DB object
 		/// </summary>
 		/// <param name="obj"></param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
-			DBDoor door = obj as DBDoor;
+			var door = obj as Door;
 			if (door == null)
 				return;
 			base.LoadFromDatabase(obj);

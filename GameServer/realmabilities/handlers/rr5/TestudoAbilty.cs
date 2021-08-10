@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class TestudoAbility : RR5RealmAbility
 	{
-		public TestudoAbility(DBAbility dba, int level) : base(dba, level) { }
+		public TestudoAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action
@@ -24,7 +24,7 @@ namespace DOL.GS.RealmAbilities
 			InventoryItem shield = living.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 			if (shield == null)
 				return;
-			if (shield.Object_Type != (int)eObjectType.Shield)
+			if (shield.ObjectType != (int)eObjectType.Shield)
 				return;
 			if (living.TargetObject == null)
 				return;

@@ -18,6 +18,7 @@
  */
 using System;
 using Atlas.DataLayer.Models;
+using Atlas.DataLayer;
 
 namespace DOL.GS.Movement
 {

@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class CombatAwarenessAbility : RR5RealmAbility
 	{
-		public CombatAwarenessAbility(DBAbility dba, int level) : base(dba, level) { }
+		public CombatAwarenessAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

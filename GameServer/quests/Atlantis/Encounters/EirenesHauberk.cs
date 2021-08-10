@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
         public EirenesHauberk(GamePlayer questingPlayer)
             : base(questingPlayer) { }
 
-        public EirenesHauberk(GamePlayer questingPlayer, DBQuest dbQuest)
+        public EirenesHauberk(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
             : base(questingPlayer, dbQuest) { }
 
         /// <summary>

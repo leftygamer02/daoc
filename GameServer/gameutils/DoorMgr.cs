@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -46,19 +47,19 @@ namespace DOL.GS
 		/// </summary>
 		public static bool Init()
 		{
-			var dbdoors = GameServer.Database.SelectAllObjects<DBDoor>();
-			foreach (DBDoor door in dbdoors)
+			var dbdoors = GameServer.Database.Doors.ToList();
+			foreach (Door door in dbdoors)
 			{
 				if (!LoadDoor(door))
 				{
-					log.Error("Unable to load door id " + door.ObjectId + ", correct your database");
+					log.Error("Unable to load door id " + door.Id + ", correct your database");
 					// continue loading, no need to stop server for one bad door!
 				}
 			}
 			return true;
 		}
 
-		public static bool LoadDoor(DBDoor door)
+		public static bool LoadDoor(Door door)
 		{
 			IDoor mydoor = null;
 			ushort zone = (ushort)(door.InternalID / 1000000);

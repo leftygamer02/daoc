@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class SecondWindAbility : TimedRealmAbility
 	{
-		public SecondWindAbility(DBAbility dba, int level) : base(dba, level) { }
+		public SecondWindAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

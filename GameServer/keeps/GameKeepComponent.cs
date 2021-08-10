@@ -257,14 +257,14 @@ namespace DOL.GS.Keeps
 				// Battlegrounds, ignore all but GameKeepDoor
 				whereClause = whereClause.And(DB.Column("ClassType").IsEqualTo("DOL.GS.Keeps.GameKeepDoor"));
 			}
-			var DBPositions = DOLDB<DBKeepPosition>.SelectObjects(whereClause);
+			var DBPositions = DOLDB<KeepPosition>.SelectObjects(whereClause);
 
-			foreach (DBKeepPosition position in DBPositions)
+			foreach (KeepPosition position in DBPositions)
 			{
-				DBKeepPosition[] list = this.Positions[position.TemplateID] as DBKeepPosition[];
+				KeepPosition[] list = this.Positions[position.TemplateID] as KeepPosition[];
 				if (list == null)
 				{
-					list = new DBKeepPosition[4];
+					list = new KeepPosition[4];
 					this.Positions[position.TemplateID] = list;
 				}
 
@@ -277,11 +277,11 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public virtual void FillPositions()
 		{
-			foreach (DBKeepPosition[] positionGroup in Positions.Values)
+			foreach (KeepPosition[] positionGroup in Positions.Values)
 			{
 				for (int i = this.Height; i >= 0; i--)
 				{
-					if (positionGroup[i] is DBKeepPosition position)
+					if (positionGroup[i] is KeepPosition position)
 					{
 						bool create = false;
 						string sKey = position.TemplateID + ID;
@@ -392,9 +392,9 @@ namespace DOL.GS.Keeps
 								log.Warn($"FillPositions(): Keep {Keep.KeepID} already has a {position.ClassType} assigned to Position {position.ObjectId} on Component {InternalID}");
 					}
 						break; // We found the highest item for that position, move onto the next one
-					}// if (positionGroup[i] is DBKeepPosition position)
+					}// if (positionGroup[i] is KeepPosition position)
 				}// for (int i = this.Height; i >= 0; i--)
-			}// foreach (DBKeepPosition[] positionGroup in this.Positions.Values)
+			}// foreach (KeepPosition[] positionGroup in this.Positions.Values)
 
 			foreach (var guard in Keep.Guards.Values)
 			{
@@ -451,13 +451,13 @@ namespace DOL.GS.Keeps
 
 			if (New)
 			{
-				GameServer.Database.AddObject(obj);
+				GameServer.Instance.SaveDataObject(obj);
 				InternalID = obj.ObjectId;
 				log.DebugFormat("Added new component {0} for keep ID {1}, skin {2}, health {3}", ID, Keep.KeepID, Skin, Health);
 			}
 			else
 			{
-				GameServer.Database.SaveObject(obj);
+				GameServer.Instance.SaveDataObject(obj);
 			}
 			base.SaveIntoDatabase();
 		}

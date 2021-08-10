@@ -79,6 +79,7 @@ namespace DOL.GS
 		protected int m_tetherRange;
 		protected bool m_replaceMobValues;
 		protected byte m_visibleActiveWeaponSlot;
+		protected int m_realm;
 
 		/// <summary>
 		/// Constructs a new NpcTemplate
@@ -188,7 +189,8 @@ namespace DOL.GS
 			m_bodyType = (ushort)data.BodyType;
 			m_maxdistance = data.MaxDistance;
 			m_tetherRange = data.TetherRange;
-			m_visibleActiveWeaponSlot = (byte)data.VisibleWeaponSlots;			
+			m_visibleActiveWeaponSlot = (byte)data.VisibleWeaponSlots;
+			m_realm = data.Realm;
 		}
 
 
@@ -229,6 +231,7 @@ namespace DOL.GS
 			m_templateId = 0;
 			m_tetherRange = mob.TetherRange;
 			m_visibleActiveWeaponSlot = mob.VisibleActiveWeaponSlots;
+			m_realm = mob.Realm;
 			
 			if ( mob.Abilities != null && mob.Abilities.Count > 0 )
 			{
@@ -656,6 +659,12 @@ namespace DOL.GS
 		public byte VisibleActiveWeaponSlot {
 			get { return m_visibleActiveWeaponSlot; }
 			set { m_visibleActiveWeaponSlot = value; }
+		}
+
+		public int Realm
+		{
+			get { return m_realm; }
+			set { m_realm = value; }
 		}
 
 		public virtual void SaveIntoDatabase()

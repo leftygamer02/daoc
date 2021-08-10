@@ -61,7 +61,7 @@ namespace DOL.GS
 
 		public override int GetSecondaryCraftingSkillMinimumLevel(Recipe recipe)
 		{
-			switch(recipe.Product.Object_Type)
+			switch(recipe.Product.ObjectType)
 			{
 				case (int)eObjectType.Studded:
 				case (int)eObjectType.Chain:

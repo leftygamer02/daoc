@@ -68,7 +68,7 @@ namespace DOL.GS.DatabaseConverters
 								template.Charges = 0;
 								template.PoisonMaxCharges = template.MaxCharges;
 								template.MaxCharges = 0;
-								GameServer.Database.SaveObject(template);
+								GameServer.Instance.SaveDataObject(template);
 								count++;
 								break;
 							}
@@ -101,7 +101,7 @@ namespace DOL.GS.DatabaseConverters
 									template.Charges = 0;
 									template.PoisonMaxCharges = template.MaxCharges;
 									template.MaxCharges = 0;
-									GameServer.Database.SaveObject(template);
+									GameServer.Instance.SaveDataObject(template);
 									count++;
 									break;
 								}

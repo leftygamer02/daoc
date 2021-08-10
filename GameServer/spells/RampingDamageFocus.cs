@@ -241,7 +241,7 @@ namespace DOL.GS.Spells
 
 		private ISpellHandler CreateSnare()
 		{
-			DBSpell dbSpell = new DBSpell();
+			Atlas.DataLayer.Models.Spell dbSpell = new Atlas.DataLayer.Models.Spell();
 			dbSpell.ClientEffect = Spell.ClientEffect;
 			dbSpell.Icon = Spell.Icon;
 			dbSpell.Type = "SpeedDecrease";

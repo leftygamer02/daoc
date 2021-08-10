@@ -53,7 +53,7 @@ namespace DOL.GS.DatabaseConverters
 			foreach (Mob mob in mobs)
 			{
 				mob.ClassType = "DOL.GS.GameNPC";
-				GameServer.Database.SaveObject(mob);
+				GameServer.Instance.SaveDataObject(mob);
 				count++;
 			}
 

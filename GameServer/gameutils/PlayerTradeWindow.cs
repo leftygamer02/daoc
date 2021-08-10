@@ -290,7 +290,7 @@ namespace DOL.GS
                 {
                     foreach (InventoryItem i in (ArrayList)m_owner.TradeWindow.TradeItems.Clone())
                     {
-                        if (i.Object_Type == (int)eObjectType.AlchemyTincture)
+                        if (i.ObjectType == (int)eObjectType.AlchemyTincture)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                             {
@@ -298,7 +298,7 @@ namespace DOL.GS
                                 break;
                             }
                         }
-						else if (i.Object_Type == (int)eObjectType.SpellcraftGem)
+						else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
 						{
 							if (m_owner.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
 							{
@@ -487,13 +487,13 @@ namespace DOL.GS
                     // --------------------------------------------------------------
                     // Luhz Crafting Update:
                     // Players may now have any, and all, "primary" crafting skills.
-                    // AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(crafter.CraftingPrimarySkill);
+                    // AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(crafter.PrimaryCraftingSkill);
                     AbstractCraftingSkill skill = null;
                     lock (crafter.TradeWindow.Sync)
                     {
                         foreach (InventoryItem i in (ArrayList)crafter.TradeWindow.TradeItems.Clone())
                         {
-                            if (i.Object_Type == (int)eObjectType.AlchemyTincture)
+                            if (i.ObjectType == (int)eObjectType.AlchemyTincture)
                             {
                                 if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                                 {
@@ -501,7 +501,7 @@ namespace DOL.GS
                                     break;
                                 }
                             }
-                            else if (i.Object_Type == (int)eObjectType.SpellcraftGem)
+                            else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
                             {
                                 if (crafter.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
                                 {
@@ -581,7 +581,7 @@ namespace DOL.GS
 							if (!m_owner.Inventory.RemoveTradeItem(item))
 							{
 								if (logTrade)
-									GameServer.Instance.LogGMAction("   NOTItem: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id_nb + ")");
+									GameServer.Instance.LogGMAction("   NOTItem: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
 
 								//BOT.Ban(m_owner, "Trade Hack");
 								//BOT.Ban(partner, "Trade Hack");
@@ -597,7 +597,7 @@ namespace DOL.GS
 							if (!partner.Inventory.RemoveTradeItem(item))
 							{
 								if (logTrade)
-									GameServer.Instance.LogGMAction("   NOTItem: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id_nb + ")");
+									GameServer.Instance.LogGMAction("   NOTItem: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
 
 								//BOT.Ban(m_owner, "Trade Hack");
 								//BOT.Ban(partner, "Trade Hack");
@@ -627,14 +627,14 @@ namespace DOL.GS
 
 						if (!tradeSuccess)
 						{
-							log.Error("Trade item was not added to Partner first free slot.  Owner = " + m_owner.Name + ", Partner = " + partner.Name + "; Item = " + item.Id_nb);
+							log.Error("Trade item was not added to Partner first free slot.  Owner = " + m_owner.Name + ", Partner = " + partner.Name + "; Item = " + item.Id);
 						}
 						else
 						{
                             InventoryLogging.LogInventoryAction(m_owner, partner, eInventoryActionType.Trade, item.Template, item.Count);
 						    if (logTrade)
 						    {
-						        GameServer.Instance.LogGMAction("   Item: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id_nb + ")");
+						        GameServer.Instance.LogGMAction("   Item: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
 						    }
 						}
 					}
@@ -659,14 +659,14 @@ namespace DOL.GS
 
 						if (!tradeSuccess)
 						{
-							log.Error("Trade item was not added to Owner first free slot.  Owner = " + m_owner.Name + ", Partner = " + partner.Name + "; Item = " + item.Id_nb);
+							log.Error("Trade item was not added to Owner first free slot.  Owner = " + m_owner.Name + ", Partner = " + partner.Name + "; Item = " + item.Id);
 						}
 						else
 						{
                             InventoryLogging.LogInventoryAction(partner, m_owner, eInventoryActionType.Trade, item.Template, item.Count);
 						    if (logTrade)
 						    {
-						        GameServer.Instance.LogGMAction("   Item: " + partner.Name + "(" + partner.Client.Account.Name + ") -> " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") : " + item.Name + "(" + item.Id_nb + ")");
+						        GameServer.Instance.LogGMAction("   Item: " + partner.Name + "(" + partner.Client.Account.Name + ") -> " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
 						    }
 						}
 					}

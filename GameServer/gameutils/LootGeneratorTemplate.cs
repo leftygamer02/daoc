@@ -47,13 +47,13 @@ namespace DOL.GS
 		/// Map holding a list of ItemTemplateIDs for each TemplateName
 		/// 1:n mapping between loottemplateName and loottemplate entries
 		/// </summary>
-		protected static Dictionary<string, Dictionary<string, LootTemplate>> m_lootTemplates = null;
+		protected static Dictionary<int, Dictionary<int, LootTableItem>> m_lootTemplates = null;
 
 		/// <summary>
 		/// Map holding the corresponding LootTemplateName for each MobName
 		/// 1:n Mapping between Mob and LootTemplate
 		/// </summary>
-		protected static Dictionary<string, List<MobXLootTemplate>> m_mobXLootTemplates = null;
+		protected static Dictionary<int, LootTable> m_mobXLootTemplates = null;
 
 		/// <summary>
 		/// Construct a new templategenerate and load its values from database.
@@ -89,7 +89,7 @@ namespace DOL.GS
 					{
 						// TemplateName (typically the mob name), ItemTemplateID, Chance
 						dbLootTemplates = GameServer.Database.SelectAllObjects<LootTemplate>();
-						itemtemplates = GameServer.Database.SelectAllObjects<ItemTemplate>().ToDictionary(k => k.Id_nb.ToLower());
+						itemtemplates = GameServer.Database.SelectAllObjects<ItemTemplate>().ToDictionary(k => k.Id.ToLower());
 					}
 					catch (Exception e)
 					{
@@ -380,14 +380,14 @@ namespace DOL.GS
 		/// <param name="lootList">List to hold loot.</param>
 		/// <param name="player">Player used to determine realm</param>
 		/// <returns>lootList (for readability)</returns>
-		private LootList GenerateLootFromMobXLootTemplates(MobXLootTemplate mobXLootTemplates, List<LootTemplate> lootTemplates, LootList lootList, GamePlayer player)
+		private LootList GenerateLootFromMobXLootTemplates(LootTable mobXLootTemplates, List<LootTableItem> lootTemplates, LootList lootList, GamePlayer player)
 		{
 			if (mobXLootTemplates == null || lootTemplates == null || player == null)
 				return lootList;
 
 			// Using Name + Realm (if ALLOW_CROSS_REALM_ITEMS) for the key to try and prevent duplicate drops
 
-			Dictionary<string, LootTemplate> templateList = null;
+			Dictionary<string, LootTableItem> templateList = null;
 
 			if (m_lootTemplates.ContainsKey(mobXLootTemplates.LootTemplateName.ToLower()))
 			{

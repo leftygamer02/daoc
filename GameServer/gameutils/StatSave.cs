@@ -23,7 +23,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Atlas.DataLayer.Models;
-using DOL.Database.Attributes;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -153,8 +152,8 @@ namespace DOL.GS.GameEvents
 				newstat.Upload = (int)outRate/1024;
 				newstat.Download = (int)inRate / 1024;
 				newstat.Memory = totalmem / 1024;
-				GameServer.Database.AddObject(newstat);
-				GameServer.Database.SaveObject(newstat);
+				GameServer.Instance.SaveDataObject(newstat);
+				GameServer.Instance.SaveDataObject(newstat);
 			}
 			catch (Exception e)
 			{

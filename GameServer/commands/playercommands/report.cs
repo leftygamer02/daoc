@@ -87,7 +87,7 @@ namespace DOL.GS.Commands
 			
 			report.Message = message;
 			report.Submitter = client.Player.Name + " [" + client.Account.Name + "]";
-			GameServer.Database.AddObject(report);
+			GameServer.Instance.SaveDataObject(report);
 			client.Player.Out.SendMessage("Report submitted, if this is not a bug report it will be ignored!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 			if (ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES.Trim() != "")

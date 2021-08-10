@@ -77,7 +77,7 @@ namespace DOL.GS
 
 			if (item.SalvageYieldID == 0)
 			{
-				whereClause = DB.Column("ObjectType").IsEqualTo(item.Object_Type).And(DB.Column("SalvageLevel").IsEqualTo(salvageLevel));
+				whereClause = DB.Column("ObjectType").IsEqualTo(item.ObjectType).And(DB.Column("SalvageLevel").IsEqualTo(salvageLevel));
 			}
 			else
 			{
@@ -98,8 +98,8 @@ namespace DOL.GS
 
 				if (material == null)
 				{
-					player.Out.SendMessage("Can't find material (" + material.Id_nb + ") needed to salvage this item!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-					log.ErrorFormat("Salvage Error for ID: {0}:  Material not found: {1}", salvageYield.ID, material.Id_nb);
+					player.Out.SendMessage("Can't find material (" + material.Id + ") needed to salvage this item!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					log.ErrorFormat("Salvage Error for ID: {0}:  Material not found: {1}", salvageYield.ID, material.Id);
 				}
 			}
 
@@ -113,7 +113,7 @@ namespace DOL.GS
 				else if (salvageYield == null)
 				{
 					player.Out.SendMessage("Salvage recipe not found for this item.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					log.ErrorFormat("Salvage Lookup Error: ObjectType: {0}, Item: {1}", item.Object_Type, item.Name);
+					log.ErrorFormat("Salvage Lookup Error: ObjectType: {0}, Item: {1}", item.ObjectType, item.Name);
 				}
 				return 0;
 			}
@@ -181,7 +181,7 @@ namespace DOL.GS
 				return 1;
             }
 
-			var rawMaterials = DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(recipe.Id_nb));
+			var rawMaterials = DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(recipe.Id));
 
 			if (rawMaterials == null || rawMaterials.Count == 0)
             {
@@ -275,7 +275,7 @@ namespace DOL.GS
 				foreach (InventoryItem item in player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
 				{
 					if (item == null) continue;
-					if (item.Id_nb != rawMaterial.Id_nb) continue;
+					if (item.Id != rawMaterial.Id) continue;
 					if (item.Count >= item.MaxCount) continue;
 
 					int countFree = item.MaxCount - item.Count;
@@ -393,7 +393,7 @@ namespace DOL.GS
 		#region Calcul functions
 
         /// <summary>
-        /// Calculate the count per Object_Type
+        /// Calculate the count per ObjectType
         /// </summary>
         public static int GetCountForSalvage(InventoryItem item, ItemTemplate rawMaterial)
         {
@@ -404,7 +404,7 @@ namespace DOL.GS
 
             #region Weapons
 
-            switch ((eObjectType)item.Object_Type)
+            switch ((eObjectType)item.ObjectType)
             {
                 case eObjectType.RecurvedBow:
                 case eObjectType.CompositeBow:
@@ -450,7 +450,7 @@ namespace DOL.GS
                     }
                     break;
                 case eObjectType.Shield:
-                    switch (item.Type_Damage)
+                    switch (item.TypeDamage)
                     {
                         case 1:
                             maxCount += 5;
@@ -467,7 +467,7 @@ namespace DOL.GS
                     }
                     break;
                 case eObjectType.Instrument:
-                    switch (item.Type_Damage)
+                    switch (item.TypeDamage)
                     {
                         case 1:
                             maxCount += 5;
@@ -496,7 +496,7 @@ namespace DOL.GS
                 case eObjectType.Scale:
                 case eObjectType.Chain:
                 case eObjectType.Plate:
-                    switch (item.Item_Type)
+                    switch (item.ItemType)
                     {
                         case Slot.HELM:
                             maxCount += 12;

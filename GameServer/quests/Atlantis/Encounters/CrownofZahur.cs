@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public CrownofZahur(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public CrownofZahur(GamePlayer questingPlayer, DBQuest dbQuest)
+        public CrownofZahur(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

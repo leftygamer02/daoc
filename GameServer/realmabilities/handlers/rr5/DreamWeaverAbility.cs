@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class DreamweaverAbility : RR5RealmAbility
 	{
-		public DreamweaverAbility(DBAbility dba, int level) : base(dba, level) { }
+		public DreamweaverAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

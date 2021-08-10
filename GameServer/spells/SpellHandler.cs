@@ -275,7 +275,7 @@ namespace DOL.GS.Spells
 		{
 			InventoryItem instrument = Caster.AttackWeapon;
 			// From patch 1.97:  Flutes, Lutes, and Drums will now be able to play any song type, and will no longer be limited to specific songs.
-			if (instrument == null || instrument.Object_Type != (int)eObjectType.Instrument ) // || (instrument.DPS_AF != 4 && instrument.DPS_AF != m_spell.InstrumentRequirement))
+			if (instrument == null || instrument.ObjectType != (int)eObjectType.Instrument ) // || (instrument.DPS_AF != 4 && instrument.DPS_AF != m_spell.InstrumentRequirement))
 			{
 				return false;
 			}
@@ -4009,7 +4009,7 @@ namespace DOL.GS.Spells
 		#endregion
 
 		#region saved effects
-		public virtual PlayerXEffect GetSavedEffect(GameSpellEffect effect)
+		public virtual PlayerEffect GetSavedEffect(GameSpellEffect effect)
 		{
 			return null;
 		}

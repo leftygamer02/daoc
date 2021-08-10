@@ -42,9 +42,9 @@ namespace DOL.GS.DatabaseConverters
 			log.Info("Database Version 5 Convert Started");
 			log.Info("This fixes some errors with the area classtypes");
 
-			var objs = GameServer.Database.SelectAllObjects<DBArea>();
+			var objs = GameServer.Database.SelectAllObjects<Atlas.DataLayer.Models.Area>();
 			int count = 0;
-			foreach (DBArea area in objs)
+			foreach (Atlas.DataLayer.Models.Area area in objs)
 			{
 				string orig = area.ClassType;
 				if (area.ClassType == "DOL.GS.Area.Circle")
@@ -56,7 +56,7 @@ namespace DOL.GS.DatabaseConverters
 				if (area.ClassType != orig)
 				{
 					count++;
-					GameServer.Database.SaveObject(area);
+					GameServer.Instance.SaveDataObject(area);
 				}
 			}
 

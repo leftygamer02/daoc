@@ -9,7 +9,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class SpeedOfSoundAbility : TimedRealmAbility
 	{
-		public SpeedOfSoundAbility(DBAbility dba, int level) : base(dba, level) { }
+		public SpeedOfSoundAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		int m_range = 2000;
 		int m_duration = 1;

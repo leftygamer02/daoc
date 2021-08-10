@@ -106,7 +106,7 @@ namespace DOL.GS.Quests.Atlantis
 			SetCustomProperty("SchName", scholarName);
 		}
 
-		public ArtifactTurnInQuest(GamePlayer questingPlayer, DBQuest dbQuest)
+		public ArtifactTurnInQuest(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest)
 		{
 
@@ -302,14 +302,14 @@ namespace DOL.GS.Quests.Atlantis
 			if (Step == 0)
 			{
 				//Lets see if they gave us a valid artifact
-				string ArtID = ArtifactMgr.GetArtifactIDFromItemID(item.Id_nb);
+				string ArtID = ArtifactMgr.GetArtifactIDFromItemID(item.Id);
 				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 				//If this artifact has more than one option for them, give them the quest
 				if (versions != null && item != null && versions.Count > 1 && RemoveItem(player, item))
 				{
 					m_artifactID = ArtID;
 					SetCustomProperty("Art", ArtifactID);
-					SetCustomProperty("Id_nb", item.Id_nb);
+					SetCustomProperty("Id_nb", item.Id);
 					SetCustomProperty("AXP", (item as InventoryArtifact).Experience.ToString());
 					SetCustomProperty("ALevel", (item as InventoryArtifact).ArtifactLevel.ToString());
 

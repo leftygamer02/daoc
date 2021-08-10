@@ -8,7 +8,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class SerenityAbility : RAPropertyEnhancer
 	{
-		public SerenityAbility(DBAbility dba, int level) : base(dba, level, eProperty.PowerRegenerationRate) { }
+		public SerenityAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.PowerRegenerationRate) { }
 
 		public override int GetAmountForLevel(int level)
 		{

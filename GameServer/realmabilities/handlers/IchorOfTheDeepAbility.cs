@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class IchorOfTheDeepAbility : TimedRealmAbility
 	{
-		public IchorOfTheDeepAbility(DBAbility dba, int level) : base(dba, level) { }
+		public IchorOfTheDeepAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		private RegionTimer m_expireTimerID;
 		private RegionTimer m_rootExpire;

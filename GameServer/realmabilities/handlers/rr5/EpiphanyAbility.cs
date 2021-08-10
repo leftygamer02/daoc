@@ -8,7 +8,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class EpiphanyAbility : RR5RealmAbility
 	{
-		public EpiphanyAbility(DBAbility dba, int level) : base(dba, level) { }
+		public EpiphanyAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

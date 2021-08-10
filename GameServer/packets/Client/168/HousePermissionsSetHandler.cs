@@ -48,7 +48,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				return;
 
 			// read in the permission values
-			DBHousePermissions permission = house.PermissionLevels[level];
+			DbHousePermissions permission = house.PermissionLevels[level];
 
 			permission.CanEnterHouse = (packet.ReadByte() != 0);
 			permission.Vault1 = (byte) packet.ReadByte();
@@ -67,7 +67,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			int unk2 = (byte) packet.ReadByte();
 
 			// save the updated permission
-			GameServer.Database.SaveObject(permission);
+			GameServer.Instance.SaveDataObject(permission);
 		}
 	}
 }

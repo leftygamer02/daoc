@@ -19,8 +19,9 @@
 namespace DOL.GS.Spells
 {
     using System;
+    using System.Linq;
     using System.Collections;
-    using Database;
+    using Atlas.DataLayer.Models;
     using Events;
 
     /// <summary>
@@ -33,10 +34,10 @@ namespace DOL.GS.Spells
 
 		private ItemTemplate _artefJavelin;
 
-        public GoldenSpearJavelin(GameLiving caster, Spell spell, SpellLine line)
+        public GoldenSpearJavelin(GameLiving caster, GS.Spell spell, GS.SpellLine line)
             : base(caster, spell, line)
         {
-            _artefJavelin = GameServer.Database.FindObjectByKey<ItemTemplate>("Artef_Javelin") ?? Javelin;
+            _artefJavelin = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Artef_Javelin") ?? Javelin;
             items.Add (GameInventoryItem.Create(_artefJavelin));
         }
 
@@ -44,19 +45,19 @@ namespace DOL.GS.Spells
         {
             get
             {
-                _artefJavelin = (ItemTemplate) GameServer.Database.FindObjectByKey<ItemTemplate>("Artef_Javelin");
+                _artefJavelin = (ItemTemplate) GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Artef_Javelin");
                 if(_artefJavelin == null)
                 {
                     if(log.IsWarnEnabled) log.Warn("Could not find Artef_Javelin, loading it ...");
                     _artefJavelin = new ItemTemplate();
-                    _artefJavelin.Id_nb = "Artef_Javelin";
+                    _artefJavelin.KeyName = "Artef_Javelin";
                     _artefJavelin.Name = "Golden Javelin";
                     _artefJavelin.Level = 50;
                     _artefJavelin.MaxDurability = 50000;
                     _artefJavelin.MaxCondition = 50000;
                     _artefJavelin.Quality = 100;
-                    _artefJavelin.Object_Type = (int) eObjectType.Magical;
-                    _artefJavelin.Item_Type = 41;
+                    _artefJavelin.ObjectType = (int) eObjectType.Magical;
+                    _artefJavelin.ItemType = 41;
                     _artefJavelin.Model = 23;
                     _artefJavelin.IsPickable = false;
                     _artefJavelin.IsDropable = false;
@@ -64,9 +65,15 @@ namespace DOL.GS.Spells
                     _artefJavelin.IsTradable = false;
                     _artefJavelin.MaxCount = 1;
                     _artefJavelin.PackSize = 1;
-                    _artefJavelin.Charges = 5;
-                    _artefJavelin.MaxCharges = 5;
-                    _artefJavelin.SpellID = 38076;
+
+                    _artefJavelin.Spells.Add(new ItemSpell()
+                    {
+                        Charges = 5,
+                        MaxCharges = 5,
+                        SpellID = 38076,
+                        IsPoison = false,
+                        ProcChance = 0
+                    });
                 }
                 return _artefJavelin;
             }
@@ -87,7 +94,7 @@ namespace DOL.GS.Spells
                 var items = player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
                 foreach(InventoryItem invItem in items)
                 {
-                    if(invItem.Id_nb.Equals("Artef_Javelin"))
+                    if(invItem.Id.Equals("Artef_Javelin"))
                     {
                         player.Inventory.RemoveItem(invItem);
                     }

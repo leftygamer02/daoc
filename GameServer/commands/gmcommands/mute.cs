@@ -79,7 +79,7 @@ namespace DOL.GS.Commands
 				{
 					playerClient.Account.IsMuted = true;
 					playerClient.Player.IsMuted = true;
-					GameServer.Database.SaveObject(playerClient.Account);
+					GameServer.Instance.SaveDataObject(playerClient.Account);
 					mutedAccount = true;
 				}
 			}
@@ -89,7 +89,7 @@ namespace DOL.GS.Commands
 				{
 					playerClient.Account.IsMuted = false;
 					playerClient.Player.IsMuted = false;
-					GameServer.Database.SaveObject(playerClient.Account);
+					GameServer.Instance.SaveDataObject(playerClient.Account);
 					mutedAccount = true;
 				}
 			}

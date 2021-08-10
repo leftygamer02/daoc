@@ -41,7 +41,7 @@ namespace DOL.GS.Keeps
 			if (newRadius == 0 && m_Radius != 0)
 			{
 				if (m_dbArea != null)
-					GameServer.Database.DeleteObject(m_dbArea);
+					GameServer.Instance.DeleteDataObject(m_dbArea);
 				m_Radius = Keep is GameKeep ? (Keep.IsPortalKeep ? PK_RADIUS : KEEP_RADIUS) : TOWER_RADIUS;
 				return;
 			}
@@ -53,28 +53,28 @@ namespace DOL.GS.Keeps
 				if (m_dbArea != null)
 				{
 					m_dbArea.Radius = m_Radius;
-					GameServer.Database.SaveObject(m_dbArea);
+					GameServer.Instance.SaveDataObject(m_dbArea);
 				}
 				else
 				{
-					m_dbArea = new DBArea();
+					m_dbArea = new Atlas.DataLayer.Models.Area();
 					m_dbArea.CanBroadcast = this.CanBroadcast;
 					m_dbArea.CheckLOS = this.CheckLOS;
 					m_dbArea.ClassType = this.GetType().ToString();
 					m_dbArea.Description = this.Description;
 					m_dbArea.Radius = this.Radius;
-					m_dbArea.Region = (ushort)this.Keep.Region;
+					m_dbArea.RegionID = (ushort)this.Keep.Region;
 					m_dbArea.Sound = this.Sound;
 					m_dbArea.X = this.X;
 					m_dbArea.Y = this.Y;
 					m_dbArea.Z = this.Z;
 
-					GameServer.Database.AddObject(m_dbArea);
+					GameServer.Instance.SaveDataObject(m_dbArea);
 				}
 			}
 		}
 
-		public override void LoadFromDatabase(DBArea area)
+		public override void LoadFromDatabase(Atlas.DataLayer.Models.Area area)
 		{
 			base.LoadFromDatabase(area);
 			GameServer.KeepManager.Log.Debug("KeepArea " + area.Description + " LoadFromDatabase called");

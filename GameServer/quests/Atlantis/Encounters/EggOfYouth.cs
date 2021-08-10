@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public EggOfYouth(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public EggOfYouth(GamePlayer questingPlayer, DBQuest dbQuest)
+		public EggOfYouth(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

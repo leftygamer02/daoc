@@ -45,7 +45,7 @@ namespace DOL.GS
 			LootList loot = base.GenerateLoot(mob, killer);
 			
 			// ItemTemplate aurulite = new ItemTemplate(m_aurulite);  Creating a new ItemTemplate throws an exception later
-			ItemTemplate aurulite = GameServer.Database.FindObjectByKey<ItemTemplate>(m_aurulite.Id_nb);
+			ItemTemplate aurulite = GameServer.Database.FindObjectByKey<ItemTemplate>(m_aurulite.Id);
 			
 			
 			try

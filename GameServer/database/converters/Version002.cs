@@ -47,7 +47,7 @@ namespace DOL.GS.DatabaseConverters
 			{
 				style.Icon = style.ID;
 
-				GameServer.Database.SaveObject(style);
+				GameServer.Instance.SaveDataObject(style);
 			}
 			log.Info(styles.Count + " Styles Processed");
 
@@ -70,7 +70,7 @@ namespace DOL.GS.DatabaseConverters
 					}
 				}
 
-				GameServer.Database.SaveObject(mob);
+				GameServer.Instance.SaveDataObject(mob);
 			}
 			log.Info(mobs.Count + " Mobs Processed");
 

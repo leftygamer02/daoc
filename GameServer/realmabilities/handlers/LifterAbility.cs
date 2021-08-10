@@ -6,7 +6,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class LifterAbility : RAPropertyEnhancer
 	{
-		public LifterAbility(DBAbility dba, int level)
+		public LifterAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.Undefined)
 		{
 		}

@@ -30,7 +30,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class RealmAbility : Ability
 	{
-		public RealmAbility(DBAbility ability, int level) : base(ability, level) { }
+		public RealmAbility(Atlas.DataLayer.Models.Ability ability, int level) : base(ability, level) { }
 
 		public virtual int CostForUpgrade(int currentLevel)
 		{
@@ -98,7 +98,7 @@ namespace DOL.GS.RealmAbilities
 	public class TimedRealmAbility : RealmAbility
 	{
 
-		public TimedRealmAbility(DBAbility ability, int level) : base(ability, level) { }
+		public TimedRealmAbility(Atlas.DataLayer.Models.Ability ability, int level) : base(ability, level) { }
 
 		public override int CostForUpgrade(int level)
 		{
@@ -363,7 +363,7 @@ namespace DOL.GS.RealmAbilities
 	public class L5RealmAbility : RealmAbility
 	{
 
-		public L5RealmAbility(DBAbility ability, int level) : base(ability, level) { }
+		public L5RealmAbility(Atlas.DataLayer.Models.Ability ability, int level) : base(ability, level) { }
 
 		public override int CostForUpgrade(int level)
 		{
@@ -427,7 +427,7 @@ namespace DOL.GS.RealmAbilities
 
 	public class RR5RealmAbility : TimedRealmAbility
 	{
-		public RR5RealmAbility(DBAbility ability, int level) : base(ability, level) { }
+		public RR5RealmAbility(Atlas.DataLayer.Models.Ability ability, int level) : base(ability, level) { }
 
 		public override int MaxLevel
 		{

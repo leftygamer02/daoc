@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public ScorpionsTail(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public ScorpionsTail(GamePlayer questingPlayer, DBQuest dbQuest)
+        public ScorpionsTail(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

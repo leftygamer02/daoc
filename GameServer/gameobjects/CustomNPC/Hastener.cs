@@ -20,7 +20,6 @@
 using System;
 using System.Collections;
 using Atlas.DataLayer.Models;
-using DOL.Database.Attributes;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.Keeps;

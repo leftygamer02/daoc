@@ -244,7 +244,7 @@ namespace DOL.GS.Spells
 		/// </summary>
 		event CastingCompleteCallback CastingCompleteEvent;
 
-		PlayerXEffect GetSavedEffect(GameSpellEffect e);
+		PlayerEffect GetSavedEffect(GameSpellEffect e);
 		void OnEffectRestored(GameSpellEffect effect, int[] RestoreVars);
 		int OnRestoredEffectExpires(GameSpellEffect effect, int[] RestoreVars, bool noMessages);
 		bool CheckBeginCast(GameLiving selectedTarget);

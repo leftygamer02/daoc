@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class MasteryOfStealthAbility : RAPropertyEnhancer
 	{
-		public MasteryOfStealthAbility(DBAbility dba, int level)
+		public MasteryOfStealthAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.Undefined)
 		{
 		}

@@ -147,14 +147,14 @@ namespace DOL.GS.Spells
 		{
 		}
 		
-		public override PlayerXEffect GetSavedEffect(GameSpellEffect e)
+		public override PlayerEffect GetSavedEffect(GameSpellEffect e)
 		{
 			if ( //VaNaTiC-> this cannot work, cause PulsingSpellEffect is derived from object and only implements IConcEffect
 			    //e is PulsingSpellEffect ||
 			    //VaNaTiC<-
 			    Spell.Pulse != 0 || Spell.Concentration != 0 || e.RemainingTime < 1)
 				return null;
-			PlayerXEffect eff = new PlayerXEffect();
+			PlayerEffect eff = new PlayerEffect();
 			eff.Var1 = Spell.ID;
 			eff.Duration = e.RemainingTime;
 			eff.IsHandler = true;

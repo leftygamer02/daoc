@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class FalconsEyeAbility : RAPropertyEnhancer
 	{
-		public FalconsEyeAbility(DBAbility dba, int level)
+		public FalconsEyeAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.CriticalSpellHitChance)
 		{
 		}

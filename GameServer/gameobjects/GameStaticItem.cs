@@ -27,7 +27,7 @@ namespace DOL.GS
 	/// <summary>
 	/// This class represents a static Item in the gameworld
 	/// </summary>
-	public class GameStaticItem : GameObject , ITranslatableObject
+	public class GameStaticItem : GameObject 
 	{
 		/// <summary>
 		/// The emblem of the Object
@@ -87,11 +87,6 @@ namespace DOL.GS
 				}
 			}
 		}
-
-        public virtual LanguageDataObject.eTranslationIdentifier TranslationIdentifier
-        {
-            get { return LanguageDataObject.eTranslationIdentifier.eObject; }
-        }
 
         /// <summary>
         /// The translation id
@@ -189,20 +184,19 @@ namespace DOL.GS
 		}
 		#endregion
 
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
 			WorldObject item = obj as WorldObject;
 			base.LoadFromDatabase(obj);
 			
 			m_loadedFromScript = false;
-			CurrentRegionID = item.Region;
-            TranslationId = item.TranslationId;
+			CurrentRegionID = (ushort)item.RegionID;
 			Name = item.Name;
             ExamineArticle = item.ExamineArticle;
-			Model = item.Model;
+			Model = (ushort)item.Model;
 			Emblem = item.Emblem;
 			Realm = (eRealm)item.Realm;
-			Heading = item.Heading;
+			Heading = (ushort)item.Heading;
 			X = item.X;
 			Y = item.Y;
 			Z = item.Z;
@@ -261,9 +255,9 @@ namespace DOL.GS
 		public override void SaveIntoDatabase()
 		{
 			WorldObject obj = null;
-			if (InternalID != null)
+			if (InternalID > 0)
 			{
-				obj = (WorldObject)GameServer.Database.FindObjectByKey<WorldObject>(InternalID);
+				obj = (WorldObject)GameServer.Database.WorldObjects.Find(InternalID);
 			}
 			if (obj == null)
 			{
@@ -276,29 +270,21 @@ namespace DOL.GS
 					return;
 				}
 			}
-            obj.TranslationId = TranslationId;
 			obj.Name = Name;
             obj.ExamineArticle = ExamineArticle;
 			obj.Model = Model;
 			obj.Emblem = Emblem;
 			obj.Realm = (byte)Realm;
 			obj.Heading = Heading;
-			obj.Region = CurrentRegionID;
+			obj.RegionID = CurrentRegionID;
 			obj.X = X;
 			obj.Y = Y;
 			obj.Z = Z;
 			obj.ClassType = this.GetType().ToString();
 			obj.RespawnInterval = RespawnInterval;
 
-			if (InternalID == null)
-			{
-				GameServer.Database.AddObject(obj);
-				InternalID = obj.ObjectId;
-			}
-			else
-			{
-				GameServer.Database.SaveObject(obj);
-			}
+			GameServer.Instance.SaveDataObject(obj);
+			InternalID = obj.Id;
 		}
 
 		public override void Delete()
@@ -313,13 +299,13 @@ namespace DOL.GS
 		/// </summary>
 		public override void DeleteFromDatabase()
 		{
-			if(InternalID != null)
+			if(InternalID > 0)
 			{
-				WorldObject obj = (WorldObject) GameServer.Database.FindObjectByKey<WorldObject>(InternalID);
+				WorldObject obj = (WorldObject)GameServer.Database.WorldObjects.Find(InternalID);
 				if(obj != null)
-				  GameServer.Database.DeleteObject(obj);
+				  GameServer.Instance.DeleteDataObject(obj);
 			}
-			InternalID = null;
+			InternalID = 0;
 		}
 
 		/// <summary>

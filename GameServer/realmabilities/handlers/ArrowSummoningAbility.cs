@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using Atlas.DataLayer.Models;
@@ -30,17 +31,17 @@ namespace DOL.GS.RealmAbilities
 	{
 		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public ArrowSummoningAbility(DBAbility dba, int level) : base(dba, level) { }
+        public ArrowSummoningAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
         public override void Execute(GameLiving living)
 		{
             if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
             GamePlayer player = living as GamePlayer;
-            ItemTemplate arrow_summoning_1 = GameServer.Database.FindObjectByKey<ItemTemplate>("arrow_summoning1");
-            ItemTemplate arrow_summoning_2 = GameServer.Database.FindObjectByKey<ItemTemplate>("arrow_summoning2");
-            ItemTemplate arrow_summoning_3 = GameServer.Database.FindObjectByKey<ItemTemplate>("arrow_summoning3");
+			ItemTemplate arrow_summoning_1 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Name == "arrow_summoning1");
+            ItemTemplate arrow_summoning_2 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Name == "arrow_summoning2");
+			ItemTemplate arrow_summoning_3 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Name == "arrow_summoning3");
 
 			// what are these used for? - tolakram
-            WorldInventoryItem as1 = WorldInventoryItem.CreateFromTemplate(arrow_summoning_1);
+			WorldInventoryItem as1 = WorldInventoryItem.CreateFromTemplate(arrow_summoning_1);
             WorldInventoryItem as2 = WorldInventoryItem.CreateFromTemplate(arrow_summoning_2);
             WorldInventoryItem as3 = WorldInventoryItem.CreateFromTemplate(arrow_summoning_3);
 
@@ -76,23 +77,23 @@ namespace DOL.GS.RealmAbilities
 			if (player == null) return;		
 			lock(player.Inventory)
 			{
-                InventoryItem item = player.Inventory.GetFirstItemByID("arrow_summoning1", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                InventoryItem item = player.Inventory.GetFirstItemByName("arrow_summoning1", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				while (item != null)
 				{
 					player.Inventory.RemoveItem(item);
-                    item = player.Inventory.GetFirstItemByID("arrow_summoning1", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                    item = player.Inventory.GetFirstItemByName("arrow_summoning1", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				}
-                item = player.Inventory.GetFirstItemByID("arrow_summoning2", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                item = player.Inventory.GetFirstItemByName("arrow_summoning2", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				while (item != null)
 				{
 					player.Inventory.RemoveItem(item);
-                    item = player.Inventory.GetFirstItemByID("arrow_summoning2", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                    item = player.Inventory.GetFirstItemByName("arrow_summoning2", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				}
-                item = player.Inventory.GetFirstItemByID("arrow_summoning3", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                item = player.Inventory.GetFirstItemByName("arrow_summoning3", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				while (item != null)
 				{
 					player.Inventory.RemoveItem(item);
-                    item = player.Inventory.GetFirstItemByID("arrow_summoning3", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                    item = player.Inventory.GetFirstItemByName("arrow_summoning3", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 				}
 			}
 		}
@@ -102,7 +103,7 @@ namespace DOL.GS.RealmAbilities
             if (!ServerProperties.Properties.LOAD_ARROW_SUMMONING)
                 return;            
             
-            ItemTemplate arrow_summoning1 = GameServer.Database.FindObjectByKey<ItemTemplate>("arrow_summoning1");
+            ItemTemplate arrow_summoning1 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Name == "arrow_summoning1");
 			if (arrow_summoning1 == null)
 			{
 				arrow_summoning1 = new ItemTemplate();
@@ -114,21 +115,21 @@ namespace DOL.GS.RealmAbilities
 				arrow_summoning1.DPS_AF = 0;
 				arrow_summoning1.SPD_ABS = 47;
 				arrow_summoning1.Hand = 0;
-				arrow_summoning1.Type_Damage = 3;
-				arrow_summoning1.Object_Type = 43;
-				arrow_summoning1.Item_Type = 40;
+				arrow_summoning1.TypeDamage = 3;
+				arrow_summoning1.ObjectType = 43;
+				arrow_summoning1.ItemType = 40;
 				arrow_summoning1.Weight = 0;
 				arrow_summoning1.Model = 1635;
 				arrow_summoning1.IsPickable = true;
 				arrow_summoning1.IsDropable = false;
 				arrow_summoning1.IsTradable = false;
 				arrow_summoning1.MaxCount = 20;
-				arrow_summoning1.Id_nb = "arrow_summoning1";
-				GameServer.Database.AddObject(arrow_summoning1);
+				arrow_summoning1.Id = 0;
+				arrow_summoning1 = GameServer.Instance.SaveDataObject(arrow_summoning1);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + arrow_summoning1.Id_nb);
+					log.Debug("Added " + arrow_summoning1.Id);
 			}
-			ItemTemplate arrow_summoning2 = GameServer.Database.FindObjectByKey<ItemTemplate>("arrow_summoning2");
+			ItemTemplate arrow_summoning2 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Name == "arrow_summoning2");
 			if (arrow_summoning2 == null)
 			{
 				arrow_summoning2 = new ItemTemplate();
@@ -140,21 +141,21 @@ namespace DOL.GS.RealmAbilities
 				arrow_summoning2.DPS_AF = 0;
 				arrow_summoning2.SPD_ABS = 47;
 				arrow_summoning2.Hand = 0;
-				arrow_summoning2.Type_Damage = 3;
-				arrow_summoning2.Object_Type = 43;
-				arrow_summoning2.Item_Type = 40;
+				arrow_summoning2.TypeDamage = 3;
+				arrow_summoning2.ObjectType = 43;
+				arrow_summoning2.ItemType = 40;
 				arrow_summoning2.Weight = 0;
 				arrow_summoning2.Model = 1635;
 				arrow_summoning2.IsPickable = true;
 				arrow_summoning2.IsDropable = false;
 				arrow_summoning2.IsTradable = false;
 				arrow_summoning2.MaxCount = 20;
-				arrow_summoning2.Id_nb = "arrow_summoning2";
-				GameServer.Database.AddObject(arrow_summoning2);
+				arrow_summoning2.Id = 0;
+				arrow_summoning2 = GameServer.Instance.SaveDataObject(arrow_summoning2);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + arrow_summoning2.Id_nb);
+					log.Debug("Added " + arrow_summoning2.Id);
 			}
-			ItemTemplate arrow_summoning3 = GameServer.Database.FindObjectByKey<ItemTemplate>("arrow_summoning3");
+			ItemTemplate arrow_summoning3 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Name == "arrow_summoning3");
 			if (arrow_summoning3 == null)
 			{
 				arrow_summoning3 = new ItemTemplate();
@@ -166,19 +167,19 @@ namespace DOL.GS.RealmAbilities
 				arrow_summoning3.DPS_AF = 0;
 				arrow_summoning3.SPD_ABS = 47;
 				arrow_summoning3.Hand = 0;
-				arrow_summoning3.Type_Damage = 3;
-				arrow_summoning3.Object_Type = 43;
-				arrow_summoning3.Item_Type = 40;
+				arrow_summoning3.TypeDamage = 3;
+				arrow_summoning3.ObjectType = 43;
+				arrow_summoning3.ItemType = 40;
 				arrow_summoning3.Weight = 0;
 				arrow_summoning3.Model = 1635;
 				arrow_summoning3.IsPickable = true;
 				arrow_summoning3.IsDropable = false;
 				arrow_summoning3.IsTradable = false;
 				arrow_summoning3.MaxCount = 20;
-				arrow_summoning3.Id_nb = "arrow_summoning3";
-				GameServer.Database.AddObject(arrow_summoning3);
+				arrow_summoning3.Id = 0;
+				arrow_summoning3 = GameServer.Instance.SaveDataObject(arrow_summoning3);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + arrow_summoning3.Id_nb);
+					log.Debug("Added " + arrow_summoning3.Id);
 			}
 		}
 	}

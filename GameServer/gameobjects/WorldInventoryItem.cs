@@ -76,7 +76,7 @@ namespace DOL.GS
 
 			if (item.ItemTemplate is ItemUnique && item.ItemTemplate.IsPersisted == false)
 			{
-				GameServer.Database.AddObject(item.ItemTemplate as ItemUnique);
+				GameServer.Instance.SaveDataObject(item.ItemTemplate as ItemUnique);
 			}
 		}
 
@@ -92,7 +92,7 @@ namespace DOL.GS
 			if (item.ItemTemplate is ItemUnique)
 				return null;
 			
-			return CreateFromTemplate(item.Id_nb);
+			return CreateFromTemplate(item.Id);
 		}
 
 		/// <summary>
@@ -167,7 +167,7 @@ namespace DOL.GS
 
 			WorldInventoryItem invItem = new WorldInventoryItem();
 			ItemUnique item = new ItemUnique(template);
-			GameServer.Database.AddObject(item);
+			GameServer.Instance.SaveDataObject(item);
 
 			invItem.m_item = GameInventoryItem.Create(item);
 			

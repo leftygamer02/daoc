@@ -219,7 +219,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						m_zonePoint.SourceX = player.X;
 						m_zonePoint.SourceY = player.Y;
 						m_zonePoint.SourceZ = player.Z;
-						GameServer.Database.SaveObject(m_zonePoint);
+						GameServer.Instance.SaveDataObject(m_zonePoint);
 					}
 
 				}

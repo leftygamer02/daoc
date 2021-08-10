@@ -71,7 +71,7 @@ namespace DOL.GS
 		protected static readonly Dictionary<string, List<Tuple<string, byte, int, int>>> m_specsAbilities = new Dictionary<string, List<Tuple<string, byte, int, int>>>();
 
 		
-		// Ability Cache Dict KeyName => DBAbility Object (to instanciate)
+		// Ability Cache Dict KeyName => Atlas.DataLayer.Models.Ability Object (to instanciate)
 		protected static readonly Dictionary<string, Atlas.DataLayer.Models.Ability> m_abilityIndex = new Dictionary<string, Atlas.DataLayer.Models.Ability>();
 		
 		// class id => realm abilitykey list
@@ -288,7 +288,7 @@ namespace DOL.GS
 		/// Useful to load new spells added in preperation for ReloadSpellLine(linename) to update a spell line live
 		/// We want to add any new spells in the DB to the global spell list, m_spells, but not remove any added by scripts
 		/// </summary>
-		public static void ReloadDBSpells()
+		public static void ReloadSpells()
 		{
 			// lock skillbase for writes
 			m_syncLockUpdates.EnterWriteLock();

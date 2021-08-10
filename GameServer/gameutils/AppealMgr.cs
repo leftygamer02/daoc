@@ -59,7 +59,7 @@ namespace DOL.GS.Appeal
 
 				//Register and load the DB.
 				//Obsolete with GSS Table Registering in SVN : 3337
-				//GameServer.Database.RegisterDataObject(typeof(DBAppeal));
+				//GameServer.Database.RegisterDataObject(typeof(Atlas.DataLayer.Models.Appeal));
 				GameEventMgr.AddHandler(GamePlayerEvent.GameEntered, new DOLEventHandler(PlayerEnter));
 				GameEventMgr.AddHandler(GamePlayerEvent.Quit, new DOLEventHandler(PlayerQuit));
 				GameEventMgr.AddHandler(GamePlayerEvent.Linkdeath, new DOLEventHandler(PlayerQuit));
@@ -93,7 +93,7 @@ namespace DOL.GS.Appeal
 		public static void NotifyStaff()
 		{
 			//here we keep the staff up to date on the status of the appeal queue, if there are open Appeals.
-			IList<DBAppeal> Appeals = GetAllAppeals();
+			IList<Atlas.DataLayer.Models.Appeal> Appeals = GetAllAppeals();
 
 			if (Appeals.Count == 0)
 				return;
@@ -102,7 +102,7 @@ namespace DOL.GS.Appeal
 			int med = 0;
 			int high = 0;
 			int crit = 0;
-			foreach (DBAppeal a in Appeals)
+			foreach (Atlas.DataLayer.Models.Appeal a in Appeals)
 			{
 				if (a == null) { return; }
 				if (a.Severity < 1) { return; }
@@ -176,15 +176,15 @@ namespace DOL.GS.Appeal
 			return;
 		}
 
-		public static DBAppeal GetAppealByPlayerName(string name)
+		public static Atlas.DataLayer.Models.Appeal GetAppealByPlayerName(string name)
 		{
-			DBAppeal appeal = DOLDB<DBAppeal>.SelectObject(DB.Column("Name").IsEqualTo(name));
+			Atlas.DataLayer.Models.Appeal appeal = GameServer.Database.Appeals.FirstOrDefault(x => x.Name == name);
 			return appeal;
 		}
 
-		public static DBAppeal GetAppealByAccountName(string name)
+		public static Atlas.DataLayer.Models.Appeal GetAppealByAccountName(string name)
 		{
-			DBAppeal appeal = DOLDB<DBAppeal>.SelectObject(DB.Column("Account").IsEqualTo(name));
+			Atlas.DataLayer.Models.Appeal appeal = GameServer.Database.Appeals.FirstOrDefault(x => x.Account.Name == name);
 			return appeal;
 		}
 
@@ -192,16 +192,16 @@ namespace DOL.GS.Appeal
 		/// Gets a combined list of Appeals for every player that is online.
 		/// </summary>
 		/// <returns></returns>
-		public static IList<DBAppeal> GetAllAppeals()
+		public static IList<Atlas.DataLayer.Models.Appeal> GetAllAppeals()
 		{
-			var rlist = new List<DBAppeal>();
+			var rlist = new List<Atlas.DataLayer.Models.Appeal>();
 			var clientlist = WorldMgr.GetAllPlayingClients();
 
 			foreach (GameClient c in clientlist)
 			{
 				try
 				{
-					DBAppeal ap = GetAppealByPlayerName(c.Player.Name);
+					Atlas.DataLayer.Models.Appeal ap = GetAppealByPlayerName(c.Player.Name);
 					if (ap != null)
 					{
 						rlist.Add(ap);
@@ -221,9 +221,9 @@ namespace DOL.GS.Appeal
 		/// Gets a combined list of Appeals including player Appeals who are offline.
 		/// </summary>
 		/// <returns></returns>
-		public static IList<DBAppeal> GetAllAppealsOffline()
+		public static IList<Atlas.DataLayer.Models.Appeal> GetAllAppealsOffline()
 		{
-			return GameServer.Database.SelectAllObjects<DBAppeal>();
+			return GameServer.Database.Appeals.ToList();
 		}
 		/// <summary>
 		/// Creates a New Appeal
@@ -245,10 +245,17 @@ namespace DOL.GS.Appeal
 				Player.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(Player.Client.Account.Language, "Scripts.Players.Appeal.AlreadyActiveAppeal"), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
 				return;
 			}
-			string eText = GameServer.Database.Escape(Text); //prevent SQL injection
-			string TimeStamp = DateTime.Now.ToLongTimeString() + " " + DateTime.Now.ToLongDateString();
-			DBAppeal appeal = new DBAppeal(Player.Name, Player.Client.Account.Name, Severity, Status, TimeStamp, eText);
-			GameServer.Database.AddObject(appeal);
+			
+			var appeal = new Atlas.DataLayer.Models.Appeal()
+			{
+				Name = Player.Name,
+				AccountID = Player.Client.Account.Id,
+				Severity = Severity,
+				Status = Status,
+				Timestamp = DateTime.Now,
+				Text = Text
+			};
+			GameServer.Instance.SaveDataObject(appeal);
 			Player.TempProperties.setProperty("HasPendingAppeal", true);
 			Player.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(Player.Client.Account.Language, "Scripts.Players.Appeal.AppealSubmitted"), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
 			Player.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(Player.Client.Account.Language, "Scripts.Players.Appeal.IfYouLogOut"), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
@@ -263,11 +270,10 @@ namespace DOL.GS.Appeal
 		/// <param name="name"></param>The name of the staff member making this change.
 		/// <param name="appeal"></param>The appeal to change the status of.
 		/// <param name="status">the new status (Open, Being Helped)</param>
-		public static void ChangeStatus(string staffname, GamePlayer target, DBAppeal appeal, string status)
+		public static void ChangeStatus(string staffname, GamePlayer target, Atlas.DataLayer.Models.Appeal appeal, string status)
 		{
 			appeal.Status = status;
-			appeal.Dirty = true;
-			GameServer.Database.SaveObject(appeal);
+			GameServer.Instance.SaveDataObject(appeal);
 			MessageToAllStaff("Staffmember " + staffname + " has changed the status of " + target.Name + "'s appeal to " + status + ".");
 			target.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(target.Client, "Scripts.Players.Appeal.StaffChangedStatus", staffname, status), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
 			return;
@@ -279,12 +285,12 @@ namespace DOL.GS.Appeal
 		/// <param name="name"></param>The name of the staff member making this change.
 		/// <param name="appeal"></param>The appeal to remove.
 		/// <param name="Player"></param>The Player whose appeal we are closing.
-		public static void CloseAppeal(string staffname, GamePlayer Player, DBAppeal appeal)
+		public static void CloseAppeal(string staffname, GamePlayer Player, Atlas.DataLayer.Models.Appeal appeal)
 		{
 			MessageToAllStaff("[Appeals]: " + "Staffmember " + staffname + " has just closed " + Player.Name + "'s appeal.");
 			Player.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(Player.Client.Account.Language, "Scripts.Players.Appeal.StaffClosedYourAppeal", staffname), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
 			Player.Out.SendPlaySound(eSoundType.Craft, 0x02);
-			GameServer.Database.DeleteObject(appeal);
+			GameServer.Instance.DeleteDataObject(appeal);
 			Player.TempProperties.setProperty("HasPendingAppeal", false);
 			return;
 		}
@@ -293,19 +299,19 @@ namespace DOL.GS.Appeal
 		/// </summary>
 		/// <param name="name"></param>The name of the staff member making this change.
 		/// <param name="appeal"></param>The appeal to remove.
-		public static void CloseAppeal(string staffname, DBAppeal appeal)
+		public static void CloseAppeal(string staffname, Atlas.DataLayer.Models.Appeal appeal)
 		{
 			MessageToAllStaff("[Appeals]: " + "Staffmember " + staffname + " has just closed " + appeal.Name + "'s (offline) appeal.");
-			GameServer.Database.DeleteObject(appeal);
+			GameServer.Instance.DeleteDataObject(appeal);
 			return;
 		}
 
-		public static void CancelAppeal(GamePlayer Player, DBAppeal appeal)
+		public static void CancelAppeal(GamePlayer Player, Atlas.DataLayer.Models.Appeal appeal)
 		{
 			MessageToAllStaff("[Appeals]: " + Player.Name + " has canceled their appeal.");
 			Player.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(Player.Client.Account.Language, "Scripts.Players.Appeal.CanceledYourAppeal"), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
 			Player.Out.SendPlaySound(eSoundType.Craft, 0x02);
-			GameServer.Database.DeleteObject(appeal);
+			GameServer.Instance.DeleteDataObject(appeal);
 			Player.TempProperties.setProperty("HasPendingAppeal", false);
 			return;
 		}
@@ -323,7 +329,7 @@ namespace DOL.GS.Appeal
 
 				StaffList.Add(player);
 				
-				IList<DBAppeal> Appeals = GetAllAppeals();
+				IList<Atlas.DataLayer.Models.Appeal> Appeals = GetAllAppeals();
 				if (Appeals.Count > 0)
 				{
 					player.Out.SendMessage("[Appeals]: " + "There are " + Appeals.Count + " appeals in the queue!  Use /gmappeal to work the appeals queue.", eChatType.CT_Important, eChatLoc.CL_ChatWindow);
@@ -331,7 +337,7 @@ namespace DOL.GS.Appeal
 			}
 
 			//Check if there is an existing appeal belonging to this player.
-			DBAppeal appeal = GetAppealByAccountName(player.Client.Account.Name);
+			Atlas.DataLayer.Models.Appeal appeal = GetAppealByAccountName(player.Client.Account.Name);
 
 			if (appeal == null)
 			{
@@ -342,8 +348,7 @@ namespace DOL.GS.Appeal
 			{
 				//players account has an appeal but it dosn't belong to this player, let's change it.
 				appeal.Name = player.Name;
-				appeal.Dirty = true;
-				GameServer.Database.SaveObject(appeal);
+				GameServer.Instance.SaveDataObject(appeal);
 			}
 			player.Out.SendMessage("[Appeals]: " + LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Players.Appeal.YouHavePendingAppeal"), eChatType.CT_Important, eChatLoc.CL_ChatWindow);
 			player.TempProperties.setProperty("HasPendingAppeal", true);

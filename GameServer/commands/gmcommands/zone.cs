@@ -102,7 +102,7 @@ namespace DOL.GS.Commands
 
 					var dbZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(zone.ID).And(DB.Column("RegionID").IsEqualTo(zone.ZoneRegion.ID)));
 					dbZone.DivingFlag = divingFlag;
-					GameServer.Database.SaveObject(dbZone);
+					GameServer.Instance.SaveDataObject(dbZone);
 
 					// Update water level and diving flag for the new zone
 					client.Out.SendPlayerPositionAndObjectID();
@@ -125,7 +125,7 @@ namespace DOL.GS.Commands
 
 					var dbZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(zone.ID).And(DB.Column("RegionID").IsEqualTo(zone.ZoneRegion.ID)));
 					dbZone.WaterLevel = waterlevel;
-					GameServer.Database.SaveObject(dbZone);
+					GameServer.Instance.SaveDataObject(dbZone);
 
 					// Update water level and diving flag for the new zone
 					client.Out.SendPlayerPositionAndObjectID();
@@ -222,7 +222,7 @@ namespace DOL.GS.Commands
             dbZone.Realmpoints = zone.BonusRealmpoints;
             dbZone.Coin = zone.BonusCoin;
             dbZone.Experience = zone.BonusExperience;
-            GameServer.Database.SaveObject(dbZone);
+            GameServer.Instance.SaveDataObject(dbZone);
 
             player.Out.SendCustomDialog(string.Format("{0}'s new zone bonuses have been updated to the database and changes have already taken effect!", zone.Description), null);
             

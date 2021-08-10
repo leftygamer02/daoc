@@ -203,7 +203,7 @@ namespace DOL.GS
 		/// <returns>True, if artifact gained 1 or more abilities, else false.</returns>
 		private bool AddAbilities(GamePlayer player, int artifactLevel)
 		{
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(this.Id);
+			ItemTemplate template = GameServer.Database.ItemTemplates.Find(this.Id);
 
 			if (template == null)
 			{

@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public AlvarusLeggings(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public AlvarusLeggings(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AlvarusLeggings(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

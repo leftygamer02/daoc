@@ -194,7 +194,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				door.Y = player.Y;
 				door.Z = player.Z;
 				door.Heading = player.Heading;
-				GameServer.Database.AddObject(door);
+				GameServer.Instance.SaveDataObject(door);
 
 				player.Out.SendMessage("Added door " + m_handlerDoorID + " to the database!", eChatType.CT_Important,
 				                       eChatLoc.CL_SystemWindow);
@@ -289,7 +289,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					report.ID = GameServer.Database.GetObjectCount<BugReport>() + 1;
 					report.Message = "There is a missing door at location Region: " + player.CurrentRegionID + " X:" + player.X + " Y: " + player.Y + " Z: " + player.Z;
 					report.Submitter = player.Name;
-					GameServer.Database.AddObject(report);
+					GameServer.Instance.SaveDataObject(report);
 					 */
 
 					player.Out.SendDebugMessage("Door {0} not found in door list, opening via GM door hack.", m_doorId);

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -784,14 +785,14 @@ namespace DOL.GS
         /// <param name="merchantCount"></param>
         /// <param name="itemCount"></param>
         /// <param name="bindCount"></param>
-        public virtual void LoadFromDatabase(Mob[] mobObjs, ref long mobCount, ref long merchantCount, ref long itemCount, ref long bindCount)
+        public virtual void LoadFromDatabase(SpawnPoint[] mobObjs, ref long mobCount, ref long merchantCount, ref long itemCount, ref long bindCount)
         {
             if (!LoadObjects)
                 return;
 
             Assembly gasm = Assembly.GetAssembly(typeof(GameServer));
-            var staticObjs = DOLDB<WorldObject>.SelectObjects(DB.Column("Region").IsEqualTo(ID));
-            var bindPoints = DOLDB<BindPoint>.SelectObjects(DB.Column("Region").IsEqualTo(ID));
+            var staticObjs = GameServer.Database.WorldObjects.Where(x => x.RegionID == ID).ToList();
+            var bindPoints = GameServer.Database.BindPoints.Where(x => x.RegionID == ID).ToList();
             int count = mobObjs.Length + staticObjs.Count;
             if (count > 0) PreAllocateRegionSpace(count + 100);
             int myItemCount = staticObjs.Count;
@@ -802,7 +803,7 @@ namespace DOL.GS
 
             if (mobObjs.Length > 0)
             {
-                foreach (Mob mob in mobObjs)
+                foreach (var mob in mobObjs)
                 {
                     GameNPC myMob = null;
                     string error = string.Empty;
@@ -812,15 +813,15 @@ namespace DOL.GS
                     
                     // load template if any
                     INpcTemplate template = null;
-                    if(mob.NPCTemplateID != -1)
+                    if(mob.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplateID > 0)
                     {
-                    	template = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
+                    	template = NpcTemplateMgr.GetTemplate(mob.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplateID);
                     }
                     
 
-                    if (Properties.USE_NPCGUILDSCRIPTS && mob.Guild.Length > 0 && mob.Realm >= 0 && mob.Realm <= (int)eRealm._Last)
+                    if (Properties.USE_NPCGUILDSCRIPTS && template.GuildName.Length > 0 && template.Realm >= 0 && template.Realm <= (int)eRealm._Last)
                     {
-                        Type type = ScriptMgr.FindNPCGuildScriptClass(mob.Guild, (eRealm)mob.Realm);
+                        Type type = ScriptMgr.FindNPCGuildScriptClass(template.GuildName, (eRealm)template.Realm);
                         if (type != null)
                         {
                             try
@@ -840,13 +841,13 @@ namespace DOL.GS
   
                     if (myMob == null)
                     {
-                    	if(template != null && template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != Mob.DEFAULT_NPC_CLASSTYPE && template.ReplaceMobValues)
+                    	if(template != null && template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != "DOL.GS.GameNPC" && template.ReplaceMobValues)
                     	{
                 			classtype = template.ClassType;
                     	}
-                        else if (mob.ClassType != null && mob.ClassType.Length > 0 && mob.ClassType != Mob.DEFAULT_NPC_CLASSTYPE)
+                        else if (template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != "DOL.GS.GameNPC")
                         {
-                            classtype = mob.ClassType;
+                            classtype = template.ClassType;
                         }
 
                         try
@@ -1521,7 +1522,7 @@ namespace DOL.GS
         /// <summary>
         /// Gets objects in a radius around a point
         /// </summary>
-        /// <param name="type">OBJECT_TYPE (0=item, 1=npc, 2=player)</param>
+        /// <param name="type">ObjectType (0=item, 1=npc, 2=player)</param>
         /// <param name="x">origin X</param>
         /// <param name="y">origin Y</param>
         /// <param name="z">origin Z</param>

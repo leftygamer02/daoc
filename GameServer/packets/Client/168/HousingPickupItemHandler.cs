@@ -133,13 +133,13 @@ namespace DOL.GS.PacketHandler.Client.v168
 						         		IsDropable = true,
 						         		IsPickable = true,
 						         		IsTradable = true,
-						         		Item_Type = 41,
+						         		ItemType = 41,
 						         		Level = 1,
 						         		MaxCharges = 1,
 						         		MaxCount = 1,
 						         		Model = iitem.DatabaseItem.Model,
 						         		Emblem = iitem.DatabaseItem.Emblem,
-						         		Object_Type = (int) eObjectType.HouseWallObject,
+						         		ObjectType = (int) eObjectType.HouseWallObject,
 						         		Realm = 0,
 						         		Quality = 100
 						         	};
@@ -204,7 +204,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 		private static bool GetItemBack(InventoryItem item)
 		{
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int) eObjectType.Axe:
 				case (int) eObjectType.Blades:

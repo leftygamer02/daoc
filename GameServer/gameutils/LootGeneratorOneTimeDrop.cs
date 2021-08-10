@@ -36,7 +36,7 @@ namespace DOL.GS
 		/// <summary>
 		///
 		/// </summary>
-		protected static Dictionary<string, List<LootOTD>> m_mobOTDList = new Dictionary<string,List<LootOTD>>();
+		protected static Dictionary<string, List<LootOtd>> m_mobOTDList = new Dictionary<string,List<LootOtd>>();
 
 		public LootGeneratorOneTimeDrop()
 		{
@@ -53,11 +53,11 @@ namespace DOL.GS
 			lock (m_mobOTDList)
 			{
 				m_mobOTDList.Clear();
-				IList<LootOTD> lootOTDs;
+				IList<LootOtd> lootOTDs;
 
 				try
 				{
-					lootOTDs = GameServer.Database.SelectAllObjects<LootOTD>();
+					lootOTDs = GameServer.Database.LootOtds.ToList();
 				}
 				catch (Exception e)
 				{
@@ -73,9 +73,9 @@ namespace DOL.GS
 				{
 					int count = 0;
 
-					foreach (LootOTD l in lootOTDs)
+					foreach (var l in lootOTDs)
 					{
-						IList<Mob> mobs = DOLDB<Mob>.SelectObjects(DB.Column("Name").IsEqualTo(l.MobName));
+						IList<Atlas.DataLayer.Models.NpcTemplate> mobs = GameServer.Database.NpcTemplates.Where(x => x.Name == l.MobName).ToList();
 
 						if (mobs == null || mobs.Count == 0)
 						{
@@ -83,7 +83,7 @@ namespace DOL.GS
 							continue;
 						}
 
-						ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(l.ItemTemplateID);
+						ItemTemplate item = GameServer.Database.ItemTemplates.Find(l.ItemTemplateID);
 
 						if (item == null)
 						{
@@ -93,7 +93,7 @@ namespace DOL.GS
 
 						if (m_mobOTDList.ContainsKey(l.MobName.ToLower()))
 						{
-							List<LootOTD> drops = m_mobOTDList[l.MobName.ToLower()];
+							List<LootOtd> drops = m_mobOTDList[l.MobName.ToLower()];
 
 							if (drops.Contains(l) == false)
 							{
@@ -107,7 +107,7 @@ namespace DOL.GS
 						}
 						else
 						{
-							List<LootOTD> drops = new List<LootOTD>();
+							List<LootOtd> drops = new List<LootOtd>();
 							drops.Add(l);
 							m_mobOTDList.Add(l.MobName.ToLower(), drops);
 							count++;
@@ -132,7 +132,7 @@ namespace DOL.GS
 			if (mob == null)
 				return;
 
-			IList<LootOTD> otds = DOLDB<LootOTD>.SelectObjects(DB.Column("MobName").IsEqualTo(mob.Name));
+			IList<LootOtd> otds = GameServer.Database.LootOtds.Where(x => x.MobName == mob.Name).ToList();
 
 			lock (m_mobOTDList)
 			{
@@ -146,9 +146,9 @@ namespace DOL.GS
 			{
 				lock (m_mobOTDList)
 				{
-					List<LootOTD> newList = new List<LootOTD>();
+					List<LootOtd> newList = new List<LootOtd>();
 
-					foreach (LootOTD otd in otds)
+					foreach (LootOtd otd in otds)
 					{
 						newList.Add(otd);
 					}
@@ -162,7 +162,7 @@ namespace DOL.GS
 		public override LootList GenerateLoot(GameNPC mob, GameObject killer)
 		{
 			LootList loot = base.GenerateLoot(mob, killer);
-			List<LootOTD> lootOTDs = null;
+			List<LootOtd> lootOTDs = null;
 
 			try
 			{
@@ -192,24 +192,24 @@ namespace DOL.GS
 
 						if (player != null)
 						{
-							foreach (LootOTD drop in lootOTDs)
+							foreach (LootOtd drop in lootOTDs)
 							{
 								if (drop.MinLevel <= player.Level)
 								{
-									var hasDrop = DOLDB<CharacterXOneTimeDrop>.SelectObject(DB.Column("CharacterID").IsEqualTo(player.QuestPlayerID).And(DB.Column("ItemTemplateID").IsEqualTo(drop.ItemTemplateID)));
+									var hasDrop = GameServer.Database.CharacterOneTimeDrops.FirstOrDefault(x => x.CharacterID == player.QuestPlayerID && x.ItemTemplateID == drop.ItemTemplateID);
 
 									if (hasDrop == null)
 									{
-										ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(drop.ItemTemplateID);
+										ItemTemplate item = GameServer.Database.ItemTemplates.Find(drop.ItemTemplateID);
 
 										if (item != null)
 										{
 											if (player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, GameInventoryItem.Create(item)))
 											{
-												CharacterXOneTimeDrop charXDrop = new CharacterXOneTimeDrop();
+												CharacterOneTimeDrop charXDrop = new CharacterOneTimeDrop();
 												charXDrop.CharacterID = player.QuestPlayerID;
 												charXDrop.ItemTemplateID = drop.ItemTemplateID;
-												GameServer.Database.AddObject(charXDrop);
+												GameServer.Instance.SaveDataObject(charXDrop);
 
 												player.Out.SendMessage(string.Format("You receive {0} from {1}!", item.GetName(1, false), mob.GetName(1, false)), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
                                                 InventoryLogging.LogInventoryAction(mob, player, eInventoryActionType.Loot, item);

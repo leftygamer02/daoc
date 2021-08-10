@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public FlamedancersBoots(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public FlamedancersBoots(GamePlayer questingPlayer, DBQuest dbQuest)
+        public FlamedancersBoots(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

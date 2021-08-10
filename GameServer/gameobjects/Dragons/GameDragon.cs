@@ -88,7 +88,7 @@ namespace DOL.GS
 		/// Create dragon's lair after it was loaded from the DB.
 		/// </summary>
 		/// <param name="obj"></param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
 			base.LoadFromDatabase(obj);
 			String[] dragonName = Name.Split(new char[] { ' ' });
@@ -812,8 +812,7 @@ namespace DOL.GS
 			{
 				if (m_stun == null)
 				{
-					DBSpell spell = new DBSpell();
-					spell.AllowAdd = false;
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.CastTime = 0;
 					spell.Uninterruptible = true;
 					spell.ClientEffect = 4123;
@@ -826,7 +825,7 @@ namespace DOL.GS
 					spell.Damage = 500;
 					spell.DamageType = 13;
 					spell.RecastDelay = 10;
-					spell.SpellID = 6000;
+					spell.Id = 6000;
 					spell.Target = "Enemy";
 					spell.Type = "Stun";
 					spell.Message1 = "You cannot move!";

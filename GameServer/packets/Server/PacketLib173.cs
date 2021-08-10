@@ -284,7 +284,7 @@ namespace DOL.GS.PacketHandler
 			{
 				pak.FillString(m_gameClient.Account.Name, 24);
 				IList<InventoryItem> items;
-				DOLCharacters[] characters = m_gameClient.Account.Characters;
+				Character[] characters = m_gameClient.Account.Characters;
 				if (characters == null)
 				{
 					pak.Fill(0x0, 1840);
@@ -713,7 +713,7 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte((byte)item.DPS_AF);
 					pak.WriteByte((byte)item.SPD_ABS);
 					pak.WriteByte((byte)(item.Hand * 64));
-					pak.WriteByte((byte)((item.Type_Damage * 64) + item.Object_Type));
+					pak.WriteByte((byte)((item.TypeDamage * 64) + item.ObjectType));
 					pak.WriteShort((ushort)item.Weight);
 					pak.WriteByte(item.ConditionPercent); // % of con
 					pak.WriteByte(item.DurabilityPercent); // % of dur

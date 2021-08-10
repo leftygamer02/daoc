@@ -57,7 +57,7 @@ namespace DOL.GS.Spells
             font.Owner = (GamePlayer)caster;
 
             // Construct the font spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7245;
             dbs.ClientEffect = 7245;
@@ -113,7 +113,7 @@ namespace DOL.GS.Spells
             font.Owner = (GamePlayer)caster;
 
             // Construct the font spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7212;
             dbs.ClientEffect = 7212;
@@ -168,7 +168,7 @@ namespace DOL.GS.Spells
             font.Owner = (GamePlayer)caster;
 
             // Construct the font spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7214;
             dbs.ClientEffect = 7214;
@@ -237,7 +237,7 @@ namespace DOL.GS.Spells
             font.Owner = (GamePlayer)caster;
 
             // Construct the font spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7310;
             dbs.ClientEffect = 7310;

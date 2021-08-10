@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	{
 		public const int DURATION = 15;
 
-		public ChargeAbility(DBAbility dba, int level) : base(dba, level) { }
+		public ChargeAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		// no charge when snared
 		public override bool CheckPreconditions(GameLiving living, long bitmask)

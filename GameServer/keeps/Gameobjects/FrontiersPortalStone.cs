@@ -38,14 +38,14 @@ namespace DOL.GS.Keeps
 			set { m_component = value; }
 		}
 
-		private DBKeepPosition m_position;
-		public DBKeepPosition Position
+		private KeepPosition m_position;
+		public KeepPosition Position
 		{
 			get { return m_position; }
 			set { m_position = value; }
 		}
 
-		public void LoadFromPosition(DBKeepPosition pos, GameKeepComponent component)
+		public void LoadFromPosition(KeepPosition pos, GameKeepComponent component)
 		{
 			if (component.Keep.DBKeep.BaseLevel < 50)
 				return;
@@ -55,7 +55,7 @@ namespace DOL.GS.Keeps
 			this.AddToWorld();
 		}
 
-		public void MoveToPosition(DBKeepPosition position)
+		public void MoveToPosition(KeepPosition position)
 		{ }
 
 		public override eRealm Realm

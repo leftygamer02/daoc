@@ -62,24 +62,24 @@ namespace DOL.GS.Quests.Atlantis
 		/// </summary>
 		/// <param name="questingPlayer"></param>
 		/// <param name="dbQuest"></param>
-		public ArtifactQuest(GamePlayer questingPlayer, DBQuest dbQuest)
+		public ArtifactQuest(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>
 		/// Quest initialisation.
 		/// </summary>
-		public static void Init(String artifactID, Type questType)
+		public static void Init(int artifactID, Type questType)
 		{
-			if (artifactID == null || questType == null)
+			if (artifactID <= 0 || questType == null)
 				return;
 
-			String[] scholars = ArtifactMgr.GetScholars(artifactID);
+			int[] scholars = ArtifactMgr.GetScholars(artifactID);
 			if (scholars != null)
 			{
 				eRealm realm = eRealm.Albion;
 				GameNPC[] npcs;
 
-				foreach (String scholar in scholars)
+				foreach (var scholar in scholars)
 				{
 					String title;
 
@@ -131,9 +131,9 @@ namespace DOL.GS.Quests.Atlantis
 		/// <summary>
 		/// The artifact ID.
 		/// </summary>
-		public virtual String ArtifactID
+		public virtual int ArtifactID
 		{
-			get { return "UNDEFINED"; }
+			get { return 0; }
 		}
 
 		/// <summary>
@@ -211,7 +211,7 @@ namespace DOL.GS.Quests.Atlantis
 			if (player == null)
 				return false;
 
-			Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+			Dictionary<int, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 				(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 			return (versions.Count > 0);
@@ -232,7 +232,7 @@ namespace DOL.GS.Quests.Atlantis
 		/// <param name="player"></param>
 		/// <param name="artifactID"></param>
 		/// <param name="itemTemplate"></param>
-		protected static bool GiveItem(GameLiving source, GamePlayer player, String artifactID, ItemTemplate itemTemplate)
+		protected static bool GiveItem(GameLiving source, GamePlayer player, int artifactID, ItemTemplate itemTemplate)
 		{
 			InventoryItem item = new InventoryArtifact(itemTemplate);
 			if (!player.ReceiveItem(source, item))
@@ -293,7 +293,7 @@ namespace DOL.GS.Quests.Atlantis
             {
                 if (player.Inventory.RemoveItem(item))
                 {
-                    InventoryLogging.LogInventoryAction(player, "(ARTIFACT;" + Name + ")", eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, "(ARTIFACT;" + Name + ")", eInventoryActionType.Quest, item.ItemTemplate, item.Count);
                     return true;
                 }
             }

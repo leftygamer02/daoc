@@ -77,7 +77,7 @@ namespace DOL.GS.Commands
 			player.Out.SendMessage("Your password has been changed.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 			player.Client.Account.Password = LoginRequestHandler.CryptPassword(newPassword);
 
-			GameServer.Database.SaveObject(player.Client.Account);
+			GameServer.Instance.SaveDataObject(player.Client.Account);
 
 			// Log change
 			AuditMgr.AddAuditEntry(player, AuditType.Account, AuditSubtype.AccountPasswordChange, "", player.Name);

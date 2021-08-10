@@ -191,7 +191,7 @@ namespace DOL.GS
 			{
 				if (m_baseaf == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -221,7 +221,7 @@ namespace DOL.GS
 			{
 				if (m_casterbaseaf == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -251,7 +251,7 @@ namespace DOL.GS
 			{
 				if (m_basestr == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -281,7 +281,7 @@ namespace DOL.GS
 			{
 				if (m_casterbasestr == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -311,7 +311,7 @@ namespace DOL.GS
 			{
 				if (m_basecon == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -341,7 +341,7 @@ namespace DOL.GS
 			{
 				if (m_casterbasecon == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -371,7 +371,7 @@ namespace DOL.GS
 			{
 				if (m_basedex == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -401,7 +401,7 @@ namespace DOL.GS
 			{
 				if (m_casterbasedex == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -431,7 +431,7 @@ namespace DOL.GS
 			{
 				if (m_strcon == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -461,7 +461,7 @@ namespace DOL.GS
 			{
 				if (m_casterstrcon == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -491,7 +491,7 @@ namespace DOL.GS
 			{
 				if (m_dexqui == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -521,7 +521,7 @@ namespace DOL.GS
 			{
 				if (m_casterdexqui == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -551,7 +551,7 @@ namespace DOL.GS
 			{
 				if (m_acuity == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -581,7 +581,7 @@ namespace DOL.GS
 			{
 				if (m_casteracuity == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -611,7 +611,7 @@ namespace DOL.GS
 			{
 				if (m_specaf == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -641,7 +641,7 @@ namespace DOL.GS
 			{
 				if (m_casterspecaf == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -671,7 +671,7 @@ namespace DOL.GS
 			{
 				if (m_haste == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -703,7 +703,7 @@ namespace DOL.GS
 			{
 				if (m_powereg == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -732,7 +732,7 @@ namespace DOL.GS
 			{
 				if (m_dmgadd == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -762,7 +762,7 @@ namespace DOL.GS
 			{
 				if (m_hpRegen == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -791,7 +791,7 @@ namespace DOL.GS
 			{
 				if (m_heal == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -998,7 +998,7 @@ namespace DOL.GS
 			}
 			if (t != null && item != null)
 			{
-				if (item.Id_nb == "Full_Buffs_Token" || item.Id_nb == "BPFull_Buffs_Token")
+				if (item.Id == "Full_Buffs_Token" || item.Id == "BPFull_Buffs_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1035,7 +1035,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Specialization_Buffs_Token" || item.Id_nb == "BPSpecialization_Buffs_Token")
+				if (item.Id == "Specialization_Buffs_Token" || item.Id == "BPSpecialization_Buffs_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1056,7 +1056,7 @@ namespace DOL.GS
 					return true;
 
 				}
-				if (item.Id_nb == "Baseline_Buffs_Token" || item.Id_nb == "BPBaseline_Buffs_Token")
+				if (item.Id == "Baseline_Buffs_Token" || item.Id == "BPBaseline_Buffs_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1076,7 +1076,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Strength_Buff_Token" || item.Id_nb == "BPStrength_Buff_Token")
+				if (item.Id == "Strength_Buff_Token" || item.Id == "BPStrength_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1090,7 +1090,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Fortification_Buff_Token" || item.Id_nb == "BPFortification_Buff_Token")
+				if (item.Id == "Fortification_Buff_Token" || item.Id == "BPFortification_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1104,7 +1104,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Dexterity_Buff_Token" || item.Id_nb == "BPDexterity_Buff_Token")
+				if (item.Id == "Dexterity_Buff_Token" || item.Id == "BPDexterity_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1118,7 +1118,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Armor_Buff_Token" || item.Id_nb == "BPArmor_Buff_Token")
+				if (item.Id == "Armor_Buff_Token" || item.Id == "BPArmor_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1132,7 +1132,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "StrCon_Buff_Token" || item.Id_nb == "BPStrCon_Buff_Token")
+				if (item.Id == "StrCon_Buff_Token" || item.Id == "BPStrCon_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1146,7 +1146,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "DexQui_Buff_Token" || item.Id_nb == "BPDexQui_Buff_Token")
+				if (item.Id == "DexQui_Buff_Token" || item.Id == "BPDexQui_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1160,7 +1160,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Acu_Buff_Token" || item.Id_nb == "BPAcu_Buff_Token")
+				if (item.Id == "Acu_Buff_Token" || item.Id == "BPAcu_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1174,7 +1174,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "SpecAF_Buff_Token" || item.Id_nb == "BPSpecAF_Buff_Token")
+				if (item.Id == "SpecAF_Buff_Token" || item.Id == "BPSpecAF_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1188,7 +1188,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "Haste_Buff_Token" || item.Id_nb == "BPHaste_Buff_Token")
+				if (item.Id == "Haste_Buff_Token" || item.Id == "BPHaste_Buff_Token")
 				{
 					BuffPlayer(t, MerchHasteBuff, MerchSpecSpellLine);
 					t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
@@ -1197,21 +1197,21 @@ namespace DOL.GS
 				}
 				#region Non-live (commented out)
 				/*
-				if (item.Id_nb == "PowerReg_Buff_Token")
+				if (item.Id == "PowerReg_Buff_Token")
 				{
 					BuffPlayer(t, MerchPoweregBuff, MerchSpecSpellLine);
 					t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "DmgAdd_Buff_Token")
+				if (item.Id == "DmgAdd_Buff_Token")
 				{
 					BuffPlayer(t, MerchDmgaddBuff, MerchSpecSpellLine);
 					t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id_nb == "HPReg_Buff_Token")
+				if (item.Id == "HPReg_Buff_Token")
 				{
 					BuffPlayer(t, MerchHPRegenBuff, MerchSpecSpellLine);
 					t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
@@ -1222,21 +1222,21 @@ namespace DOL.GS
 				#endregion Non-live (commented out)
 			}
 			#region Non-live (commented out)
-			/*if (item.Id_nb == "EnduReg_Buff_Token")
+			/*if (item.Id == "EnduReg_Buff_Token")
 			{
 				BuffPlayer(t, MerchEndRegenBuff, MerchSpecSpellLine);
 				t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 				t.Inventory.RemoveItem(item);
 				return true;
 			}
-			if (item.Id_nb == "Heal_Buff_Token")
+			if (item.Id == "Heal_Buff_Token")
 			{
 				BuffPlayer(t, MerchHealBuff, MerchSpecSpellLine);
 				t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 				t.Inventory.RemoveItem(item);
 				return true;
 			}
-			if (item.Id_nb == "Otherline_Buffs_Token")
+			if (item.Id == "Otherline_Buffs_Token")
 			{
 				BuffPlayer(t, MerchPoweregBuff, MerchSpecSpellLine);
 				BuffPlayer(t, MerchDmgaddBuff, MerchSpecSpellLine);
@@ -1275,228 +1275,228 @@ namespace DOL.GS.Items
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Full_Buffs_Token";
+				item.Id = "Full_Buffs_Token";
 				item.Name = "Full Buffs Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 320000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Specialization_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Specialization_Buffs_Token";
+				item.Id = "Specialization_Buffs_Token";
 				item.Name = "Specialization Buffs Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 240000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Baseline_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Baseline_Buffs_Token";
+				item.Id = "Baseline_Buffs_Token";
 				item.Name = "Baseline Buffs Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 80000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Strength_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Strength_Buff_Token";
+				item.Id = "Strength_Buff_Token";
 				item.Name = "Strength Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 20000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Fortification_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Fortification_Buff_Token";
+				item.Id = "Fortification_Buff_Token";
 				item.Name = "Fortification Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 20000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Dexterity_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Dexterity_Buff_Token";
+				item.Id = "Dexterity_Buff_Token";
 				item.Name = "Dexertity Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 20000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Armor_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Armor_Buff_Token";
+				item.Id = "Armor_Buff_Token";
 				item.Name = "Armor Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 20000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("StrCon_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "StrCon_Buff_Token";
+				item.Id = "StrCon_Buff_Token";
 				item.Name = "Might Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 40000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("DexQui_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "DexQui_Buff_Token";
+				item.Id = "DexQui_Buff_Token";
 				item.Name = "Deftness Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 40000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Acu_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Acu_Buff_Token";
+				item.Id = "Acu_Buff_Token";
 				item.Name = "Enlightenment Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 40000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("SpecAF_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "SpecAF_Buff_Token";
+				item.Id = "SpecAF_Buff_Token";
 				item.Name = "Barrier Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 60000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Haste_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Haste_Buff_Token";
+				item.Id = "Haste_Buff_Token";
 				item.Name = "Haste Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 60000;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			#region Non-live (commented out)
 			/*
@@ -1504,114 +1504,114 @@ namespace DOL.GS.Items
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Otherline_Buffs_Token";
+				item.Id = "Otherline_Buffs_Token";
 				item.Name = "Extended Buffs Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("DmgAdd_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "DmgAdd_Buff_Token";
+				item.Id = "DmgAdd_Buff_Token";
 				item.Name = "Damage Add Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("PowerReg_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "PowerReg_Buff_Token";
+				item.Id = "PowerReg_Buff_Token";
 				item.Name = "Power Regen Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("HPReg_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "HPReg_Buff_Token";
+				item.Id = "HPReg_Buff_Token";
 				item.Name = "HP Regen Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
  
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("EnduReg_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "EnduReg_Buff_Token";
+				item.Id = "EnduReg_Buff_Token";
 				item.Name = "Endurance Regen Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Heal_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Heal_Buff_Token";
+				item.Id = "Heal_Buff_Token";
 				item.Name = "Heal Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			 */
 			#endregion Non-live (commented out)
@@ -1633,228 +1633,228 @@ namespace DOL.GS.Items
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPFull_Buffs_Token";
+				item.Id = "BPFull_Buffs_Token";
 				item.Name = "Full Buffs Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 32;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPSpecialization_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPSpecialization_Buffs_Token";
+				item.Id = "BPSpecialization_Buffs_Token";
 				item.Name = "Specialization Buffs Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 24;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPBaseline_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPBaseline_Buffs_Token";
+				item.Id = "BPBaseline_Buffs_Token";
 				item.Name = "Baseline Buffs Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 8;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPStrength_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPStrength_Buff_Token";
+				item.Id = "BPStrength_Buff_Token";
 				item.Name = "Strength Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 2;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPFortification_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPFortification_Buff_Token";
+				item.Id = "BPFortification_Buff_Token";
 				item.Name = "Fortification Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 2;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPDexterity_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPDexterity_Buff_Token";
+				item.Id = "BPDexterity_Buff_Token";
 				item.Name = "Dexertity Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 2;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPArmor_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPArmor_Buff_Token";
+				item.Id = "BPArmor_Buff_Token";
 				item.Name = "Armor Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 2;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPStrCon_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPStrCon_Buff_Token";
+				item.Id = "BPStrCon_Buff_Token";
 				item.Name = "Might Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 4;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPDexQui_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPDexQui_Buff_Token";
+				item.Id = "BPDexQui_Buff_Token";
 				item.Name = "Deftness Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 4;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPAcu_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPAcu_Buff_Token";
+				item.Id = "BPAcu_Buff_Token";
 				item.Name = "Enlightenment Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 4;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPSpecAF_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPSpecAF_Buff_Token";
+				item.Id = "BPSpecAF_Buff_Token";
 				item.Name = "Barrier Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 6;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPHaste_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "BPHaste_Buff_Token";
+				item.Id = "BPHaste_Buff_Token";
 				item.Name = "Haste Buff Token";
 				item.Level = 1;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 6;
 				item.Weight = 1;
 				item.PackageID = "BPBuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			#region Non-live (commented out)
 			/*
@@ -1862,114 +1862,114 @@ namespace DOL.GS.Items
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Otherline_Buffs_Token";
+				item.Id = "Otherline_Buffs_Token";
 				item.Name = "Extended Buffs Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("DmgAdd_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "DmgAdd_Buff_Token";
+				item.Id = "DmgAdd_Buff_Token";
 				item.Name = "Damage Add Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("PowerReg_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "PowerReg_Buff_Token";
+				item.Id = "PowerReg_Buff_Token";
 				item.Name = "Power Regen Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("HPReg_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "HPReg_Buff_Token";
+				item.Id = "HPReg_Buff_Token";
 				item.Name = "HP Regen Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
  
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("EnduReg_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "EnduReg_Buff_Token";
+				item.Id = "EnduReg_Buff_Token";
 				item.Name = "Endurance Regen Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0; // Change to your pricing
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 
 			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Heal_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id_nb = "Heal_Buff_Token";
+				item.Id = "Heal_Buff_Token";
 				item.Name = "Heal Buff Token";
 				item.Level = 50;
-				item.Item_Type = 40;
+				item.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
 				item.Price = 0;
 				item.Weight = 1;
 				item.PackageID = "BuffTokens";
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item);
 				if (log.IsDebugEnabled)
-					log.Debug("Added " + item.Id_nb);
+					log.Debug("Added " + item.Id);
 			}
 			 */
 			#endregion Non-live (commented out)
@@ -1985,7 +1985,7 @@ public class BuffTokensList
 	[GameServerStartedEvent]
 	public static void OnServerStartup(DOLEvent e, object sender, EventArgs args)
 	{
-		ItemTemplate[] buffMerch = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsLike("BuffTokens")).OrderBy(it => it.Item_Type).ToArray();
+		ItemTemplate[] buffMerch = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsLike("BuffTokens")).OrderBy(it => it.ItemType).ToArray();
 		MerchantItem m_item = null;
 		int pagenumber = 0;
 		int slotposition = 0;
@@ -1996,11 +1996,11 @@ public class BuffTokensList
 			{
 				m_item = new MerchantItem();
 				m_item.ItemListID = "BuffTokens";
-				m_item.ItemTemplateID = item.Id_nb;
+				m_item.ItemTemplateID = item.Id;
 				m_item.PageNumber = pagenumber;
 				m_item.SlotPosition = slotposition;
 				m_item.AllowAdd = true;
-				GameServer.Database.AddObject(m_item);
+				GameServer.Instance.SaveDataObject(m_item);
 				if (slotposition == 29)
 				{
 					slotposition = 0;
@@ -2020,7 +2020,7 @@ public class BPBuffTokensList
 	[GameServerStartedEvent]
 	public static void OnServerStartup(DOLEvent e, object sender, EventArgs args)
 	{
-		ItemTemplate[] buffMerch = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsLike("BPBuffTokens")).OrderBy(it => it.Item_Type).ToArray();
+		ItemTemplate[] buffMerch = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsLike("BPBuffTokens")).OrderBy(it => it.ItemType).ToArray();
 		MerchantItem m_item = null;
 		int pagenumber = 0;
 		int slotposition = 0;
@@ -2031,11 +2031,11 @@ public class BPBuffTokensList
 			{
 				m_item = new MerchantItem();
 				m_item.ItemListID = "BPBuffTokens";
-				m_item.ItemTemplateID = item.Id_nb;
+				m_item.ItemTemplateID = item.Id;
 				m_item.PageNumber = pagenumber;
 				m_item.SlotPosition = slotposition;
 				m_item.AllowAdd = true;
-				GameServer.Database.AddObject(m_item);
+				GameServer.Instance.SaveDataObject(m_item);
 				if (slotposition == 29)
 				{
 					slotposition = 0;

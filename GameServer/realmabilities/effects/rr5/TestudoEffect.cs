@@ -53,7 +53,7 @@ namespace DOL.GS.Effects
 			InventoryItem shield = living.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 			if (shield == null)
 				return;
-			if (shield.Object_Type != (int)eObjectType.Shield)
+			if (shield.ObjectType != (int)eObjectType.Shield)
 				return;
 			if (living.TargetObject == null)
 				return;

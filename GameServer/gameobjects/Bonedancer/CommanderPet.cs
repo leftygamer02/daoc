@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using DOL.AI.Brain;
 using Atlas.DataLayer.Models;
@@ -147,10 +148,12 @@ namespace DOL.GS
 
 		static CommanderPet()
 		{
+			var itemTemps = GameServer.Database.ItemTemplates.Where(x => WEAPON_KEYS.Contains(x.KeyName)).ToList();
+
 			// Get weapon templates, creating them if necessary.
 			for (int i = (int)eWeaponType.MIN; i <= (int)eWeaponType.MAX; i++)
 			{
-				ItemTemplate itemTemp = GameServer.Database.FindObjectByKey<ItemTemplate>(WEAPON_KEYS[i]);
+				ItemTemplate itemTemp = itemTemps.FirstOrDefault(x => x.KeyName == WEAPON_KEYS[i]);
 
 				if (itemTemp == null)
 				{
@@ -169,7 +172,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Adds additional aggro to melee attacks if pet is set to taunt
 		/// </summary>
-		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Style style, double effectiveness, int interruptDuration, bool dualWield)
+		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield)
 		{
 			AttackData ad = base.MakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield);
 
@@ -521,89 +524,89 @@ namespace DOL.GS
 			if (weaponType == eWeaponType.Bow)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "SkillBase.RegisterPropertyNames.ShortBow");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3467;
-				temp.Object_Type = (int)eObjectType.CompositeBow;
-				temp.Type_Damage = (int)eDamageType.Thrust;
+				temp.ObjectType = (int)eObjectType.CompositeBow;
+				temp.TypeDamage = (int)eDamageType.Thrust;
 				temp.SPD_ABS = 45;
-				temp.Item_Type = (int)eInventorySlot.DistanceWeapon;
+				temp.ItemType = (int)eInventorySlot.DistanceWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Distance;
 			}
 			else if (weaponType == eWeaponType.OneHandAxe)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "GameObjects.CommanderPet.WR.Const.1HandedAxe");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3469;
-				temp.Object_Type = (int)eObjectType.Axe;
-				temp.Type_Damage = (int)eDamageType.Slash;
+				temp.ObjectType = (int)eObjectType.Axe;
+				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 37;
-				temp.Item_Type = (int)eInventorySlot.RightHandWeapon;
+				temp.ItemType = (int)eInventorySlot.RightHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Standard;
 			}
 			else if (weaponType == eWeaponType.OneHandHammer)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "GameObjects.CommanderPet.WR.Const.1HandedHammer");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3466;
-				temp.Object_Type = (int)eObjectType.Hammer;
-				temp.Type_Damage = (int)eDamageType.Crush;
+				temp.ObjectType = (int)eObjectType.Hammer;
+				temp.TypeDamage = (int)eDamageType.Crush;
 				temp.SPD_ABS = 37;
-				temp.Item_Type = (int)eInventorySlot.RightHandWeapon;
+				temp.ItemType = (int)eInventorySlot.RightHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Standard;
 			}
 			else if (weaponType == eWeaponType.OneHandSword)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "GameObjects.CommanderPet.WR.Const.1HandedSword");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3463;
-				temp.Object_Type = (int)eObjectType.Sword;
-				temp.Type_Damage = (int)eDamageType.Slash;
+				temp.ObjectType = (int)eObjectType.Sword;
+				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 34;
-				temp.Item_Type = (int)eInventorySlot.RightHandWeapon;
+				temp.ItemType = (int)eInventorySlot.RightHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Standard;
 			}
 			else if (weaponType == eWeaponType.TwoHandAxe)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "GameObjects.CommanderPet.WR.Const.2HandedAxe");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3468;
-				temp.Object_Type = (int)eObjectType.Axe;
-				temp.Type_Damage = (int)eDamageType.Slash;
+				temp.ObjectType = (int)eObjectType.Axe;
+				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 50;
-				temp.Item_Type = (int)eInventorySlot.TwoHandWeapon;
+				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
 			}
 			else if (weaponType == eWeaponType.TwoHandHammer)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "GameObjects.CommanderPet.WR.Const.2HandedHammer");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3465;
-				temp.Object_Type = (int)eObjectType.Hammer;
-				temp.Type_Damage = (int)eDamageType.Crush;
+				temp.ObjectType = (int)eObjectType.Hammer;
+				temp.TypeDamage = (int)eDamageType.Crush;
 				temp.SPD_ABS = 50;
-				temp.Item_Type = (int)eInventorySlot.TwoHandWeapon;
+				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
 			}
 			else if (weaponType == eWeaponType.TwoHandSword)
 			{
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "GameObjects.CommanderPet.WR.Const.2HandedSword");
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				temp.Model = 3462;
-				temp.Object_Type = (int)eObjectType.Sword;
-				temp.Type_Damage = (int)eDamageType.Slash;
+				temp.ObjectType = (int)eObjectType.Sword;
+				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 45;
-				temp.Item_Type = (int)eInventorySlot.TwoHandWeapon;
+				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
 			}
 			else if (weaponType == eWeaponType.Staff)
 			{
-				temp.Id_nb = WEAPON_KEYS[(int)weaponType];
+				temp.KeyName = WEAPON_KEYS[(int)weaponType];
 				weaponName = LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, "SkillBase.RegisterPropertyNames.Staff");
 				temp.Model = 3464;
-				temp.Object_Type = (int)eObjectType.Staff;
-				temp.Type_Damage = (int)eDamageType.Crush;
+				temp.ObjectType = (int)eObjectType.Staff;
+				temp.TypeDamage = (int)eDamageType.Crush;
 				temp.SPD_ABS = 50;
-				temp.Item_Type = (int)eInventorySlot.TwoHandWeapon;
+				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
 				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
 			}
 			else
@@ -724,7 +727,7 @@ namespace DOL.GS
 					{
 						// Only empty the slot we're about to fill, as we check the other weapon slots
 						//	to determine which weapon types unknown commanders can switch to
-						Inventory.RemoveItem(Inventory.GetItem((eInventorySlot)weapon.Item_Type));
+						Inventory.RemoveItem(Inventory.GetItem((eInventorySlot)weapon.ItemTemplate.ItemType));
 					}
 					else
 					{
@@ -735,13 +738,13 @@ namespace DOL.GS
 
 				}
 
-				Inventory.AddItem((eInventorySlot)weapon.Item_Type, weapon);
+				Inventory.AddItem((eInventorySlot)weapon.ItemTemplate.ItemType, weapon);
 
 				// If we've got a ranged weapon, keep using it
 				if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 					BroadcastLivingEquipmentUpdate();
 				else
-					SwitchWeapon((eActiveWeaponSlot)weapon.Hand);
+					SwitchWeapon((eActiveWeaponSlot)weapon.ItemTemplate.Hand);
 			}
 		}
 		#endregion

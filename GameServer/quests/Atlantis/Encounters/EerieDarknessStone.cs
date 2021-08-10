@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public EerieDarknessStone(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public EerieDarknessStone(GamePlayer questingPlayer, DBQuest dbQuest)
+		public EerieDarknessStone(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

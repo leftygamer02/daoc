@@ -418,7 +418,7 @@ namespace DOL.GS.ServerRules
 		/// </summary>
 		/// <param name="regionID"></param>
 		/// <returns></returns>
-		string GetLotMarkerListName(ushort regionID);
+		int GetLotMarkerListName(ushort regionID);
 
 		/// <summary>
 		/// Send merchant window containing housing items that can be purchased by a player.  If this list is customized 

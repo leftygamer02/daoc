@@ -57,7 +57,7 @@ namespace DOL.GS.SkillHandler
 			if (spellid == -1)
 			{
 				spellid=0;
-				DBSpell climbSpell = DOLDB<DBSpell>.SelectObject(DB.Column("Name").IsEqualTo(Abilities.ClimbSpikes));
+				Atlas.DataLayer.Models.Spell climbSpell = DOLDB<Atlas.DataLayer.Models.Spell>.SelectObject(DB.Column("Name").IsEqualTo(Abilities.ClimbSpikes));
 				if (climbSpell != null)
 					spellid = climbSpell.SpellID;
 			}

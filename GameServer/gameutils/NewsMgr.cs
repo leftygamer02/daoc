@@ -56,7 +56,7 @@ namespace DOL.GS
 				news.Type = (byte)type;
 				news.Realm = (byte)realm;
 				news.Text = message;
-				GameServer.Database.AddObject(news);
+				GameServer.Instance.SaveDataObject(news);
 				GameEventMgr.Notify(DatabaseEvent.NewsCreated, new NewsEventArgs(news));
 			}
 		}

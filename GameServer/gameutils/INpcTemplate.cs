@@ -58,16 +58,17 @@ namespace DOL.GS
 		ushort Race { get; }
 		ushort BodyType { get;}
 		byte VisibleActiveWeaponSlot { get;}
+		int Realm { get; }
 
 		/// <summary>
 		/// Gets the template npc inventory
 		/// </summary>
-		string Inventory { get; }
+		int Inventory { get; }
 
 		/// <summary>
 		/// List of items sold by this npc
 		/// </summary>
-		string ItemsListTemplateID { get; }
+		int ItemsListTemplateID { get; }
 
 		/// <summary>
 		/// Gets the template combat stats

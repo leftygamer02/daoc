@@ -469,7 +469,7 @@ namespace DOL.GS.Quests
 			TaskItems.DPS_AF = 0;
 			TaskItems.SPD_ABS = 0;
 			TaskItems.Hand = 0;
-			//TaskItems.Type_Damage = 0;
+			//TaskItems.TypeDamage = 0;
 			TaskItems.ObjectType = 0;
 			TaskItems.ItemType = 1;
 			TaskItems.Weight = 1;

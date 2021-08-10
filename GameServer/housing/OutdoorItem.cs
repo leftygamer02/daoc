@@ -31,12 +31,12 @@ namespace DOL.GS.Housing
 		public OutdoorItem()
 		{}
 
-		public OutdoorItem(DBHouseOutdoorItem dbitem)
+		public OutdoorItem(DbOutdoorItem dbitem)
 		{
 			Model = dbitem.Model;
 			Position = dbitem.Position;
 			Rotation = dbitem.Rotation;
-			BaseItem = GameServer.Database.FindObjectByKey<ItemTemplate>(dbitem.BaseItemID);
+			BaseItem = GameServer.Database.ItemTemplates.Find(dbitem.BaseItemID);
 			DatabaseItem = dbitem;
 		}
 
@@ -48,16 +48,16 @@ namespace DOL.GS.Housing
 
 		public ItemTemplate BaseItem { get; set; }
 
-		public DBHouseOutdoorItem DatabaseItem { get; set; }
+		public DbOutdoorItem DatabaseItem { get; set; }
 
-		public DBHouseOutdoorItem CreateDBOutdoorItem(int houseNumber)
+		public DbOutdoorItem CreateDBOutdoorItem(int houseNumber)
 		{
-			var dbitem = new DBHouseOutdoorItem
+			var dbitem = new DbOutdoorItem
 			             	{
 			             		HouseNumber = houseNumber,
 			             		Model = Model,
 			             		Position = Position,
-			             		BaseItemID = BaseItem.Id_nb,
+			             		BaseItemID = BaseItem.Id,
 			             		Rotation = Rotation
 			             	};
 

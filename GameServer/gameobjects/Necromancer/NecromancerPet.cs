@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using DOL.AI.Brain;
 using Atlas.DataLayer.Models;
@@ -89,9 +90,14 @@ namespace DOL.GS
 					EffectList.Add(new MezzRootImmunityEffect());
 					LoadEquipmentTemplate("barehand_weapon");
 					InventoryItem item;
-					if (Inventory != null &&
-					    (item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
-						item.ProcSpellID = (int)Procs.Stun;
+					if (Inventory != null && (item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
+                    {
+						item.Spells.Add(new InventoryItemSpell()
+						{
+							SpellID = (int)Procs.Stun,
+							ProcChance = 10
+						});
+                    }
 					break;
 				case "reanimated servant" :
 					LoadEquipmentTemplate("reanimated_servant");
@@ -101,9 +107,14 @@ namespace DOL.GS
 					break;
 				case "greater necroservant":
 					LoadEquipmentTemplate("barehand_weapon");
-					if (Inventory != null &&
-					    (item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
-						item.ProcSpellID = (int)Procs.Poison;
+					if (Inventory != null && (item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
+                    {
+						item.Spells.Add(new InventoryItemSpell()
+						{
+							SpellID = (int)Procs.Poison,
+							ProcChance = 10
+						});
+					}
 					break;
 				case "abomination":
 					LoadEquipmentTemplate("abomination_fiery_sword");
@@ -398,7 +409,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Called when the necro pet attacks, which interrupts current spells being cast
 		/// </summary>
-		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Style style, double effectiveness, int interruptDuration, bool dualWield, bool ignoreLOS)
+		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield, bool ignoreLOS)
 		{
 			if (!HasEffect(typeof(FacilitatePainworkingEffect)))
 			{
@@ -642,7 +653,11 @@ namespace DOL.GS
 					if (Inventory != null &&
 					    (item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
 					{
-						item.ProcSpellID = (int)Procs.Disease;
+						item.Spells.Add(new InventoryItemSpell()
+						{
+							SpellID = (int)Procs.Disease,
+							ProcChance = 10
+						});
 						SayTo(owner, eChatLoc.CL_SystemWindow, "As you command.");
 					}
 					return true;
@@ -654,7 +669,11 @@ namespace DOL.GS
 					if (Inventory != null &&
 					    (item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
 					{
-						item.ProcSpellID = (int)Procs.Poison;
+						item.Spells.Add(new InventoryItemSpell()
+						{
+							SpellID = (int)Procs.Poison,
+							ProcChance = 10
+						});
 						SayTo(owner, eChatLoc.CL_SystemWindow, "As you command.");
 					}
 					return true;
@@ -679,8 +698,9 @@ namespace DOL.GS
 						if (Name != "abomination")
 							return false;
 
-						String templateID = String.Format("{0}_{1}", Name, text.Replace(" ", "_"));
-						if (LoadEquipmentTemplate(templateID))
+						var keyName = String.Format("{0}_{1}", Name, text.Replace(" ", "_"));
+						
+						if (LoadEquipmentTemplate(keyName))
 							SayTo(owner, eChatLoc.CL_SystemWindow, "As you command.");
 						return true;
 					}
@@ -693,32 +713,47 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="templateID">Equipment Template ID.</param>
 		/// <returns>True on success, else false.</returns>
-		private bool LoadEquipmentTemplate(String templateID)
+		private bool LoadEquipmentTemplate(string keyName)
 		{
-			if (templateID.Length > 0)
+			var template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == keyName);
+
+			if (template != null)
 			{
 				GameNpcInventoryTemplate inventoryTemplate = new GameNpcInventoryTemplate();
-				if (inventoryTemplate.LoadFromDatabase(templateID))
+				if (inventoryTemplate.LoadFromDatabase(template.Id))
 				{
 					Inventory = new GameNPCInventory(inventoryTemplate);
 					InventoryItem item;
 					if ((item = Inventory.GetItem(eInventorySlot.TwoHandWeapon)) != null)
 					{
-						item.DPS_AF = (int)(Level * 3.3);
-						item.SPD_ABS = 50;
-						switch (templateID)
+						item.ItemTemplate = template;
+						item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+						item.ItemTemplate.SPD_ABS = 50;
+						switch (item.ItemTemplate.KeyName)
 						{
 							case "abomination_fiery_sword":
 							case "abomination_flaming_mace":
-								item.ProcSpellID = (int)Procs.Heat;
+								item.Spells.Add(new InventoryItemSpell()
+								{
+									SpellID = (int)Procs.Heat,
+									ProcChance = 10
+								});
 								break;
 							case "abomination_icy_sword":
 							case "abomination_frozen_mace":
-								item.ProcSpellID = (int)Procs.Cold;
+								item.Spells.Add(new InventoryItemSpell()
+								{
+									SpellID = (int)Procs.Cold,
+									ProcChance = 10
+								});
 								break;
 							case "abomination_poisonous_sword":
 							case "abomination_venomous_mace":
-								item.ProcSpellID = (int)Procs.Poison;
+								item.Spells.Add(new InventoryItemSpell()
+								{
+									SpellID = (int)Procs.Poison,
+									ProcChance = 10
+								});
 								break;
 						}
 						SwitchWeapon(eActiveWeaponSlot.TwoHanded);
@@ -727,13 +762,15 @@ namespace DOL.GS
 					{
 						if ((item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
 						{
-							item.DPS_AF = (int)(Level * 3.3);
-							item.SPD_ABS = 37;
+							item.ItemTemplate = template;
+							item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+							item.ItemTemplate.SPD_ABS = 37;
 						}
 						if ((item = Inventory.GetItem(eInventorySlot.LeftHandWeapon)) != null)
 						{
-							item.DPS_AF = (int)(Level * 3.3);
-							item.SPD_ABS = 37;
+							item.ItemTemplate = template;
+							item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+							item.ItemTemplate.SPD_ABS = 37;
 						}
 						SwitchWeapon(eActiveWeaponSlot.Standard);
 					}

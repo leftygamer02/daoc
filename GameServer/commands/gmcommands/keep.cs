@@ -2043,10 +2043,10 @@ namespace DOL.GS.Commands
 						keep.Z = client.Player.Z;
 						keep.Heading = client.Player.Heading;
 						keep.BaseLevel = baseLevel;
-						GameServer.Database.AddObject(keep);
+						GameServer.Instance.SaveDataObject(keep);
 
 						DBKeepComponent towerComponent = new DBKeepComponent(0, (int)GameKeepComponent.eComponentSkin.Tower, 0, 0, 0, 0, 3200, keep.KeepID, client.Player.Name + ";/keep towercreate");
-						GameServer.Database.AddObject(towerComponent);
+						GameServer.Instance.SaveDataObject(towerComponent);
 
 						GameKeepTower k = new GameKeepTower();
 						k.Load(keep);
@@ -2138,7 +2138,7 @@ namespace DOL.GS.Commands
 						keep.Z = client.Player.Z;
 						keep.Heading = client.Player.Heading;
 						keep.BaseLevel = baselevel;
-						GameServer.Database.AddObject(keep);
+						GameServer.Instance.SaveDataObject(keep);
 
 						GameKeep k = new GameKeep();
 						k.Load(keep);
@@ -2418,7 +2418,7 @@ namespace DOL.GS.Commands
 						GameKeepComponent component = client.Player.TargetObject as GameKeepComponent;
 						if (component != null)
 						{
-							DBKeepPosition pos = PositionMgr.CreatePosition(typeof(FrontiersPortalStone), 0, client.Player, Guid.NewGuid().ToString(), component);
+							KeepPosition pos = PositionMgr.CreatePosition(typeof(FrontiersPortalStone), 0, client.Player, Guid.NewGuid().ToString(), component);
 							PositionMgr.AddPosition(pos);
 							PositionMgr.FillPositions();
 						}
@@ -2454,9 +2454,9 @@ namespace DOL.GS.Commands
 						GameKeepComponent component = client.Player.TargetObject as GameKeepComponent;
 						if (component != null)
 						{
-							DBKeepPosition pos = PositionMgr.CreatePosition(typeof(GameKeepBanner), 0, client.Player, Guid.NewGuid().ToString(), component);
+							KeepPosition pos = PositionMgr.CreatePosition(typeof(GameKeepBanner), 0, client.Player, Guid.NewGuid().ToString(), component);
 							pos.TemplateType = (int)bannerType;
-							GameServer.Database.SaveObject(pos);
+							GameServer.Instance.SaveDataObject(pos);
 							PositionMgr.AddPosition(pos);
 							PositionMgr.FillPositions();
 						}

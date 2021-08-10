@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class BladeBarrierAbility : RR5RealmAbility
 	{
-		public BladeBarrierAbility(DBAbility dba, int level) : base(dba, level) { }
+		public BladeBarrierAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

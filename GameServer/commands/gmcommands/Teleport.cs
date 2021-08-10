@@ -129,7 +129,7 @@ namespace DOL.GS.Commands
                 return;
             }
 
-            GameServer.Database.AddObject(teleport);
+            GameServer.Instance.SaveDataObject(teleport);
             client.Out.SendMessage(String.Format("Teleport ID [{0}] successfully added.", teleportID),
                 eChatType.CT_System, eChatLoc.CL_SystemWindow);
         }

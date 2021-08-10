@@ -83,7 +83,7 @@ namespace DOL.GS.Commands
                             ((DBLanguageSystem)translation).Text = args[4];
                             ((DBLanguageSystem)translation).Language = args[2];
 
-                            GameServer.Database.AddObject(translation);
+                            GameServer.Instance.SaveDataObject(translation);
                             LanguageMgr.RegisterLanguageDataObject(translation);
                             DisplayMessage(client, "[Language-Manager] Translation successfully added! (Language <" + args[2].ToUpper() + "> - TranslationId <" + args[3] + "> )");
                             return;
@@ -183,7 +183,7 @@ namespace DOL.GS.Commands
                                     DisplayMessage(client, "[Language-Manager] Can't register language object in LanguageMgr, there is already another one!");
                                 else
                                 {
-                                    GameServer.Database.AddObject(lngObj);
+                                    GameServer.Instance.SaveDataObject(lngObj);
                                     client.Player.TempProperties.removeProperty(LANGUAGEMGR_MEM_LNG_OBJ);
                                     DisplayMessage(client, "[Language-Manager] Translation successfully added into the database and registered in LanguageMgr.");
                                 }
@@ -222,7 +222,7 @@ namespace DOL.GS.Commands
                             else
                             {
                                 ((DBLanguageSystem)lngObj).Text = args[3];
-                                GameServer.Database.SaveObject(lngObj);
+                                GameServer.Instance.SaveDataObject(lngObj);
                                 DisplayMessage(client, "[Language-Manager] TranslationId <" + args[3] + "> (Language: " + args[2].ToUpper() + " ) successfully updated in database!");
                             }
                         }
@@ -305,7 +305,7 @@ namespace DOL.GS.Commands
                                 else
                                     ((DBLanguageSystem)lngObj).Text = args[2];
 
-                                GameServer.Database.SaveObject(lngObj);
+                                GameServer.Instance.SaveDataObject(lngObj);
                                 client.Player.TempProperties.removeProperty(LANGUAGEMGR_SEL_LNG_OBJ);
                                 DisplayMessage(client, "[Language-Manager] Language object successfully changed and saved in database." +
                                                        "( Language <" + ((DBLanguageSystem)lngObj).Language +

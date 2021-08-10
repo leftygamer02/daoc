@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public FoppishSleeves(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public FoppishSleeves(GamePlayer questingPlayer, DBQuest dbQuest)
+        public FoppishSleeves(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

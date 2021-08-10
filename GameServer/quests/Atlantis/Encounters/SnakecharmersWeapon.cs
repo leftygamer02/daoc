@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public SnakecharmersWeapon(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public SnakecharmersWeapon(GamePlayer questingPlayer, DBQuest dbQuest)
+        public SnakecharmersWeapon(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

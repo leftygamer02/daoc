@@ -640,7 +640,7 @@ namespace DOL.GS
 		{
 			LoadPlayer(accountindex, Properties.PLAYER_CLASS);
 		}
-		public void LoadPlayer(DOLCharacters dolChar)
+		public void LoadPlayer(Character dolChar)
 		{
 			LoadPlayer(dolChar, Properties.PLAYER_CLASS);
 		}
@@ -649,7 +649,7 @@ namespace DOL.GS
 		{
 			// refreshing Account to load any changes from the DB
 			GameServer.Database.FillObjectRelations(m_account);
-			DOLCharacters dolChar = m_account.Characters[accountindex];
+			Character dolChar = m_account.Characters[accountindex];
 			LoadPlayer(dolChar, playerClass);
 		}
 
@@ -658,7 +658,7 @@ namespace DOL.GS
 		/// Loads a player from the DB
 		/// </summary>
 		/// <param name="accountindex">Index of the character within the account</param>
-		public void LoadPlayer(DOLCharacters dolChar, string playerClass)
+		public void LoadPlayer(Character dolChar, string playerClass)
 		{
 			m_activeCharIndex = 0;
 			foreach (var ch in Account.Characters)
@@ -725,7 +725,7 @@ namespace DOL.GS
 						//Time playing
 						var connectedtime = DateTime.Now.Subtract(m_account.LastLogin).TotalMinutes;
 						//Lets get our player from DB.
-						var getp = GameServer.Database.FindObjectByKey<DOLCharacters>(m_player.InternalID);
+						var getp = GameServer.Database.FindObjectByKey<Character>(m_player.InternalID);
 						//Let get saved poistion from DB.
 						int[] oldloc = { getp.Xpos, getp.Ypos, getp.Zpos, getp.Direction, getp.Region };
 						//Lets get current player Gloc.

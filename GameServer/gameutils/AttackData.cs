@@ -39,7 +39,7 @@ namespace DOL.GS
 		private int m_styledamage = 0;
 		private int m_modifier = 0;
 		private eDamageType m_damageType = 0;
-		private Style m_style = null;
+		private Styles.Style m_style = null;
 		private eAttackType m_attackType = eAttackType.Unknown;
 		private GameLiving.eAttackResult m_attackResult = GameLiving.eAttackResult.Any;
 		private ISpellHandler m_spellHandler;
@@ -157,7 +157,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Sets or gets the style used
 		/// </summary>
-		public Style Style
+		public Styles.Style Style
 		{
 			get { return m_style; }
 			set { m_style = value; }

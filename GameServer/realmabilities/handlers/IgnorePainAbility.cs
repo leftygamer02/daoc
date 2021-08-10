@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class IgnorePainAbility : TimedRealmAbility
 	{
-		public IgnorePainAbility(DBAbility dba, int level) : base(dba, level) { }
+		public IgnorePainAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

@@ -58,7 +58,7 @@ namespace DOL.GS.Effects
             spiritTimer = new RegionTimer[spiritCount];
 
             // Build spell
-            DBSpell tSpell = new DBSpell();
+            Atlas.DataLayer.Models.Spell tSpell = new Atlas.DataLayer.Models.Spell();
             tSpell.AllowAdd = false;
             tSpell.Description = "Target is stunned and can't move or do any action during spell duration.";
             tSpell.Name = "Rescue stun";

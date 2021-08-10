@@ -153,15 +153,15 @@ namespace DOL.GS.Quests
 		/// <returns>A Generated NPC Item</returns>
 		public static ItemTemplate GenerateNPCItem(GamePlayer player)
 		{
-			int mediumCraftingLevel = player.GetCraftingSkillValue(player.CraftingPrimarySkill) + 20;
+			int mediumCraftingLevel = player.GetCraftingSkillValue(player.PrimaryCraftingSkill) + 20;
 			int lowLevel = mediumCraftingLevel - 20;
 			int highLevel = mediumCraftingLevel + 20;
 
-			var craftitem = DOLDB<DBCraftedItem>.SelectObjects(DB.Column("CraftingSkillType").IsEqualTo((int)player.CraftingPrimarySkill)
+			var craftitem = DOLDB<DBCraftedItem>.SelectObjects(DB.Column("CraftingSkillType").IsEqualTo((int)player.PrimaryCraftingSkill)
 				.And(DB.Column("CraftingLevel").IsGreatherThan(lowLevel).And(DB.Column("CraftingLevel").IsLessThan(highLevel))));
 			int craftrnd = Util.Random(craftitem.Count);
 
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(craftitem[craftrnd].Id_nb);
+			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(craftitem[craftrnd].Id);
 			return template;
 		}
 
@@ -225,7 +225,7 @@ namespace DOL.GS.Quests
 
 			if (target is CraftNPC)
 			{
-				if (((target as CraftNPC).TheCraftingSkill == player.CraftingPrimarySkill))
+				if (((target as CraftNPC).TheCraftingSkill == player.PrimaryCraftingSkill))
 					return AbstractTask.CheckAvailability(player, target, CHANCE);
 			}
 			return false;//else return false

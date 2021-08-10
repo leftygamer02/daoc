@@ -44,8 +44,8 @@ namespace DOL.GS
 
 		protected override bool CheckForTools(GamePlayer player, Recipe recipe)
 		{
-			if (recipe.Product.Object_Type != (int)eObjectType.Arrow &&
-				recipe.Product.Object_Type != (int)eObjectType.Bolt)
+			if (recipe.Product.ObjectType != (int)eObjectType.Arrow &&
+				recipe.Product.ObjectType != (int)eObjectType.Bolt)
 			{
 				foreach (GameStaticItem item in player.GetItemsInRadius(CRAFT_DISTANCE))
 				{
@@ -67,7 +67,7 @@ namespace DOL.GS
 
 		public override int GetSecondaryCraftingSkillMinimumLevel(Recipe recipe)
 		{
-			switch (recipe.Product.Object_Type)
+			switch (recipe.Product.ObjectType)
 			{
 				case (int)eObjectType.Fired:  //tested
 				case (int)eObjectType.Longbow: //tested

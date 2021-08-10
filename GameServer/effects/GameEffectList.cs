@@ -159,7 +159,7 @@ namespace DOL.GS.Effects
 		}
 
 		/// <summary>
-		/// Restore All Effect From PlayerXEffect Data Table
+		/// Restore All Effect From PlayerEffect Data Table
 		/// </summary>
 		public virtual void RestoreAllEffects()
 		{
@@ -168,14 +168,14 @@ namespace DOL.GS.Effects
 			if (player == null || player.DBCharacter == null || GameServer.Database == null)
 				return;
 
-			var effs = DOLDB<PlayerXEffect>.SelectObjects(DB.Column("ChardID").IsEqualTo(player.ObjectId));
+			var effs = DOLDB<PlayerEffect>.SelectObjects(DB.Column("ChardID").IsEqualTo(player.ObjectId));
 			if (effs == null)
 				return;
 
-			foreach (PlayerXEffect eff in effs)
+			foreach (PlayerEffect eff in effs)
 				GameServer.Database.DeleteObject(eff);
 
-			foreach (PlayerXEffect eff in effs.GroupBy(e => e.Var1).Select(e => e.First()))
+			foreach (PlayerEffect eff in effs.GroupBy(e => e.Var1).Select(e => e.First()))
 			{
 				if (eff.SpellLine == GlobalSpellsLines.Reserved_Spells)
 					continue;
@@ -215,7 +215,7 @@ namespace DOL.GS.Effects
 		}
 
 		/// <summary>
-		/// Save All Effect to PlayerXEffect Data Table
+		/// Save All Effect to PlayerEffect Data Table
 		/// </summary>
 		public virtual void SaveAllEffects()
 		{
@@ -241,7 +241,7 @@ namespace DOL.GS.Effects
 								continue;
 						}
 						
-						PlayerXEffect effx = eff.getSavedEffect();
+						PlayerEffect effx = eff.getSavedEffect();
 						
 						if (effx == null)
 							continue;
@@ -251,7 +251,7 @@ namespace DOL.GS.Effects
 	
 						effx.ChardID = player.ObjectId;
 						
-						GameServer.Database.AddObject(effx);
+						GameServer.Instance.SaveDataObject(effx);
 					}
 					catch (Exception e)
 					{

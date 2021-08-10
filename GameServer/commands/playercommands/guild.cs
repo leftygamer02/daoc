@@ -478,7 +478,7 @@ namespace DOL.GS.Commands
 								if (myclient == null)
 								{
 									// Patch 1.84: look for offline players
-									obj = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(playername));
+									obj = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(playername));
 								}
 								else
 									obj = myclient.Player;
@@ -493,7 +493,7 @@ namespace DOL.GS.Commands
 							ushort guildRank = 9;
 							string plyName = "";
 							GamePlayer ply = obj as GamePlayer;
-							DOLCharacters ch = obj as DOLCharacters;
+							Character ch = obj as Character;
 							if (obj is GamePlayer)
 							{
 								plyName = ply.Name;
@@ -523,7 +523,7 @@ namespace DOL.GS.Commands
 							{
 								ch.GuildID = "";
 								ch.GuildRank = 9;
-								GameServer.Database.SaveObject(ch);
+								GameServer.Instance.SaveDataObject(ch);
 							}
 
 							client.Player.Guild.UpdateGuildWindow();
@@ -556,13 +556,13 @@ namespace DOL.GS.Commands
 
 							string playername = String.Join(" ", args, 2, args.Length - 2);
 							// Patch 1.84: look for offline players
-							var chs = DOLDB<DOLCharacters>.SelectObjects(DB.Column("AccountName").IsEqualTo(playername).And(DB.Column("GuildID").IsEqualTo(client.Player.GuildID)));
+							var chs = DOLDB<Character>.SelectObjects(DB.Column("AccountName").IsEqualTo(playername).And(DB.Column("GuildID").IsEqualTo(client.Player.GuildID)));
 							if (chs.Count > 0)
 							{
 								GameClient myclient = WorldMgr.GetClientByAccountName(playername, false);
 								string plys = "";
 								bool isOnline = (myclient != null);
-								foreach (DOLCharacters ch in chs)
+								foreach (Character ch in chs)
 								{
 									plys += (plys != "" ? "," : "") + ch.Name;
 									if (isOnline && ch.Name == myclient.Player.Name)
@@ -571,7 +571,7 @@ namespace DOL.GS.Commands
 									{
 										ch.GuildID = "";
 										ch.GuildRank = 9;
-										GameServer.Database.SaveObject(ch);
+										GameServer.Instance.SaveDataObject(ch);
 									}
 								}
 
@@ -1292,7 +1292,7 @@ namespace DOL.GS.Commands
 								if (onlineClient == null)
 								{
 									// Patch 1.84: look for offline players
-									obj = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(playerName));
+									obj = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(playerName));
 									useDB = true;
 								}
 								else
@@ -1323,7 +1323,7 @@ namespace DOL.GS.Commands
 							string plyName = "";
 							ushort currentTargetGuildRank = 9;
 							GamePlayer ply = obj as GamePlayer;
-							DOLCharacters ch = obj as DOLCharacters;
+							Character ch = obj as Character;
 
 							if (ply != null)
 							{
@@ -1388,7 +1388,7 @@ namespace DOL.GS.Commands
 							else
 							{
 								ch.GuildRank = newrank;
-								GameServer.Database.SaveObject(ch);
+								GameServer.Instance.SaveDataObject(ch);
 								GameServer.Database.FillObjectRelations(ch);
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.PromotedOther", plyName, newrank.ToString()), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 							}
@@ -1429,7 +1429,7 @@ namespace DOL.GS.Commands
 								if (myclient == null)
 								{
 									// Patch 1.84: look for offline players
-									obj = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(playername));
+									obj = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(playername));
 								}
 								else
 									obj = myclient.Player;
@@ -1444,7 +1444,7 @@ namespace DOL.GS.Commands
 							ushort guildRank = 1;
 							string plyName = "";
 							GamePlayer ply = obj as GamePlayer;
-							DOLCharacters ch = obj as DOLCharacters;
+							Character ch = obj as Character;
 							if (obj is GamePlayer)
 							{
 								plyName = ply.Name;
@@ -1481,7 +1481,7 @@ namespace DOL.GS.Commands
 								else
 								{
 									ch.GuildRank = newrank;
-									GameServer.Database.SaveObject(ch);
+									GameServer.Instance.SaveDataObject(ch);
 									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.DemotedOther", plyName, newrank.ToString()), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 								}
 							}
@@ -1694,7 +1694,7 @@ namespace DOL.GS.Commands
 								}
 								else
 								{
-									DOLCharacters c = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(playername));
+									Character c = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(playername));
 
 									if (c == null)
 									{
@@ -1704,16 +1704,16 @@ namespace DOL.GS.Commands
 
 									accountId = c.AccountName;
 								}
-								List<DOLCharacters> chars = new List<DOLCharacters>();
-								chars.AddRange(DOLDB<DOLCharacters>.SelectObjects(DB.Column("AccountName").IsEqualTo(accountId)));
+								List<Character> chars = new List<Character>();
+								chars.AddRange(DOLDB<Character>.SelectObjects(DB.Column("AccountName").IsEqualTo(accountId)));
 								//chars.AddRange((Character[])DOLDB<CharacterArchive>.SelectObjects("AccountID = '" + accountId + "'"));
 
-								foreach (DOLCharacters ply in chars)
+								foreach (Character ply in chars)
 								{
 									ply.GuildID = "";
 									ply.GuildRank = 0;
 								}
-								GameServer.Database.SaveObject(chars);
+								GameServer.Instance.SaveDataObject(chars);
 								break;
 							}
 							else if (args.Length == 3)
@@ -1726,7 +1726,7 @@ namespace DOL.GS.Commands
 								}
 								else
 								{
-									var c = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(args[2]));
+									var c = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(args[2]));
 									if (c == null)
 									{
 										client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.PlayerNotFound"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -1741,7 +1741,7 @@ namespace DOL.GS.Commands
 									{
 										c.GuildID = "";
 										c.GuildRank = 0;
-										GameServer.Database.SaveObject(c);
+										GameServer.Instance.SaveDataObject(c);
 									}
 								}
 								break;
@@ -1801,7 +1801,7 @@ namespace DOL.GS.Commands
 							}
 							message = String.Join(" ", args, 2, args.Length - 2);
 							client.Player.Guild.alliance.Dballiance.Motd = message;
-							GameServer.Database.SaveObject(client.Player.Guild.alliance.Dballiance);
+							GameServer.Instance.SaveDataObject(client.Player.Guild.alliance.Dballiance);
 							client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.AMotdSet"), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
 							client.Player.Guild.UpdateGuildWindow();
 						}
@@ -2879,7 +2879,7 @@ namespace DOL.GS.Commands
 			} //switch
 			DBRank rank = client.Player.Guild.GetRankByID(number);
 			if (rank != null)
-				GameServer.Database.SaveObject(rank);
+				GameServer.Instance.SaveDataObject(rank);
 			return 1;
 		}
 

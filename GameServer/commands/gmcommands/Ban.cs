@@ -151,7 +151,7 @@ namespace DOL.GS.Commands
 						}
 						#endregion Default
 				}
-				GameServer.Database.AddObject(b);
+				GameServer.Instance.SaveDataObject(b);
 
 				if (log.IsInfoEnabled)
 					log.Info("Ban added [" + args[1].ToLower() + "]: " + acc.Name + "(" + acc.LastLoginIP + ")");

@@ -113,7 +113,7 @@ namespace DOL.GS
 
             Assembly gasm = Assembly.GetAssembly(typeof(GameServer));
             var staticObjs = DOLDB<WorldObject>.SelectObjects(DB.Column("Region").IsEqualTo(Skin));
-            var areaObjs = DOLDB<DBArea>.SelectObjects(DB.Column("Region").IsEqualTo(Skin));            
+            var areaObjs = DOLDB<Atlas.DataLayer.Models.Area>.SelectObjects(DB.Column("Region").IsEqualTo(Skin));            
             
             int count = mobObjs.Length + staticObjs.Count;
             if (count > 0) PreAllocateRegionSpace(count + 100);
@@ -281,24 +281,24 @@ namespace DOL.GS
 
             int areaCnt = 0;
             // Add missing area
-            foreach(DBArea area in areaObjs) 
+            foreach(Atlas.DataLayer.Models.Area area in areaObjs) 
             {
             	// Don't bind in instance.
             	if(area.ClassType.Equals("DOL.GS.Area+BindArea"))
             		continue;
             	
             	// clone DB object.
-            	DBArea newDBArea = ((DBArea)area.Clone());
-            	newDBArea.AllowAdd = false;
-            	newDBArea.Region = this.ID;
+            	Atlas.DataLayer.Models.Area newAtlas.DataLayer.Models.Area = ((Atlas.DataLayer.Models.Area)area.Clone());
+            	newAtlas.DataLayer.Models.Area.AllowAdd = false;
+            	newAtlas.DataLayer.Models.Area.Region = this.ID;
             	// Instantiate Area with cloned DB object and add to region
             	try
             	{
-            		AbstractArea newArea = (AbstractArea)gasm.CreateInstance(newDBArea.ClassType, false);
-            		newArea.LoadFromDatabase(newDBArea);
-					newArea.Sound = newDBArea.Sound;
-					newArea.CanBroadcast = newDBArea.CanBroadcast;
-					newArea.CheckLOS = newDBArea.CheckLOS;
+            		AbstractArea newArea = (AbstractArea)gasm.CreateInstance(newAtlas.DataLayer.Models.Area.ClassType, false);
+            		newArea.LoadFromDatabase(newAtlas.DataLayer.Models.Area);
+					newArea.Sound = newAtlas.DataLayer.Models.Area.Sound;
+					newArea.CanBroadcast = newAtlas.DataLayer.Models.Area.CanBroadcast;
+					newArea.CheckLOS = newAtlas.DataLayer.Models.Area.CheckLOS;
 					this.AddArea(newArea);
 					areaCnt++;
 	            }

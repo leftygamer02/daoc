@@ -13,14 +13,14 @@ namespace DOL.GS.RealmAbilities.Statics
 		protected override string GetStaticName() {return "Negative Maelstrom";}
 		protected override ushort GetStaticModel() {return 1293;}
 		protected override ushort GetStaticEffect() {return 7027;}
-		private DBSpell dbs;
+		private Atlas.DataLayer.Models.Spell dbs;
 		private Spell   s;
 		private SpellLine sl;
 		int damage;		
 		public NegativeMaelstromBase(int damage) 
         {
 			this.damage = damage;
-			dbs = new DBSpell();
+			dbs = new Atlas.DataLayer.Models.Spell();
 			dbs.Name = GetStaticName();
 			dbs.Icon = GetStaticEffect();
 			dbs.ClientEffect = GetStaticEffect();

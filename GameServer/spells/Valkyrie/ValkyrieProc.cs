@@ -65,7 +65,7 @@ namespace DOL.GS.Spells
                     InventoryItem leftWeapon = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
                     // if we can use left weapon, we have currently a weapon in left hand and we still have endurance,
                     // we can assume that we are using the two weapons.
-                    if (player.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type != (int)eObjectType.Shield)
+                    if (player.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ObjectType != (int)eObjectType.Shield)
                     {
                         baseChance /= 2;
                     }

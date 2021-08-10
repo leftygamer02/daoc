@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public RingofDances(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public RingofDances(GamePlayer questingPlayer, DBQuest dbQuest)
+        public RingofDances(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

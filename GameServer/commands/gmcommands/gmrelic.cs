@@ -49,7 +49,7 @@ namespace DOL.GS.Commands
 			relic.Y = client.Player.Y;
 			relic.Z = client.Player.Z;
 			relic.RelicID = Util.Random(100);
-			GameServer.Database.AddObject(relic);
+			GameServer.Instance.SaveDataObject(relic);
 			RelicMgr.Init();
 		}
 	}

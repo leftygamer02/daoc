@@ -264,8 +264,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 		private bool CreateCharacter(CreationCharacterData pdata, GameClient client, int accountSlot)
 		{
 			Account account = client.Account;
-			var ch = new DOLCharacters();
-			ch.AccountName = account.Name;
+			var ch = new Character();
+			ch.Account.Name = account.Name;
 			ch.Name = pdata.CharName;
 
 			if (pdata.CustomMode == 0x01)
@@ -297,7 +297,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			ch.CreationModel = pdata.CreationModel;
 			ch.CurrentModel = ch.CreationModel;
-			ch.Region = pdata.Region;
+			ch.RegionID = pdata.Region;
 
 			ch.Strength = pdata.Strength;
 			ch.Dexterity = pdata.Dexterity;
@@ -309,7 +309,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			ch.Charisma = pdata.Charisma;
 
 			// defaults
-			ch.CreationDate = DateTime.Now;
+			ch.CreateDate = DateTime.Now;
 
 			ch.Endurance = 100;
 			ch.MaxEndurance = 100;
@@ -370,21 +370,21 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (log.IsWarnEnabled)
 				{
 					log.WarnFormat("{0} tried to create invalid character:\nchar name={1}, gender={2}, race={3}, realm={4}, class={5}, region={6}" +
-								   "\nstr={7}, con={8}, dex={9}, qui={10}, int={11}, pie={12}, emp={13}, chr={14}", ch.AccountName, ch.Name, ch.Gender,
+								   "\nstr={7}, con={8}, dex={9}, qui={10}, int={11}, pie={12}, emp={13}, chr={14}", ch.Account.Name, ch.Name, ch.Gender,
 								  ch.Race, ch.Realm, ch.Class, ch.Region, ch.Strength, ch.Constitution, ch.Dexterity, ch.Quickness, ch.Intelligence, ch.Piety, ch.Empathy, ch.Charisma);
 				}
 				return true;
 			}
 
 			//Save the character in the database
-			GameServer.Database.AddObject(ch);
+			GameServer.Instance.SaveDataObject(ch);
 
 			// Fire the character creation event
 			// This is Where Most Creation Script should take over to update any data they would like !
 			GameEventMgr.Notify(DatabaseEvent.CharacterCreated, null, new CharacterEventArgs(ch, client));
 
 			//write changes
-			GameServer.Database.SaveObject(ch);
+			GameServer.Instance.SaveDataObject(ch);
 
 			// Log creation
 			AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.CharacterCreate, "", pdata.CharName);
@@ -395,7 +395,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				log.InfoFormat("Character {0} created on Account {1}!", pdata.CharName, account);
 
 			// Reload Account Relations
-			GameServer.Database.FillObjectRelations(client.Account);
+			client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
 
 			return true;
 		}
@@ -411,7 +411,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <param name="client">client</param>
 		/// <param name="character">db character</param>
 		/// <returns>True if character need refreshment false if no refresh needed.</returns>
-		private bool CheckCharacterForUpdates(CreationCharacterData pdata, GameClient client, DOLCharacters character)
+		private bool CheckCharacterForUpdates(CreationCharacterData pdata, GameClient client, Character character)
 		{
 			int newModel = character.CurrentModel;
 
@@ -541,7 +541,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				}
 
 				//Save the character in the database
-				GameServer.Database.SaveObject(character);
+				GameServer.Instance.SaveDataObject(character);
 			}
 
 			return false;
@@ -557,11 +557,11 @@ namespace DOL.GS.PacketHandler.Client.v168
 			else if (accountName.EndsWith("-N")) charSlot = 200 + slot;
 			else if (accountName.EndsWith("-H")) charSlot = 300 + slot;
 
-			DOLCharacters[] allChars = client.Account.Characters;
+			var allChars = client.Account.Characters.ToArray();
 
 			if (allChars != null)
 			{
-				foreach (DOLCharacters character in allChars.ToArray())
+				foreach (Character character in allChars.ToArray())
 				{
 					if (character.AccountSlot == charSlot && client.ClientState == GameClient.eClientState.CharScreen)
 					{
@@ -578,12 +578,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 						if (Properties.BACKUP_DELETED_CHARACTERS)
 						{
-							var backupCharacter = new DOLCharactersBackup(character);
-							Util.ForEach(backupCharacter.CustomParams, param => GameServer.Database.AddObject(param));
-							GameServer.Database.AddObject(backupCharacter);
+							//var backupCharacter = new CharacterBackup(character);
+							//Util.ForEach(backupCharacter.CustomParams, param => GameServer.Instance.SaveDataObject(param));
+							//GameServer.Instance.SaveDataObject(backupCharacter);
 
-							if (log.IsWarnEnabled)
-								log.WarnFormat("DB Character {0} backed up to DOLCharactersBackup and no associated content deleted.", character.ObjectId);
+							//if (log.IsWarnEnabled)
+							//	log.WarnFormat("DB Character {0} backed up to CharacterBackup and no associated content deleted.", character.ObjectId);
 						}
 						else
 						{
@@ -591,48 +591,48 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 							try
 							{
-								var objs = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsEqualTo(character.ObjectId));
-								GameServer.Database.DeleteObject(objs);
+								var objs = GameServer.Database.InventoryItems.Where(x => x.CharacterID == character.Id);
+								GameServer.Instance.DeleteDataObjects(objs);
 							}
 							catch (Exception e)
 							{
 								if (log.IsErrorEnabled)
-									log.ErrorFormat("Error deleting char items, char OID={0}, Exception:{1}", character.ObjectId, e);
+									log.ErrorFormat("Error deleting char items, char OID={0}, Exception:{1}", character.Id, e);
 							}
 
 							// delete quests
 							try
 							{
-								var objs = DOLDB<DBQuest>.SelectObjects(DB.Column("Character_ID").IsEqualTo(character.ObjectId));
-								GameServer.Database.DeleteObject(objs);
+								var objs = GameServer.Database.Quests.Where(x => x.CharacterID == character.Id);
+								GameServer.Instance.DeleteDataObjects(objs);
 							}
 							catch (Exception e)
 							{
 								if (log.IsErrorEnabled)
-									log.ErrorFormat("Error deleting char quests, char OID={0}, Exception:{1}", character.ObjectId, e);
+									log.ErrorFormat("Error deleting char quests, char OID={0}, Exception:{1}", character.Id, e);
 							}
 
 							// delete ML steps
 							try
 							{
-								var objs = DOLDB<DBCharacterXMasterLevel>.SelectObjects(DB.Column("Character_ID").IsEqualTo(character.ObjectId));
-								GameServer.Database.DeleteObject(objs);
+								var objs = GameServer.Database.CharacterMasterLevels.Where(x => x.CharacterID == character.Id);
+								GameServer.Instance.DeleteDataObjects(objs);
 							}
 							catch (Exception e)
 							{
 								if (log.IsErrorEnabled)
-									log.ErrorFormat("Error deleting char ml steps, char OID={0}, Exception:{1}", character.ObjectId, e);
+									log.ErrorFormat("Error deleting char ml steps, char OID={0}, Exception:{1}", character.Id, e);
 							}
 						}
 
 						string deletedChar = character.Name;
 
-						GameServer.Database.DeleteObject(character);
+						GameServer.Instance.DeleteDataObject(character);
 						client.Account.Characters = null;
 						client.Player = null;
-						GameServer.Database.FillObjectRelations(client.Account);
+						client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
 
-						if (client.Account.Characters == null || client.Account.Characters.Length == 0)
+						if (client.Account.Characters == null || client.Account.Characters.Count == 0)
 						{
 							if (log.IsInfoEnabled)
 								log.InfoFormat("Account {0} has no more chars. Realm reset!", client.Account.Name);
@@ -641,7 +641,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 							client.Account.Realm = 0;
 						}
 
-						GameServer.Database.SaveObject(client.Account);
+						GameServer.Instance.SaveDataObject(client.Account);
 
 						// Log deletion
 						AuditMgr.AddAuditEntry(client, AuditType.Character, AuditSubtype.CharacterDelete, "", deletedChar);
@@ -662,7 +662,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <param name="stats"></param>
 		/// <param name="points"></param>
 		/// <returns></returns>
-		public static bool IsCustomPointsDistributionValid(DOLCharacters character, IDictionary<eStat, int> stats, out int points)
+		public static bool IsCustomPointsDistributionValid(Character character, IDictionary<eStat, int> stats, out int points)
 		{
 			ICharacterClass charClass = ScriptMgr.FindCharacterClass(character.Class);
 
@@ -710,7 +710,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// </summary>
 		/// <param name="ch">The character to check</param>
 		/// <returns>True if valid</returns>
-		public static bool IsCharacterValid(DOLCharacters ch)
+		public static bool IsCharacterValid(Character ch)
 		{
 			ICharacterClass charClass = ScriptMgr.FindCharacterClass(ch.Class);
 
@@ -720,26 +720,26 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if ((eRealm)ch.Realm < eRealm._FirstPlayerRealm || (eRealm)ch.Realm > eRealm._LastPlayerRealm)
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Wrong realm: {0} on character creation from Account: {1}", ch.Realm, ch.AccountName);
+						log.WarnFormat("Wrong realm: {0} on character creation from Account: {1}", ch.Realm, ch.Account.Name);
 					valid = false;
 				}
 				if (ch.Level != 1)
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Wrong level: {0} on character creation from Account: {1}", ch.Level, ch.AccountName);
+						log.WarnFormat("Wrong level: {0} on character creation from Account: {1}", ch.Level, ch.Account.Name);
 					valid = false;
 				}
 				if (!GlobalConstants.STARTING_CLASSES_DICT.ContainsKey((eRealm)ch.Realm) || !GlobalConstants.STARTING_CLASSES_DICT[(eRealm)ch.Realm].Contains((eCharacterClass)ch.Class))
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Wrong class: {0}, realm:{1} on character creation from Account: {2}", ch.Class, ch.Realm, ch.AccountName);
+						log.WarnFormat("Wrong class: {0}, realm:{1} on character creation from Account: {2}", ch.Class, ch.Realm, ch.Account.Name);
 					valid = false;
 				}
 
 				if(!charClass.EligibleRaces.Exists(s => (int)s.ID == ch.Race))
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Wrong race: {0}, class:{1} on character creation from Account: {2}", ch.Race, ch.Class, ch.AccountName);
+						log.WarnFormat("Wrong race: {0}, class:{1} on character creation from Account: {2}", ch.Race, ch.Class, ch.Account.Name);
 					valid = false;
 				}
 				int pointsUsed;
@@ -751,7 +751,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (pointsUsed != MaxStartingBonusPoints)
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Points used: {0} on character creation from Account: {1}", pointsUsed, ch.AccountName);
+						log.WarnFormat("Points used: {0} on character creation from Account: {1}", pointsUsed, ch.Account.Name);
 					valid = false;
 				}
 
@@ -760,21 +760,21 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (GlobalConstants.RACE_GENDER_CONSTRAINTS_DICT.ContainsKey((eRace)ch.Race) && GlobalConstants.RACE_GENDER_CONSTRAINTS_DICT[(eRace)ch.Race] != gender)
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Wrong Race gender: {0}, race: {1} on character creation from Account: {2}", ch.Gender, ch.Race, ch.AccountName);
+						log.WarnFormat("Wrong Race gender: {0}, race: {1} on character creation from Account: {2}", ch.Gender, ch.Race, ch.Account.Name);
 					valid = false;
 				}
 
 				if (GlobalConstants.CLASS_GENDER_CONSTRAINTS_DICT.ContainsKey((eCharacterClass)ch.Class) && GlobalConstants.CLASS_GENDER_CONSTRAINTS_DICT[(eCharacterClass)ch.Class] != gender)
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Wrong class gender: {0}, class:{1} on character creation from Account: {2}", ch.Gender, ch.Class, ch.AccountName);
+						log.WarnFormat("Wrong class gender: {0}, class:{1} on character creation from Account: {2}", ch.Gender, ch.Class, ch.Account.Name);
 					valid = false;
 				}
 			}
 			catch (Exception e)
 			{
 				if (log.IsErrorEnabled)
-					log.ErrorFormat("CharacterCreation error on account {0}, slot {1}. Exception:{2}", ch.AccountName, ch.AccountSlot, e);
+					log.ErrorFormat("CharacterCreation error on account {0}, slot {1}. Exception:{2}", ch.Account.Name, ch.AccountSlot, e);
 
 				valid = false;
 			}
@@ -953,9 +953,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 		private bool _CreateCharacter1124(CreationCharacterData1124 pdata, GameClient client, int accountSlot)
 		{
 			Account account = client.Account;
-			var ch = new DOLCharacters
+			var ch = new Character
 			{
-				AccountName = account.Name,
+				AccountID = account.Id,
 				Name = pdata.CharName
 			};
 
@@ -987,7 +987,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			ch.CreationModel = pdata.CreationModel;
 			ch.CurrentModel = ch.CreationModel;
-			ch.Region = pdata.Region;
+			ch.RegionID = pdata.Region;
 
 			ch.Strength = pdata.Strength;
 			ch.Dexterity = pdata.Dexterity;
@@ -999,7 +999,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			ch.Charisma = pdata.Charisma;
 
 			// defaults
-			ch.CreationDate = DateTime.Now;
+			ch.CreateDate = DateTime.Now;
 
 			ch.Endurance = 100;
 			ch.MaxEndurance = 100;
@@ -1044,19 +1044,19 @@ namespace DOL.GS.PacketHandler.Client.v168
 			// check if client tried to create invalid char
 			if (!IsCharacterValid(ch))
 			{
-				log.Warn($"{ch.AccountName} tried to create invalid character:\nchar name={ch.Name}, gender={ch.Gender}, race={ch.Race}, realm={ch.Realm}, class={ch.Class}, region={ch.Region}\nstr={ch.Strength}, con={ch.Constitution}, dex={ch.Dexterity}, qui={ch.Quickness}, int={ch.Intelligence}, pie={ch.Piety}, emp={ch.Empathy}, chr={ch.Charisma}");
+				log.Warn($"{ch.Account.Name} tried to create invalid character:\nchar name={ch.Name}, gender={ch.Gender}, race={ch.Race}, realm={ch.Realm}, class={ch.Class}, region={ch.Region}\nstr={ch.Strength}, con={ch.Constitution}, dex={ch.Dexterity}, qui={ch.Quickness}, int={ch.Intelligence}, pie={ch.Piety}, emp={ch.Empathy}, chr={ch.Charisma}");
 				return true;
 			}
 
 			// Save the character in the database
-			GameServer.Database.AddObject(ch);
+			GameServer.Instance.SaveDataObject(ch);
 
 			// Fire the character creation event
 			// This is Where Most Creation Script should take over to update any data they would like !
 			GameEventMgr.Notify(DatabaseEvent.CharacterCreated, null, new CharacterEventArgs(ch, client));
 
 			// write changes
-			GameServer.Database.SaveObject(ch);
+			GameServer.Instance.SaveDataObject(ch);
 
 			// Log creation
 			AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.CharacterCreate, string.Empty, pdata.CharName);
@@ -1066,12 +1066,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 			log.Info($"Character {pdata.CharName} created on Account {account}!");
 
 			// Reload Account Relations
-			GameServer.Database.FillObjectRelations(client.Account);
+			client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
 			return true;
 		}
 
 		// 1125 support
-		private bool CheckCharacterForUpdates1124(CreationCharacterData1124 pdata, GameClient client, DOLCharacters character, int type)
+		private bool CheckCharacterForUpdates1124(CreationCharacterData1124 pdata, GameClient client, Character character, int type)
 		{
 			int newModel = character.CurrentModel;
 
@@ -1202,7 +1202,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				}
 
 				//Save the character in the database
-				GameServer.Database.SaveObject(character);
+				GameServer.Instance.SaveDataObject(character);
 			}
 
 			return false;

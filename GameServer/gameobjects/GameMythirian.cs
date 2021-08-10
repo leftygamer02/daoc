@@ -53,7 +53,7 @@ namespace DOL.GS
 		{
 			if (base.CanEquip(player))
 			{
-				if (Type_Damage <= player.ChampionLevel)
+				if (TypeDamage <= player.ChampionLevel)
 				{
 					return true;
 				}

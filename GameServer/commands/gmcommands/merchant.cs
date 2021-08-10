@@ -154,7 +154,7 @@ namespace DOL.GS.Commands
 							item.ItemTemplateID = merchantItem.ItemTemplateID;
 							item.PageNumber = merchantItem.PageNumber;
 							item.SlotPosition = merchantItem.SlotPosition;
-							GameServer.Database.AddObject(item);
+							GameServer.Instance.SaveDataObject(item);
 						}
 
 						DisplayMessage(client, "New MerchantItems list saved as '" + GameServer.Database.Escape(args[2]) + "'");
@@ -276,12 +276,12 @@ namespace DOL.GS.Commands
 												item.SlotPosition = (int)slot;
 												item.PageNumber = page;
 
-												GameServer.Database.AddObject(item);
+												GameServer.Instance.SaveDataObject(item);
 											}
 											else
 											{
 												item.ItemTemplateID = templateID;
-												GameServer.Database.SaveObject(item);
+												GameServer.Instance.SaveDataObject(item);
 											}
 											DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Add.ItemAdded"));
 										}

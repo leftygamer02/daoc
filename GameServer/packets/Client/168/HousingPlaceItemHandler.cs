@@ -110,7 +110,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					return;
 				}
 
-				if (orgitem.Id_nb == "house_removal_deed")
+				if (orgitem.Id == "house_removal_deed")
 				{
 					client.Out.SendInventorySlotsUpdate(null);
 
@@ -128,8 +128,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 					return;
 				}
 
-				if (orgitem.Id_nb.Contains("cottage_deed") || orgitem.Id_nb.Contains("house_deed") ||
-					orgitem.Id_nb.Contains("villa_deed") || orgitem.Id_nb.Contains("mansion_deed"))
+				if (orgitem.Id.Contains("cottage_deed") || orgitem.Id.Contains("house_deed") ||
+					orgitem.Id.Contains("villa_deed") || orgitem.Id.Contains("mansion_deed"))
 				{
 					client.Out.SendInventorySlotsUpdate(null);
 
@@ -238,12 +238,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 					}
 				}
 
-				int objType = orgitem.Object_Type;
+				int objType = orgitem.ObjectType;
 				if (objType == 49) // Garden items 
 				{
 					method = 1;
 				}
-				else if (orgitem.Id_nb == "housing_porch_deed" || orgitem.Id_nb == "housing_porch_remove_deed" || orgitem.Id_nb == "housing_consignment_deed")
+				else if (orgitem.Id == "housing_porch_deed" || orgitem.Id == "housing_porch_remove_deed" || orgitem.Id == "housing_consignment_deed")
 				{
 					method = 4;
 				}
@@ -304,7 +304,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 							// create an outdoor item to represent the item being placed
 							var oitem = new OutdoorItem
 											{
-												BaseItem = GameServer.Database.FindObjectByKey<ItemTemplate>(orgitem.Id_nb),
+												BaseItem = GameServer.Database.FindObjectByKey<ItemTemplate>(orgitem.Id),
 												Model = orgitem.Model,
 												Position = (byte)_position,
 												Rotation = (byte)rotation
@@ -312,10 +312,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 							//add item in db
 							pos = GetFirstFreeSlot(house.OutdoorItems.Keys);
-							DBHouseOutdoorItem odbitem = oitem.CreateDBOutdoorItem(housenumber);
+							Atlas.DataLayer.Models.HouseOutdoorItem odbitem = oitem.CreateDBOutdoorItem(housenumber);
 							oitem.DatabaseItem = odbitem;
 
-							GameServer.Database.AddObject(odbitem);
+							GameServer.Instance.SaveDataObject(odbitem);
 
 							// remove the item from the player's inventory
 							client.Player.Inventory.RemoveItem(orgitem);
@@ -415,20 +415,20 @@ namespace DOL.GS.PacketHandler.Client.v168
 								InventoryLogging.LogInventoryAction(client.Player, "(HOUSE;" + housenumber + ")", eInventoryActionType.Other, orgitem.Template, orgitem.Count);
 
 								//set right base item, so we can recreate it on take.
-								if (orgitem.Id_nb.Contains("GuildBanner"))
+								if (orgitem.Id.Contains("GuildBanner"))
 								{
 									iitem.BaseItem = orgitem.Template;
 									iitem.Size = 50; // Banners have to be reduced in size
 								}
 								else
 								{
-									iitem.BaseItem = GameServer.Database.FindObjectByKey<ItemTemplate>(orgitem.Id_nb);
+									iitem.BaseItem = GameServer.Database.FindObjectByKey<ItemTemplate>(orgitem.Id);
 								}
 							}
 
-							DBHouseIndoorItem idbitem = iitem.CreateDBIndoorItem(housenumber);
+							Atlas.DataLayer.Models.HouseIndoorItem idbitem = iitem.CreateDBIndoorItem(housenumber);
 							iitem.DatabaseItem = idbitem;
-							GameServer.Database.AddObject(idbitem);
+							GameServer.Instance.SaveDataObject(idbitem);
 
 							house.IndoorItems.Add(pos, iitem);
 
@@ -462,7 +462,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 								return;
 							}
 
-							switch (orgitem.Id_nb)
+							switch (orgitem.Id)
 							{
 								case "housing_porch_deed":
 									// try and add the porch
@@ -576,15 +576,15 @@ namespace DOL.GS.PacketHandler.Client.v168
 							}
 							else if (house.GetHookpointLocation((uint)_position) != null)
 							{
-								var point = new DBHouseHookpointItem
+								var point = new Atlas.DataLayer.Models.HouseHookpointItem
 												{
 													HouseNumber = house.HouseNumber,
-													ItemTemplateID = orgitem.Id_nb,
+													ItemTemplateID = orgitem.Id,
 													HookpointID = (uint)_position
 												};
 
 								// If we already have soemthing here, do not place more
-								foreach (var hpitem in DOLDB<DBHouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber)))
+								foreach (var hpitem in DOLDB<Atlas.DataLayer.Models.HouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber)))
 								{
 									if (hpitem.HookpointID == point.HookpointID)
 									{
@@ -597,18 +597,18 @@ namespace DOL.GS.PacketHandler.Client.v168
 								if (house.HousepointItems.ContainsKey(point.HookpointID) == false)
 								{
 									house.HousepointItems.Add(point.HookpointID, point);
-									house.FillHookpoint((uint)_position, orgitem.Id_nb, client.Player.Heading, 0);
+									house.FillHookpoint((uint)_position, orgitem.Id, client.Player.Heading, 0);
 								}
 								else
 								{
-									string error = string.Format("Hookpoint already has item on attempt to attach {0} to hookpoint {1} for house {2}!", orgitem.Id_nb, _position, house.HouseNumber);
+									string error = string.Format("Hookpoint already has item on attempt to attach {0} to hookpoint {1} for house {2}!", orgitem.Id, _position, house.HouseNumber);
 									log.ErrorFormat(error);
 									client.Out.SendInventorySlotsUpdate(new[] { slot });
 									throw new Exception(error);
 								}
 
 								// add the item to the database
-								GameServer.Database.AddObject(point);
+								GameServer.Instance.SaveDataObject(point);
 
 								// remove the original item from the player's inventory
 								client.Player.Inventory.RemoveItem(orgitem);
@@ -732,7 +732,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 							}
 
 							// If we already have soemthing here, do not place more
-							foreach (var hpitem in DOLDB<DBHouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber)))
+							foreach (var hpitem in DOLDB<Atlas.DataLayer.Models.HouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber)))
 							{
 								if (hpitem.HookpointID == _position)
 								{
@@ -773,7 +773,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 		private static bool IsSuitableForWall(InventoryItem item)
 		{
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.HouseWallObject:
 				case (int)eObjectType.Axe:
@@ -810,7 +810,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 		private static bool IsSuitableForHookpoint(InventoryItem item)
 		{
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.HouseVault:
 				case (int)eObjectType.HouseNPC:
@@ -893,7 +893,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				Heading = player.Heading - player.CurrentHouse.Heading
 			};
 
-			if (GameServer.Database.AddObject(a) && House.AddNewOffset(a))
+			if (GameServer.Instance.SaveDataObject(a) && House.AddNewOffset(a))
 			{
 				ChatUtil.SendSystemMessage(player, "Scripts.Player.Housing.HookPointLogged", _position);
 

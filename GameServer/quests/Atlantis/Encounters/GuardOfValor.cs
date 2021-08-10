@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public GuardOfValor(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public GuardOfValor(GamePlayer questingPlayer, DBQuest dbQuest)
+		public GuardOfValor(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

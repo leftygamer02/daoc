@@ -372,7 +372,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 								if (Log.IsInfoEnabled)
 									Log.Info("New account created: " + userName);
 
-								GameServer.Database.AddObject(playerAccount);
+								GameServer.Instance.SaveDataObject(playerAccount);
 
 								// Log account creation
 								AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.AccountCreate, "", userName);
@@ -422,7 +422,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 								playerAccount.Language = Properties.SERV_LANGUAGE;
 							}
 
-							GameServer.Database.SaveObject(playerAccount);
+							GameServer.Instance.SaveDataObject(playerAccount);
 						}
 					}
 

@@ -204,9 +204,9 @@ namespace DOL.GS.Spells
 				{
 					GamePlayer player = (GamePlayer)target;
 					InventoryItem lefthand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-					if (lefthand != null && (player.AttackWeapon == null || player.AttackWeapon.Item_Type == Slot.RIGHTHAND || player.AttackWeapon.Item_Type == Slot.LEFTHAND))
+					if (lefthand != null && (player.AttackWeapon == null || player.AttackWeapon.ItemType == Slot.RIGHTHAND || player.AttackWeapon.ItemType == Slot.LEFTHAND))
 					{
-						if (target.IsObjectInFront(caster, 180) && lefthand.Object_Type == (int)eObjectType.Shield)
+						if (target.IsObjectInFront(caster, 180) && lefthand.ObjectType == (int)eObjectType.Shield)
 						{
 							// TODO: shield size vs number of attackers not calculated
 							double shield = 0.5 * player.GetModifiedSpecLevel(Specs.Shields);
@@ -349,7 +349,7 @@ namespace DOL.GS.Spells
 					}
 				}
 
-				if (arrowBlock == false && m_handler.Caster.AttackWeapon != null && GlobalConstants.IsBowWeapon((eObjectType)m_handler.Caster.AttackWeapon.Object_Type))
+				if (arrowBlock == false && m_handler.Caster.AttackWeapon != null && GlobalConstants.IsBowWeapon((eObjectType)m_handler.Caster.AttackWeapon.ObjectType))
 				{
 					if (ad.AttackResult == GameLiving.eAttackResult.HitUnstyled || ad.AttackResult == GameLiving.eAttackResult.HitStyle)
 					{

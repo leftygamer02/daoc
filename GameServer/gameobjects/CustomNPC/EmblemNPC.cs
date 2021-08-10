@@ -59,8 +59,8 @@ namespace DOL.GS
 				return false;
 			}
 
-			if (item.Object_Type == (int) eObjectType.Shield
-				|| item.Item_Type == Slot.CLOAK)
+			if (item.ObjectType == (int) eObjectType.Shield
+				|| item.ItemType == Slot.CLOAK)
 			{
 				if (t.Guild == null)
 				{
@@ -74,14 +74,14 @@ namespace DOL.GS
 				}
 				if (t.Level < 20) //if level of player < 20 so can not put emblem
 				{
-					if (t.CraftingPrimarySkill == eCraftingSkill.NoCrafting)
+					if (t.PrimaryCraftingSkill == eCraftingSkill.NoCrafting)
 					{
 						t.Out.SendMessage("You have to be at least level 20 or have 400 in a tradeskill to be able to wear an emblem.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return false;
 					}
 					else
 					{
-						if (t.GetCraftingSkillValue(t.CraftingPrimarySkill) < 400)
+						if (t.GetCraftingSkillValue(t.PrimaryCraftingSkill) < 400)
 						{
 							t.Out.SendMessage("You have to be at least level 20 or have 400 in a tradeskill to be able to wear an emblem.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							return false;

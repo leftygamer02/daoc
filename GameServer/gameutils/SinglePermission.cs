@@ -44,7 +44,7 @@ namespace DOL.GS
 			DBSinglePermission perm = new DBSinglePermission();
 			perm.Command = command;
 			perm.PlayerID = player.ObjectId;
-			GameServer.Database.AddObject(perm);
+			GameServer.Instance.SaveDataObject(perm);
 		}
 
 		public static void setPermissionAccount(GamePlayer player, string command)
@@ -52,7 +52,7 @@ namespace DOL.GS
 			DBSinglePermission perm = new DBSinglePermission();
 			perm.Command = command;
 			perm.PlayerID = player.AccountName;
-			GameServer.Database.AddObject(perm);
+			GameServer.Instance.SaveDataObject(perm);
 		}
 
 		public static bool removePermission(GamePlayer player,string command)

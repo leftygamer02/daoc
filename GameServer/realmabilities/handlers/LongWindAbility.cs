@@ -11,7 +11,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class LongWindAbility : RAPropertyEnhancer
 	{
-		public LongWindAbility(DBAbility dba, int level) : base(dba, level, eProperty.Undefined) { }
+		public LongWindAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.Undefined) { }
 
         protected override string ValueUnit { get { return "%"; } }
 

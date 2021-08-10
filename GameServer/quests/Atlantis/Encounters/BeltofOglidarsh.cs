@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public BeltofOglidarsh(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public BeltofOglidarsh(GamePlayer questingPlayer, DBQuest dbQuest)
+        public BeltofOglidarsh(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

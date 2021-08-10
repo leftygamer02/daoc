@@ -4638,6 +4638,20 @@ namespace DOL.GS
 		}
 
 		/// <summary>
+		/// The loot table db ID for this living
+		/// </summary>
+		protected int m_lootTableID = 0; // none by default
+
+		/// <summary>
+		/// Gets the loot table db ID for this living
+		/// </summary>
+		public int LootTableID
+		{
+			get { return m_lootTableID; }
+			set { m_lootTableID = value; }
+		}
+
+		/// <summary>
 		/// Holds the living's cloak hood state
 		/// </summary>
 		protected bool m_isCloakHoodUp;
@@ -4723,7 +4737,7 @@ namespace DOL.GS
 
 				case eActiveWeaponSlot.TwoHanded:
 					{
-						if (twoHandSlot != null && (twoHandSlot.Hand == 1 || this is GameNPC)) // 2h
+						if (twoHandSlot != null && (twoHandSlot.ItemTemplate.Hand == 1 || this is GameNPC)) // 2h
 						{
 							rightHand = leftHand = 0x02;
 							break;
@@ -4748,7 +4762,7 @@ namespace DOL.GS
 
 						if (distanceSlot == null)
 							rightHand = 0xFF;
-						else if (distanceSlot.Hand == 1 || this is GameNPC) // NPC equipment does not have hand so always assume 2 handed bow
+						else if (distanceSlot.ItemTemplate.Hand == 1 || this is GameNPC) // NPC equipment does not have hand so always assume 2 handed bow
 							rightHand = leftHand = 0x03; // bows use 2 hands, throwing axes 1h
 						else
 							rightHand = 0x03;
@@ -6197,7 +6211,7 @@ namespace DOL.GS
 			Notify(GameLivingEvent.ReceiveItem, this, new ReceiveItemEventArgs(source, this, item));
 
 			//If the item has been removed by the event handlers : return
-			if (item == null || item.OwnerID == null)
+			if (item == null || item.CharacterID == null)
 			{
 				return true;
 			}

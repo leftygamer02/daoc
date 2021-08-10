@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public StoneOfAtlantis(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public StoneOfAtlantis(GamePlayer questingPlayer, DBQuest dbQuest)
+		public StoneOfAtlantis(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

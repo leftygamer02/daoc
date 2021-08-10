@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public RingofUnyieldingWill(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public RingofUnyieldingWill(GamePlayer questingPlayer, DBQuest dbQuest)
+        public RingofUnyieldingWill(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

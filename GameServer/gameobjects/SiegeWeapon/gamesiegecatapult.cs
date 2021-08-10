@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using DOL.GS.PacketHandler;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {
@@ -107,7 +108,7 @@ namespace DOL.GS
 			}
 			return;
 		}
-		public override bool ReceiveItem(GameLiving source, DOL.Database.InventoryItem item)
+		public override bool ReceiveItem(GameLiving source, InventoryItem item)
 		{
 			//todo check if bullet
 			return base.ReceiveItem(source, item);

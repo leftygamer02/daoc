@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class ShieldTripAbility : RR5RealmAbility
 	{
-		public ShieldTripAbility(DBAbility dba, int level) : base(dba, level) { }
+		public ShieldTripAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action
@@ -22,7 +22,7 @@ namespace DOL.GS.RealmAbilities
 			InventoryItem shield = living.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 			if (shield == null)
 				return;
-			if (shield.Object_Type != (int)eObjectType.Shield)
+			if (shield.ObjectType != (int)eObjectType.Shield)
 				return;
 			if (living.TargetObject == null)
 				return;

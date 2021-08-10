@@ -2440,7 +2440,7 @@ namespace DOL.GS.ServerProperties
 		/// <summary>
 		/// Use salvage per realm and get back material to use in chars realm
 		/// </summary>
-		[ServerProperty("salvage", "use_new_salvage", "Enable to use a new system calcul of salvage count based on object_type.", false)]
+		[ServerProperty("salvage", "use_new_salvage", "Enable to use a new system calcul of salvage count based on ObjectType.", false)]
 		public static bool USE_NEW_SALVAGE;
 
 		#endregion
@@ -2558,7 +2558,7 @@ namespace DOL.GS.ServerProperties
 			// Not Added to database...
 			if (!prop.IsPersisted)
 			{
-				GameServer.Database.AddObject(prop);
+				GameServer.Instance.SaveDataObject(prop);
 				log.DebugFormat("Cannot find server property {0} creating it", key);
 			}
 			

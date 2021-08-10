@@ -80,13 +80,13 @@ namespace DOL.GS.PacketHandler.Client.v168
 								}
 								if (player.Level < 20)
 								{
-									if (player.CraftingPrimarySkill == eCraftingSkill.NoCrafting)
+									if (player.PrimaryCraftingSkill == eCraftingSkill.NoCrafting)
 									{
 										myitem.Emblem = 0;
 									}
 									else
 									{
-										if (player.GetCraftingSkillValue(player.CraftingPrimarySkill) < 400)
+										if (player.GetCraftingSkillValue(player.PrimaryCraftingSkill) < 400)
 										{
 											myitem.Emblem = 0;
 										}

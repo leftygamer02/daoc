@@ -92,7 +92,7 @@ namespace DOL.GS
 			base.Deactivate(living, sendUpdates);
 		}
 		
-		public SpellLinePassiveAbility(DBAbility dba, int level)
+		public SpellLinePassiveAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level)
 		{
 		}

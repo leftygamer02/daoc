@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public BraggartsBow(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public BraggartsBow(GamePlayer questingPlayer, DBQuest dbQuest)
+        public BraggartsBow(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

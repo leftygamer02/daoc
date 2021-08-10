@@ -34,12 +34,12 @@ namespace DOL.GS.Housing
 		/// </summary>
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private readonly DBHouse _databaseItem;
-		private readonly Dictionary<int, DBHouseCharsXPerms> _housePermissions;
-		private readonly Dictionary<uint, DBHouseHookpointItem> _housepointItems;
+		private readonly DbHouse _databaseItem;
+		private readonly Dictionary<int, DbHouseCharPerms> _housePermissions;
+		private readonly Dictionary<uint, HouseHookpointItem> _housepointItems;
 		private readonly Dictionary<int, IndoorItem> _indoorItems;
 		private readonly Dictionary<int, OutdoorItem> _outdoorItems;
-		private readonly Dictionary<int, DBHousePermissions> _permissionLevels;
+		private readonly Dictionary<int, DbHousePermissions> _permissionLevels;
 		private GameConsignmentMerchant _consignmentMerchant;
 
 		#region Properties
@@ -50,7 +50,7 @@ namespace DOL.GS.Housing
 			set { _databaseItem.HouseNumber = value; }
 		}
 
-		public string OwnerID
+		public int OwnerID
 		{
 			get { return _databaseItem.OwnerID; }
 			set { _databaseItem.OwnerID = value; }
@@ -180,7 +180,7 @@ namespace DOL.GS.Housing
 
 		public DateTime LastPaid
 		{
-			get { return _databaseItem.LastPaid; }
+			get { return _databaseItem.LastPaid.Value; }
 			set { _databaseItem.LastPaid = value; }
 		}
 
@@ -208,27 +208,27 @@ namespace DOL.GS.Housing
 			get { return _outdoorItems; }
 		}
 
-		public IDictionary<uint, DBHouseHookpointItem> HousepointItems
+		public IDictionary<uint, Atlas.DataLayer.Models.HouseHookpointItem> HousepointItems
 		{
 			get { return _housepointItems; }
 		}
 
-		public DBHouse DatabaseItem
+		public DbHouse DatabaseItem
 		{
 			get { return _databaseItem; }
 		}
 
-		public IEnumerable<KeyValuePair<int, DBHouseCharsXPerms>> HousePermissions
+		public IEnumerable<KeyValuePair<int, DbHouseCharPerms>> HousePermissions
 		{
-			get { return _housePermissions.OrderBy(entry => entry.Value.CreationTime); }
+			get { return _housePermissions.OrderBy(entry => entry.Value.CreateDate.Value); }
 		}
 
-		public IDictionary<int, DBHouseCharsXPerms> CharXPermissions
+		public IDictionary<int, DbHouseCharPerms> CharXPermissions
 		{
 			get { return _housePermissions; }
 		}
 
-		public IDictionary<int, DBHousePermissions> PermissionLevels
+		public IDictionary<int, DbHousePermissions> PermissionLevels
 		{
 			get { return _permissionLevels; }
 		}
@@ -275,7 +275,7 @@ namespace DOL.GS.Housing
 
 		public ushort RegionID
 		{
-			get { return _databaseItem.RegionID; }
+			get { return (ushort)_databaseItem.RegionID; }
 			set { _databaseItem.RegionID = value; }
 		}
 
@@ -293,14 +293,14 @@ namespace DOL.GS.Housing
 
 		#endregion
 
-		public House(DBHouse house)
+		public House(DbHouse house)
 		{
 			_databaseItem = house;
-			_permissionLevels = new Dictionary<int, DBHousePermissions>();
+			_permissionLevels = new Dictionary<int, DbHousePermissions>();
 			_indoorItems = new Dictionary<int, IndoorItem>();
 			_outdoorItems = new Dictionary<int, OutdoorItem>();
-			_housepointItems = new Dictionary<uint, DBHouseHookpointItem>();
-			_housePermissions = new Dictionary<int, DBHouseCharsXPerms>();
+			_housepointItems = new Dictionary<uint, HouseHookpointItem>();
+			_housePermissions = new Dictionary<int, DbHouseCharPerms>();
 		}
 
 		~House()
@@ -570,7 +570,7 @@ namespace DOL.GS.Housing
 		{
 			var usedVaults = new[] {false, false, false, false};
 
-			foreach (var housePointItem in DOLDB<DBHouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(HouseNumber).And(DB.Column("ItemTemplateID").IsLike("%_vault"))))
+			foreach (var housePointItem in GameServer.Database.HouseHookpointItems.Where(x => x.HouseNumber == HouseNumber && x.ItemTemplate.Name.Contains("_vault")))
 			{
 				if (housePointItem.Index >= 0 && housePointItem.Index <= 3)
 				{
@@ -614,7 +614,7 @@ namespace DOL.GS.Housing
 				}
 			}
 
-			IList<HouseHookpointOffset> objs = GameServer.Database.SelectAllObjects<HouseHookpointOffset>();
+			IList<HouseHookpointOffset> objs = GameServer.Database.HouseHookpointOffsets.ToList();
 			foreach (HouseHookpointOffset o in objs)
 			{
 				AddNewOffset(o);
@@ -673,9 +673,9 @@ namespace DOL.GS.Housing
 		/// <param name="position">The position of the hookpoint</param>
 		/// <param name="templateID">The template id of the item (can be blank if item is filled)</param>
 		/// <param name="heading">The requested heading of this house item</param>
-		public bool FillHookpoint(uint position, string templateID, ushort heading, int index)
+		public bool FillHookpoint(uint position, int templateID, ushort heading, int index)
 		{
-			ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(templateID);
+			ItemTemplate item = GameServer.Database.ItemTemplates.Find(templateID);
 
 			if (item == null)
 				return false;
@@ -690,7 +690,7 @@ namespace DOL.GS.Housing
 			int z = location.Z;
 			GameObject hookpointObject = null;
 
-			switch ((eObjectType)item.Object_Type)
+			switch ((eObjectType)item.ObjectType)
 			{
 				case eObjectType.HouseVault:
 					{
@@ -754,7 +754,7 @@ namespace DOL.GS.Housing
 				return;
 			}
 
-			var items = DOLDB<DBHouseHookpointItem>.SelectObjects(DB.Column("HookpointID").IsEqualTo(position).And(DB.Column("HouseNumber").IsEqualTo(obj.CurrentHouse.HouseNumber)));
+			var items = GameServer.Database.HouseHookpointItems.Where(x => x.Id == position && x.HouseNumber == obj.CurrentHouse.HouseNumber).ToList();
 			if (items.Count == 0)
 			{
 				ChatUtil.SendSystemMessage(player, "No hookpoint item found at position " + position);
@@ -762,7 +762,10 @@ namespace DOL.GS.Housing
 			}
 
 			// clear every item from this hookpoint
-			GameServer.Database.DeleteObject(items);
+			for (int i = 0; i < items.Count; i++)
+            {				
+				GameServer.Instance.DeleteDataObject(items[i]);
+			}			
 
 			obj.Delete();
 			player.CurrentHouse.HousepointItems.Remove((uint)position);
@@ -770,7 +773,7 @@ namespace DOL.GS.Housing
 
 			if (addToInventory)
 			{
-				var template = GameServer.Database.FindObjectByKey<ItemTemplate>(obj.OwnerID);
+				var template = GameServer.Database.ItemTemplates.Find(obj.OwnerID);
 				if (template != null)
 				{
                     if (player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, GameInventoryItem.Create(template)))
@@ -825,14 +828,14 @@ namespace DOL.GS.Housing
 				return false;
 			}
 
-			var obj = DOLDB<Mob>.SelectObject(DB.Column("HouseNumber").IsEqualTo(HouseNumber));
+			var obj = GameServer.Database.NpcTemplates.FirstOrDefault(x => x.HouseNumber == HouseNumber);
 			if (obj != null)
 			{
 				log.DebugFormat("Add CM: Found consignment merchant in Mob table for house {0}.", HouseNumber);
 				return false;
 			}
 
-			var houseCM = DOLDB<HouseConsignmentMerchant>.SelectObject(DB.Column("HouseNumber").IsEqualTo(HouseNumber));
+			var houseCM = GameServer.Database.HouseConsignmentMerchants.FirstOrDefault(x => x.HouseNumber == HouseNumber);
 			if (houseCM != null)
 			{
 				log.DebugFormat("Add CM: Found active consignment merchant in HousingConsignmentMerchant table for house {0}.", HouseNumber);
@@ -845,7 +848,7 @@ namespace DOL.GS.Housing
 			}
 
 			// now let's try to find a CM with this owner ID and no house and if we find it, attach
-			houseCM = DOLDB<HouseConsignmentMerchant>.SelectObject(DB.Column("OwnerID").IsEqualTo(OwnerID));
+			houseCM = GameServer.Database.HouseConsignmentMerchants.FirstOrDefault(x => x.OwnerID == OwnerID);
 
 			if (houseCM != null)
 			{
@@ -856,7 +859,7 @@ namespace DOL.GS.Housing
 				}
 
 				houseCM.HouseNumber = HouseNumber;
-				GameServer.Database.SaveObject(houseCM);
+				GameServer.Instance.SaveDataObject(houseCM);
 				log.Warn("Re-adding an existing consignment merchant for house " + HouseNumber);
 			}
 
@@ -865,7 +868,7 @@ namespace DOL.GS.Housing
 				// create a new consignment merchant entry, and add it to the DB
 				log.Warn("Adding a consignment merchant for house " + HouseNumber);
 				houseCM = new HouseConsignmentMerchant { OwnerID = OwnerID, HouseNumber = HouseNumber, Money = startValue };
-				GameServer.Database.AddObject(houseCM);
+				GameServer.Instance.SaveDataObject(houseCM);
 			}
 
 			float[] consignmentCoords = HousingConstants.ConsignmentPositioning[Model];
@@ -920,7 +923,7 @@ namespace DOL.GS.Housing
 				foreach(InventoryItem item in ConsignmentMerchant.DBItems(null))
 				{
 					item.OwnerLot = 0;
-					GameServer.Database.SaveObject(item);
+					GameServer.Instance.SaveDataObject(item);
 					count++;
 				}
 
@@ -929,11 +932,11 @@ namespace DOL.GS.Housing
 					log.Warn("HOUSING: Cleared OwnerLot for " + count + " items on the consignment merchant!");
 				}
 
-				var houseCM = DOLDB<HouseConsignmentMerchant>.SelectObject(DB.Column("HouseNumber").IsEqualTo(HouseNumber));
+				var houseCM = GameServer.Database.HouseConsignmentMerchants.FirstOrDefault(x => x.HouseNumber == HouseNumber);
 				if (houseCM != null)
 				{
 					houseCM.HouseNumber = 0;
-					GameServer.Database.SaveObject(houseCM);
+					GameServer.Instance.SaveDataObject(houseCM);
 				}
 
 				ConsignmentMerchant.HouseNumber = 0;
@@ -999,7 +1002,7 @@ namespace DOL.GS.Housing
 
 				if (item != null)
 				{
-					switch ((eObjectType) item.Object_Type)
+					switch ((eObjectType) item.ObjectType)
 					{
 						case eObjectType.HouseInteriorBanner:
 							IndoorGuildBanner = (item.DPS_AF == 1 ? true : false);
@@ -1053,7 +1056,7 @@ namespace DOL.GS.Housing
 			}
 
 			// save the house
-			GameServer.Database.SaveObject(_databaseItem);
+			GameServer.Instance.SaveDataObject(_databaseItem);
 			
 			SendUpdate();
 		}
@@ -1074,7 +1077,7 @@ namespace DOL.GS.Housing
 			string targetName = permType == PermissionType.Account ? player.Client.Account.Name : player.Name;
 
 			//  check to make sure an existing mapping doesn't exist.
-			foreach (DBHouseCharsXPerms perm in _housePermissions.Values)
+			foreach (DbHouseCharPerms perm in _housePermissions.Values)
 			{
 				// fast expression to evaluate to match appropriate permissions
 				if (perm.PermissionType == (int) permType)
@@ -1086,8 +1089,8 @@ namespace DOL.GS.Housing
 			}
 
 			// no matching permissions, create a new one and add it.
-			var housePermission = new DBHouseCharsXPerms(HouseNumber, targetName, player.Name, permLevel, (int) permType);
-			GameServer.Database.AddObject(housePermission);
+			var housePermission = new DbHouseCharPerms(HouseNumber, targetName, player.Name, permLevel, (int) permType);
+			GameServer.Instance.SaveDataObject(housePermission);
 
 			// add it to our list
 			_housePermissions.Add(GetOpenPermissionSlot(), housePermission);
@@ -1098,7 +1101,7 @@ namespace DOL.GS.Housing
 		public bool AddPermission(string targetName, PermissionType permType, int permLevel)
 		{
 			//  check to make sure an existing mapping doesn't exist.
-			foreach (DBHouseCharsXPerms perm in _housePermissions.Values)
+			foreach (DbHouseCharPerms perm in _housePermissions.Values)
 			{
 				// fast expression to evaluate to match appropriate permissions
 				if (perm.PermissionType == (int) permType)
@@ -1110,8 +1113,8 @@ namespace DOL.GS.Housing
 			}
 
 			// no matching permissions, create a new one and add it.
-			var housePermission = new DBHouseCharsXPerms(HouseNumber, targetName, targetName, permLevel, (int) permType);
-			GameServer.Database.AddObject(housePermission);
+			var housePermission = new DbHouseCharPerms(HouseNumber, targetName, targetName, permLevel, (int) permType);
+			GameServer.Instance.SaveDataObject(housePermission);
 
 			// add it to our list
 			_housePermissions.Add(GetOpenPermissionSlot(), housePermission);
@@ -1145,7 +1148,7 @@ namespace DOL.GS.Housing
 
 			// remove the permission and delete it from the database
 			_housePermissions.Remove(slot);
-			GameServer.Database.DeleteObject(matchedPerm);
+			GameServer.Instance.DeleteDataObject(matchedPerm);
 		}
 
 		public void AdjustPermissionSlot(int slot, int newPermLevel)
@@ -1164,21 +1167,21 @@ namespace DOL.GS.Housing
 			permission.PermissionLevel = newPermLevel;
 
 			// save the permission
-			GameServer.Database.SaveObject(permission);
+			GameServer.Instance.SaveDataObject(permission);
 		}
 
 		#endregion
 
 		#region Get Permissions
 
-		private DBHouseCharsXPerms GetPlayerPermissions(GamePlayer player)
+		private DbHouseCharPerms GetPlayerPermissions(GamePlayer player)
 		{
 			// make sure player isn't null
 			if (player == null)
 				return null;
 
 			// try character permissions first
-			IEnumerable<DBHouseCharsXPerms> charPermissions = from cp in _housePermissions.Values
+			IEnumerable<DbHouseCharPerms> charPermissions = from cp in _housePermissions.Values
 				where
 				cp.TargetName == player.Name &&
 				cp.PermissionType == (int) PermissionType.Player
@@ -1188,7 +1191,7 @@ namespace DOL.GS.Housing
 				return charPermissions.First();
 
 			// try account permissions next
-			IEnumerable<DBHouseCharsXPerms> acctPermissions = from cp in _housePermissions.Values
+			IEnumerable<DbHouseCharPerms> acctPermissions = from cp in _housePermissions.Values
 				where
 				cp.TargetName == player.Client.Account.Name &&
 				cp.PermissionType == (int) PermissionType.Account
@@ -1200,7 +1203,7 @@ namespace DOL.GS.Housing
 			if (player.Guild != null)
 			{
 				// try guild permissions next
-				IEnumerable<DBHouseCharsXPerms> guildPermissions = from cp in _housePermissions.Values
+				IEnumerable<DbHouseCharPerms> guildPermissions = from cp in _housePermissions.Values
 					where
 					player.Guild.Name == cp.TargetName &&
 					cp.PermissionType == (int) PermissionType.Guild
@@ -1211,7 +1214,7 @@ namespace DOL.GS.Housing
 			}
 
 			// look for the catch-all permissions last
-			IEnumerable<DBHouseCharsXPerms> allPermissions = from cp in _housePermissions.Values
+			IEnumerable<DbHouseCharPerms> allPermissions = from cp in _housePermissions.Values
 				where cp.TargetName == "All"
 				select cp;
 
@@ -1222,7 +1225,7 @@ namespace DOL.GS.Housing
 			return null;
 		}
 
-		private bool HasAccess(GamePlayer player, Func<DBHousePermissions, bool> accessExpression)
+		private bool HasAccess(GamePlayer player, Func<DbHousePermissions, bool> accessExpression)
 		{
 			// make sure player isn't null
 			if (player == null)
@@ -1233,7 +1236,7 @@ namespace DOL.GS.Housing
 				return true;
 
 			// get house permissions for the given player
-			DBHousePermissions housePermissions = GetPermissionLevel(player);
+			DbHousePermissions housePermissions = GetPermissionLevel(player);
 
 			if (housePermissions == null)
 				return false;
@@ -1242,21 +1245,21 @@ namespace DOL.GS.Housing
 			return accessExpression(housePermissions);
 		}
 
-		private DBHousePermissions GetPermissionLevel(GamePlayer player)
+		private DbHousePermissions GetPermissionLevel(GamePlayer player)
 		{
 			// get player permissions mapping
-			DBHouseCharsXPerms permissions = GetPlayerPermissions(player);
+			DbHouseCharPerms permissions = GetPlayerPermissions(player);
 
 			if (permissions == null)
 				return null;
 
 			// get house permissions for the given mapping
-			DBHousePermissions housePermissions = GetPermissionLevel(permissions);
+			DbHousePermissions housePermissions = GetPermissionLevel(permissions);
 
 			return housePermissions;
 		}
 
-		private DBHousePermissions GetPermissionLevel(DBHouseCharsXPerms charPerms)
+		private DbHousePermissions GetPermissionLevel(DbHouseCharPerms charPerms)
 		{
 			// make sure permissions aren't null
 			if (charPerms == null)
@@ -1265,9 +1268,9 @@ namespace DOL.GS.Housing
 			return GetPermissionLevel(charPerms.PermissionLevel);
 		}
 
-		private DBHousePermissions GetPermissionLevel(int permissionLevel)
+		private DbHousePermissions GetPermissionLevel(int permissionLevel)
 		{
-			DBHousePermissions permissions;
+			DbHousePermissions permissions;
 			_permissionLevels.TryGetValue(permissionLevel, out permissions);
 
 			return permissions;
@@ -1290,8 +1293,8 @@ namespace DOL.GS.Housing
 					return true;
 
 				// check account-wide if not a guild house
-				IEnumerable<DOLCharacters> charsOnAccount = from chr in player.Client.Account.Characters
-					where chr.ObjectId == _databaseItem.OwnerID
+				IEnumerable<Character> charsOnAccount = from chr in player.Client.Account.Characters
+					where chr.Id == _databaseItem.OwnerID
 					select chr;
 
 				if (charsOnAccount.Count() > 0)
@@ -1333,7 +1336,7 @@ namespace DOL.GS.Housing
 				return true;
 
 			// get player house permissions
-			DBHousePermissions housePermissions = GetPermissionLevel(player);
+			DbHousePermissions housePermissions = GetPermissionLevel(player);
 
 			if (housePermissions == null)
 				return false;
@@ -1373,7 +1376,7 @@ namespace DOL.GS.Housing
 				return true;
 
 			// get player house permissions
-			DBHousePermissions housePermissions = GetPermissionLevel(player);
+			DbHousePermissions housePermissions = GetPermissionLevel(player);
 
 			if (housePermissions == null)
 				return false;
@@ -1392,7 +1395,7 @@ namespace DOL.GS.Housing
 				return true;
 
 			// get player house permissions
-			DBHousePermissions housePermissions = GetPermissionLevel(player);
+			DbHousePermissions housePermissions = GetPermissionLevel(player);
 
 			if (housePermissions == null)
 				return false;
@@ -1411,7 +1414,7 @@ namespace DOL.GS.Housing
 				return true;
 
 			// get player house permissions
-			DBHousePermissions housePermissions = GetPermissionLevel(player);
+			DbHousePermissions housePermissions = GetPermissionLevel(player);
 
 			if (housePermissions == null)
 				return false;
@@ -1466,7 +1469,7 @@ namespace DOL.GS.Housing
 		/// </summary>
 		public void SaveIntoDatabase()
 		{
-			GameServer.Database.SaveObject(_databaseItem);
+			GameServer.Instance.SaveDataObject(_databaseItem);
 		}
 
 		/// <summary>
@@ -1476,26 +1479,26 @@ namespace DOL.GS.Housing
 		{
 			int i = 0;
 			_indoorItems.Clear();
-			foreach (DBHouseIndoorItem dbiitem in DOLDB<DBHouseIndoorItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(HouseNumber)))
+			foreach (DbIndoorItem dbiitem in GameServer.Database.DbIndoorItems.Where(x => x.HouseNumber == HouseNumber))
 			{
 				_indoorItems.Add(i++, new IndoorItem(dbiitem));
 			}
 
 			i = 0;
 			_outdoorItems.Clear();
-			foreach (DBHouseOutdoorItem dboitem in DOLDB<DBHouseOutdoorItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(HouseNumber)))
+			foreach (DbOutdoorItem dboitem in GameServer.Database.DbOutdoorItems.Where(x => x.HouseNumber == HouseNumber))
 			{
 				_outdoorItems.Add(i++, new OutdoorItem(dboitem));
 			}
 
 			_housePermissions.Clear();
-			foreach (DBHouseCharsXPerms d in DOLDB<DBHouseCharsXPerms>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(HouseNumber)))
+			foreach (DbHouseCharPerms d in GameServer.Database.DbHouseCharPerms.Where(x => x.HouseNumber == HouseNumber))
 			{
 				_housePermissions.Add(GetOpenPermissionSlot(), d);
 			}
 
 			_permissionLevels.Clear();
-			foreach (DBHousePermissions dbperm in DOLDB<DBHousePermissions>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(HouseNumber)))
+			foreach (DbHousePermissions dbperm in GameServer.Database.DbHousePermissions.Where(x => x.HouseNumber == HouseNumber))
 			{
 				if (_permissionLevels.ContainsKey(dbperm.PermissionLevel) == false)
 				{
@@ -1508,12 +1511,12 @@ namespace DOL.GS.Housing
 			}
 
 			HousepointItems.Clear();
-			foreach (DBHouseHookpointItem item in DOLDB<DBHouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(HouseNumber)))
+			foreach (HouseHookpointItem item in GameServer.Database.HouseHookpointItems.Where(x => x.HouseNumber == HouseNumber))
 			{
-				if (HousepointItems.ContainsKey(item.HookpointID) == false)
+				if (HousepointItems.ContainsKey((uint)item.HookpointID) == false)
 				{
-					HousepointItems.Add(item.HookpointID, item);
-					FillHookpoint(item.HookpointID, item.ItemTemplateID, item.Heading, item.Index);
+					HousepointItems.Add((uint)item.HookpointID, item);
+					FillHookpoint((uint)item.HookpointID, item.ItemTemplateID, (ushort)item.Heading, item.Index);
 				}
 				else
 				{

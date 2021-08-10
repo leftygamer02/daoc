@@ -1533,16 +1533,42 @@ namespace DOL.GS
             }
         }
 
-		public void DeleteDataObject<T>(T obj) where T : class, IDataObject
+		public bool DeleteDataObject<T>(T obj) where T : class, IDataObject
+		{
+            try
+            {
+				using (var db = GetNewDbContext())
+				{
+					var entity = db.Set<T>().Find(obj.Id);
+
+					if (entity != null)
+					{
+						db.Set<T>().Remove(entity);
+						db.SaveChanges();
+					}
+				}
+				return true;
+			}
+			catch
+			{
+				return false;
+            }
+			
+		}
+
+		public void DeleteDataObjects<T>(IEnumerable<T> objs) where T : class, IDataObject
 		{
 			using (var db = GetNewDbContext())
 			{
-				var entity = db.Set<T>().Find(obj.Id);
+				foreach (var obj in objs)
+                {
+					var entity = db.Set<T>().Find(obj.Id);
 
-				if (entity != null)
-				{
-					db.Set<T>().Remove(entity);
-					db.SaveChanges();
+					if (entity != null)
+					{
+						db.Set<T>().Remove(entity);
+						db.SaveChanges();
+					}
 				}
 			}
 		}

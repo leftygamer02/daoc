@@ -113,7 +113,7 @@ namespace DOL.GS.Spells
 
         private ISpellHandler MakeTrap()
         {
-            DBSpell dbs = new DBSpell();
+            Atlas.DataLayer.Models.Spell dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = "Increased Essence Consumption";
             dbs.Icon = 11020;
             dbs.ClientEffect = 11020;

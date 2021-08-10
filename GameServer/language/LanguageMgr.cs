@@ -249,7 +249,7 @@ namespace DOL.Language
                             if (dbo.Text != sentence[TEXT])
                             {
                                 dbo.Text = sentence[TEXT];
-                                GameServer.Database.SaveObject(dbo); // Please be sure to use the UTF-8 format for your language files, otherwise
+                                GameServer.Instance.SaveDataObject(dbo); // Please be sure to use the UTF-8 format for your language files, otherwise
                                 // some database rows will be updated on each server start, because one char
                                 // differs from the one within the database.
                                 updatedEntries++;
@@ -269,7 +269,7 @@ namespace DOL.Language
                             dbo.Text = sentence[TEXT];
                             dbo.Language = sentence[LANGUAGE];
 
-                            GameServer.Database.AddObject(dbo);
+                            GameServer.Instance.SaveDataObject(dbo);
                             RegisterLanguageDataObject(dbo);
                             newEntries++;
 
@@ -302,7 +302,7 @@ namespace DOL.Language
                             dbo.Text = sentence[TEXT];
                             dbo.Language = sentence[LANGUAGE];
 
-                            GameServer.Database.AddObject(dbo);
+                            GameServer.Instance.SaveDataObject(dbo);
                             RegisterLanguageDataObject(dbo);
                             newEntries++;
 

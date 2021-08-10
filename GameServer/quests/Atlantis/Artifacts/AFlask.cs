@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "A Flask";
-		public override String ArtifactID
+		private static int m_artifactID = 1004;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -79,7 +80,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// </summary>
 		/// <param name="questingPlayer"></param>
 		/// <param name="dbQuest"></param>
-		public AFlask(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AFlask(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>
@@ -121,14 +122,15 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step > -1 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
+			var artifact = ArtifactMgr.GetArtifactForBook(item.Name);
+			if (Step > -1 && artifact != null && artifact.Id == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				Dictionary<int, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(artifact.Id,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, artifact.Id, versions[0]);
 					String reply = String.Format("Here is the {0}, {1} {2} {3} {4}, {5}!",
 						"restored to its original power. It is a fine item and I wish I could keep",
 						"it, but it is for you and you alone. Do not destroy it because you will never",
@@ -162,8 +164,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			Scholar scholar = target as Scholar;
 			if (player == null || scholar == null)
 				return false;
-
-			if (Step > -1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step > -1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				/* Commenting out to give a template for future development
 				String reply = String.Format("Vara was a very skilled healer and she put her skills {0} {1} {2}",

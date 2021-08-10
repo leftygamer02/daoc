@@ -151,7 +151,7 @@ namespace DOL.GS
 			{
 				if (m_glareSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.ClientEffect = 5702;
@@ -185,7 +185,7 @@ namespace DOL.GS
 			{
 				if (m_breathSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Uninterruptible = true;
@@ -215,7 +215,7 @@ namespace DOL.GS
 			{
 				if (m_resistDebuffSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Uninterruptible = true;
@@ -254,7 +254,7 @@ namespace DOL.GS
 			{
 				if (m_meleeDebuffSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Uninterruptible = true;
@@ -290,7 +290,7 @@ namespace DOL.GS
 			{
 				if (m_rangedDebuffSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Uninterruptible = true;

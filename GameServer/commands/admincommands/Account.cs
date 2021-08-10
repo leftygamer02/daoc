@@ -91,7 +91,7 @@ namespace DOL.GS.Commands
                             CreationDate = DateTime.Now,
                             Language = ServerProperties.Properties.SERV_LANGUAGE
                         };
-                        GameServer.Database.AddObject(account);
+                        GameServer.Instance.SaveDataObject(account);
 
                         DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Account.AccountCreated"));
                     }
@@ -117,7 +117,7 @@ namespace DOL.GS.Commands
 						}
 
 						acc.Password = LoginRequestHandler.CryptPassword(newpass);
-						GameServer.Database.SaveObject(acc);
+						GameServer.Instance.SaveDataObject(acc);
 
 						// Log change
 						AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.AccountPasswordChange, "", (client.Player != null ? client.Player.Name : ""));
@@ -162,7 +162,7 @@ namespace DOL.GS.Commands
                         }
 
                         string charname = args[2];
-                        DOLCharacters cha = GetCharacter(charname);
+                        Character cha = GetCharacter(charname);
 
                         if (cha == null)
                         {
@@ -192,7 +192,7 @@ namespace DOL.GS.Commands
                         string charname = args[2];
                         string accountname = args[3];
 
-                        DOLCharacters cha = GetCharacter(charname);
+                        Character cha = GetCharacter(charname);
                         if (cha == null)
                         {
                             DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Account.CharacterNotFound", charname));
@@ -227,7 +227,7 @@ namespace DOL.GS.Commands
                         for (freeslot = firstAccountSlot; freeslot < firstAccountSlot + 8; freeslot++)
                         {
                             bool found = false;
-                            foreach (DOLCharacters ch in acc.Characters)
+                            foreach (Character ch in acc.Characters)
                             {
                                 if (ch.Realm == cha.Realm && ch.AccountSlot == freeslot)
                                 {
@@ -256,7 +256,7 @@ namespace DOL.GS.Commands
                         cha.AccountName = acc.Name;
                         cha.AccountSlot = freeslot;
 
-                        GameServer.Database.SaveObject(cha);
+                        GameServer.Instance.SaveDataObject(cha);
                         DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Account.CharacterMovedToAccount", cha.Name, acc.Name));
                         return;
                     }
@@ -284,7 +284,7 @@ namespace DOL.GS.Commands
 						if(status >= 0 && status < 256 )
 						{
 							acc.Status=status;
-							GameServer.Database.SaveObject(acc);
+							GameServer.Instance.SaveDataObject(acc);
 							DisplayMessage(client, "Account "+acc.Name+" Status is now set to : "+acc.Status);
 						}
 						else DisplaySyntax(client);
@@ -335,7 +335,7 @@ namespace DOL.GS.Commands
                         }
 
                         string CharName = args[2];
-                        DOLCharacters Char = GetCharacter(CharName);
+                        Character Char = GetCharacter(CharName);
                         
                         if (Char == null)
                         {
@@ -370,12 +370,12 @@ namespace DOL.GS.Commands
 		/// </summary>
 		/// <param name="charname">the charactername</param>
 		/// <returns>the found character or null</returns>
-		private DOLCharacters GetCharacter(string charname)
+		private Character GetCharacter(string charname)
 		{
 			GameClient client = WorldMgr.GetClientByPlayerName(charname, true, false);
 			if (client != null)
 				return client.Player.DBCharacter;
-			return DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(charname));
+			return DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(charname));
 		}
 
 		/// <summary>
@@ -396,7 +396,7 @@ namespace DOL.GS.Commands
 		/// Kicks an active playing character from the server
 		/// </summary>
 		/// <param name="cha">the character</param>
-		private void KickCharacter(DOLCharacters cha)
+		private void KickCharacter(Character cha)
 		{
 			GameClient playingclient = WorldMgr.GetClientByPlayerName(cha.Name, true, false);
 			if (playingclient != null)
@@ -417,7 +417,7 @@ namespace DOL.GS.Commands
 			if (client != null)
 				return client.Account.Name;
 
-			var ch = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(charname));
+			var ch = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(charname));
 			if (ch != null)
 				return ch.AccountName;
 			else

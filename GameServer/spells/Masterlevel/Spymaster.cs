@@ -183,7 +183,7 @@ namespace DOL.GS.Spells
             mine.Owner = (GamePlayer)caster;
 
             // Construct the mine spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7220;
             dbs.ClientEffect = 7220;
@@ -233,7 +233,7 @@ namespace DOL.GS.Spells
             mine.Owner = (GamePlayer)caster;
 
             // Construct the mine spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7281;
             dbs.ClientEffect = 7281;
@@ -365,7 +365,7 @@ namespace DOL.GS.Spells
             mine.Owner = (GamePlayer)caster;
 
             // Construct the mine spell
-            dbs = new DBSpell();
+            dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = spell.Name;
             dbs.Icon = 7301;
             dbs.ClientEffect = 7301;

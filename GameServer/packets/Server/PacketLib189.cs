@@ -237,7 +237,7 @@ namespace DOL.GS.PacketHandler
 			int value1; // some object types use this field to display count
 			int value2; // some object types use this field to display count
 
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 					value1 = item.Count & 0xFF;
@@ -258,7 +258,7 @@ namespace DOL.GS.PacketHandler
 					value2 = 0;
 					break; // unused
 				case (int)eObjectType.Shield:
-					value1 = item.Type_Damage;
+					value1 = item.TypeDamage;
 					value2 = item.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
@@ -291,9 +291,9 @@ namespace DOL.GS.PacketHandler
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			// ChatUtil.SendDebugMessage(m_gameClient, string.Format("WriteItemDate189: name {0}, level {1}, object {2}, value1 {3}, value2 {4}", item.Id_nb, item.Level, item.Object_Type, value1, value2));
+			// ChatUtil.SendDebugMessage(m_gameClient, string.Format("WriteItemDate189: name {0}, level {1}, object {2}, value1 {3}, value2 {4}", item.Id, item.Level, item.ObjectType, value1, value2));
 
-			if (item.Object_Type == (int)eObjectType.GardenObject)
+			if (item.ObjectType == (int)eObjectType.GardenObject)
 			{
 				pak.WriteByte((byte)(item.DPS_AF));
 			}
@@ -302,7 +302,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte((byte)(item.Hand << 6));
 			}
 
-			pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+			pak.WriteByte((byte)((item.TypeDamage > 3 ? 0 : item.TypeDamage << 6) | item.ObjectType));
 			pak.WriteShort((ushort)item.Weight);
 			pak.WriteByte(item.ConditionPercent); // % of con
 			pak.WriteByte(item.DurabilityPercent); // % of dur
@@ -346,7 +346,7 @@ namespace DOL.GS.PacketHandler
 			string spell_name1 = "";
 			string spell_name2 = "";
 
-			if (item.Object_Type != (int)eObjectType.AlchemyTincture)
+			if (item.ObjectType != (int)eObjectType.AlchemyTincture)
 			{
 				SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
 

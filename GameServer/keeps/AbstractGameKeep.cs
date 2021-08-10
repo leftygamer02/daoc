@@ -177,13 +177,13 @@ namespace DOL.GS.Keeps
 			}
 		}
 
-		public Dictionary<string, GameKeepDoor> Doors { get; set; } = new Dictionary<string, GameKeepDoor>();
+		public Dictionary<int, GameKeepDoor> Doors { get; set; } = new Dictionary<int, GameKeepDoor>();
 
-		public DBKeep DBKeep { get; set; }
+		public Keep DBKeep { get; set; }
 
-		public Dictionary<string, GameKeepGuard> Guards { get; } = new Dictionary<string, GameKeepGuard>();
+		public Dictionary<int, GameKeepGuard> Guards { get; } = new Dictionary<int, GameKeepGuard>();
 
-		public Dictionary<string, GameKeepBanner> Banners { get; set; } = new Dictionary<string, GameKeepBanner>();
+		public Dictionary<int, GameKeepBanner> Banners { get; set; } = new Dictionary<int, GameKeepBanner>();
 
 		public Dictionary<string, Patrol> Patrols { get; set; } = new Dictionary<string, Patrol>();
 
@@ -278,11 +278,11 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public ushort KeepID
 		{
-			get	{ return (ushort)DBKeep.KeepID; }
+			get	{ return (ushort)DBKeep.Id; }
 			set
 			{
 				SendRemoveKeep();
-				DBKeep.KeepID = (ushort)value;
+				DBKeep.Id = (ushort)value;
 				SendKeepInfo();
 			}
 		}
@@ -292,7 +292,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public byte Level
 		{
-			get	{ return DBKeep.Level; }
+			get	{ return (byte)DBKeep.Level; }
 			set	{ DBKeep.Level = value; }
 		}
 
@@ -306,7 +306,7 @@ namespace DOL.GS.Keeps
 			get
 			{
 				if (m_baseLevel == 0)
-					m_baseLevel = DBKeep.BaseLevel;
+					m_baseLevel = (byte)DBKeep.BaseLevel;
 				return m_baseLevel;
 			}
 			set
@@ -352,10 +352,10 @@ namespace DOL.GS.Keeps
 		/// <summary>
 		/// The Keep Region ID linked to the DBKeep
 		/// </summary>
-		public ushort Region
+		public int Region
 		{
-			get	{ return DBKeep.Region; }
-			set	{ DBKeep.Region = value; }
+			get	{ return DBKeep.RegionID; }
+			set	{ DBKeep.RegionID = value; }
 		}
 
 		/// <summary>
@@ -390,7 +390,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public ushort Heading
 		{
-			get	{ return DBKeep.Heading; }
+			get	{ return (ushort)DBKeep.Heading; }
 			set	{ DBKeep.Heading = value; }
 		}
 
@@ -411,11 +411,11 @@ namespace DOL.GS.Keeps
 			get	{ return (eRealm)DBKeep.OriginalRealm; }
 		}
 
-		protected string m_InternalID;
+		protected int m_InternalID;
 		/// <summary>
 		/// The Keep Internal ID
 		/// </summary>
-		public string InternalID
+		public int InternalID
 		{
 			get { return m_InternalID; }
 			set { m_InternalID = value; }
@@ -449,19 +449,19 @@ namespace DOL.GS.Keeps
 		/// load keep from Db object and load keep component and object of keep
 		/// </summary>
 		/// <param name="keep"></param>
-		public virtual void Load(DBKeep keep)
+		public virtual void Load(Atlas.DataLayer.Models.Keep keep)
 		{
-			CurrentRegion = WorldMgr.GetRegion((ushort)keep.Region);
+			CurrentRegion = WorldMgr.GetRegion((ushort)keep.RegionID);
 			InitialiseTimers();
 			LoadFromDatabase(keep);
 			GameEventMgr.AddHandler(CurrentRegion, RegionEvent.PlayerEnter, new DOLEventHandler(SendKeepInit));
 			KeepArea area = null;
-			//see if any keep areas for this keep have already been added via DBArea
+			//see if any keep areas for this keep have already been added via Atlas.DataLayer.Models.Area
 			foreach (AbstractArea a in CurrentRegion.GetAreasOfSpot(keep.X, keep.Y, keep.Z))
 			{
 				if (a is KeepArea && a.Description == keep.Name)
 				{
-					log.Debug("Found a DBArea entry for " + keep.Name + ", loading that instead of creating a new one.");
+					log.Debug("Found a Atlas.DataLayer.Models.Area entry for " + keep.Name + ", loading that instead of creating a new one.");
 					area = a as KeepArea;
 					area.Keep = this;
 					break;
@@ -485,21 +485,21 @@ namespace DOL.GS.Keeps
 		/// <param name="area"></param>
 		public virtual void Remove(KeepArea area)
 		{
-			Dictionary<string, GameKeepGuard> guards = new Dictionary<string, GameKeepGuard>(Guards); // Use a shallow copy
+			Dictionary<int, GameKeepGuard> guards = new Dictionary<int, GameKeepGuard>(Guards); // Use a shallow copy
 			foreach (GameKeepGuard guard in guards.Values)
 			{
 				guard.Delete();
 				guard.DeleteFromDatabase();
 			}
 
-			Dictionary<string, GameKeepBanner> banners = new Dictionary<string, GameKeepBanner>(Banners); // Use a shallow copy
+			Dictionary<int, GameKeepBanner> banners = new Dictionary<int, GameKeepBanner>(Banners); // Use a shallow copy
 			foreach (GameKeepBanner banner in banners.Values)
 			{
 				banner.Delete();
 				banner.DeleteFromDatabase();
 			}
 
-			Dictionary<string, GameKeepDoor> doors = new Dictionary<string, GameKeepDoor>(Doors); // Use a shallow copy
+			Dictionary<int, GameKeepDoor> doors = new Dictionary<int, GameKeepDoor>(Doors); // Use a shallow copy
 			foreach (GameKeepDoor door in doors.Values)
 			{
 				door.Delete();
@@ -534,10 +534,10 @@ namespace DOL.GS.Keeps
 		/// load keep from DB
 		/// </summary>
 		/// <param name="keep"></param>
-		public virtual void LoadFromDatabase(DataObject keep)
+		public virtual void LoadFromDatabase(DataObjectBase keep)
 		{
-			DBKeep = keep as DBKeep;
-			InternalID = keep.ObjectId;
+			DBKeep = keep as Keep;
+			InternalID = keep.Id;
 			m_difficultyLevel[0] = DBKeep.AlbionDifficultyLevel;
 			m_difficultyLevel[1] = DBKeep.MidgardDifficultyLevel;
 			m_difficultyLevel[2] = DBKeep.HiberniaDifficultyLevel;
@@ -562,7 +562,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public virtual void RemoveFromDatabase()
 		{
-			GameServer.Database.DeleteObject(DBKeep);
+			GameServer.Instance.DeleteDataObject(DBKeep);
 			log.Warn("Keep ID " + KeepID + " removed from database!");
 		}
 
@@ -575,13 +575,13 @@ namespace DOL.GS.Keeps
 				DBKeep.ClaimedGuildName = Guild.Name;
 			else
 				DBKeep.ClaimedGuildName = "";
-			if(InternalID == null)
+			if(InternalID <= 0)
 			{
-				GameServer.Database.AddObject(DBKeep);
-				InternalID = DBKeep.ObjectId;
+				GameServer.Instance.SaveDataObject(DBKeep);
+				InternalID = DBKeep.Id;
 			}
 			else
-				GameServer.Database.SaveObject(DBKeep);
+				GameServer.Instance.SaveDataObject(DBKeep);
 
 			foreach (GameKeepComponent comp in this.KeepComponents)
 				comp.SaveIntoDatabase();
@@ -1166,7 +1166,7 @@ namespace DOL.GS.Keeps
 				return;
 
 			//predict Z
-			DBKeepHookPoint hp = DOLDB<DBKeepHookPoint>.SelectObject(DB.Column("HookPointID").IsEqualTo(97).And(DB.Column("Height").IsEqualTo(Height)));
+			KeepHookpoint hp = GameServer.Database.KeepHookpoints.FirstOrDefault(x => x.HookPointID == 97 && x.Height == Height);
 			if (hp == null)
 				return;
 			int z = component.Z + hp.Z;

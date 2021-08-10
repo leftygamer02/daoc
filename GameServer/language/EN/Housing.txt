@@ -1,6 +1,6 @@
 ﻿# HOUSING
 # /house
-House.DBHousePermissions.AccessLevel:			Access level {0}
+House.DbHousePermissions.AccessLevel:			Access level {0}
 House.Edit.NotEnoughMoney:				You don't have enough money to do that!
 House.Edit.PayForChanges:				You pay {0} for your changes.
 House.Enter.EnteredHouse:				You have entered house number {0}.

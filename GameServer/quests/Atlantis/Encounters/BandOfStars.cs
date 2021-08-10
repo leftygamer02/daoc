@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public BandOfStars(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public BandOfStars(GamePlayer questingPlayer, DBQuest dbQuest)
+		public BandOfStars(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

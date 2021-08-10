@@ -258,8 +258,8 @@ namespace DOL.GS.Keeps
 			}
 		}
 
-		protected string m_templateID;
-		public string TemplateID
+		protected int m_templateID;
+		public int TemplateID
 		{
 			get { return m_templateID; }
 		}
@@ -271,8 +271,8 @@ namespace DOL.GS.Keeps
 			set { m_component = value; }
 		}
 
-		protected DBKeepPosition m_position;
-		public DBKeepPosition Position
+		protected KeepPosition m_position;
+		public KeepPosition Position
 		{
 			get { return m_position; }
 			set { m_position = value; }
@@ -290,7 +290,7 @@ namespace DOL.GS.Keeps
 		/// <returns></returns>
 		public override bool AllowWeaponMagicalEffect(AttackData ad, InventoryItem weapon, Spell weaponSpell)
 		{
-			if (weapon.Flags == 10) //Bruiser or any other item needs Itemtemplate "Flags" set to 10 to proc on keep components
+			if (weapon.ItemTemplate.Flags == 10) //Bruiser or any other item needs Itemtemplate "Flags" set to 10 to proc on keep components
 				return true;
 			else return false; // special code goes here
 		}
@@ -566,7 +566,7 @@ namespace DOL.GS.Keeps
 			{
 				if (Component.Keep != null)
 				{
-					Component.Keep.Doors.Remove(ObjectID.ToString());
+					Component.Keep.Doors.Remove(ObjectID);
 				}
 
 				Component.Delete();
@@ -603,9 +603,9 @@ namespace DOL.GS.Keeps
 		/// load the keep door object from DB object
 		/// </summary>
 		/// <param name="obj"></param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
-			DBDoor door = obj as DBDoor;
+			var door = obj as Door;
 			if (door == null)
 				return;
 			base.LoadFromDatabase(obj);
@@ -628,7 +628,7 @@ namespace DOL.GS.Keeps
 			{
 				if (area is KeepArea keepArea)
 				{
-					string sKey = door.InternalID.ToString();
+					int sKey = door.InternalID;
 					if (!keepArea.Keep.Doors.ContainsKey(sKey))
 					{
 						Component = new GameKeepComponent();
@@ -644,7 +644,7 @@ namespace DOL.GS.Keeps
 			DoorMgr.RegisterDoor(this);
 		}
 
-		public virtual void LoadFromPosition(DBKeepPosition pos, GameKeepComponent component)
+		public virtual void LoadFromPosition(KeepPosition pos, GameKeepComponent component)
 		{
 			m_templateID = pos.TemplateID;
 			m_component = component;
@@ -667,12 +667,12 @@ namespace DOL.GS.Keeps
 			}
 			else
 			{
-				log.Error("Failed to load keep door from keepposition_id =" + pos.ObjectId + ". Component SkinID=" + component.Skin + ". KeepID=" + component.Keep.KeepID);
+				log.Error("Failed to load keep door from keepposition_id =" + pos.Id + ". Component SkinID=" + component.Skin + ". KeepID=" + component.Keep.KeepID);
 			}
 
 		}
 
-		public void MoveToPosition(DBKeepPosition position)
+		public void MoveToPosition(KeepPosition position)
 		{ }
 
 		public int GenerateDoorID()

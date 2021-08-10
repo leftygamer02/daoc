@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public NailahsRobes(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public NailahsRobes(GamePlayer questingPlayer, DBQuest dbQuest)
+        public NailahsRobes(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

@@ -189,7 +189,7 @@ namespace DOL.GS.Keeps
 
 						keeplog.RPGainerList = listRPGainers.TrimEnd(';');
 
-						GameServer.Database.AddObject(keeplog);
+						GameServer.Instance.SaveDataObject(keeplog);
 					}
 					else
 					{

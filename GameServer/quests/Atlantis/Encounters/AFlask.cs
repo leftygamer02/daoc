@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public AFlask(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public AFlask(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AFlask(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

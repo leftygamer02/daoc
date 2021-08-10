@@ -182,7 +182,7 @@ namespace DOL.GS
 					{
 						InventoryItem currentItem = (InventoryItem)player.TradeWindow.TradeItems[i];
 
-						if (currentItem.Object_Type != (int)eObjectType.SpellcraftGem)
+						if (currentItem.ObjectType != (int)eObjectType.SpellcraftGem)
 						{
 							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "SpellCrafting.IsAllowedToCombine.FalseItem"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							return false;
@@ -239,20 +239,20 @@ namespace DOL.GS
 			{
 				ApplyMagicalDusts(player, item);
 			}
-			else if (((InventoryItem)player.TradeWindow.TradeItems[0]).Object_Type == (int)eObjectType.SpellcraftGem) // Spellcraft item
+			else if (((InventoryItem)player.TradeWindow.TradeItems[0]).ObjectType == (int)eObjectType.SpellcraftGem) // Spellcraft item
 			{
 				ApplySpellcraftGems(player, item);
 			}
 
 			if (item.Template is ItemUnique)
 			{
-				GameServer.Database.SaveObject(item);
-				GameServer.Database.SaveObject(item.Template as ItemUnique);
+				GameServer.Instance.SaveDataObject(item);
+				GameServer.Instance.SaveDataObject(item.Template as ItemUnique);
 			}
 			else
 			{
 				ChatUtil.SendErrorMessage(player, "Spellcrafting error: Item was not an ItemUnique, crafting changes not saved to DB!");
-				log.ErrorFormat("Spellcrafting error: Item {0} was not an ItemUnique for player {1}, crafting changes not saved to DB!", item.Id_nb, player.Name);
+				log.ErrorFormat("Spellcrafting error: Item {0} was not an ItemUnique for player {1}, crafting changes not saved to DB!", item.Id, player.Name);
 			}
 		}
 
@@ -389,7 +389,7 @@ namespace DOL.GS
                     // The base item is no longer lost when spellcrafting explodes - only gems are destroyed.
                     foreach (InventoryItem gem in (ArrayList)player.TradeWindow.TradeItems.Clone())
                     {
-                        if (gem.Object_Type == (int)eObjectType.SpellcraftGem)
+                        if (gem.ObjectType == (int)eObjectType.SpellcraftGem)
 						{
                             player.Inventory.RemoveCountFromStack(gem, 1);
 							InventoryLogging.LogInventoryAction(player, "(craft)", eInventoryActionType.Craft, gem.Template);

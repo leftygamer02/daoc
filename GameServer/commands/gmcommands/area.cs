@@ -50,7 +50,7 @@ namespace DOL.GS.Commands
 							return;
 						}
 
-						DBArea area = new DBArea();
+						Atlas.DataLayer.Models.Area area = new Atlas.DataLayer.Models.Area();
 						area.Description = args[2];
 
 						switch (args[3].ToLower())
@@ -88,7 +88,7 @@ namespace DOL.GS.Commands
 						newArea.Sound = area.Sound;
 						newArea.CanBroadcast = area.CanBroadcast;
 						WorldMgr.GetRegion(client.Player.CurrentRegionID).AddArea(newArea);
-						GameServer.Database.AddObject(area);
+						GameServer.Instance.SaveDataObject(area);
 						DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Area.AreaCreated", area.Description, area.X, area.Z, area.Radius, area.CanBroadcast.ToString(), area.Sound));
 						break;
 					}

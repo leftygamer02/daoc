@@ -71,7 +71,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			iitem.DatabaseItem.Rotation = iitem.Rotation;
 
 			// save item
-			GameServer.Database.SaveObject(iitem.DatabaseItem);
+			GameServer.Instance.SaveDataObject(iitem.DatabaseItem);
 
 			ChatUtil.SendSystemMessage(client,
 			                           string.Format("Interior decoration rotated from {0} degrees to {1}", old, iitem.Rotation));

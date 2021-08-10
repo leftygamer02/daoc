@@ -27,7 +27,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class SelflessDevotionAbility : RR5RealmAbility
 	{
-		public SelflessDevotionAbility(DBAbility dba, int level) : base(dba, level) { }
+		public SelflessDevotionAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		public override void Execute(GameLiving living)
 		{

@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public ArmsOfTheWinds(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public ArmsOfTheWinds(GamePlayer questingPlayer, DBQuest dbQuest)
+		public ArmsOfTheWinds(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

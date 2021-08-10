@@ -50,7 +50,7 @@ namespace DOL.GS.Commands
 					string oldEmail = obj.Client.Account.Mail;
 					obj.Client.Account.Mail = EmailAddy; // Set email
 
-					GameServer.Database.SaveObject(obj.Client.Account); // Save account.
+					GameServer.Instance.SaveDataObject(obj.Client.Account); // Save account.
 
 					// Log change
 					AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.AccountEmailChange, oldEmail, EmailAddy);

@@ -4,7 +4,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class DualThreatAbility : L3RAPropertyEnhancer
 	{
-		public DualThreatAbility(DBAbility dba, int level)
+		public DualThreatAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, new eProperty[] { eProperty.CriticalMeleeHitChance, eProperty.CriticalSpellHitChance, eProperty.CriticalHealHitChance})
 		{
 		}
@@ -39,7 +39,7 @@ namespace DOL.GS.RealmAbilities
 
 	public class ReflexAttackAbility : L3RAPropertyEnhancer
 	{
-		public ReflexAttackAbility(DBAbility dba, int level)
+		public ReflexAttackAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.Undefined)
 		{
 		}
@@ -75,7 +75,7 @@ namespace DOL.GS.RealmAbilities
 
 	public class ViperAbility : L3RAPropertyEnhancer
 	{
-		public ViperAbility(DBAbility dba, int level)
+		public ViperAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.Undefined)
 		{
 		}

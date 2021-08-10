@@ -11,7 +11,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class EtherealBondAbility : RAPropertyEnhancer
 	{
-		public EtherealBondAbility(DBAbility dba, int level) : base(dba, level, eProperty.MaxMana) { }
+		public EtherealBondAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.MaxMana) { }
 
 		public override int CostForUpgrade(int level)
 		{

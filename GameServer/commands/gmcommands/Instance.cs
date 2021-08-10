@@ -110,8 +110,8 @@ namespace DOL.GS.Commands
 
 
 							//Save the element to database!
-							GameServer.Database.AddObject(element);
-							GameServer.Database.SaveObject(element);
+							GameServer.Instance.SaveDataObject(element);
+							GameServer.Instance.SaveDataObject(element);
 
 							//Dinberg: place a marker at this spot!
 							string theType = args[2];

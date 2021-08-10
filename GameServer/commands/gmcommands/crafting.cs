@@ -145,7 +145,7 @@ namespace DOL.GS.Commands
 
 							salvage.PackageID = package;
 
-							GameServer.Database.AddObject(salvage);
+							GameServer.Instance.SaveDataObject(salvage);
 
 							DisplayMessage(client, string.Format("Created SalvageYield ID: {0}, Material: {1}, Count: {2}, Realm: {3}, PackageID: {4}",
 																	salvage.ID, salvage.MaterialId_nb, salvage.Count, salvage.Realm, salvage.PackageID));
@@ -178,7 +178,7 @@ namespace DOL.GS.Commands
 								salvage.PackageID = package;
 							}
 
-							GameServer.Database.SaveObject(salvage);
+							GameServer.Instance.SaveDataObject(salvage);
 
 							DisplayMessage(client, string.Format("Updated SalvageYield ID: {0}, Material: {1}, Count: {2}, Realm: {3}, PackageID: {4}",
 																	salvage.ID, salvage.MaterialId_nb, salvage.Count, salvage.Realm, salvage.PackageID));

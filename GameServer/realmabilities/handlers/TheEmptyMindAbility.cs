@@ -12,7 +12,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class TheEmptyMindAbility : TimedRealmAbility
 	{
-		public TheEmptyMindAbility(DBAbility dba, int level) : base(dba, level) { }
+		public TheEmptyMindAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		public const Int32 m_duration = 45000; //45 seconds
 

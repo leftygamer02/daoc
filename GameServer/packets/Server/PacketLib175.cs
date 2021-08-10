@@ -176,7 +176,7 @@ namespace DOL.GS.PacketHandler
 					pak.WritePascalString("");
 				pak.WriteByte(0x0);
 	
-				AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(player.CraftingPrimarySkill);
+				AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(player.PrimaryCraftingSkill);
 				if (skill != null)
 					pak.WritePascalString(skill.Name); //crafter guilde: alchemist
 				else

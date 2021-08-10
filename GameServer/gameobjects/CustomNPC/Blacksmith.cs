@@ -91,7 +91,7 @@ namespace DOL.GS
 				return false;
 			}
 
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 				case (int)eObjectType.Magical:

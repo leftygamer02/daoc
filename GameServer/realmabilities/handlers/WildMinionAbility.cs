@@ -5,7 +5,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class WildMinionAbility : RAPropertyEnhancer
 	{
-		public WildMinionAbility(DBAbility dba, int level)
+		public WildMinionAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.Undefined)
 		{
 		}

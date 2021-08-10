@@ -62,7 +62,7 @@ namespace DOL.GS.Commands
 							}
 							report.ClosedBy = client.Player.Name;
 							report.DateClosed = DateTime.Now;
-							GameServer.Database.SaveObject(report);
+							GameServer.Instance.SaveDataObject(report);
 							break;
 						}
 					case "delete":
@@ -93,7 +93,7 @@ namespace DOL.GS.Commands
 							{
 								// Create new DB for bugreports without the one we deleted
 								curReport.ID = count;
-								GameServer.Database.SaveObject(curReport);
+								GameServer.Instance.SaveDataObject(curReport);
 								count++;
 							}
 							client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.ViewReport.ReportDeleted", report.ID), eChatType.CT_System, eChatLoc.CL_SystemWindow);

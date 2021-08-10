@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -46,7 +47,7 @@ namespace DOL.GS
 			IList list = base.GetExamineMessages(player);
 			list.RemoveAt(list.Count - 1);
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.GetExamineMessages.YouExamine", 
-                                                GetName(0, false, player.Client.Account.Language, this), GetPronoun(0, true, player.Client.Account.Language),
+                                                GetName(0, false), GetPronoun(0, true, player.Client.Account.Language),
                                                 GetAggroLevelString(player, false)));
 			list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.GetExamineMessages.RightClick")); 
 			return list;
@@ -230,7 +231,7 @@ namespace DOL.GS
 		public virtual void OnPlayerSell(GamePlayer player, InventoryItem item)
 		{
 			if(item==null || player==null) return;
-			if (!item.IsDropable)
+			if (!item.ItemTemplate.IsDropable)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.CantBeSold"), eChatType.CT_Merchant, eChatLoc.CL_SystemWindow);
 				return;
@@ -246,15 +247,15 @@ namespace DOL.GS
 
 			if (itemValue == 0)
 			{
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.IsntInterested", GetName(0, true), item.GetName(0, false)), eChatType.CT_Merchant, eChatLoc.CL_SystemWindow);
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.IsntInterested", GetName(0, true), item.ItemTemplate.GetName(0, false)), eChatType.CT_Merchant, eChatLoc.CL_SystemWindow);
 				return;
 			}
 
 			if (player.Inventory.RemoveItem(item))
 			{
-				string message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.GivesYou", GetName(0, true), Money.GetString(itemValue), item.GetName(0, false));
+				string message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.GivesYou", GetName(0, true), Money.GetString(itemValue), item.ItemTemplate.GetName(0, false));
 				player.AddMoney(itemValue, message, eChatType.CT_Merchant, eChatLoc.CL_SystemWindow);
-				InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template, item.Count);
+				InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate, item.Count);
 				InventoryLogging.LogInventoryAction(this, player, eInventoryActionType.Merchant, itemValue);
 				return;
 			}
@@ -275,11 +276,11 @@ namespace DOL.GS
 				return 0;
 
 			int itemCount = Math.Max(1, item.Count);
-			int packSize = Math.Max(1, item.PackSize);
+			int packSize = Math.Max(1, item.ItemTemplate.PackSize);
 			
-			long val = item.Price * itemCount / packSize * ServerProperties.Properties.ITEM_SELL_RATIO / 100;
+			long val = item.ItemTemplate.Price * itemCount / packSize * ServerProperties.Properties.ITEM_SELL_RATIO / 100;
 
-			if (!item.IsDropable)
+			if (!item.ItemTemplate.IsDropable)
 			{
 				val = 0;
 			}
@@ -289,11 +290,11 @@ namespace DOL.GS
 				string message;
 				if (val == 0)
 				{
-					message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.IsntInterested", GetName(0, true), item.GetName(0, false));
+					message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerSell.IsntInterested", GetName(0, true), item.ItemTemplate.GetName(0, false));
 				}
 				else
 				{
-					message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerAppraise.Offers", GetName(0, true), Money.GetString(val), item.GetName(0, false));
+					message = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerAppraise.Offers", GetName(0, true), Money.GetString(val), item.ItemTemplate.GetName(0, false));
 				}
 				player.Out.SendMessage(message, eChatType.CT_Merchant, eChatLoc.CL_SystemWindow);
 			}
@@ -307,7 +308,7 @@ namespace DOL.GS
 		{
 			base.LoadTemplate(template);
 
-			if (template != null && string.IsNullOrEmpty(template.ItemsListTemplateID) == false)
+			if (template != null && template.ItemsListTemplateID > 0)
 			{
 				TradeItems = new MerchantTradeItems(template.ItemsListTemplateID);
 			}
@@ -320,13 +321,14 @@ namespace DOL.GS
 		/// Loads a merchant from the DB
 		/// </summary>
 		/// <param name="merchantobject">The merchant DB object</param>
-		public override void LoadFromDatabase(DataObject merchantobject)
+		public override void LoadFromDatabase(DataObjectBase merchantobject)
 		{
 			base.LoadFromDatabase(merchantobject);
-			if (!(merchantobject is Mob)) return;
-			Mob merchant = (Mob)merchantobject;
-			if (merchant.ItemsListTemplateID != null && merchant.ItemsListTemplateID.Length > 0)
-				m_tradeItems = new MerchantTradeItems(merchant.ItemsListTemplateID);
+			if (!(merchantobject is SpawnPoint)) return;
+			SpawnPoint merchant = (SpawnPoint)merchantobject;
+			var npcTemplate = merchant.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplate;
+			if (npcTemplate != null && npcTemplate.ItemsListTemplateID > 0)
+				m_tradeItems = new MerchantTradeItems(npcTemplate.ItemsListTemplateID);
 		}
 
 		/// <summary>
@@ -334,29 +336,57 @@ namespace DOL.GS
 		/// </summary>
 		public override void SaveIntoDatabase()
 		{
-			Mob merchant = null;
-			if (InternalID != null)
-				merchant = GameServer.Database.FindObjectByKey<Mob>(InternalID);
+			SpawnPoint merchant = null;
+			if (InternalID > 0)
+				merchant = GameServer.Database.SpawnPoints.Find(InternalID);
 			if (merchant == null)
-				merchant = new Mob();
+				merchant = new SpawnPoint();
 
-			merchant.Name = Name;
-			merchant.Guild = GuildName;
+			if (merchant.SpawnGroup == null)
+            {
+				merchant.SpawnGroup = new SpawnGroup()
+				{
+					ClassType = "DOL.GS.MerchantNPC",
+					DayNightSpawn = 0,
+					Name = Name,
+				};
+            }
+
+			var npcSpawnGroup = merchant.SpawnGroup.NpcSpawnGroups.FirstOrDefault();
+			if (npcSpawnGroup == null)
+            {
+				npcSpawnGroup = new NpcSpawnGroup()
+				{
+					SpawnChance = 100,
+				};
+				merchant.SpawnGroup.NpcSpawnGroups.Add(npcSpawnGroup);
+			}
+
+			var npcTemplate = npcSpawnGroup.NpcTemplate;
+
+			if (npcTemplate == null)
+            {
+				npcTemplate = new Atlas.DataLayer.Models.NpcTemplate();
+				npcSpawnGroup.NpcTemplate = npcTemplate;
+			}
+
+			npcTemplate.Name = Name;
+			npcTemplate.Guild = GuildName;
 			merchant.X = X;
 			merchant.Y = Y;
 			merchant.Z = Z;
 			merchant.Heading = Heading;
-			merchant.Speed = MaxSpeedBase;
-			merchant.Region = CurrentRegionID;
-            merchant.Realm = (byte)Realm;
+			npcTemplate.MaxSpeed = MaxSpeedBase;
+			merchant.RegionID = CurrentRegionID;
+			npcTemplate.Realm = (byte)Realm;
             merchant.RoamingRange = RoamingRange;
-			merchant.Model = Model;
-			merchant.Size = Size;
-			merchant.Level = Level;
-            merchant.Gender = (byte)Gender;
-			merchant.Flags = (uint)Flags;
+			npcTemplate.Model = Model.ToString();
+			npcTemplate.Size = Size.ToString();
+			npcTemplate.Level = Level.ToString();
+			npcTemplate.Gender = (byte)Gender;
+			npcTemplate.Flags = (int)Flags;
 			merchant.PathID = PathID;
-			merchant.PackageID = PackageID;
+			npcTemplate.PackageID = PackageID;
 			merchant.OwnerID = OwnerID;
 
 			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
@@ -365,26 +395,18 @@ namespace DOL.GS
 				merchant.AggroLevel = aggroBrain.AggroLevel;
 				merchant.AggroRange = aggroBrain.AggroRange;
 			}
-			merchant.ClassType = this.GetType().ToString();
-			merchant.EquipmentTemplateID = EquipmentTemplateID;
+			npcTemplate.ClassType = this.GetType().ToString();
+			npcTemplate.EquipmentTemplateID = EquipmentTemplateID;
 			if (m_tradeItems == null)
 			{
-				merchant.ItemsListTemplateID = null;
+				npcTemplate.ItemsListTemplateID = 0;
 			}
 			else
 			{
-				merchant.ItemsListTemplateID = m_tradeItems.ItemsListID;
+				npcTemplate.ItemsListTemplateID = m_tradeItems.ItemsListID;
 			}
 
-			if (InternalID == null)
-			{
-				GameServer.Database.AddObject(merchant);
-				InternalID = merchant.ObjectId;
-			}
-			else
-			{
-				GameServer.Database.SaveObject(merchant);
-			}
+			GameServer.Instance.SaveDataObject(merchant);
 		}
 
 		/// <summary>
@@ -392,13 +414,13 @@ namespace DOL.GS
 		/// </summary>
 		public override void DeleteFromDatabase()
 		{
-			if (InternalID != null)
+			if (InternalID > 0)
 			{
-				Mob merchant = GameServer.Database.FindObjectByKey<Mob>(InternalID);
+				var merchant = GameServer.Database.SpawnPoints.FirstOrDefault(x => x.Id == InternalID);
 				if (merchant != null)
-					GameServer.Database.DeleteObject(merchant);
+					GameServer.Instance.DeleteDataObject(merchant);
 			}
-			InternalID = null;
+			InternalID = 0;
 		}
 
 		#endregion
@@ -444,7 +466,7 @@ namespace DOL.GS
 		public override bool ReceiveItem(GameLiving source, InventoryItem item)
 		{
 			if (source is GamePlayer player && item != null && m_currencyValues != null
-				&& m_currencyValues.TryGetValue(item.Id_nb, out int value) && value > 0)
+				&& m_currencyValues.TryGetValue(item.ItemTemplate.KeyName, out int value) && value > 0)
 			{
 				player.GainBountyPoints(item.Count * value);
 				player.Inventory.RemoveItem(item);
@@ -562,7 +584,7 @@ namespace DOL.GS
 		{
 			if (MoneyKey != null)
 			{
-				m_itemTemplate = GameServer.Database.FindObjectByKey<ItemTemplate>(MoneyKey);
+				m_itemTemplate = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == MoneyKey);
 
 				if (m_itemTemplate != null)
 					m_moneyItem = WorldInventoryItem.CreateFromTemplate(m_itemTemplate);
@@ -648,7 +670,7 @@ namespace DOL.GS
 
 			lock (player.Inventory)
 			{
-				if (player.Inventory.CountItemTemplate(m_moneyItem.Item.Id_nb, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) < totalValue)
+				if (player.Inventory.CountItemTemplate(m_moneyItem.Item.Id, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) < totalValue)
 				{
 					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerBuy.YouNeed2", totalValue, MoneyItemName), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
@@ -672,11 +694,11 @@ namespace DOL.GS
 
 				foreach (InventoryItem item in items)
 				{
-					if (item.Id_nb != m_moneyItem.Item.Id_nb)
+					if (item.Id != m_moneyItem.Item.Id)
 						continue;
 					int remFromStack = Math.Min(item.Count, (int)(totalValue - removed));
 					player.Inventory.RemoveCountFromStack(item, remFromStack);
-					InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template, remFromStack);
+					InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate, remFromStack);
 					removed += remFromStack;
 					if (removed == totalValue)
 						break;
@@ -696,7 +718,7 @@ namespace DOL.GS
 		public override bool ReceiveItem(GameLiving source, InventoryItem item)
 		{
 			if (source is GamePlayer player && item != null && m_currencyValues != null
-				&& m_currencyValues.TryGetValue(item.Id_nb, out int receiveCost)
+				&& m_currencyValues.TryGetValue(item.ItemTemplate.KeyName, out int receiveCost)
 				&& m_currencyValues.TryGetValue(MoneyKey, out int giveCost))
 			{
 				int giveCount = item.Count * receiveCost / giveCost;
@@ -705,7 +727,7 @@ namespace DOL.GS
 				{
 					// Create and give new item to player
 					InventoryItem newItem = GameInventoryItem.Create(m_itemTemplate);
-					newItem.OwnerID = player.InternalID;
+					newItem.CharacterID = player.InternalID;
 					newItem.Count = giveCount;
 
 					if (!player.Inventory.AddTemplate(newItem, newItem.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))

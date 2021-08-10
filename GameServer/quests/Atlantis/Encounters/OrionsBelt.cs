@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public OrionsBelt(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public OrionsBelt(GamePlayer questingPlayer, DBQuest dbQuest)
+        public OrionsBelt(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

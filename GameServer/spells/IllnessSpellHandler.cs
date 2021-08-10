@@ -94,9 +94,9 @@ namespace DOL.GS.Spells
         /// <summary>
         /// Saves the effect when player quits
         /// </summary>        
-        public override PlayerXEffect GetSavedEffect(GameSpellEffect e)
+        public override PlayerEffect GetSavedEffect(GameSpellEffect e)
         {
-            PlayerXEffect eff = new PlayerXEffect();
+            PlayerEffect eff = new PlayerEffect();
             eff.Var1 = Spell.ID;
             eff.Duration = e.RemainingTime;
             eff.IsHandler = true;

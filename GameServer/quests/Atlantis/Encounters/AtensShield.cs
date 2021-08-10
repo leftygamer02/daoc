@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public AtensShield(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public AtensShield(GamePlayer questingPlayer, DBQuest dbQuest)
+		public AtensShield(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

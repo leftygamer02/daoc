@@ -70,7 +70,7 @@ namespace DOL.GS
 			if (!base.IsAllowedToCombine(player, item)) 
                 return false;
 			
-			if (((InventoryItem)player.TradeWindow.TradeItems[0]).Object_Type != 
+			if (((InventoryItem)player.TradeWindow.TradeItems[0]).ObjectType != 
                 (int)eObjectType.AlchemyTincture)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, 
@@ -136,13 +136,13 @@ namespace DOL.GS
 
 			if (item.Template is ItemUnique)
 			{
-				GameServer.Database.SaveObject(item);
-				GameServer.Database.SaveObject(item.Template as ItemUnique);
+				GameServer.Instance.SaveDataObject(item);
+				GameServer.Instance.SaveDataObject(item.Template as ItemUnique);
 			}
 			else
 			{
 				ChatUtil.SendErrorMessage(player, "Alchemy crafting error: Item was not an ItemUnique, crafting changes not saved to DB!");
-				log.ErrorFormat("Alchemy crafting error: Item {0} was not an ItemUnique for player {1}, crafting changes not saved to DB!", item.Id_nb, player.Name);
+				log.ErrorFormat("Alchemy crafting error: Item {0} was not an ItemUnique for player {1}, crafting changes not saved to DB!", item.Id, player.Name);
 			}
 		}
 

@@ -159,10 +159,9 @@ namespace DOL.GS
 				return true;
 			}
 
-			public override void LoadFromDatabase(DBArea area)
+			public override void LoadFromDatabase(Atlas.DataLayer.Models.Area area)
 			{
 				m_dbArea = area;
-                m_translationId = area.TranslationId;
 				m_Description = area.Description;
 				m_X = area.X;
 				m_Y = area.Y;
@@ -315,9 +314,8 @@ namespace DOL.GS
 				return IsContaining(p.X, p.Y, p.Z, checkZ);
 			}
 
-			public override void LoadFromDatabase(DBArea area)
+			public override void LoadFromDatabase(Atlas.DataLayer.Models.Area area)
 			{
-                m_translationId = area.TranslationId;
 				m_Description = area.Description;
 				m_X = area.X;
 				m_Y = area.Y;
@@ -479,9 +477,8 @@ namespace DOL.GS
                 return inside;
             }
 
-            public override void LoadFromDatabase(DBArea area)
+            public override void LoadFromDatabase(Atlas.DataLayer.Models.Area area)
             {
-                m_translationId = area.TranslationId;
                 m_Description = area.Description;
                 m_X = area.X;
                 m_Y = area.Y;
@@ -512,7 +509,7 @@ namespace DOL.GS
 				get { return m_dbBindPoint; }
 			}
 
-			public override void LoadFromDatabase(DBArea area)
+			public override void LoadFromDatabase(Atlas.DataLayer.Models.Area area)
 			{
 				base.LoadFromDatabase(area);
 
@@ -521,7 +518,7 @@ namespace DOL.GS
 				m_dbBindPoint.X = area.X;
 				m_dbBindPoint.Y = area.Y;
 				m_dbBindPoint.Z = area.Z;
-				m_dbBindPoint.Region = area.Region;
+				m_dbBindPoint.RegionID = area.RegionID;
 			}
 		}
 

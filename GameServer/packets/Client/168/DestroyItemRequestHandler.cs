@@ -38,7 +38,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					return;
 				}
 
-				if (item.Id_nb == "ARelic")
+				if (item.Id == "ARelic")
 				{
 					client.Out.SendMessage("You cannot destroy a relic!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;

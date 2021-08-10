@@ -362,7 +362,7 @@ namespace DOL.GS.Styles
 				if (attackData.Style == null)
 					return false;
 
-				if (weapon != null && weapon.Object_Type == (int)eObjectType.Shield)
+				if (weapon != null && weapon.ObjectType == (int)eObjectType.Shield)
 				{
 					attackData.AnimationId = (weapon.Hand != 1) ? attackData.Style.Icon : attackData.Style.TwoHandAnimation; // 2h shield?
 				}
@@ -414,7 +414,7 @@ namespace DOL.GS.Styles
 
 					if (staticGrowth)
 					{
-						if (living.AttackWeapon.Item_Type == Slot.TWOHAND)
+						if (living.AttackWeapon.ItemType == Slot.TWOHAND)
 						{
 							styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.AttackWeapon) * Math.Max(0,living.AttackWeapon.SPD_ABS - 21) * 10 / 66d;
 						}
@@ -582,15 +582,15 @@ namespace DOL.GS.Styles
 					InventoryItem rightHand = player.AttackWeapon;
 					InventoryItem leftHand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 
-					if (rightHand == null || leftHand == null || (rightHand.Item_Type != Slot.RIGHTHAND && rightHand.Item_Type != Slot.LEFTHAND))
+					if (rightHand == null || leftHand == null || (rightHand.ItemType != Slot.RIGHTHAND && rightHand.ItemType != Slot.LEFTHAND))
 						return false;
 
-					if (style.Spec == Specs.HandToHand && (rightHand.Object_Type != (int)eObjectType.HandToHand || leftHand.Object_Type != (int)eObjectType.HandToHand))
+					if (style.Spec == Specs.HandToHand && (rightHand.ObjectType != (int)eObjectType.HandToHand || leftHand.ObjectType != (int)eObjectType.HandToHand))
 						return false;
-					else if (style.Spec == Specs.Fist_Wraps && (rightHand.Object_Type != (int)eObjectType.FistWraps || leftHand.Object_Type != (int)eObjectType.FistWraps))
+					else if (style.Spec == Specs.Fist_Wraps && (rightHand.ObjectType != (int)eObjectType.FistWraps || leftHand.ObjectType != (int)eObjectType.FistWraps))
 						return false;
 
-					return leftHand.Object_Type != (int)eObjectType.Shield;
+					return leftHand.ObjectType != (int)eObjectType.Shield;
 
 				case Style.SpecialWeaponType.AnyWeapon:
 					// TODO: style can be used with any weapon type,
@@ -605,13 +605,13 @@ namespace DOL.GS.Styles
 
 					// can't use shield styles if no active weapon
 					if (style.WeaponTypeRequirement == (int)eObjectType.Shield
-						&& (player.AttackWeapon == null || (player.AttackWeapon.Item_Type != Slot.RIGHTHAND && player.AttackWeapon.Item_Type != Slot.LEFTHAND)))
+						&& (player.AttackWeapon == null || (player.AttackWeapon.ItemType != Slot.RIGHTHAND && player.AttackWeapon.ItemType != Slot.LEFTHAND)))
 						return false;
 
 					// weapon type check
 					return GameServer.ServerRules.IsObjectTypesEqual(
 							(eObjectType)style.WeaponTypeRequirement,
-							(eObjectType)weapon.Object_Type);
+							(eObjectType)weapon.ObjectType);
 			}
 		}
 

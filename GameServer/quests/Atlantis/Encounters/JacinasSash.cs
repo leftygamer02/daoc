@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public JacinasSash(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public JacinasSash(GamePlayer questingPlayer, DBQuest dbQuest)
+        public JacinasSash(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

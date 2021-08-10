@@ -89,7 +89,7 @@ namespace DOL.GS.Commands
                         }
 
                         relic.RelicID = MinotaurRelicManager.GetRelicCount() + 1;
-                        GameServer.Database.AddObject(relic);
+                        GameServer.Instance.SaveDataObject(relic);
 
                         MinotaurRelic rrelic = new MinotaurRelic(relic);
                         rrelic.AddToWorld();

@@ -30,7 +30,7 @@ namespace DOL.GS
 		GameRelicPad m_currentRelicPad = null;
 		GameRelicPad m_returnRelicPad = null;
 		RegionTimer m_currentCarrierTimer;
-		DBRelic m_dbRelic;
+		Relic m_dbRelic;
 		eRelicType m_relicType;
 		RegionTimer m_returnRelicTimer;
 		long m_timeRelicOnGround = 0;
@@ -132,7 +132,7 @@ namespace DOL.GS
 		public GameRelic() : base() { m_saveInDB = true; }
 
 
-		public GameRelic(DBRelic obj)
+		public GameRelic(Relic obj)
 			: this()
 		{
 			LoadFromDatabase(obj);
@@ -242,7 +242,7 @@ namespace DOL.GS
 			{
 				if (m_item == null)
 					log.Warn("GameRelic: Could not retrive " + Name + " as InventoryItem on player " + player.Name);
-				InventoryLogging.LogInventoryAction(this, player, eInventoryActionType.Other, m_item.Template, m_item.Count);
+				InventoryLogging.LogInventoryAction(this, player, eInventoryActionType.Other, m_item.ItemTemplate, m_item.Count);
 
 
 				m_currentCarrier = player;
@@ -299,7 +299,7 @@ namespace DOL.GS
 				lock (player.Inventory)
 				{
 					bool success = player.Inventory.RemoveItem(m_item);
-					InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Other, m_item.Template, m_item.Count);
+					InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Other, m_item.ItemTemplate, m_item.Count);
 					log.Debug("Remove " + m_item.Name + " from " + player.Name + "'s Inventory " + ((success) ? "successfully." : "with errors."));
 				}
 
@@ -411,7 +411,7 @@ namespace DOL.GS
 				return 0;
 			}
 
-			if (CurrentCarrier != null && CurrentCarrier.Inventory.GetFirstItemByID(m_item.Id_nb, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == null)
+			if (CurrentCarrier != null && CurrentCarrier.Inventory.GetFirstItemByID(m_item.Id, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == null)
 			{
 				log.DebugFormat("{0} not found in carriers backpack, relic returned to previous pad.", Name);
 				RelicPadTakesOver(ReturnRelicPad, true);
@@ -489,16 +489,16 @@ namespace DOL.GS
 		/// Loads the GameRelic from Database
 		/// </summary>
 		/// <param name="obj">The DBRelic-object for this relic</param>
-		public override void LoadFromDatabase(DataObject obj)
+		public override void LoadFromDatabase(DataObjectBase obj)
 		{
-			InternalID = obj.ObjectId;
-			m_dbRelic = obj as DBRelic;
-			CurrentRegionID = (ushort)m_dbRelic.Region;
+			InternalID = obj.Id;
+			m_dbRelic = obj as Relic;
+			CurrentRegionID = (ushort)m_dbRelic.RegionID;
 			X = m_dbRelic.X;
 			Y = m_dbRelic.Y;
 			Z = m_dbRelic.Z;
 			Heading = (ushort)m_dbRelic.Heading;
-			m_relicType = (eRelicType)m_dbRelic.relicType;
+			m_relicType = (eRelicType)m_dbRelic.RelicType;
 			Realm = (eRealm)m_dbRelic.Realm;
 			m_originalRealm = (eRealm)m_dbRelic.OriginalRealm;
 			m_lastRealm = (eRealm)m_dbRelic.LastRealm;
@@ -518,7 +518,7 @@ namespace DOL.GS
 			ItemTemplate m_itemTemp;
 			m_itemTemp = new ItemTemplate();
 			m_itemTemp.Name = Name;
-			m_itemTemp.Object_Type = (int)eObjectType.Magical;
+			m_itemTemp.ObjectType = (int)eObjectType.Magical;
 			m_itemTemp.Model = Model;
 			m_itemTemp.IsDropable = true;
 			m_itemTemp.IsPickable = false;
@@ -526,9 +526,8 @@ namespace DOL.GS
 			m_itemTemp.Quality = 100;
 			m_itemTemp.Price = 0;
 			m_itemTemp.PackSize = 1;
-			m_itemTemp.AllowAdd = false;
 			m_itemTemp.Weight = 1000;
-			m_itemTemp.Id_nb = "GameRelic";
+			m_itemTemp.KeyName = "GameRelic";
 			m_itemTemp.IsTradable = false;
 			m_itemTemp.ClassType = "DOL.GS.GameInventoryRelic";
 			m_item = GameInventoryItem.Create(m_itemTemp);
@@ -542,19 +541,14 @@ namespace DOL.GS
 			m_dbRelic.OriginalRealm = (int)OriginalRealm;
 			m_dbRelic.LastRealm = (int)m_lastRealm;
 			m_dbRelic.Heading = (int)Heading;
-			m_dbRelic.Region = (int)CurrentRegionID;
-			m_dbRelic.relicType = (int)RelicType;
+			m_dbRelic.RegionID = (int)CurrentRegionID;
+			m_dbRelic.RelicType = (int)RelicType;
 			m_dbRelic.X = X;
 			m_dbRelic.Y = Y;
 			m_dbRelic.Z = Z;
 
-			if (InternalID == null)
-			{
-				GameServer.Database.AddObject(m_dbRelic);
-				InternalID = m_dbRelic.ObjectId;
-			}
-			else
-				GameServer.Database.SaveObject(m_dbRelic);
+			GameServer.Instance.SaveDataObject(m_dbRelic);
+			InternalID = m_dbRelic.Id;
 		}
 		#endregion
 

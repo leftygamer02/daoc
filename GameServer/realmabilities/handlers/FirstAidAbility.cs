@@ -11,7 +11,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class FirstAidAbility : TimedRealmAbility
 	{
-		public FirstAidAbility(DBAbility dba, int level) : base(dba, level) { }
+		public FirstAidAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		/// <summary>
 		/// Action

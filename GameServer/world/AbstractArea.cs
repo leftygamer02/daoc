@@ -29,9 +29,9 @@ namespace DOL.GS
 	/// AbstractArea extend this if you wish to implement e new custom area.
 	/// For examples see Area.Cricle, Area.Square
 	/// </summary>
-	public abstract class AbstractArea : IArea, ITranslatableObject
+	public abstract class AbstractArea : IArea
 	{
-		protected DBArea m_dbArea = null;
+		protected Atlas.DataLayer.Models.Area m_dbArea = null;
 		protected bool m_canBroadcast = false;
 		/// <summary>
 		/// Variable holding whether or not players can broadcast in this area
@@ -120,11 +120,6 @@ namespace DOL.GS
 			get { return m_ID; }
 			set { m_ID = value; }
 		}
-
-        public virtual LanguageDataObject.eTranslationIdentifier TranslationIdentifier
-        {
-            get { return LanguageDataObject.eTranslationIdentifier.eArea; }
-        }
 
         /// <summary>
         /// Gets or sets the translation id
@@ -219,16 +214,6 @@ namespace DOL.GS
                 string description = Description;
                 string screenDescription = description;
 
-                var translation = LanguageMgr.GetTranslation(player, this) as DBLanguageArea;
-                if (translation != null)
-                {
-                    if (!Util.IsEmpty(translation.Description))
-                        description = translation.Description;
-
-                    if (!Util.IsEmpty(translation.ScreenDescription))
-                        screenDescription = translation.ScreenDescription;
-                }
-
                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractArea.Entered", description),
                     eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
@@ -243,6 +228,6 @@ namespace DOL.GS
 			player.Notify(AreaEvent.PlayerEnter, this, new AreaEventArgs(this, player));
 		}
 
-		public abstract void LoadFromDatabase(DBArea area);
+		public abstract void LoadFromDatabase(Atlas.DataLayer.Models.Area area);
 	}
 }

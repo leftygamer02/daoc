@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public NightsShroudBracelet(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public NightsShroudBracelet(GamePlayer questingPlayer, DBQuest dbQuest)
+        public NightsShroudBracelet(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

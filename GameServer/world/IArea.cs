@@ -30,7 +30,7 @@ namespace DOL.GS
 	/// - Area.Cricle
 	/// - Area.Square
 	/// </summary>
-	public interface IArea : ITranslatableObject
+	public interface IArea
 	{					
 		/// <summary>
 		/// Returns the ID of this zone

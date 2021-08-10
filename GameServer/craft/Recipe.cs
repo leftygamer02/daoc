@@ -99,12 +99,12 @@ namespace DOL.GS
                     product.Price = pricetoset;
                     product.AllowUpdate = true;
                     product.Dirty = true;
-                    product.Id_nb = product.Id_nb.ToLower();
-                    if (GameServer.Database.SaveObject(product))
-                        log.Error("Craft Price Correction: " + product.Id_nb + " rawmaterials price= " + totalPrice + " Actual Price= " + currentPrice + ". Corrected price to= " + pricetoset);
+                    product.Id = product.Id.ToLower();
+                    if (GameServer.Instance.SaveDataObject(product))
+                        log.Error("Craft Price Correction: " + product.Id + " rawmaterials price= " + totalPrice + " Actual Price= " + currentPrice + ". Corrected price to= " + pricetoset);
                     else
-                        log.Error("Craft Price Correction Not SAVED: " + product.Id_nb + " rawmaterials price= " + totalPrice + " Actual Price= " + currentPrice + ". Corrected price to= " + pricetoset);
-                    GameServer.Database.UpdateInCache<ItemTemplate>(product.Id_nb);
+                        log.Error("Craft Price Correction Not SAVED: " + product.Id + " rawmaterials price= " + totalPrice + " Actual Price= " + currentPrice + ". Corrected price to= " + pricetoset);
+                    GameServer.Database.UpdateInCache<ItemTemplate>(product.Id);
                     product.Dirty = false;
                     product.AllowUpdate = false;
                 }
@@ -169,10 +169,10 @@ namespace DOL.GS
             var dbRecipe = GameServer.Database.FindObjectByKey<DBCraftedItem>(recipeDatabaseID.ToString());
             if (dbRecipe == null) throw new ArgumentException("No DBCraftedItem with ID " + recipeDatabaseID + "exists.");
 
-            ItemTemplate product = GameServer.Database.FindObjectByKey<ItemTemplate>(dbRecipe.Id_nb);
-            if (product == null) throw new ArgumentException("Product ItemTemplate " + dbRecipe.Id_nb + " for Recipe with ID " + dbRecipe.CraftedItemID + " does not exist.");
+            ItemTemplate product = GameServer.Database.FindObjectByKey<ItemTemplate>(dbRecipe.Id);
+            if (product == null) throw new ArgumentException("Product ItemTemplate " + dbRecipe.Id + " for Recipe with ID " + dbRecipe.CraftedItemID + " does not exist.");
 
-            var rawMaterials = DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(dbRecipe.Id_nb));
+            var rawMaterials = DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(dbRecipe.Id));
             if (rawMaterials.Count == 0) throw new ArgumentException("Recipe with ID " + dbRecipe.CraftedItemID + " has no ingredients.");
 
             bool isRecipeValid = true;

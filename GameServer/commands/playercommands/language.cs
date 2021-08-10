@@ -75,7 +75,7 @@ namespace DOL.GS.Commands
                         }
 
                         client.Account.Language = args[2];
-                        GameServer.Database.SaveObject(client.Account);
+                        GameServer.Instance.SaveDataObject(client.Account);
                         DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Language.Set", args[2].ToUpper()));
                         return;
                     }

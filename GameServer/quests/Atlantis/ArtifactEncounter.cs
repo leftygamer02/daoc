@@ -33,7 +33,7 @@ namespace DOL.GS.Quests.Atlantis
 		public ArtifactEncounter(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public ArtifactEncounter(GamePlayer questingPlayer, DBQuest dbQuest)
+		public ArtifactEncounter(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		public override bool CheckQuestQualification(GamePlayer player)

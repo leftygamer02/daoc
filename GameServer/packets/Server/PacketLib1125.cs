@@ -111,8 +111,8 @@ namespace DOL.GS.PacketHandler
 				}
 				else
 				{
-					Dictionary<int, DOLCharacters> charsBySlot = new Dictionary<int, DOLCharacters>();
-					foreach (DOLCharacters c in m_gameClient.Account.Characters)
+					Dictionary<int, Character> charsBySlot = new Dictionary<int, Character>();
+					foreach (Character c in m_gameClient.Account.Characters)
 					{
 						try
 						{
@@ -151,7 +151,7 @@ namespace DOL.GS.PacketHandler
 
 					for (int i = firstSlot; i < (firstSlot + 10); i++)
 					{
-						if (!charsBySlot.TryGetValue(i, out DOLCharacters c))
+						if (!charsBySlot.TryGetValue(i, out Character c))
 						{
 							pak.WriteByte(0);
 						}
@@ -512,7 +512,7 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte((byte)item.Level);
 					int value1; // some object types use this field to display count
 					int value2; // some object types use this field to display count
-					switch (item.Object_Type)
+					switch (item.ObjectType)
 					{
 						case (int)eObjectType.Arrow:
 						case (int)eObjectType.Bolt:
@@ -527,7 +527,7 @@ namespace DOL.GS.PacketHandler
 							value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF); // 0x00 = Lute ; 0x01 = Drum ; 0x03 = Flute
 							value2 = 0; break; // unused
 						case (int)eObjectType.Shield:
-							value1 = item.Type_Damage;
+							value1 = item.TypeDamage;
 							value2 = item.DPS_AF; break;
 						case (int)eObjectType.GardenObject:
 						case (int)eObjectType.HouseWallObject:
@@ -540,7 +540,7 @@ namespace DOL.GS.PacketHandler
 					}
 					pak.WriteByte((byte)value1);
 					pak.WriteByte((byte)value2);
-					if (item.Object_Type == (int)eObjectType.GardenObject)
+					if (item.ObjectType == (int)eObjectType.GardenObject)
 					{
 						pak.WriteByte((byte)(item.DPS_AF));
 					}
@@ -549,7 +549,7 @@ namespace DOL.GS.PacketHandler
 						pak.WriteByte((byte)(item.Hand << 6));
 					}
 
-					pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+					pak.WriteByte((byte)((item.TypeDamage > 3 ? 0 : item.TypeDamage << 6) | item.ObjectType));
 					pak.WriteByte((byte)(m_gameClient.Player.HasAbilityToUseItem(item.Template) ? 0 : 1));
 					pak.WriteShortLowEndian((ushort)(item.PackSize > 1 ? item.Weight * item.PackSize : item.Weight)); // 
 
@@ -651,7 +651,7 @@ namespace DOL.GS.PacketHandler
 								// some objects use this for count
 								int value1;
 								int value2;
-								switch (item.Object_Type)
+								switch (item.ObjectType)
 								{
 									case (int)eObjectType.Arrow:
 									case (int)eObjectType.Bolt:
@@ -670,7 +670,7 @@ namespace DOL.GS.PacketHandler
 										}
 									case (int)eObjectType.Shield:
 										{
-											value1 = item.Type_Damage;
+											value1 = item.TypeDamage;
 											value2 = item.Weight;
 											break;
 										}
@@ -689,7 +689,7 @@ namespace DOL.GS.PacketHandler
 								}
 								pak.WriteByte((byte)value1);
 								pak.WriteByte((byte)item.SPD_ABS);
-								if (item.Object_Type == (int)eObjectType.GardenObject)
+								if (item.ObjectType == (int)eObjectType.GardenObject)
 								{
 									pak.WriteByte((byte)(item.DPS_AF));
 								}
@@ -698,7 +698,7 @@ namespace DOL.GS.PacketHandler
 									pak.WriteByte((byte)(item.Hand << 6));
 								}
 
-								pak.WriteByte((byte)((item.Type_Damage << 6) | item.Object_Type));
+								pak.WriteByte((byte)((item.TypeDamage << 6) | item.ObjectType));
 								//1 if item cannot be used by your class (greyed out)
 								if (m_gameClient.Player != null && m_gameClient.Player.HasAbilityToUseItem(item))
 								{

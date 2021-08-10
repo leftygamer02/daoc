@@ -31,6 +31,7 @@ using DOL.GS.Movement;
 using DOL.GS.PacketHandler;
 using DOL.GS.Quests;
 using DOL.GS.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.Commands
 {
@@ -225,14 +226,11 @@ namespace DOL.GS.Commands
 						case "equipinfo": equipinfo(client, targetMob, args); break;
 						case "equiptemplate": equiptemplate(client, targetMob, args); break;
 						case "visibleslot": visibleslot(client, targetMob, args); break;
-						case "dropcount": dropcount<MobXLootTemplate>(client, targetMob, args); break;
-						case "dropcount2": dropcount<MobDropTemplate>(client, targetMob, args); break;
-						case "addloot": addloot<MobXLootTemplate, LootTemplate>(client, targetMob, args); break;
-						case "addloot2": addloot<MobDropTemplate, DropTemplateXItemTemplate>(client, targetMob, args); break;
+						case "dropcount": dropcount(client, targetMob, args); break;
+						case "addloot": addloot(client, targetMob, args); break;
 						case "addotd": addotd(client, targetMob, args); break;
 						case "viewloot": viewloot(client, targetMob, args); break;
-						case "removeloot": removeloot<LootTemplate>(client, targetMob, args); break;
-						case "removeloot2": removeloot<DropTemplateXItemTemplate>(client, targetMob, args); break;
+						case "removeloot": removeloot(client, targetMob, args); break;
 						case "removeotd": removeotd(client, targetMob, args); break;
 						case "refreshloot": refreshloot(client, targetMob, args); break;
 						case "copy": copy(client, targetMob, args); break;
@@ -1666,7 +1664,7 @@ namespace DOL.GS.Commands
 			{
 				client.Out.SendMessage("Slot Description : [" + GlobalConstants.SlotToName(item.SlotPosition) + "]", eChatType.CT_System, eChatLoc.CL_PopupWindow);
 				client.Out.SendMessage("------------", eChatType.CT_System, eChatLoc.CL_PopupWindow);
-				client.Out.SendMessage("         Slot: " + GlobalConstants.SlotToName(item.Item_Type), eChatType.CT_System, eChatLoc.CL_PopupWindow);
+				client.Out.SendMessage("         Slot: " + GlobalConstants.SlotToName(item.ItemType), eChatType.CT_System, eChatLoc.CL_PopupWindow);
 				client.Out.SendMessage("        Model: " + item.Model, eChatType.CT_System, eChatLoc.CL_PopupWindow);
 				client.Out.SendMessage("        Color: " + item.Color, eChatType.CT_System, eChatLoc.CL_PopupWindow);
 				client.Out.SendMessage("       Effect: " + item.Effect, eChatType.CT_System, eChatLoc.CL_PopupWindow);
@@ -1947,13 +1945,13 @@ namespace DOL.GS.Commands
 			}
 		}
 
-		private void dropcount<T>(GameClient client, GameNPC targetMob, string[] args) where T : MobXLootTemplate
+		private void dropcount(GameClient client, GameNPC targetMob, string[] args) //where T : MobXLootTemplate
 		{
-			var mxlt = DOLDB<T>.SelectObject(DB.Column("MobName").IsEqualTo(targetMob.Name).And(DB.Column("LootTemplateName").IsEqualTo(targetMob.Name)));
+			var mxlt = GameServer.Database.LootTableItems.Where(x => x.LootTableID == targetMob.LootTableID).ToList();
 
 			if (args.Length < 3)
 			{
-				DisplayMessage(client, "Mob '" + targetMob.Name + "' drops " + mxlt.DropCount + " items.");
+				DisplayMessage(client, "Mob '" + targetMob.Name + "' drops " + mxlt.Count + " items.");
 			}
 			else
 			{
@@ -1975,16 +1973,14 @@ namespace DOL.GS.Commands
 
 				mxlt.DropCount = dropCount;
 				if (!mxlt.IsPersisted)
-					GameServer.Database.AddObject(mxlt);
+					GameServer.Instance.SaveDataObject(mxlt);
 				else
-					GameServer.Database.SaveObject(mxlt);
+					GameServer.Instance.SaveDataObject(mxlt);
 				DisplayMessage(client, "Mob '" + targetMob.Name + "' will drop a maximum of " + mxlt.DropCount + " items!");
 			}
 		}
 
-		private void addloot<MobXLootType, LootTemplateType>(GameClient client, GameNPC targetMob, string[] args)
-			where MobXLootType : MobXLootTemplate
-			where LootTemplateType : LootTemplate
+		private void addloot(GameClient client, GameNPC targetMob, string[] args)
 		{
 			try
 			{
@@ -2001,7 +1997,7 @@ namespace DOL.GS.Commands
 				if (numDrops < 1)
 					numDrops = 1;
 
-				ItemTemplate item = GameServer.Database.FindObjectByKey<ItemTemplate>(lootTemplateID);
+				ItemTemplate item = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == lootTemplateID || x.KeyName == lootTemplateID);
 				if (item == null)
 				{
 					DisplayMessage(client,
@@ -2009,34 +2005,28 @@ namespace DOL.GS.Commands
 					return;
 				}
 
-				var template = DOLDB<LootTemplateType>.SelectObjects(DB.Column("TemplateName").IsEqualTo(name).And(DB.Column("ItemTemplateID").IsEqualTo(lootTemplateID)));
+				var lootTable = GameServer.Database.LootTables.Include(x => x.Items).FirstOrDefault(x => x.Id == targetMob.LootTableID);
+				var template = GameServer.Database.LootTableItems.FirstOrDefault(x => x.LootTable.Name == name && x.ItemTemplateID == item.Id);
 				if (template != null)
 				{
-					GameServer.Database.DeleteObject(template);
+					GameServer.Instance.DeleteDataObject(template);
 
-					LootTemplateType lt = Activator.CreateInstance<LootTemplateType>();
-					lt.Chance = chance;
-					lt.TemplateName = name;
-					lt.ItemTemplateID = lootTemplateID;
-					lt.Count = numDrops;
-					GameServer.Database.AddObject(lt);
+					var lootItem = new LootTableItem();
+					lootItem.Chance = chance;
+					lootItem.LootTableID = lootTable.Id;
+					lootItem.ItemTemplateID = item.Id;
+					lootItem.Count = numDrops;
+					GameServer.Instance.SaveDataObject(lootItem);
 					refreshloot(client, targetMob, null);
 				}
 				else
 				{
-					ItemTemplate itemtemplate = GameServer.Database.FindObjectByKey<ItemTemplate>(lootTemplateID);
-					if (itemtemplate == null)
-					{
-						DisplayMessage(client, "ItemTemplate " + lootTemplateID + " not found!");
-						return;
-					}
-
-					LootTemplateType lt = Activator.CreateInstance<LootTemplateType>();
-					lt.Chance = chance;
-					lt.TemplateName = name;
-					lt.ItemTemplateID = lootTemplateID;
-					lt.Count = numDrops;
-					GameServer.Database.AddObject(lt);
+					var lootItem = new LootTableItem();
+					lootItem.Chance = chance;
+					lootItem.LootTableID = lootTable.Id;
+					lootItem.ItemTemplateID = item.Id;
+					lootItem.Count = numDrops;
+					GameServer.Instance.SaveDataObject(lootItem);
 					refreshloot(client, targetMob, null);
 				}
 
@@ -2105,9 +2095,9 @@ namespace DOL.GS.Commands
 
 					LootOTD loot = new LootOTD();
 					loot.MobName = mobName;
-					loot.ItemTemplateID = itemtemplate.Id_nb;
+					loot.ItemTemplateID = itemtemplate.Id;
 					loot.MinLevel = minlevel;
-					GameServer.Database.AddObject(loot);
+					GameServer.Instance.SaveDataObject(loot);
 					refreshloot(client, targetMob, null);
 					client.Out.SendMessage(itemTemplateID + " was succesfully added to " + mobName + "'s one time drop list.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
@@ -2138,7 +2128,7 @@ namespace DOL.GS.Commands
 				DisplayMessage(client, "[ " + targetMob.Name + "'s Loot Table ]\n\n");
 				foreach (ItemTemplate temp in templates)
 				{
-					string message = string.Format("Name: {0}, Id_nb: {1}", temp.Name, temp.Id_nb);
+					string message = string.Format("Name: {0}, Id_nb: {1}", temp.Name, temp.Id);
 					DisplayMessage(client, message);
 				}
 			}
@@ -2160,7 +2150,7 @@ namespace DOL.GS.Commands
 
 						if (drop != null)
 						{
-							text.Add("- " + drop.Name + " (" + drop.Id_nb + "), Min Level = " + otd.MinLevel);
+							text.Add("- " + drop.Name + " (" + drop.Id + "), Min Level = " + otd.MinLevel);
 						}
 						else
 						{
@@ -2281,11 +2271,11 @@ namespace DOL.GS.Commands
 			string itemTemplateID = args[2];
 			string name = targetMob.Name;
 
-			IList<LootOTD> template = DOLDB<LootOTD>.SelectObjects(DB.Column("MobName").IsEqualTo(name).And(DB.Column("ItemTemplateID").IsEqualTo(itemTemplateID)));
+			IList<LootOtd> template = GameServer.Database.LootOtds.Where(x => x.MobName == name && x.ItemTemplateID.ToString() == itemTemplateID).ToList();
 
 			if (template != null)
 			{
-				GameServer.Database.DeleteObject(template);
+				GameServer.Instance.DeleteDataObjects(template);
 
 				refreshloot(client, targetMob, null);
 
@@ -3201,7 +3191,7 @@ namespace DOL.GS.Commands
 				if (text.Contains("{y}"))
 					voice = "y";
 				text = text.Replace("{b}", string.Empty).Replace("{y}", string.Empty);
-				GameServer.Database.AddObject(new MobXAmbientBehaviour(targetMob.Name, trig.ToString(), emote, text, chance, voice) {Dirty = true, AllowAdd = true});
+				GameServer.Instance.SaveDataObject(new MobXAmbientBehaviour(targetMob.Name, trig.ToString(), emote, text, chance, voice) {Dirty = true, AllowAdd = true});
 				client.Out.SendMessage(" Trigger added to mobs with name " + targetMob.Name + " when they " + type + ".", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return;
 			}

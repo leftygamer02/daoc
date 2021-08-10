@@ -35,7 +35,7 @@ namespace DOL.GS.RealmAbilities
 
         public const int DURATION = 30 * 1000;
 
-        public BlissfulIgnoranceAbility(DBAbility dba, int level) : base(dba, level) { }
+        public BlissfulIgnoranceAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
         /// <summary>
         /// Action
@@ -77,7 +77,7 @@ namespace DOL.GS.RealmAbilities
                     Spell spell = obj as Spell;
                     try
 					{
-						DBSpell db = new DBSpell();
+						Atlas.DataLayer.Models.Spell db = new Atlas.DataLayer.Models.Spell();
                         db.ClientEffect = spell.ClientEffect;
 						db.Icon = spell.Icon;
 						db.Name = spell.Name;

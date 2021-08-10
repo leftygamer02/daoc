@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public GemofLostMemories(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public GemofLostMemories(GamePlayer questingPlayer, DBQuest dbQuest)
+        public GemofLostMemories(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

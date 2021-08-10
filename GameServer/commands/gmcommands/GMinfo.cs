@@ -310,7 +310,7 @@ namespace DOL.GS.Commands
 						}
 						else
 						{
-							message += drop.Name + " (" + drop.Id_nb + ")";
+							message += drop.Name + " (" + drop.Id + ")";
 						}
 
 						message += " Chance: " + loot.Chance.ToString();
@@ -339,7 +339,7 @@ namespace DOL.GS.Commands
 					info.Add("  - Priv. Level : " + target.Client.Account.PrivLevel);
 					info.Add("  - Client Version: " + target.Client.Account.LastClientVersion);
 					info.Add(" ");
-					info.Add("  - Craftingskill : " + target.CraftingPrimarySkill + "");
+					info.Add("  - Craftingskill : " + target.PrimaryCraftingSkill + "");
 					info.Add("  - Model ID : " + target.Model);
 					info.Add("  - AFK Message: " + target.TempProperties.getProperty<string>(GamePlayer.AFK_MESSAGE) + "");
 					info.Add(" ");
@@ -413,7 +413,7 @@ namespace DOL.GS.Commands
 
 					info.Add("  ----- Wearing:");
 					foreach (InventoryItem item in target.Inventory.EquippedItems)
-						info.Add(" [" + GlobalConstants.SlotToName(item.Item_Type) + "] " + item.Name);
+						info.Add(" [" + GlobalConstants.SlotToName(item.ItemType) + "] " + item.Name);
 					info.Add(" ");
 				}
 

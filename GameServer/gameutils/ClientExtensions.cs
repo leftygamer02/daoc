@@ -39,8 +39,8 @@ namespace DOL.GS
 			b.DateBan = DateTime.Now;
 			b.Type = "B";
 			b.Reason = reason;
-			GameServer.Database.AddObject(b);
-			GameServer.Database.SaveObject(b);
+			GameServer.Instance.SaveDataObject(b);
+			GameServer.Instance.SaveDataObject(b);
 			GameServer.Instance.LogCheatAction(string.Format("{1}. Client Account: {0}", client.Account.Name, b.Reason));
         }
         #endregion

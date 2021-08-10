@@ -17,6 +17,7 @@
 *
 */
 using System;
+using System.Linq;
 using System.Reflection;
 using Atlas.DataLayer.Models;
 using System.Collections;
@@ -118,11 +119,11 @@ namespace DOL.GS.PacketHandler
 			// Create a GameInventoryItem so item will display correctly in inventory window
 			item = GameInventoryItem.Create(item);
 
-			pak.WriteByte((byte)item.Level);
+			pak.WriteByte((byte)item.ItemTemplate.Level);
 
 			int value1; // some object types use this field to display count
 			int value2; // some object types use this field to display count
-			switch (item.Object_Type)
+			switch (item.ItemTemplate.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 					value1 = item.Count & 0xFF;
@@ -132,19 +133,19 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.Bolt:
 				case (int)eObjectType.Poison:
 					value1 = item.Count;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 				case (int)eObjectType.Thrown:
-					value1 = item.DPS_AF;
+					value1 = item.ItemTemplate.DPS_AF;
 					value2 = item.Count;
 					break;
 				case (int)eObjectType.Instrument:
-					value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF);
+					value1 = (item.ItemTemplate.DPS_AF == 2 ? 0 : item.ItemTemplate.DPS_AF);
 					value2 = 0;
 					break; // unused
 				case (int)eObjectType.Shield:
-					value1 = item.Type_Damage;
-					value2 = item.DPS_AF;
+					value1 = item.ItemTemplate.TypeDamage;
+					value2 = item.ItemTemplate.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
 				case (int)eObjectType.SpellcraftGem:
@@ -158,7 +159,7 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.HouseFloorObject:
 				case (int)eObjectType.GardenObject:
 					value1 = 0;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					/*
 					Value2 byte sets the width, only lower 4 bits 'seem' to be used (so 1-15 only)
 
@@ -168,27 +169,27 @@ namespace DOL.GS.PacketHandler
 					break;
 
 				default:
-					value1 = item.DPS_AF;
-					value2 = item.SPD_ABS;
+					value1 = item.ItemTemplate.DPS_AF;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 			}
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (item.Object_Type == (int)eObjectType.GardenObject)
-				pak.WriteByte((byte)(item.DPS_AF));
+			if (item.ItemTemplate.ObjectType == (int)eObjectType.GardenObject)
+				pak.WriteByte((byte)(item.ItemTemplate.DPS_AF));
 			else
-				pak.WriteByte((byte)(item.Hand << 6));
-			pak.WriteByte((byte)((item.Type_Damage > 3 ? 0 : item.Type_Damage << 6) | item.Object_Type));
+				pak.WriteByte((byte)(item.ItemTemplate.Hand << 6));
+			pak.WriteByte((byte)((item.ItemTemplate.TypeDamage > 3 ? 0 : item.ItemTemplate.TypeDamage << 6) | item.ItemTemplate.ObjectType));
 
 			pak.Fill(0x00, 1); // 1.109, +1 byte, no clue what this is  - Tolakram
 
-			pak.WriteShort((ushort)item.Weight);
+			pak.WriteShort((ushort)item.ItemTemplate.Weight);
 			pak.WriteByte(item.ConditionPercent); // % of con
 			pak.WriteByte(item.DurabilityPercent); // % of dur
-			pak.WriteByte((byte)item.Quality); // % of qua
-			pak.WriteByte((byte)item.Bonus); // % bonus
-			pak.WriteShort((ushort)item.Model);
+			pak.WriteByte((byte)item.ItemTemplate.Quality); // % of qua
+			pak.WriteByte((byte)item.ItemTemplate.ItemBonus); // % bonus
+			pak.WriteShort((ushort)item.ItemTemplate.Model);
 			pak.WriteByte((byte)item.Extension);
 			int flag = 0;
 			if (item.Emblem != 0)
@@ -222,31 +223,26 @@ namespace DOL.GS.PacketHandler
 			ushort icon2 = 0;
 			string spell_name1 = "";
 			string spell_name2 = "";
-			if (item.Object_Type != (int)eObjectType.AlchemyTincture)
+			if (item.ItemTemplate.ObjectType != (int)eObjectType.AlchemyTincture)
 			{
-				SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-
-				if (chargeEffectsLine != null)
+				if (item.Spells.Count > 0/* && item.Charges > 0*/)
 				{
-					if (item.SpellID > 0/* && item.Charges > 0*/)
+					var spell = item.Spells.FirstOrDefault();
+					if (spell != null)
 					{
-						Spell spell = SkillBase.FindSpell(item.SpellID, chargeEffectsLine);
-						if (spell != null)
-						{
-							flag |= 0x08;
-							icon1 = spell.Icon;
-							spell_name1 = spell.Name; // or best spl.Name ?
-						}
+						flag |= 0x08;
+						icon2 = (ushort)spell.Spell.Icon;
+						spell_name2 = spell.Spell.Name; // or best spl.Name ?
 					}
-					if (item.SpellID1 > 0/* && item.Charges > 0*/)
+				}
+				if (item.Spells.Count > 1/* && item.Charges > 0*/)
+				{
+					var spell = item.Spells.Skip(1).FirstOrDefault();
+					if (spell != null)
 					{
-						Spell spell = SkillBase.FindSpell(item.SpellID1, chargeEffectsLine);
-						if (spell != null)
-						{
-							flag |= 0x10;
-							icon2 = spell.Icon;
-							spell_name2 = spell.Name; // or best spl.Name ?
-						}
+						flag |= 0x10;
+						icon2 = (ushort)spell.Spell.Icon;
+						spell_name2 = spell.Spell.Name; // or best spl.Name ?
 					}
 				}
 			}
@@ -261,7 +257,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)icon2);
 				pak.WritePascalString(spell_name2);
 			}
-			pak.WriteByte((byte)item.Effect);
+			pak.WriteByte((byte)item.ItemTemplate.Effect);
 			string name = item.Name;
 			if (item.Count > 1)
 				name = item.Count + " " + name;
@@ -292,7 +288,7 @@ namespace DOL.GS.PacketHandler
 			int value1;
 			int value2;
 
-			switch (template.Object_Type)
+			switch (template.ObjectType)
 			{
 				case (int)eObjectType.Arrow:
 				case (int)eObjectType.Bolt:
@@ -310,7 +306,7 @@ namespace DOL.GS.PacketHandler
 					value2 = 0;
 					break;
 				case (int)eObjectType.Shield:
-					value1 = template.Type_Damage;
+					value1 = template.TypeDamage;
 					value2 = template.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
@@ -340,19 +336,19 @@ namespace DOL.GS.PacketHandler
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (template.Object_Type == (int)eObjectType.GardenObject)
+			if (template.ObjectType == (int)eObjectType.GardenObject)
 				pak.WriteByte((byte)(template.DPS_AF));
 			else
 				pak.WriteByte((byte)(template.Hand << 6));
-			pak.WriteByte((byte)((template.Type_Damage > 3
+			pak.WriteByte((byte)((template.TypeDamage > 3
 				? 0
-				: template.Type_Damage << 6) | template.Object_Type));
+				: template.TypeDamage << 6) | template.ObjectType));
 			pak.Fill(0x00, 1); // 1.109, +1 byte, no clue what this is  - Tolakram
 			pak.WriteShort((ushort)template.Weight);
 			pak.WriteByte(template.BaseConditionPercent);
 			pak.WriteByte(template.BaseDurabilityPercent);
 			pak.WriteByte((byte)template.Quality);
-			pak.WriteByte((byte)template.Bonus);
+			pak.WriteByte((byte)template.ItemBonus);
 			pak.WriteShort((ushort)template.Model);
 			pak.WriteByte((byte)template.Extension);
 			if (template.Emblem != 0)

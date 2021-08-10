@@ -32,7 +32,7 @@ namespace DOL.GS.Quests.Catacombs.Obelisks
 		public KoboldUndercity(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public KoboldUndercity(GamePlayer questingPlayer, DBQuest dbQuest)
+		public KoboldUndercity(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

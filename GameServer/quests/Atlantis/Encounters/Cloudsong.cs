@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public Cloudsong(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public Cloudsong(GamePlayer questingPlayer, DBQuest dbQuest)
+		public Cloudsong(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

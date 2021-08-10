@@ -112,7 +112,7 @@ namespace DOL.GS
 			if (!item.IsCrafted)
 				return eCraftingSkill.NoCrafting;
 
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.Cloth:
 				case (int)eObjectType.Leather:
@@ -180,7 +180,7 @@ namespace DOL.GS
 		/// </summary>
 		public static eCraftingSkill GetSecondaryCraftingSkillToWorkOnItem(InventoryItem item)
 		{
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.Cloth:
 					return eCraftingSkill.ClothWorking;
@@ -235,7 +235,7 @@ namespace DOL.GS
 		/// </summary>
 		public static int GetItemCraftLevel(InventoryItem item)
 		{
-			switch (item.Object_Type)
+			switch (item.ObjectType)
 			{
 				case (int)eObjectType.Cloth:
 				case (int)eObjectType.Leather:
@@ -246,7 +246,7 @@ namespace DOL.GS
 				case (int)eObjectType.Scale:
 					{
 						int baseLevel = 15 + item.Level * 20; // gloves
-						switch (item.Item_Type)
+						switch (item.ItemType)
 						{
 							case (int)eInventorySlot.HeadArmor: // head
 								return baseLevel + 15;

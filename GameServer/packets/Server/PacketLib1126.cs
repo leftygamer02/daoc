@@ -104,8 +104,8 @@ namespace DOL.GS.PacketHandler
 					return;
 				}
 
-				Dictionary<int, DOLCharacters> charsBySlot = new Dictionary<int, DOLCharacters>();
-				foreach (DOLCharacters c in m_gameClient.Account.Characters)
+				Dictionary<int, Character> charsBySlot = new Dictionary<int, Character>();
+				foreach (Character c in m_gameClient.Account.Characters)
 				{
 					try
 					{
@@ -143,7 +143,7 @@ namespace DOL.GS.PacketHandler
 				// send each characters
 				for (int i = firstSlot; i < (firstSlot + 10); i++)
 				{
-					DOLCharacters c = null;
+					Character c = null;
 					if (!charsBySlot.TryGetValue(i, out c))
 					{
 						pak.WriteByte(0);

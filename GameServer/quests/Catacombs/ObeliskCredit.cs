@@ -33,7 +33,7 @@ namespace DOL.GS.Quests.Catacombs.Obelisks
 		public ObeliskCredit(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-		public ObeliskCredit(GamePlayer questingPlayer, DBQuest dbQuest)
+		public ObeliskCredit(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		public override bool CheckQuestQualification(GamePlayer player)

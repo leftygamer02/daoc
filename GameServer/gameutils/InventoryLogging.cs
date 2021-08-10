@@ -56,7 +56,7 @@ namespace DOL.GS
 			obj == null ? "(null)" : ("(" + obj.Name + ";" + obj.GetType() + ";" + obj.X + ";" + obj.Y + ";" + obj.Z + ";" + obj.CurrentRegionID + ")");
 
 		public static Func<ItemTemplate, int, string> GetItemString = (item, count) =>
-			item == null ? "(null)" : ("(" + count + ";" + item.Name + ";" + item.Id_nb + ")");
+			item == null ? "(null)" : ("(" + count + ";" + item.Name + ";" + item.Id + ")");
 
 		public static Func<long, string> GetMoneyString = amount =>
 			"(MONEY;" + amount + ")";

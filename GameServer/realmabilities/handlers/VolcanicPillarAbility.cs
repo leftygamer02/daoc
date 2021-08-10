@@ -11,7 +11,7 @@ namespace DOL.GS.RealmAbilities
 {
 	public class VolcanicPillarAbility : TimedRealmAbility
 	{
-		public VolcanicPillarAbility(DBAbility dba, int level) : base(dba, level) { }
+		public VolcanicPillarAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 		private int m_dmgValue = 0;
 		private GamePlayer m_caster = null;
 

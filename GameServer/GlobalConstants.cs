@@ -1161,7 +1161,7 @@ namespace DOL.GS
 		}
 
 		/// <summary>
-		/// Check an Object_Type to determine if it's a Bow weapon
+		/// Check an ObjectType to determine if it's a Bow weapon
 		/// </summary>
 		/// <param name="objectType"></param>
 		/// <returns></returns>
@@ -1170,7 +1170,7 @@ namespace DOL.GS
 			return (objectType == eObjectType.CompositeBow || objectType == eObjectType.Longbow || objectType == eObjectType.RecurvedBow);
 		}
 		/// <summary>
-		/// Check an Object_Type to determine if it's a weapon
+		/// Check an ObjectType to determine if it's a weapon
 		/// </summary>
 		/// <param name="objectTypeID"></param>
 		/// <returns></returns>
@@ -1180,7 +1180,7 @@ namespace DOL.GS
 			return false;
 		}
 		/// <summary>
-		/// Check an Object_Type to determine if it's armor
+		/// Check an ObjectType to determine if it's armor
 		/// </summary>
 		/// <param name="objectTypeID"></param>
 		/// <returns></returns>
@@ -1679,7 +1679,7 @@ namespace DOL.GS
 
 		public static eRealm[] GetItemTemplateRealm(ItemTemplate item)
 		{
-			switch ((eObjectType)item.Object_Type)
+			switch ((eObjectType)item.ObjectType)
 			{
 					//Albion
 				case eObjectType.CrushingWeapon:

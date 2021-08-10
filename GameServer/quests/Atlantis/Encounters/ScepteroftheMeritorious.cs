@@ -34,7 +34,7 @@ namespace DOL.GS.Quests.Atlantis.Encounters
 		public ScepteroftheMeritorious(GamePlayer questingPlayer)
 			: base(questingPlayer) { }
 
-        public ScepteroftheMeritorious(GamePlayer questingPlayer, DBQuest dbQuest)
+        public ScepteroftheMeritorious(GamePlayer questingPlayer, Atlas.DataLayer.Models.Quest dbQuest)
 			: base(questingPlayer, dbQuest) { }
 
 		/// <summary>

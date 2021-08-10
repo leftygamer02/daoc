@@ -13,7 +13,7 @@ namespace DOL.GS.RealmAbilities
     /// </summary>
     public class PurgeAbility : TimedRealmAbility
     {
-        public PurgeAbility(DBAbility dba, int level) : base(dba, level) { }
+        public PurgeAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
         /// <summary>
         /// Action

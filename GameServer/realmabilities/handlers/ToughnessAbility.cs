@@ -11,7 +11,7 @@ namespace DOL.GS.RealmAbilities
 	/// </summary>
 	public class ToughnessAbility : RAPropertyEnhancer
 	{
-		public ToughnessAbility(DBAbility dba, int level) : base(dba, level, eProperty.MaxHealth) { }
+		public ToughnessAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.MaxHealth) { }
 
 		public override int GetAmountForLevel(int level)
 		{

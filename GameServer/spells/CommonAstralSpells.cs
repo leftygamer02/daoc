@@ -205,7 +205,7 @@ namespace DOL.GS.Spells
         // Creates the trap(spell)
         private ISpellHandler MakeTrap()
         {
-            DBSpell dbs = new DBSpell();
+            Atlas.DataLayer.Models.Spell dbs = new Atlas.DataLayer.Models.Spell();
             dbs.Name = "irritatin wisp";
             dbs.Icon = 4107;
             dbs.ClientEffect = 5435;

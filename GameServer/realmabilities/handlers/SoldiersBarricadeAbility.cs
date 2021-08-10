@@ -10,7 +10,7 @@ namespace DOL.GS.RealmAbilities
 
 	public class SoldiersBarricadeAbility : TimedRealmAbility
 	{
-		public SoldiersBarricadeAbility(DBAbility dba, int level) : base(dba, level) { }
+		public SoldiersBarricadeAbility(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level) { }
 
 		public const string BofBaSb = "RA_DAMAGE_DECREASE";
 

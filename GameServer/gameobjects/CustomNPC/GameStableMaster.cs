@@ -122,9 +122,9 @@ namespace DOL.GS
 			{
 				GamePlayer player = (GamePlayer)source;
 
-				if (item.Item_Type == 40 && isItemInMerchantList(item))
+				if (item.ItemType == 40 && isItemInMerchantList(item))
 				{
-					PathPoint path = MovementMgr.LoadPath(item.Id_nb);
+					PathPoint path = MovementMgr.LoadPath(item.Id);
 
 					if ((path != null) && ((Math.Abs(path.X - this.X)) < 500) && ((Math.Abs(path.Y - this.Y)) < 500))
 					{
@@ -234,7 +234,7 @@ namespace DOL.GS
 					ItemTemplate compareItem = de.Value as ItemTemplate;
 					if (compareItem != null)
 					{
-						if (compareItem.Id_nb == item.Id_nb)
+						if (compareItem.Id == item.Id)
 						{
 							return true;
 						}

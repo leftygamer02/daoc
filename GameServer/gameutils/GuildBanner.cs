@@ -239,12 +239,12 @@ namespace DOL.GS
 
 					m_guildBannerTemplate = new ItemTemplate();
 					m_guildBannerTemplate.CanDropAsLoot = false;
-					m_guildBannerTemplate.Id_nb = guildIDNB;
+					m_guildBannerTemplate.Id = guildIDNB;
 					m_guildBannerTemplate.IsDropable = false;
 					m_guildBannerTemplate.IsPickable = true;
 					m_guildBannerTemplate.IsTradable = false;
 					m_guildBannerTemplate.IsIndestructible = true;
-					m_guildBannerTemplate.Item_Type = 41;
+					m_guildBannerTemplate.ItemType = 41;
 					m_guildBannerTemplate.Level = 1;
 					m_guildBannerTemplate.MaxCharges = 1;
 					m_guildBannerTemplate.MaxCount = 1;
@@ -262,7 +262,7 @@ namespace DOL.GS
 							break;
 					}
 					m_guildBannerTemplate.Name = m_player.Guild.Name + "'s Banner";
-					m_guildBannerTemplate.Object_Type = (int)eObjectType.HouseWallObject;
+					m_guildBannerTemplate.ObjectType = (int)eObjectType.HouseWallObject;
 					m_guildBannerTemplate.Realm = 0;
 					m_guildBannerTemplate.Quality = 100;
 					m_guildBannerTemplate.ClassType = "DOL.GS.GuildBannerItem";

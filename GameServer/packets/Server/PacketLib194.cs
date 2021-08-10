@@ -34,12 +34,12 @@ namespace DOL.GS.PacketHandler
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 
-		public override void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, DataQuest quest)
+		public override void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest)
 		{
 			SendQuestWindow(questNPC, player, quest, true);
 		}
 
-		public override void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, DataQuest quest)
+		public override void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest)
 		{
 			SendQuestWindow(questNPC, player, quest, false);
 		}
@@ -47,7 +47,7 @@ namespace DOL.GS.PacketHandler
         const ushort MAX_STORY_LENGTH = 1000;   // Via trial and error, 1.108 client. 
                                                 // Often will cut off text around 990 but longer strings do not result in any errors. -Tolakram
 
-		protected override void SendQuestWindow(GameNPC questNPC, GamePlayer player, DataQuest quest, bool offer)
+		protected override void SendQuestWindow(GameNPC questNPC, GamePlayer player, Quests.DataQuest quest, bool offer)
 		{
 			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.Dialog)))
 			{

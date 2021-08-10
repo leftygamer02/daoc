@@ -22,7 +22,7 @@ namespace DOL.GS.RealmAbilities
 			get { return m_property; }
 		}
 
-		public RAStatEnhancer(DBAbility dba, int level, eProperty property)
+		public RAStatEnhancer(Atlas.DataLayer.Models.Ability dba, int level, eProperty property)
 			: base(dba, level)
 		{
 			m_property = property;
@@ -137,37 +137,37 @@ namespace DOL.GS.RealmAbilities
 
 	public class RAStrengthEnhancer : RAStatEnhancer
 	{
-		public RAStrengthEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.Strength) { }
+		public RAStrengthEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.Strength) { }
 	}
 
 	public class RAConstitutionEnhancer : RAStatEnhancer
 	{
-		public RAConstitutionEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.Constitution) { }
+		public RAConstitutionEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.Constitution) { }
 	}
 
 	public class RAQuicknessEnhancer : RAStatEnhancer
 	{
-		public RAQuicknessEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.Quickness) { }
+		public RAQuicknessEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.Quickness) { }
 	}
 
 	public class RADexterityEnhancer : RAStatEnhancer
 	{
-		public RADexterityEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.Dexterity) { }
+		public RADexterityEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.Dexterity) { }
 	}
 
 	public class RAAcuityEnhancer : RAStatEnhancer
 	{
-		public RAAcuityEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.Acuity) { }
+		public RAAcuityEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.Acuity) { }
 	}
 
 	public class RAMaxManaEnhancer : RAStatEnhancer
 	{
-		public RAMaxManaEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.MaxMana) { }
+		public RAMaxManaEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.MaxMana) { }
 	}
 
 	public class RAMaxHealthEnhancer : RAStatEnhancer
 	{
-		public RAMaxHealthEnhancer(DBAbility dba, int level) : base(dba, level, eProperty.MaxHealth) { }
+		public RAMaxHealthEnhancer(Atlas.DataLayer.Models.Ability dba, int level) : base(dba, level, eProperty.MaxHealth) { }
 
 		public override bool CheckRequirement(GamePlayer player)
 		{

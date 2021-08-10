@@ -62,7 +62,7 @@ namespace DOL.GS
 		{
 			var product = recipe.Product;
 			GameSiegeWeapon siegeweapon;
-			switch ((eObjectType)product.Object_Type)
+			switch ((eObjectType)product.ObjectType)
 			{
 				case eObjectType.SiegeBalista:
 					{
@@ -97,7 +97,7 @@ namespace DOL.GS
 			}
 
 			//actually stores the Id_nb of the siegeweapon
-			siegeweapon.ItemId = product.Id_nb;
+			siegeweapon.ItemId = product.Id;
 
 			siegeweapon.LoadFromDatabase(product);
 			siegeweapon.CurrentRegion = player.CurrentRegion;

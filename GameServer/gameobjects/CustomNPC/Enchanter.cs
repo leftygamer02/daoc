@@ -76,7 +76,7 @@ namespace DOL.GS
 
 			if (item.Level >= 10 && item.IsCrafted)
 			{
-				if (item.Object_Type != (int) eObjectType.Magical && item.Object_Type != (int) eObjectType.Bolt && item.Object_Type != (int) eObjectType.Poison)
+				if (item.ObjectType != (int) eObjectType.Magical && item.ObjectType != (int) eObjectType.Bolt && item.ObjectType != (int) eObjectType.Poison)
 				{
 					if (item.Bonus == 0)
 					{

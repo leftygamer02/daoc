@@ -245,7 +245,7 @@ namespace DOL.GS.Commands
 			else if (player.CharacterClass != null)
 			{
 				result.Append(" ");
-				AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(player.CraftingPrimarySkill);
+				AbstractCraftingSkill skill = CraftingMgr.getSkillbyEnum(player.PrimaryCraftingSkill);
 				result.Append(player.CraftTitle.GetValue(source.Player, player));
 			}
 			else
