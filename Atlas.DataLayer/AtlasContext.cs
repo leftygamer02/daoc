@@ -216,7 +216,7 @@ namespace Atlas.DataLayer
             modelBuilder.Entity<Region>()
                 .HasMany(r => r.ZonePointTargets)
                 .WithOne(z => z.TargetRegion)
-                .HasForeignKey(z => z.SourceTargetID)
+                .HasForeignKey(z => z.TargetRegionID)
                 .OnDelete(DeleteBehavior.Cascade);
 
         }

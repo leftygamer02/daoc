@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public partial class ItemUnique : ItemTemplate
+    public partial class SalvageYield
     {
+        public const string LEGACY_SALVAGE_ID = "legacy_salvage_donotdelete";
     }
 }

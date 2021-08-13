@@ -47,7 +47,7 @@ namespace Atlas.DataLayer.Models
         public string PackageID { get; set; }
         public string Description { get; set; }
         public string ClassType { get; set; }
-        public int SalvageYieldID { get; set; }
+        public int? SalvageYieldID { get; set; }
         public int ItemBonus { get; set; }
 
 

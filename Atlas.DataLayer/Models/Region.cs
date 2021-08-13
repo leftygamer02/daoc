@@ -17,7 +17,7 @@ namespace Atlas.DataLayer.Models
         public bool DivingEnabled { get; set; }
         public int WaterLevel { get; set; }
         public string ClassType { get; set; }
-        public bool IsFontier { get; set; }
+        public bool IsFrontier { get; set; }
 
         public virtual ICollection<Zone> Zones { get; set; }
         public virtual ICollection<SpawnGroup> SpawnGroups { get; set; }

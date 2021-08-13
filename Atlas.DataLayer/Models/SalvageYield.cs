@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class SalvageYield : DataObjectBase
+    public partial class SalvageYield : DataObjectBase
     {
         public int ObjectType { get; set; }
         public int SalvageLevel { get; set; }
