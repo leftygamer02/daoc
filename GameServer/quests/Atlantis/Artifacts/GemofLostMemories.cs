@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -47,8 +48,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private const String m_artifactID = "Gem of Lost Memories";
-		public override String ArtifactID
+		private static int m_artifactID = 1001;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -123,7 +124,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step > -1 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				Dictionary<int, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				if (versions.Count > 0 && RemoveItem(player, item))
@@ -163,7 +164,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step > -1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == -1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				/* Commenting out to give a template for future development
 				String reply = String.Format("Vara was a very skilled healer and she put her skills {0} {1} {2}",

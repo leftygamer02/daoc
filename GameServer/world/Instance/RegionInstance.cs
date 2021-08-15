@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
@@ -106,14 +107,14 @@ namespace DOL.GS
 		/// Load from Database override to clone objects from original Region.
 		/// Loads Objects, Mobs, Areas from Database using "SkinID"
 		/// </summary>
-		public override void LoadFromDatabase(Mob[] mobObjs, ref long mobCount, ref long merchantCount, ref long itemCount, ref long bindCount)
+		public override void LoadFromDatabase(SpawnPoint[] mobObjs, ref long mobCount, ref long merchantCount, ref long itemCount, ref long bindCount)
         {
             if (!LoadObjects)
                 return;
 
             Assembly gasm = Assembly.GetAssembly(typeof(GameServer));
-            var staticObjs = DOLDB<WorldObject>.SelectObjects(DB.Column("Region").IsEqualTo(Skin));
-            var areaObjs = DOLDB<Atlas.DataLayer.Models.Area>.SelectObjects(DB.Column("Region").IsEqualTo(Skin));            
+            var staticObjs = GameServer.Database.WorldObjects.Where(x => x.RegionID == Skin).ToList();
+            var areaObjs = GameServer.Database.Areas.Where(x => x.RegionID == Skin).ToList();
             
             int count = mobObjs.Length + staticObjs.Count;
             if (count > 0) PreAllocateRegionSpace(count + 100);
@@ -126,25 +127,27 @@ namespace DOL.GS
 
             if (mobObjs.Length > 0)
             {
-                foreach (Mob mob in mobObjs)
+                foreach (var mob in mobObjs)
                 {
                     GameNPC myMob = null;
                     string error = string.Empty;
   
                     // Default Classtype
-                    string classtype = ServerProperties.Properties.GAMENPC_DEFAULT_CLASSTYPE;
-                    
+                    string classtype = ServerProperties.Properties.GAMENPC_DEFAULT_CLASSTYPE;                    
+
                     // load template if any
                     INpcTemplate template = null;
-                    if(mob.NPCTemplateID != -1)
+                    Atlas.DataLayer.Models.NpcTemplate dbNpc = null;
+                    if (mob.SpawnGroup.NpcSpawnGroups.Any())
                     {
-                    	template = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
+                        dbNpc = mob.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplate;
+                        template = NpcTemplateMgr.GetTemplate(dbNpc.Id);
                     }
                     
 
-                    if (mob.Guild.Length > 0 && mob.Realm >= 0 && mob.Realm <= (int)eRealm._Last)
+                    if (dbNpc.Guild.Length > 0 && dbNpc.Realm >= 0 && dbNpc.Realm <= (int)eRealm._Last)
                     {
-                        Type type = ScriptMgr.FindNPCGuildScriptClass(mob.Guild, (eRealm)mob.Realm);
+                        Type type = ScriptMgr.FindNPCGuildScriptClass(dbNpc.Guild, (eRealm)dbNpc.Realm);
                         if (type != null)
                         {
                             try
@@ -164,13 +167,13 @@ namespace DOL.GS
   
                     if (myMob == null)
                     {
-                    	if(template != null && template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != Mob.DEFAULT_NPC_CLASSTYPE && template.ReplaceMobValues)
+                    	if(template != null && template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != "DOL.GS.GameNPC" && template.ReplaceMobValues)
                     	{
                 			classtype = template.ClassType;
                     	}
-                        else if (mob.ClassType != null && mob.ClassType.Length > 0 && mob.ClassType != Mob.DEFAULT_NPC_CLASSTYPE)
+                        else if (dbNpc.ClassType != null && dbNpc.ClassType.Length > 0 && dbNpc.ClassType != "DOL.GS.GameNPC")
                         {
-                            classtype = mob.ClassType;
+                            classtype = dbNpc.ClassType;
                         }
 
                         try
@@ -215,10 +218,8 @@ namespace DOL.GS
                     {
                         try
                         {
-                        	Mob clone = (Mob)mob.Clone();
-                        	clone.AllowAdd = false;
-                        	clone.AllowDelete = false;
-                        	clone.Region = this.ID;
+                        	var clone = (SpawnPoint)mob.Clone();
+                        	clone.RegionID = this.ID;
                         	
                         	myMob.LoadFromDatabase(clone);
 
@@ -248,9 +249,7 @@ namespace DOL.GS
                 foreach (WorldObject item in staticObjs)
                 {
                 	WorldObject itemclone = (WorldObject)item.Clone();
-                	itemclone.AllowAdd = false;
-                	itemclone.AllowDelete = false;
-                	itemclone.Region = this.ID;
+                	itemclone.RegionID = this.ID;
                 	
                     GameStaticItem myItem;
                     if (!string.IsNullOrEmpty(itemclone.ClassType))
@@ -281,24 +280,23 @@ namespace DOL.GS
 
             int areaCnt = 0;
             // Add missing area
-            foreach(Atlas.DataLayer.Models.Area area in areaObjs) 
+            foreach(var area in areaObjs) 
             {
             	// Don't bind in instance.
             	if(area.ClassType.Equals("DOL.GS.Area+BindArea"))
             		continue;
             	
             	// clone DB object.
-            	Atlas.DataLayer.Models.Area newAtlas.DataLayer.Models.Area = ((Atlas.DataLayer.Models.Area)area.Clone());
-            	newAtlas.DataLayer.Models.Area.AllowAdd = false;
-            	newAtlas.DataLayer.Models.Area.Region = this.ID;
+            	var dbArea = ((Atlas.DataLayer.Models.Area)area.Clone());
+                dbArea.RegionID = this.ID;
             	// Instantiate Area with cloned DB object and add to region
             	try
             	{
-            		AbstractArea newArea = (AbstractArea)gasm.CreateInstance(newAtlas.DataLayer.Models.Area.ClassType, false);
-            		newArea.LoadFromDatabase(newAtlas.DataLayer.Models.Area);
-					newArea.Sound = newAtlas.DataLayer.Models.Area.Sound;
-					newArea.CanBroadcast = newAtlas.DataLayer.Models.Area.CanBroadcast;
-					newArea.CheckLOS = newAtlas.DataLayer.Models.Area.CheckLOS;
+            		AbstractArea newArea = (AbstractArea)gasm.CreateInstance(dbArea.ClassType, false);
+            		newArea.LoadFromDatabase(dbArea);
+					newArea.Sound = (byte)dbArea.Sound;
+					newArea.CanBroadcast = dbArea.CanBroadcast;
+					newArea.CheckLOS = dbArea.CheckLOS;
 					this.AddArea(newArea);
 					areaCnt++;
 	            }

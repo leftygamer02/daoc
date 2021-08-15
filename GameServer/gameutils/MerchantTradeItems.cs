@@ -70,22 +70,22 @@ namespace DOL.GS
 		/// Constructor
 		/// </summary>
 		/// <param name="itemsListId"></param>
-		public MerchantTradeItems(int itemsListId)
+		public MerchantTradeItems(string itemsListName)
 		{
-			m_itemsListID = itemsListId;
+			m_itemsListName = itemsListName;
 		}
 
 		/// <summary>
 		/// Item list id
 		/// </summary>
-		protected int m_itemsListID;
+		protected string m_itemsListName;
 
 		/// <summary>
-		/// Item list id
+		/// Item list name
 		/// </summary>
-		public int ItemsListID
+		public string ItemsListName
 		{
-			get { return m_itemsListID; }
+			get { return m_itemsListName; }
 		}
 
 		/// <summary>
@@ -116,7 +116,7 @@ namespace DOL.GS
 
 				if (pageSlot == eMerchantWindowSlot.Invalid)
 				{
-					log.ErrorFormat("Invalid slot {0} specified for page {1} of TradeItemList {2}", slot, page, ItemsListID);
+					log.ErrorFormat("Invalid slot {0} specified for page {1} of TradeItemList {2}", slot, page, ItemsListName);
 					return false;
 				}
 
@@ -156,9 +156,9 @@ namespace DOL.GS
 			try
 			{
 				HybridDictionary itemsInPage = new HybridDictionary(MAX_ITEM_IN_TRADEWINDOWS);
-				if (m_itemsListID > 0)
+				if (!String.IsNullOrEmpty(ItemsListName))
 				{
-					var itemList = GameServer.Database.MerchantItems.Include(x => x.ItemTemplate).Where(x => x.ItemListID == m_itemsListID && x.PageNumber == page).ToList();
+					var itemList = GameServer.Database.MerchantItems.Include(x => x.ItemTemplate).Where(x => x.ItemListName == m_itemsListName && x.PageNumber == page).ToList();
 					foreach (MerchantItem merchantitem in itemList)
 					{
 						ItemTemplate item = merchantitem.ItemTemplate;
@@ -172,13 +172,12 @@ namespace DOL.GS
                             }
                             else
                             {
-                                log.ErrorFormat("two merchant items on same page/slot: listID={0} page={1} slot={2}", m_itemsListID, page, merchantitem.SlotPosition);
+                                log.ErrorFormat("two merchant items on same page/slot: listID={0} page={1} slot={2}", m_itemsListName, page, merchantitem.SlotPosition);
                             }
                         }
                         else
                         {
-                            log.ErrorFormat("Item template with ID = '{0}' not found for merchant item list '{1}'", 
-                                merchantitem.ItemTemplateID, ItemsListID);
+                            log.ErrorFormat("Item template with ID = '{0}' not found for merchant item list '{1}'", merchantitem.ItemTemplateID, ItemsListName);
                         }
 					}
 				}
@@ -195,7 +194,7 @@ namespace DOL.GS
 			catch (Exception e)
 			{
 				if (log.IsErrorEnabled)
-					log.Error("Loading merchant items list (" + m_itemsListID + ") page (" + page + "): ", e);
+					log.Error("Loading merchant items list (" + m_itemsListName + ") page (" + page + "): ", e);
 				return new HybridDictionary();
 			}
 		}
@@ -220,11 +219,11 @@ namespace DOL.GS
 					if (item != null) return item;
 				}
 
-				if (m_itemsListID > 0)
+				if (!String.IsNullOrEmpty(ItemsListName))
 				{
 					var itemToFind = GameServer.Database.MerchantItems
 											.Include(x => x.ItemTemplate)
-											.FirstOrDefault(x => x.ItemListID == m_itemsListID && 
+											.FirstOrDefault(x => x.ItemListName == m_itemsListName && 
 																 x.PageNumber == page && 
 																 x.SlotPosition == (int)slot);
 					if (itemToFind != null)
@@ -237,7 +236,7 @@ namespace DOL.GS
 			catch (Exception e)
 			{
 				if (log.IsErrorEnabled)
-					log.Error("Loading merchant items list (" + m_itemsListID + ") page (" + page + ") slot (" + slot + "): ", e);
+					log.Error("Loading merchant items list (" + m_itemsListName + ") page (" + page + ") slot (" + slot + "): ", e);
 				return null;
 			}
 		}
@@ -251,11 +250,11 @@ namespace DOL.GS
 			try
 			{
 				Hashtable allItems = new Hashtable();
-				if (m_itemsListID > 0)
+				if (!String.IsNullOrEmpty(m_itemsListName))
 				{
 					var itemList = GameServer.Database.MerchantItems
 											.Include(x => x.ItemTemplate)
-											.Where(x => x.ItemListID == m_itemsListID);
+											.Where(x => x.ItemListName == m_itemsListName);
 					foreach (MerchantItem merchantitem in itemList)
 					{
 						ItemTemplate item = merchantitem.ItemTemplate;
@@ -268,7 +267,7 @@ namespace DOL.GS
 							}
 							else
 							{
-								log.ErrorFormat("two merchant items on same page/slot: listID={0} page={1} slot={2}", m_itemsListID, merchantitem.PageNumber, merchantitem.SlotPosition);
+								log.ErrorFormat("two merchant items on same page/slot: listID={0} page={1} slot={2}", m_itemsListName, merchantitem.PageNumber, merchantitem.SlotPosition);
 							}
 						}
 					}
@@ -286,7 +285,7 @@ namespace DOL.GS
 			catch (Exception e)
 			{
 				if (log.IsErrorEnabled)
-					log.Error("Loading merchant items list (" + m_itemsListID + "):", e);
+					log.Error("Loading merchant items list (" + m_itemsListName + "):", e);
 				return new HybridDictionary();
 			}
 		}

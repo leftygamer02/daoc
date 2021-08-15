@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,10 +46,10 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		}
 
 		/// <summary>
-		/// The artifact ID.
+		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Guard of Valor";
-		public override String ArtifactID
+		private static int m_artifactID = 1029;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -134,12 +135,12 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
 				scholar.TurnTo(player);
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, ArtifactID, versions[0]);
 					String reply = "Can you feel the magic of the Guard of Valor flowing once again? ";
 					reply += "It comes from Aloeus' love for his beautiful Nikolia. When Aloeus ";
 					reply += "presented the gift to Nikolia, the magic in it bound to her. And now as ";
@@ -175,7 +176,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("Tell me, {0}, do you have any versions of the Love Story {1} {2} {3} {4}",
 					player.CharacterClass.Name,

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,10 +46,10 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		}
 
 		/// <summary>
-		/// The artifact ID.
+		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Battler";
-		public override String ArtifactID
+		private static int m_artifactID = 1006;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -173,7 +174,9 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = "Battler, eh? Careful, when I unlock this sword's abilities, for it has a thirst for blood, from what we've learned of it. Do you have the scrolls that talk about Battler?";
 				scholar.TurnTo(player);
@@ -207,11 +210,9 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 					case "one handed":
 					case "two handed":
 						{
-							String versionID = String.Format("{0};{1};",
-								GetCustomProperty("DamageType"), text.ToLower());
-							Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
-								(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
-							ItemTemplate template = versions[versionID];
+							String versionID = String.Format("{0};{1};", GetCustomProperty("DamageType"), text.ToLower());
+							var versions = ArtifactMgr.GetArtifactVersions(ArtifactID,(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+							ItemTemplate template = versions[0];
 							if (template == null)
 							{
 								log.Warn(String.Format("Artifact version {0} not found", versionID));

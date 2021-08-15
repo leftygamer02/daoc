@@ -341,28 +341,28 @@ namespace DOL.GS
 
 			log.Debug("loading mobs from DB...");
 
-			var mobList = new List<Mob>();
+			var mobList = new List<SpawnPoint>();
 			if (ServerProperties.Properties.DEBUG_LOAD_REGIONS != string.Empty)
 			{
 				foreach (string loadRegion in Util.SplitCSV(ServerProperties.Properties.DEBUG_LOAD_REGIONS, true))
 				{
-					mobList.AddRange(DOLDB<Mob>.SelectObjects(DB.Column("Region").IsEqualTo(loadRegion)));
+					mobList.AddRange(GameServer.Database.SpawnPoints.Where(x => x.RegionID.ToString() == loadRegion));
 				}
 			}
 			else
 			{
-				mobList.AddRange(GameServer.Database.SelectAllObjects<Mob>());
+				mobList.AddRange(GameServer.Database.SpawnPoints);
 			}
 
-			var mobsByRegionId = new Dictionary<ushort, List<Mob>>(512);
-			foreach (Mob mob in mobList)
+			var mobsByRegionId = new Dictionary<int, List<SpawnPoint>>(512);
+			foreach (var mob in mobList)
 			{
-				List<Mob> list;
+				List<SpawnPoint> list;
 
-				if (!mobsByRegionId.TryGetValue(mob.Region, out list))
+				if (!mobsByRegionId.TryGetValue(mob.RegionID, out list))
 				{
-					list = new List<Mob>(1024);
-					mobsByRegionId.Add(mob.Region, list);
+					list = new List<SpawnPoint>(1024);
+					mobsByRegionId.Add(mob.RegionID, list);
 				}
 
 				list.Add(mob);
@@ -371,15 +371,15 @@ namespace DOL.GS
 			bool hasFrontierRegion = false;
 
 			var regions = new List<RegionData>(512);
-			foreach (DBRegions dbRegion in GameServer.Database.SelectAllObjects<DBRegions>())
+			foreach (var dbRegion in GameServer.Database.Regions)
 			{
 				var data = new RegionData();
 
-				data.Id = dbRegion.RegionID;
+				data.Id = (ushort)dbRegion.Id;
 				data.Name = dbRegion.Name;
 				data.Description = dbRegion.Description;
 				data.Ip = dbRegion.IP;
-				data.Port = dbRegion.Port;
+				data.Port = (ushort)dbRegion.Port;
 				data.Expansion = dbRegion.Expansion;
 				data.HousingEnabled = dbRegion.HousingEnabled;
 				data.DivingEnabled = dbRegion.DivingEnabled;
@@ -389,10 +389,10 @@ namespace DOL.GS
 
 				hasFrontierRegion |= data.IsFrontier;
 
-				List<Mob> mobs;
+				List<SpawnPoint> mobs;
 
 				if (!mobsByRegionId.TryGetValue(data.Id, out mobs))
-					data.Mobs = new Mob[0];
+					data.Mobs = new SpawnPoint[0];
 				else
 					data.Mobs = mobs.ToArray();
 
@@ -443,7 +443,7 @@ namespace DOL.GS
 				}
 			}
 
-			foreach (Zones dbZone in GameServer.Database.SelectAllObjects<Zones>())
+			foreach (var dbZone in GameServer.Database.Zones.ToList())
 			{
 				ZoneData zoneData = new ZoneData();
 				zoneData.Height = (byte)dbZone.Height;
@@ -451,13 +451,13 @@ namespace DOL.GS
 				zoneData.OffY = (byte)dbZone.OffsetY;
 				zoneData.OffX = (byte)dbZone.OffsetX;
 				zoneData.Description = dbZone.Name;
-				zoneData.RegionID = dbZone.RegionID;
-				zoneData.ZoneID = (ushort)dbZone.ZoneID;
+				zoneData.RegionID = (ushort)dbZone.RegionID;
+				zoneData.ZoneID = (ushort)dbZone.Id;
 				zoneData.WaterLevel = dbZone.WaterLevel;
-				zoneData.DivingFlag = dbZone.DivingFlag;
+				zoneData.DivingFlag = (byte)dbZone.DivingFlag;
 				zoneData.IsLava = dbZone.IsLava;
 				RegisterZone(zoneData, zoneData.ZoneID, zoneData.RegionID, zoneData.Description,
-							 dbZone.Experience, dbZone.Realmpoints, dbZone.Bountypoints, dbZone.Coin, dbZone.Realm);
+							 dbZone.Experience, dbZone.Realmpoints, dbZone.Bountypoints, dbZone.Coin, (byte)dbZone.Realm);
 
 				//Save the zonedata.
 				if (!m_zonesData.ContainsKey(zoneData.RegionID))
@@ -479,7 +479,7 @@ namespace DOL.GS
 		/// </summary>
 		public static string LoadTeleports()
 		{
-			var objs = GameServer.Database.SelectAllObjects<Teleport>();
+			var objs = GameServer.Database.Teleports.ToList();
 			m_teleportLocations = new Dictionary<eRealm, Dictionary<string, Teleport>>();
 			int[] numTeleports = new int[3];
 			foreach (Teleport teleport in objs)

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Goddess Necklace";
-		public override String ArtifactID
+		private static int m_artifactID = 1054;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -125,12 +126,12 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				Dictionary<int, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 				
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, ArtifactID, versions[0]);
 					String reply = String.Format("Brilliant, thank you! Here, take the artifact. {0} {1} {2}",
 						"I've unlocked its powers for you. As I've said before, I'm more interested",
 						"in the stories and the history behind these artifacts than the actual items",
@@ -162,7 +163,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
                 String reply = "Oh, the mysterious Goddess Necklace. Do you have the scrolls on it? I've found a few that allude to its true nature, but haven't found anything with any detail.";
 				scholar.TurnTo(player);

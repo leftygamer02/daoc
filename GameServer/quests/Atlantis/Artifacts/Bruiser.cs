@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,10 +46,10 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		}
 
 		/// <summary>
-		/// The artifact ID.
+		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Bruiser";
-		public override String ArtifactID
+		private static int m_artifactID = 1011;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -175,7 +176,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("Ah, Bruiser! Many smiths would love a hammer {0} {1} {2} {3}",
 					"such as that! Well, for ",
@@ -200,14 +202,13 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 								return false;
 
 							String versionID = String.Format(";{0};", text.ToLower());
-							Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
-								(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
-							if (!versions.ContainsKey(versionID))
+							var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+							if (!versions.ContainsKey(0))
 							{
 								log.Warn(String.Format("Artifact version {0} not found", versionID));
 								return false;
 							}
-							ItemTemplate template = versions[versionID];
+							ItemTemplate template = versions[0];
 							if (GiveItem(scholar, player, ArtifactID, template))
 							{
 								String reply = String.Format("May Bruiser serve you well. Do not lose {0}",

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Band of Stars";
-		public override String ArtifactID
+		private static int m_artifactID = 1005;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -125,12 +126,12 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, ArtifactID, versions[0]);
 					String reply = String.Format("Do you see how the stars in the {0} {1}? {2} {3} {4} {5} {6} {7}.",
 						"band have begun to glow, ",
 						player.CharacterClass.Name,
@@ -167,7 +168,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("This bracelet was quite beautiful and powerful. {0} {1} {2}",
 					"Let's get that power flowing again! Give me the King's Vase and I shall examine it.",

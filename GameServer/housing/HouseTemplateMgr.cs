@@ -37,6 +37,7 @@ namespace DOL.GS.Housing
         private static MerchantTradeItems _indoorNpcShopItemsAlb;
         private static MerchantTradeItems _indoorNpcShopItemsHib;
         private static MerchantTradeItems _indoorNpcShopItemsMid;
+        private static List<string> _houseMerchantShopNames;
 
         public static MerchantTradeItems IndoorBindstoneShopItems { get; private set; }
         public static MerchantTradeItems IndoorCraftShopItems { get; private set; }
@@ -45,6 +46,8 @@ namespace DOL.GS.Housing
         public static MerchantTradeItems IndoorVaultShopItems { get; private set; }
         public static MerchantTradeItems OutdoorMenuItems { get; private set; }
         public static MerchantTradeItems OutdoorShopItems { get; private set; }
+
+        
 
         public static void Initialize()
         {
@@ -260,23 +263,30 @@ namespace DOL.GS.Housing
             CheckMerchantItems("housing_indoor_vault", indoorvault);
         }
 
-        private static void CheckMerchantItems(string merchantid, ICollection<string> itemids)
+        private static void CheckMerchantItems(string itemListName, ICollection<string> itemKeyNames)
         {
-            var merchantitems = DOLDB<MerchantItem>.SelectObjects(DB.Column("ItemListID").IsEqualTo(merchantid));
+            var merchantitems = GameServer.Database.MerchantItems.Where(x => x.ItemListName == itemListName).ToList();
 
             int slot = 0;
-            foreach (string itemid in itemids)
+            foreach (var keyName in itemKeyNames)
             {
-                if (merchantitems.Any(x => x.ItemTemplateID == itemid))
+                if (merchantitems.Any(x => x.ItemTemplate.KeyName == keyName))
                 {
                     slot += 1;
                     continue;
                 }
 
+                var itemTemplate = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == keyName);
+
+                if (itemTemplate == null)
+                {
+                    continue;
+                }
+
                 var newitem = new MerchantItem
                 {
-                    ItemListID = merchantid,
-                    ItemTemplateID = itemid,
+                    ItemListName = itemListName,
+                    ItemTemplateID = itemTemplate.Id,
                     SlotPosition = (slot % 30),
                     PageNumber = (slot / 30)
                 };
@@ -289,7 +299,7 @@ namespace DOL.GS.Housing
         private static void CheckItemTemplate(string name, string id, int model, int objtype, int copper, int dps, int spd,
                                               int bonus, int weight, int realm)
         {
-            var templateitem = GameServer.Database.FindObjectByKey<ItemTemplate>(id);
+            var templateitem = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == id || x.KeyName.ToLower() == id.ToLower());
             if (templateitem != null)
             {
                 return;
@@ -301,7 +311,7 @@ namespace DOL.GS.Housing
                 Model = model,
                 Level = 0,
                 ObjectType = objtype,
-                Id_nb = id,
+                KeyName = id,
                 IsPickable = true,
                 IsDropable = true,
                 DPS_AF = dps,
@@ -309,7 +319,7 @@ namespace DOL.GS.Housing
                 Hand = 0x0E,
                 Weight = weight,
                 Price = copper,
-                Bonus = bonus,
+                ItemBonus = bonus,
                 Realm = (byte)realm,
                 PackageID = "PlayerHousing"
             };
@@ -326,27 +336,27 @@ namespace DOL.GS.Housing
 
             // These are default npc's
 
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID, "DOL.GS.GameHastener", "Piper", "Hastener", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 1, "DOL.GS.Blacksmith", "Blacksmith", "Smith", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 2, "DOL.GS.Enchanter", "Enchanter", "Enchanter", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 3, "DOL.GS.EmblemNPC", "Guild Emblemer", "Emblemer", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 4, "DOL.GS.GameHealer", "Healer", "Healer", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 5, "DOL.GS.Recharger", "Recharger", "Recharger", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, "DOL.GS.GameNPC", "Realm Teleporter", "Teleporter", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 7, "DOL.GS.GameMerchant", "Apprentice Merchant", "Merchant", "0", "", "housing_apprentice");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 8, "DOL.GS.GameMerchant", "Grandmaster Merchant", "Merchant", "0", "", "housing_grandmaster");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 9, "DOL.GS.GameMerchant", "Incantation Merchant", "Merchant", "0", "", "housing_incantation");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 10, "DOL.GS.GameMerchant", "Poison and Dye Supplies", "Merchant", "0", "", "housing_poison_dye");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 11, "DOL.GS.GameMerchant", "Potion, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_potion_tincture_enchantment");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 12, "DOL.GS.GameMerchant", "Poison and Potion Supplies", "Merchant", "0", "", "housing_poison_potion");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 13, "DOL.GS.GameMerchant", "Dye, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_dye_tincture_enchantment");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 14, "DOL.GS.GameMerchant", "Taxidermy Supplies", "Merchant", "0", "", "housing_taxidermy");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 15, "DOL.GS.GameMerchant", "Siegecraft Supplies", "Merchant", "0", "", "housing_siegecraft");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 16, "DOL.GS.GameVaultKeeper", "Vault Keeper", "Vault Keeper", "0", "", "");
-            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 17, "DOL.GS.GameMerchant", "Dye Supply Master", "Merchant", "0", "", "housing_dye");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID, "DOL.GS.GameHastener", "Piper", "Hastener", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 1, "DOL.GS.Blacksmith", "Blacksmith", "Smith", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 2, "DOL.GS.Enchanter", "Enchanter", "Enchanter", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 3, "DOL.GS.EmblemNPC", "Guild Emblemer", "Emblemer", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 4, "DOL.GS.GameHealer", "Healer", "Healer", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 5, "DOL.GS.Recharger", "Recharger", "Recharger", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, "DOL.GS.GameNPC", "Realm Teleporter", "Teleporter", "0", null, null);
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 7, "DOL.GS.GameMerchant", "Apprentice Merchant", "Merchant", "0", null, "housing_apprentice");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 8, "DOL.GS.GameMerchant", "Grandmaster Merchant", "Merchant", "0", null, "housing_grandmaster");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 9, "DOL.GS.GameMerchant", "Incantation Merchant", "Merchant", "0", null, "housing_incantation");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 10, "DOL.GS.GameMerchant", "Poison and Dye Supplies", "Merchant", "0", null, "housing_poison_dye");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 11, "DOL.GS.GameMerchant", "Potion, Tincture, and Enchantment Supplies", "Merchant", "0", null, "housing_potion_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 12, "DOL.GS.GameMerchant", "Poison and Potion Supplies", "Merchant", "0", null, "housing_poison_potion");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 13, "DOL.GS.GameMerchant", "Dye, Tincture, and Enchantment Supplies", "Merchant", "0", null, "housing_dye_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 14, "DOL.GS.GameMerchant", "Taxidermy Supplies", "Merchant", "0", null, "housing_taxidermy");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 15, "DOL.GS.GameMerchant", "Siegecraft Supplies", "Merchant", "0", null, "housing_siegecraft");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 16, "DOL.GS.GameVaultKeeper", "Vault Keeper", "Vault Keeper", "0", null, "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 17, "DOL.GS.GameMerchant", "Dye Supply Master", "Merchant", "0", null, "housing_dye");
         }
 
-        private static void CheckNPCTemplate(int templateID, string classType, string name, string guild, string model, string inventory, string merchantListID)
+        private static void CheckNPCTemplate(int templateID, string classType, string name, string guild, string model, int? inventory, string itemListName)
         {
             NpcTemplate template = NpcTemplateMgr.GetTemplate(templateID);
             if (template != null)
@@ -354,16 +364,15 @@ namespace DOL.GS.Housing
                 return;
             }
 
-            DBNpcTemplate dbTemplate = new DBNpcTemplate
+            var dbTemplate = new Atlas.DataLayer.Models.NpcTemplate
             {
                 Name = name,
-                TemplateId = templateID,
                 ClassType = classType,
                 GuildName = guild,
                 Model = model,
                 Size = "50",
                 Level = "50",
-                ItemsListTemplateID = merchantListID,
+                ItemListName = itemListName,
                 EquipmentTemplateID = inventory,
                 PackageID = "Housing"
             };

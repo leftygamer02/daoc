@@ -16,12 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.PacketHandler.Client.v168;
 using DOL.GS.Spells;
 using DOL.Language;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.Commands
 {
@@ -112,13 +114,13 @@ namespace DOL.GS.Commands
                             ItemTemplate newTemplate = new ItemTemplate
                             {
                                 Name = "(blank item)",
-                                Id_nb = InventoryItem.BLANK_ITEM
+                                KeyName = InventoryItem.BLANK_ITEM
                             };
                             GameInventoryItem item = new GameInventoryItem(newTemplate);
 							if (client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item))
 							{
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Blank.ItemCreated"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-								InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, item.Template, item.Count);
+								InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, item.ItemTemplate, item.Count);
 							}
 							else
 							{
@@ -130,7 +132,7 @@ namespace DOL.GS.Commands
 						#region Scroll
 					case "scroll":
 						{
-							WorldInventoryItem scroll = ArtifactMgr.CreateScroll(args[2], Convert.ToInt16(args[3]));
+							WorldInventoryItem scroll = ArtifactMgr.CreateScroll(Convert.ToInt32(args[2]), Convert.ToInt16(args[3]));
 							if (scroll == null)
 							{
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Scroll.NotFound", args[3], args[2]), eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
@@ -139,7 +141,7 @@ namespace DOL.GS.Commands
 							if (client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, scroll.Item))
 							{
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Scroll.Created", scroll.Item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-								InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, scroll.Item.Template, scroll.Item.Count);
+								InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, scroll.Item.ItemTemplate, scroll.Item.Count);
 							}
 							break;
 						}
@@ -162,14 +164,14 @@ namespace DOL.GS.Commands
 								return;
 							}
 							
-							item.AllowedClasses = args[2].Trim();
+							item.ItemTemplate.AllowedClasses = args[2].Trim();
 							break;
 						}
 						#endregion
 						#region Create
 					case "create":
 						{
-							ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(args[2]);
+							ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == args[2] || x.KeyName == args[2]);
 							if (template == null)
 							{
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Create.NotFound", args[2]), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -192,14 +194,14 @@ namespace DOL.GS.Commands
 								}
 
 								InventoryItem item = GameInventoryItem.Create(template);
-								if (item.IsStackable)
+								if (item.ItemTemplate.IsStackable)
 								{
 									item.Count = count;
 								}
 								if (client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item))
 								{
-									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Create.Created", item.Level, item.GetName(0, false), count), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-									InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, item.Template, item.Count);
+									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Create.Created", item.ItemTemplate.Level, item.ItemTemplate.GetName(0, false), count), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, item.ItemTemplate, item.Count);
 								}
 							}
 							break;
@@ -222,9 +224,9 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							if (!item.IsStackable)
+							if (!item.ItemTemplate.IsStackable)
 							{
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NotStackable", item.GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NotStackable", item.ItemTemplate.GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
 							if (Convert.ToInt32(args[2]) < 1)
@@ -258,9 +260,9 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.MaxCount = Convert.ToInt32(args[2]);
-							if (item.MaxCount < 1)
-								item.MaxCount = 1;
+							item.ItemTemplate.MaxCount = Convert.ToInt32(args[2]);
+							if (item.ItemTemplate.MaxCount < 1)
+								item.ItemTemplate.MaxCount = 1;
 							break;
 						}
 						#endregion MaxCount
@@ -281,16 +283,16 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.PackSize = Convert.ToInt32(args[2]);
-							if (item.PackSize < 1)
-								item.PackSize = 1;
+							item.ItemTemplate.PackSize = Convert.ToInt32(args[2]);
+							if (item.ItemTemplate.PackSize < 1)
+								item.ItemTemplate.PackSize = 1;
 							break;
 						}
 						#endregion PackSize
 						#region Info
 					case "info":
 						{
-							ItemTemplate obj = GameServer.Database.FindObjectByKey<ItemTemplate>(args[2]);
+							ItemTemplate obj = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == args[2] || x.KeyName == args[2]);
 							if (obj == null)
 							{
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Info.ItemTemplateUnknown", args[2]), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -354,9 +356,9 @@ namespace DOL.GS.Commands
 							}
 							item.Extension = Convert.ToByte(args[2]);
 
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
 							{
-								item.Template.Extension = item.Extension;
+								item.ItemTemplate.Extension = item.Extension;
 							}
 
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
@@ -388,9 +390,9 @@ namespace DOL.GS.Commands
 							}
 							item.Color = Convert.ToUInt16(args[2]);
 
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
 							{
-								item.Template.Color = item.Color;
+								item.ItemTemplate.Color = item.Color;
 							}
 
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
@@ -420,7 +422,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Effect = Convert.ToUInt16(args[2]);
+							item.ItemTemplate.Effect = Convert.ToUInt16(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							if (item.SlotPosition < (int)eInventorySlot.FirstBackpack)
 								client.Player.UpdateEquipmentAppearance();
@@ -448,7 +450,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.ItemType = Convert.ToInt32(args[2]);
+							item.ItemTemplate.ItemType = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -474,7 +476,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.ObjectType = Convert.ToInt32(args[2]);
+							item.ItemTemplate.ObjectType = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -500,7 +502,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Hand = Convert.ToInt32(args[2]);
+							item.ItemTemplate.Hand = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -526,7 +528,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.TypeDamage = Convert.ToInt32(args[2]);
+							item.ItemTemplate.TypeDamage = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -582,7 +584,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							item.Description = desc;
+							item.ItemTemplate.Description = desc;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -637,9 +639,9 @@ namespace DOL.GS.Commands
 							}
 							item.Emblem = Convert.ToInt32(args[2]);
 
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
 							{
-								item.Template.Emblem = item.Emblem;
+								item.ItemTemplate.Emblem = item.Emblem;
 							}
 
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
@@ -669,7 +671,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Level = Convert.ToUInt16(args[2]);
+							item.ItemTemplate.Level = Convert.ToUInt16(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -695,7 +697,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Price = Money.GetMoney(0, (int)(Convert.ToInt16(args[2]) % 1000), (int)(Convert.ToInt16(args[3]) % 1000), (int)(Convert.ToByte(args[4]) % 100), (int)(Convert.ToByte(args[5]) % 100));
+							item.ItemTemplate.Price = Money.GetMoney(0, (int)(Convert.ToInt16(args[2]) % 1000), (int)(Convert.ToInt16(args[3]) % 1000), (int)(Convert.ToByte(args[4]) % 100), (int)(Convert.ToByte(args[5]) % 100));
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -726,10 +728,10 @@ namespace DOL.GS.Commands
 							int con = Convert.ToInt32(args[2]);
 							int maxcon = Convert.ToInt32(args[3]);
 							item.Condition = con;
-							item.MaxCondition = maxcon;
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+							item.ItemTemplate.MaxCondition = maxcon;
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
 							{
-								item.Template.Condition = item.Condition;
+								item.ItemTemplate.Condition = item.Condition;
 							}
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
@@ -761,11 +763,11 @@ namespace DOL.GS.Commands
 							int Dur = Convert.ToInt32(args[2]);
 							int MaxDur = Convert.ToInt32(args[3]);
 							item.Durability = Dur;
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
 							{
-								item.Template.Durability = item.Durability;
+								item.ItemTemplate.Durability = item.Durability;
 							}
-							item.MaxDurability = MaxDur;
+							item.ItemTemplate.MaxDurability = MaxDur;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -792,7 +794,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 							int Qua = Convert.ToInt32(args[2]);
-							item.Quality = Qua;
+							item.ItemTemplate.Quality = Qua;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -819,7 +821,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 							int Bonus = Convert.ToInt32(args[2]);
-							item.Bonus = Bonus;
+							item.ItemTemplate.ItemBonus = Bonus;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -871,79 +873,25 @@ namespace DOL.GS.Commands
 							}
 							try
 							{
-								bonusValue = Convert.ToInt32(args[4]);
-								switch (num)
-								{
-									case 0:
-										{
-											item.ExtraBonus = bonusValue;
-											item.ExtraBonusType = bonusType;
-											break;
-										}
-									case 1:
-										{
-											item.Bonus1 = bonusValue;
-											item.Bonus1Type = bonusType;
-											break;
-										}
-									case 2:
-										{
-											item.Bonus2 = bonusValue;
-											item.Bonus2Type = bonusType;
-											break;
-										}
-									case 3:
-										{
-											item.Bonus3 = bonusValue;
-											item.Bonus3Type = bonusType;
-											break;
-										}
-									case 4:
-										{
-											item.Bonus4 = bonusValue;
-											item.Bonus4Type = bonusType;
-											break;
-										}
-									case 5:
-										{
-											item.Bonus5 = bonusValue;
-											item.Bonus5Type = bonusType;
-											break;
-										}
-									case 6:
-										{
-											item.Bonus6 = bonusValue;
-											item.Bonus6Type = bonusType;
-											break;
-										}
-									case 7:
-										{
-											item.Bonus7 = bonusValue;
-											item.Bonus7Type = bonusType;
-											break;
-										}
-									case 8:
-										{
-											item.Bonus8 = bonusValue;
-											item.Bonus8Type = bonusType;
-											break;
-										}
-									case 9:
-										{
-											item.Bonus9 = bonusValue;
-											item.Bonus9Type = bonusType;
-											break;
-										}
-									case 10:
-										{
-											item.Bonus10 = bonusValue;
-											item.Bonus10Type = bonusType;
-											break;
-										}
-									default:
-										client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.mBonus.UnknownBonusNumber", num), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-										return;
+								if (num < 0 || num > 10)
+                                {
+									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.mBonus.UnknownBonusNumber", num), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									return;
 								}
+									
+
+								bonusValue = Convert.ToInt32(args[4]);
+
+								var bonus = item.Bonuses.FirstOrDefault(x => x.BonusOrder == num);
+
+								if (bonus == null)
+                                {
+									bonus = new ItemBonus() { BonusOrder = num };
+									item.Bonuses.Add(bonus);
+                                }
+								bonus.BonusValue = bonusValue;
+								bonus.BonusType = bonusType;
+								
 								if (item.SlotPosition < (int)eInventorySlot.FirstBackpack)
 								{
 									client.Out.SendCharStatsUpdate();
@@ -978,7 +926,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Weight = Convert.ToInt32(args[2]);
+							item.ItemTemplate.Weight = Convert.ToInt32(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1006,7 +954,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.DPS_AF = Convert.ToByte(args[2]);
+							item.ItemTemplate.DPS_AF = Convert.ToByte(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1034,7 +982,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.SPD_ABS = Convert.ToByte(args[2]);
+							item.ItemTemplate.SPD_ABS = Convert.ToByte(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1060,7 +1008,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.IsDropable = Convert.ToBoolean(args[2]);
+							item.ItemTemplate.IsDropable = Convert.ToBoolean(args[2]);
 							break;
 						}
 						#endregion IsDropable
@@ -1085,7 +1033,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.IsPickable = Convert.ToBoolean(args[2]);
+							item.ItemTemplate.IsPickable = Convert.ToBoolean(args[2]);
 							break;
 						}
 						#endregion IsPickable
@@ -1110,7 +1058,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.IsNotLosingDur = Convert.ToBoolean(args[2]);
+							item.ItemTemplate.IsNotLosingDur = Convert.ToBoolean(args[2]);
 							break;
 						}
 						#endregion IsNotLosingDur
@@ -1135,7 +1083,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.IsIndestructible = Convert.ToBoolean(args[2]);
+							item.ItemTemplate.IsIndestructible = Convert.ToBoolean(args[2]);
 							break;
 						}
 						#endregion IsIndestructible
@@ -1160,7 +1108,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.IsTradable = Convert.ToBoolean(args[2]);
+							item.ItemTemplate.IsTradable = Convert.ToBoolean(args[2]);
 							break;
 						}
 						#endregion IsTradable
@@ -1185,7 +1133,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.CanDropAsLoot = Convert.ToBoolean(args[2]);
+							item.ItemTemplate.CanDropAsLoot = Convert.ToBoolean(args[2]);
 							break;
 						}
 						#endregion CanDropAsLoot
@@ -1213,14 +1161,32 @@ namespace DOL.GS.Commands
 							int Charges = Convert.ToInt32(args[2]);
 							int MaxCharges = Convert.ToInt32(args[3]);
 							int SpellID = Convert.ToInt32(args[4]);
-							item.Charges = Charges;
-							item.MaxCharges = MaxCharges;
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+
+							var spell = item.Spells.FirstOrDefault(x => x.ProcChance <= 0 && !x.IsPoison);
+
+							if (spell == null)
+                            {
+								spell = new InventoryItemSpell();
+								item.Spells.Add(spell);
+                            }
+							spell.Charges = Charges;
+							spell.MaxCharges = MaxCharges;
+							spell.SpellID = SpellID;
+
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
 							{
-								item.Template.Charges = item.Charges;
-								item.Template.MaxCharges = item.MaxCharges;
+								var templateSpell = item.ItemTemplate.Spells.FirstOrDefault(x => x.ProcChance <= 0 && !x.IsPoison);
+
+								if (templateSpell == null)
+								{
+									templateSpell = new ItemSpell();
+									item.ItemTemplate.Spells.Add(templateSpell);
+								}
+								templateSpell.Charges = Charges;
+								templateSpell.MaxCharges = MaxCharges;
+								templateSpell.SpellID = SpellID;
 							}
-							item.SpellID = SpellID;
+							
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1248,15 +1214,32 @@ namespace DOL.GS.Commands
 							}
 							int Charges = Convert.ToInt32(args[2]);
 							int MaxCharges = Convert.ToInt32(args[3]);
-							int SpellID1 = Convert.ToInt32(args[4]);
-							item.Charges1 = Charges;
-							item.MaxCharges1 = MaxCharges;
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+							int SpellID = Convert.ToInt32(args[4]);
+
+							var spell = item.Spells.Where(x => x.ProcChance <= 0 && !x.IsPoison).Skip(1).FirstOrDefault();
+
+							if (spell == null)
 							{
-								item.Template.Charges1 = item.Charges1;
-								item.Template.MaxCharges1 = item.MaxCharges1;
+								spell = new InventoryItemSpell();
+								item.Spells.Add(spell);
 							}
-							item.SpellID1 = SpellID1;
+							spell.Charges = Charges;
+							spell.MaxCharges = MaxCharges;
+							spell.SpellID = SpellID;
+
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
+							{
+								var templateSpell = item.ItemTemplate.Spells.FirstOrDefault(x => x.ProcChance <= 0 && !x.IsPoison);
+
+								if (templateSpell == null)
+								{
+									templateSpell = new ItemSpell();
+									item.ItemTemplate.Spells.Add(templateSpell);
+								}
+								templateSpell.Charges = Charges;
+								templateSpell.MaxCharges = MaxCharges;
+								templateSpell.SpellID = SpellID;
+							}
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1282,7 +1265,17 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.ProcSpellID = Convert.ToInt32(args[2]);
+							int spellID = Convert.ToInt32(args[2]);
+
+							var spell = item.Spells.Where(x => x.ProcChance > 0 && !x.IsPoison).FirstOrDefault();
+
+							if (spell == null)
+							{
+								spell = new InventoryItemSpell();
+								item.Spells.Add(spell);
+							}
+							spell.SpellID = spellID;
+
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1308,7 +1301,18 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.ProcSpellID1 = Convert.ToInt32(args[2]);
+
+							int spellID = Convert.ToInt32(args[2]);
+
+							var spell = item.Spells.Where(x => x.ProcChance > 0 && !x.IsPoison).Skip(1).FirstOrDefault();
+
+							if (spell == null)
+							{
+								spell = new InventoryItemSpell();
+								item.Spells.Add(spell);
+							}
+							spell.SpellID = spellID;
+
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1334,7 +1338,16 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.ProcChance = Convert.ToByte(args[2]);
+
+							var spell = item.Spells.Where(x => x.ProcChance > 0 && !x.IsPoison).Skip(1).FirstOrDefault();
+
+							if (spell == null)
+							{
+								spell = new InventoryItemSpell();
+								item.Spells.Add(spell);
+							}
+
+							spell.ProcChance = Convert.ToByte(args[2]);
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1363,14 +1376,32 @@ namespace DOL.GS.Commands
 							int Charges = Convert.ToInt32(args[2]);
 							int MaxCharges = Convert.ToInt32(args[3]);
 							int SpellID = Convert.ToInt32(args[4]);
-							item.PoisonCharges = Charges;
-							item.PoisonMaxCharges = MaxCharges;
-							if (item.Template is ItemUnique || (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate))
+
+							var spell = item.Spells.Where(x => x.IsPoison).FirstOrDefault();
+
+							if (spell == null)
 							{
-								item.Template.PoisonCharges = item.PoisonCharges;
-								item.Template.PoisonMaxCharges = item.PoisonMaxCharges;
+								spell = new InventoryItemSpell();
+								item.Spells.Add(spell);
 							}
-							item.PoisonSpellID = SpellID;
+							spell.Charges = Charges;
+							spell.MaxCharges = MaxCharges;
+							spell.SpellID = SpellID;
+
+							if (item.ItemTemplate is ItemUnique || (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate))
+							{
+								var templateSpell = item.ItemTemplate.Spells.FirstOrDefault(x => x.ProcChance <= 0 && !x.IsPoison);
+
+								if (templateSpell == null)
+								{
+									templateSpell = new ItemSpell();
+									item.ItemTemplate.Spells.Add(templateSpell);
+								}
+								templateSpell.Charges = Charges;
+								templateSpell.MaxCharges = MaxCharges;
+								templateSpell.SpellID = SpellID;
+							}
+
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1396,7 +1427,7 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.Count.NoItemInSlot", slot), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
-							item.Realm = int.Parse(args[2]);
+							item.ItemTemplate.Realm = int.Parse(args[2]);
 							break;
 						}
 						#endregion Realm
@@ -1422,7 +1453,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 							int setting = Convert.ToInt32(args[2]);
-							item.LevelRequirement = setting;
+							item.ItemTemplate.LevelRequirement = setting;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1449,7 +1480,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 							int setting = Convert.ToInt32(args[2]);
-							item.BonusLevel = setting;
+							item.ItemTemplate.BonusLevel = setting;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1472,7 +1503,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							item.ClassType = classType;
+							item.ItemTemplate.ClassType = classType;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1495,7 +1526,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							item.PackageID = packageID;
+							item.ItemTemplate.PackageID = packageID;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1518,7 +1549,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							item.Flags = flags;
+							item.ItemTemplate.Flags = flags;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1541,7 +1572,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							item.SalvageYieldID = salvageID;
+							item.ItemTemplate.SalvageYieldID = salvageID;
 							client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 							break;
 						}
@@ -1562,30 +1593,30 @@ namespace DOL.GS.Commands
 							}
 
 							List<string> list = new List<string>();
-
-							SalvageYield salvageYield = null;
+														
 							bool calculated = true;
-							var whereClause = WhereClause.Empty;
 
 							int salvageLevel = CraftingMgr.GetItemCraftLevel(item) / 100;
 							if (salvageLevel > 9) salvageLevel = 9; // max 9
 
-							if (item.SalvageYieldID == 0)
+							var query = GameServer.Database.SalvageYields.AsQueryable();
+
+							if (!item.ItemTemplate.SalvageYieldID.HasValue || item.ItemTemplate.SalvageYieldID <= 0)
 							{
-								whereClause = DB.Column("ObjectType").IsEqualTo(item.ObjectType).And(DB.Column("SalvageLevel").IsEqualTo(salvageLevel));
+								query = query.Where(x => x.ObjectType == item.ItemTemplate.ObjectType && x.SalvageLevel == salvageLevel);
 							}
 							else
 							{
-								whereClause = DB.Column("ID").IsEqualTo(item.SalvageYieldID);
+								query = query.Where(x => x.Id == item.ItemTemplate.SalvageYieldID.Value);
 								calculated = false;
 							}
 
 							if (ServerProperties.Properties.USE_SALVAGE_PER_REALM)
 							{
-								whereClause = whereClause.And(DB.Column("Realm").IsEqualTo((int)eRealm.None).Or(DB.Column("Realm").IsEqualTo(item.Realm)));
+								query = query.Where(x => x.Realm == (int)eRealm.None || x.Realm == item.ItemTemplate.Realm);
 							}
 
-							salvageYield = DOLDB<SalvageYield>.SelectObject(whereClause);
+							var salvageYield = query.FirstOrDefault();
 
 							SalvageYield yield = null;
 
@@ -1598,7 +1629,7 @@ namespace DOL.GS.Commands
 							{
 								if (calculated == false)
 								{
-									list.Add("SalvageYield ID " + item.SalvageYieldID + " specified but not found!");
+									list.Add("SalvageYield ID " + item.ItemTemplate.SalvageYieldID + " specified but not found!");
 								}
 								else if (ServerProperties.Properties.USE_NEW_SALVAGE)
 								{
@@ -1611,13 +1642,13 @@ namespace DOL.GS.Commands
 							}
 							else
 							{
-								list.Add("Using SalvageYield ID: " + yield.ID);
+								list.Add("Using SalvageYield ID: " + yield.Id);
 							}
 
 							list.Add(" ");
 
-							ItemTemplate material = GameServer.Database.FindObjectByKey<ItemTemplate>(yield.MaterialId_nb);
-							string materialName = yield.MaterialId_nb;
+							ItemTemplate material = GameServer.Database.ItemTemplates.Find(yield.ItemTemplateID);
+							string materialName = yield.ItemTemplate.KeyName;
 
 							if (material != null)
 							{
@@ -1632,7 +1663,7 @@ namespace DOL.GS.Commands
 							{
 								if (yield != null)
 								{
-									list.Add("SalvageYield ID: " + yield.ID);
+									list.Add("SalvageYield ID: " + yield.Id);
 									list.Add("       Material: " + materialName);
 									list.Add("          Count: " + yield.Count);
 									list.Add("          Realm: " + (yield.Realm == 0 ? "Any" : GlobalConstants.RealmToName((eRealm)yield.Realm)));
@@ -1641,7 +1672,7 @@ namespace DOL.GS.Commands
 							}
 							else
 							{
-								list.Add("SalvageYield ID: " + yield.ID);
+								list.Add("SalvageYield ID: " + yield.Id);
 								list.Add("     ObjectType: " + yield.ObjectType);
 								list.Add("   SalvageLevel: " + yield.SalvageLevel);
 								list.Add("       Material: " + materialName);
@@ -1718,10 +1749,10 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							if (item.Template is ItemUnique)
+							if (item.ItemTemplate is ItemUnique)
 							{
-								ItemUnique itemUnique = item.Template as ItemUnique;
-								Log.Debug("update ItemUnique " + item.Template.Id);
+								ItemUnique itemUnique = item.ItemTemplate as ItemUnique;
+								Log.Debug("update ItemUnique " + item.ItemTemplate.Id);
 								GameServer.Instance.SaveDataObject(itemUnique);
 								client.Out.SendMessage(string.Format("ItemUnique {0} updated!", itemUnique.Id), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							}
@@ -1778,27 +1809,27 @@ namespace DOL.GS.Commands
 							}
 
 							// if a blank item was created then AllowAdd will be false here
-							if (idnb == string.Empty && (item.AllowAdd == false || item.Id == InventoryItem.BLANK_ITEM || args[1].ToLower() == "addunique"))
+							if (idnb == string.Empty && (item.AllowAdd == false || item.ItemTemplate.KeyName == InventoryItem.BLANK_ITEM || args[1].ToLower() == "addunique"))
 							{
 								DisplayMessage(client, "You need to provide a new id_nb for this item.");
 								return;
 							}
 							else if (idnb == string.Empty)
 							{
-								if (args[1].ToLower() == "save" && item.Template is ItemUnique)
+								if (args[1].ToLower() == "save" && item.ItemTemplate is ItemUnique)
 								{
 									DisplayMessage(client, "You need to provide a new id_nb to save this ItemUnique as an ItemTemplate.  Use saveunique to save this ItemUnique.");
 									return;
 								}
 
-								idnb = item.Id;
+								idnb = item.ItemTemplate.KeyName;
 							}
 
 							ItemTemplate temp = null;
 							if (args[1].ToLower() == "save")
 							{
 								// if the item is allready in the database
-								temp = GameServer.Database.FindObjectByKey<ItemTemplate>(idnb);
+								temp = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == idnb || x.KeyName == idnb);
 							}
 
 							// save the new item
@@ -1809,16 +1840,14 @@ namespace DOL.GS.Commands
 									try
 									{
 										client.Player.Inventory.RemoveItem(item);
-                                        ItemTemplate itemTemplate = new ItemTemplate(item.Template)
-                                        {
-                                            Id_nb = idnb
-                                        };
+										ItemTemplate itemTemplate = (ItemTemplate)item.ItemTemplate.Clone();
+										itemTemplate.KeyName = idnb;
                                         GameServer.Instance.SaveDataObject(itemTemplate);
 										Log.Debug("Added New Item Template: " + itemTemplate.Id);
 										DisplayMessage(client, "Added New Item Template: " + itemTemplate.Id);
 										GameInventoryItem newItem = GameInventoryItem.Create(itemTemplate);
 										if (client.Player.Inventory.AddItem((eInventorySlot)slot, newItem))
-											InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, newItem.Template, newItem.Count);
+											InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, newItem.ItemTemplate, newItem.Count);
 									}
 									catch (Exception ex)
 									{
@@ -1831,16 +1860,15 @@ namespace DOL.GS.Commands
 									try
 									{
 										client.Player.Inventory.RemoveItem(item);
-                                        ItemUnique unique = new ItemUnique(item.Template)
-                                        {
-                                            Id_nb = idnb
-                                        };
-                                        GameServer.Instance.SaveDataObject(unique);
-										Log.Debug("Added New ItemUnique: " + unique.Id + " (" + unique.ObjectId + ")");
-										DisplayMessage(client, "Added New ItemUnique: " + unique.Id + " (" + unique.ObjectId + ")");
+										ItemUnique unique = (ItemUnique)item.ItemTemplate.Clone();
+										unique.KeyName = idnb;
+
+										GameServer.Instance.SaveDataObject(unique);
+										Log.Debug("Added New ItemUnique: " + unique.Id + " (" + unique.Id + ")");
+										DisplayMessage(client, "Added New ItemUnique: " + unique.Id + " (" + unique.Id + ")");
 										GameInventoryItem newItem = GameInventoryItem.Create(unique);
 										if (client.Player.Inventory.AddItem((eInventorySlot)slot, newItem))
-											InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, newItem.Template, newItem.Count);
+											InventoryLogging.LogInventoryAction(client.Player, client.Player, eInventoryActionType.Other, newItem.ItemTemplate, newItem.Count);
 									}
 									catch (Exception ex)
 									{
@@ -1851,14 +1879,12 @@ namespace DOL.GS.Commands
 							}
 							else // update the item
 							{
-								item.Template.Dirty = true;
-								GameServer.Instance.SaveDataObject(item.Template);
-								GameServer.Database.UpdateInCache<ItemTemplate>(item.Template.Id);
+								GameServer.Instance.SaveDataObject(item.ItemTemplate);
 								DisplayMessage(client, "Updated Inventory Item: " + item.Id);
 
-								if (item.Template is ItemTemplate && (item.Template as ItemTemplate).AllowUpdate)
+								if (item.ItemTemplate is ItemTemplate && (item.ItemTemplate as ItemTemplate).AllowUpdate)
 								{
-									Log.Debug("Updated ItemTemplate: " + item.Template.Id);
+									Log.Debug("Updated ItemTemplate: " + item.ItemTemplate.Id);
 									DisplayMessage(client, "++ Source ItemTemplate Updated!");
 								}
 							}
@@ -1872,8 +1898,8 @@ namespace DOL.GS.Commands
 							string name = string.Join(" ", args, 2, args.Length - 2);
 							if (name != "")
 							{
-								var items = DOLDB<ItemTemplate>.SelectObjects(DB.Column("id_nb").IsLike($"%{name}%"));
-								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.FindID.MatchingIDsForX", name, items.Count), new object[] { });
+								var items = GameServer.Database.ItemTemplates.Where(x => x.Id.ToString().Contains(name) || x.KeyName.ToLower().Contains(name.ToLower())).ToList();
+								DisplayMessage(client, LanguageMgr.GetTranslation("EN", "GMCommands.Item.FindID.MatchingIDsForX", name, items.Count), new object[] { });
 								foreach (ItemTemplate item in items)
 								{
 									DisplayMessage(client, item.Id + " (" + item.Name + ")", new object[] { });
@@ -1888,8 +1914,8 @@ namespace DOL.GS.Commands
 							string name = string.Join(" ", args, 2, args.Length - 2);
 							if (name != "")
 							{
-								var items = DOLDB<ItemTemplate>.SelectObjects(DB.Column("name").IsLike($"%{name}%"));
-								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Item.FindName.MatchingNamesForX", name, items.Count), new object[] { });
+								var items = GameServer.Database.ItemTemplates.Where(x => x.Name.ToLower().Contains(name.ToLower())).ToList();
+								DisplayMessage(client, LanguageMgr.GetTranslation("EN", "GMCommands.Item.FindName.MatchingNamesForX", name, items.Count), new object[] { });
 								foreach (ItemTemplate item in items)
 								{
 									DisplayMessage(client, item.Name + "  (" + item.Id + ")", new object[] { });
@@ -1901,7 +1927,8 @@ namespace DOL.GS.Commands
 						#region Load
 					case "load":
 						{
-							if (GameServer.Database.UpdateInCache<ItemTemplate>(args[2]))
+							var item = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == args[2] || x.KeyName == args[2]);
+							if (item != null)
 							{
 								Log.DebugFormat("Item {0} updated or added to ItemTemplate cache.", args[2]);
 								DisplayMessage(client, "Item {0} updated or added to ItemTemplate cache.", args[2]);
@@ -1921,19 +1948,11 @@ namespace DOL.GS.Commands
 							{
 								if (args[2] == "**all**") args[2] = String.Empty;
 
-								var packageItems = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsEqualTo(args[2]));
+								var packageItems = GameServer.Database.ItemTemplates.Where(x => x.PackageID == args[2]).ToList();
 
 								if (packageItems != null)
 								{
 									int count = 0;
-
-									foreach (ItemTemplate item in packageItems)
-									{
-										if (GameServer.Database.UpdateInCache<ItemTemplate>(item.Id))
-										{
-											count++;
-										}
-									}
 
 									Log.DebugFormat("{0} items updated or added to the ItemTemplate cache.", count);
 									DisplayMessage(client, "{0} items updated or added to the ItemTemplate cache.", count);
@@ -1975,10 +1994,10 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							LoadSpell(client, item.SpellID);
-							LoadSpell(client, item.SpellID1);
-							LoadSpell(client, item.ProcSpellID);
-							LoadSpell(client, item.ProcSpellID1);
+							foreach (var spell in item.Spells)
+                            {
+								LoadSpell(client, spell.SpellID);
+                            }
 							break;
 						}
 						#endregion LoadSpells
@@ -1992,16 +2011,16 @@ namespace DOL.GS.Commands
 		
 		private void UpdateAllowed(InventoryItem item, GameClient client)
 		{
-			if (item.Template is ItemUnique)
+			if (item.ItemTemplate is ItemUnique)
 			{
 				DisplayMessage(client, "This command is only applicable for items based on an ItemTemplate");
 				return;
 			}
 			else
 			{
-				(item.Template as ItemTemplate).AllowUpdate = true;
-				client.Out.SendMessage("** When this item is saved all changes will also be made to the source ItemTemplate: " + item.Template.Id, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
-				DisplayMessage(client, "** When this item is saved all changes will also be made to the source ItemTemplate: " + item.Template.Id);
+				(item.ItemTemplate as ItemTemplate).AllowUpdate = true;
+				client.Out.SendMessage("** When this item is saved all changes will also be made to the source ItemTemplate: " + item.ItemTemplate.Id, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+				DisplayMessage(client, "** When this item is saved all changes will also be made to the source ItemTemplate: " + item.ItemTemplate.Id);
 			}
 		}
 		

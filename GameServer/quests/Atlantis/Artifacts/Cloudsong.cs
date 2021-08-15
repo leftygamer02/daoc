@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Cloudsong";
-		public override String ArtifactID
+		private static int m_artifactID = 1001;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -122,8 +123,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
-					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				IDictionaryEnumerator versionsEnum = versions.GetEnumerator();
 				versionsEnum.MoveNext();
@@ -162,7 +162,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
             if (Step == 1)
             {
-                if (text.ToLower() == ArtifactID.ToLower())
+				var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+				if (text.ToLower() == artifact.Name.ToLower())
                 {
                     String reply = String.Format("Do you have the story that goes with Cloudsong? {0} {1} {2}",
                         "I'd very much like to read it. If you don't, go, get the scrolls and use them.",

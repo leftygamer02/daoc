@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,10 +46,10 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		}
 
 		/// <summary>
-		/// The artifact ID.
+		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Ceremonial Bracers";
-		public override String ArtifactID
+		private static int m_artifactID = 1012;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -167,7 +168,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("The scholars have often remarked about the {0} {1} {2} {3} {4}",
 					"craftsmanship that went into these bracers. I'm impressed. I don't think we can make",
@@ -191,9 +193,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 					case "casting":
 						{
 							String versionID = String.Format(";;{0}", text.ToLower());
-							Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
-								(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
-							ItemTemplate template = versions[versionID];
+							var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+							ItemTemplate template = versions[0];
 							if (template == null)
 							{
 								log.Warn(String.Format("Artifact version {0} not found", versionID));

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Alvarus's Leggings";
-		public override String ArtifactID
+		private static int m_artifactID = 1001;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -125,16 +126,13 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				String armorType = GlobalConstants.ArmorLevelToName(player.BestArmorLevel, 
-					(eRealm)player.Realm);
+				String armorType = GlobalConstants.ArmorLevelToName(player.BestArmorLevel, (eRealm)player.Realm);
 				ItemTemplate template = null;
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
-					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
-				foreach (String versionKey in versions.Keys)
+				foreach (var versionKey in versions.Keys)
 				{
-					String[] serializedKey = versionKey.Split(';');
-					if (serializedKey[0] == armorType)
+					if (versionKey == player.BestArmorLevel)
 					{
 						template = versions[versionKey];
 						break;
@@ -177,7 +175,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("The magic contained in the Alvarus' Letter has {0} {1} {2} {3}",
 					"already begun to work on the Leggings while they were in your possession. All I",

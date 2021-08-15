@@ -33,7 +33,7 @@ namespace DOL.GS
 	/// This class represents one Zone in DAOC. It holds all relevant information
 	/// that is needed to do different calculations.
 	/// </summary>
-	public class Zone : ITranslatableObject
+	public class Zone
 	{
 		/* 
         This file has been extensively modified for the new subzone management system
@@ -288,17 +288,7 @@ namespace DOL.GS
 		#endregion
 
 		#region properties
-        public virtual LanguageDataObject.eTranslationIdentifier TranslationIdentifier
-        {
-            get { return LanguageDataObject.eTranslationIdentifier.eZone; }
-        }
-
-        public string TranslationId
-        {
-            get { return ID.ToString(); }
-            set { }
-        }
-
+        
         public eRealm Realm
         {
             get

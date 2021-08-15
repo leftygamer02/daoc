@@ -20,8 +20,8 @@ namespace Atlas.DataLayer.Models
         public string Size { get; set; }
         public string Level { get; set; }
         public int MaxSpeed { get; set; }
-        public int EquipmentTemplateID { get; set; }
-        public int ItemsListTemplateID { get; set; }
+        public int? EquipmentTemplateID { get; set; }
+        public string ItemListName { get; set; }
         public int Flags { get; set; }
         public int MeleeDamageType { get; set; }
         public int ParryChance { get; set; }
@@ -47,7 +47,7 @@ namespace Atlas.DataLayer.Models
         public int TetherRange { get; set; }
         public int VisibleWeaponSlots { get; set; }
         public string PackageID { get; set; }
-        public int LootTableID { get; set; }
+        public int? LootTableID { get; set; }
         public string Brain { get; set; }
         public int FactionID { get; set; }
         public int HouseNumber { get; set; }
@@ -55,7 +55,6 @@ namespace Atlas.DataLayer.Models
         public string Guild { get; set; }
 
         public virtual NpcEquipment EquipmentTemplate { get; set; }
-        public virtual MerchantItem ItemListTemplate { get; set; }
         public virtual Race Race { get; set; }
         public virtual LootTable LootTable { get; set; }
 

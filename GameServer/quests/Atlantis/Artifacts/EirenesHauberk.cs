@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Eirene's Chestpiece";
-		public override String ArtifactID
+		private static int m_artifactID = 1021;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -135,7 +136,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 				scholar.TurnTo(player);
 				if (RemoveItem(player, item))
 				{
-					Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+					var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 					String reply = "";
 
@@ -154,7 +155,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 							"from you forever. I hope it will help you succeed in the trials.",
 							"Bring glory to", GlobalConstants.RealmToName(player.Realm));
 
-						Dictionary<String, ItemTemplate>.Enumerator venum = versions.GetEnumerator();
+						Dictionary<int, ItemTemplate>.Enumerator venum = versions.GetEnumerator();
 						venum.MoveNext();
 
 						if (GiveItem(scholar, player, ArtifactID, venum.Current.Value))
@@ -184,13 +185,13 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 		public void DisplayStep3(Scholar scholar, GamePlayer player, string reply)
 		{
-			Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+			var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 			reply += "Now you need to decide what version of " + ArtifactID + " you would like.  The following are available to you, please choose wisely. ";
 
 			// versions will be in the format Name;  ... strip the ; when displaying, add it back when searching
 
-			foreach (string version in versions.Keys)
+			foreach (string version in versions.Keys.Select(x => x.ToString()))
 			{
 				reply += " [" + version.Replace(";", "") + "],";
 			}
@@ -217,7 +218,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("There is powerful magic flowing through that artifact, {0}, {1} {2}",
                     player.CharacterClass.Name,
@@ -231,12 +233,12 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 3)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				Dictionary<int, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 				string version = text + ";;";
 
-				if (versions.ContainsKey(version))
+				if (versions.ContainsKey(0))
 				{
-					if (GiveItem(scholar, player, ArtifactID, versions[version]))
+					if (GiveItem(scholar, player, ArtifactID, versions[0]))
 					{
 						String reply = String.Format("The magic of Eirene's Chestpiece is unlocked {0} {1}. {2} {3} {4} {5}, {1}!",
 							"and linked now to you,", player.CharacterClass.Name,

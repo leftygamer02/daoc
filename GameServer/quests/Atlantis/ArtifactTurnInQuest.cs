@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -65,11 +66,11 @@ namespace DOL.GS.Quests.Atlantis
 			set { m_chosenTypes = value; }
 		}
 
-		private string m_artifactID = "";
+		private int m_artifactID = 0;
 		/// <summary>
 		/// The artifact ID.
 		/// </summary>
-		public override String ArtifactID
+		public override int ArtifactID
 		{
 			get {return m_artifactID; }
 		}
@@ -262,12 +263,11 @@ namespace DOL.GS.Quests.Atlantis
 		public override bool CheckQuestQualification(GamePlayer player)
 		{
 			bool artCheck = false;
-			List<string> arts = ArtifactMgr.GetArtifacts(player);
+			var arts = ArtifactMgr.GetArtifacts(player);
 
-			foreach (string art in arts)
+			foreach (var art in arts)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(art,
-				                                                                            (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				var versions = ArtifactMgr.GetArtifactVersions(art, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 				if (versions.Count > 1)
 				{
 					artCheck = true;
@@ -302,14 +302,14 @@ namespace DOL.GS.Quests.Atlantis
 			if (Step == 0)
 			{
 				//Lets see if they gave us a valid artifact
-				string ArtID = ArtifactMgr.GetArtifactIDFromItemID(item.Id);
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				var ArtID = ArtifactMgr.GetArtifactIDFromItemID(item.Id).Value;
+				var versions = ArtifactMgr.GetArtifactVersions(ArtID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 				//If this artifact has more than one option for them, give them the quest
 				if (versions != null && item != null && versions.Count > 1 && RemoveItem(player, item))
 				{
 					m_artifactID = ArtID;
-					SetCustomProperty("Art", ArtifactID);
-					SetCustomProperty("Id_nb", item.Id);
+					SetCustomProperty("Art", ArtifactID.ToString());
+					SetCustomProperty("Id_nb", item.ItemTemplate.KeyName);
 					SetCustomProperty("AXP", (item as InventoryArtifact).Experience.ToString());
 					SetCustomProperty("ALevel", (item as InventoryArtifact).ArtifactLevel.ToString());
 
@@ -355,7 +355,7 @@ namespace DOL.GS.Quests.Atlantis
 
 				//Lets get the next set of options
 				//Get the versions of this art
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				//If we still have more options, give it to them
 				if (GetNextOptions(versions) && virtualStep < MAXNUMOFSTEPS)
@@ -374,7 +374,7 @@ namespace DOL.GS.Quests.Atlantis
 
 					m_chosenTypes = m_chosenTypes.Replace(";;", ";");
 
-					if (!versions.ContainsKey(m_chosenTypes))
+					if (!versions.ContainsKey(Convert.ToInt32(m_chosenTypes)))
 					{
 						log.Warn(String.Format("Artifact version {0} not found", m_chosenTypes));
 						scholar.SayTo(player, eChatLoc.CL_PopupWindow, "I can't find your chosen replacement, it may not be available for your class. Please try again.");
@@ -382,7 +382,7 @@ namespace DOL.GS.Quests.Atlantis
 						return true;
 					}
 
-					ItemTemplate template = versions[m_chosenTypes] as ItemTemplate;
+					ItemTemplate template = versions[Convert.ToInt32(m_chosenTypes)] as ItemTemplate;
 
 					if (GiveItem(player, template))
 					{
@@ -400,7 +400,7 @@ namespace DOL.GS.Quests.Atlantis
 
 		protected void ReturnArtifact(GamePlayer player)
 		{
-			ItemTemplate itemTemplate = GameServer.Database.FindObjectByKey<ItemTemplate>(GetCustomProperty("Id_nb"));
+			ItemTemplate itemTemplate = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == GetCustomProperty("Id_nb"));
 			InventoryArtifact artifact = new InventoryArtifact(itemTemplate);
 			artifact.ArtifactLevel = Convert.ToInt32(GetCustomProperty("ALevel"));
 			artifact.Experience = Convert.ToInt64(GetCustomProperty("AXP"));
@@ -467,7 +467,7 @@ namespace DOL.GS.Quests.Atlantis
 			return true;
 		}
 
-		private bool GetNextOptions(Dictionary<String, ItemTemplate> versions)
+		private bool GetNextOptions(Dictionary<int, ItemTemplate> versions)
 		{
 			//Clear the current types since we are going to be offering more
 			m_curTypes.Clear();
@@ -476,10 +476,10 @@ namespace DOL.GS.Quests.Atlantis
 			while (m_curTypes.Count <= 1 && virtualStep < MAXNUMOFSTEPS)
 			{
 				//Go through each set of options in our list
-				foreach (string str in versions.Keys)
+				foreach (var str in versions.Keys)
 				{
 					//Used as the key to store the option in the database
-					string[] splitVersion = str.Split(';');
+					string[] splitVersion = str.ToString().Split(';');
 
 					// multiple versions may not available
 					if (splitVersion == null || splitVersion.Length <= virtualStep)
@@ -545,7 +545,7 @@ namespace DOL.GS.Quests.Atlantis
 		private void LoadProperties()
 		{
 			this.m_scholarName = GetCustomProperty("SN");
-			this.m_artifactID = GetCustomProperty("Art");
+			this.m_artifactID = Int32.Parse(GetCustomProperty("Art"));
 			this.m_name = GetCustomProperty("Name");
 
 			m_curTypes = new List<string>(2);

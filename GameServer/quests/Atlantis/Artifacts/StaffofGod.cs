@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -43,8 +44,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Staff of the God";
-		public override String ArtifactID
+		private static int m_artifactID = 1052;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -123,7 +124,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				if (versions.Count > 0 && RemoveItem(player, item))
@@ -159,7 +160,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
                 String reply = String.Format("Staff of the God is an interesting staff. The story of its {0} {1}",
 					"making rather unique, don't you think? If you give me the scroll, I'll give you the",

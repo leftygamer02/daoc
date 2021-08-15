@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Aten's Shield";
-		public override String ArtifactID
+		private static int m_artifactID = 1003;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -125,12 +126,11 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 			if (Step == 2 && ArtifactMgr.GetArtifactID(item.Name) == ArtifactID)
 			{
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
-					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID, (eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, ArtifactID, versions[0]);
 					String reply = String.Format("Ahh. This is a tale about some great {0} {1} {2} {3}.",
 						"crazy champion named Remus. There's not much known about him, or his father,",
 						"except what is in this tale. I've read pieces of it, but never did we find all",
@@ -163,7 +163,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("Some of the other scholars have been {0} {1} {2} {3} {4}",
 					"studying this shield. It belonged to someone named Remus, supposedly a great champion.",

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
@@ -45,8 +46,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 		/// <summary>
 		/// The reward for this quest.
 		/// </summary>
-		private static String m_artifactID = "Enyalio's Boots";
-		public override String ArtifactID
+		private static int m_artifactID = 1022;
+		public override int ArtifactID
 		{
 			get { return m_artifactID; }
 		}
@@ -128,13 +129,12 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 				String armorType = GlobalConstants.ArmorLevelToName(player.BestArmorLevel,
 					(eRealm)player.Realm);
 				ItemTemplate template = null;
-				Dictionary<String, ItemTemplate> versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
+				var versions = ArtifactMgr.GetArtifactVersions(ArtifactID,
 					(eCharacterClass)player.CharacterClass.ID, (eRealm)player.Realm);
 
-				foreach (String versionKey in versions.Keys)
-				{
-					String[] serializedKey = versionKey.Split(';');
-					if (serializedKey[0] == armorType)
+				foreach (var versionKey in versions.Keys)
+				{					
+					if (versionKey == player.BestArmorLevel)
 					{
 						template = versions[versionKey];
 						break;
@@ -173,7 +173,8 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 			if (player == null || scholar == null)
 				return false;
 
-			if (Step == 1 && text.ToLower() == ArtifactID.ToLower())
+			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
+			if (Step == 1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				String reply = String.Format("Do you have the story that goes along with that? {0} {1}",
 					"If you do, hand it in to me, and I will unlock the power that these boots had",

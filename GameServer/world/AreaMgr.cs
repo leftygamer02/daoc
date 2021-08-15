@@ -1,5 +1,6 @@
 using Atlas.DataLayer.Models;
 using System;
+using System.Linq;
 using log4net;
 using System.Reflection;
 
@@ -17,8 +18,8 @@ namespace DOL.GS
 			try
 			{
 				Assembly gasm = Assembly.GetExecutingAssembly();
-				var Atlas.DataLayer.Models.Areas = GameServer.Database.SelectAllObjects<Atlas.DataLayer.Models.Area>();
-				foreach (Atlas.DataLayer.Models.Area thisArea in Atlas.DataLayer.Models.Areas)
+				var areas = GameServer.Database.Areas.ToList();
+				foreach (var thisArea in areas)
 				{
 					AbstractArea area = (AbstractArea)gasm.CreateInstance(thisArea.ClassType, false);
 					if (area == null)
@@ -46,10 +47,10 @@ namespace DOL.GS
 						}
 					}
 					area.LoadFromDatabase(thisArea);
-					area.Sound = thisArea.Sound;
+					area.Sound = (byte)thisArea.Sound;
 					area.CanBroadcast = thisArea.CanBroadcast;
 					area.CheckLOS = thisArea.CheckLOS;
-					Region region = WorldMgr.GetRegion(thisArea.Region);
+					Region region = WorldMgr.GetRegion((ushort)thisArea.RegionID);
 					if (region == null)
 						continue;
 					region.AddArea(area);

@@ -87,43 +87,16 @@ namespace DOL.GS
 		public override IList GetExamineMessages(GamePlayer player)
 		{
 			string TrainerClassName = "";
-            switch (player.Client.Account.Language)
-			{
-                case "DE":
-                    {
-                        var translation = (DBLanguageNPC)LanguageMgr.GetTranslation(player.Client.Account.Language, this);
-
-                        if (translation != null)
-                        {
-                            int index = -1;
-                            if (translation.GuildName.Length > 0)
-                                index = translation.GuildName.IndexOf("-Ausbilder");
-                            if (index >= 0)
-                                TrainerClassName = translation.GuildName.Substring(0, index);
-                        }
-                        else
-                        {
-                            TrainerClassName = GuildName;
-                        }
-                    }
-                    break;
-				default:
-					{
-						int index = -1;
-						if (GuildName.Length > 0)
-							index = GuildName.IndexOf(" Trainer");
-						if (index >= 0)
-							TrainerClassName = GuildName.Substring(0, index);
-					}
-					break;
-			}
+			int index = -1;
+			if (GuildName.Length > 0)
+				index = GuildName.IndexOf(" Trainer");
+			if (index >= 0)
+				TrainerClassName = GuildName.Substring(0, index);
 
 			IList list = new ArrayList();
-            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.YouTarget", 
-                                                GetName(0, false, player.Client.Account.Language, this)));
-            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.YouExamine",
-                                                GetName(0, false, player.Client.Account.Language, this), GetPronoun(0, true, player.Client.Account.Language),
-                                                GetAggroLevelString(player, false), TrainerClassName));
+            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.YouTarget", GetName(0, false)));
+			list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.YouExamine", GetName(0, false), GetPronoun(0, true, player.Client.Account.Language),
+												GetAggroLevelString(player, false), TrainerClassName));
 			list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.RightClick"));
 			return list;
 		}
@@ -249,16 +222,16 @@ namespace DOL.GS
 			{
 				foreach (InventoryItem item in player.Inventory.EquippedItems)
 				{
-					if (!player.HasAbilityToUseItem(item.Template))
+					if (!player.HasAbilityToUseItem(item.ItemTemplate))
 						if (player.Inventory.IsSlotsFree(item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == true)
 					{
 						player.Inventory.MoveItem((eInventorySlot)item.SlotPosition, player.Inventory.FindFirstEmptySlot(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack), item.Count);
-						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.CheckAbilityToUseItem.Text1", item.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.CheckAbilityToUseItem.Text1", item.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					}
 					else
 					{
 						player.Inventory.MoveItem((eInventorySlot)item.SlotPosition, eInventorySlot.Ground, item.Count);
-						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.CheckAbilityToUseItem.Text1", item.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.CheckAbilityToUseItem.Text1", item.ItemTemplate.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					}
 				}
 			}
@@ -277,12 +250,12 @@ namespace DOL.GS
 			GamePlayer player = source as GamePlayer;
 			if (player != null)
 			{
-				switch (item.Id)
+				switch (item.ItemTemplate.KeyName)
 				{
 					case "respec_single":
 						{
 							player.Inventory.RemoveCountFromStack(item, 1);
-							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
 							player.RespecAmountSingleSkill++;
 							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.ReceiveItem.RespecSingle"), eChatType.CT_System, eChatLoc.CL_PopupWindow);
 							return true;
@@ -290,7 +263,7 @@ namespace DOL.GS
 					case "respec_full":
 						{
 							player.Inventory.RemoveCountFromStack(item, 1);
-							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
 							player.RespecAmountAllSkill++;
 							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.ReceiveItem.RespecFull", item.Name), eChatType.CT_System, eChatLoc.CL_PopupWindow);
 							return true;
@@ -298,7 +271,7 @@ namespace DOL.GS
 					case "respec_realm":
 						{
 							player.Inventory.RemoveCountFromStack(item, 1);
-							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
 							player.RespecAmountRealmSkill++;
 							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.ReceiveItem.RespecRealm"), eChatType.CT_System, eChatLoc.CL_PopupWindow);
 							return true;
@@ -401,7 +374,7 @@ namespace DOL.GS
 		/// <returns>true if succesful</returns>
 		public virtual bool addGift(String template, GamePlayer player)
 		{
-			ItemTemplate temp = GameServer.Database.FindObjectByKey<ItemTemplate>(template);
+			ItemTemplate temp = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == template || x.KeyName == template);
 			if (temp != null)
 			{
 				if (!player.Inventory.AddTemplate(GameInventoryItem.Create(temp), 1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))

@@ -4179,37 +4179,39 @@ namespace DOL.GS
 		/// <returns></returns>
 		public virtual string RealmRankTitle(string language)
 		{
-			string translationId = string.Empty;
+			return RealmTitle;
 
-			if (Realm != eRealm.None && Realm != eRealm.Door)
-			{
-				int RR = 0;
-				
-				if (RealmLevel > 1)
-					RR = RealmLevel / 10 + 1;
-				
-				string realm = string.Empty;
-				if (Realm == eRealm.Albion)
-					realm = "Albion";
-				else if (Realm == eRealm.Midgard)
-					realm = "Midgard";
-				else
-					realm = "Hibernia";
-				
-				string gender = Gender == eGender.Female ? "Female" : "Male";
-				
-				translationId = string.Format("{0}.RR{1}.{2}", realm, RR, gender);
-			}
-			else
-			{
-				translationId = "UnknownRealm";
-			}
+			//string translationId = string.Empty;
 
-			string translation;
-			if (!LanguageMgr.TryGetTranslation(out translation, language, string.Format("GamePlayer.RealmTitle.{0}", translationId)))
-				translation = RealmTitle;
+			//if (Realm != eRealm.None && Realm != eRealm.Door)
+			//{
+			//	int RR = 0;
+				
+			//	if (RealmLevel > 1)
+			//		RR = RealmLevel / 10 + 1;
+				
+			//	string realm = string.Empty;
+			//	if (Realm == eRealm.Albion)
+			//		realm = "Albion";
+			//	else if (Realm == eRealm.Midgard)
+			//		realm = "Midgard";
+			//	else
+			//		realm = "Hibernia";
+				
+			//	string gender = Gender == eGender.Female ? "Female" : "Male";
+				
+			//	translationId = string.Format("{0}.RR{1}.{2}", realm, RR, gender);
+			//}
+			//else
+			//{
+			//	translationId = "UnknownRealm";
+			//}
 
-			return translation;
+			//string translation;
+			//if (!LanguageMgr.TryGetTranslation(out translation, language, string.Format("GamePlayer.RealmTitle.{0}", translationId)))
+			//	translation = RealmTitle;
+
+			//return translation;
 		}
 
 		/// <summary>

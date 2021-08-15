@@ -8,7 +8,7 @@ namespace Atlas.DataLayer.Models
 {
     public class MerchantItem : DataObjectBase
     {
-        public int ItemListID { get; set; }
+        public string ItemListName { get; set; }
         public int ItemTemplateID { get; set; }
         public int PageNumber { get; set; }
         public int SlotPosition { get; set; }

@@ -23,8 +23,8 @@ namespace DOL.Language
 {
     public interface ITranslatableObject
     {
-        string TranslationId { get; set; }
+        //string TranslationId { get; set; }
 
-        LanguageDataObject.eTranslationIdentifier TranslationIdentifier { get; }
+        //LanguageDataObject.eTranslationIdentifier TranslationIdentifier { get; }
     }
 }

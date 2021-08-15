@@ -54,11 +54,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 				// this is only used if zone table has the proper realms defined, otherwise it reverts to old behavior - Tolakram
                 targetRealm = client.Player.CurrentZone.Realm;
 			}
+			
+			var zonePoint = GameServer.Database.ZonePoints.FirstOrDefault(x => x.Id == jumpSpotId && (x.Realm == (int)targetRealm || x.Realm <= 0));
 
-			var filterRealm = DB.Column("Realm").IsEqualTo((byte)targetRealm).Or(DB.Column("Realm").IsEqualTo(0)).Or(DB.Column("Realm").IsNull());
-			var zonePoint = DOLDB<ZonePoint>.SelectObject(DB.Column("Id").IsEqualTo(jumpSpotId).And(filterRealm));
-
-			if (zonePoint == null || zonePoint.TargetRegion == 0)
+			if (zonePoint == null || zonePoint.TargetRegionID <= 0)
 			{
 				ChatUtil.SendDebugMessage(client, $"Invalid Jump (ZonePoint table): [{jumpSpotId}]{((zonePoint == null) ? ". Entry missing!" : ". TargetRegion is 0!")}");
 				zonePoint = new ZonePoint();
@@ -74,9 +73,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 			//Dinberg: Fix - some jump points are handled code side, such as instances.
 			//As such, region MAY be zero in the database, so this causes an issue.
 
-			if (zonePoint.TargetRegion != 0)
+			if (zonePoint.TargetRegionID != 0)
 			{
-				Region reg = WorldMgr.GetRegion(zonePoint.TargetRegion);
+				Region reg = WorldMgr.GetRegion((ushort)zonePoint.TargetRegionID);
 				if (reg != null)
 				{
 					// check for target region disabled if player is in a standard region
@@ -101,7 +100,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			}
 
 			//check caps for battleground
-			Battleground bg = GameServer.KeepManager.GetBattleground(zonePoint.TargetRegion);
+			Battleground bg = GameServer.KeepManager.GetBattleground((ushort)zonePoint.TargetRegionID);
 			if (bg != null)
 			{
 				if (client.Player.Level < bg.MinLevel && client.Player.Level > bg.MaxLevel &&
@@ -201,7 +200,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			{
 				var player = (GamePlayer)m_actionSource;
 
-				Region reg = WorldMgr.GetRegion(m_zonePoint.TargetRegion);
+				Region reg = WorldMgr.GetRegion((ushort)m_zonePoint.TargetRegionID);
 				if (reg != null && reg.Expansion > (int)player.Client.ClientType)
 				{
 					player.Out.SendMessage("Destination region (" + reg.Description + ") is not supported by your client type.",
@@ -213,9 +212,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 
 					//check if the zonepoint has source locations set  Check prior to any zonepoint modification by handlers
-					if (m_zonePoint.SourceRegion == 0)
+					if (m_zonePoint.SourceRegionID <= 0)
 					{
-						m_zonePoint.SourceRegion = player.CurrentRegionID;
+						m_zonePoint.SourceRegionID = player.CurrentRegionID;
 						m_zonePoint.SourceX = player.X;
 						m_zonePoint.SourceY = player.Y;
 						m_zonePoint.SourceZ = player.Z;
@@ -249,7 +248,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				}
 
 				//move the player
-				player.MoveTo(m_zonePoint.TargetRegion, m_zonePoint.TargetX, m_zonePoint.TargetY, m_zonePoint.TargetZ, m_zonePoint.TargetHeading);
+				player.MoveTo((ushort)m_zonePoint.TargetRegionID, m_zonePoint.TargetX, m_zonePoint.TargetY, m_zonePoint.TargetZ, (ushort)m_zonePoint.TargetHeading);
 			}
 		}
 	}

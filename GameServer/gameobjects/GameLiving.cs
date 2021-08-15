@@ -4640,12 +4640,12 @@ namespace DOL.GS
 		/// <summary>
 		/// The loot table db ID for this living
 		/// </summary>
-		protected int m_lootTableID = 0; // none by default
+		protected int? m_lootTableID = 0; // none by default
 
 		/// <summary>
 		/// Gets the loot table db ID for this living
 		/// </summary>
-		public int LootTableID
+		public int? LootTableID
 		{
 			get { return m_lootTableID; }
 			set { m_lootTableID = value; }
