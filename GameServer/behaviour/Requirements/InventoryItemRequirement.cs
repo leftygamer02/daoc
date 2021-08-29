@@ -79,7 +79,7 @@ namespace DOL.GS.Behaviour.Requirements
 		    {
 			    if (invItem.Name == N.Name)
 			    {
-				    if (invItem.IsStackable)
+				    if (invItem.ItemTemplate.IsStackable)
 				    {
 					    count += invItem.Count;
 				    }

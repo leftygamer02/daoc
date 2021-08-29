@@ -14,12 +14,6 @@ namespace Atlas.DataLayer.Models
         public int Effect { get; set; }
         public int Extension { get; set; }
         public int Emblem { get; set; }
-
-        public virtual ICollection<NpcTemplate> Npcs { get; set; }
-
-        public NpcEquipment()
-        {
-            Npcs = new HashSet<NpcTemplate>();
-        }
+        public string EquipmentTemplateName { get; set; }
     }
 }

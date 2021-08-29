@@ -58,12 +58,12 @@ namespace DOL.GS.Spells
 			
 			if(item!=null)
 			{
-				old_item_af=item.DPS_AF;
-				old_item_abs=item.SPD_ABS;
-				item.DPS_AF -= (int)Spell.Value;
-				item.SPD_ABS -= (int)Spell.ResurrectMana;
-				if(item.DPS_AF<0) item.DPS_AF=0;
-				if(item.SPD_ABS<0) item.SPD_ABS=0;
+				old_item_af=item.ItemTemplate.DPS_AF;
+				old_item_abs=item.ItemTemplate.SPD_ABS;
+				item.ItemTemplate.DPS_AF -= (int)Spell.Value;
+				item.ItemTemplate.SPD_ABS -= (int)Spell.ResurrectMana;
+				if(item.ItemTemplate.DPS_AF <0) item.ItemTemplate.DPS_AF =0;
+				if(item.ItemTemplate.SPD_ABS <0) item.ItemTemplate.SPD_ABS =0;
 			
 				player.Client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 				player.Out.SendCharStatsUpdate();
@@ -100,8 +100,8 @@ namespace DOL.GS.Spells
             if (effect!=null) effect.Cancel(false);
 			if(item==null) return;
 			
-			item.DPS_AF=old_item_af;
-			item.SPD_ABS=old_item_abs;
+			item.ItemTemplate.DPS_AF =old_item_af;
+			item.ItemTemplate.SPD_ABS =old_item_abs;
 			
 			player.Client.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
 			player.Out.SendCharStatsUpdate();

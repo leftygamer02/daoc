@@ -17,7 +17,7 @@
  *
  */
 using System;
-
+using System.Linq;
 using DOL.GS;
 using DOL.AI.Brain;
 using Atlas.DataLayer.Models;
@@ -31,8 +31,8 @@ namespace DOL.GS
 	/// </summary>
 	public class LootGeneratorAurulite : LootGeneratorBase
 	{
-		
-		public static ItemTemplate m_aurulite = GameServer.Database.FindObjectByKey<ItemTemplate>("aurulite");
+
+		public static ItemTemplate m_aurulite = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "aurulite");
 		
 		/// <summary>
         /// Generate loot for given mob
@@ -43,9 +43,9 @@ namespace DOL.GS
 		public override LootList GenerateLoot(GameNPC mob, GameObject killer)
 		{
 			LootList loot = base.GenerateLoot(mob, killer);
-			
+
 			// ItemTemplate aurulite = new ItemTemplate(m_aurulite);  Creating a new ItemTemplate throws an exception later
-			ItemTemplate aurulite = GameServer.Database.FindObjectByKey<ItemTemplate>(m_aurulite.Id);
+			ItemTemplate aurulite = GameServer.Database.ItemTemplates.Find(m_aurulite.Id);
 			
 			
 			try

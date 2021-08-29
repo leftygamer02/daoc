@@ -1,4 +1,4 @@
-﻿using DOL.Database;
+﻿using Atlas.DataLayer.Models;
 using DOL.GS;
 using DOL.GS.Effects;
 using NUnit.Framework;
@@ -235,7 +235,7 @@ namespace DOL.UnitTests.Gameserver
             public ushort InternalID { get => throw new System.NotImplementedException(); set { } }
             public IList<string> DelveInfo => throw new System.NotImplementedException();
             public void Cancel(bool playerCanceled) { receivedCancel = true; }
-            public PlayerXEffect getSavedEffect() { throw new System.NotImplementedException(); }
+            public PlayerEffect getSavedEffect() { throw new System.NotImplementedException(); }
         }
     }
 }

@@ -90,9 +90,8 @@ namespace DOL.GS.Commands
 
 			// Get the specialization line.
 			string line = string.Join(" ", args, 1, args.Length - 2);
-			line = GameServer.Database.Escape(line);
 
-			var dbSpec = DOLDB<DBSpecialization>.SelectObject(DB.Column("KeyName").IsLike($"{line}%"));
+			var dbSpec = GameServer.Database.Specializations.FirstOrDefault(x => x.KeyName.Contains(line));
 
 			Specialization spec = null;
 

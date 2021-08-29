@@ -98,7 +98,7 @@ namespace DOL.GS
 				InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, totalValue);
 			}
 
-			if (item.Name.ToUpper().Contains("TICKET TO") || item.Description.ToUpper() == "TICKET")
+			if (item.Name.ToUpper().Contains("TICKET TO") || item.ItemTemplate.Description.ToUpper() == "TICKET")
 			{
 				// Give the ticket to the merchant
 				InventoryItem ticket = player.Inventory.GetFirstItemByName(item.Name, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) as InventoryItem;
@@ -122,14 +122,14 @@ namespace DOL.GS
 			{
 				GamePlayer player = (GamePlayer)source;
 
-				if (item.ItemType == 40 && isItemInMerchantList(item))
+				if (item.ItemTemplate.ItemType == 40 && isItemInMerchantList(item))
 				{
-					PathPoint path = MovementMgr.LoadPath(item.Id);
+					PathPoint path = MovementMgr.LoadPath(item.ItemTemplate.KeyName);
 
 					if ((path != null) && ((Math.Abs(path.X - this.X)) < 500) && ((Math.Abs(path.Y - this.Y)) < 500))
 					{
 						player.Inventory.RemoveCountFromStack(item, 1);
-                        InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+                        InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
 
 						GameTaxi mount;
 						

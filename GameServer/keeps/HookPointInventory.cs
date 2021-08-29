@@ -22,6 +22,7 @@ using System.Reflection;
 using DOL.GS.PacketHandler;
 using DOL.Events;
 using log4net;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Keeps
 {
@@ -301,7 +302,13 @@ namespace DOL.GS.Keeps
 			hookpoint.Object = hookPointObj;
 
 			//create the db entry
-			Database.DBKeepHookPointItem item = new Database.DBKeepHookPointItem(component.Keep.KeepID, component.ID, hookpoint.ID, GameObjectType);
+			var item = new KeepHookpointItem()
+			{
+				KeepID = component.Keep.KeepID,
+				ComponentID = component.ID,
+				HookPointID = hookpoint.ID,
+				ClassType = GameObjectType
+			};
 			GameServer.Instance.SaveDataObject(item);
 		}
 

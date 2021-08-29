@@ -5,6 +5,7 @@ using log4net;
 using DOL.GS.PlayerClass;
 using DOL.GS.ServerProperties;
 using DOL.Language;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Keeps
 {
@@ -155,7 +156,7 @@ namespace DOL.GS.Keeps
 				{
 					if (this.Component != null)
 					{
-						Database.KeepCaptureLog keeplog = new Database.KeepCaptureLog();
+						var keeplog = new KeepCaptureLog();
 						keeplog.KeepName = Component.Keep.Name;
 
 						if (Component.Keep is GameKeep)

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -34,8 +35,8 @@ namespace DOL.GS
 	/// </summary>
 	public class LootGeneratorAtlanteanGlass : LootGeneratorBase
 	{
-		
-		private static ItemTemplate m_atlanteanglass = GameServer.Database.FindObjectByKey<ItemTemplate>("atlanteanglass");
+
+		private static ItemTemplate m_atlanteanglass = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "atlanteanglass");
 		
 		/// <summary>
         /// Generate loot for given mob
@@ -53,9 +54,9 @@ namespace DOL.GS
 				if (killer is GameNPC && ((GameNPC)killer).Brain is IControlledBrain)
 					player = ((ControlledNpcBrain)((GameNPC)killer).Brain).GetPlayerOwner();
 				if (player == null)
-					return loot;			
-			
-				ItemTemplate atlanteanGlass = GameServer.Database.FindObjectByKey<ItemTemplate>(m_atlanteanglass.Id);
+					return loot;
+
+				ItemTemplate atlanteanGlass = GameServer.Database.ItemTemplates.Find(m_atlanteanglass.Id);
 				// ItemTemplate atlanteanGlass = new ItemTemplate(m_atlanteanglass);  Creating a new ItemTemplate throws an exception later
 
 				int killedcon = (int)player.GetConLevel(mob)+3;

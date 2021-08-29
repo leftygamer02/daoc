@@ -57,7 +57,7 @@ namespace DOL.GS
         {
 			IList list = new ArrayList();
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Healer.GetExamineMessages.Text1",
-                GetName(0, false, player.Client.Account.Language, this), GetPronoun(0, true, player.Client.Account.Language), GetAggroLevelString(player, false)));
+                GetName(0, false), GetPronoun(0, true, player.Client.Account.Language), GetAggroLevelString(player, false)));
             return list;
 		}
 
@@ -73,7 +73,7 @@ namespace DOL.GS
 			{
 				effect.Cancel(false);
                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Healer.Interact.Text1",
-                    GetName(0, false, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
             }
 
 			if (player.TotalConstitutionLostAtDeath > 0)
@@ -95,7 +95,7 @@ namespace DOL.GS
             if (!this.IsWithinRadius(player, WorldMgr.INTERACT_DISTANCE))
             {
                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Healer.HealerDialogResponse.Text1",
-                    GetName(0, false, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 return;
             }
 

@@ -4,6 +4,7 @@ using DOL.GS.PacketHandler;
 using DOL.GS.SkillHandler;
 using DOL.GS.PropertyCalc;
 using DOL.Events;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Effects
 {
@@ -52,16 +53,16 @@ namespace DOL.GS.Effects
                 return;
             GamePlayer target = afea.AttackData.Target as GamePlayer;
             
-            Database.InventoryItem armor = target.Inventory.GetItem((eInventorySlot)((int)afea.AttackData.ArmorHitLocation));
+            var armor = target.Inventory.GetItem((eInventorySlot)((int)afea.AttackData.ArmorHitLocation));
             
-            if (armor == null || armor.SPD_ABS == 0)
+            if (armor == null || armor.ItemTemplate.SPD_ABS == 0)
                 return;
             //cap at 50%
-            int bonusPercent = Math.Min(armor.SPD_ABS,50);
+            int bonusPercent = Math.Min(armor.ItemTemplate.SPD_ABS,50);
                         
 
             //add 2times percentual of abs, one time will be substracted later
-            afea.AttackData.Damage = (int)(armor.SPD_ABS*(bonusPercent*2 + 100)*0.01 );
+            afea.AttackData.Damage = (int)(armor.ItemTemplate.SPD_ABS *(bonusPercent*2 + 100)*0.01 );
 
         }
 

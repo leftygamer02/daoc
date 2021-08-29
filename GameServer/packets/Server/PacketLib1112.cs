@@ -139,9 +139,9 @@ namespace DOL.GS.PacketHandler
 							pak.WriteShort(spell.InternalIconID > 0 ? spell.InternalIconID : spell.Icon); // icon
 							pak.WritePascalString(spell.Name);
 						}
-						else if (skill is Style)
+						else if (skill is Styles.Style)
 						{
-							Style style = (Style)skill;
+							Styles.Style style = (Styles.Style)skill;
 							pak.WriteByte((byte)style.SpecLevelRequirement);
 							pak.WriteShort((ushort)style.InternalID); //new 1.112
 							pak.WriteByte((byte)style.SkillType);
@@ -151,20 +151,20 @@ namespace DOL.GS.PacketHandler
 				
 							switch (style.OpeningRequirementType)
 							{
-								case Style.eOpening.Offensive:
+								case Styles.Style.eOpening.Offensive:
 									pre = (int)style.AttackResultRequirement; // last result of our attack against enemy hit, miss, target blocked, target parried, ...
-									if (style.AttackResultRequirement == Style.eAttackResultRequirement.Style)
+									if (style.AttackResultRequirement == Styles.Style.eAttackResultRequirement.Style)
 									{
 										// get style requirement value... find prerequisite style index from specs beginning...
-										int styleindex = Math.Max(0, usableSkills.FindIndex(it => (it.Item1 is Style) && it.Item1.ID == style.OpeningRequirementValue));										
+										int styleindex = Math.Max(0, usableSkills.FindIndex(it => (it.Item1 is Styles.Style) && it.Item1.ID == style.OpeningRequirementValue));										
 										int speccount = Math.Max(0, usableSkills.FindIndex(it => (it.Item1 is Specialization) == false));										
 										pre |= ((byte)(100 + styleindex - speccount)) << 8;
 									}
 									break;
-								case Style.eOpening.Defensive:
+								case Styles.Style.eOpening.Defensive:
 									pre = 100 + (int)style.AttackResultRequirement; // last result of enemies attack against us hit, miss, you block, you parry, ...
 									break;
-								case Style.eOpening.Positional:
+								case Styles.Style.eOpening.Positional:
 									pre = 200 + style.OpeningRequirementValue;
 									break;
 							}
@@ -252,12 +252,12 @@ namespace DOL.GS.PacketHandler
 						else
 						{
 							int reqLevel = 1;
-							if (sk is Style)
-								reqLevel = ((Style)sk).SpecLevelRequirement;
+							if (sk is Styles.Style)
+								reqLevel = ((Styles.Style)sk).SpecLevelRequirement;
 							else if (sk is Ability)
 								reqLevel = ((Ability)sk).SpecLevelRequirement;
 							
-							pak.WriteShortLowEndian((ushort)((byte)reqLevel + (sk is Style ? 512 : 256)));
+							pak.WriteShortLowEndian((ushort)((byte)reqLevel + (sk is Styles.Style ? 512 : 256)));
 							pak.WriteShort((ushort)sk.InternalID); //new 1.112
 							pak.WriteShort(sk.Icon);
 							pak.WritePascalString(sk.Name);
@@ -358,7 +358,7 @@ namespace DOL.GS.PacketHandler
 			pak.WriteByte(template.BaseConditionPercent);
 			pak.WriteByte(template.BaseDurabilityPercent);
 			pak.WriteByte((byte)template.Quality);
-			pak.WriteByte((byte)template.Bonus);
+			pak.WriteByte((byte)template.ItemBonus);
 			pak.WriteByte((byte)template.BonusLevel); // 1.109
 			pak.WriteShort((ushort)template.Model);
 			pak.WriteByte((byte)template.Extension);
@@ -382,11 +382,11 @@ namespace DOL.GS.PacketHandler
 				return;
 			}
 
-			pak.WriteByte((byte)item.Level);
+			pak.WriteByte((byte)item.ItemTemplate.Level);
 
 			int value1; // some object types use this field to display count
 			int value2; // some object types use this field to display count
-			switch (item.ObjectType)
+			switch (item.ItemTemplate.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 					value1 = item.Count & 0xFF;
@@ -396,19 +396,19 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.Bolt:
 				case (int)eObjectType.Poison:
 					value1 = item.Count;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 				case (int)eObjectType.Thrown:
-					value1 = item.DPS_AF;
+					value1 = item.ItemTemplate.DPS_AF;
 					value2 = item.Count;
 					break;
 				case (int)eObjectType.Instrument:
-					value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF);
+					value1 = (item.ItemTemplate.DPS_AF == 2 ? 0 : item.ItemTemplate.DPS_AF);
 					value2 = 0;
 					break; // unused
 				case (int)eObjectType.Shield:
-					value1 = item.TypeDamage;
-					value2 = item.DPS_AF;
+					value1 = item.ItemTemplate.TypeDamage;
+					value2 = item.ItemTemplate.DPS_AF;
 					break;
 				case (int)eObjectType.AlchemyTincture:
 				case (int)eObjectType.SpellcraftGem:
@@ -422,7 +422,7 @@ namespace DOL.GS.PacketHandler
 				case (int)eObjectType.HouseFloorObject:
 				case (int)eObjectType.GardenObject:
 					value1 = 0;
-					value2 = item.SPD_ABS;
+					value2 = item.ItemTemplate.SPD_ABS;
 					/*
 					Value2 byte sets the width, only lower 4 bits 'seem' to be used (so 1-15 only)
 
@@ -432,26 +432,26 @@ namespace DOL.GS.PacketHandler
 					break;
 
 				default:
-					value1 = item.DPS_AF;
-					value2 = item.SPD_ABS;
+					value1 = item.ItemTemplate.DPS_AF;
+					value2 = item.ItemTemplate.SPD_ABS;
 					break;
 			}
 			pak.WriteByte((byte)value1);
 			pak.WriteByte((byte)value2);
 
-			if (item.ObjectType == (int)eObjectType.GardenObject)
-				pak.WriteByte((byte)(item.DPS_AF));
+			if (item.ItemTemplate.ObjectType == (int)eObjectType.GardenObject)
+				pak.WriteByte((byte)(item.ItemTemplate.DPS_AF));
 			else
-				pak.WriteByte((byte)(item.Hand << 6));
+				pak.WriteByte((byte)(item.ItemTemplate.Hand << 6));
 			
-			pak.WriteByte((byte)((item.TypeDamage > 3 ? 0 : item.TypeDamage << 6) | item.ObjectType));
+			pak.WriteByte((byte)((item.ItemTemplate.TypeDamage > 3 ? 0 : item.ItemTemplate.TypeDamage << 6) | item.ItemTemplate.ObjectType));
 			pak.WriteByte(0x00); //unk 1.112
-			pak.WriteShort((ushort)item.Weight);
+			pak.WriteShort((ushort)item.ItemTemplate.Weight);
 			pak.WriteByte(item.ConditionPercent); // % of con
 			pak.WriteByte(item.DurabilityPercent); // % of dur
-			pak.WriteByte((byte)item.Quality); // % of qua
-			pak.WriteByte((byte)item.Bonus); // % bonus
-			pak.WriteByte((byte)item.BonusLevel); // 1.109
+			pak.WriteByte((byte)item.ItemTemplate.Quality); // % of qua
+			pak.WriteByte((byte)item.ItemTemplate.ItemBonus); // % bonus
+			pak.WriteByte((byte)item.ItemTemplate.BonusLevel); // 1.109
 			pak.WriteShort((ushort)item.Model);
 			pak.WriteByte((byte)item.Extension);
 			int flag = 0;
@@ -489,17 +489,17 @@ namespace DOL.GS.PacketHandler
 			ushort icon2 = 0;
 			string spell_name1 = "";
 			string spell_name2 = "";
-			if (item.ObjectType != (int)eObjectType.AlchemyTincture)
+			if (item.ItemTemplate.ObjectType != (int)eObjectType.AlchemyTincture)
 			{
-				if (item.SpellID > 0/* && item.Charges > 0*/)
-				{
+				foreach (var itemSpell in item.Spells)
+                {
 					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
 					if (chargeEffectsLine != null)
 					{
 						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
 						foreach (Spell spl in spells)
 						{
-							if (spl.ID == item.SpellID)
+							if (spl.ID == itemSpell.SpellID)
 							{
 								flag |= 0x08;
 								icon1 = spl.Icon;
@@ -508,25 +508,7 @@ namespace DOL.GS.PacketHandler
 							}
 						}
 					}
-				}
-				if (item.SpellID1 > 0/* && item.Charges > 0*/)
-				{
-					SpellLine chargeEffectsLine = SkillBase.GetSpellLine(GlobalSpellsLines.Item_Effects);
-					if (chargeEffectsLine != null)
-					{
-						List<Spell> spells = SkillBase.GetSpellList(chargeEffectsLine.KeyName);
-						foreach (Spell spl in spells)
-						{
-							if (spl.ID == item.SpellID1)
-							{
-								flag |= 0x10;
-								icon2 = spl.Icon;
-								spell_name2 = spl.Name; // or best spl.Name ?
-								break;
-							}
-						}
-					}
-				}
+				}				
 			}
 			pak.WriteByte((byte)flag);
 			if ((flag & 0x08) == 0x08)
@@ -539,7 +521,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)icon2);
 				pak.WritePascalString(spell_name2);
 			}
-			pak.WriteByte((byte)item.Effect);
+			pak.WriteByte((byte)item.ItemTemplate.Effect);
 			string name = item.Name;
 			if (item.Count > 1)
 				name = item.Count + " " + name;

@@ -50,7 +50,7 @@ namespace DOL.GS.Housing
 			set { _databaseItem.HouseNumber = value; }
 		}
 
-		public int OwnerID
+		public int? OwnerID
 		{
 			get { return _databaseItem.OwnerID; }
 			set { _databaseItem.OwnerID = value; }
@@ -867,7 +867,7 @@ namespace DOL.GS.Housing
 			{
 				// create a new consignment merchant entry, and add it to the DB
 				log.Warn("Adding a consignment merchant for house " + HouseNumber);
-				houseCM = new HouseConsignmentMerchant { OwnerID = OwnerID, HouseNumber = HouseNumber, Money = startValue };
+				houseCM = new HouseConsignmentMerchant { OwnerID = OwnerID.Value, HouseNumber = HouseNumber, Money = startValue };
 				GameServer.Instance.SaveDataObject(houseCM);
 			}
 
@@ -1089,7 +1089,14 @@ namespace DOL.GS.Housing
 			}
 
 			// no matching permissions, create a new one and add it.
-			var housePermission = new DbHouseCharPerms(HouseNumber, targetName, player.Name, permLevel, (int) permType);
+			var housePermission = new DbHouseCharPerms()
+			{
+				HouseNumber = HouseNumber,
+				TargetName = targetName,
+				DisplayName = player.Name,
+				PermissionLevel = permLevel,
+				PermissionType = (int)permType
+			};
 			GameServer.Instance.SaveDataObject(housePermission);
 
 			// add it to our list
@@ -1113,7 +1120,14 @@ namespace DOL.GS.Housing
 			}
 
 			// no matching permissions, create a new one and add it.
-			var housePermission = new DbHouseCharPerms(HouseNumber, targetName, targetName, permLevel, (int) permType);
+			var housePermission = new DbHouseCharPerms()
+			{
+				HouseNumber = HouseNumber,
+				TargetName = targetName,
+				DisplayName = targetName,
+				PermissionLevel = permLevel,
+				PermissionType = (int)permType
+			};
 			GameServer.Instance.SaveDataObject(housePermission);
 
 			// add it to our list

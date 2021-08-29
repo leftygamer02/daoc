@@ -1379,8 +1379,8 @@ namespace DOL.GS.Commands
 			info.Add(" + Speed(current/max): " + targetMob.CurrentSpeed + "/" + targetMob.MaxSpeedBase);
 			info.Add(" + Health: " + targetMob.Health + "/" + targetMob.MaxHealth);
 
-			if (targetMob.EquipmentTemplateID > 0)
-				info.Add(" + Equipment Template ID: " + targetMob.EquipmentTemplateID);
+			if (!String.IsNullOrEmpty(targetMob.EquipmentTemplateName))
+				info.Add(" + Equipment Template ID: " + targetMob.EquipmentTemplateName);
 
 			if (targetMob.Inventory != null)
 				info.Add(" + Inventory: " + targetMob.Inventory.AllItems.Count + " items");
@@ -1651,7 +1651,7 @@ namespace DOL.GS.Commands
 				closed = t.IsClosed ? " (closed)" : " (open)";
 			}
 
-			string message = string.Format("			         Inventory: {0}{1}, equip template ID: {2}", targetMob.Inventory.GetType().ToString(), closed, targetMob.EquipmentTemplateID);
+			string message = string.Format("			         Inventory: {0}{1}, equip template ID: {2}", targetMob.Inventory.GetType().ToString(), closed, targetMob.EquipmentTemplateName);
 			client.Out.SendMessage(message, eChatType.CT_System, eChatLoc.CL_PopupWindow);
 			client.Out.SendMessage("-------------------------------", eChatType.CT_System, eChatLoc.CL_PopupWindow);
 			client.Out.SendMessage("", eChatType.CT_System, eChatLoc.CL_PopupWindow);
@@ -1680,7 +1680,7 @@ namespace DOL.GS.Commands
 			if (args[2].ToLower() == "clear")
 			{
 				targetMob.Inventory = null;
-				targetMob.EquipmentTemplateID = 0;
+				targetMob.EquipmentTemplateName = string.Empty;
 				targetMob.SaveIntoDatabase();
 				client.Out.SendMessage("Mob equipment cleared.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				targetMob.BroadcastLivingEquipmentUpdate();
@@ -1721,14 +1721,14 @@ namespace DOL.GS.Commands
 					{
 						GameNpcInventoryTemplate load = new GameNpcInventoryTemplate();
 
-						var equipmentId = Convert.ToInt32(args[3]);
-						if (!load.LoadFromDatabase(equipmentId))
+						var equipmentName = args[3];
+						if (!load.LoadFromDatabase(equipmentName))
 						{
 							client.Out.SendMessage("Error loading equipment template \"" + args[3] + "\"", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							return;
 						}
 
-						targetMob.EquipmentTemplateID = equipmentId;
+						targetMob.EquipmentTemplateName = equipmentName;
 						targetMob.Inventory = load;
 						targetMob.SaveIntoDatabase();
 						targetMob.BroadcastLivingEquipmentUpdate();
@@ -1858,9 +1858,9 @@ namespace DOL.GS.Commands
 						{
 							bool replace = (args.Length > 4 && args[4].ToLower() == "replace");
 
-							var templateId = Convert.ToInt32(args[3]);
+							var templateName = args[3];
 
-							var existingTemplates = GameServer.Database.NpcEquipments.Where(x => x.Id == templateId).ToList();
+							var existingTemplates = GameServer.Database.NpcEquipments.Where(x => x.EquipmentTemplateName == templateName).ToList();
 
 							if (existingTemplates.Any())
 							{
@@ -1875,13 +1875,13 @@ namespace DOL.GS.Commands
 								}
 							}
 
-							if (!targetMob.Inventory.SaveIntoDatabase(templateId))
+							if (!targetMob.Inventory.SaveIntoDatabase(templateName))
 							{
 								client.Out.SendMessage("Error saving template with name " + args[3], eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								return;
 							}
 
-							targetMob.EquipmentTemplateID = templateId;
+							targetMob.EquipmentTemplateName = templateName;
 							targetMob.SaveIntoDatabase();
 							GameNpcInventoryTemplate.Init();
 							client.Out.SendMessage("Target mob equipment template is saved as '" + args[3] + "'", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -2370,7 +2370,7 @@ namespace DOL.GS.Commands
 			mob.CurrentSpeed = 0;
 			mob.MaxSpeedBase = targetMob.MaxSpeedBase;
 			mob.Inventory = targetMob.Inventory;
-			mob.EquipmentTemplateID = targetMob.EquipmentTemplateID;
+			mob.EquipmentTemplateName = targetMob.EquipmentTemplateName;
 
 			if (mob.Inventory != null)
 				mob.SwitchWeapon(targetMob.ActiveWeaponSlot);
@@ -2549,7 +2549,7 @@ namespace DOL.GS.Commands
 			if (mob.Inventory != null)
 				mob.SwitchWeapon(targetMob.ActiveWeaponSlot);
 
-			mob.EquipmentTemplateID = targetMob.EquipmentTemplateID;
+			mob.EquipmentTemplateName = targetMob.EquipmentTemplateName;
 
 			if (mob is GameMerchant)
 			{
@@ -2702,19 +2702,21 @@ namespace DOL.GS.Commands
 			{
 				string pathname = String.Join(" ", args, 2, args.Length - 2);
 
-				if (!Int32.TryParse(pathname, out int pathId))
-                {
-					client.Out.SendMessage("Invalid path ID", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					return;
-				}
+				//if (!Int32.TryParse(pathname, out int pathId))
+				//            {
+				//	client.Out.SendMessage("Invalid path ID", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				//	return;
+				//}
 
-				if (MovementMgr.LoadPath(pathId) == null)
+				var pathPoint = MovementMgr.LoadPath(pathname);
+				var path = GameServer.Database.Paths.FirstOrDefault(x => x.PathName == pathname);
+				if (pathPoint == null || path == null)
 				{
 					client.Out.SendMessage("The specified path does not exist", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				else
 				{
-					targetMob.PathID = pathId;
+					targetMob.PathID = path.Id;
 					targetMob.SaveIntoDatabase();
 
 					if (targetMob.Brain.Stop())

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -286,7 +287,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					}
 					else
 					{
-						playerAccount = GameServer.Database.FindObjectByKey<Account>(userName);
+						playerAccount = GameServer.Database.Accounts.FirstOrDefault(x => x.Name == userName);
 
 						client.PingTime = DateTime.Now.Ticks;
 
@@ -311,11 +312,11 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 								// check for account bombing
 								TimeSpan ts;
-								var allAccByIp = DOLDB<Account>.SelectObjects(DB.Column("LastLoginIP").IsEqualTo(ipAddress));
+								var allAccByIp = GameServer.Database.Accounts.Where(x => x.LastLoginIP == ipAddress);
 								int totalacc = 0;
 								foreach (Account ac in allAccByIp)
 								{
-									ts = DateTime.Now - ac.CreationDate;
+									ts = DateTime.Now - ac.CreateDate.Value;
 									if (ts.TotalMinutes < Properties.TIME_BETWEEN_ACCOUNT_CREATION_SAMEIP && totalacc > 1)
 									{
 										Log.Warn("Account creation: too many from same IP within set minutes - " + userName + " : " + ipAddress);
@@ -362,7 +363,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 								playerAccount.Name = userName;
 								playerAccount.Password = CryptPassword(password);
 								playerAccount.Realm = 0;
-								playerAccount.CreationDate = DateTime.Now;
+								playerAccount.CreateDate = DateTime.Now;
 								playerAccount.LastLogin = DateTime.Now;
 								playerAccount.LastLoginIP = ipAddress;
 								playerAccount.LastClientVersion = ((int)client.Version).ToString();
@@ -448,19 +449,11 @@ namespace DOL.GS.PacketHandler.Client.v168
 					AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.AccountSuccessfulLogin, "", userName);
 				}
 			}
-			catch (DatabaseException e)
+			catch (Exception e)
 			{
 				if (Log.IsErrorEnabled) Log.Error("LoginRequestHandler", e);
 
                 client.IsConnected = false;
-				client.Out.SendLoginDenied(eLoginError.CannotAccessUserAccount);
-				GameServer.Instance.Disconnect(client);
-			}
-			catch (Exception e)
-			{
-				if (Log.IsErrorEnabled)
-					Log.Error("LoginRequestHandler", e);
-
 				client.Out.SendLoginDenied(eLoginError.CannotAccessUserAccount);
 				GameServer.Instance.Disconnect(client);
 			}

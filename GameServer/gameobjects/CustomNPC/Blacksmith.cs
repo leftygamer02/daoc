@@ -49,8 +49,8 @@ namespace DOL.GS
 		public override IList GetExamineMessages(GamePlayer player)
 		{
 			IList list = new ArrayList();
-            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Blacksmith.YouTarget", GetName(0, false, player.Client.Account.Language, this)));
-            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Blacksmith.YouExamine", GetName(0, false, player.Client.Account.Language, this),
+            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Blacksmith.YouTarget", GetName(0, false)));
+            list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Blacksmith.YouExamine", GetName(0, false),
                                                 GetPronoun(0, true, player.Client.Account.Language), GetAggroLevelString(player, false)));
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Blacksmith.GiveObject", GetPronoun(0, true, player.Client.Account.Language)));
 			return list;
@@ -91,7 +91,7 @@ namespace DOL.GS
 				return false;
 			}
 
-			switch (item.ObjectType)
+			switch (item.ItemTemplate.ObjectType)
 			{
 				case (int)eObjectType.GenericItem:
 				case (int)eObjectType.Magical:
@@ -103,7 +103,7 @@ namespace DOL.GS
 					return false;
 			}
 
-			if (item.Condition < item.MaxCondition)
+			if (item.Condition < item.ItemTemplate.MaxCondition)
 			{
 				if (item.Durability <= 0)
 				{
@@ -154,7 +154,7 @@ namespace DOL.GS
 
 
 			if (item == null || item.SlotPosition == (int)eInventorySlot.Ground
-			    || item.OwnerID == null || item.OwnerID != player.InternalID)
+			    || item.CharacterID == null || item.CharacterID != player.InternalID)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language,
 				                                                  "Scripts.Blacksmith.InvalidItem"), eChatType.CT_System,
@@ -163,7 +163,7 @@ namespace DOL.GS
 				return;
 			}
 
-			int ToRecoverCond = item.MaxCondition - item.Condition;
+			int ToRecoverCond = item.ItemTemplate.MaxCondition - item.Condition;
 
 			if (!player.RemoveMoney(item.RepairCost))
 			{
@@ -189,8 +189,8 @@ namespace DOL.GS
 			}
 			else
 			{
-				item.Condition = item.MaxCondition;
-				if (!item.IsNotLosingDur) item.Durability -= (ToRecoverCond + 1);
+				item.Condition = item.ItemTemplate.MaxCondition;
+				if (!item.ItemTemplate.IsNotLosingDur) item.Durability -= (ToRecoverCond + 1);
 			}
 
 

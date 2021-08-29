@@ -137,7 +137,7 @@ namespace DOL.GS
 
 				foreach (ArtifactQuest quest in QuestListToGive)
 				{
-					if (text.ToLower() == quest.ArtifactID.ToLower())
+					if (text.ToLower() == quest.ArtifactID.ToString().ToLower())
 					{
 						if (quest.CheckQuestQualification(player))
 						{
@@ -229,7 +229,7 @@ namespace DOL.GS
 				return;
 
 			player.AddQuest(quest);
-			quest.WhisperReceive(player, this, quest.ArtifactID);
+			quest.WhisperReceive(player, this, quest.ArtifactID.ToString());
 		}
 
 		/// <summary>

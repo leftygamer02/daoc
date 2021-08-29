@@ -76,7 +76,7 @@ namespace DOL.GS
 			if (response != 0x01)
 				return; //declined
 
-			player.PrimaryCraftingSkill = TheCraftingSkill;
+			player.CraftingPrimarySkill = TheCraftingSkill;
 
 			player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "CraftNPC.CraftNpcDialogResponse.Accepted", ACCEPTED_BY_ORDER_NAME), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 				

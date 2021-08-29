@@ -171,6 +171,8 @@ namespace Atlas.DataLayer.Models
         public virtual ICollection<CharacterOneTimeDrop> OneTimeDrops { get; set; }
         public virtual ICollection<CharacterMasterLevel> MasterLevels { get; set; }
         public virtual ICollection<CharacterTask> CharacterTasks { get; set; }
+        public virtual ICollection<PlayerEffect> PlayerEffects { get; set; }
+        public virtual ICollection<SinglePermission> SinglePermissions { get; set; }
 
         public Character()
         {
@@ -185,6 +187,8 @@ namespace Atlas.DataLayer.Models
             OneTimeDrops = new HashSet<CharacterOneTimeDrop>();
             MasterLevels = new HashSet<CharacterMasterLevel>();
             CharacterTasks = new HashSet<CharacterTask>();
+            PlayerEffects = new HashSet<PlayerEffect>();
+            SinglePermissions = new HashSet<SinglePermission>();
         }
 
     }

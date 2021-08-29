@@ -18,7 +18,7 @@
  */
 
 using System;
-
+using System.Linq;
 using DOL.GS.PacketHandler;
 using DOL.GS.GameEvents;
 using Atlas.DataLayer.Models;
@@ -63,12 +63,12 @@ namespace DOL.GS.Commands
 			if (ServerProperties.Properties.MAX_BUGREPORT_QUEUE > 0)
 			{
 				//Andraste
-				var reports = GameServer.Database.SelectAllObjects<BugReport>();
+				var reports = GameServer.Database.BugReports.ToList();
 				bool found = false; int i = 0;
 				for (i = 0; i < ServerProperties.Properties.MAX_BUGREPORT_QUEUE; i++)
 				{
 					found = false;
-					foreach (BugReport rep in reports) if (rep.ID == i) found = true;
+					foreach (BugReport rep in reports) if (rep.Id == i) found = true;
 					if (!found) break;
 				}
 				if (found)
@@ -76,13 +76,11 @@ namespace DOL.GS.Commands
 					client.Player.Out.SendMessage("There are too many reports, please contact a GM or wait until they are cleaned.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
 				}
-
-				report.ID = i;
 			}
 			else
 			{
 				// This depends on bugs never being deleted from the report table!
-				report.ID = GameServer.Database.GetObjectCount<BugReport>() + 1;
+				//report.ID = GameServer.Database. GetObjectCount<BugReport>() + 1;
 			}
 			
 			report.Message = message;
@@ -96,7 +94,7 @@ namespace DOL.GS.Commands
 					client.Player.Out.SendMessage("If you enter your email address for your account with /email command, your bug reports will send an email to the staff!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 				else
 				{
-					Mail.MailMgr.SendMail(ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES, GameServer.Instance.Configuration.ServerName + " bug report " + report.ID, report.Message, report.Submitter, client.Account.Mail);
+					Mail.MailMgr.SendMail(ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES, GameServer.Instance.Configuration.ServerName + " bug report " + report.Id, report.Message, report.Submitter, client.Account.Mail);
 				}
 			}
 		}

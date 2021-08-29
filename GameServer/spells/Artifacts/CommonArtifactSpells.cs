@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using DOL.AI.Brain;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -272,7 +273,7 @@ namespace DOL.GS.Spells
             {
             	GamePlayer player = effect.Owner as GamePlayer;
                 GameClient client = player.Client;
- 				player.Model = (ushort)client.Account.Characters[client.ActiveCharIndex].CreationModel;            	
+                player.Model = (ushort)client.Account.Characters.ElementAt(client.ActiveCharIndex).CreationModel;
  				player.Out.SendUpdatePlayer();  
             }                       
             return base.OnEffectExpires(effect, noMessages);         	

@@ -21,6 +21,7 @@ using System.Linq;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler.Client.v168;
 using DOL.Language;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.Commands
 {
@@ -86,9 +87,9 @@ namespace DOL.GS.Commands
                         {
                             Name = AccountName,
                             Password = PacketHandler.Client.v168.LoginRequestHandler.CryptPassword(Password),
-                            PrivLevel = (uint)ePrivLevel.Player,
+                            PrivLevel = (int)ePrivLevel.Player,
                             Realm = (int)eRealm.None,
-                            CreationDate = DateTime.Now,
+                            CreateDate = DateTime.Now,
                             Language = ServerProperties.Properties.SERV_LANGUAGE
                         };
                         GameServer.Instance.SaveDataObject(account);
@@ -143,7 +144,7 @@ namespace DOL.GS.Commands
 						}
 
 						KickAccount(acc);
-						GameServer.Database.DeleteObject(acc);
+						GameServer.Instance.DeleteDataObject(acc);
 
 						// Log change
 						AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.AccountDelete, "acct="+AccountName, (client.Player != null ? client.Player.Name : ""));
@@ -171,7 +172,7 @@ namespace DOL.GS.Commands
                         }
 
                         KickCharacter(cha);
-                        GameServer.Database.DeleteObject(cha);
+                        GameServer.Instance.DeleteDataObject(cha);
 
 						// Log change
 						AuditMgr.AddAuditEntry(client, AuditType.Character, AuditSubtype.CharacterDelete, "char="+charname, (client.Player != null ? client.Player.Name : ""));
@@ -253,7 +254,7 @@ namespace DOL.GS.Commands
                             playingclient.Disconnect();
                         }
 
-                        cha.AccountName = acc.Name;
+                        cha.AccountID = acc.Id;
                         cha.AccountSlot = freeslot;
 
                         GameServer.Instance.SaveDataObject(cha);
@@ -309,8 +310,8 @@ namespace DOL.GS.Commands
 							return;
 						}
 
-						var banacc = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("A").Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Account").IsEqualTo(accountname)));
-						if (banacc.Count == 0)
+						var banacc = GameServer.Database.Bans.Where(x => (x.Type == "A" || x.Type == "B") && x.AccountID == acc.Id);
+						if (banacc.Any())
 						{
 							DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Account.AccountNotFound", accountname));
 							return;
@@ -318,7 +319,7 @@ namespace DOL.GS.Commands
 						
 						try
                         {
-                            GameServer.Database.DeleteObject(banacc);
+                            GameServer.Instance.DeleteDataObjects(banacc.ToList());
                         }
                         catch(Exception) { DisplaySyntax(client); return; }
 						DisplayMessage(client, "Account "+accountname+" unbanned!");
@@ -362,7 +363,7 @@ namespace DOL.GS.Commands
 			GameClient client = WorldMgr.GetClientByAccountName(name, true);
 			if (client != null)
 				return client.Account;
-			return GameServer.Database.FindObjectByKey<Account>(name);
+			return GameServer.Database.Accounts.FirstOrDefault(x => x.Name == name);
 		}
 
 		/// <summary>
@@ -375,7 +376,7 @@ namespace DOL.GS.Commands
 			GameClient client = WorldMgr.GetClientByPlayerName(charname, true, false);
 			if (client != null)
 				return client.Player.DBCharacter;
-			return DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(charname));
+			return GameServer.Database.Characters.FirstOrDefault(x => x.Name == charname);
 		}
 
 		/// <summary>
@@ -417,9 +418,9 @@ namespace DOL.GS.Commands
 			if (client != null)
 				return client.Account.Name;
 
-			var ch = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(charname));
+			var ch = GameServer.Database.Characters.Include(x => x.Account).FirstOrDefault(x => x.Name == charname);
 			if (ch != null)
-				return ch.AccountName;
+				return ch.Account.Name;
 			else
 				return null;
 		}

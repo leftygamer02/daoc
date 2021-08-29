@@ -163,7 +163,7 @@ namespace DOL.GS.Commands
 
 		private void add(GameClient client, GameDoor targetDoor)
 		{
-			var DOOR = DOLDB<DBDoor>.SelectObject(DB.Column("InternalID").IsEqualTo(DoorID));
+			var DOOR = GameServer.Database.Doors.FirstOrDefault(x => x.InternalID == DoorID);
 
 			if (DOOR != null)
 			{
@@ -174,8 +174,7 @@ namespace DOL.GS.Commands
 			{
 				if (doorType != 7 && doorType != 9)
 				{
-					var door = new DBDoor();
-					door.ObjectId = null;
+					var door = new Door();
 					door.InternalID = DoorID;
 					door.Name = "door";
 					door.Type = DoorID/100000000;
@@ -204,8 +203,7 @@ namespace DOL.GS.Commands
 			{
 				if (doorType != 7 && doorType != 9)
 				{
-					var door = new DBDoor();
-					door.ObjectId = null;
+					var door = new Door();
 					door.InternalID = DoorID;
 					door.Name = "door";
 					door.Type = DoorID/100000000;
@@ -228,11 +226,11 @@ namespace DOL.GS.Commands
 
 		private void delete(GameClient client, GameDoor targetDoor)
 		{
-			var DOOR = DOLDB<DBDoor>.SelectObject(DB.Column("InternalID").IsEqualTo(DoorID));
+			var DOOR = GameServer.Database.Doors.FirstOrDefault(x => x.InternalID == DoorID);
 
 			if (DOOR != null)
 			{
-				GameServer.Database.DeleteObject(DOOR);
+				GameServer.Instance.DeleteDataObject(DOOR);
 				client.Out.SendMessage("Door removed", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return;
 			}

@@ -37,7 +37,7 @@ namespace DOL.GS
 		int LastClientSlot { get; }
 		int FirstDBSlot { get; }
 		int LastDBSlot { get; }
-		string GetOwner(GamePlayer player);
+		int? GetOwner(GamePlayer player);
 		IList<InventoryItem> DBItems(GamePlayer player = null);
 		Dictionary<int, InventoryItem> GetClientInventory(GamePlayer player);
 		bool CanHandleMove(GamePlayer player, ushort fromClientSlot, ushort toClientSlot);
@@ -125,7 +125,7 @@ namespace DOL.GS
 				{
 					player.Inventory.RemoveTradeItem(toItem);
 					toItem.SlotPosition = fromItem.SlotPosition;
-					toItem.OwnerID = thisObject.GetOwner(player);
+					toItem.CharacterID = thisObject.GetOwner(player);
 					thisObject.OnAddItem(player, toItem);
 					GameServer.Instance.SaveDataObject(toItem);
 				}
@@ -174,7 +174,7 @@ namespace DOL.GS
 					player.Inventory.AddTradeItem(fromClientSlot, toItem);
 				}
 
-				fromItem.OwnerID = thisObject.GetOwner(player);
+				fromItem.CharacterID = thisObject.GetOwner(player);
 				fromItem.SlotPosition = (int)(toClientSlot) - (int)(thisObject.FirstClientSlot) + thisObject.FirstDBSlot;
 				thisObject.OnAddItem(player, fromItem);
 				GameServer.Instance.SaveDataObject(fromItem);

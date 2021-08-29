@@ -23,7 +23,7 @@ namespace DOL.GS
         {
             IList list = new ArrayList(4);
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameGuard.GetExamineMessages.Examine", 
-                                                GetName(0, true, player.Client.Account.Language, this), GetPronoun(0, true, player.Client.Account.Language),
+                                                GetName(0, true), GetPronoun(0, true, player.Client.Account.Language),
                                                 GetAggroLevelString(player, false)));
             return list;
         }

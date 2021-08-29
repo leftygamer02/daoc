@@ -97,7 +97,7 @@ namespace DOL.GS
 			}
 
 			//actually stores the Id_nb of the siegeweapon
-			siegeweapon.ItemId = product.Id;
+			siegeweapon.KeyName = product.KeyName;
 
 			siegeweapon.LoadFromDatabase(product);
 			siegeweapon.CurrentRegion = player.CurrentRegion;

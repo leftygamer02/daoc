@@ -1751,35 +1751,11 @@ namespace DOL.GS
 
 			eRealm realm = eRealm.None;
 
-			if (item.Bonus1Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus1Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus2Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus2Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus3Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus3Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus4Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus4Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus5Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus5Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus6Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus6Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus7Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus7Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus8Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus8Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus9Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus9Type)) != eRealm.None)
-				return new eRealm[] { realm };
-
-			if (item.Bonus10Type > 0 && (realm = GetBonusRealm((eProperty)item.Bonus10Type)) != eRealm.None)
-				return new eRealm[] { realm };
+			foreach (var bonus in item.Bonuses)
+            {
+				if (bonus.BonusType > 0 && (realm = GetBonusRealm((eProperty)bonus.BonusType)) != eRealm.None)
+					return new eRealm[] { realm };
+            }
 
 			return new eRealm[] { realm };
 

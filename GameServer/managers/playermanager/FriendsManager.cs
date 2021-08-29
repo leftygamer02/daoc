@@ -51,7 +51,7 @@ namespace DOL.GS.Friends
 		/// <summary>
 		/// Server Database Reference.
 		/// </summary>
-		private IObjectDatabase Database { get; set; }
+		private Atlas.DataLayer.AtlasContext Database { get; set; }
 
 		/// <summary>
 		/// Get this Player Friends List
@@ -71,7 +71,7 @@ namespace DOL.GS.Friends
 		/// <summary>
 		/// Create a new Instance of <see cref="FriendsManager"/>
 		/// </summary>
-		public FriendsManager(IObjectDatabase Database)
+		public FriendsManager(Atlas.DataLayer.AtlasContext Database)
 		{
 			this.Database = Database;
 			PlayersFriendsListsCache = new ReaderWriterDictionary<GamePlayer, string[]>();
@@ -91,7 +91,7 @@ namespace DOL.GS.Friends
 			if (Player == null)
 				throw new ArgumentNullException("Player");
 
-			var friends = Player.SerializedFriendsList;
+			var friends = Player.GetFriends();
 
 			if (!PlayersFriendsListsCache.AddIfNotExists(Player, friends))
 			{
@@ -102,8 +102,8 @@ namespace DOL.GS.Friends
 			var offlineFriends = new FriendStatus[0];
 			if (friends.Any())
 			{
-				offlineFriends = Database.SelectObjects<Character>(DB.Column("Name").IsIn(friends))
-					.Select(chr => new FriendStatus(chr.Name, chr.Level, chr.Class, chr.LastPlayed)).ToArray();
+				offlineFriends = Database.Characters.Where(x => friends.Contains(x.Name))
+					.Select(chr => new FriendStatus(chr.Name, chr.Level, chr.Class, chr.LastPlayed.Value)).ToArray();
 			}
 
 			if (!PlayersFriendsStatusCache.AddIfNotExists(Player, offlineFriends))
@@ -171,15 +171,19 @@ namespace DOL.GS.Friends
 
 			if (success)
 			{
-				Player.Out.SendAddFriends(new[] { Friend });
-				Player.SerializedFriendsList = this[Player];
+                Player.Out.SendAddFriends(new[] { Friend });
+				Player.DBCharacter.FriendList.Add(new CharacterFriend()
+				{
+					CharacterID = Player.DBCharacter.Id,
+					FriendName = Friend
+				});
 
-				var offlineFriend = Database.SelectObjects<Character>(DB.Column("Name").IsEqualTo(Friend)).FirstOrDefault();
+				var offlineFriend = Database.Characters.FirstOrDefault(x => x.Name == Friend);
 
 				if (offlineFriend != null)
 				{
 					if (!PlayersFriendsStatusCache.TryUpdate(Player, list => list.Where(frd => frd.Name != Friend)
-															 .Concat(new[] { new FriendStatus(offlineFriend.Name, offlineFriend.Level, offlineFriend.Class, offlineFriend.LastPlayed) })
+															 .Concat(new[] { new FriendStatus(offlineFriend.Name, offlineFriend.Level, offlineFriend.Class, offlineFriend.LastPlayed.Value) })
 															 .ToArray()))
 					{
 						if (log.IsWarnEnabled)
@@ -228,7 +232,14 @@ namespace DOL.GS.Friends
 			if (success)
 			{
 				Player.Out.SendRemoveFriends(new[] { Friend });
-				Player.SerializedFriendsList = this[Player];
+
+				var existing = Player.DBCharacter.FriendList.FirstOrDefault(x => x.FriendName == Friend);
+
+				if (existing != null)
+                {
+					Player.DBCharacter.FriendList.Remove(existing);
+                }
+
 
 				if (!PlayersFriendsStatusCache.TryUpdate(Player, list => list.Where(frd => frd.Name != Friend).ToArray()))
 				{

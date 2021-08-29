@@ -64,12 +64,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 							continue;
 
 						int i = entry.Key;
-						GameServer.Database.DeleteObject(oitem.DatabaseItem); //delete the database instance
+						GameServer.Instance.DeleteDataObject(oitem.DatabaseItem); //delete the database instance
 
 						// return indoor item into inventory item, add to player inventory
 						var invitem = GameInventoryItem.Create((house.OutdoorItems[i]).BaseItem);
 						if (client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem))
-							InventoryLogging.LogInventoryAction("(HOUSE;" + house.HouseNumber + ")", client.Player, eInventoryActionType.Other, invitem.Template, invitem.Count);
+							InventoryLogging.LogInventoryAction("(HOUSE;" + house.HouseNumber + ")", client.Player, eInventoryActionType.Other, invitem.ItemTemplate, invitem.Count);
 						house.OutdoorItems.Remove(i);
 
 						// update garden
@@ -111,7 +111,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 								                                  (method == 2 ? "wall surface" : "floor"));
 
 								ChatUtil.SendSystemMessage(client, removalMsg);
-								InventoryLogging.LogInventoryAction("(HOUSE;" + house.HouseNumber + ")", client.Player, eInventoryActionType.Other, item.Template, item.Count);
+								InventoryLogging.LogInventoryAction("(HOUSE;" + house.HouseNumber + ")", client.Player, eInventoryActionType.Other, item.ItemTemplate, item.Count);
 							}
 							else
 							{
@@ -124,18 +124,17 @@ namespace DOL.GS.PacketHandler.Client.v168
 							ChatUtil.SendSystemMessage(client, "The " + item.Name + " is cleared from the wall surface.");
 						}
 					}
-					else if (iitem.DatabaseItem.BaseItemID.Contains("GuildBanner"))
+					else if (iitem.DatabaseItem.BaseItem.KeyName.Contains("GuildBanner"))
 					{
 						var it = new ItemTemplate
 						         	{
-						         		Id_nb = iitem.DatabaseItem.BaseItemID,
+						         		KeyName = iitem.DatabaseItem.BaseItem.KeyName,
 						         		CanDropAsLoot = false,
 						         		IsDropable = true,
 						         		IsPickable = true,
 						         		IsTradable = true,
 						         		ItemType = 41,
 						         		Level = 1,
-						         		MaxCharges = 1,
 						         		MaxCount = 1,
 						         		Model = iitem.DatabaseItem.Model,
 						         		Emblem = iitem.DatabaseItem.Emblem,
@@ -144,7 +143,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						         		Quality = 100
 						         	};
 
-						string[] idnb = iitem.DatabaseItem.BaseItemID.Split('_');
+						string[] idnb = iitem.DatabaseItem.BaseItem.KeyName.Split('_');
 						it.Name = idnb[1] + "'s Banner";
 
 						// TODO: Once again with guild banners, templates are memory only and will not load correctly once player logs out - tolakram
@@ -155,7 +154,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 							                              (method == 2 ? "wall surface" : "floor"));
 
 							ChatUtil.SendSystemMessage(client, invMsg);
-							InventoryLogging.LogInventoryAction("(HOUSE;" + house.HouseNumber + ")", client.Player, eInventoryActionType.Other, inv.Template, inv.Count);
+							InventoryLogging.LogInventoryAction("(HOUSE;" + house.HouseNumber + ")", client.Player, eInventoryActionType.Other, inv.ItemTemplate, inv.Count);
 						}
 						else
 						{
@@ -172,7 +171,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						ChatUtil.SendSystemMessage(client, "The decoration item is cleared from the floor.");
 					}
 
-					GameServer.Database.DeleteObject((house.IndoorItems[(position)]).DatabaseItem);
+					GameServer.Instance.DeleteDataObject((house.IndoorItems[(position)]).DatabaseItem);
 					house.IndoorItems.Remove(position);
 
 					var pak = new GSTCPPacketOut(client.Out.GetPacketCode(eServerPackets.HousingItem));
@@ -204,7 +203,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 		private static bool GetItemBack(InventoryItem item)
 		{
-			switch (item.ObjectType)
+			switch (item.ItemTemplate.ObjectType)
 			{
 				case (int) eObjectType.Axe:
 				case (int) eObjectType.Blades:

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
@@ -106,12 +107,12 @@ namespace DOL.GS
 			get { return (int)(eInventorySlot.HouseVault_First) + VaultSize * (Index + 1) - 1; }
 		}
 
-		public virtual string GetOwner(GamePlayer player = null)
+		public virtual int? GetOwner(GamePlayer player = null)
 		{
 			if (player == null)
 			{
 				log.Error("GameVault GetOwner(): player cannot be null!");
-				return "PlayerIsNullError";
+				return null;
 			}
 
 			return player.InternalID;
@@ -142,7 +143,7 @@ namespace DOL.GS
 					}
 					else
 					{
-						log.ErrorFormat("GAMEVAULT: Duplicate item {0}, owner {1}, position {2}", item.Name, item.OwnerID, (item.SlotPosition + slotOffset));
+						log.ErrorFormat("GAMEVAULT: Duplicate item {0}, owner {1}, position {2}", item.Name, item.CharacterID, (item.SlotPosition + slotOffset));
 					}
 				}
 			}
@@ -182,8 +183,7 @@ namespace DOL.GS
 		/// </summary>
 		public IList<InventoryItem> DBItems(GamePlayer player = null)
 		{
-			var filterBySlot = DB.Column("SlotPosition").IsGreaterOrEqualTo(FirstDBSlot).And(DB.Column("SlotPosition").IsLessOrEqualTo(LastDBSlot));
-			return DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsEqualTo(GetOwner(player)).And(filterBySlot));
+			return GameServer.Database.InventoryItems.Where(x => x.CharacterID == GetOwner(player) && x.SlotPosition >= FirstDBSlot && x.SlotPosition <= LastDBSlot).ToList();
 		}
 
 		/// <summary>
@@ -257,7 +257,7 @@ namespace DOL.GS
 			InventoryItem itemInToSlot = player.Inventory.GetItem((eInventorySlot)toSlot);
 
 			// Check for a swap to get around not allowing non-tradables in a housing vault - Tolakram
-			if (fromHousing && itemInToSlot != null && itemInToSlot.IsTradable == false)
+			if (fromHousing && itemInToSlot != null && itemInToSlot.ItemTemplate.IsTradable == false)
 			{
 				player.Out.SendMessage("You cannot swap with an untradable item!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				log.DebugFormat("GameVault: {0} attempted to swap untradable item {2} with {1}", player.Name, itemInFromSlot.Name, itemInToSlot.Name);
@@ -267,7 +267,7 @@ namespace DOL.GS
 
 			// Allow people to get untradables out of their house vaults (old bug) but 
 			// block placing untradables into housing vaults from any source - Tolakram
-			if (toHousing && itemInFromSlot != null && itemInFromSlot.IsTradable == false)
+			if (toHousing && itemInFromSlot != null && itemInFromSlot.ItemTemplate.IsTradable == false)
 			{
 				player.Out.SendMessage("You can not put this item into a House Vault!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				player.Out.SendInventoryItemsUpdate(null);

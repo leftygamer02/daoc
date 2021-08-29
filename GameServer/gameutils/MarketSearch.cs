@@ -21,6 +21,7 @@
 // Based on MarketNPC by Etaew, rewritten by Tolakram for new Inventory system
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -94,7 +95,7 @@ namespace DOL.GS
 				if (m_searchHasError)
 					break;
 
-				if (item.IsTradable == false)
+				if (item.ItemTemplate.IsTradable == false)
 					continue;
 
 				if (item.SellPrice < 1)
@@ -108,16 +109,16 @@ namespace DOL.GS
 				if (search.name != "" && item.Name.ToLower().Contains(search.name.ToLower()) == false)
 					continue;
 
-				if (search.levelMin > 1 && item.Level < search.levelMin)
+				if (search.levelMin > 1 && item.ItemTemplate.Level < search.levelMin)
 					continue;
 
-				if (search.levelMax > -1 && search.levelMax < 52 && item.Level > search.levelMax)
+				if (search.levelMax > -1 && search.levelMax < 52 && item.ItemTemplate.Level > search.levelMax)
 					continue;
 
-				if (search.qtyMin > 84 && item.Quality < search.qtyMin)
+				if (search.qtyMin > 84 && item.ItemTemplate.Quality < search.qtyMin)
 					continue;
 
-				if (search.qtyMax < 100 && item.Quality > search.qtyMax)
+				if (search.qtyMax < 100 && item.ItemTemplate.Quality > search.qtyMax)
 					continue;
 
 				if (search.priceMin > 1 && item.SellPrice < search.priceMin)
@@ -126,13 +127,13 @@ namespace DOL.GS
 				if (search.priceMax > 0 && item.SellPrice > search.priceMax)
 					continue;
 
-				if (search.visual > 0 && item.Effect == 0)
+				if (search.visual > 0 && item.ItemTemplate.Effect == 0)
 					continue;
 
 				if (search.playerCrafted > 0 && item.IsCrafted == false)
 					continue;
 
-				if (search.proc > 0 && item.ProcSpellID == 0 && item.ProcSpellID1 == 0)
+				if (search.proc > 0 && !item.Spells.Any(x => x.ProcChance > 0))
 					continue;
 
 				if (CheckSlot(item, search.slot) == false)
@@ -174,25 +175,25 @@ namespace DOL.GS
 			{
 				switch (slot)
 				{
-					case 0: return item.ItemType == (int)eInventorySlot.HandsArmor;
-					case 1: return item.ItemType == (int)eInventorySlot.FeetArmor;
-					case 2: return item.ItemType == (int)eInventorySlot.HeadArmor;
-					case 3: return item.ItemType == (int)eInventorySlot.ArmsArmor;
-					case 4: return item.ItemType == (int)eInventorySlot.LegsArmor;
-					case 5: return item.ItemType == (int)eInventorySlot.TorsoArmor;
-					case 6: return item.ObjectType == (int)eObjectType.Magical && (item.ItemType == (int)eInventorySlot.RightRing || item.ItemType == (int)eInventorySlot.LeftRing);
-					case 7: return item.ObjectType == (int)eObjectType.Magical && (item.ItemType == (int)eInventorySlot.RightBracer || item.ItemType == (int)eInventorySlot.LeftBracer);
-					case 8: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Waist;
-					case 9: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Neck;
-					case 10: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Cloak;
-					case 11: return item.ObjectType == (int)eObjectType.Magical && item.ItemType == (int)eInventorySlot.Jewellery;
-					case 12: return item.ItemType == (int)eInventorySlot.RightHandWeapon || item.ItemType == (int)eInventorySlot.LeftHandWeapon || item.ItemType == (int)eInventorySlot.TwoHandWeapon;
-					case 13: return item.ObjectType == (int)eObjectType.Shield && item.ItemType == (int)eInventorySlot.LeftHandWeapon;
-					case 14: return item.ItemType == (int)eInventorySlot.TwoHandWeapon;
-					case 15: return item.ItemType == (int)eInventorySlot.DistanceWeapon;
-					case 16: return item.ItemType == (int)eInventorySlot.LeftHandWeapon;
-					case 17: return item.ObjectType == (int)eObjectType.Instrument && item.ItemType == (int)eInventorySlot.RightHandWeapon;
-					case 18: return item.ObjectType == (int)eObjectType.GenericItem;
+					case 0: return item.ItemTemplate.ItemType == (int)eInventorySlot.HandsArmor;
+					case 1: return item.ItemTemplate.ItemType == (int)eInventorySlot.FeetArmor;
+					case 2: return item.ItemTemplate.ItemType == (int)eInventorySlot.HeadArmor;
+					case 3: return item.ItemTemplate.ItemType == (int)eInventorySlot.ArmsArmor;
+					case 4: return item.ItemTemplate.ItemType == (int)eInventorySlot.LegsArmor;
+					case 5: return item.ItemTemplate.ItemType == (int)eInventorySlot.TorsoArmor;
+					case 6: return item.ItemTemplate.ObjectType == (int)eObjectType.Magical && (item.ItemTemplate.ItemType == (int)eInventorySlot.RightRing || item.ItemTemplate.ItemType == (int)eInventorySlot.LeftRing);
+					case 7: return item.ItemTemplate.ObjectType == (int)eObjectType.Magical && (item.ItemTemplate.ItemType == (int)eInventorySlot.RightBracer || item.ItemTemplate.ItemType == (int)eInventorySlot.LeftBracer);
+					case 8: return item.ItemTemplate.ObjectType == (int)eObjectType.Magical && item.ItemTemplate.ItemType == (int)eInventorySlot.Waist;
+					case 9: return item.ItemTemplate.ObjectType == (int)eObjectType.Magical && item.ItemTemplate.ItemType == (int)eInventorySlot.Neck;
+					case 10: return item.ItemTemplate.ObjectType == (int)eObjectType.Magical && item.ItemTemplate.ItemType == (int)eInventorySlot.Cloak;
+					case 11: return item.ItemTemplate.ObjectType == (int)eObjectType.Magical && item.ItemTemplate.ItemType == (int)eInventorySlot.Jewellery;
+					case 12: return item.ItemTemplate.ItemType == (int)eInventorySlot.RightHandWeapon || item.ItemTemplate.ItemType == (int)eInventorySlot.LeftHandWeapon || item.ItemTemplate.ItemType == (int)eInventorySlot.TwoHandWeapon;
+					case 13: return item.ItemTemplate.ObjectType == (int)eObjectType.Shield && item.ItemTemplate.ItemType == (int)eInventorySlot.LeftHandWeapon;
+					case 14: return item.ItemTemplate.ItemType == (int)eInventorySlot.TwoHandWeapon;
+					case 15: return item.ItemTemplate.ItemType == (int)eInventorySlot.DistanceWeapon;
+					case 16: return item.ItemTemplate.ItemType == (int)eInventorySlot.LeftHandWeapon;
+					case 17: return item.ItemTemplate.ObjectType == (int)eObjectType.Instrument && item.ItemTemplate.ItemType == (int)eInventorySlot.RightHandWeapon;
+					case 18: return item.ItemTemplate.ObjectType == (int)eObjectType.GenericItem;
 
 					default:
 
@@ -211,18 +212,7 @@ namespace DOL.GS
 		{
 			if (hp > 0)
 			{
-				if ((item.ExtraBonusType == (int)eProperty.MaxHealth && item.ExtraBonus >= hp) ||
-					(item.Bonus1Type == (int)eProperty.MaxHealth && item.Bonus1 >= hp) ||
-					(item.Bonus2Type == (int)eProperty.MaxHealth && item.Bonus2 >= hp) ||
-					(item.Bonus3Type == (int)eProperty.MaxHealth && item.Bonus3 >= hp) ||
-					(item.Bonus4Type == (int)eProperty.MaxHealth && item.Bonus4 >= hp) ||
-					(item.Bonus5Type == (int)eProperty.MaxHealth && item.Bonus5 >= hp) ||
-					(item.Bonus6Type == (int)eProperty.MaxHealth && item.Bonus6 >= hp) ||
-					(item.Bonus7Type == (int)eProperty.MaxHealth && item.Bonus7 >= hp) ||
-					(item.Bonus8Type == (int)eProperty.MaxHealth && item.Bonus8 >= hp) ||
-					(item.Bonus9Type == (int)eProperty.MaxHealth && item.Bonus9 >= hp) ||
-					(item.Bonus10Type == (int)eProperty.MaxHealth && item.Bonus10 >= hp))
-					return true;
+				return item.Bonuses.Any(x => x.BonusType == (int)eProperty.MaxHealth && x.BonusValue >= hp);
 			}
 
 			return false;
@@ -232,18 +222,7 @@ namespace DOL.GS
 		{
 			if (power > 0)
 			{
-				if ((item.ExtraBonusType == (int)eProperty.MaxMana && item.ExtraBonus >= power) ||
-					(item.Bonus1Type == (int)eProperty.MaxMana && item.Bonus1 >= power) ||
-					(item.Bonus2Type == (int)eProperty.MaxMana && item.Bonus2 >= power) ||
-					(item.Bonus3Type == (int)eProperty.MaxMana && item.Bonus3 >= power) ||
-					(item.Bonus4Type == (int)eProperty.MaxMana && item.Bonus4 >= power) ||
-					(item.Bonus5Type == (int)eProperty.MaxMana && item.Bonus5 >= power) ||
-					(item.Bonus6Type == (int)eProperty.MaxMana && item.Bonus6 >= power) ||
-					(item.Bonus7Type == (int)eProperty.MaxMana && item.Bonus7 >= power) ||
-					(item.Bonus8Type == (int)eProperty.MaxMana && item.Bonus8 >= power) ||
-					(item.Bonus9Type == (int)eProperty.MaxMana && item.Bonus9 >= power) ||
-					(item.Bonus10Type == (int)eProperty.MaxMana && item.Bonus10 >= power))
-					return true;
+				return item.Bonuses.Any(x => x.BonusType == (int)eProperty.MaxMana && x.BonusValue >= power);
 			}
 
 			return false;
@@ -255,31 +234,31 @@ namespace DOL.GS
 			{
 				case 1:
 
-					return item.ObjectType == (int)eObjectType.Cloth;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Cloth;
 
 				case 2:
 
-					return item.ObjectType == (int)eObjectType.Leather;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Leather;
 
 				case 3:
 
-					return item.ObjectType == (int)eObjectType.Studded;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Studded;
 
 				case 4:
 
-					return item.ObjectType == (int)eObjectType.Chain;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Chain;
 
 				case 5:
 
-					return item.ObjectType == (int)eObjectType.Plate;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Plate;
 
 				case 6:
 
-					return item.ObjectType == (int)eObjectType.Reinforced;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Reinforced;
 
 				case 7:
 
-					return item.ObjectType == (int)eObjectType.Scale;
+					return item.ItemTemplate.ObjectType == (int)eObjectType.Scale;
 
 				default:
 
@@ -611,11 +590,11 @@ namespace DOL.GS
 
 		protected virtual bool CheckForDamageType(InventoryItem item, int damageType)
 		{
-			if (GlobalConstants.IsWeapon(item.ObjectType))
+			if (GlobalConstants.IsWeapon(item.ItemTemplate.ObjectType))
 			{
 				if (damageType >= 1 && damageType <= 3)
 				{
-					return damageType == item.TypeDamage;
+					return damageType == item.ItemTemplate.TypeDamage;
 				}
 				else
 				{
@@ -634,18 +613,7 @@ namespace DOL.GS
 		{
 			if (property > 0)
 			{
-				if ((item.ExtraBonusType == property && item.ExtraBonus >= 0) ||
-					(item.Bonus1Type == property && item.Bonus1 >= 0) ||
-					(item.Bonus2Type == property && item.Bonus2 >= 0) ||
-					(item.Bonus3Type == property && item.Bonus3 >= 0) ||
-					(item.Bonus4Type == property && item.Bonus4 >= 0) ||
-					(item.Bonus5Type == property && item.Bonus5 >= 0) ||
-					(item.Bonus6Type == property && item.Bonus6 >= 0) ||
-					(item.Bonus7Type == property && item.Bonus7 >= 0) ||
-					(item.Bonus8Type == property && item.Bonus8 >= 0) ||
-					(item.Bonus9Type == property && item.Bonus9 >= 0) ||
-					(item.Bonus10Type == property && item.Bonus10 >= 0))
-					return true;
+				return item.Bonuses.Any(x => x.BonusType == property && x.BonusValue > 0);
 			}
 
 			return false;

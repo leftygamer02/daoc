@@ -129,7 +129,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, ArtifactID, versions[0]);
 					String reply = String.Format("Here is the {0}, {1} {2} {3} {4}, {5}!",
 						"restored to its original power. It is a fine item and I wish I could keep",
 						"it, but it is for you and you alone. Do not destroy it because you will never",
@@ -165,7 +165,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 				return false;
 
 			var artifact = ArtifactMgr.GetArtifacts().FirstOrDefault(x => x.Id == ArtifactID);
-			if (Step == 1- && text.ToLower() == artifact.Name.ToLower())
+			if (Step == -1 && text.ToLower() == artifact.Name.ToLower())
 			{
 				/* Commenting out to give a template for future development
 				String reply = String.Format("Vara was a very skilled healer and she put her skills {0} {1} {2}",

@@ -63,8 +63,6 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static int BeginWork(GamePlayer player, InventoryItem item)
 		{
-            SalvageYield salvageYield = null;
-
 			if (!IsAllowedToBeginWork(player, item))
 			{
 				return 0;
@@ -73,47 +71,47 @@ namespace DOL.GS
 			int salvageLevel = CraftingMgr.GetItemCraftLevel(item) / 100;
 			if(salvageLevel > 9) salvageLevel = 9; // max 9
 
-			var whereClause = WhereClause.Empty;
+			var query = GameServer.Database.SalvageYields.AsQueryable();
 
-			if (item.SalvageYieldID == 0)
-			{
-				whereClause = DB.Column("ObjectType").IsEqualTo(item.ObjectType).And(DB.Column("SalvageLevel").IsEqualTo(salvageLevel));
-			}
-			else
-			{
-				whereClause = DB.Column("ID").IsEqualTo(item.SalvageYieldID);
-			}
+			if (item.ItemTemplate.SalvageYieldID <= 0)
+            {
+				query = query.Where(x => x.ObjectType == item.ItemTemplate.ObjectType && x.SalvageLevel == salvageLevel);
+            }
+            else
+            {
+				query = query.Where(x => x.Id == item.ItemTemplate.SalvageYieldID);
+            }
 
 			if (ServerProperties.Properties.USE_SALVAGE_PER_REALM)
 			{
-				whereClause = whereClause.And(DB.Column("Realm").IsEqualTo((int)eRealm.None).Or(DB.Column("Realm").IsEqualTo(item.Realm)));
+				query = query.Where(x => x.Realm == (int)eRealm.None || x.Realm == item.ItemTemplate.Realm);
 			}
 
-			salvageYield = DOLDB<SalvageYield>.SelectObject(whereClause);
+			var salvageYield = query.FirstOrDefault();
 			ItemTemplate material = null;
 
-			if (salvageYield != null && string.IsNullOrEmpty(salvageYield.MaterialId_nb) == false)
+			if (salvageYield != null && salvageYield.ItemTemplateID > 0)
 			{
-				material = GameServer.Database.FindObjectByKey<ItemTemplate>(salvageYield.MaterialId_nb);
+				material = GameServer.Database.ItemTemplates.Find(salvageYield.ItemTemplateID);
 
 				if (material == null)
 				{
 					player.Out.SendMessage("Can't find material (" + material.Id + ") needed to salvage this item!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-					log.ErrorFormat("Salvage Error for ID: {0}:  Material not found: {1}", salvageYield.ID, material.Id);
+					log.ErrorFormat("Salvage Error for ID: {0}:  Material not found: {1}", salvageYield.Id, material.Id);
 				}
 			}
 
             if (material == null)
 			{
-				if (salvageYield == null && item.SalvageYieldID > 0)
+				if (salvageYield == null && item.ItemTemplate.SalvageYieldID > 0)
 				{
-					player.Out.SendMessage("This items salvage recipe (" + item.SalvageYieldID + ") not implemented yet.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-					log.ErrorFormat("SalvageYield ID {0} not found for item: {1}", item.SalvageYieldID, item.Name);
+					player.Out.SendMessage("This items salvage recipe (" + item.ItemTemplate.SalvageYieldID + ") not implemented yet.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					log.ErrorFormat("SalvageYield ID {0} not found for item: {1}", item.ItemTemplate.SalvageYieldID, item.Name);
 				}
 				else if (salvageYield == null)
 				{
 					player.Out.SendMessage("Salvage recipe not found for this item.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					log.ErrorFormat("Salvage Lookup Error: ObjectType: {0}, Item: {1}", item.ObjectType, item.Name);
+					log.ErrorFormat("Salvage Lookup Error: ObjectType: {0}, Item: {1}", item.ItemTemplate.ObjectType, item.Name);
 				}
 				return 0;
 			}
@@ -134,7 +132,7 @@ namespace DOL.GS
 			// clone the yield entry and update values to work with this salvage (not saved to the DB)
 			SalvageYield yield = salvageYield.Clone() as SalvageYield;
 
-			if (item.SalvageYieldID == 0 || yield.Count == 0)
+			if (item.ItemTemplate.SalvageYieldID == 0 || yield.Count == 0)
 			{
 				// Calculated salvage values
 				int count = GetMaterialYield(player, item, yield, material);
@@ -172,21 +170,21 @@ namespace DOL.GS
 			siegeWeapon.ReleaseControl();
 			siegeWeapon.RemoveFromWorld();
 			bool error = false;
-			var recipe = DOLDB<DBCraftedItem>.SelectObject(DB.Column("Id_nb").IsEqualTo(siegeWeapon.ItemId));
+			var recipe = GameServer.Database.CraftedItems.FirstOrDefault(x => x.ItemTemplate.KeyName == siegeWeapon.KeyName);
 
 			if (recipe == null)
             {
 				player.Out.SendMessage("Error retrieving salvage data!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-				log.Error("Salvage Siege Error: DBCraftedItem is null for" + siegeWeapon.ItemId);
+				log.Error("Salvage Siege Error: DBCraftedItem is null for" + siegeWeapon.KeyName);
 				return 1;
             }
 
-			var rawMaterials = DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(recipe.Id));
+			var rawMaterials = GameServer.Database.CraftedItemComponents.Where(x => x.CraftedItemID == recipe.Id).ToList();
 
 			if (rawMaterials == null || rawMaterials.Count == 0)
             {
 				player.Out.SendMessage("No raw materials provided for this siege weapon!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-				log.Error("Salvage Siege Error: No Raw Materials found for " + siegeWeapon.ItemId);
+				log.Error("Salvage Siege Error: No Raw Materials found for " + siegeWeapon.KeyName);
 				return 1;
             }
 
@@ -197,14 +195,14 @@ namespace DOL.GS
             }
 			InventoryItem item;
 			ItemTemplate template;
-			foreach (DBCraftedXItem material in rawMaterials)
+			foreach (var material in rawMaterials)
 			{
-				template = GameServer.Database.FindObjectByKey<ItemTemplate>(material.IngredientId_nb);
+				template = GameServer.Database.ItemTemplates.Find(material.ItemTemplateID);
 
 				if (template == null)
 				{
-					player.Out.SendMessage("Missing raw material " + material.IngredientId_nb + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-					log.Error("Salvage Siege Error: Raw Material not found " + material.IngredientId_nb);
+					player.Out.SendMessage("Missing raw material " + material.ItemTemplateID + "!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					log.Error("Salvage Siege Error: Raw Material not found " + material.ItemTemplateID);
 					return 1;
 				}
 
@@ -215,7 +213,7 @@ namespace DOL.GS
 					error = true;
 					break;
 				}
-				InventoryLogging.LogInventoryAction("(salvage)", player, eInventoryActionType.Craft, item.Template, item.Count);
+				InventoryLogging.LogInventoryAction("(salvage)", player, eInventoryActionType.Craft, item.ItemTemplate, item.Count);
 			}
 
 			if (error)
@@ -245,15 +243,15 @@ namespace DOL.GS
 
 			ItemTemplate rawMaterial = null;
 
-			if (string.IsNullOrEmpty(yield.MaterialId_nb) == false)
+			if (yield.ItemTemplateID > 0)
 			{
-				rawMaterial = GameServer.Database.FindObjectByKey<ItemTemplate>(yield.MaterialId_nb);
+				rawMaterial = GameServer.Database.ItemTemplates.Find(yield.ItemTemplateID);
 			}
 
 			if (rawMaterial == null)
 			{
 				player.Out.SendMessage("Error finding the raw material needed to salvage this item!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-				log.Error("Salvage: Error finding raw material " + yield.MaterialId_nb);
+				log.Error("Salvage: Error finding raw material " + yield.ItemTemplateID);
 				return 0;
 			}
 
@@ -266,19 +264,19 @@ namespace DOL.GS
 				return 0;
 			}
 
-			InventoryLogging.LogInventoryAction(player, "(salvage)", eInventoryActionType.Craft, itemToSalvage.Template, itemToSalvage.Count);
+			InventoryLogging.LogInventoryAction(player, "(salvage)", eInventoryActionType.Craft, itemToSalvage.ItemTemplate, itemToSalvage.Count);
 
 			Dictionary<int, int> changedSlots = new Dictionary<int, int>(5); // value: < 0 = new item count; > 0 = add to old
 			lock(player.Inventory)
 			{
 				int count = materialCount;
-				foreach (InventoryItem item in player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
+				foreach (var item in player.Inventory.GetItemRange(eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
 				{
 					if (item == null) continue;
 					if (item.Id != rawMaterial.Id) continue;
-					if (item.Count >= item.MaxCount) continue;
+					if (item.Count >= item.ItemTemplate.MaxCount) continue;
 
-					int countFree = item.MaxCount - item.Count;
+					int countFree = item.ItemTemplate.MaxCount - item.Count;
 					if (count > countFree)
 					{
 						changedSlots.Add(item.SlotPosition, countFree); // existing item should be changed
@@ -312,14 +310,14 @@ namespace DOL.GS
 				{
 					newItem = player.Inventory.GetItem((eInventorySlot)de.Key);
 					player.Inventory.AddCountToStack(newItem, countToAdd);
-					InventoryLogging.LogInventoryAction("(salvage)", player, eInventoryActionType.Craft, newItem.Template, countToAdd);
+					InventoryLogging.LogInventoryAction("(salvage)", player, eInventoryActionType.Craft, newItem.ItemTemplate, countToAdd);
 				}
 				else
 				{
 					newItem = GameInventoryItem.Create(rawMaterial);
 					newItem.Count = -countToAdd;
 					player.Inventory.AddItem((eInventorySlot)de.Key, newItem);
-					InventoryLogging.LogInventoryAction("(salvage)", player, eInventoryActionType.Craft, newItem.Template, newItem.Count);
+					InventoryLogging.LogInventoryAction("(salvage)", player, eInventoryActionType.Craft, newItem.ItemTemplate, newItem.Count);
 				}
 			}
 
@@ -347,14 +345,14 @@ namespace DOL.GS
 				return false;
 			}
 
-			if (item.IsNotLosingDur || item.IsIndestructible)
+			if (item.ItemTemplate.IsNotLosingDur || item.ItemTemplate.IsIndestructible)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.BeginWork.NoSalvage", item.Name + ".  This item is indestructible"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
 			}
 
 			// using negative numbers to indicate item cannot be salvaged
-			if (item.SalvageYieldID < 0)
+			if (item.ItemTemplate.SalvageYieldID < 0)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client, "Salvage.BeginWork.NoSalvage", item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
@@ -404,7 +402,7 @@ namespace DOL.GS
 
             #region Weapons
 
-            switch ((eObjectType)item.ObjectType)
+            switch ((eObjectType)item.ItemTemplate.ObjectType)
             {
                 case eObjectType.RecurvedBow:
                 case eObjectType.CompositeBow:
@@ -428,7 +426,7 @@ namespace DOL.GS
                 case eObjectType.Axe:
                 case eObjectType.HandToHand:
                     {
-                        int dps = item.DPS_AF;
+                        int dps = item.ItemTemplate.DPS_AF;
                         if (dps > 520)
                             maxCount += 10;
                         else
@@ -442,7 +440,7 @@ namespace DOL.GS
                 case eObjectType.Scythe:
                 case eObjectType.Spear:
                     {
-                        int dps = item.DPS_AF;
+                        int dps = item.ItemTemplate.DPS_AF;
                         if (dps > 520)
                             maxCount += 15;
                         else
@@ -450,7 +448,7 @@ namespace DOL.GS
                     }
                     break;
                 case eObjectType.Shield:
-                    switch (item.TypeDamage)
+                    switch (item.ItemTemplate.TypeDamage)
                     {
                         case 1:
                             maxCount += 5;
@@ -467,7 +465,7 @@ namespace DOL.GS
                     }
                     break;
                 case eObjectType.Instrument:
-                    switch (item.TypeDamage)
+                    switch (item.ItemTemplate.TypeDamage)
                     {
                         case 1:
                             maxCount += 5;
@@ -496,7 +494,7 @@ namespace DOL.GS
                 case eObjectType.Scale:
                 case eObjectType.Chain:
                 case eObjectType.Plate:
-                    switch (item.ItemType)
+                    switch (item.ItemTemplate.ItemType)
                     {
                         case Slot.HELM:
                             maxCount += 12;
@@ -529,20 +527,20 @@ namespace DOL.GS
             #region Modifications
 
             if (maxCount < 1)
-                maxCount = (int)(item.Price * 0.45 / rawMaterial.Price);
+                maxCount = (int)(item.ItemTemplate.Price * 0.45 / rawMaterial.Price);
 
             int toadd = 0;
 
-            if (item.Quality > 97 && !item.IsCrafted)
-                for (int i = 97; i < item.Quality;)
+            if (item.ItemTemplate.Quality > 97 && !item.IsCrafted)
+                for (int i = 97; i < item.ItemTemplate.Quality;)
                 {
                     toadd += 3;
                     i++;
                 }
 
-            if (item.Price > 300000 && !item.IsCrafted)
+            if (item.ItemTemplate.Price > 300000 && !item.IsCrafted)
             {
-                long i = item.Price / 100000;
+                long i = item.ItemTemplate.Price / 100000;
                 toadd += (int)i;
             }
 
@@ -551,13 +549,13 @@ namespace DOL.GS
 
             #region SpecialFix MerchantList
 
-            if (item.Bonus8 > 0)
-                if (item.Bonus8Type == 0 || item.Bonus8Type.ToString() == "")
-                    maxCount = item.Bonus8;
+            //if (item.ItemTemplate.ItemBonus8 > 0)
+            //    if (item.ItemTemplate.ItemBonus8Type == 0 || item.ItemTemplate.ItemBonus8Type.ToString() == "")
+            //        maxCount = item.ItemTemplate.ItemBonus8;
 
             #endregion SpecialFix MerchantList
 
-            if (item.Condition != item.MaxCondition && item.Condition < item.MaxCondition)
+            if (item.Condition != item.ItemTemplate.MaxCondition && item.Condition < item.ItemTemplate.MaxCondition)
             {
                 long usureoverall = (maxCount * ((item.Condition / 5) / 1000)) / 100; // assume that all items have 50000 base con
                 maxCount = usureoverall;
@@ -589,7 +587,7 @@ namespace DOL.GS
 			}
 			else
 			{
-				maxCount = (int)(item.Price * 0.45 / rawMaterial.Price); // crafted item return max 45% of the item value in material
+				maxCount = (int)(item.ItemTemplate.Price * 0.45 / rawMaterial.Price); // crafted item return max 45% of the item value in material
 
 				if (item.IsCrafted)
 				{

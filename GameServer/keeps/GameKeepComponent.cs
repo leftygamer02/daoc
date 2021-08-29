@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
@@ -161,7 +162,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public override bool AllowWeaponMagicalEffect(AttackData ad, InventoryItem weapon, Spell weaponSpell)
 		{
-			if (weapon.Flags == 10) //Bruiser or any other item needs Itemtemplate "Flags" set to 10 to proc on keep components
+			if (weapon.ItemTemplate.Flags == 10) //Bruiser or any other item needs Itemtemplate "Flags" set to 10 to proc on keep components
 				return true;
 			else return false;
 		}
@@ -195,7 +196,7 @@ namespace DOL.GS.Keeps
 		/// <summary>
 		/// load component from db object
 		/// </summary>
-		public virtual void LoadFromDatabase(DBKeepComponent component, AbstractGameKeep keep)
+		public virtual void LoadFromDatabase(KeepComponent component, AbstractGameKeep keep)
 		{
 			Region myregion = WorldMgr.GetRegion((ushort)keep.Region);
 			if (myregion == null)
@@ -224,7 +225,7 @@ namespace DOL.GS.Keeps
 			//			this.Health = component.Health;
 			m_oldHealthPercent = HealthPercent;
 			CurrentRegion = myregion;
-			ID = component.ID;
+			ID = component.Id;
 			SaveInDB = false;
 			IsRaized = false;
 			LoadPositions();
@@ -247,19 +248,19 @@ namespace DOL.GS.Keeps
 
 			this.Positions.Clear();
 
-			var whereClause = DB.Column("ComponentSkin").IsEqualTo(Skin);
+			var dbPositions = GameServer.Database.KeepPositions.Where(x => x.ComponentSkin == Skin);
+
 			if (Skin != (int)eComponentSkin.Keep && Skin != (int)eComponentSkin.Tower && Skin != (int)eComponentSkin.Gate)
 			{
-				whereClause = whereClause.And(DB.Column("ComponentRotation").IsEqualTo(ComponentHeading));
+				dbPositions = dbPositions.Where(x => x.ComponentRotation == ComponentHeading);
 			}
 			if (bg != null && GameServer.Instance.Configuration.ServerType != eGameServerType.GST_PvE)
 			{
 				// Battlegrounds, ignore all but GameKeepDoor
-				whereClause = whereClause.And(DB.Column("ClassType").IsEqualTo("DOL.GS.Keeps.GameKeepDoor"));
+				dbPositions = dbPositions.Where(x => x.ClassType == "DOL.GS.Keeps.GameKeepDoor");
 			}
-			var DBPositions = DOLDB<KeepPosition>.SelectObjects(whereClause);
 
-			foreach (KeepPosition position in DBPositions)
+			foreach (KeepPosition position in dbPositions)
 			{
 				KeepPosition[] list = this.Positions[position.TemplateID] as KeepPosition[];
 				if (list == null)
@@ -284,7 +285,7 @@ namespace DOL.GS.Keeps
 					if (positionGroup[i] is KeepPosition position)
 					{
 						bool create = false;
-						string sKey = position.TemplateID + ID;
+						string sKey = position.TemplateID;
 
 						switch (position.ClassType)
 						{
@@ -312,7 +313,7 @@ namespace DOL.GS.Keeps
 								continue;
 							case "DOL.GS.Keeps.FrontierHastener":
 								if (Keep.HasHastener && log.IsWarnEnabled)
-									log.Warn($"FillPositions(): KeepComponent_ID {InternalID}, KeepPosition_ID {position.ObjectId}: There is already a {position.ClassType} on Keep {Keep.KeepID}");
+									log.Warn($"FillPositions(): KeepComponent_ID {InternalID}, KeepPosition_ID {position.Id}: There is already a {position.ClassType} on Keep {Keep.KeepID}");
 
 								if (Keep.Guards.ContainsKey(sKey) == false)
 								{
@@ -322,7 +323,7 @@ namespace DOL.GS.Keeps
 								break;
 							case "DOL.GS.Keeps.MissionMaster":
 								if (Keep.HasCommander && log.IsWarnEnabled)
-									log.Warn($"FillPositions(): KeepComponent_ID {InternalID}, KeepPosition_ID {position.ObjectId}: There is already a {position.ClassType} on Keep {Keep.KeepID}");
+									log.Warn($"FillPositions(): KeepComponent_ID {InternalID}, KeepPosition_ID {position.Id}: There is already a {position.ClassType} on Keep {Keep.KeepID}");
 
 								if (Keep.Guards.ContainsKey(sKey) == false)
 								{
@@ -332,7 +333,7 @@ namespace DOL.GS.Keeps
 								break;
 							case "DOL.GS.Keeps.GuardLord":
 								if (Keep.HasLord && log.IsWarnEnabled)
-									log.Warn($"FillPositions(): KeepComponent_ID {InternalID}, KeepPosition_ID {position.ObjectId}: There is already a {position.ClassType} on Keep {Keep.KeepID}");
+									log.Warn($"FillPositions(): KeepComponent_ID {InternalID}, KeepPosition_ID {position.Id}: There is already a {position.ClassType} on Keep {Keep.KeepID}");
 
 								if (Keep.Guards.ContainsKey(sKey) == false)
 								{
@@ -389,7 +390,7 @@ namespace DOL.GS.Keeps
 									break;
 							}*/
 							if (log.IsWarnEnabled)
-								log.Warn($"FillPositions(): Keep {Keep.KeepID} already has a {position.ClassType} assigned to Position {position.ObjectId} on Component {InternalID}");
+								log.Warn($"FillPositions(): Keep {Keep.KeepID} already has a {position.ClassType} assigned to Position {position.Id} on Component {InternalID}");
 					}
 						break; // We found the highest item for that position, move onto the next one
 					}// if (positionGroup[i] is KeepPosition position)
@@ -431,13 +432,13 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public override void SaveIntoDatabase()
 		{
-			DBKeepComponent obj = null;
+			KeepComponent obj = null;
 			bool New = false;
-			if (InternalID != null)
-				obj = GameServer.Database.FindObjectByKey<DBKeepComponent>(InternalID);
+			if (InternalID > 0)
+				obj = GameServer.Database.KeepComponents.Find(InternalID);
 			if (obj == null)
 			{
-				obj = new DBKeepComponent();
+				obj = new KeepComponent();
 				New = true;
 			}
 			obj.KeepID = Keep.KeepID;
@@ -445,14 +446,13 @@ namespace DOL.GS.Keeps
 			obj.Health = Health;
 			obj.X = ComponentX;
 			obj.Y = ComponentY;
-			obj.ID = ID;
 			obj.Skin = Skin;
 			obj.CreateInfo = m_CreateInfo;
 
 			if (New)
 			{
 				GameServer.Instance.SaveDataObject(obj);
-				InternalID = obj.ObjectId;
+				InternalID = obj.Id;
 				log.DebugFormat("Added new component {0} for keep ID {1}, skin {2}, health {3}", ID, Keep.KeepID, Skin, Health);
 			}
 			else
@@ -580,13 +580,13 @@ namespace DOL.GS.Keeps
 		public virtual void Remove()
 		{
 			Delete();
-			DBKeepComponent obj = null;
-			if (this.InternalID != null)
-				obj = GameServer.Database.FindObjectByKey<DBKeepComponent>(this.InternalID);
+			KeepComponent obj = null;
+			if (this.InternalID > 0)
+				obj = GameServer.Database.KeepComponents.Find(this.InternalID);
 			if (obj != null)
-				GameServer.Database.DeleteObject(obj);
+				GameServer.Instance.DeleteDataObject(obj);
 
-			log.Warn("Keep Component deleted from database: " + obj.ID);
+			log.Warn("Keep Component deleted from database: " + obj.Id);
 			//todo find a packet to remove the keep
 		}
 

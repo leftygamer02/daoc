@@ -57,12 +57,12 @@ namespace DOL.GS.Trainer
 
 				if (player.Level >= 10 && player.Level < 15)
 				{
-					if (player.Inventory.GetFirstItemByID(ARMOR_ID3, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == null)
+					if (player.Inventory.GetFirstItemByKeyName(ARMOR_ID3, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == null)
 					{
 						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "FriarTrainer.Interact.Text4", this.Name), eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 						addGift(ARMOR_ID3, player);
 					}
-					if (player.Inventory.GetFirstItemByID(ARMOR_ID1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == null)
+					if (player.Inventory.GetFirstItemByKeyName(ARMOR_ID1, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) == null)
 					{}
 					else
 					{
@@ -125,7 +125,7 @@ namespace DOL.GS.Trainer
 
 			GamePlayer player = source as GamePlayer;
 
-			if (player.Level >= 10 && player.Level < 15 && item.Id == ARMOR_ID1)
+			if (player.Level >= 10 && player.Level < 15 && item.ItemTemplate.KeyName == ARMOR_ID1)
 			{
 				player.Inventory.RemoveCountFromStack(item, 1);
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "FriarTrainer.ReceiveItem.Text1", this.Name, player.Name), eChatType.CT_Say, eChatLoc.CL_PopupWindow);

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using log4net;
 using Atlas.DataLayer.Models;
@@ -42,7 +43,7 @@ namespace DOL.GS.DatabaseConverters
 			log.Info("Database Version 5 Convert Started");
 			log.Info("This fixes some errors with the area classtypes");
 
-			var objs = GameServer.Database.SelectAllObjects<Atlas.DataLayer.Models.Area>();
+			var objs = GameServer.Database.Areas.ToList();
 			int count = 0;
 			foreach (Atlas.DataLayer.Models.Area area in objs)
 			{

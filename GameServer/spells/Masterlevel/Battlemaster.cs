@@ -204,7 +204,7 @@ namespace DOL.GS.Spells
                     InventoryItem leftWeapon = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
                     // if we can use left weapon, we have currently a weapon in left hand and we still have endurance,
                     // we can assume that we are using the two weapons.
-                    if (player.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ObjectType != (int)eObjectType.Shield)
+                    if (player.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.ItemTemplate.ObjectType != (int)eObjectType.Shield)
                     {
                         baseChance /= 2;
                     }
@@ -279,7 +279,7 @@ namespace DOL.GS.Spells
                     spell.Range = 0;
                     spell.Value = 0;
                     spell.Duration = 10;
-                    spell.SpellID = 900100;
+                    spell.Id = 900100;
                     spell.Target = "Self";
                     spell.Type = "Disarm";
                     Disarm_Weapon = new Spell(spell, 50);
@@ -376,7 +376,7 @@ namespace DOL.GS.Spells
                         if (ad.Target != null && ad.Target.Inventory != null)
                         {
                             InventoryItem lefthand = ad.Target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-                            if (lefthand != null && lefthand.ObjectType == (int)eObjectType.Shield)
+                            if (lefthand != null && lefthand.ItemTemplate.ObjectType == (int)eObjectType.Shield)
                             {
                                 defendersWeapon = lefthand.Model;
                             }
@@ -545,10 +545,10 @@ namespace DOL.GS.Spells
             ad.WeaponSpeed = player.AttackSpeed(weapon) / 100;
             ad.DamageType = player.AttackDamageType(weapon);
             ad.Weapon = weapon;
-            ad.IsOffHand = weapon.Hand == 2;
+            ad.IsOffHand = weapon.ItemTemplate.Hand == 2;
             //we need to figure out which armor piece they are going to hit.
             //figure out the attacktype
-            switch (weapon.ItemType)
+            switch (weapon.ItemTemplate.ItemType)
             {
                 default:
                 case Slot.RIGHTHAND:

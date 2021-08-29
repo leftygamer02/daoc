@@ -242,7 +242,7 @@ namespace DOL.GS.Styles
 
 				if (player != null) //Do mob use endurance?
 				{
-					int fatCost = CalculateEnduranceCost(player, style, weapon.SPD_ABS);
+					int fatCost = CalculateEnduranceCost(player, style, weapon.ItemTemplate.SPD_ABS);
 					if (player.Endurance < fatCost)
 					{
 						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "StyleProcessor.TryToUseStyle.Fatigued"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -362,13 +362,13 @@ namespace DOL.GS.Styles
 				if (attackData.Style == null)
 					return false;
 
-				if (weapon != null && weapon.ObjectType == (int)eObjectType.Shield)
+				if (weapon != null && weapon.ItemTemplate.ObjectType == (int)eObjectType.Shield)
 				{
-					attackData.AnimationId = (weapon.Hand != 1) ? attackData.Style.Icon : attackData.Style.TwoHandAnimation; // 2h shield?
+					attackData.AnimationId = (weapon.ItemTemplate.Hand != 1) ? attackData.Style.Icon : attackData.Style.TwoHandAnimation; // 2h shield?
 				}
 				int fatCost = 0;
 				if (weapon != null)
-					fatCost = CalculateEnduranceCost(living, attackData.Style, weapon.SPD_ABS);
+					fatCost = CalculateEnduranceCost(living, attackData.Style, weapon.ItemTemplate.SPD_ABS);
 
 				//Reduce endurance if styled attack missed
 				switch (attackData.AttackResult)
@@ -414,9 +414,9 @@ namespace DOL.GS.Styles
 
 					if (staticGrowth)
 					{
-						if (living.AttackWeapon.ItemType == Slot.TWOHAND)
+						if (living.AttackWeapon.ItemTemplate.ItemType == Slot.TWOHAND)
 						{
-							styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.AttackWeapon) * Math.Max(0,living.AttackWeapon.SPD_ABS - 21) * 10 / 66d;
+							styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.AttackWeapon) * Math.Max(0,living.AttackWeapon.ItemTemplate.SPD_ABS - 21) * 10 / 66d;
 						}
 						attackData.StyleDamage = (int)(absorbRatio * styleGrowth * ServerProperties.Properties.CS_OPENING_EFFECTIVENESS);
 					}
@@ -518,7 +518,7 @@ namespace DOL.GS.Styles
 
 					#region Animation
 					if (weapon != null)
-						attackData.AnimationId = (weapon.Hand != 1) ? attackData.Style.Icon : attackData.Style.TwoHandAnimation; // special animation for two-hand
+						attackData.AnimationId = (weapon.ItemTemplate.Hand != 1) ? attackData.Style.Icon : attackData.Style.TwoHandAnimation; // special animation for two-hand
 					else if (living.Inventory != null)
 						attackData.AnimationId = (living.Inventory.GetItem(eInventorySlot.RightHandWeapon) != null) ? attackData.Style.Icon : attackData.Style.TwoHandAnimation; // special animation for two-hand
 					else
@@ -582,15 +582,15 @@ namespace DOL.GS.Styles
 					InventoryItem rightHand = player.AttackWeapon;
 					InventoryItem leftHand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 
-					if (rightHand == null || leftHand == null || (rightHand.ItemType != Slot.RIGHTHAND && rightHand.ItemType != Slot.LEFTHAND))
+					if (rightHand == null || leftHand == null || (rightHand.ItemTemplate.ItemType != Slot.RIGHTHAND && rightHand.ItemTemplate.ItemType != Slot.LEFTHAND))
 						return false;
 
-					if (style.Spec == Specs.HandToHand && (rightHand.ObjectType != (int)eObjectType.HandToHand || leftHand.ObjectType != (int)eObjectType.HandToHand))
+					if (style.Spec == Specs.HandToHand && (rightHand.ItemTemplate.ObjectType != (int)eObjectType.HandToHand || leftHand.ItemTemplate.ObjectType != (int)eObjectType.HandToHand))
 						return false;
-					else if (style.Spec == Specs.Fist_Wraps && (rightHand.ObjectType != (int)eObjectType.FistWraps || leftHand.ObjectType != (int)eObjectType.FistWraps))
+					else if (style.Spec == Specs.Fist_Wraps && (rightHand.ItemTemplate.ObjectType != (int)eObjectType.FistWraps || leftHand.ItemTemplate.ObjectType != (int)eObjectType.FistWraps))
 						return false;
 
-					return leftHand.ObjectType != (int)eObjectType.Shield;
+					return leftHand.ItemTemplate.ObjectType != (int)eObjectType.Shield;
 
 				case Style.SpecialWeaponType.AnyWeapon:
 					// TODO: style can be used with any weapon type,
@@ -605,13 +605,13 @@ namespace DOL.GS.Styles
 
 					// can't use shield styles if no active weapon
 					if (style.WeaponTypeRequirement == (int)eObjectType.Shield
-						&& (player.AttackWeapon == null || (player.AttackWeapon.ItemType != Slot.RIGHTHAND && player.AttackWeapon.ItemType != Slot.LEFTHAND)))
+						&& (player.AttackWeapon == null || (player.AttackWeapon.ItemTemplate.ItemType != Slot.RIGHTHAND && player.AttackWeapon.ItemTemplate.ItemType != Slot.LEFTHAND)))
 						return false;
 
 					// weapon type check
 					return GameServer.ServerRules.IsObjectTypesEqual(
 							(eObjectType)style.WeaponTypeRequirement,
-							(eObjectType)weapon.ObjectType);
+							(eObjectType)weapon.ItemTemplate.ObjectType);
 			}
 		}
 

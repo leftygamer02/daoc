@@ -191,7 +191,7 @@ namespace DOL.GS
 			{
 				if (m_baseaf == null)
 				{
-					Atlas.DataLayer.Models.Spell spell = new Atlas.DataLayer.Models.Spell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Concentration = 1;
@@ -202,7 +202,7 @@ namespace DOL.GS
 					spell.Name = "Armor of the Realm";
 					spell.Description = "Adds to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88001;
+					spell.Id = 88001;
 					spell.Target = "Realm";
 					spell.Type = "ArmorFactorBuff";
 					spell.EffectGroup = 1;
@@ -232,7 +232,7 @@ namespace DOL.GS
 					spell.Name = "Armor of the Realm";
 					spell.Description = "Adds to the recipient's Armor Factor (AF) resulting in better protection againts some forms of attack. It acts in addition to any armor the target is wearing.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89001;
+					spell.Id = 89001;
 					spell.Target = "Realm";
 					spell.Type = "ArmorFactorBuff";
 					spell.EffectGroup = 1;
@@ -262,7 +262,7 @@ namespace DOL.GS
 					spell.Name = "Strength of the Realm";
 					spell.Description = "Increases target's Strength.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88002;
+					spell.Id = 88002;
 					spell.Target = "Realm";
 					spell.Type = "StrengthBuff";
 					spell.EffectGroup = 4;
@@ -292,7 +292,7 @@ namespace DOL.GS
 					spell.Name = "Strength of the Realm";
 					spell.Description = "Increases target's Strength.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89002;
+					spell.Id = 89002;
 					spell.Target = "Realm";
 					spell.Type = "StrengthBuff";
 					spell.EffectGroup = 4;
@@ -322,7 +322,7 @@ namespace DOL.GS
 					spell.Name = "Fortitude of the Realm";
 					spell.Description = "Increases target's Constitution.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88003;
+					spell.Id = 88003;
 					spell.Target = "Realm";
 					spell.Type = "ConstitutionBuff";
 					spell.EffectGroup = 201;
@@ -352,7 +352,7 @@ namespace DOL.GS
 					spell.Name = "Fortitude of the Realm";
 					spell.Description = "Increases target's Constitution.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89003;
+					spell.Id = 89003;
 					spell.Target = "Realm";
 					spell.Type = "ConstitutionBuff";
 					spell.EffectGroup = 201;
@@ -382,7 +382,7 @@ namespace DOL.GS
 					spell.Name = "Dexterity of the Realm";
 					spell.Description = "Increases Dexterity for a character.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88004;
+					spell.Id = 88004;
 					spell.Target = "Realm";
 					spell.Type = "DexterityBuff";
 					spell.EffectGroup = 202;
@@ -412,7 +412,7 @@ namespace DOL.GS
 					spell.Name = "Dexterity of the Realm";
 					spell.Description = "Increases Dexterity for a character.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89004;
+					spell.Id = 89004;
 					spell.Target = "Realm";
 					spell.Type = "DexterityBuff";
 					spell.EffectGroup = 202;
@@ -442,7 +442,7 @@ namespace DOL.GS
 					spell.Name = "Might of the Realm";
 					spell.Description = "Increases Str/Con for a character";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88005;
+					spell.Id = 88005;
 					spell.Target = "Realm";
 					spell.Type = "StrengthConstitutionBuff";
 					spell.EffectGroup = 204;
@@ -472,7 +472,7 @@ namespace DOL.GS
 					spell.Name = "Might of the Realm";
 					spell.Description = "Increases Str/Con for a character";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89005;
+					spell.Id = 89005;
 					spell.Target = "Realm";
 					spell.Type = "StrengthConstitutionBuff";
 					spell.EffectGroup = 204;
@@ -502,7 +502,7 @@ namespace DOL.GS
 					spell.Name = "Deftness of the Realm";
 					spell.Description = "Increases Dexterity and Quickness for a character.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88006;
+					spell.Id = 88006;
 					spell.Target = "Realm";
 					spell.Type = "DexterityQuicknessBuff";
 					spell.EffectGroup = 203;
@@ -532,7 +532,7 @@ namespace DOL.GS
 					spell.Name = "Deftness of the Realm";
 					spell.Description = "Increases Dexterity and Quickness for a character.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89006;
+					spell.Id = 89006;
 					spell.Target = "Realm";
 					spell.Type = "DexterityQuicknessBuff";
 					spell.EffectGroup = 203;
@@ -562,7 +562,7 @@ namespace DOL.GS
 					spell.Name = "Acuity of the Realm";
 					spell.Description = "Increases Acuity (casting attribute) for a character.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88007;
+					spell.Id = 88007;
 					spell.Target = "Realm";
 					spell.Type = "AcuityBuff";
 					spell.EffectGroup = 200;
@@ -592,7 +592,7 @@ namespace DOL.GS
 					spell.Name = "Acuity of the Realm";
 					spell.Description = "Increases Acuity (casting attribute) for a character.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89007;
+					spell.Id = 89007;
 					spell.Target = "Realm";
 					spell.Type = "AcuityBuff";
 					spell.EffectGroup = 200;
@@ -622,7 +622,7 @@ namespace DOL.GS
 					spell.Name = "Armor of the Realm";
 					spell.Description = "Adds to the recipient's Armor Factor (AF), resulting in better protection against some forms of attack. It acts in addition to any armor the target is wearing.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88014;
+					spell.Id = 88014;
 					spell.Target = "Realm";
 					spell.Type = "ArmorFactorBuff";
 					spell.EffectGroup = 2;
@@ -652,7 +652,7 @@ namespace DOL.GS
 					spell.Name = "Armor of the Realm";
 					spell.Description = "Adds to the recipient's Armor Factor (AF), resulting in better protection against some forms of attack. It acts in addition to any armor the target is wearing.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 89014;
+					spell.Id = 89014;
 					spell.Target = "Realm";
 					spell.Type = "ArmorFactorBuff";
 					spell.EffectGroup = 2;
@@ -682,7 +682,7 @@ namespace DOL.GS
 					spell.Name = "Haste of the Realm";
 					spell.Description = "Increases the target's combat speed.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88010;
+					spell.Id = 88010;
 					spell.Target = "Realm";
 					spell.Type = "CombatSpeedBuff";
 					spell.EffectGroup = 100;
@@ -714,7 +714,7 @@ namespace DOL.GS
 					spell.Name = "Power of the Realm";
 					spell.Description = "Target regenerates power regeneration during the duration of the spell";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88008;
+					spell.Id = 88008;
 					spell.Target = "Realm";
 					spell.Type = "PowerRegenBuff";
 					m_powereg = new Spell(spell, 50);
@@ -744,7 +744,7 @@ namespace DOL.GS
 					spell.Name = "Damage of the Realm";
 					spell.Description = "Target's melee attacks do additional damage.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88009;
+					spell.Id = 88009;
 					spell.Target = "Realm";
 					spell.Type = "DamageAdd";
 					m_dmgadd = new Spell(spell, 50);
@@ -773,7 +773,7 @@ namespace DOL.GS
 					spell.Name = "Health of the Realm";
 					spell.Description = "Target regenerates the given amount of health every tick";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88011;
+					spell.Id = 88011;
 					spell.Target = "Realm";
 					spell.Type = "HealthRegenBuff";
 					m_hpRegen = new Spell(spell, 50);
@@ -800,7 +800,7 @@ namespace DOL.GS
 					spell.Name = "Blessed Health of the Realm";
 					spell.Description = "Heals the target.";
 					spell.Range = WorldMgr.VISIBILITY_DISTANCE;
-					spell.SpellID = 88013;
+					spell.Id = 88013;
 					spell.Target = "Realm";
 					spell.Type = "Heal";
 					m_heal = new Spell(spell, 50);
@@ -998,7 +998,7 @@ namespace DOL.GS
 			}
 			if (t != null && item != null)
 			{
-				if (item.Id == "Full_Buffs_Token" || item.Id == "BPFull_Buffs_Token")
+				if (item.ItemTemplate.KeyName == "Full_Buffs_Token" || item.ItemTemplate.KeyName == "BPFull_Buffs_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1035,7 +1035,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Specialization_Buffs_Token" || item.Id == "BPSpecialization_Buffs_Token")
+				if (item.ItemTemplate.KeyName == "Specialization_Buffs_Token" || item.ItemTemplate.KeyName == "BPSpecialization_Buffs_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1056,7 +1056,7 @@ namespace DOL.GS
 					return true;
 
 				}
-				if (item.Id == "Baseline_Buffs_Token" || item.Id == "BPBaseline_Buffs_Token")
+				if (item.ItemTemplate.KeyName == "Baseline_Buffs_Token" || item.ItemTemplate.KeyName == "BPBaseline_Buffs_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1076,7 +1076,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Strength_Buff_Token" || item.Id == "BPStrength_Buff_Token")
+				if (item.ItemTemplate.KeyName == "Strength_Buff_Token" || item.ItemTemplate.KeyName == "BPStrength_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1090,7 +1090,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Fortification_Buff_Token" || item.Id == "BPFortification_Buff_Token")
+				if (item.ItemTemplate.KeyName == "Fortification_Buff_Token" || item.ItemTemplate.KeyName == "BPFortification_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1104,7 +1104,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Dexterity_Buff_Token" || item.Id == "BPDexterity_Buff_Token")
+				if (item.ItemTemplate.KeyName == "Dexterity_Buff_Token" || item.ItemTemplate.KeyName == "BPDexterity_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1118,7 +1118,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Armor_Buff_Token" || item.Id == "BPArmor_Buff_Token")
+				if (item.ItemTemplate.KeyName == "Armor_Buff_Token" || item.ItemTemplate.KeyName == "BPArmor_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1132,7 +1132,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "StrCon_Buff_Token" || item.Id == "BPStrCon_Buff_Token")
+				if (item.ItemTemplate.KeyName == "StrCon_Buff_Token" || item.ItemTemplate.KeyName == "BPStrCon_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1146,7 +1146,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "DexQui_Buff_Token" || item.Id == "BPDexQui_Buff_Token")
+				if (item.ItemTemplate.KeyName == "DexQui_Buff_Token" || item.ItemTemplate.KeyName == "BPDexQui_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1160,7 +1160,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Acu_Buff_Token" || item.Id == "BPAcu_Buff_Token")
+				if (item.ItemTemplate.KeyName == "Acu_Buff_Token" || item.ItemTemplate.KeyName == "BPAcu_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1174,7 +1174,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "SpecAF_Buff_Token" || item.Id == "BPSpecAF_Buff_Token")
+				if (item.ItemTemplate.KeyName == "SpecAF_Buff_Token" || item.ItemTemplate.KeyName == "BPSpecAF_Buff_Token")
 				{
 					if (t.CharacterClass.ClassType == eClassType.ListCaster)
 					{
@@ -1188,7 +1188,7 @@ namespace DOL.GS
 					t.Inventory.RemoveItem(item);
 					return true;
 				}
-				if (item.Id == "Haste_Buff_Token" || item.Id == "BPHaste_Buff_Token")
+				if (item.ItemTemplate.KeyName == "Haste_Buff_Token" || item.ItemTemplate.KeyName == "BPHaste_Buff_Token")
 				{
 					BuffPlayer(t, MerchHasteBuff, MerchSpecSpellLine);
 					t.Out.SendMessage("Fight well, " + t.RaceName + ".", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
@@ -1270,12 +1270,12 @@ namespace DOL.GS.Items
 				return;
 			
 			ItemTemplate item;
-			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Full_Buffs_Token");
+
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Full_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Full_Buffs_Token";
+				item.KeyName = "Full_Buffs_Token";
 				item.Name = "Full Buffs Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1290,11 +1290,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Specialization_Buffs_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Specialization_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Specialization_Buffs_Token";
+				item.KeyName = "Specialization_Buffs_Token";
 				item.Name = "Specialization Buffs Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1309,11 +1309,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Baseline_Buffs_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Baseline_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Baseline_Buffs_Token";
+				item.KeyName = "Baseline_Buffs_Token";
 				item.Name = "Baseline Buffs Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1328,11 +1328,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Strength_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Strength_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Strength_Buff_Token";
+				item.KeyName = "Strength_Buff_Token";
 				item.Name = "Strength Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1347,11 +1347,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Fortification_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Fortification_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Fortification_Buff_Token";
+				item.KeyName = "Fortification_Buff_Token";
 				item.Name = "Fortification Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1366,11 +1366,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Dexterity_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Dexterity_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Dexterity_Buff_Token";
+				item.KeyName = "Dexterity_Buff_Token";
 				item.Name = "Dexertity Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1385,11 +1385,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Armor_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Armor_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Armor_Buff_Token";
+				item.KeyName = "Armor_Buff_Token";
 				item.Name = "Armor Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1404,11 +1404,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("StrCon_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "StrCon_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "StrCon_Buff_Token";
+				item.KeyName = "StrCon_Buff_Token";
 				item.Name = "Might Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1423,11 +1423,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("DexQui_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DexQui_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "DexQui_Buff_Token";
+				item.KeyName = "DexQui_Buff_Token";
 				item.Name = "Deftness Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1442,11 +1442,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Acu_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Acu_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Acu_Buff_Token";
+				item.KeyName = "Acu_Buff_Token";
 				item.Name = "Enlightenment Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1461,11 +1461,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 			
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("SpecAF_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SpecAF_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "SpecAF_Buff_Token";
+				item.KeyName = "SpecAF_Buff_Token";
 				item.Name = "Barrier Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1480,11 +1480,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("Haste_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Haste_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "Haste_Buff_Token";
+				item.KeyName = "Haste_Buff_Token";
 				item.Name = "Haste Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1506,8 +1506,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "Otherline_Buffs_Token";
 				item.Name = "Extended Buffs Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1525,8 +1525,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "DmgAdd_Buff_Token";
 				item.Name = "Damage Add Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1544,8 +1544,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "PowerReg_Buff_Token";
 				item.Name = "Power Regen Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1563,8 +1563,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "HPReg_Buff_Token";
 				item.Name = "HP Regen Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1582,8 +1582,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "EnduReg_Buff_Token";
 				item.Name = "Endurance Regen Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1601,8 +1601,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "Heal_Buff_Token";
 				item.Name = "Heal Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1629,11 +1629,11 @@ namespace DOL.GS.Items
 			
 			ItemTemplate item;
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPFull_Buffs_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPFull_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPFull_Buffs_Token";
+				item.KeyName = "BPFull_Buffs_Token";
 				item.Name = "Full Buffs Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1648,11 +1648,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPSpecialization_Buffs_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPSpecialization_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPSpecialization_Buffs_Token";
+				item.KeyName = "BPSpecialization_Buffs_Token";
 				item.Name = "Specialization Buffs Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1667,11 +1667,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPBaseline_Buffs_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPBaseline_Buffs_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPBaseline_Buffs_Token";
+				item.KeyName = "BPBaseline_Buffs_Token";
 				item.Name = "Baseline Buffs Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1686,11 +1686,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPStrength_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPStrength_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPStrength_Buff_Token";
+				item.KeyName = "BPStrength_Buff_Token";
 				item.Name = "Strength Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1705,11 +1705,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPFortification_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPFortification_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPFortification_Buff_Token";
+				item.KeyName = "BPFortification_Buff_Token";
 				item.Name = "Fortification Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1724,11 +1724,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPDexterity_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPDexterity_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPDexterity_Buff_Token";
+				item.KeyName = "BPDexterity_Buff_Token";
 				item.Name = "Dexertity Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1743,11 +1743,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPArmor_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPArmor_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPArmor_Buff_Token";
+				item.KeyName = "BPArmor_Buff_Token";
 				item.Name = "Armor Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1762,11 +1762,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPStrCon_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPStrCon_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPStrCon_Buff_Token";
+				item.KeyName = "BPStrCon_Buff_Token";
 				item.Name = "Might Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1781,11 +1781,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPDexQui_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPDexQui_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPDexQui_Buff_Token";
+				item.KeyName = "BPDexQui_Buff_Token";
 				item.Name = "Deftness Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1800,11 +1800,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPAcu_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPAcu_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPAcu_Buff_Token";
+				item.KeyName = "BPAcu_Buff_Token";
 				item.Name = "Enlightenment Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1819,11 +1819,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPSpecAF_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPSpecAF_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPSpecAF_Buff_Token";
+				item.KeyName = "BPSpecAF_Buff_Token";
 				item.Name = "Barrier Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1838,11 +1838,11 @@ namespace DOL.GS.Items
 					log.Debug("Added " + item.Id);
 			}
 
-			item = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate>("BPHaste_Buff_Token");
+			item = (ItemTemplate)GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BPHaste_Buff_Token");
 			if (item == null)
 			{
 				item = new ItemTemplate();
-				item.Id = "BPHaste_Buff_Token";
+				item.KeyName = "BPHaste_Buff_Token";
 				item.Name = "Haste Buff Token";
 				item.Level = 1;
 				item.ItemType = 40;
@@ -1864,8 +1864,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "Otherline_Buffs_Token";
 				item.Name = "Extended Buffs Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1883,8 +1883,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "DmgAdd_Buff_Token";
 				item.Name = "Damage Add Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1902,8 +1902,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "PowerReg_Buff_Token";
 				item.Name = "Power Regen Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1921,8 +1921,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "HPReg_Buff_Token";
 				item.Name = "HP Regen Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1940,8 +1940,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "EnduReg_Buff_Token";
 				item.Name = "Endurance Regen Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1959,8 +1959,8 @@ namespace DOL.GS.Items
 				item = new ItemTemplate();
 				item.Id = "Heal_Buff_Token";
 				item.Name = "Heal Buff Token";
-				item.Level = 50;
-				item.ItemType = 40;
+				item.ItemTemplate.Level = 50;
+				item.ItemTemplate.ItemType = 40;
 				item.Model = 485;
 				item.IsDropable = false;
 				item.IsPickable = true;
@@ -1985,17 +1985,17 @@ public class BuffTokensList
 	[GameServerStartedEvent]
 	public static void OnServerStartup(DOLEvent e, object sender, EventArgs args)
 	{
-		ItemTemplate[] buffMerch = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsLike("BuffTokens")).OrderBy(it => it.ItemType).ToArray();
+		ItemTemplate[] buffMerch = GameServer.Database.ItemTemplates.Where(x=>x.PackageID.Contains("BuffTokens")).OrderBy(it => it.ItemType).ToArray();
 		MerchantItem m_item = null;
 		int pagenumber = 0;
 		int slotposition = 0;
-		m_item = DOLDB<MerchantItem>.SelectObject(DB.Column("ItemListID").IsEqualTo("BuffTokens"));
+		m_item = GameServer.Database.MerchantItems.FirstOrDefault(x => x.ItemListName == "BuffTokens");
 		if (m_item == null)
 		{
 			foreach (ItemTemplate item in buffMerch)
 			{
 				m_item = new MerchantItem();
-				m_item.ItemListID = "BuffTokens";
+				m_item.ItemListName = "BuffTokens";
 				m_item.ItemTemplateID = item.Id;
 				m_item.PageNumber = pagenumber;
 				m_item.SlotPosition = slotposition;
@@ -2020,17 +2020,17 @@ public class BPBuffTokensList
 	[GameServerStartedEvent]
 	public static void OnServerStartup(DOLEvent e, object sender, EventArgs args)
 	{
-		ItemTemplate[] buffMerch = DOLDB<ItemTemplate>.SelectObjects(DB.Column("PackageID").IsLike("BPBuffTokens")).OrderBy(it => it.ItemType).ToArray();
+		ItemTemplate[] buffMerch = GameServer.Database.ItemTemplates.Where(x => x.PackageID.Contains("BPBuffTokens")).OrderBy(it => it.ItemType).ToArray();
 		MerchantItem m_item = null;
 		int pagenumber = 0;
 		int slotposition = 0;
-		m_item = DOLDB<MerchantItem>.SelectObject(DB.Column("ItemListID").IsEqualTo("BPBuffTokens"));
+		m_item = GameServer.Database.MerchantItems.FirstOrDefault(x => x.ItemListName == "BPBuffTokens");
 		if (m_item == null)
 		{
 			foreach (ItemTemplate item in buffMerch)
 			{
 				m_item = new MerchantItem();
-				m_item.ItemListID = "BPBuffTokens";
+				m_item.ItemListName = "BPBuffTokens";
 				m_item.ItemTemplateID = item.Id;
 				m_item.PageNumber = pagenumber;
 				m_item.SlotPosition = slotposition;

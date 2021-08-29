@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using DOL.GS.PacketHandler;
 using Atlas.DataLayer.Models;
@@ -74,7 +75,7 @@ namespace DOL.GS
 			this.Emblem = item.Emblem;
 			this.Name = item.Name;
 
-			if (item.ItemTemplate is ItemUnique && item.ItemTemplate.IsPersisted == false)
+			if (item.ItemTemplate is ItemUnique && item.ItemTemplate.Id <= 0)
 			{
 				GameServer.Instance.SaveDataObject(item.ItemTemplate as ItemUnique);
 			}
@@ -92,7 +93,7 @@ namespace DOL.GS
 			if (item.ItemTemplate is ItemUnique)
 				return null;
 			
-			return CreateFromTemplate(item.Id);
+			return CreateFromTemplate(item.ItemTemplate);
 		}
 
 		/// <summary>
@@ -102,9 +103,9 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="templateID">the templateID to load and create an item</param>
 		/// <returns>Found item or null</returns>
-		public static WorldInventoryItem CreateFromTemplate(string templateID)
+		public static WorldInventoryItem CreateFromTemplate(int templateID)
 		{
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(templateID);
+			ItemTemplate template = GameServer.Database.ItemTemplates.Find(templateID);
 			if (template == null)
 			{
 				if (log.IsWarnEnabled)
@@ -116,13 +117,33 @@ namespace DOL.GS
 		}
 
 		/// <summary>
+		/// Creates a new GameInventoryItem based on an
+		/// InventoryTemplateID. Will disappear after 3 minutes if
+		/// added to the world
+		/// </summary>
+		/// <param name="keyName">the keyname of the template to load and create an item</param>
+		/// <returns>Found item or null</returns>
+		public static WorldInventoryItem CreateFromTemplate(string keyName)
+		{
+			ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == keyName);
+			if (template == null)
+			{
+				if (log.IsWarnEnabled)
+					log.Warn("Item Creation: Template not found!\n" + Environment.StackTrace);
+				return null;
+			}
+
+			return CreateFromTemplate(template);
+		}
+
+		/// <summary>
 		/// Creates a new GII handling an UniqueItem in the InventoryItem attached
 		/// </summary>
 		/// <param name="templateID"></param>
 		/// <returns></returns>
-		public static WorldInventoryItem CreateUniqueFromTemplate(string templateID)
+		public static WorldInventoryItem CreateUniqueFromTemplate(int templateID)
 		{
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(templateID);
+			ItemTemplate template = GameServer.Database.ItemTemplates.Find(templateID);
 
 			if (template == null)
 			{
@@ -150,7 +171,7 @@ namespace DOL.GS
 			invItem.m_item = GameInventoryItem.Create(template);
 			
 			invItem.m_item.SlotPosition = 0;
-			invItem.m_item.OwnerID = null;
+			invItem.m_item.CharacterID = null;
 
 			invItem.Level = (byte)template.Level;
 			invItem.Model = (ushort)template.Model;
@@ -172,7 +193,7 @@ namespace DOL.GS
 			invItem.m_item = GameInventoryItem.Create(item);
 			
 			invItem.m_item.SlotPosition = 0;
-			invItem.m_item.OwnerID = null;
+			invItem.m_item.CharacterID = null;
 
 			invItem.Level = (byte)template.Level;
 			invItem.Model = (ushort)template.Model;
@@ -200,10 +221,10 @@ namespace DOL.GS
 
 		public override void Delete()
 		{
-			if (m_item != null && m_isRemoved == false && m_item.Template is ItemUnique)
+			if (m_item != null && m_isRemoved == false && m_item.ItemTemplate is ItemUnique)
 			{
 				// for world items that expire we need to delete the associated ItemUnique
-				GameServer.Database.DeleteObject(m_item.Template as ItemUnique);
+				GameServer.Instance.DeleteDataObject(m_item.ItemTemplate as ItemUnique);
 			}
 
 			base.Delete();

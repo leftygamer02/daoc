@@ -31,8 +31,8 @@ namespace DOL.GS
 
         public class TempPropContainer
         {
-            private string m_ownerid;
-            public string OwnerID
+            private int m_ownerid;
+            public int OwnerID
             {
                 get { return m_ownerid; }
             }

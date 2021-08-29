@@ -38,10 +38,9 @@ namespace Atlas.DataLayer
                     optionsBuilder.UseSqlite(connectionString);
                     break;
             }
-
-            
-
         }
+
+        public eConnectionType ConnectionType { get { return engine; } }
 
         public DbSet<Ability> Abilities { get; set; }
         public DbSet<Account> Accounts { get; set; }
@@ -88,6 +87,7 @@ namespace Atlas.DataLayer
         public DbSet<HouseConsignmentMerchant> HouseConsignmentMerchants { get; set; }
         public DbSet<HouseHookpointItem> HouseHookpointItems { get; set; }
         public DbSet<HouseHookpointOffset> HouseHookpointOffsets { get; set; }
+        public DbSet<InstanceElement> InstanceElements { get; set; }
         public DbSet<InventoryItem> InventoryItems { get; set; }
         public DbSet<InventoryItemSpell> InventoryItemSpells { get; set; }
         public DbSet<ItemBonus> ItemBonuses { get; set; }
@@ -206,6 +206,19 @@ namespace Atlas.DataLayer
                 .HasOne(s => s.SalvageYield)
                 .WithOne(s => s.ItemTemplate)
                 .HasForeignKey<SalvageYield>(x => x.ItemTemplateID);
+
+            modelBuilder.Entity<ItemTemplate>()
+                .HasIndex(p => p.KeyName).IsUnique();
+
+            modelBuilder.Entity<Path>()                
+                .HasMany(p => p.PathPoints)
+                .WithOne(p => p.Path)
+                .HasForeignKey(p => p.PathID)
+                .IsRequired(true)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Path>()
+                .HasIndex(p => p.PathName).IsUnique();
 
             modelBuilder.Entity<Region>()
                 .HasMany(r => r.ZonePointSources)

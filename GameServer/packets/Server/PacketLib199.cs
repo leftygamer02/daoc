@@ -17,6 +17,7 @@
 *
 */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -65,7 +66,7 @@ namespace DOL.GS.PacketHandler
 			{
 				pak.FillString(m_gameClient.Account.Name, 24);
 				IList<InventoryItem> items;
-				Character[] characters = m_gameClient.Account.Characters;
+				Character[] characters = m_gameClient.Account.Characters.ToArray();
 				if (characters == null)
 				{
 					pak.Fill(0x0, 1880);
@@ -80,7 +81,7 @@ namespace DOL.GS.PacketHandler
 							if (characters[j].AccountSlot == i)
 							{
 								pak.FillString(characters[j].Name, 24);
-								items = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsEqualTo(characters[j].ObjectId).And(DB.Column("SlotPosition").IsGreaterOrEqualTo(10)).And(DB.Column("SlotPosition").IsLessOrEqualTo(37)));
+								items = GameServer.Database.InventoryItems.Where(x => x.CharacterID == characters[j].Id && x.SlotPosition >= 10 && x.SlotPosition <= 37).ToList();
 								byte ExtensionTorso = 0;
 								byte ExtensionGloves = 0;
 								byte ExtensionBoots = 0;
@@ -89,13 +90,13 @@ namespace DOL.GS.PacketHandler
 									switch (item.SlotPosition)
 									{
 										case 22:
-											ExtensionGloves = item.Extension;
+											ExtensionGloves = (byte)item.Extension;
 											break;
 										case 23:
-											ExtensionBoots = item.Extension;
+											ExtensionBoots = (byte)item.Extension;
 											break;
 										case 25:
-											ExtensionTorso = item.Extension;
+											ExtensionTorso = (byte)item.Extension;
 											break;
 										default:
 											break;
@@ -113,7 +114,7 @@ namespace DOL.GS.PacketHandler
 								pak.WriteByte((byte)characters[j].CustomisationStep); //1 = auto generate config, 2= config ended by player, 3= enable config to player
 								pak.WriteByte((byte)characters[j].MoodType);
 								pak.Fill(0x0, 13); //0 String
-								Region reg = WorldMgr.GetRegion((ushort)characters[j].Region);
+								Region reg = WorldMgr.GetRegion((ushort)characters[j].RegionID);
 								if (reg != null)
 								{
 									var description = m_gameClient.GetTranslatedSpotDescription(reg, characters[j].Xpos, characters[j].Ypos, characters[j].Zpos);									
@@ -138,7 +139,7 @@ namespace DOL.GS.PacketHandler
 								pak.WriteByte((byte)characters[j].Realm);
 								pak.WriteByte((byte)((((characters[j].Race & 0x10) << 2) + (characters[j].Race & 0x0F)) | (characters[j].Gender << 4))); // race max value can be 0x1F
 								pak.WriteShortLowEndian((ushort)characters[j].CurrentModel);
-								pak.WriteByte((byte)characters[j].Region);
+								pak.WriteByte((byte)characters[j].RegionID);
 								if (reg == null || (int)m_gameClient.ClientType > reg.Expansion)
 									pak.WriteByte(0x00);
 								else

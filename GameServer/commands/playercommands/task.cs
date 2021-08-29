@@ -64,7 +64,7 @@ namespace DOL.GS.Commands
 					messages.Add("You are on " + task.Name);
 					messages.Add("What to do: " + task.Description);
 					messages.Add(" ");
-					messages.Add("Task will expire at " + task.TimeOut.ToShortTimeString());
+					messages.Add("Task will expire at " + task.TimeOut.Value.ToShortTimeString());
 					messages.Add("You have done " + task.TasksDone + " tasks out of " + AbstractTask.MaxTasksDone(player.Level) + " until now.");
 					player.Out.SendCustomTextWindow("Tasks (Snapshot)", messages);
 				}

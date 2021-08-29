@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -38,7 +39,7 @@ namespace DOL.GS
         /// <summary>
         /// table of all relics, InternalID as key
         /// </summary>
-        public static readonly Dictionary<string, MinotaurRelic> m_minotaurrelics = new Dictionary<string, MinotaurRelic>();
+        public static readonly Dictionary<int, MinotaurRelic> m_minotaurrelics = new Dictionary<int, MinotaurRelic>();
 
         /// <summary>
         /// Holds the maximum XP of Minotaur Relics
@@ -84,12 +85,12 @@ namespace DOL.GS
 
             try
             {
-                var relics = GameServer.Database.SelectAllObjects<DBMinotaurRelic>();
-                foreach (DBMinotaurRelic dbrelic in relics)
+                var relics = GameServer.Database.MinotaurRelics.ToList();
+                foreach (var dbrelic in relics)
                 {
                     if (WorldMgr.GetRegion((ushort)dbrelic.SpawnRegion) == null)
                     {
-                        log.Warn("DBMinotaurRelic: Could not load " + dbrelic.ObjectId + ": Region missmatch.");
+                        log.Warn("DBMinotaurRelic: Could not load " + dbrelic.Id + ": Region missmatch.");
                         continue;
                     }
 
@@ -191,7 +192,7 @@ namespace DOL.GS
 
             lock (m_minotaurrelics)
             {
-                foreach (string id in m_minotaurrelics.Keys)
+                foreach (var id in m_minotaurrelics.Keys)
                     relics.Add(m_minotaurrelics[id]);
             }
 
@@ -202,7 +203,7 @@ namespace DOL.GS
         /// Returns the Relic with the given ID
         /// </summary>
         /// <param name="ID">The Internal ID of the Relic</param>
-        public static MinotaurRelic GetRelic(string ID)
+        public static MinotaurRelic GetRelic(int ID)
         {
             lock (m_minotaurrelics)
             {
@@ -213,18 +214,18 @@ namespace DOL.GS
             }
         }
 
-        public static MinotaurRelic GetRelic(int ID)
-        {
-            lock (m_minotaurrelics)
-            {
-                foreach (MinotaurRelic relic in m_minotaurrelics.Values)
-                {
-                    if (relic.RelicID == ID)
-                        return relic;
-                }
-            }
-            return null;
-        }
+        //public static MinotaurRelic GetRelic(int ID)
+        //{
+        //    lock (m_minotaurrelics)
+        //    {
+        //        foreach (MinotaurRelic relic in m_minotaurrelics.Values)
+        //        {
+        //            if (relic.RelicID == ID)
+        //                return relic;
+        //        }
+        //    }
+        //    return null;
+        //}
         #endregion
     }
 }

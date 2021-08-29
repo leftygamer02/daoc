@@ -111,25 +111,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)flag);
 				pak.WriteInt(0x0); //TODO: unknown, new in 1.71
 	
-				string name = obj.Name;
-				LanguageDataObject translation = null;
-				if (obj is GameStaticItem)
-				{
-					translation = LanguageMgr.GetTranslation(m_gameClient, (GameStaticItem)obj);
-					if (translation != null)
-					{
-						if (obj is WorldInventoryItem)
-						{
-							//if (!Util.IsEmpty(((DBLanguageItem)translation).Name))
-							//    name = ((DBLanguageItem)translation).Name;
-						}
-						else
-						{
-							if (!Util.IsEmpty(((DBLanguageGameObject)translation).Name))
-								name = ((DBLanguageGameObject)translation).Name;
-						}
-					}
-				}
+				string name = obj.Name;				
 				pak.WritePascalString(name);
 	
 				if (obj is IDoor)
@@ -246,17 +228,7 @@ namespace DOL.GS.PacketHandler
 	
 				string name = npc.Name;
 				string guildName = npc.GuildName;
-	
-				LanguageDataObject translation = LanguageMgr.GetTranslation(m_gameClient, npc);
-				if (translation != null)
-				{
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).Name))
-						name = ((DBLanguageNPC)translation).Name;
-	
-					if (!Util.IsEmpty(((DBLanguageNPC)translation).GuildName))
-						guildName = ((DBLanguageNPC)translation).GuildName;
-				}
-	
+
 				if (name.Length + add.Length + 2 > 47) // clients crash with too long names
 					name = name.Substring(0, 47 - add.Length - 2);
 				if (add.Length > 0)

@@ -98,26 +98,15 @@ namespace DOL.GS
 			{
 				var area = reg.GetAreasOfSpot(x, y, z).OfType<AbstractArea>().FirstOrDefault(a => a.DisplayMessage);
 				
-				// Try Translate Area First
 				if (area != null)
-				{
-					var lng = LanguageMgr.GetTranslation(client, area) as DBLanguageArea;
-					
-					if (lng != null && !Util.IsEmpty(lng.ScreenDescription))
-						return lng.ScreenDescription;
-							
+				{					
 					return area.Description;
 				}
 				
 				var zone = reg.GetZone(x, y);
 				
-				// Try Translate Zone
 				if (zone != null)
 				{
-					var lng = LanguageMgr.GetTranslation(client, zone) as DBLanguageZone;
-					if (lng != null)
-						return lng.ScreenDescription;
-					
 					return zone.Description;
 				}
 				

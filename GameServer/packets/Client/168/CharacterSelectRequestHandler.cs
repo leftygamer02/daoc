@@ -17,7 +17,7 @@
  *
  */
 using System;
-
+using System.Linq;
 using DOL.Events;
 
 namespace DOL.GS.PacketHandler.Client.v168
@@ -79,28 +79,20 @@ namespace DOL.GS.PacketHandler.Client.v168
 						|| (client.Player != null && client.Player.Name.ToLower() != charName.ToLower())
 					) && client.ClientState == GameClient.eClientState.CharScreen)
 				{
-					bool charFound = false;
-					for (int i = 0; i < client.Account.Characters.Length; i++)
+					var character = client.Account.Characters.FirstOrDefault(x => x.Name == charName);
+
+					if (character != null)
 					{
-						if (client.Account.Characters[i] != null
-						    && client.Account.Characters[i].Name == charName)
-						{
-							charFound = true;
-							// Notify Character Selection Event, last hope to fix any bad data before Loading.
-							GameEventMgr.Notify(DatabaseEvent.CharacterSelected, new CharacterEventArgs(client.Account.Characters[i], client));
-							client.LoadPlayer(i);
-							break;
-						}
-					}
-					if (charFound == false)
-					{
-						client.Player = null;
-						client.ActiveCharIndex = -1;
-					}
-					else
-					{
+						// Notify Character Selection Event, last hope to fix any bad data before Loading.
+						GameEventMgr.Notify(DatabaseEvent.CharacterSelected, new CharacterEventArgs(character, client));
+						client.LoadPlayer(character);
 						// Log character play
 						AuditMgr.AddAuditEntry(client, AuditType.Character, AuditSubtype.CharacterLogin, "", charName);
+					}
+                    else
+                    {
+						client.Player = null;
+						client.ActiveCharIndex = -1;
 					}
 				}
 
@@ -131,25 +123,18 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (((client.Player == null && client.Account.Characters != null) || (client.Player != null && client.Player.Name.ToLower() != charName.ToLower()))
 					&& client.ClientState == GameClient.eClientState.CharScreen)
 				{
-					bool charFound = false;
-					for (int i = 0; i < client.Account.Characters.Length; i++)
-					{
-						if (client.Account.Characters[i] != null && client.Account.Characters[i].Name == charName)
-						{
-							charFound = true;
-							client.LoadPlayer(i);
-							break;
-						}
-					}
-					if (!charFound)
-					{
-						client.Player = null;
-						client.ActiveCharIndex = -1;
-					}
-					else
-					{
+					var character = client.Account.Characters.FirstOrDefault(x => x.Name == charName);
+
+					if (character != null)
+                    {
+						client.LoadPlayer(character);
 						// Log character play
 						AuditMgr.AddAuditEntry(client, AuditType.Character, AuditSubtype.CharacterLogin, "", charName);
+					}
+                    else
+                    {
+						client.Player = null;
+						client.ActiveCharIndex = -1;
 					}
 				}
 
@@ -170,28 +155,21 @@ namespace DOL.GS.PacketHandler.Client.v168
 			// some funkyness going on below here. Could use some safeguards to ensure a character is loaded correctly
 			if (client.Player == null && client.Account.Characters != null && client.ClientState == GameClient.eClientState.CharScreen)
 			{
-				bool charFound = false;
 				int realmOffset = charIndex - (client.Account.Realm * 10 - 10);
 				int charSlot = (client.Account.Realm * 100) + realmOffset;
-				for (int i = 0; i < client.Account.Characters.Length; i++)
-				{
-					if (client.Account.Characters[i] != null && client.Account.Characters[i].AccountSlot == charSlot)
-					{
-						charFound = true;
-						client.LoadPlayer(i);
-						break;
-					}
-				}
 
-				if (!charFound)
-				{
-					client.Player = null;
-					client.ActiveCharIndex = -1;
+				var character = client.Account.Characters.FirstOrDefault(x => x.AccountSlot == charSlot);
+
+				if (character != null)
+                {
+					client.LoadPlayer(character);
+					// Log character play
+					AuditMgr.AddAuditEntry(client, AuditType.Character, AuditSubtype.CharacterLogin, "", client.Player.Name);
 				}
 				else
 				{
-					// Log character play
-					AuditMgr.AddAuditEntry(client, AuditType.Character, AuditSubtype.CharacterLogin, "", client.Player.Name);
+					client.Player = null;
+					client.ActiveCharIndex = -1;
 				}
 			}
 

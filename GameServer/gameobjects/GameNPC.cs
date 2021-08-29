@@ -1069,6 +1069,8 @@ namespace DOL.GS
 			set { m_pathID = value; }
 		}
 
+		public Path Path { get; set; }
+
 		private IPoint3D m_targetPosition = new Point3D(0, 0, 0);
 
 		/// <summary>
@@ -1961,13 +1963,13 @@ namespace DOL.GS
 		/// Loads the equipment template of this npc
 		/// </summary>
 		/// <param name="equipmentTemplateID">The template id</param>
-		public virtual void LoadEquipmentTemplateFromDatabase(int equipmentTemplateID)
+		public virtual void LoadEquipmentTemplateFromDatabase(string equipmentTemplateName)
 		{
-			EquipmentTemplateID = equipmentTemplateID;
-			if (EquipmentTemplateID > 0)
+			EquipmentTemplateName = equipmentTemplateName;
+			if (!String.IsNullOrEmpty(equipmentTemplateName))
 			{
 				GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-				if (template.LoadFromDatabase(EquipmentTemplateID))
+				if (template.LoadFromDatabase(EquipmentTemplateName))
 				{
 					m_inventory = template.CloseTemplate();
 				}
@@ -2062,7 +2064,7 @@ namespace DOL.GS
 			ActiveQuiverSlot = eActiveQuiverSlot.None;
 
 			m_faction = FactionMgr.GetFactionByID(dbNpc.FactionID);
-			LoadEquipmentTemplateFromDatabase(dbNpc.EquipmentTemplateID);
+			LoadEquipmentTemplateFromDatabase(dbNpc.EquipmentTemplateName);
 
 			if (dbMobPoint.RespawnInterval == -1)
 			{
@@ -2071,6 +2073,7 @@ namespace DOL.GS
 			m_respawnInterval = dbMobPoint.RespawnInterval * 1000;
 
 			m_pathID = dbMobPoint.PathID;
+			this.Path = dbMobPoint.Path;
 
 			if (dbNpc.Brain != "")
 			{
@@ -2248,7 +2251,7 @@ namespace DOL.GS
 				mob.AggroLevel = aggroBrain.AggroLevel;
 				mob.AggroRange = aggroBrain.AggroRange;
 			}
-			npc.EquipmentTemplateID = EquipmentTemplateID;
+			npc.EquipmentTemplateName = EquipmentTemplateName;
 
 			if (m_faction != null)
 				npc.FactionID = m_faction.ID;
@@ -2371,7 +2374,7 @@ namespace DOL.GS
 
 			#region Inventory
 			//Ok lets start loading the npc equipment - only if there is a value!
-			if (template.Inventory > 0)
+			if (!String.IsNullOrEmpty(template.Inventory))
 			{
 				bool equipHasItems = false;
 				GameNpcInventoryTemplate equip = new GameNpcInventoryTemplate();
@@ -2386,7 +2389,7 @@ namespace DOL.GS
 						m_templatedInventory.Add(str);
 					}
 
-					int equipid = 0;
+					string equipid = string.Empty;
 
 					if (m_templatedInventory.Count > 0)
 					{
@@ -2485,14 +2488,14 @@ namespace DOL.GS
 		/// <summary>
 		/// Equipment templateID
 		/// </summary>
-		protected int m_equipmentTemplateID;
+		protected string m_equipmentTemplateName;
 		/// <summary>
 		/// The equipment template id of this npc
 		/// </summary>
-		public int EquipmentTemplateID
+		public string EquipmentTemplateName
 		{
-			get { return m_equipmentTemplateID; }
-			set { m_equipmentTemplateID = value; }
+			get { return m_equipmentTemplateName; }
+			set { m_equipmentTemplateName = value; }
 		}
 
 		#endregion
@@ -3007,9 +3010,9 @@ namespace DOL.GS
 			if (MaxSpeedBase > 0 && CurrentSpellHandler == null && !IsMoving
 				&& !AttackState && !InCombat && !IsMovingOnPath && !IsReturningHome
 				//Check everything otherwise the Server will crash
-				&& PathID > 0)
+				&& this.Path != null)
 			{
-				PathPoint path = MovementMgr.LoadPath(PathID);
+				PathPoint path = MovementMgr.LoadPath(this.Path.PathName);
 				if (path != null)
 				{
 					CurrentWayPoint = path;
@@ -5717,7 +5720,7 @@ namespace DOL.GS
 			copyTarget.Dexterity = Dexterity;
 			copyTarget.Empathy = Empathy;
 			copyTarget.Endurance = Endurance;
-			copyTarget.EquipmentTemplateID = EquipmentTemplateID;
+			copyTarget.EquipmentTemplateName = EquipmentTemplateName;
 			copyTarget.EvadeChance = EvadeChance;
 			copyTarget.Faction = Faction;
 			copyTarget.Flags = Flags;
@@ -5740,6 +5743,7 @@ namespace DOL.GS
 			copyTarget.NPCTemplate = NPCTemplate;
 			copyTarget.ParryChance = ParryChance;
 			copyTarget.PathID = PathID;
+			copyTarget.Path = this.Path;
 			copyTarget.PathingNormalSpeed = PathingNormalSpeed;
 			copyTarget.Quickness = Quickness;
 			copyTarget.Piety = Piety;

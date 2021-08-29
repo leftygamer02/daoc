@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Reflection;
 using Atlas.DataLayer.Models;
@@ -73,8 +74,8 @@ namespace DOL.GS
 				lock (m_mobTemplates.SyncRoot)
 				{
 					m_mobTemplates.Clear();
-					var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
-					foreach (DBNpcTemplate dbTemplate in objs)
+					var objs = GameServer.Database.NpcTemplates.ToList();
+					foreach (var dbTemplate in objs)
 					{
 						try
 						{
@@ -106,16 +107,16 @@ namespace DOL.GS
 			{
 				lock (m_mobTemplates.SyncRoot)
 				{
-					var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
+					var objs = GameServer.Database.NpcTemplates.ToList();
 
 					// remove all the db templates
-					foreach (DBNpcTemplate dbTemplate in objs)
+					foreach (var dbTemplate in objs)
 					{
 						RemoveTemplate(new NpcTemplate(dbTemplate));
 					}
 
 					// add them back in
-					foreach (DBNpcTemplate dbTemplate in objs)
+					foreach (var dbTemplate in objs)
 					{
 						AddTemplate(new NpcTemplate(dbTemplate));
 					}

@@ -14,6 +14,7 @@ namespace Atlas.DataLayer.Models
         public string Description { get; set; }
         public int IconID { get; set; }
         public string Implementation { get; set; }
+        public int AbilityOrder { get; set; }
 
     }
 }

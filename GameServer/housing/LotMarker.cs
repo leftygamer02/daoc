@@ -46,7 +46,7 @@ namespace DOL.GS.Housing
 			IList list = new ArrayList();
 			list.Add("You target lot number " + DatabaseItem.HouseNumber + ".");
 
-			if (string.IsNullOrEmpty(DatabaseItem.OwnerID))
+			if (DatabaseItem.OwnerID == null)
 			{
 				list.Add(" It can be bought for " + Money.GetString(HouseTemplateMgr.GetLotPrice(DatabaseItem)) + ".");
 			}
@@ -75,7 +75,7 @@ namespace DOL.GS.Housing
 				}
 			}
 
-			if (string.IsNullOrEmpty(DatabaseItem.OwnerID))
+			if (DatabaseItem.OwnerID == null)
 			{
 				player.Out.SendCustomDialog("Do you want to buy this lot?\r\n It costs " + Money.GetString(HouseTemplateMgr.GetLotPrice(DatabaseItem)) + "!", BuyLot);
 			}
@@ -101,7 +101,7 @@ namespace DOL.GS.Housing
 
 			lock (DatabaseItem) // Mannen 10:56 PM 10/30/2006 - Fixing every lock(this)
 			{
-				if (!string.IsNullOrEmpty(DatabaseItem.OwnerID))
+				if (DatabaseItem.Owner != null)
 					return;
 
 				if (HouseMgr.GetHouseNumberByPlayer(player) != 0 && player.Client.Account.PrivLevel != (int)ePrivLevel.Admin)
@@ -138,7 +138,7 @@ namespace DOL.GS.Housing
 
 			if (HouseMgr.IsOwner(DatabaseItem, player))
 			{
-				switch (item.Id)
+				switch (item.ItemTemplate.KeyName)
 				{
 					case "housing_alb_cottage_deed":
 						CreateHouse(player, 1);
@@ -183,7 +183,7 @@ namespace DOL.GS.Housing
 				player.Inventory.RemoveItem(item);
 
 				// Tolakram:  Is this always null when purchasing a house?
-				InventoryLogging.LogInventoryAction(player, "(HOUSE;" + (CurrentHouse == null ? DatabaseItem.HouseNumber : CurrentHouse.HouseNumber) + ")", eInventoryActionType.Other, item.Template, item.Count);
+				InventoryLogging.LogInventoryAction(player, "(HOUSE;" + (CurrentHouse == null ? DatabaseItem.HouseNumber : CurrentHouse.HouseNumber) + ")", eInventoryActionType.Other, item.ItemTemplate, item.Count);
 
 				return true;
 			}
@@ -227,7 +227,7 @@ namespace DOL.GS.Housing
 
 		public virtual bool OnPlayerSell(GamePlayer player, InventoryItem item)
 		{
-			if (!item.IsDropable)
+			if (!item.ItemTemplate.IsDropable)
 			{
 				ChatUtil.SendMerchantMessage(player, "This item can't be sold.");
 				return false;
@@ -242,7 +242,7 @@ namespace DOL.GS.Housing
 				return 0;
 
 			int itemCount = Math.Max(1, item.Count);
-			return item.Price * itemCount / 2;
+			return item.ItemTemplate.Price * itemCount / 2;
 		}
 
 		public override void SaveIntoDatabase()
@@ -257,7 +257,7 @@ namespace DOL.GS.Housing
 			          		X = house.X,
 			          		Y = house.Y,
 			          		Z = house.Z,
-			          		CurrentRegionID = house.RegionID,
+			          		CurrentRegionID = (ushort)house.RegionID,
 			          		Heading = (ushort) house.Heading,
 			          		Name = "Lot Marker",
 			          		Model = 1308,

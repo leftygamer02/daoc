@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Reflection;
 
@@ -79,23 +80,23 @@ namespace DOL.GS
 				// if relics are on the ground during init we will return them to their owners
 				List<GameRelic> lostRelics = new List<GameRelic>();
 
-				var relics = GameServer.Database.SelectAllObjects<DBRelic>();
-				foreach (DBRelic datarelic in relics)
+				var relics = GameServer.Database.Relics.ToList();
+				foreach (var datarelic in relics)
 				{
-					if (datarelic.relicType < 0 || datarelic.relicType > 1
+					if (datarelic.RelicType < 0 || datarelic.RelicType > 1
 						|| datarelic.OriginalRealm < 1 || datarelic.OriginalRealm > 3)
 					{
-						log.Warn("DBRelic: Could not load " + datarelic.RelicID + ": Realm or Type missmatch.");
+						log.Warn("DBRelic: Could not load " + datarelic.Id + ": Realm or Type missmatch.");
 						continue;
 					}
 
-					if (WorldMgr.GetRegion((ushort)datarelic.Region) == null)
+					if (WorldMgr.GetRegion((ushort)datarelic.RegionID) == null)
 					{
-						log.Warn("DBRelic: Could not load " + datarelic.RelicID + ": Region missmatch.");
+						log.Warn("DBRelic: Could not load " + datarelic.Id + ": Region missmatch.");
 						continue;
 					}
 					GameRelic relic = new GameRelic(datarelic);
-					m_relics.Add(datarelic.RelicID, relic);
+					m_relics.Add(datarelic.Id, relic);
 
 					relic.AddToWorld();
 					GameRelicPad pad = GetPadAtRelicLocation(relic);

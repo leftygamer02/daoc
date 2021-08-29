@@ -9,9 +9,8 @@ namespace Atlas.DataLayer.Models
     public class CharacterFriend : DataObjectBase
     {
         public int CharacterID { get; set; }
-        public int FriendID { get; set; }
+        public string FriendName { get; set; }
 
         public virtual Character Character { get; set; }
-        public virtual Character Friend { get; set; }
     }
 }

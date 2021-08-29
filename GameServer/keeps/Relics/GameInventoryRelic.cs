@@ -53,8 +53,8 @@ namespace DOL.GS
 		public GameInventoryRelic(InventoryItem item)
 			: base(item)
 		{
-			OwnerID = item.OwnerID;
-			ObjectId = item.ObjectId;
+			this.CharacterID = item.CharacterID;
+			this.Id = item.Id;
 		}
 
 		/// <summary>

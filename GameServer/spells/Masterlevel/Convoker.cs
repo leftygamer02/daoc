@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Reflection;
 using DOL.AI.Brain;
@@ -22,16 +23,16 @@ namespace DOL.GS.Spells
 		public SummonWoodSpellHandler(GameLiving caster, Spell spell, SpellLine line)
 			: base(caster, spell, line)
 		{
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>("mysticwood_wooden_boards");
+			ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "mysticwood_wooden_boards");
 			if (template != null)
 			{
                 items.Add(GameInventoryItem.Create(template));
                 foreach (InventoryItem item in items)
                 {
-                    if (item.IsStackable)
+                    if (item.ItemTemplate.IsStackable)
                     {
                         item.Count = 1;
-                        item.Weight = item.Count * item.Weight;
+                        item.ItemTemplate.Weight = item.Count * item.ItemTemplate.Weight;
                     }
                 }
 			}
@@ -254,16 +255,16 @@ namespace DOL.GS.Spells
 					ammo = "mystic_ammo_cold";
 					break;
 			}
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(ammo);
+			ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ammo);
 			if (template != null)
 			{
                 items.Add(GameInventoryItem.Create(template));
                 foreach (InventoryItem item in items)
                 {
-                    if (item.IsStackable)
+                    if (item.ItemTemplate.IsStackable)
                     {
                         item.Count = 1;
-                        item.Weight = item.Count * item.Weight;
+                        item.ItemTemplate.Weight = item.Count * item.ItemTemplate.Weight;
                     }
                 }
 

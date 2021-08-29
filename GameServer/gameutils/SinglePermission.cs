@@ -33,7 +33,7 @@ namespace DOL.GS
 
 		public static bool HasPermission(GamePlayer player,string command)
 		{
-			var obj = DOLDB<DBSinglePermission>.SelectObject(DB.Column("Command").IsEqualTo(command).And(DB.Column("PlayerID").IsEqualTo(player.ObjectId).Or(DB.Column("PlayerID").IsEqualTo(player.AccountName))));
+			var obj = GameServer.Database.SinglePermissions.FirstOrDefault(x => x.Command == command && (x.CharacterID == player.ObjectId || x.AccountID == player.AccountID));
 			if (obj == null)
 				return false;
 			return true;
@@ -41,39 +41,39 @@ namespace DOL.GS
 
 		public static void setPermission(GamePlayer player,string command)
 		{
-			DBSinglePermission perm = new DBSinglePermission();
+			var perm = new Atlas.DataLayer.Models.SinglePermission();
 			perm.Command = command;
-			perm.PlayerID = player.ObjectId;
+			perm.CharacterID = player.ObjectId;
 			GameServer.Instance.SaveDataObject(perm);
 		}
 
 		public static void setPermissionAccount(GamePlayer player, string command)
 		{
-			DBSinglePermission perm = new DBSinglePermission();
+			var perm = new Atlas.DataLayer.Models.SinglePermission();
 			perm.Command = command;
-			perm.PlayerID = player.AccountName;
+			perm.AccountID = player.AccountID;
 			GameServer.Instance.SaveDataObject(perm);
 		}
 
 		public static bool removePermission(GamePlayer player,string command)
 		{
-			var obj = DOLDB<DBSinglePermission>.SelectObject(DB.Column("Command").IsEqualTo(command).And(DB.Column("PlayerID").IsEqualTo(player.ObjectId)));
+			var obj = GameServer.Database.SinglePermissions.FirstOrDefault(x => x.Command == command && x.CharacterID == player.ObjectId);
 			if (obj == null)
 			{
 				return false;
 			}
-			GameServer.Database.DeleteObject(obj);
+			GameServer.Instance.DeleteDataObject(obj);
 			return true;
         }
 
         public static bool removePermissionAccount(GamePlayer player, string command)
         {
-            var obj = DOLDB<DBSinglePermission>.SelectObject(DB.Column("Command").IsEqualTo(command).And(DB.Column("PlayerID").IsEqualTo(player.AccountName)));
-            if (obj == null)
+			var obj = GameServer.Database.SinglePermissions.FirstOrDefault(x => x.Command == command && x.AccountID == player.AccountID);
+			if (obj == null)
             {
                 return false;
             }
-            GameServer.Database.DeleteObject(obj);
+            GameServer.Instance.DeleteDataObject(obj);
             return true;
         }
 	}

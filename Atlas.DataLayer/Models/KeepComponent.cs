@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class KeepComponent :DataObjectBase
+    public partial class KeepComponent :DataObjectBase
     {
         public int X { get; set; }
         public int Y { get; set; }

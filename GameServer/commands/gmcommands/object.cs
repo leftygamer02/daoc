@@ -89,7 +89,7 @@ namespace DOL.GS.Commands
 							info.Add(" ");
 							info.Add(" Owner: " + targetObject.Owners[0].Name);
 						}
-						if (string.IsNullOrEmpty(targetObject.OwnerID) == false)
+						if (targetObject.OwnerID > 0)
 						{
 							info.Add(" ");
 							info.Add(" OwnerID: " + targetObject.OwnerID);

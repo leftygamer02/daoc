@@ -1242,8 +1242,8 @@ namespace DOL.GS.Spells
                     if (targetPlayer.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item))
                     {
 
-                        InventoryLogging.LogInventoryAction(Caster, targetPlayer, eInventoryActionType.Other, item.Template, item.Count);
-                        targetPlayer.Out.SendMessage("Item created: " + item.GetName(0, false), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        InventoryLogging.LogInventoryAction(Caster, targetPlayer, eInventoryActionType.Other, item.ItemTemplate, item.Count);
+                        targetPlayer.Out.SendMessage("Item created: " + item.ItemTemplate.GetName(0, false), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     }
                 }
             }

@@ -38,13 +38,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 		public void HandlePacket(GameClient client, GSPacketIn packet)
 		{
 			string charName = packet.ReadString(30);
-			Character[] chars = client.Account.Characters;
 
-			var foundChar = chars?.FirstOrDefault(ch => ch.Name.Equals(charName, StringComparison.OrdinalIgnoreCase));
+			var foundChar = client.Account.Characters.FirstOrDefault(ch => ch.Name.Equals(charName, StringComparison.OrdinalIgnoreCase));
 			if (foundChar != null)
 			{
 				var slot = foundChar.AccountSlot;
-				CharacterCreateRequestHandler.CheckForDeletedCharacter(foundChar.AccountName, client, slot);
+				CharacterCreateRequestHandler.CheckForDeletedCharacter(foundChar.Account.Name, client, slot);
 			}
 		}
 	}

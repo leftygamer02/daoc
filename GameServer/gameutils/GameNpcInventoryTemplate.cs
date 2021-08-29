@@ -284,7 +284,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Cache for fast loading of npc equipment
 		/// </summary>
-		protected static Dictionary<int, List<NpcEquipment>> m_npcEquipmentCache = null;
+		protected static Dictionary<string, List<NpcEquipment>> m_npcEquipmentCache = null;
 
 		/// <summary>
 		/// Loads the inventory template from the Database
@@ -298,9 +298,10 @@ namespace DOL.GS
 			lock (m_items)
 			{
 				IList<NpcEquipment> npcEquip;
+				var templateStr = templateID.ToString();
 
-				if (m_npcEquipmentCache.ContainsKey(templateID))
-					npcEquip = m_npcEquipmentCache[templateID];
+				if (m_npcEquipmentCache.ContainsKey(templateStr))
+					npcEquip = m_npcEquipmentCache[templateStr];
 				else
 					npcEquip = GameServer.Database.NpcEquipments.Where(x => x.Id == templateID).ToList();
 
@@ -324,24 +325,61 @@ namespace DOL.GS
 		}
 
 		/// <summary>
+		/// Loads the inventory template from the Database
+		/// </summary>
+		/// <returns>success</returns>
+		public override bool LoadFromDatabase(string templateName)
+		{
+			if (string.IsNullOrEmpty(templateName))
+				return false;
+
+			lock (m_items)
+			{
+				IList<NpcEquipment> npcEquip;
+
+				if (m_npcEquipmentCache.ContainsKey(templateName))
+					npcEquip = m_npcEquipmentCache[templateName];
+				else
+					npcEquip = GameServer.Database.NpcEquipments.Where(x => x.EquipmentTemplateName == templateName).ToList();
+
+				if (npcEquip == null || npcEquip.Count == 0)
+				{
+					if (log.IsWarnEnabled)
+						log.Warn(string.Format("Failed loading NPC inventory template: {0}", templateName));
+					return false;
+				}
+
+				foreach (var npcItem in npcEquip)
+				{
+					if (!AddNPCEquipment((eInventorySlot)npcItem.Slot, npcItem.Model, npcItem.Color, npcItem.Effect, npcItem.Extension, npcItem.Emblem))
+					{
+						if (log.IsWarnEnabled)
+							log.Warn("Error adding NPC equipment for templateID " + templateName + ", ModelID=" + npcItem.Model + ", slot=" + npcItem.Slot);
+					}
+				}
+			}
+			return true;
+		}
+
+		/// <summary>
 		/// Create the hash table
 		/// </summary>
 		public static bool Init()
 		{
 			try
 			{
-				m_npcEquipmentCache = new Dictionary<int, List<NpcEquipment>>(1000);
+				m_npcEquipmentCache = new Dictionary<string, List<NpcEquipment>>(1000);
 				foreach (NpcEquipment equip in GameServer.Database.NpcEquipments.ToList())
 				{
 					List<NpcEquipment> list;
-					if (m_npcEquipmentCache.ContainsKey(equip.Id))
+					if (m_npcEquipmentCache.ContainsKey(equip.Id.ToString()))
 					{
-						list = m_npcEquipmentCache[equip.Id];
+						list = m_npcEquipmentCache[equip.Id.ToString()];
 					}
 					else
 					{
 						list = new List<NpcEquipment>();
-						m_npcEquipmentCache[equip.Id] = list;
+						m_npcEquipmentCache[equip.Id.ToString()] = list;
 					}
 
 					list.Add(equip);
@@ -359,16 +397,16 @@ namespace DOL.GS
 		/// Save the inventory template to Database
 		/// </summary>
 		/// <returns>success</returns>
-		public override bool SaveIntoDatabase(int templateID)
+		public override bool SaveIntoDatabase(string templateName)
 		{
 			lock (m_items)
 			{
 				try
 				{
-					if (templateID <= 0)
-						throw new ArgumentNullException("templateID");
+					if (String.IsNullOrEmpty(templateName))
+						throw new ArgumentNullException("templateName");
 
-					var npcEquipment = GameServer.Database.NpcEquipments.Where(x => x.Id == templateID);
+					var npcEquipment = GameServer.Database.NpcEquipments.Where(x => x.EquipmentTemplateName == templateName);
 
 					// delete removed item templates
 					foreach (var npcItem in npcEquipment)
@@ -408,7 +446,7 @@ namespace DOL.GS
 							npcItem.Model = item.ItemTemplate.Model;
 							npcItem.Color = item.Color;
 							npcItem.Effect = item.ItemTemplate.Effect;
-							npcItem.Id = templateID;
+							npcItem.EquipmentTemplateName = templateName;
 							npcItem.Extension = item.Extension;
 							npcItem.Emblem = item.Emblem;
 							GameServer.Instance.SaveDataObject(npcItem);
@@ -420,7 +458,7 @@ namespace DOL.GS
 				catch (Exception e)
 				{
 					if (log.IsErrorEnabled)
-						log.Error("Error saving NPC inventory template, templateID=" + templateID, e);
+						log.Error("Error saving NPC inventory template, templateName=" + templateName, e);
 
 					return false;
 				}

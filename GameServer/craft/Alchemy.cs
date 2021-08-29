@@ -17,6 +17,7 @@
  *
  */
 
+using System.Linq;
 using Atlas.DataLayer.Models;
 using DOL.Language;
 using System;
@@ -70,7 +71,7 @@ namespace DOL.GS
 			if (!base.IsAllowedToCombine(player, item)) 
                 return false;
 			
-			if (((InventoryItem)player.TradeWindow.TradeItems[0]).ObjectType != 
+			if (((InventoryItem)player.TradeWindow.TradeItems[0]).ItemTemplate.ObjectType != 
                 (int)eObjectType.AlchemyTincture)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, 
@@ -89,11 +90,11 @@ namespace DOL.GS
 				return false;
 			}
 
-			if (item.ProcSpellID != 0 || item.SpellID != 0)
+			if (item.Spells.Any(x => !x.IsPoison))
 			{
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, 
-                    "Alchemy.IsAllowedToCombine.AlreadyImbued", item.Name), 
-                    PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language,
+					"Alchemy.IsAllowedToCombine.AlreadyImbued", item.Name),
+					PacketHandler.eChatType.CT_System, PacketHandler.eChatLoc.CL_SystemWindow);
 
 				return false;
 			}
@@ -119,25 +120,24 @@ namespace DOL.GS
 
 			if (item == null || tincture == null) 
                 return ;
-			
-			if(tincture.ProcSpellID != 0)
+
+			var spellToAdd = tincture.Spells.First();
+
+			item.Spells.Add(new InventoryItemSpell()
 			{
-				item.ProcSpellID = tincture.ProcSpellID;
-			}
-			else
-			{
-				item.MaxCharges = GetItemMaxCharges(item);
-				item.Charges = item.MaxCharges;
-				item.SpellID = tincture.SpellID;
-			}
+				SpellID = spellToAdd.SpellID,
+				Charges = spellToAdd.Charges,
+				MaxCharges = spellToAdd.MaxCharges,
+				ProcChance = spellToAdd.ProcChance,
+			});			
 
 			player.Inventory.RemoveCountFromStack(tincture, 1);
-			InventoryLogging.LogInventoryAction(player, "(craft)", eInventoryActionType.Craft, tincture.Template);
+			InventoryLogging.LogInventoryAction(player, "(craft)", eInventoryActionType.Craft, tincture.ItemTemplate);
 
-			if (item.Template is ItemUnique)
+			if (item.ItemTemplate is ItemUnique)
 			{
 				GameServer.Instance.SaveDataObject(item);
-				GameServer.Instance.SaveDataObject(item.Template as ItemUnique);
+				GameServer.Instance.SaveDataObject(item.ItemTemplate as ItemUnique);
 			}
 			else
 			{
@@ -155,15 +155,15 @@ namespace DOL.GS
 		/// <returns></returns>
 		public int GetItemMaxCharges(InventoryItem item)
 		{
-			if(item.Quality < 94)
+			if(item.ItemTemplate.Quality < 94)
 			{
 				return 2;
 			}
-			if(item.Quality >= 100)
+			if(item.ItemTemplate.Quality >= 100)
 			{
 				return 10;
 			}
-			return item.Quality - 92;
+			return item.ItemTemplate.Quality - 92;
 		}
 	}
 }

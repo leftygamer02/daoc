@@ -38,88 +38,50 @@ namespace DOL.GS.Movement
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private static Dictionary<int, Path> m_pathCache = new Dictionary<int, Path>();
-		private static Dictionary<int, SortedList<int, PathPoints>> m_pathpointCache = new Dictionary<int, SortedList<int, PathPoints>>();
+		private static Dictionary<string, Path> m_pathCache = new Dictionary<string, Path>();
 		private static object LockObject = new object();
 		/// <summary>
 		/// Cache all the paths and pathpoints
 		/// </summary>
 		private static void FillPathCache()
 		{
-			IList<Path> allPaths = GameServer.Database.Paths.ToList();
+			IList<Path> allPaths = GameServer.Database.Paths.Include(x => x.PathPoints).ToList();
 			foreach (Path path in allPaths)
 			{
-				m_pathCache.Add(path.Id, path);
+				m_pathCache.Add(path.PathName, path);
 			}
 
 			int duplicateCount = 0;
 
-			IList<PathPoints> allPathPoints = GameServer.Database.PathPoints.ToList();
-			foreach (var pathPoint in allPathPoints)
-			{
-				if (m_pathpointCache.ContainsKey(pathPoint.PathID))
-				{
-					if (m_pathpointCache[pathPoint.PathID].ContainsKey(pathPoint.Step) == false)
-					{
-						m_pathpointCache[pathPoint.PathID].Add(pathPoint.Step, pathPoint);
-					}
-					else
-					{
-						duplicateCount++;
-					}
-				}
-				else
-				{
-					SortedList<int, PathPoints> pList = new SortedList<int, PathPoints>();
-					pList.Add(pathPoint.Step, pathPoint);
-					m_pathpointCache.Add(pathPoint.PathID, pList);
-				}
-			}
             if (duplicateCount > 0)
                 log.ErrorFormat("{0} duplicate steps ignored while loading paths.", duplicateCount);
 			log.InfoFormat("Path cache filled with {0} paths.", m_pathCache.Count);
 		}
 
-		public static void UpdatePathInCache(int pathID)
+		public static void UpdatePathInCache(string pathName)
 		{
-			log.DebugFormat("Updating path {0} in path cache.", pathID);
+			log.DebugFormat("Updating path {0} in path cache.", pathName);
 
-			var Path = GameServer.Database.Paths.Find(pathID);
+			var Path = GameServer.Database.Paths.Include(x => x.PathPoints).FirstOrDefault(x => x.PathName == pathName);
 			if (Path != null)
 			{
-				if (m_pathCache.ContainsKey(pathID))
+				if (m_pathCache.ContainsKey(pathName))
 				{
-					m_pathCache[pathID] = Path;
+					m_pathCache[pathName] = Path;
 				}
 				else
 				{
-					m_pathCache.Add(Path.Id, Path);
+					m_pathCache.Add(Path.PathName, Path);
 				}
-			}
-
-			var pathPoints = Path.PathPoints;
-			SortedList<int, PathPoints> pList = new SortedList<int, PathPoints>();
-			if (m_pathpointCache.ContainsKey(pathID))
-			{
-				m_pathpointCache[pathID] = pList;
-			}
-			else
-			{
-				m_pathpointCache.Add(pathID, pList);
-			}
-
-			foreach (var pathPoint in pathPoints)
-			{
-				m_pathpointCache[pathPoint.PathID].Add(pathPoint.Step, pathPoint);
 			}
 		}
 
         /// <summary>
         /// loads a path from the cache
         /// </summary>
-        /// <param name="pathID">path to load</param>
+        /// <param name="pathName">path to load</param>
         /// <returns>first pathpoint of path or null if not found</returns>
-        public static PathPoint LoadPath(int pathID)
+        public static PathPoint LoadPath(string pathName)
         {
         	lock(LockObject)
         	{
@@ -130,9 +92,9 @@ namespace DOL.GS.Movement
 	
 				Path Path = null;
 	
-				if (m_pathCache.ContainsKey(pathID))
+				if (m_pathCache.ContainsKey(pathName))
 				{
-					Path = m_pathCache[pathID];
+					Path = m_pathCache[pathName];
 				}
 	
 				// even if path entry not found see if pathpoints exist and try to use it
@@ -144,21 +106,10 @@ namespace DOL.GS.Movement
 	                pathType = (ePathType)Path.PathType;
 	            }
 	
-				SortedList<int, PathPoints> pathPoints = null;
-	
-				if (m_pathpointCache.ContainsKey(pathID))
-				{
-					pathPoints = m_pathpointCache[pathID];
-				}
-				else
-				{
-					pathPoints = new SortedList<int, PathPoints>();
-				}
-	
 	            PathPoint prev = null;
 	            PathPoint first = null;
 	
-				foreach (var pp in pathPoints.Values)
+				foreach (var pp in Path.PathPoints)
 				{
 					PathPoint p = new PathPoint(pp.X, pp.Y, pp.Z, pp.MaxSpeed, pathType);
 					p.WaitTime = pp.WaitTime;
@@ -179,48 +130,56 @@ namespace DOL.GS.Movement
         	}
         }
 
-        /// <summary>
-        /// Saves the path into the database
-        /// </summary>
-        /// <param name="pathID">The path ID</param>
-        /// <param name="path">The path waypoint</param>
-        public static void SavePath(int pathID, PathPoint path)
+		/// <summary>
+		/// Saves the path into the database
+		/// </summary>
+		/// <param name="pathName">The path to save</param>
+		/// <param name="path">The path waypoint</param>
+		public static void SavePath(string pathName, PathPoint pathPoint)
         {
-            if (path == null)
+            if (pathPoint == null)
                 return;
 
 			// First delete any path with this pathID from the database
 
-			var Path = GameServer.Database.Paths.Find(pathID);
-			if (Path != null)
+			var path = GameServer.Database.Paths.FirstOrDefault(x => x.PathName == pathName);
+			if (path != null)
 			{
-				GameServer.Instance.DeleteDataObject(Path);
+				GameServer.Instance.DeleteDataObject(path);
 			}
-
-			GameServer.Instance.DeleteDataObjects(GameServer.Database.PathPoints.Where(x => x.PathID == pathID));
 
 			// Now add this path and iterate through the PathPoint linked list to add all the path points
 
-            PathPoint root = FindFirstPathPoint(path);
+            PathPoint root = FindFirstPathPoint(pathPoint);
 
             //Set the current pathpoint to the rootpoint!
-            path = root;
-            Path = new Path(pathID, root.Type);
-            GameServer.Instance.SaveDataObject(Path);
+            pathPoint = root;
+			path = new Path()
+			{
+				PathName = pathName,
+				PathType = (int)root.Type
+			};
+            GameServer.Instance.SaveDataObject(path);
 
             int i = 1;
             do
             {
-                var dbpp = new Atlas.DataLayer.Models.PathPoints(path.X, path.Y, path.Z, path.MaxSpeed);
+				var dbpp = new PathPoints()
+				{
+					X = pathPoint.X,
+					Y = pathPoint.Y,
+					Z = pathPoint.Z,
+					MaxSpeed = pathPoint.MaxSpeed
+				};
                 dbpp.Step = i++;
-                dbpp.PathID = pathID;
-                dbpp.WaitTime = path.WaitTime;
+                dbpp.PathID = path.Id;
+                dbpp.WaitTime = pathPoint.WaitTime;
                 GameServer.Instance.SaveDataObject(dbpp);
-                path = path.Next;
+				pathPoint = pathPoint.Next;
             }
-			while (path != null && path != root);
+			while (pathPoint != null && pathPoint != root);
 
-			UpdatePathInCache(pathID);
+			UpdatePathInCache(pathName);
         }
 
         /// <summary>

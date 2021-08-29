@@ -184,7 +184,7 @@ namespace DOL.GS
             }
 
             #region /stats top
-            var chars = DOLDB<Character>.SelectObjects(DB.Column("RealmPoints").IsGreatherThan(213881)).OrderByDescending(dc => dc.RealmPoints).Take(100).ToArray();
+            var chars = GameServer.Database.Characters.Where(x => x.RealmPoints > 213881).OrderByDescending(dc => dc.RealmPoints).Take(100).ToArray();
             // assuming we can get at least 20 players
             if (toplist.Count > 0)
             {
@@ -195,7 +195,7 @@ namespace DOL.GS
             {
                 if (chr.IgnoreStatistics == false)
                 {
-                    var account = GameServer.Database.FindObjectByKey<Account>(chr.AccountName);
+                    var account = GameServer.Database.Accounts.FirstOrDefault(x => x.Id == chr.AccountID);
 
                     if (account != null && account.PrivLevel == 1)
                     {

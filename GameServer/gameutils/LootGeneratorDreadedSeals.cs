@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using DOL.GS;
 using DOL.AI.Brain;
@@ -34,8 +35,8 @@ namespace DOL.GS
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static readonly ItemTemplate m_GlowingDreadedSeal = GameServer.Database.FindObjectByKey<ItemTemplate>("glowing_dreaded_seal");
-        private static readonly ItemTemplate m_SanguineDreadedSeal = GameServer.Database.FindObjectByKey<ItemTemplate>("sanguine_dreaded_seal");
+        private static readonly ItemTemplate m_GlowingDreadedSeal = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "glowing_dreaded_seal");
+        private static readonly ItemTemplate m_SanguineDreadedSeal = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "sanguine_dreaded_seal");
 
         /// <summary>       
         /// Generate loot for given mob

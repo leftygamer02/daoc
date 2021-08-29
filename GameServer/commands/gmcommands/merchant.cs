@@ -127,7 +127,7 @@ namespace DOL.GS.Commands
 								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Info.ArtListIsEmpty"));
 							else
 							{
-								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Info.ArtList", targetMerchant.TradeItems.ItemsListID));
+								DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Info.ArtList", targetMerchant.TradeItems.ItemsListName));
 							}
 						}
 						break;
@@ -144,20 +144,20 @@ namespace DOL.GS.Commands
 				#region SaveList
 				case "savelist":
 					{
-						string currentID = targetMerchant.TradeItems.ItemsListID;
+						string currentID = targetMerchant.TradeItems.ItemsListName;
 
-						var itemList = DOLDB<MerchantItem>.SelectObjects(DB.Column("ItemListID").IsEqualTo(currentID));
+						var itemList = GameServer.Database.MerchantItems.Where(x => x.ItemListName == currentID);
 						foreach (MerchantItem merchantItem in itemList)
 						{
 							MerchantItem item = new MerchantItem();
-							item.ItemListID = GameServer.Database.Escape(args[2]);
+							item.ItemListName = args[2];
 							item.ItemTemplateID = merchantItem.ItemTemplateID;
 							item.PageNumber = merchantItem.PageNumber;
 							item.SlotPosition = merchantItem.SlotPosition;
 							GameServer.Instance.SaveDataObject(item);
 						}
 
-						DisplayMessage(client, "New MerchantItems list saved as '" + GameServer.Database.Escape(args[2]) + "'");
+						DisplayMessage(client, $"New MerchantItems list saved as '{args[2]}'");
 
 						break;
 					}
@@ -248,7 +248,7 @@ namespace DOL.GS.Commands
 												return;
 											}
 
-											ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(templateID);
+											ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == templateID || x.KeyName == templateID);
 											if (template == null)
 											{
 												DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Add.ItemTemplateNoFound", templateID));
@@ -267,12 +267,12 @@ namespace DOL.GS.Commands
 												return;
 											}
 
-											var item = DOLDB<MerchantItem>.SelectObject(DB.Column("ItemListID").IsEqualTo(targetMerchant.TradeItems.ItemsListID).And(DB.Column("PageNumber").IsEqualTo(page)).And(DB.Column("SlotPosition").IsEqualTo(slot)));
+											var item = GameServer.Database.MerchantItems.FirstOrDefault(x => x.ItemListName == targetMerchant.TradeItems.ItemsListName && x.PageNumber == page && x.SlotPosition == (int)slot);
 											if (item == null)
 											{
 												item = new MerchantItem();
-												item.ItemListID = targetMerchant.TradeItems.ItemsListID;
-												item.ItemTemplateID = templateID;
+												item.ItemListName = targetMerchant.TradeItems.ItemsListName;
+												item.ItemTemplateID = template.Id;
 												item.SlotPosition = (int)slot;
 												item.PageNumber = page;
 
@@ -280,7 +280,7 @@ namespace DOL.GS.Commands
 											}
 											else
 											{
-												item.ItemTemplateID = templateID;
+												item.ItemTemplateID = template.Id;
 												GameServer.Instance.SaveDataObject(item);
 											}
 											DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Add.ItemAdded"));
@@ -326,13 +326,13 @@ namespace DOL.GS.Commands
 												return;
 											}
 
-											MerchantItem item = DOLDB<MerchantItem>.SelectObject(DB.Column("ItemListID").IsEqualTo(targetMerchant.TradeItems.ItemsListID).And(DB.Column("PageNumber").IsEqualTo(page)).And(DB.Column("SlotPosition").IsEqualTo(slot)));
+											MerchantItem item = GameServer.Database.MerchantItems.FirstOrDefault(x => x.ItemListName == targetMerchant.TradeItems.ItemsListName && x.PageNumber == page && x.SlotPosition == (int)slot);
 											if (item == null)
 											{
 												DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Remove.SlotInPageIsAEmpty", slot, page));
 												return;
 											}
-											GameServer.Database.DeleteObject(item);
+											GameServer.Instance.DeleteDataObject(item);
 											DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Remove.SlotInPageCleaned", slot, page));
 
 										}
@@ -363,10 +363,10 @@ namespace DOL.GS.Commands
 											}
 											DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Delete.DeletingListTemp"));
 
-											var merchantitems = DOLDB<MerchantItem>.SelectObjects(DB.Column("ItemListID").IsEqualTo(targetMerchant.TradeItems.ItemsListID));
+											var merchantitems = GameServer.Database.MerchantItems.Where(x => x.ItemListName == targetMerchant.TradeItems.ItemsListName).ToList();
 											if (merchantitems.Count > 0)
 											{
-												GameServer.Database.DeleteObject(merchantitems);
+												GameServer.Instance.DeleteDataObjects(merchantitems);
 											}
 											DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Merchant.Articles.Delete.ListDeleted"));
 										}
@@ -434,7 +434,7 @@ namespace DOL.GS.Commands
 						merchant.GuildName = targetMerchant.GuildName;
 						merchant.Size = targetMerchant.Size;
 						merchant.Inventory = targetMerchant.Inventory;
-						merchant.EquipmentTemplateID = targetMerchant.EquipmentTemplateID;
+						merchant.EquipmentTemplateName = targetMerchant.EquipmentTemplateName;
 						merchant.TradeItems = targetMerchant.TradeItems;
 						merchant.AddToWorld();
 						merchant.SaveIntoDatabase();

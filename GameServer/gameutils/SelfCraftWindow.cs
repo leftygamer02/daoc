@@ -191,7 +191,7 @@ namespace DOL.GS
 		{
 			lock(Sync)
 			{
-				if(!itemForTrade.IsDropable || !itemForTrade.IsPickable || itemForTrade.IsNotLosingDur)
+				if(!itemForTrade.ItemTemplate.IsDropable || !itemForTrade.ItemTemplate.IsPickable || itemForTrade.ItemTemplate.IsNotLosingDur)
 					return false;
 				if (TradeItems.Contains(itemForTrade))
 					return false;
@@ -257,7 +257,7 @@ namespace DOL.GS
                 {
                     foreach (InventoryItem i in (ArrayList)m_owner.TradeWindow.TradeItems.Clone())
                     {
-                        if (i.ObjectType == (int)eObjectType.AlchemyTincture)
+                        if (i.ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                             {
@@ -265,7 +265,7 @@ namespace DOL.GS
                                 break;
                             }
                         }
-                        else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
+                        else if (i.ItemTemplate.ObjectType == (int)eObjectType.SpellcraftGem)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
                             {
@@ -311,7 +311,7 @@ namespace DOL.GS
                 {
                     foreach (InventoryItem i in (ArrayList)m_owner.TradeWindow.TradeItems.Clone())
                     {
-                        if (i.ObjectType == (int)eObjectType.AlchemyTincture)
+                        if (i.ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                             {
@@ -319,7 +319,7 @@ namespace DOL.GS
                                 break;
                             }
                         }
-                        else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
+                        else if (i.ItemTemplate.ObjectType == (int)eObjectType.SpellcraftGem)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
                             {

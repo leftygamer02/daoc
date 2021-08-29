@@ -1,6 +1,6 @@
 ﻿using DOL.AI;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 
@@ -28,7 +28,7 @@ namespace DOL.UnitTests.Gameserver
 
         public override ICharacterClass CharacterClass { get { return fakeCharacterClass; } }
         public override byte Level { get; set; }
-        public override Region CurrentRegion { get { return fakeRegion; } set { } }
+        public override GS.Region CurrentRegion { get { return fakeRegion; } set { } }
         public override IPacketLib Out => new FakePacketLib();
         public override GameClient Client => new GameClient(GameServer.Instance) { Account = new Account() };
         public override int GetBaseStat(eStat stat) => baseStat;
@@ -53,7 +53,7 @@ namespace DOL.UnitTests.Gameserver
             }
         }
 
-        public override void LoadFromDatabase(DataObject obj) { }
+        public override void LoadFromDatabase(Atlas.DataLayer.Models.DataObjectBase obj) { }
 
         public override void DealDamage(AttackData ad)
         {
@@ -91,7 +91,7 @@ namespace DOL.UnitTests.Gameserver
 
         public FakeNPC() : this(new FakeBrain()) { }
 
-        public override Region CurrentRegion { get { return new FakeRegion(); } set { } }
+        public override GS.Region CurrentRegion { get { return new FakeRegion(); } set { } }
         public override bool IsAlive => true;
         public override int GetModified(eProperty property)
         {

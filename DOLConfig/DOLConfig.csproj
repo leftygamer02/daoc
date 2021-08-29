@@ -74,7 +74,6 @@
     </Reference>
     <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase" Private="False" ExcludeAssets="All" />
     <ProjectReference Include="..\GameServer\GameServer.csproj" Name="GameServer" Private="False" ExcludeAssets="All" />
-    <ProjectReference Include="..\DOLDatabase\DOLDatabase.csproj" Name="DOLDatabase" Private="False" ExcludeAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="DOLConfig.cs" />
@@ -86,9 +85,7 @@
     <Content Include="icon.ico" />
   </ItemGroup>
   <Target Name="CopyFiles" AfterTargets="AfterBuild">
-    <Copy
-      SourceFiles="serverconfig_extraproperties.xml"
-      DestinationFolder="$(MSBuildProjectDirectory)\..\$(Configuration)\lib\config\" />
+    <Copy SourceFiles="serverconfig_extraproperties.xml" DestinationFolder="$(MSBuildProjectDirectory)\..\$(Configuration)\lib\config\" />
   </Target>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

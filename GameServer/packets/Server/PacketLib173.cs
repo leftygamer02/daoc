@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -284,8 +285,8 @@ namespace DOL.GS.PacketHandler
 			{
 				pak.FillString(m_gameClient.Account.Name, 24);
 				IList<InventoryItem> items;
-				Character[] characters = m_gameClient.Account.Characters;
-				if (characters == null)
+				var characters = m_gameClient.Account.Characters.ToArray();
+				if (characters == null || !characters.Any())
 				{
 					pak.Fill(0x0, 1840);
 				}
@@ -298,7 +299,7 @@ namespace DOL.GS.PacketHandler
 							if (characters[j].AccountSlot == i)
 							{
 								pak.FillString(characters[j].Name, 24);
-								items = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsEqualTo(characters[j].ObjectId).And(DB.Column("SlotPosition").IsGreaterOrEqualTo(10)).And(DB.Column("SlotPosition").IsLessOrEqualTo(37)));
+								items = GameServer.Database.InventoryItems.Where(x => x.CharacterID == characters[j].Id && x.SlotPosition >= 10 && x.SlotPosition <= 37).ToList();
 								byte ExtensionTorso = 0;
 								byte ExtensionGloves = 0;
 								byte ExtensionBoots = 0;
@@ -307,13 +308,13 @@ namespace DOL.GS.PacketHandler
 									switch (item.SlotPosition)
 									{
 										case 22:
-											ExtensionGloves = item.Extension;
+											ExtensionGloves = (byte)item.ItemTemplate.Extension;
 											break;
 										case 23:
-											ExtensionBoots = item.Extension;
+											ExtensionBoots = (byte)item.ItemTemplate.Extension;
 											break;
 										case 25:
-											ExtensionTorso = item.Extension;
+											ExtensionTorso = (byte)item.ItemTemplate.Extension;
 											break;
 										default:
 											break;
@@ -333,7 +334,7 @@ namespace DOL.GS.PacketHandler
 								pak.Fill(0x0, 14); //0 String
 	
 	
-								Region reg = WorldMgr.GetRegion((ushort)characters[j].Region);
+								Region reg = WorldMgr.GetRegion((ushort)characters[j].RegionID);
 								if (reg != null)
 								{
 									var description = m_gameClient.GetTranslatedSpotDescription(reg, characters[j].Xpos, characters[j].Ypos, characters[j].Zpos);
@@ -354,7 +355,7 @@ namespace DOL.GS.PacketHandler
 								pak.WriteByte((byte)characters[j].Realm);
 								pak.WriteByte((byte)((((characters[j].Race & 0x10) << 2) + (characters[j].Race & 0x0F)) | (characters[j].Gender << 4))); // race max value can be 0x1F
 								pak.WriteShortLowEndian((ushort)characters[j].CurrentModel);
-								pak.WriteByte((byte)characters[j].Region);
+								pak.WriteByte((byte)characters[j].RegionID);
 								if (reg == null || (int)m_gameClient.ClientType > reg.Expansion)
 									pak.WriteByte(0x00);
 								else
@@ -693,13 +694,6 @@ namespace DOL.GS.PacketHandler
 	
 	            string name = siegeWeapon.Name;
 	
-	            LanguageDataObject translation = LanguageMgr.GetTranslation(m_gameClient, siegeWeapon);
-	            if (translation != null)
-	            {
-	                if (!Util.IsEmpty(((DBLanguageNPC)translation).Name))
-	                    name = ((DBLanguageNPC)translation).Name;
-	            }
-	
 	            pak.WritePascalString(name + " (" + siegeWeapon.CurrentState.ToString() + ")");
 				foreach (InventoryItem item in siegeWeapon.Ammo)
 				{
@@ -709,22 +703,22 @@ namespace DOL.GS.PacketHandler
 						pak.Fill(0x00, 18);
 						continue;
 					}
-					pak.WriteByte((byte)item.Level);
-					pak.WriteByte((byte)item.DPS_AF);
-					pak.WriteByte((byte)item.SPD_ABS);
-					pak.WriteByte((byte)(item.Hand * 64));
-					pak.WriteByte((byte)((item.TypeDamage * 64) + item.ObjectType));
-					pak.WriteShort((ushort)item.Weight);
+					pak.WriteByte((byte)item.ItemTemplate.Level);
+					pak.WriteByte((byte)item.ItemTemplate.DPS_AF);
+					pak.WriteByte((byte)item.ItemTemplate.SPD_ABS);
+					pak.WriteByte((byte)(item.ItemTemplate.Hand * 64));
+					pak.WriteByte((byte)((item.ItemTemplate.TypeDamage * 64) + item.ItemTemplate.ObjectType));
+					pak.WriteShort((ushort)item.ItemTemplate.Weight);
 					pak.WriteByte(item.ConditionPercent); // % of con
 					pak.WriteByte(item.DurabilityPercent); // % of dur
-					pak.WriteByte((byte)item.Quality); // % of qua
-					pak.WriteByte((byte)item.Bonus); // % bonus
+					pak.WriteByte((byte)item.ItemTemplate.Quality); // % of qua
+					pak.WriteByte((byte)item.ItemTemplate.ItemBonus); // % bonus
 					pak.WriteShort((ushort)item.Model);
 					if (item.Emblem != 0)
 						pak.WriteShort((ushort)item.Emblem);
 					else
 						pak.WriteShort((ushort)item.Color);
-					pak.WriteShort((ushort)item.Effect);
+					pak.WriteShort((ushort)item.ItemTemplate.Effect);
 					if (item.Count > 1)
 						pak.WritePascalString(item.Count + " " + item.Name);
 					else

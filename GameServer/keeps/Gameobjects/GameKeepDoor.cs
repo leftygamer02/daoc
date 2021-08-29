@@ -258,8 +258,8 @@ namespace DOL.GS.Keeps
 			}
 		}
 
-		protected int m_templateID;
-		public int TemplateID
+		protected string m_templateID;
+		public string TemplateID
 		{
 			get { return m_templateID; }
 		}
@@ -566,7 +566,7 @@ namespace DOL.GS.Keeps
 			{
 				if (Component.Keep != null)
 				{
-					Component.Keep.Doors.Remove(ObjectID);
+					Component.Keep.Doors.Remove(ObjectID.ToString());
 				}
 
 				Component.Delete();
@@ -629,11 +629,11 @@ namespace DOL.GS.Keeps
 				if (area is KeepArea keepArea)
 				{
 					int sKey = door.InternalID;
-					if (!keepArea.Keep.Doors.ContainsKey(sKey))
+					if (!keepArea.Keep.Doors.ContainsKey(sKey.ToString()))
 					{
 						Component = new GameKeepComponent();
 						Component.Keep = keepArea.Keep;
-						keepArea.Keep.Doors.Add(sKey, this);
+						keepArea.Keep.Doors.Add(sKey.ToString(), this);
 					}
 					break;
 				}

@@ -25,7 +25,7 @@ namespace DOL.GS.Commands
 				client.Player.ClassNameFlag = true;
 			else if (args[1].ToLower() == "trade")
 			{
-				if (client.Player.PrimaryCraftingSkill == eCraftingSkill.NoCrafting)
+				if (client.Player.CraftingPrimarySkill == eCraftingSkill.NoCrafting)
 				{
 					DisplayMessage(client, "You need a profession to enable it in for who messages");
 					return;

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
@@ -104,7 +105,8 @@ namespace DOL.GS.Behaviour
                     result = obj;
                 else
                 {
-                    result = GameServer.Database.FindObjectByKey<ItemTemplate>(Convert.ToString(obj));
+                    var objString = Convert.ToString(obj);
+                    result = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.Id.ToString() == objString || x.KeyName == objString);
                 }
             }
             else if (destinationType == typeof(CustomDialogResponse))

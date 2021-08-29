@@ -164,7 +164,7 @@ namespace DOL.GS.Commands
 								target = targetClient.Player;
 						}
 
-						target.Client.Account.PrivLevel = plvl;
+						target.Client.Account.PrivLevel = (int)plvl;
 						GameServer.Instance.SaveDataObject(target.Client.Account);
 						client.Player.RefreshWorld();
 

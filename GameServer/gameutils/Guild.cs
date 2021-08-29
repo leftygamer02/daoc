@@ -375,7 +375,7 @@ namespace DOL.GS
 			}
 		}
 
-		public int AllianceId
+		public int? AllianceId
 		{
 			get
 			{

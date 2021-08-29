@@ -134,8 +134,8 @@ namespace DOL.GS
 	/// </summary>		
 	public interface IGameInventory
 	{
-		bool            LoadFromDatabase(int inventoryID);
-		bool            SaveIntoDatabase(int inventoryID);
+		bool            LoadFromDatabase(string templateName);
+		bool            SaveIntoDatabase(string templateName);
 
 		bool			AddItem(eInventorySlot slot, InventoryItem item);
 						/// <summary>
@@ -167,6 +167,7 @@ namespace DOL.GS
 
 		int				CountSlots(bool countUsed, eInventorySlot minSlot, eInventorySlot maxSlot);
 		int				CountItemTemplate(int itemtemplateID, eInventorySlot minSlot, eInventorySlot maxSlot);
+		int				CountItemTemplate(string keyName, eInventorySlot minSlot, eInventorySlot maxSlot);
 		bool			IsSlotsFree(int count, eInventorySlot minSlot, eInventorySlot maxSlot);
 		
 		eInventorySlot	FindFirstEmptySlot(eInventorySlot first, eInventorySlot last);
@@ -177,6 +178,7 @@ namespace DOL.GS
 		InventoryItem	GetFirstItemByID(int uniqueID, eInventorySlot minSlot, eInventorySlot maxSlot);
 		InventoryItem	GetFirstItemByObjectType(int objectType, eInventorySlot minSlot, eInventorySlot maxSlot);
 		InventoryItem   GetFirstItemByName(string name ,eInventorySlot minSlot, eInventorySlot maxSlot);
+		InventoryItem	GetFirstItemByKeyName(string keyName, eInventorySlot minSlot, eInventorySlot maxSlot);
 
 		ICollection<InventoryItem> VisibleItems		{ get; }
 		ICollection<InventoryItem> EquippedItems	{ get; }

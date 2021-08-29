@@ -57,9 +57,9 @@ namespace DOL.GS.SkillHandler
 			if (spellid == -1)
 			{
 				spellid=0;
-				Atlas.DataLayer.Models.Spell climbSpell = DOLDB<Atlas.DataLayer.Models.Spell>.SelectObject(DB.Column("Name").IsEqualTo(Abilities.ClimbSpikes));
+				var climbSpell = GameServer.Database.Spells.FirstOrDefault(x => x.Name == Abilities.ClimbSpikes);
 				if (climbSpell != null)
-					spellid = climbSpell.SpellID;
+					spellid = climbSpell.Id;
 			}
 		}
 	}

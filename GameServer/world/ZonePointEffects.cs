@@ -38,21 +38,22 @@ namespace DOL.GS.GameEvents
 			NpcTemplate zp;
 			try{
 				model = (ushort)ServerProperties.Properties.ZONEPOINT_NPCTEMPLATE;
-				zp = new NpcTemplate(DOLDB<DBNpcTemplate>.SelectObjects(DB.Column("TemplateId").IsEqualTo(model)).FirstOrDefault());
+				var npcTemp = GameServer.Database.NpcTemplates.FirstOrDefault(x => x.Id == model);
+				zp = new NpcTemplate(npcTemp);
 				if (model <= 0 || zp == null) throw new ArgumentNullException();
 			}
 			catch {
 				return;
 			}
-			
+
 			// processing all the ZP
-			IList<ZonePoint> zonePoints = GameServer.Database.SelectAllObjects<ZonePoint>();
+			IList<ZonePoint> zonePoints = GameServer.Database.ZonePoints.ToList();
 			foreach (ZonePoint z in zonePoints)
 			{
-				if (z.SourceRegion == 0) continue;
+				if (z.SourceRegionID == 0) continue;
 				
 				// find target region for the current zonepoint
-				Region r = WorldMgr.GetRegion(z.TargetRegion);
+				Region r = WorldMgr.GetRegion((ushort)z.TargetRegionID);
 				if (r == null)
 				{
 					log.Warn("Zonepoint Id (" + z.Id +  ") references an inexistent target region " + z.TargetRegion + " - skipping, ZP not created");
@@ -61,7 +62,7 @@ namespace DOL.GS.GameEvents
 				
 				GameNPC npc = new GameNPC(zp);
 
-				npc.CurrentRegionID = z.SourceRegion;
+				npc.CurrentRegionID = (ushort)z.SourceRegionID;
 				npc.X = z.SourceX;
 				npc.Y = z.SourceY;
 				npc.Z = z.SourceZ;

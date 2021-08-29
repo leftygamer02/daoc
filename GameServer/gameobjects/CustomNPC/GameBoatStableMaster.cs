@@ -90,7 +90,7 @@ namespace DOL.GS
 				InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, totalValue);
 			}
 
-			if (item.Name.ToUpper().Contains("TICKET TO") || item.Description.ToUpper() == "TICKET")
+			if (item.Name.ToUpper().Contains("TICKET TO") || item.ItemTemplate.Description.ToUpper() == "TICKET")
 			{
 				// Give the ticket to the merchant
 				InventoryItem ticket = player.Inventory.GetFirstItemByName(item.Name, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack) as InventoryItem;
@@ -114,7 +114,7 @@ namespace DOL.GS
 			{
 				GamePlayer player = (GamePlayer)source;
 
-                if (item.Name.ToLower().StartsWith(LanguageMgr.GetTranslation(ServerProperties.Properties.DB_LANGUAGE, "GameStableMaster.ReceiveItem.TicketTo")) && item.ItemType == 40)
+                if (item.Name.ToLower().StartsWith(LanguageMgr.GetTranslation(ServerProperties.Properties.DB_LANGUAGE, "GameStableMaster.ReceiveItem.TicketTo")) && item.ItemTemplate.ItemType == 40)
 				{
 					foreach (GameNPC npc in GetNPCsInRadius(1500))
 					{
@@ -126,12 +126,12 @@ namespace DOL.GS
 					}
 
                     String destination = item.Name.Substring(LanguageMgr.GetTranslation(ServerProperties.Properties.DB_LANGUAGE, "GameStableMaster.ReceiveItem.TicketTo").Length);
-					PathPoint path = MovementMgr.LoadPath(item.Id);
+					PathPoint path = MovementMgr.LoadPath(item.ItemTemplate.KeyName);
 					//PathPoint path = MovementMgr.Instance.LoadPath(this.Name + "=>" + destination);
                     if ((path != null) && ((Math.Abs(path.X - this.X)) < 500) && ((Math.Abs(path.Y - this.Y)) < 500))
 					{
 						player.Inventory.RemoveCountFromStack(item, 1);
-                        InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+                        InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
 
 						GameTaxiBoat boat = new GameTaxiBoat();
 						boat.Name = "Boat to " + destination;

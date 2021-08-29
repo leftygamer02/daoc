@@ -3355,7 +3355,7 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte(0);//
 					pak.WriteByte((byte)item.Count);
 					//pak.WriteByte((byte)(item.Hand * 64));
-					//pak.WriteByte((byte)((item.TypeDamage * 64) + item.ObjectType));
+					//pak.WriteByte((byte)((item.TypeDamage * 64) + item.ItemTemplate.ObjectType));
 					//pak.WriteShort((ushort)item.Weight);
 					pak.WriteByte(item.ConditionPercent); // % of con
 					pak.WriteByte(item.DurabilityPercent); // % of dur

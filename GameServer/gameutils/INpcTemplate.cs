@@ -61,14 +61,14 @@ namespace DOL.GS
 		int Realm { get; }
 
 		/// <summary>
-		/// Gets the template npc inventory
+		/// Gets the template npc equipment name
 		/// </summary>
-		int Inventory { get; }
+		string Inventory { get; }
 
 		/// <summary>
 		/// List of items sold by this npc
 		/// </summary>
-		int ItemsListTemplateID { get; }
+		string ItemListName { get; }
 
 		/// <summary>
 		/// Gets the template combat stats

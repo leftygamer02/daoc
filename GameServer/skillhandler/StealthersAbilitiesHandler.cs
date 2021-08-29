@@ -71,7 +71,7 @@ namespace DOL.GS
 					spell.Range = 0;
 					spell.Value = 25;
 					spell.Duration = 60;
-					spell.SpellID = 900090;
+					spell.Id = 900090;
 					spell.Target = "Self";
 					spell.Type = "BloodRage";
 					Blood_Rage = new Spell(spell, 50);
@@ -101,7 +101,7 @@ namespace DOL.GS
 					spell.Range = 0;
 					spell.Value = 25;
 					spell.Duration = 60;
-					spell.SpellID = 900091;
+					spell.Id = 900091;
 					spell.Target = "Self";
 					spell.Type = "HeightenedAwareness";
 					Heightened_Awareness = new Spell(spell, 50);
@@ -131,7 +131,7 @@ namespace DOL.GS
 					spell.Range = 0;
 					spell.Value = 25;
 					spell.Duration = 60;
-					spell.SpellID = 900092;
+					spell.Id = 900092;
 					spell.Target = "Self";
 					spell.Type = "SubtleKills";
 					Subtle_Kills = new Spell(spell, 50);

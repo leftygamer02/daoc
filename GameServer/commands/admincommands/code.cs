@@ -37,55 +37,55 @@ namespace DOL.GS.Commands
 
 		public static void ExecuteCode(GameClient client, string methodBody)
 		{
-			var compiler = new DOLScriptCompiler();
-			var compiledAssembly = compiler.CompileFromSource(GetCode(methodBody));
+			//var compiler = new DOLScriptCompiler();
+			//var compiledAssembly = compiler.CompileFromSource(GetCode(methodBody));
 
-			var errorMessages = compiler.GetErrorMessages();
-			if (errorMessages.Any())
-			{
-				if (client.Player != null)
-				{
-					client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Code.ErrorCompiling"), eChatType.CT_System, eChatLoc.CL_PopupWindow);
+			//var errorMessages = compiler.GetErrorMessages();
+			//if (errorMessages.Any())
+			//{
+			//	if (client.Player != null)
+			//	{
+			//		client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Code.ErrorCompiling"), eChatType.CT_System, eChatLoc.CL_PopupWindow);
 
-					foreach (var errorMessage in errorMessages)
-						client.Out.SendMessage(errorMessage, eChatType.CT_System, eChatLoc.CL_PopupWindow);
-				}
-				else
-				{
-					log.Debug("Error compiling code.");
-				}
-				return;
-			}
+			//		foreach (var errorMessage in errorMessages)
+			//			client.Out.SendMessage(errorMessage, eChatType.CT_System, eChatLoc.CL_PopupWindow);
+			//	}
+			//	else
+			//	{
+			//		log.Debug("Error compiling code.");
+			//	}
+			//	return;
+			//}
 
-			var methodinf = compiledAssembly.GetType("DynCode").GetMethod("DynMethod");
+			//var methodinf = compiledAssembly.GetType("DynCode").GetMethod("DynMethod");
 
-			try
-			{
-				methodinf.Invoke(null, new object[] { client.Player == null ? null : client.Player.TargetObject, client.Player });
+			//try
+			//{
+			//	methodinf.Invoke(null, new object[] { client.Player == null ? null : client.Player.TargetObject, client.Player });
 
-				if (client.Player != null)
-				{
-					client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Code.CodeExecuted"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				}
-				else
-				{
-					log.Debug("Code Executed.");
-				}
+			//	if (client.Player != null)
+			//	{
+			//		client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "AdminCommands.Code.CodeExecuted"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			//	}
+			//	else
+			//	{
+			//		log.Debug("Code Executed.");
+			//	}
 
-			}
-			catch (Exception ex)
-			{
-				if (client.Player != null)
-				{
-					string[] errors = ex.ToString().Split('\n');
-					foreach (string error in errors)
-						client.Out.SendMessage(error, eChatType.CT_System, eChatLoc.CL_PopupWindow);
-				}
-				else
-				{
-					log.Debug("Error during execution.");
-				}
-			}
+			//}
+			//catch (Exception ex)
+			//{
+			//	if (client.Player != null)
+			//	{
+			//		string[] errors = ex.ToString().Split('\n');
+			//		foreach (string error in errors)
+			//			client.Out.SendMessage(error, eChatType.CT_System, eChatLoc.CL_PopupWindow);
+			//	}
+			//	else
+			//	{
+			//		log.Debug("Error during execution.");
+			//	}
+			//}
 		}
 
 		private static string GetCode(string methodBody)

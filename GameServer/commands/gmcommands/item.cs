@@ -882,12 +882,12 @@ namespace DOL.GS.Commands
 
 								bonusValue = Convert.ToInt32(args[4]);
 
-								var bonus = item.Bonuses.FirstOrDefault(x => x.BonusOrder == num);
+								var bonus = item.ItemTemplate.Bonuses.FirstOrDefault(x => x.BonusOrder == num);
 
 								if (bonus == null)
                                 {
 									bonus = new ItemBonus() { BonusOrder = num };
-									item.Bonuses.Add(bonus);
+									item.ItemTemplate.Bonuses.Add(bonus);
                                 }
 								bonus.BonusValue = bonusValue;
 								bonus.BonusType = bonusType;

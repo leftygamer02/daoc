@@ -128,7 +128,7 @@ namespace DOL.GS.Quests.Atlantis.Artifacts
 
 				if (versions.Count > 0 && RemoveItem(player, item))
 				{
-					GiveItem(scholar, player, ArtifactID, versions[";;"]);
+					GiveItem(scholar, player, ArtifactID, versions[0]);
 					String reply = String.Format("Here is the {0}, {1} {2} {3} {4}, {5}!",
 						"restored to its original power. It is a fine item and I wish I could keep",
 						"it, but it is for you and you alone. Do not destroy it because you will never",

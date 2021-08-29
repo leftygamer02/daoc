@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using log4net;
 using Atlas.DataLayer.Models;
 
@@ -42,37 +43,37 @@ namespace DOL.GS.DatabaseConverters
 			log.Info("Database Version 2 Convert Started");
 
 			log.Info("Converting Styles");
-			var styles = GameServer.Database.SelectAllObjects<DBStyle>();
-			foreach (DBStyle style in styles)
+			var styles = GameServer.Database.Styles.ToList();
+			foreach (Style style in styles)
 			{
-				style.Icon = style.ID;
+				style.Icon = style.Id;
 
 				GameServer.Instance.SaveDataObject(style);
 			}
 			log.Info(styles.Count + " Styles Processed");
 
 			log.Info("Converting Mobs");
-			var mobs = DOLDB<Mob>.SelectObjects(DB.Column("Realm").IsEqualTo(6));
-			foreach (Mob mob in mobs)
-			{
-				if ((mob.Flags & (uint)GameNPC.eFlags.PEACE) == 0)
-				{
-					mob.Flags ^= (uint)GameNPC.eFlags.PEACE;
-				}
+			//var mobs = DOLDB<Mob>.SelectObjects(DB.Column("Realm").IsEqualTo(6));
+			//foreach (Mob mob in mobs)
+			//{
+			//	if ((mob.Flags & (uint)GameNPC.eFlags.PEACE) == 0)
+			//	{
+			//		mob.Flags ^= (uint)GameNPC.eFlags.PEACE;
+			//	}
 
-				Region region = WorldMgr.GetRegion(mob.Region);
-				if (region != null)
-				{
-					Zone zone = region.GetZone(mob.X, mob.Y);
-					if (zone != null)
-					{
-						mob.Realm = (byte)zone.Realm;
-					}
-				}
+			//	Region region = WorldMgr.GetRegion(mob.Region);
+			//	if (region != null)
+			//	{
+			//		Zone zone = region.GetZone(mob.X, mob.Y);
+			//		if (zone != null)
+			//		{
+			//			mob.Realm = (byte)zone.Realm;
+			//		}
+			//	}
 
-				GameServer.Instance.SaveDataObject(mob);
-			}
-			log.Info(mobs.Count + " Mobs Processed");
+			//	GameServer.Instance.SaveDataObject(mob);
+			//}
+			//log.Info(mobs.Count + " Mobs Processed");
 
 			log.Info("Database Version 2 Convert Finished");
 		}

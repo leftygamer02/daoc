@@ -204,9 +204,9 @@ namespace DOL.GS.Spells
 				{
 					GamePlayer player = (GamePlayer)target;
 					InventoryItem lefthand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-					if (lefthand != null && (player.AttackWeapon == null || player.AttackWeapon.ItemType == Slot.RIGHTHAND || player.AttackWeapon.ItemType == Slot.LEFTHAND))
+					if (lefthand != null && (player.AttackWeapon == null || player.AttackWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || player.AttackWeapon.ItemTemplate.ItemType == Slot.LEFTHAND))
 					{
-						if (target.IsObjectInFront(caster, 180) && lefthand.ObjectType == (int)eObjectType.Shield)
+						if (target.IsObjectInFront(caster, 180) && lefthand.ItemTemplate.ObjectType == (int)eObjectType.Shield)
 						{
 							// TODO: shield size vs number of attackers not calculated
 							double shield = 0.5 * player.GetModifiedSpecLevel(Specs.Shields);
@@ -290,10 +290,10 @@ namespace DOL.GS.Spells
 					if (caster.AttackWeapon != null)
 					{
 						// Quality
-						ad.Damage -= (int)(ad.Damage * (100 - caster.AttackWeapon.Quality) * .01);
+						ad.Damage -= (int)(ad.Damage * (100 - caster.AttackWeapon.ItemTemplate.Quality) * .01);
 
 						// Condition
-						ad.Damage = (int)((double)ad.Damage * Math.Min(1.0, (double)caster.AttackWeapon.Condition / (double)caster.AttackWeapon.MaxCondition));
+						ad.Damage = (int)((double)ad.Damage * Math.Min(1.0, (double)caster.AttackWeapon.Condition / (double)caster.AttackWeapon.ItemTemplate.MaxCondition));
 
 						// Patch Note:  http://support.darkageofcamelot.com/kb/article.php?id=931
 						// - The Damage Per Second (DPS) of your bow will have an effect on your damage for archery shots. If the effective DPS
@@ -302,9 +302,9 @@ namespace DOL.GS.Spells
 
 						int spellRequiredDPS = 12 + 3 * m_handler.Spell.Level;
 
-						if (caster.AttackWeapon.DPS_AF < spellRequiredDPS)
+						if (caster.AttackWeapon.ItemTemplate.DPS_AF < spellRequiredDPS)
 						{
-							double percentReduction = (double)caster.AttackWeapon.DPS_AF / (double)spellRequiredDPS;
+							double percentReduction = (double)caster.AttackWeapon.ItemTemplate.DPS_AF / (double)spellRequiredDPS;
 							ad.Damage = (int)(ad.Damage * percentReduction);
 						}
 					}
@@ -349,7 +349,7 @@ namespace DOL.GS.Spells
 					}
 				}
 
-				if (arrowBlock == false && m_handler.Caster.AttackWeapon != null && GlobalConstants.IsBowWeapon((eObjectType)m_handler.Caster.AttackWeapon.ObjectType))
+				if (arrowBlock == false && m_handler.Caster.AttackWeapon != null && GlobalConstants.IsBowWeapon((eObjectType)m_handler.Caster.AttackWeapon.ItemTemplate.ObjectType))
 				{
 					if (ad.AttackResult == GameLiving.eAttackResult.HitUnstyled || ad.AttackResult == GameLiving.eAttackResult.HitStyle)
 					{

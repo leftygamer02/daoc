@@ -20,6 +20,7 @@
 //Instance devised by Dinberg
 //     - there will probably be questions, direct them to dinberg_darktouch@hotmail.co.uk ;)
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -71,7 +72,7 @@ namespace DOL.GS
 		/// <param name="instanceName"></param>
 		public virtual void LoadFromDatabase(string instanceName)
 		{
-			var objects = DOLDB<DBInstanceXElement>.SelectObjects(DB.Column("InstanceID").IsEqualTo(instanceName));
+			var objects = GameServer.Database.InstanceElements.Where(x => x.InstanceID == instanceName).ToList();
 
 			if (objects.Count == 0)
 				return;
@@ -80,7 +81,7 @@ namespace DOL.GS
 
 			//Now we have a list of DBElements, lets create the various entries
 			//associated with them and populate the instance.
-			foreach (DBInstanceXElement entry in objects)
+			foreach (var entry in objects)
 			{
 				if (entry == null)
 					continue; //an odd error, but experience knows best.
@@ -94,7 +95,7 @@ namespace DOL.GS
 					case "entrance":
 						{
 							//create the entrance, then move to the next.
-							m_entranceLocation = new GameLocation(instanceName + "entranceRegion" + ID, ID, entry.X, entry.Y, entry.Z, entry.Heading);
+							m_entranceLocation = new GameLocation(instanceName + "entranceRegion" + ID, ID, entry.X, entry.Y, entry.Z, (ushort)entry.Heading);
 							//move to the next entry, nothing more to do here...
 							continue;
 						}
@@ -122,24 +123,18 @@ namespace DOL.GS
 				obj.X = entry.X;
 				obj.Y = entry.Y;
 				obj.Z = entry.Z;
-				obj.Heading = entry.Heading;
+				obj.Heading = (ushort)entry.Heading;
 				obj.CurrentRegionID = ID;
 
 				//If its an npc, load from the npc template about now.
 				//By default, we ignore npctemplate if its set to 0.
-				if ((GameNPC)obj != null && !Util.IsEmpty(entry.NPCTemplate, true))
+				if ((GameNPC)obj != null && entry.NpcTemplateID > 0)
 				{
-					var listTemplate = Util.SplitCSV(entry.NPCTemplate, true);
-					int template = 0;
-					
-					if (int.TryParse(listTemplate[Util.Random(listTemplate.Count-1)], out template) && template > 0)
-					{	
-						INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(template);
-						//we only want to load the template if one actually exists, or there could be trouble!
-						if (npcTemplate != null)
-						{
-							((GameNPC)obj).LoadTemplate(npcTemplate);
-						}
+					INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(entry.NpcTemplateID);
+					//we only want to load the template if one actually exists, or there could be trouble!
+					if (npcTemplate != null)
+					{
+						((GameNPC)obj).LoadTemplate(npcTemplate);
 					}
 				}
 				//Finally, add it to the world!

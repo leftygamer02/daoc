@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class HouseHookpointItem : DataObjectBase
+    public partial class HouseHookpointItem : DataObjectBase
     {
         
         public int HouseID { get; set; }

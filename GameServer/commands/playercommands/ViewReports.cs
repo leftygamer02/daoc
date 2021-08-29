@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.Language;
@@ -54,7 +55,7 @@ namespace DOL.GS.Commands
 							}
 
 							int repor = int.Parse(args[2]);
-							BugReport report = GameServer.Database.FindObjectByKey<BugReport>(repor);
+							BugReport report = GameServer.Database.BugReports.Find(repor);
 							if (report == null)
 							{
 								client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.ViewReport.InvalidReport"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -78,25 +79,25 @@ namespace DOL.GS.Commands
 								break;
 							}
 							int repor = int.Parse(args[2]);
-							BugReport report = GameServer.Database.FindObjectByKey<BugReport>(repor);
+							BugReport report = GameServer.Database.BugReports.Find(repor);
 							if (report == null)
 							{
 								client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.ViewReport.InvalidReport"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 								break;
 							}
 							// Create a counter to keep track of our BugReport ID
-							int count = 1;
-							GameServer.Database.DeleteObject(report);
-							// Get all Database'd Bug Reports since we have deleted one
-							var bugReports = GameServer.Database.SelectAllObjects<BugReport>();
-							foreach (BugReport curReport in bugReports)
-							{
-								// Create new DB for bugreports without the one we deleted
-								curReport.ID = count;
-								GameServer.Instance.SaveDataObject(curReport);
-								count++;
-							}
-							client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.ViewReport.ReportDeleted", report.ID), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							//int count = 1;
+							GameServer.Instance.DeleteDataObject(report);
+							//// Get all Database'd Bug Reports since we have deleted one
+							//var bugReports = GameServer.Database.BugReports.ToList();
+							//foreach (BugReport curReport in bugReports)
+							//{
+							//	// Create new DB for bugreports without the one we deleted
+							//	curReport.ID = count;
+							//	GameServer.Instance.SaveDataObject(curReport);
+							//	count++;
+							//}
+							client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.ViewReport.ReportDeleted", report.Id), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							break;
 						}
 					default:
@@ -113,7 +114,7 @@ namespace DOL.GS.Commands
 				e = new Exception();
 				// Display bug reports to player
 				string Reports = "---------- BUG REPORTS ------------\n";
-				var dbo = GameServer.Database.SelectAllObjects<BugReport>();
+				var dbo = GameServer.Database.BugReports.ToList();
 				if (dbo.Count < 1)
 				{
 					Reports += "  - No Reports On File -\n";
@@ -122,7 +123,7 @@ namespace DOL.GS.Commands
 
 				foreach (BugReport repo in dbo)
 				{
-					Reports += repo.ID + ")";
+					Reports += repo.Id + ")";
 					if (client.Account.PrivLevel > 2)
 						Reports += repo.Submitter + "\n";
 					Reports += "Submitted: " + repo.DateSubmitted + "\n";

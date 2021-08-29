@@ -196,7 +196,7 @@ namespace DOL.GS.PacketHandler
 			pak.WriteByte(template.BaseConditionPercent);
 			pak.WriteByte(template.BaseDurabilityPercent);
 			pak.WriteByte((byte)template.Quality);
-			pak.WriteByte((byte)template.Bonus);
+			pak.WriteByte((byte)template.ItemBonus);
 			pak.WriteShort((ushort)template.Model);
 			pak.WriteByte((byte)template.Extension);
 			if (template.Emblem != 0)

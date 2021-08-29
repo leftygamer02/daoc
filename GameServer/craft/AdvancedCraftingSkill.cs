@@ -103,16 +103,16 @@ namespace DOL.GS
 
             InventoryItem itemToCombine = (InventoryItem)player.TradeWindow.TradeItems[0];
 
-            if (itemToCombine.ObjectType == (int)eObjectType.AlchemyTincture)
+            if (itemToCombine.ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture)
             {
-                if (item.ObjectType != (int)eObjectType.Instrument) // Only check for non instruments
+                if (item.ItemTemplate.ObjectType != (int)eObjectType.Instrument) // Only check for non instruments
                 {
-                    switch (itemToCombine.TypeDamage)
+                    switch (itemToCombine.ItemTemplate.TypeDamage)
                     {
                         case 0: //Type damage 0 = armors
-                            if (!GlobalConstants.IsArmor(item.ObjectType))
+                            if (!GlobalConstants.IsArmor(item.ItemTemplate.ObjectType))
                             {
-                                if (item.ObjectType == (int)eObjectType.Shield) // think shield can do armor and weapon ? not verified.
+                                if (item.ItemTemplate.ObjectType == (int)eObjectType.Shield) // think shield can do armor and weapon ? not verified.
                                     return true;
 
                                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AdvancedCraftingSkill.IsAllowedToCombine.NoGoodCombine"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -120,7 +120,7 @@ namespace DOL.GS
                             }
                             break;
                         case 1: //Type damage 1 = weapons
-                            if (!GlobalConstants.IsWeapon(item.ObjectType))
+                            if (!GlobalConstants.IsWeapon(item.ItemTemplate.ObjectType))
                             {
                                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AdvancedCraftingSkill.IsAllowedToCombine.NoGoodCombine"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                                 return false;
@@ -133,7 +133,7 @@ namespace DOL.GS
                 }
                 else // Instrument
                 {
-                    if (itemToCombine.TypeDamage != 0) //think instrument can do only armorproc ? not verified.
+                    if (itemToCombine.ItemTemplate.TypeDamage != 0) //think instrument can do only armorproc ? not verified.
                     {
                         player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AdvancedCraftingSkill.IsAllowedToCombine.NoGoodCombine"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                         return false;
@@ -141,7 +141,7 @@ namespace DOL.GS
                 }
             }
 
-            if (!GlobalConstants.IsArmor(item.ObjectType) && !GlobalConstants.IsWeapon(item.ObjectType) && item.ObjectType != (int)eObjectType.Instrument)
+            if (!GlobalConstants.IsArmor(item.ItemTemplate.ObjectType) && !GlobalConstants.IsWeapon(item.ItemTemplate.ObjectType) && item.ItemTemplate.ObjectType != (int)eObjectType.Instrument)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AdvancedCraftingSkill.IsAllowedToCombine.NoEnchanted"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;	

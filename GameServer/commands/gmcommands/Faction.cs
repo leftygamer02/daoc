@@ -83,16 +83,15 @@ namespace DOL.GS.Commands
 							}
 						}
 						//Log.Info("max :" + max);
-						DBFaction dbfaction = new DBFaction();
+						var dbfaction = new Atlas.DataLayer.Models.Faction();
 						dbfaction.BaseAggroLevel = baseAggro;
 						dbfaction.Name = name;
-						dbfaction.ID = (max + 1);
 						//Log.Info("add obj to db with id :" + dbfaction.ID);
 						GameServer.Instance.SaveDataObject(dbfaction);
 						//Log.Info("add obj to db");
 						myfaction = new Faction();
 						myfaction.LoadFromDatabase(dbfaction);
-						FactionMgr.Factions.Add(dbfaction.ID, myfaction);
+						FactionMgr.Factions.Add(dbfaction.Id, myfaction);
 						client.Player.TempProperties.setProperty(TEMP_FACTION_LAST, myfaction);
 						client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Faction.Create.NewCreated"), eChatType.CT_Say, eChatLoc.CL_SystemWindow);
 					}
@@ -147,9 +146,9 @@ namespace DOL.GS.Commands
 							client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Faction.FactionNotLoaded"), eChatType.CT_Say, eChatLoc.CL_SystemWindow);
 							return;
 						}
-						DBLinkedFaction dblinkedfaction = new DBLinkedFaction();
+						var dblinkedfaction = new Atlas.DataLayer.Models.LinkedFaction();
 						dblinkedfaction.FactionID = myfaction.ID;
-						dblinkedfaction.LinkedFactionID = linkedfaction.ID;
+						dblinkedfaction.RelatedFactionID = linkedfaction.ID;
 						dblinkedfaction.IsFriend = true;
 						GameServer.Instance.SaveDataObject(dblinkedfaction);
 						myfaction.AddFriendFaction(linkedfaction);
@@ -185,9 +184,9 @@ namespace DOL.GS.Commands
 							client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Faction.FactionNotLoaded"), eChatType.CT_Say, eChatLoc.CL_SystemWindow);
 							return;
 						}
-						DBLinkedFaction dblinkedfaction = new DBLinkedFaction();
+						var dblinkedfaction = new Atlas.DataLayer.Models.LinkedFaction();
 						dblinkedfaction.FactionID = myfaction.ID;
-						dblinkedfaction.LinkedFactionID = linkedfaction.ID;
+						dblinkedfaction.RelatedFactionID = linkedfaction.ID;
 						dblinkedfaction.IsFriend = false;
 						GameServer.Instance.SaveDataObject(dblinkedfaction);
 						myfaction.AddEnemyFaction(linkedfaction);

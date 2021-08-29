@@ -187,10 +187,10 @@ namespace DOL.GS.GameEvents
 										DOL.AI.ABrain brain = npc.Brain;
                                         npc.RemoveBrain(npc.Brain);
                                         //npc.Brain.Stop();
-										if (npc.MaxSpeedBase > 0 && npc.PathID != null && npc.PathID != "" && npc.PathID != "NULL")
+										if (npc.MaxSpeedBase > 0 && npc.Path != null)
 										{
 											npc.StopMovingOnPath();
-											PathPoint path = MovementMgr.LoadPath(npc.PathID);
+											PathPoint path = MovementMgr.LoadPath(npc.Path.PathName);
 											if (path != null)
 											{
 												npc.CurrentWayPoint = path;

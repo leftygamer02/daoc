@@ -217,7 +217,7 @@ namespace DOL.GS.PacketHandler
 					if (m_gameClient.CanSendTooltip(28, t.InternalID))
 						SendDelveInfo(DetailDisplayHandler.DelveAbility(m_gameClient, t.InternalID));
 				}
-				else if (t is Style)
+				else if (t is Styles.Style)
 				{
 					if (m_gameClient.CanSendTooltip(25, t.InternalID))
 						SendDelveInfo(DetailDisplayHandler.DelveStyle(m_gameClient, t.InternalID));

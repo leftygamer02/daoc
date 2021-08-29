@@ -205,7 +205,7 @@ namespace DOL.GS
 					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameMerchant.OnPlayerBuy.NotInventorySpace"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
 				}
-				InventoryLogging.LogInventoryAction("(TRADEITEMS;" + TradeItems.ItemsListID + ")", player, eInventoryActionType.Merchant, template, amountToBuy);
+				InventoryLogging.LogInventoryAction("(TRADEITEMS;" + TradeItems.ItemsListName + ")", player, eInventoryActionType.Merchant, template, amountToBuy);
 				//Generate the buy message
 				string message;
 				if (amountToBuy > 1)
@@ -218,7 +218,7 @@ namespace DOL.GS
 				{
 					throw new Exception("Money amount changed while adding items.");
 				}
-				InventoryLogging.LogInventoryAction(player, "(TRADEITEMS;" + TradeItems.ItemsListID + ")", eInventoryActionType.Merchant, totalValue);
+				InventoryLogging.LogInventoryAction(player, "(TRADEITEMS;" + TradeItems.ItemsListName + ")", eInventoryActionType.Merchant, totalValue);
 			}
 		}
 		
@@ -308,9 +308,9 @@ namespace DOL.GS
 		{
 			base.LoadTemplate(template);
 
-			if (template != null && template.ItemsListTemplateID > 0)
+			if (template != null && !String.IsNullOrEmpty(template.ItemListName))
 			{
-				TradeItems = new MerchantTradeItems(template.ItemsListTemplateID);
+				TradeItems = new MerchantTradeItems(template.ItemListName);
 			}
 		}
 		#endregion NPCTemplate
@@ -327,8 +327,8 @@ namespace DOL.GS
 			if (!(merchantobject is SpawnPoint)) return;
 			SpawnPoint merchant = (SpawnPoint)merchantobject;
 			var npcTemplate = merchant.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplate;
-			if (npcTemplate != null && npcTemplate.ItemsListTemplateID > 0)
-				m_tradeItems = new MerchantTradeItems(npcTemplate.ItemsListTemplateID);
+			if (npcTemplate != null && !String.IsNullOrEmpty(npcTemplate.ItemListName))
+				m_tradeItems = new MerchantTradeItems(npcTemplate.ItemListName);
 		}
 
 		/// <summary>
@@ -396,14 +396,14 @@ namespace DOL.GS
 				merchant.AggroRange = aggroBrain.AggroRange;
 			}
 			npcTemplate.ClassType = this.GetType().ToString();
-			npcTemplate.EquipmentTemplateID = EquipmentTemplateID;
+			npcTemplate.EquipmentTemplateName = EquipmentTemplateName;
 			if (m_tradeItems == null)
 			{
-				npcTemplate.ItemsListTemplateID = 0;
+				npcTemplate.ItemListName = string.Empty;
 			}
 			else
 			{
-				npcTemplate.ItemsListTemplateID = m_tradeItems.ItemsListID;
+				npcTemplate.ItemListName = m_tradeItems.ItemsListName;
 			}
 
 			GameServer.Instance.SaveDataObject(merchant);

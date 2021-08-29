@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Atlas.DataLayer.Models
 {
-    public class Keep : DataObjectBase
+    public partial class Keep : DataObjectBase
     {
         public string Name { get; set; }
         public int RegionID { get; set; }
@@ -23,7 +23,7 @@ namespace Atlas.DataLayer.Models
         public int OriginalRealm { get; set; }
         public int KeepType { get; set; }
         public int BaseLevel { get; set; }
-        public int SkinType { get; set; }
+        public eKeepSkinType SkinType { get; set; }
         public string CreateInfo { get; set; }
     }
 }

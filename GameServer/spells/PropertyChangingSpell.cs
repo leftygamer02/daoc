@@ -63,8 +63,8 @@ namespace DOL.GS.Spells
 					InventoryItem instrument = Caster.AttackWeapon;
 					if (instrument != null)
 					{
-						duration *= 1.0 + Math.Min(1.0, instrument.Level / (double)Caster.Level); // up to 200% duration for songs
-						duration *= instrument.Condition / (double)instrument.MaxCondition * instrument.Quality / 100;
+						duration *= 1.0 + Math.Min(1.0, instrument.ItemTemplate.Level / (double)Caster.Level); // up to 200% duration for songs
+						duration *= instrument.Condition / (double)instrument.ItemTemplate.MaxCondition * instrument.ItemTemplate.Quality / 100;
 					}
 				}
 				if (duration < 1)

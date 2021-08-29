@@ -9,6 +9,7 @@ namespace Atlas.DataLayer.Models
     public class Account : DataObjectBase
     {
         public string Name { get; set; }
+        public string Password { get; set; }
         public DateTime? LastLogin { get; set; }
         public int Realm { get; set; }
         public int PrivLevel { get; set; }
@@ -22,16 +23,16 @@ namespace Atlas.DataLayer.Models
         public virtual ICollection<AccountCustomParam> AccountCustomParams { get; set; }
         public virtual ICollection<Appeal> Appeals { get; set; }
         public virtual ICollection<Ban> Bans { get; set; }
-        public virtual ICollection<SinglePermission> SinglePermissions { get; set; }
         public virtual ICollection<Character> Characters { get; set; }
+        public virtual ICollection<SinglePermission> SinglePermissions { get; set; }
 
         public Account()
         {
             AccountCustomParams = new HashSet<AccountCustomParam>();
             Appeals = new HashSet<Appeal>();
             Bans = new HashSet<Ban>();
-            SinglePermissions = new HashSet<SinglePermission>();
             Characters = new HashSet<Character>();
+            SinglePermissions = new HashSet<SinglePermission>();
         }
     }
 }

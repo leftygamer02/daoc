@@ -65,30 +65,37 @@ namespace DOL.GS
 							case "Oceanus Notos":
 							case "Oceanus Boreal":
 							case "Oceanus Anatole":
-								artifacts = ArtifactMgr.GetArtifacts("Oceanus");
+								artifacts = ArtifactMgr.GetArtifacts("Oceanus Hesperos");
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Mesothalassa"));
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Oceanus Notos"));
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Oceanus Boreal"));
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Oceanus Anatole"));
 								break;
 							case "Stygian Delta":
 							case "Land of Atum":
-								artifacts = ArtifactMgr.GetArtifacts("Stygia");
+								artifacts = ArtifactMgr.GetArtifacts("Stygian Delta");
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Land of Atum"));
 								break;
 							case "Arbor Glen":
 							case "Green Glades":
-								artifacts = ArtifactMgr.GetArtifacts("Aerus");
+								artifacts = ArtifactMgr.GetArtifacts("Arbor Glen");
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Green Glades"));
 								break;
 							case "Typhon's Reach":
 							case "Ashen Isles":
-								artifacts = ArtifactMgr.GetArtifacts("Volcanus");
+								artifacts = ArtifactMgr.GetArtifacts("Typhon's Reach");
+								artifacts.AddRange(ArtifactMgr.GetArtifacts("Ashen Isles"));
 								break;
 						}
 					}
 
 					if (artifacts.Count > 0)
 					{
-						String artifactID = (artifacts[Util.Random(artifacts.Count - 1)]).ArtifactID;
+						String artifactID = (artifacts[Util.Random(artifacts.Count - 1)]).Name;
 						int pageNumber;
 
 						ItemTemplate loot = new ItemTemplate();
-						loot.AllowAdd = false;
+						//loot.AllowAdd = false;
 
 						if (mob.Level > 55)
 						{

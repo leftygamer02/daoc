@@ -120,31 +120,31 @@ namespace DOL.GS.PacketHandler
 						}
 						catch (Exception ex)
 						{
-							log.Error("SendCharacterOverview - Duplicate char in slot? Slot: " + c.AccountSlot + ", Account: " + c.AccountName, ex);
+							log.Error("SendCharacterOverview - Duplicate char in slot? Slot: " + c.AccountSlot + ", Account: " + c.Account.Name, ex);
 						}
 					}
-					var itemsByOwnerID = new Dictionary<string, Dictionary<eInventorySlot, InventoryItem>>();
+					var itemsByOwnerID = new Dictionary<int?, Dictionary<eInventorySlot, InventoryItem>>();
 
 					if (charsBySlot.Any())
 					{
-						var filterBySlotPosition = DB.Column("SlotPosition").IsGreaterOrEqualTo((int)eInventorySlot.MinEquipable)
-							.And(DB.Column("SlotPosition").IsLessOrEqualTo((int)eInventorySlot.MaxEquipable));
-						var allItems = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsIn(charsBySlot.Values.Select(c => c.ObjectId)).And(filterBySlotPosition));
+						var allItems = GameServer.Database.InventoryItems.Where(x => x.Character.AccountID == m_gameClient.Account.Id &&
+																					 x.SlotPosition >= (int)eInventorySlot.MinEquipable &&
+																					 x.SlotPosition <= (int)eInventorySlot.MaxEquipable); 						
 
 						foreach (InventoryItem item in allItems)
 						{
 							try
 							{
-								if (!itemsByOwnerID.ContainsKey(item.OwnerID))
+								if (!itemsByOwnerID.ContainsKey(item.CharacterID))
 								{
-									itemsByOwnerID.Add(item.OwnerID, new Dictionary<eInventorySlot, InventoryItem>());
+									itemsByOwnerID.Add(item.CharacterID, new Dictionary<eInventorySlot, InventoryItem>());
 								}
 
-								itemsByOwnerID[item.OwnerID].Add((eInventorySlot)item.SlotPosition, item);
+								itemsByOwnerID[item.CharacterID].Add((eInventorySlot)item.SlotPosition, item);
 							}
 							catch (Exception ex)
 							{
-								log.Error("SendCharacterOverview - Duplicate item on character? OwnerID: " + item.OwnerID + ", SlotPosition: " + item.SlotPosition + ", Account: " + m_gameClient.Account.Name, ex);
+								log.Error("SendCharacterOverview - Duplicate item on character? OwnerID: " + item.CharacterID + ", SlotPosition: " + item.SlotPosition + ", Account: " + m_gameClient.Account.Name, ex);
 							}
 						}
 					}
@@ -158,7 +158,7 @@ namespace DOL.GS.PacketHandler
 						else
 						{
 
-							if (!itemsByOwnerID.TryGetValue(c.ObjectId, out Dictionary<eInventorySlot, InventoryItem> charItems))
+							if (!itemsByOwnerID.TryGetValue(c.Id, out Dictionary<eInventorySlot, InventoryItem> charItems))
 							{
 								charItems = new Dictionary<eInventorySlot, InventoryItem>();
 							}
@@ -170,17 +170,17 @@ namespace DOL.GS.PacketHandler
 
 							if (charItems.TryGetValue(eInventorySlot.TorsoArmor, out InventoryItem item))
 							{
-								extensionTorso = item.Extension;
+								extensionTorso = (byte)item.ItemTemplate.Extension;
 							}
 
 							if (charItems.TryGetValue(eInventorySlot.HandsArmor, out item))
 							{
-								extensionGloves = item.Extension;
+								extensionGloves = (byte)item.ItemTemplate.Extension;
 							}
 
 							if (charItems.TryGetValue(eInventorySlot.FeetArmor, out item))
 							{
-								extensionBoots = item.Extension;
+								extensionBoots = (byte)item.ItemTemplate.Extension;
 							}
 
 							pak.WriteByte((byte)c.Level); // moved
@@ -200,7 +200,7 @@ namespace DOL.GS.PacketHandler
 							pak.Fill(0x0, 13); //0 string
 
 							string locationDescription = string.Empty;
-							Region region = WorldMgr.GetRegion((ushort)c.Region);
+							Region region = WorldMgr.GetRegion((ushort)c.RegionID);
 							if (region != null)
 							{
 								locationDescription = region.GetTranslatedSpotDescription(m_gameClient, c.Xpos, c.Ypos, c.Zpos);
@@ -223,7 +223,7 @@ namespace DOL.GS.PacketHandler
 							pak.WritePascalStringIntLE(racename);
 							pak.WriteShortLowEndian((ushort)c.CurrentModel); // moved
 																			 // something here
-							pak.WriteByte((byte)c.Region);
+							pak.WriteByte((byte)c.RegionID);
 
 							if (region == null || (int)m_gameClient.ClientType > region.Expansion)
 							{
@@ -509,54 +509,54 @@ namespace DOL.GS.PacketHandler
 				foreach (InventoryItem item in items)
 				{
 					pak.WriteByte((byte)items.IndexOf(item));
-					pak.WriteByte((byte)item.Level);
+					pak.WriteByte((byte)item.ItemTemplate.Level);
 					int value1; // some object types use this field to display count
 					int value2; // some object types use this field to display count
-					switch (item.ObjectType)
+					switch (item.ItemTemplate.ObjectType)
 					{
 						case (int)eObjectType.Arrow:
 						case (int)eObjectType.Bolt:
 						case (int)eObjectType.Poison:
 						case (int)eObjectType.GenericItem:
-							value1 = item.PackSize;
-							value2 = item.SPD_ABS; break;
+							value1 = item.ItemTemplate.PackSize;
+							value2 = item.ItemTemplate.SPD_ABS; break;
 						case (int)eObjectType.Thrown:
-							value1 = item.DPS_AF;
-							value2 = item.PackSize; break;
+							value1 = item.ItemTemplate.DPS_AF;
+							value2 = item.ItemTemplate.PackSize; break;
 						case (int)eObjectType.Instrument:
-							value1 = (item.DPS_AF == 2 ? 0 : item.DPS_AF); // 0x00 = Lute ; 0x01 = Drum ; 0x03 = Flute
+							value1 = (item.ItemTemplate.DPS_AF == 2 ? 0 : item.ItemTemplate.DPS_AF); // 0x00 = Lute ; 0x01 = Drum ; 0x03 = Flute
 							value2 = 0; break; // unused
 						case (int)eObjectType.Shield:
-							value1 = item.TypeDamage;
-							value2 = item.DPS_AF; break;
+							value1 = item.ItemTemplate.TypeDamage;
+							value2 = item.ItemTemplate.DPS_AF; break;
 						case (int)eObjectType.GardenObject:
 						case (int)eObjectType.HouseWallObject:
 						case (int)eObjectType.HouseFloorObject:
 							value1 = 0;
-							value2 = item.SPD_ABS; break;
+							value2 = item.ItemTemplate.SPD_ABS; break;
 						default:
-							value1 = item.DPS_AF;
-							value2 = item.SPD_ABS; break;
+							value1 = item.ItemTemplate.DPS_AF;
+							value2 = item.ItemTemplate.SPD_ABS; break;
 					}
 					pak.WriteByte((byte)value1);
 					pak.WriteByte((byte)value2);
-					if (item.ObjectType == (int)eObjectType.GardenObject)
+					if (item.ItemTemplate.ObjectType == (int)eObjectType.GardenObject)
 					{
-						pak.WriteByte((byte)(item.DPS_AF));
+						pak.WriteByte((byte)(item.ItemTemplate.DPS_AF));
 					}
 					else
 					{
-						pak.WriteByte((byte)(item.Hand << 6));
+						pak.WriteByte((byte)(item.ItemTemplate.Hand << 6));
 					}
 
-					pak.WriteByte((byte)((item.TypeDamage > 3 ? 0 : item.TypeDamage << 6) | item.ObjectType));
-					pak.WriteByte((byte)(m_gameClient.Player.HasAbilityToUseItem(item.Template) ? 0 : 1));
-					pak.WriteShortLowEndian((ushort)(item.PackSize > 1 ? item.Weight * item.PackSize : item.Weight)); // 
+					pak.WriteByte((byte)((item.ItemTemplate.TypeDamage > 3 ? 0 : item.ItemTemplate.TypeDamage << 6) | item.ItemTemplate.ObjectType));
+					pak.WriteByte((byte)(m_gameClient.Player.HasAbilityToUseItem(item.ItemTemplate) ? 0 : 1));
+					pak.WriteShortLowEndian((ushort)(item.ItemTemplate.PackSize > 1 ? item.ItemTemplate.Weight * item.ItemTemplate.PackSize : item.ItemTemplate.Weight)); // 
 
 					pak.WriteByte((byte)item.ConditionPercent);
 					pak.WriteByte((byte)item.DurabilityPercent);
-					pak.WriteByte((byte)item.Quality);
-					pak.WriteByte((byte)item.Bonus);
+					pak.WriteByte((byte)item.ItemTemplate.Quality);
+					pak.WriteByte((byte)item.ItemTemplate.ItemBonus);
 					pak.WriteShortLowEndian((ushort)item.Model);
 
 					if (item.Emblem != 0)
@@ -568,8 +568,8 @@ namespace DOL.GS.PacketHandler
 						pak.WriteShortLowEndian((ushort)item.Color); // untested for low endian but probabaly
 					}
 
-					pak.WriteShortLowEndian((byte)item.Effect); // untested for low endian but probabaly
-					pak.WriteShortLowEndian(item.OwnerLot);//lot
+					pak.WriteShortLowEndian((byte)item.ItemTemplate.Effect); // untested for low endian but probabaly
+					pak.WriteShortLowEndian((ushort)item.OwnerLot);//lot
 					pak.WriteIntLowEndian((uint)item.SellPrice);
 
 					if (ServerProperties.Properties.CONSIGNMENT_USE_BP)
@@ -584,9 +584,9 @@ namespace DOL.GS.PacketHandler
 						{
 							pak.WritePascalStringIntLE(item.Count + " " + item.Name);
 						}
-						else if (item.PackSize > 1)
+						else if (item.ItemTemplate.PackSize > 1)
 						{
-							pak.WritePascalStringIntLE(item.PackSize + " " + item.Name + bpPrice);
+							pak.WritePascalStringIntLE(item.ItemTemplate.PackSize + " " + item.Name + bpPrice);
 						}
 						else
 						{
@@ -599,9 +599,9 @@ namespace DOL.GS.PacketHandler
 						{
 							pak.WritePascalStringIntLE(item.Count + " " + item.Name);
 						}
-						else if (item.PackSize > 1)
+						else if (item.ItemTemplate.PackSize > 1)
 						{
-							pak.WritePascalStringIntLE(item.PackSize + " " + item.Name);
+							pak.WritePascalStringIntLE(item.ItemTemplate.PackSize + " " + item.Name);
 						}
 						else
 						{

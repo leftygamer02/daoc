@@ -181,7 +181,7 @@ namespace DOL.GS.Commands
 
 			if (args[1].ToLower() == "spells")
 			{
-				SkillBase.ReloadAtlas.DataLayer.Models.Spells();
+				SkillBase.ReloadSpells();
 				int loaded = SkillBase.ReloadSpellLines();
 				if (client != null) ChatUtil.SendSystemMessage(client, string.Format("Reloaded db spells and {0} spells for all lines !", loaded));
 				log.Info(string.Format("Reloaded db spells and {0} spells for all spell lines !", loaded));
@@ -211,78 +211,78 @@ namespace DOL.GS.Commands
 
 			int count = 0;
 
-			foreach (GameNPC mob in WorldMgr.GetNPCsFromRegion(region))
-			{
-				if (!mob.LoadedFromScript)
-				{
-					if (arg1 == "all")
-					{
-						mob.RemoveFromWorld();
+			//foreach (GameNPC mob in WorldMgr.GetNPCsFromRegion(region))
+			//{
+			//	if (!mob.LoadedFromScript)
+			//	{
+			//		if (arg1 == "all")
+			//		{
+			//			mob.RemoveFromWorld();
 
-						Mob mobs = GameServer.Database.FindObjectByKey<Mob>(mob.InternalID);
-						if (mobs != null)
-						{
-							mob.LoadFromDatabase(mobs);
-							mob.AddToWorld();
-							count++;
-						}
-					}
+			//			Mob mobs = GameServer.Database.FindObjectByKey<Mob>(mob.InternalID);
+			//			if (mobs != null)
+			//			{
+			//				mob.LoadFromDatabase(mobs);
+			//				mob.AddToWorld();
+			//				count++;
+			//			}
+			//		}
 
-					if (arg1 == "realm")
-					{
-						eRealm realm = eRealm.None;
-						if (arg2 == "None") realm = eRealm.None;
-						if (arg2 == "Albion") realm = eRealm.Albion;
-						if (arg2 == "Midgard") realm = eRealm.Midgard;
-						if (arg2 == "Hibernia") realm = eRealm.Hibernia;
+			//		if (arg1 == "realm")
+			//		{
+			//			eRealm realm = eRealm.None;
+			//			if (arg2 == "None") realm = eRealm.None;
+			//			if (arg2 == "Albion") realm = eRealm.Albion;
+			//			if (arg2 == "Midgard") realm = eRealm.Midgard;
+			//			if (arg2 == "Hibernia") realm = eRealm.Hibernia;
 
-						if (mob.Realm == realm)
-						{
-							mob.RemoveFromWorld();
+			//			if (mob.Realm == realm)
+			//			{
+			//				mob.RemoveFromWorld();
 
-							Mob mobs = GameServer.Database.FindObjectByKey<Mob>(mob.InternalID);
-							if (mobs != null)
-							{
-								mob.LoadFromDatabase(mobs);
-								mob.AddToWorld();
-								count++;
-							}
-						}
-					}
+			//				Mob mobs = GameServer.Database.FindObjectByKey<Mob>(mob.InternalID);
+			//				if (mobs != null)
+			//				{
+			//					mob.LoadFromDatabase(mobs);
+			//					mob.AddToWorld();
+			//					count++;
+			//				}
+			//			}
+			//		}
 
-					if (arg1 == "name")
-					{
-						if (mob.Name == arg2)
-						{
-							mob.RemoveFromWorld();
+			//		if (arg1 == "name")
+			//		{
+			//			if (mob.Name == arg2)
+			//			{
+			//				mob.RemoveFromWorld();
 
-							Mob mobs = GameServer.Database.FindObjectByKey<Mob>(mob.InternalID);
-							if (mobs != null)
-							{
-								mob.LoadFromDatabase(mobs);
-								mob.AddToWorld();
-								count++;
-							}
-						}
-					}
+			//				Mob mobs = GameServer.Database.FindObjectByKey<Mob>(mob.InternalID);
+			//				if (mobs != null)
+			//				{
+			//					mob.LoadFromDatabase(mobs);
+			//					mob.AddToWorld();
+			//					count++;
+			//				}
+			//			}
+			//		}
 
-					if (arg1 == "model")
-					{
-						if (mob.Model == Convert.ToUInt16(arg2))
-						{
-							mob.RemoveFromWorld();
+			//		if (arg1 == "model")
+			//		{
+			//			if (mob.Model == Convert.ToUInt16(arg2))
+			//			{
+			//				mob.RemoveFromWorld();
 
-							WorldObject mobs = GameServer.Database.FindObjectByKey<WorldObject>(mob.InternalID);
-							if (mobs != null)
-							{
-								mob.LoadFromDatabase(mobs);
-								mob.AddToWorld();
-								count++;
-							}
-						}
-					}
-				}
-			}
+			//				WorldObject mobs = GameServer.Database.WorldObjects.Find(mob.InternalID);
+			//				if (mobs != null)
+			//				{
+			//					mob.LoadFromDatabase(mobs);
+			//					mob.AddToWorld();
+			//					count++;
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
 
 			ChatUtil.SendSystemMessage(player, count + " mobs reloaded!");
 		}
@@ -303,7 +303,7 @@ namespace DOL.GS.Commands
 					{
 						staticItem.RemoveFromWorld();
 
-						WorldObject obj = GameServer.Database.FindObjectByKey<WorldObject>(staticItem.InternalID);
+						WorldObject obj = GameServer.Database.WorldObjects.Find(staticItem.InternalID);
 						if (obj != null)
 						{
 							staticItem.LoadFromDatabase(obj);
@@ -323,7 +323,7 @@ namespace DOL.GS.Commands
 						{
 							staticItem.RemoveFromWorld();
 
-							WorldObject obj = GameServer.Database.FindObjectByKey<WorldObject>(staticItem.InternalID);
+							WorldObject obj = GameServer.Database.WorldObjects.Find(staticItem.InternalID);
 							if (obj != null)
 							{
 								staticItem.LoadFromDatabase(obj);
@@ -338,7 +338,7 @@ namespace DOL.GS.Commands
 						{
 							staticItem.RemoveFromWorld();
 
-							WorldObject obj = GameServer.Database.FindObjectByKey<WorldObject>(staticItem.InternalID);
+							WorldObject obj = GameServer.Database.WorldObjects.Find(staticItem.InternalID);
 							if (obj != null)
 							{
 								staticItem.LoadFromDatabase(obj);
@@ -353,7 +353,7 @@ namespace DOL.GS.Commands
 						{
 							staticItem.RemoveFromWorld();
 
-							WorldObject obj = GameServer.Database.FindObjectByKey<WorldObject>(staticItem.InternalID);
+							WorldObject obj = GameServer.Database.WorldObjects.Find(staticItem.InternalID);
 							if (obj != null)
 							{
 								staticItem.LoadFromDatabase(obj);

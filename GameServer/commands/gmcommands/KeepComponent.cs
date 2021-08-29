@@ -300,7 +300,7 @@ namespace DOL.GS.Commands
                             return;
                         }
 
-                        var dbcomponent = DOLDB<DBKeepComponent>.SelectObject(DB.Column("KeepID").IsEqualTo(component.Keep.KeepID).And(DB.Column("ID").IsEqualTo(component.ID)));
+						var dbcomponent = GameServer.Database.KeepComponents.FirstOrDefault(x => x.KeepID == component.Keep.KeepID && x.Id == component.ID);
                         component.ComponentX = dbcomponent.X;
                         component.ComponentY = dbcomponent.Y;
                         component.ComponentHeading = dbcomponent.Heading;

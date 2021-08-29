@@ -165,7 +165,34 @@ namespace DOL.GS
 				{
 					foreach (Artifact artifact in m_artifacts.Values)
 					{
-						if (artifact.Zone == zone)
+						if (artifact.ZoneID == zone)
+						{
+							artifacts.Add(artifact);
+						}
+					}
+				}
+			}
+			return artifacts;
+		}
+
+		/// <summary>
+		/// Find all artifacts from a particular zone.
+		/// </summary>
+		/// <param name="zone"></param>
+		/// <returns></returns>
+		public static List<Artifact> GetArtifacts(string zoneName)
+		{
+			List<Artifact> artifacts = new List<Artifact>();
+
+			var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Name == zoneName);
+
+			if (zone != null)
+			{
+				lock (m_artifacts)
+				{
+					foreach (Artifact artifact in m_artifacts.Values)
+					{
+						if (artifact.ZoneID == zone.Id)
 						{
 							artifacts.Add(artifact);
 						}
@@ -572,7 +599,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static bool GrantArtifactCredit(GamePlayer player, int artifactID)
 		{
-			if (player == null || artifactID > 0)
+			if (player == null || artifactID <= 0)
 				return false;
 
 			if (!player.CanReceiveArtifact(artifactID))
@@ -825,7 +852,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		private static WorldInventoryItem CreatePages(int artifactID, Book pageNumbers)
 		{
-			if (artifactID == null || pageNumbers == Book.NoPage)
+			if (artifactID <= 0 || pageNumbers == Book.NoPage)
 				return null;
 
 			Artifact artifact;
@@ -835,7 +862,11 @@ namespace DOL.GS
 			if (artifact == null)
 				return null;
 			
-			WorldInventoryItem scroll = WorldInventoryItem.CreateUniqueFromTemplate("artifact_scroll");
+			var template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "artifact_scroll");
+			if (template == null)
+				return null;
+
+			WorldInventoryItem scroll = WorldInventoryItem.CreateUniqueFromTemplate(template);
 			if (scroll == null)
 				return null;
 

@@ -62,7 +62,7 @@ namespace DOL.GS.Trainer
 				}
 
 				// ask for basic equipment if player doesnt own it
-				if (player.Inventory.GetFirstItemByID(PRACTICE_WEAPON_ID, eInventorySlot.MinEquipable, eInventorySlot.LastBackpack) == null)
+				if (player.Inventory.GetFirstItemByKeyName(PRACTICE_WEAPON_ID, eInventorySlot.MinEquipable, eInventorySlot.LastBackpack) == null)
 				{
 					player.Out.SendMessage(this.Name + " says, \"Do you require a [practice branch]?\"",eChatType.CT_Say,eChatLoc.CL_PopupWindow);
 				}
@@ -95,7 +95,7 @@ namespace DOL.GS.Trainer
 					}
 					return true;
 				case "practice branch":
-					if (player.Inventory.GetFirstItemByID(PRACTICE_WEAPON_ID, eInventorySlot.Min_Inv, eInventorySlot.Max_Inv) == null)
+					if (player.Inventory.GetFirstItemByKeyName(PRACTICE_WEAPON_ID, eInventorySlot.Min_Inv, eInventorySlot.Max_Inv) == null)
 					{
 						player.ReceiveItem(this,PRACTICE_WEAPON_ID);
 					}

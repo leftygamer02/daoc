@@ -161,9 +161,9 @@ namespace DOL.AI.Brain
 			//Mob will now always walk on their path
 			if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.IsMoving
 			    && !Body.AttackState && !Body.InCombat && !Body.IsMovingOnPath
-			    && Body.PathID != null && Body.PathID != "" && Body.PathID != "NULL")
+			    && Body.PathID > 0)
 			{
-				PathPoint path = MovementMgr.LoadPath(Body.PathID);
+				PathPoint path = MovementMgr.LoadPath(Body.Path.PathName);
 				if (path != null)
 				{
 					Body.CurrentWayPoint = path;
@@ -521,7 +521,7 @@ namespace DOL.AI.Brain
 					{
 						aggroamount -= protectAmount;
 						protect.ProtectSource.Out.SendMessage(LanguageMgr.GetTranslation(protect.ProtectSource.Client.Account.Language, "AI.Brain.StandardMobBrain.YouProtDist", player.GetName(0, false),
-						                                                                 Body.GetName(0, false, protect.ProtectSource.Client.Account.Language, Body)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						                                                                 Body.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						//player.Out.SendMessage("You are protected by " + protect.ProtectSource.GetName(0, false) + " from " + Body.GetName(0, false) + ".", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 						lock ((m_aggroTable as ICollection).SyncRoot)
@@ -947,8 +947,8 @@ namespace DOL.AI.Brain
 			List<GamePlayer> victims = null; // Only instantiated if we're tracking potential victims
 			
 			// These are only used if we have to check for duplicates
-			HashSet<String> countedVictims = null;
-			HashSet<String> countedAttackers = null;
+			HashSet<int> countedVictims = null;
+			HashSet<int> countedAttackers = null;
 
 			BattleGroup bg = puller.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null) as BattleGroup;
 
@@ -956,7 +956,7 @@ namespace DOL.AI.Brain
 			if (puller.Group is Group group)
 			{
 				if (DOL.GS.ServerProperties.Properties.BAF_MOBS_COUNT_BG_MEMBERS && bg != null)
-					countedAttackers = new HashSet<String>(); // We have to check for duplicates when counting attackers
+					countedAttackers = new HashSet<int>(); // We have to check for duplicates when counting attackers
 
 				if (!DOL.GS.ServerProperties.Properties.BAF_MOBS_ATTACK_PULLER)
 				{
@@ -964,7 +964,7 @@ namespace DOL.AI.Brain
 					{
 						// We need a large enough victims list for group and BG, and also need to check for duplicate victims
 						victims = new List<GamePlayer>(group.MemberCount + bg.PlayerCount - 1);
-						countedVictims = new HashSet<String>();
+						countedVictims = new HashSet<int>();
 					}
 					else
 						victims = new List<GamePlayer>(group.MemberCount);
@@ -1546,7 +1546,7 @@ namespace DOL.AI.Brain
 					return false;
 				if (Body.RoamingRange == 0)
 					return false;
-				if (!string.IsNullOrWhiteSpace(Body.PathID))
+				if (Body.PathID > 0)
 					return false;
 				return true;
 			}

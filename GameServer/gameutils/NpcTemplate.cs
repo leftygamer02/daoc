@@ -49,15 +49,15 @@ namespace DOL.GS
 		protected ushort m_gender;
 		protected string m_size;
 		protected string m_level;
-		protected int m_equipmentTemplateID;
-		protected int m_itemsListTemplateID;
+		protected string m_equipmentTemplateName;
+		protected string m_itemListName;
 		protected short m_maxSpeed;
 		protected byte m_parryChance;
 		protected byte m_evadeChance;
 		protected byte m_blockChance;
 		protected byte m_leftHandSwingChance;
 		protected ushort m_flags;
-		protected int m_inventory;
+		protected string m_inventory;
 		protected eDamageType m_meleeDamageType;
 		protected short m_strength;
 		protected short m_constitution;
@@ -105,8 +105,8 @@ namespace DOL.GS
 			m_level = data.Level;
 			if (m_level == null)
 				m_level = "0";
-			m_equipmentTemplateID = data.EquipmentTemplateID;
-			m_itemsListTemplateID = data.ItemsListTemplateID;
+			m_equipmentTemplateName = data.EquipmentTemplateName;
+			m_itemListName = data.ItemListName;
 			m_maxSpeed = (short)data.MaxSpeed;
 			m_parryChance = (byte)data.ParryChance;
 			m_evadeChance = (byte)data.EvadeChance;
@@ -182,7 +182,7 @@ namespace DOL.GS
 			if (data.MeleeDamageType == 0)
 				m_meleeDamageType = eDamageType.Slash;
 
-			m_inventory = data.EquipmentTemplateID;
+			m_inventory = data.EquipmentTemplateName;
 			m_aggroLevel = (byte)data.AggroLevel;
 			m_aggroRange = data.AggroRange;
 			m_race = (ushort)data.RaceID;
@@ -208,7 +208,7 @@ namespace DOL.GS
 			m_constitution = mob.Constitution;
 			m_dexterity = mob.Dexterity;
 			m_empathy = mob.Empathy;
-			m_equipmentTemplateID = mob.EquipmentTemplateID;
+			m_equipmentTemplateName = mob.EquipmentTemplateName;
 			m_evadeChance = mob.EvadeChance;
 			m_flags = (ushort)mob.Flags;
 			m_guildName = mob.GuildName;
@@ -231,7 +231,7 @@ namespace DOL.GS
 			m_templateId = 0;
 			m_tetherRange = mob.TetherRange;
 			m_visibleActiveWeaponSlot = mob.VisibleActiveWeaponSlots;
-			m_realm = mob.Realm;
+			m_realm = (int)mob.Realm;
 			
 			if ( mob.Abilities != null && mob.Abilities.Count > 0 )
 			{
@@ -294,13 +294,13 @@ namespace DOL.GS
 				m_aggroRange = brain.AggroRange;
 			}
 
-			if (ItemsListTemplateID > 0)
+			if (!string.IsNullOrEmpty(ItemListName))
 			{
 				GameMerchant merchant = mob as GameMerchant;
 
 				if (merchant != null)
 				{
-					merchant.TradeItems = new MerchantTradeItems(ItemsListTemplateID);
+					merchant.TradeItems = new MerchantTradeItems(ItemListName);
 				}
 			}
 		}
@@ -439,16 +439,16 @@ namespace DOL.GS
 			set { m_level = value; }
 		}
 
-		public int EquipmentTemplateID
+		public string EquipmentTemplateName
 		{
-			get { return m_equipmentTemplateID; }
-			set { m_equipmentTemplateID = value; }
+			get { return m_equipmentTemplateName; }
+			set { m_equipmentTemplateName = value; }
 		}
 
-		public int ItemsListTemplateID
+		public string ItemListName
 		{
-			get { return m_itemsListTemplateID; }
-			set { m_itemsListTemplateID = value; }
+			get { return m_itemListName; }
+			set { m_itemListName = value; }
 		}
 
 		/// <summary>
@@ -470,7 +470,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets the template npc inventory
 		/// </summary>
-		public int Inventory
+		public string Inventory
 		{
 			get { return m_inventory; }
 			set { m_inventory = value; }
@@ -687,8 +687,8 @@ namespace DOL.GS
 			tmp.Constitution = Constitution;
 			tmp.Dexterity = Dexterity;
 			tmp.Empathy = Empathy;
-			tmp.EquipmentTemplateID = EquipmentTemplateID;
-			tmp.ItemsListTemplateID = ItemsListTemplateID;
+			tmp.EquipmentTemplateName = EquipmentTemplateName;
+			tmp.ItemListName = ItemListName;
 			tmp.EvadeChance = EvadeChance;
 			tmp.Flags = Flags;
 			tmp.GuildName = GuildName;

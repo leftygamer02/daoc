@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -138,11 +139,11 @@ namespace DOL.GS
             if (item != null)
             {
                 GameLocation destination;
-                if (_itemXdestination.TryGetValue(item.Id, out destination))
+                if (_itemXdestination.TryGetValue(item.ItemTemplate.KeyName, out destination))
                 {
                     player.MoveTo(destination);
                     player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate, item.Count);
                     player.SaveIntoDatabase();
                     return true;
                 }
@@ -152,7 +153,7 @@ namespace DOL.GS
 
         #endregion Token return
 
-		public virtual string GetOwner(GamePlayer player)
+		public virtual int? GetOwner(GamePlayer player)
 		{
 			return CurrentHouse.OwnerID;
 		}
@@ -185,7 +186,7 @@ namespace DOL.GS
 			if (house == null)
 				return null;
 
-			return MarketCache.Items.Where(item => item.OwnerID == house.OwnerID).ToList();
+			return MarketCache.Items.Where(item => item.CharacterID == house.OwnerID).ToList();
         }
 
         /// <summary>
@@ -206,9 +207,12 @@ namespace DOL.GS
                 {
                     m_totalMoney = value;
 
-                    var merchant = DOLDB<HouseConsignmentMerchant>.SelectObject(DB.Column("HouseNumber").IsEqualTo(HouseNumber));
-                    merchant.Money = m_totalMoney;
-                    GameServer.Instance.SaveDataObject(merchant);
+					var merchant = GameServer.Database.HouseConsignmentMerchants.FirstOrDefault(x => x.HouseNumber == HouseNumber);
+					if (merchant != null)
+					{
+						merchant.Money = m_totalMoney;
+						GameServer.Instance.SaveDataObject(merchant);
+					}
                 }
             }
         }
@@ -401,7 +405,7 @@ namespace DOL.GS
 
 			if (item != null)
 			{
-				if (item.IsTradable)
+				if (item.ItemTemplate.IsTradable)
 				{
 					item.SellPrice = (int)price;
 				}
@@ -413,9 +417,9 @@ namespace DOL.GS
 				}
 
 				item.OwnerLot = conMerchant.HouseNumber;
-				item.OwnerID = conMerchant.GetOwner(player);
+				item.CharacterID = conMerchant.GetOwner(player);
 				GameServer.Instance.SaveDataObject(item);
-				ChatUtil.SendDebugMessage(player, item.Name + " SellPrice=" + price + ", OwnerLot=" + item.OwnerLot + ", OwnerID=" + item.OwnerID);
+				ChatUtil.SendDebugMessage(player, item.Name + " SellPrice=" + price + ", OwnerLot=" + item.OwnerLot + ", OwnerID=" + item.CharacterID);
 				player.Out.SendMessage("Price set!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 				if (ServerProperties.Properties.MARKET_ENABLE_LOG)
@@ -597,7 +601,7 @@ namespace DOL.GS
 
 					if (ServerProperties.Properties.CONSIGNMENT_USE_BP)
 					{
-						ChatUtil.SendMerchantMessage(player, "GameMerchant.OnPlayerBuy.BoughtBP", item.GetName(1, false), purchasePrice);
+						ChatUtil.SendMerchantMessage(player, "GameMerchant.OnPlayerBuy.BoughtBP", item.ItemTemplate.GetName(1, false), purchasePrice);
 						player.BountyPoints -= purchasePrice;
 						player.Out.SendUpdatePoints();
 					}
@@ -606,7 +610,7 @@ namespace DOL.GS
 						if (player.RemoveMoney(purchasePrice))
 						{
 							InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, purchasePrice);
-							ChatUtil.SendMerchantMessage(player, "GameMerchant.OnPlayerBuy.Bought", item.GetName(1, false), Money.GetString(purchasePrice));
+							ChatUtil.SendMerchantMessage(player, "GameMerchant.OnPlayerBuy.Bought", item.ItemTemplate.GetName(1, false), Money.GetString(purchasePrice));
 						}
 						else
 						{
@@ -750,7 +754,7 @@ namespace DOL.GS
 
 			SetInventoryTemplate();
 
-			var houseCM = DOLDB<HouseConsignmentMerchant>.SelectObject(DB.Column("HouseNumber").IsEqualTo(HouseNumber));
+			var houseCM = GameServer.Database.HouseConsignmentMerchants.FirstOrDefault(x => x.HouseNumber == HouseNumber);
 			if (houseCM != null)
 			{
 				TotalMoney = houseCM.Money;
@@ -782,7 +786,7 @@ namespace DOL.GS
 
 			bool isFixed = false;
 
-			var items = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsEqualTo(house.OwnerID).And(DB.Column("SlotPosition").IsGreaterOrEqualTo(FirstDBSlot)).And(DB.Column("SlotPosition").IsLessOrEqualTo(LastDBSlot)).And(DB.Column("OwnerLot").IsEqualTo(0)));
+			var items = GameServer.Database.InventoryItems.Where(x => x.CharacterID == house.OwnerID && x.SlotPosition >= FirstDBSlot && x.SlotPosition <= LastDBSlot && x.OwnerLot == 0);
 
 			foreach (InventoryItem item in items)
 			{
@@ -793,8 +797,8 @@ namespace DOL.GS
 					log.DebugFormat("CM: Fixed OwnerLot for item '{0}' on CM for lot {1}", item.Name, HouseNumber);
 				}
 				isFixed = true;
-			}
-			GameServer.Instance.SaveDataObject(items);
+				GameServer.Instance.SaveDataObject(item);
+			}			
 
 			return isFixed;
 		}
@@ -879,7 +883,7 @@ namespace DOL.GS
 
             if (house.DatabaseItem.GuildHouse)
             {
-            	var guild = DOLDB<DBGuild>.SelectObject(DB.Column("GuildName").IsEqualTo(house.DatabaseItem.GuildName));
+				var guild = GameServer.Database.Guilds.FirstOrDefault(x => x.GuildName == house.DatabaseItem.GuildName);
                 int emblem = guild.Emblem;
 
                 InventoryItem cloak = Inventory.GetItem(eInventorySlot.Cloak);

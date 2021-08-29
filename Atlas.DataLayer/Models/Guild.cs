@@ -8,7 +8,7 @@ namespace Atlas.DataLayer.Models
 {
     public class Guild : DataObjectBase
     {
-        public int GuildAllianceID { get; set; }
+        public int? GuildAllianceID { get; set; }
         public string GuildName { get; set; }
         public int Realm { get; set; }
         public bool GuildBanner { get; set; }

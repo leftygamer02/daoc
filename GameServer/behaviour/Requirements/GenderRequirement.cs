@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Text;
 using DOL.Events;
 using Atlas.DataLayer.Models;
@@ -73,7 +74,7 @@ namespace DOL.GS.Behaviour.Requirements
 			bool result = true;
 
             GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            result = compare(player.Client.Account.Characters[player.Client.ActiveCharIndex].Gender, N, Comparator);
+            result = compare(player.Client.Account.Characters.ElementAt(player.Client.ActiveCharIndex).Gender, N, Comparator);
 
 			return result;
 		}

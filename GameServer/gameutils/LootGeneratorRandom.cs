@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Atlas.DataLayer.Models;
 
@@ -58,10 +59,10 @@ namespace DOL.GS
 			{
 				try
 				{
-					var filterLevel = DB.Column("Level").IsGreaterOrEqualTo(i * LEVEL_RANGE).And(DB.Column("Level").IsLessOrEqualTo((i + 1) * LEVEL_RANGE));
-					var filterByFlags = DB.Column("IsPickable").IsEqualTo(1).And(DB.Column("IsDropable").IsEqualTo(1)).And(DB.Column("CanDropAsLoot").IsEqualTo(1));
-					var filterBySlot = DB.Column("ItemType").IsGreaterOrEqualTo((int)eInventorySlot.MinEquipable).And(DB.Column("ItemType").IsLessOrEqualTo((int)eInventorySlot.MaxEquipable));
-					itemTemplates = DOLDB<ItemTemplate>.SelectObjects(filterLevel.And(filterByFlags).And(filterBySlot));
+					var query = GameServer.Database.ItemTemplates.Where(x => x.Level >= (i * LEVEL_RANGE) && x.Level <= (i + 1) * LEVEL_RANGE);
+					query = query.Where(x => x.IsPickable && x.IsDropable && x.CanDropAsLoot);
+					query = query.Where(x => x.ItemType >= (int)eInventorySlot.MinEquipable && x.ItemType <= (int)eInventorySlot.MaxEquipable);
+					itemTemplates = query.ToList();
 				}
 				catch (Exception e)
 				{

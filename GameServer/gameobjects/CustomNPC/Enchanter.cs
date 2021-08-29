@@ -44,9 +44,9 @@ namespace DOL.GS
 		{
             IList list = new ArrayList();
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.GetExamineMessages.Text1", 
-                                                GetName(0, false, player.Client.Account.Language, this)));
+                                                GetName(0, false)));
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.GetExamineMessages.Text2",
-                                                GetName(0, false, player.Client.Account.Language, this), GetPronoun(0, true, player.Client.Account.Language),
+                                                GetName(0, false), GetPronoun(0, true, player.Client.Account.Language),
                                                 GetAggroLevelString(player, false)));
             return list;
 		}
@@ -74,11 +74,11 @@ namespace DOL.GS
 			if (t == null || item == null)
 				return false;
 
-			if (item.Level >= 10 && item.IsCrafted)
+			if (item.ItemTemplate.Level >= 10 && item.IsCrafted)
 			{
-				if (item.ObjectType != (int) eObjectType.Magical && item.ObjectType != (int) eObjectType.Bolt && item.ObjectType != (int) eObjectType.Poison)
+				if (item.ItemTemplate.ObjectType != (int) eObjectType.Magical && item.ItemTemplate.ObjectType != (int) eObjectType.Bolt && item.ItemTemplate.ObjectType != (int) eObjectType.Poison)
 				{
-					if (item.Bonus == 0)
+					if (item.ItemTemplate.ItemBonus == 0)
 					{
 						t.TempProperties.setProperty(ENCHANT_ITEM_WEAK, new WeakRef(item));
                         t.Client.Out.SendCustomDialog(LanguageMgr.GetTranslation(t.Client, "Enchanter.ReceiveItem.Text1", Money.GetString(CalculEnchantPrice(item))), new CustomDialogResponse(EnchanterDialogResponse));
@@ -110,7 +110,7 @@ namespace DOL.GS
 
 			InventoryItem item = (InventoryItem) itemWeak.Target;
 			if (item == null || item.SlotPosition == (int) eInventorySlot.Ground
-				|| item.OwnerID == null || item.OwnerID != player.InternalID)
+				|| item.CharacterID == null || item.CharacterID != player.InternalID)
 			{
                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.EnchanterDialogResponse.Text1"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 return;
@@ -123,24 +123,24 @@ namespace DOL.GS
                 SayTo(player, eChatLoc.CL_SystemWindow, LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.EnchanterDialogResponse.Text2", Money.GetString(Fee)));
                 return;
 			}
-			if (item.Level < 50)
-				item.Bonus = BONUS_TABLE[(item.Level/5) - 2];
+			if (item.ItemTemplate.Level < 50)
+				item.ItemTemplate.ItemBonus = BONUS_TABLE[(item.ItemTemplate.Level/5) - 2];
 			else
-				item.Bonus = 35;
+				item.ItemTemplate.ItemBonus = 35;
 
             item.Name = LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.EnchanterDialogResponse.Text3") + " " + item.Name;
             player.Out.SendInventoryItemsUpdate(new InventoryItem[] { item });
             player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.EnchanterDialogResponse.Text4", 
-                                    GetName(0, false, player.Client.Account.Language, this), Money.GetString(Fee)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                                    GetName(0, false), Money.GetString(Fee)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
             player.RemoveMoney(Fee, null);
             InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, Fee);
-            SayTo(player, eChatLoc.CL_SystemWindow, LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.EnchanterDialogResponse.Text5", item.GetName(1, false)));
+            SayTo(player, eChatLoc.CL_SystemWindow, LanguageMgr.GetTranslation(player.Client.Account.Language, "Enchanter.EnchanterDialogResponse.Text5", item.ItemTemplate.GetName(1, false)));
             return;
 		}
 
 		public long CalculEnchantPrice(InventoryItem item)
 		{
-			return (item.Price/5);
+			return (item.ItemTemplate.Price/5);
 		}
 	}
 }

@@ -58,7 +58,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="taskPlayer">The player doing the task</param>
 		/// <param name="dbTask">The database object</param>
-		public KillTask(GamePlayer taskPlayer, DBTask dbTask) : base(taskPlayer, dbTask)
+		public KillTask(GamePlayer taskPlayer, CharacterTask dbTask) : base(taskPlayer, dbTask)
 		{
 		}
 
@@ -290,7 +290,7 @@ namespace DOL.GS.Quests
 				if (player.Task.RecieverName == target.Name && item.Name == player.Task.ItemName)
 				{
 					player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 					player.Out.SendMessage(target.Name + " says, *Good work " + player.Name + ". Here is your reward as promised.*", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					FinishTask();
 				}

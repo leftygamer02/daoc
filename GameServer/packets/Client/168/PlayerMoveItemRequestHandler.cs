@@ -120,7 +120,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					}
 
 					//If the item has been removed by the event handlers, return;
-					if (item == null || item.OwnerID == null)
+					if (item == null || item.CharacterID == null)
 					{
 						client.Out.SendInventorySlotsUpdate(new int[] { fromClientSlot });
 						return;
@@ -129,7 +129,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					// if a player to a GM and item is not dropable then don't allow trade???? This seems wrong.
 					if (client.Account.PrivLevel == (uint)ePrivLevel.Player && tradeTarget != null && tradeTarget.Client.Account.PrivLevel != (uint)ePrivLevel.Player)
 					{
-						if (!item.IsDropable && !(obj is GameNPC && (obj is Blacksmith || obj is Recharger || (obj as GameNPC).CanTradeAnyItem)))
+						if (!item.ItemTemplate.IsDropable && !(obj is GameNPC && (obj is Blacksmith || obj is Recharger || (obj as GameNPC).CanTradeAnyItem)))
 						{
 							client.Out.SendInventorySlotsUpdate(new int[] { fromClientSlot });
 							client.Out.SendMessage("You can not remove this item!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -255,7 +255,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						client.Out.SendInventorySlotsUpdate(new int[] { fromClientSlot });
 						return;
 					}
-					if (!item.IsDropable)
+					if (!item.ItemTemplate.IsDropable)
 					{
 						client.Out.SendInventorySlotsUpdate(new int[] { fromClientSlot });
 						client.Out.SendMessage("You can not drop this item!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -264,7 +264,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 					if (client.Player.DropItem((eInventorySlot)fromClientSlot))
 					{
-						client.Out.SendMessage("You drop " + item.GetName(0, false) + " on the ground!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						client.Out.SendMessage("You drop " + item.ItemTemplate.GetName(0, false) + " on the ground!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return;
 					}
 					client.Out.SendInventoryItemsUpdate(null);
@@ -288,8 +288,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (item == null) return;
 
 				toClientSlot = 0;
-				if (item.ItemType >= (int)eInventorySlot.MinEquipable && item.ItemType <= (int)eInventorySlot.MaxEquipable)
-					toClientSlot = (ushort)item.ItemType;
+				if (item.ItemTemplate.ItemType >= (int)eInventorySlot.MinEquipable && item.ItemTemplate.ItemType <= (int)eInventorySlot.MaxEquipable)
+					toClientSlot = (ushort)item.ItemTemplate.ItemType;
 				if (toClientSlot == 0)
 				{
 					client.Out.SendInventorySlotsUpdate(new int[] { fromClientSlot });

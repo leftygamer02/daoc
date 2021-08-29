@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DOL.AI.Brain;
 using Atlas.DataLayer.Models;
+using Atlas.DataLayer;
 using DOL.Events;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
@@ -246,7 +247,10 @@ namespace DOL.GS.Commands
 							guard.AddToWorld();
 
 							if (guard.Component != null && guard.Component.Keep != null)
-								guard.Component.Keep.Guards.Add(DOL.Database.UniqueID.IDGenerator.GenerateID(), guard);
+                            {								
+								guard.Component.Keep.Guards.Add(guard.TemplateID, guard);
+							}
+								
 						}
 
 						PositionMgr.FillPositions();
@@ -419,7 +423,7 @@ namespace DOL.GS.Commands
 									}
 
 									path.Type = ePathType.Loop;
-									PositionMgr.SavePatrolPath(guard.TemplateID, path, guard.Component);
+									PositionMgr.SavePatrolPath(guard.InternalID, path, guard.Component);
 									DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.Saved"));
 									RemoveAllTempPathObjects(client);
 									guard.PatrolGroup.InitialiseGuards();

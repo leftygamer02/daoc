@@ -70,29 +70,29 @@ namespace DOL.GS.PacketHandler
 						}
 						catch (Exception ex)
 						{
-							log.Error("SendCharacterOverview - Duplicate char in slot? Slot: " + c.AccountSlot + ", Account: " + c.AccountName, ex);
+							log.Error($"SendCharacterOverview - Duplicate char in slot? Slot: {c.AccountSlot}, Account: {c.Account.Name}({c.AccountID})", ex);
 						}
 					}
-					var itemsByOwnerID = new Dictionary<string, Dictionary<eInventorySlot, InventoryItem>>();
+					var itemsByOwnerID = new Dictionary<int, Dictionary<eInventorySlot, InventoryItem>>();
 					
 					if (charsBySlot.Any())
 					{
-						var filterBySlotPosition = DB.Column("SlotPosition").IsGreaterOrEqualTo((int)eInventorySlot.MinEquipable)
-							.And(DB.Column("SlotPosition").IsLessOrEqualTo((int)eInventorySlot.MaxEquipable));
-						var allItems = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsIn(charsBySlot.Values.Select(c => c.ObjectId)).And(filterBySlotPosition));
+						var charIds = charsBySlot.Values.Select(x => x.Id).ToList();
+						var allItems = GameServer.Database.InventoryItems.Where(x => x.CharacterID.HasValue && charIds.Contains(x.CharacterID.Value) && 
+																					 x.SlotPosition >= (int)eInventorySlot.MinEquipable && x.SlotPosition <= (int)eInventorySlot.MaxEquipable);
 						
 						foreach (InventoryItem item in allItems)
 						{
 							try
 							{
-								if (!itemsByOwnerID.ContainsKey(item.OwnerID))
-									itemsByOwnerID.Add(item.OwnerID, new Dictionary<eInventorySlot, InventoryItem>());
+								if (!itemsByOwnerID.ContainsKey(item.CharacterID.Value))
+									itemsByOwnerID.Add(item.CharacterID.Value, new Dictionary<eInventorySlot, InventoryItem>());
 								
-								itemsByOwnerID[item.OwnerID].Add((eInventorySlot)item.SlotPosition, item);
+								itemsByOwnerID[item.CharacterID.Value].Add((eInventorySlot)item.SlotPosition, item);
 							}
 							catch (Exception ex)
 							{
-								log.Error("SendCharacterOverview - Duplicate item on character? OwnerID: " + item.OwnerID + ", SlotPosition: " + item.SlotPosition + ", Account: " + m_gameClient.Account.Name, ex);
+								log.Error("SendCharacterOverview - Duplicate item on character? OwnerID: " + item.CharacterID.Value + ", SlotPosition: " + item.SlotPosition + ", Account: " + m_gameClient.Account.Name, ex);
 							}
 						}
 					}
@@ -108,7 +108,7 @@ namespace DOL.GS.PacketHandler
 						{
 							Dictionary<eInventorySlot, InventoryItem> charItems = null;
 	
-							if (!itemsByOwnerID.TryGetValue(c.ObjectId, out charItems))
+							if (!itemsByOwnerID.TryGetValue(c.Id, out charItems))
 								charItems = new Dictionary<eInventorySlot, InventoryItem>();
 	
 							byte extensionTorso = 0;
@@ -118,13 +118,13 @@ namespace DOL.GS.PacketHandler
 							InventoryItem item = null;
 	
 							if (charItems.TryGetValue(eInventorySlot.TorsoArmor, out item))
-								extensionTorso = item.Extension;
+								extensionTorso = (byte)item.Extension;
 	
 							if (charItems.TryGetValue(eInventorySlot.HandsArmor, out item))
-								extensionGloves = item.Extension;
+								extensionGloves = (byte)item.Extension;
 	
 							if (charItems.TryGetValue(eInventorySlot.FeetArmor, out item))
-								extensionBoots = item.Extension;
+								extensionBoots = (byte)item.Extension;
 
 							pak.Fill(0x00, 4);//new heading bytes in from 1.99 relocated in 1.104
 							pak.FillString(c.Name, 24);
@@ -142,7 +142,7 @@ namespace DOL.GS.PacketHandler
 							pak.Fill(0x0, 13); //0 String
 	
 							string locationDescription = string.Empty;
-							Region region = WorldMgr.GetRegion((ushort)c.Region);
+							Region region = WorldMgr.GetRegion((ushort)c.RegionID);
 							if (region != null)
 							{
 								locationDescription = m_gameClient.GetTranslatedSpotDescription(region, c.Xpos, c.Ypos, c.Zpos);
@@ -162,7 +162,7 @@ namespace DOL.GS.PacketHandler
 							pak.WriteByte((byte)c.Realm);
 							pak.WriteByte((byte)((((c.Race & 0x10) << 2) + (c.Race & 0x0F)) | (c.Gender << 4))); // race max value can be 0x1F
 							pak.WriteShortLowEndian((ushort)c.CurrentModel);
-							pak.WriteByte((byte)c.Region);
+							pak.WriteByte((byte)c.RegionID);
 							if (region == null || (int)m_gameClient.ClientType > region.Expansion)
 								pak.WriteByte(0x00);
 							else

@@ -106,15 +106,15 @@ namespace DOL.GS
 
 			if (Util.Chance(CalculateSuccessChances(player, item)))
 			{
-				int toRecoverCond = (int)((item.MaxCondition - item.Condition) * 0.01 / item.MaxCondition) + 1;
+				int toRecoverCond = (int)((item.ItemTemplate.MaxCondition - item.Condition) * 0.01 / item.ItemTemplate.MaxCondition) + 1;
 				if (toRecoverCond >= item.Durability)
 				{
-					item.Condition += (int)(item.Durability * item.MaxCondition / 0.01);
+					item.Condition += (int)(item.Durability * item.ItemTemplate.MaxCondition / 0.01);
 					item.Durability = 0;
 				}
 				else
 				{
-					item.Condition = item.MaxCondition;
+					item.Condition = item.ItemTemplate.MaxCondition;
 					item.Durability -= toRecoverCond;
 				}
 
@@ -145,7 +145,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static bool IsAllowedToBeginWork(GamePlayer player, InventoryItem item, int percentNeeded)
 		{
-			if (item.IsNotLosingDur)
+			if (item.ItemTemplate.IsNotLosingDur)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Repair.IsAllowedToBeginWork.CantRepair", item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
@@ -170,7 +170,7 @@ namespace DOL.GS
 				return false;
 			}
 
-			if (item.Condition >= item.MaxCondition)
+			if (item.Condition >= item.ItemTemplate.MaxCondition)
 			{
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Repair.IsAllowedToBeginWork.FullyRepaired", item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
@@ -194,7 +194,7 @@ namespace DOL.GS
 		/// </summary>
 		protected static int GetRepairTime(GamePlayer player, InventoryItem item)
 		{
-			return Math.Max(1, item.Level / 2); // wrong but don't know the correct formula
+			return Math.Max(1, item.ItemTemplate.Level / 2); // wrong but don't know the correct formula
 		}
 
 		/// <summary>

@@ -22,7 +22,7 @@ namespace DOL.GS.RealmAbilities
 			InventoryItem shield = living.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 			if (shield == null)
 				return;
-			if (shield.ObjectType != (int)eObjectType.Shield)
+			if (shield.ItemTemplate.ObjectType != (int)eObjectType.Shield)
 				return;
 			if (living.TargetObject == null)
 				return;
@@ -30,7 +30,7 @@ namespace DOL.GS.RealmAbilities
 				return;
 			if (living.AttackWeapon == null)
 				return;
-			if (living.AttackWeapon.Hand == 1)
+			if (living.AttackWeapon.ItemTemplate.Hand == 1)
 				return;
 			GameLiving target = (GameLiving)living.TargetObject;
 			if (target == null) return;

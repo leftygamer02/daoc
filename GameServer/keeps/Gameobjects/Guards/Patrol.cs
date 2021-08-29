@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -56,7 +57,7 @@ namespace DOL.GS.Keeps
 		/// <summary>
 		/// The Patrol ID, consider this a template ID
 		/// </summary>
-		public string PatrolID = DOL.Database.UniqueID.IDGenerator.GenerateID();
+		public string PatrolID = string.Empty;
 		/// <summary>
 		/// The Guard Types that make up the Patrol
 		/// </summary>
@@ -127,7 +128,8 @@ namespace DOL.GS.Keeps
 			PositionMgr.LoadGuardPosition(SpawnPosition, guard);
 			guard.RefreshTemplate();
 			PatrolGuards.Add(guard);
-			Component.Keep.Guards.Add(Database.UniqueID.IDGenerator.GenerateID(), guard);
+			var guardId = Component.Keep.Guards.Keys.Max() + 1;
+			Component.Keep.Guards.Add(guardId, guard);
 			guard.AddToWorld();
 
 			if (ServerProperties.Properties.ENABLE_DEBUG)

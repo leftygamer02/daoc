@@ -516,18 +516,18 @@ namespace DOL.GS
 			var compilationSuccessful = false;
 			try
 			{
-				var compiler = new DOLScriptCompiler();
-				if (compileVB) compiler.SetToVisualBasicNet();
+				//var compiler = new DOLScriptCompiler();
+				//if (compileVB) compiler.SetToVisualBasicNet();
 
-				var compiledAssembly = compiler.Compile(outputFile, files);
-				foreach (var errorMessage in compiler.GetDetailedErrorMessages())
-				{
-					log.Error(errorMessage);
-				}
-				if (compiler.HasErrors) return false;
-				compilationSuccessful = true;
+				//var compiledAssembly = compiler.Compile(outputFile, files);
+				//foreach (var errorMessage in compiler.GetDetailedErrorMessages())
+				//{
+				//	log.Error(errorMessage);
+				//}
+				//if (compiler.HasErrors) return false;
+				//compilationSuccessful = true;
 
-				AddOrReplaceAssembly(compiledAssembly);
+				//AddOrReplaceAssembly(compiledAssembly);
 			}
 			catch (Exception e)
 			{

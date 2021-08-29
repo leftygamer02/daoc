@@ -57,7 +57,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="taskPlayer">The player doing the task</param>
 		/// <param name="dbTask">The database object</param>
-		public MoneyTask(GamePlayer taskPlayer, DBTask dbTask) : base(taskPlayer, dbTask)
+		public MoneyTask(GamePlayer taskPlayer, CharacterTask dbTask) : base(taskPlayer, dbTask)
 		{			
 		}
 
@@ -143,7 +143,7 @@ namespace DOL.GS.Quests
 				if(player.Task.RecieverName == target.Name && item.Name == player.Task.ItemName)
 				{
 					player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 					FinishTask();
 				}
 			}	
@@ -189,8 +189,8 @@ namespace DOL.GS.Quests
 				player.Task.ItemName = TaskItems.Name;
 				player.Task.RecieverName = NPC.Name;
 				((MoneyTask)player.Task).RecieverZone = NPC.CurrentZone.Description;
-				
-				player.Out.SendMessage("Bring "+TaskItems.GetName(0,false)+" to "+NPC.Name +" in "+ NPC.CurrentZone.Description, eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+
+				player.Out.SendMessage("Bring " + TaskItems.ItemTemplate.GetName(0, false) + " to " + NPC.Name + " in " + NPC.CurrentZone.Description, eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 				//Player.Out.SendCustomDialog("", new CustomDialogResponse(TaskDialogResponse));
 
 				player.ReceiveItem(source,TaskItems);

@@ -50,7 +50,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					int slotPosition = packet.ReadByte();
 					InventoryItem item = client.Player.Inventory.GetItem((eInventorySlot)slotPosition);
 					if (item != null 
-						&& ((item.IsDropable && item.IsTradable) || (client.Player.CanTradeAnyItem 
+						&& ((item.ItemTemplate.IsDropable && item.ItemTemplate.IsTradable) || (client.Player.CanTradeAnyItem 
 						|| trade is SelfCraftWindow
 						|| (trade.Partner != null && trade.Partner.CanTradeAnyItem))))
 					{

@@ -61,7 +61,7 @@ namespace DOL.GS.Behaviour.Actions
                     if (item.Name == itemToDestroy.Name)
                     {
 
-                        if (item.IsStackable) // is the item is stackable
+                        if (item.ItemTemplate.IsStackable) // is the item is stackable
                         {
                             if (item.Count >= count)
                             {
@@ -112,12 +112,12 @@ namespace DOL.GS.Behaviour.Actions
                 if (!de.Value.HasValue)
                 {
                     playerInventory.RemoveItem(de.Key);
-                    InventoryLogging.LogInventoryAction(player, NPC, eInventoryActionType.Quest, de.Key.Template, de.Key.Count);
+                    InventoryLogging.LogInventoryAction(player, NPC, eInventoryActionType.Quest, de.Key.ItemTemplate, de.Key.Count);
                 }
                 else
                 {
                     playerInventory.RemoveCountFromStack(de.Key, de.Value.Value);
-                    InventoryLogging.LogInventoryAction(player, NPC, eInventoryActionType.Quest, de.Key.Template, de.Value.Value);
+                    InventoryLogging.LogInventoryAction(player, NPC, eInventoryActionType.Quest, de.Key.ItemTemplate, de.Value.Value);
                 }
             }
             playerInventory.CommitChanges();

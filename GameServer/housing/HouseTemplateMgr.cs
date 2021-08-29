@@ -356,7 +356,7 @@ namespace DOL.GS.Housing
             CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 17, "DOL.GS.GameMerchant", "Dye Supply Master", "Merchant", "0", null, "housing_dye");
         }
 
-        private static void CheckNPCTemplate(int templateID, string classType, string name, string guild, string model, int? inventory, string itemListName)
+        private static void CheckNPCTemplate(int templateID, string classType, string name, string guild, string model, string equipmentName, string itemListName)
         {
             NpcTemplate template = NpcTemplateMgr.GetTemplate(templateID);
             if (template != null)
@@ -373,7 +373,7 @@ namespace DOL.GS.Housing
                 Size = "50",
                 Level = "50",
                 ItemListName = itemListName,
-                EquipmentTemplateID = inventory,
+                EquipmentTemplateName = equipmentName,
                 PackageID = "Housing"
             };
 

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using DOL.GS;
 using DOL.AI.Brain;
@@ -33,7 +34,7 @@ namespace DOL.GS
 	{
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private static ItemTemplate m_dragonscales = GameServer.Database.FindObjectByKey<ItemTemplate>("dragonscales");
+		private static ItemTemplate m_dragonscales = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "dragonscales");
 		/// <summary>
         	/// Generate loot for given mob
 		/// </summary>

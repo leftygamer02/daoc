@@ -17,10 +17,12 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.PacketHandler;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.Quests
 {
@@ -50,7 +52,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		/// <param name="taskPlayer">The player doing the task</param>
 		/// <param name="dbTask">The database object</param>
-		public CraftTask(GamePlayer taskPlayer, DBTask dbTask)
+		public CraftTask(GamePlayer taskPlayer, CharacterTask dbTask)
 			: base(taskPlayer, dbTask)
 		{
 		}
@@ -140,7 +142,7 @@ namespace DOL.GS.Quests
 				if (player.Task.RecieverName == target.Name && item.Name == player.Task.ItemName)
 				{
 					player.Inventory.RemoveItem(item);
-                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
+                    InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.ItemTemplate, item.Count);
 					FinishTask();
 				}
 			}
@@ -153,15 +155,14 @@ namespace DOL.GS.Quests
 		/// <returns>A Generated NPC Item</returns>
 		public static ItemTemplate GenerateNPCItem(GamePlayer player)
 		{
-			int mediumCraftingLevel = player.GetCraftingSkillValue(player.PrimaryCraftingSkill) + 20;
+			int mediumCraftingLevel = player.GetCraftingSkillValue(player.CraftingPrimarySkill) + 20;
 			int lowLevel = mediumCraftingLevel - 20;
 			int highLevel = mediumCraftingLevel + 20;
 
-			var craftitem = DOLDB<DBCraftedItem>.SelectObjects(DB.Column("CraftingSkillType").IsEqualTo((int)player.PrimaryCraftingSkill)
-				.And(DB.Column("CraftingLevel").IsGreatherThan(lowLevel).And(DB.Column("CraftingLevel").IsLessThan(highLevel))));
+			var craftitem = GameServer.Database.CraftedItems.Where(x => x.CraftingSkillType == (int)player.CraftingPrimarySkill && x.CraftingLevel > lowLevel && x.CraftingLevel < highLevel).ToList();
 			int craftrnd = Util.Random(craftitem.Count);
 
-			ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(craftitem[craftrnd].Id);
+			ItemTemplate template = GameServer.Database.ItemTemplates.Find(craftitem[craftrnd].Id);
 			return template;
 		}
 
@@ -225,7 +226,7 @@ namespace DOL.GS.Quests
 
 			if (target is CraftNPC)
 			{
-				if (((target as CraftNPC).TheCraftingSkill == player.PrimaryCraftingSkill))
+				if (((target as CraftNPC).TheCraftingSkill == player.CraftingPrimarySkill))
 					return AbstractTask.CheckAvailability(player, target, CHANCE);
 			}
 			return false;//else return false

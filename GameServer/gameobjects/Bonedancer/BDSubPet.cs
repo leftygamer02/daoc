@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,7 @@ using Atlas.DataLayer.Models;
 using System.Collections;
 using DOL.GS.Effects;
 using DOL.GS.Styles;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS
 {
@@ -67,15 +69,14 @@ namespace DOL.GS
 				if (m_PetSpecLine == null && Brain is IControlledBrain brain && brain.GetPlayerOwner() is GamePlayer player)
 				{
 					// Get the spell that summoned this pet
-					Atlas.DataLayer.Models.Spell dbSummoningSpell = DOLDB<Atlas.DataLayer.Models.Spell>.SelectObject(DB.Column("LifeDrainReturn").IsEqualTo(NPCTemplate.TemplateId));
+					var dbSummoningSpell = GameServer.Database.Spells.Include(x=>x.SpellLineSpells).ThenInclude(x=>x.SpellLine).FirstOrDefault(x => x.LifeDrainReturn == NPCTemplate.TemplateId);
 					if (dbSummoningSpell != null)
 					{
 						// Figure out which spell line the summoning spell is from
-						DBLineXSpell dbLineSpell = DOLDB<DBLineXSpell>.SelectObject(DB.Column("SpellID").IsEqualTo(dbSummoningSpell.SpellID));
-						if (dbLineSpell != null)
+						if (dbSummoningSpell.SpellLineSpells.Any())
 						{
 							// Now figure out what the spec name is
-							SpellLine line = player.GetSpellLine(dbLineSpell.LineName);
+							SpellLine line = player.GetSpellLine(dbSummoningSpell.SpellLineSpells.First().SpellLine.Name);
 							if (line != null)
 								m_PetSpecLine = line.Spec;
 						}
@@ -119,10 +120,10 @@ namespace DOL.GS
 				if (Inventory == null)
 					Inventory = new GameNPCInventory(new GameNpcInventoryTemplate());
 				else
-					Inventory.RemoveItem(Inventory.GetItem((eInventorySlot)weapon.ItemType));
+					Inventory.RemoveItem(Inventory.GetItem((eInventorySlot)weapon.ItemTemplate.ItemType));
 
-				Inventory.AddItem((eInventorySlot)weapon.ItemType, weapon);
-				SwitchWeapon((eActiveWeaponSlot)weapon.Hand);
+				Inventory.AddItem((eInventorySlot)weapon.ItemTemplate.ItemType, weapon);
+				SwitchWeapon((eActiveWeaponSlot)weapon.ItemTemplate.Hand);
 			}
 		}
 

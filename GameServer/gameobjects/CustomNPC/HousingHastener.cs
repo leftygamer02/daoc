@@ -71,12 +71,12 @@ namespace DOL.GS
 			if (player == null)
 				return false;
 
-			if (item.Id == "Music_Ticket")
+			if (item.ItemTemplate.KeyName == "Music_Ticket")
 			{
 				TargetObject = player;
 				CastSpell(SkillBase.GetSpellByID(GameHastener.SPEEDOFTHEREALMID), SkillBase.GetSpellLine(GlobalSpellsLines.Realm_Spells));
 				player.Inventory.RemoveItem(item);
-                InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template, item.Count);
+                InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate, item.Count);
 			}
 			return true;
 		}

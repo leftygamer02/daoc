@@ -76,7 +76,7 @@ namespace DOL.GS.Commands
 							default: { DisplaySyntax(client); return; }
 						}
 						area.Sound = byte.Parse(args[6]);
-						area.Region = client.Player.CurrentRegionID;
+						area.RegionID = client.Player.CurrentRegionID;
 						area.X = client.Player.X;
 						area.Y = client.Player.Y;
 						area.Z = client.Player.Z;
@@ -85,7 +85,7 @@ namespace DOL.GS.Commands
 						AbstractArea newArea = (AbstractArea)gasm.CreateInstance(area.ClassType, false);
 						newArea.LoadFromDatabase(area);
 
-						newArea.Sound = area.Sound;
+						newArea.Sound = (byte)area.Sound;
 						newArea.CanBroadcast = area.CanBroadcast;
 						WorldMgr.GetRegion(client.Player.CurrentRegionID).AddArea(newArea);
 						GameServer.Instance.SaveDataObject(area);

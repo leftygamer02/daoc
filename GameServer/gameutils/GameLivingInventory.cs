@@ -117,10 +117,20 @@ namespace DOL.GS
 		}
 
 		/// <summary>
+		/// LoadFromDatabase
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		public virtual bool LoadFromDatabase(string keyName)
+		{
+			return false;
+		}
+
+		/// <summary>
 		/// SaveIntoDatabase
 		/// </summary>
 		/// <returns></returns>
-		public virtual bool SaveIntoDatabase(int id)
+		public virtual bool SaveIntoDatabase(string id)
 		{
 			return false;
 		}
@@ -193,7 +203,42 @@ namespace DOL.GS
 
 				for (eInventorySlot i = minSlot; i <= maxSlot; i++)
 				{
-					if (m_items.TryGetValue(i, out item) && item.Id == itemtemplateID)
+					if (m_items.TryGetValue(i, out item) && item.ItemTemplateID == itemtemplateID)
+					{
+						count += item.Count;
+					}
+				}
+
+				return count++;
+			}
+		}
+
+		/// <summary>
+		/// Count items of some type
+		/// </summary>
+		/// <param name="keyName">keyName of item to count</param>
+		/// <param name="minSlot">first slot</param>
+		/// <param name="maxSlot">last slot</param>
+		/// <returns>number of matched items found</returns>
+		public int CountItemTemplate(string keyName, eInventorySlot minSlot, eInventorySlot maxSlot)
+		{
+			lock (m_items) // Mannen 10:56 PM 10/30/2006 - Fixing every lock(this)
+			{
+				int count = 0;
+
+				// If lower slot is greater than upper slot, flip the values.
+				if (minSlot > maxSlot)
+				{
+					eInventorySlot tmp = minSlot;
+					minSlot = maxSlot;
+					maxSlot = tmp;
+				}
+
+				InventoryItem item;
+
+				for (eInventorySlot i = minSlot; i <= maxSlot; i++)
+				{
+					if (m_items.TryGetValue(i, out item) && item.ItemTemplate.KeyName == keyName)
 					{
 						count += item.Count;
 					}
@@ -505,6 +550,46 @@ namespace DOL.GS
 					if (m_items.TryGetValue(i, out item))
 					{
 						if (item.Name == name)
+							return item;
+					}
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Searches for the first occurrence of an item with given
+		/// name between specified slots
+		/// </summary>
+		/// <param name="name">name</param>
+		/// <param name="minSlot">fist slot for search</param>
+		/// <param name="maxSlot">last slot for search</param>
+		/// <returns>found item or null</returns>
+		public InventoryItem GetFirstItemByKeyName(string name, eInventorySlot minSlot, eInventorySlot maxSlot)
+		{
+			minSlot = GetValidInventorySlot(minSlot);
+			maxSlot = GetValidInventorySlot(maxSlot);
+			if (minSlot == eInventorySlot.Invalid || maxSlot == eInventorySlot.Invalid)
+				return null;
+
+			// If lower slot is greater than upper slot, flip the values.
+			if (minSlot > maxSlot)
+			{
+				eInventorySlot tmp = minSlot;
+				minSlot = maxSlot;
+				maxSlot = tmp;
+			}
+
+			lock (m_items)
+			{
+				InventoryItem item;
+
+				for (eInventorySlot i = minSlot; i <= maxSlot; i++)
+				{
+					if (m_items.TryGetValue(i, out item))
+					{
+						if (item.ItemTemplate.KeyName == name)
 							return item;
 					}
 				}

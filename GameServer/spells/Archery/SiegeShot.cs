@@ -22,7 +22,7 @@ namespace DOL.GS.Spells
 
 		public override bool CheckBeginCast(GameLiving selectedTarget)
 		{
-			if (Caster != null && Caster is GamePlayer && Caster.AttackWeapon != null && (Caster.AttackWeapon.ObjectType == 15 || Caster.AttackWeapon.ObjectType == 18 || Caster.AttackWeapon.ObjectType == 9))
+			if (Caster != null && Caster is GamePlayer && Caster.AttackWeapon != null && (Caster.AttackWeapon.ItemTemplate.ObjectType == 15 || Caster.AttackWeapon.ItemTemplate.ObjectType == 18 || Caster.AttackWeapon.ItemTemplate.ObjectType == 9))
 			{
 				if (!(selectedTarget is GameKeepComponent || selectedTarget is Keeps.GameKeepDoor))
 				{

@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Quests;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.AI.Brain;
 using DOL.GS.Keeps;
 using DOL.GS.Housing;
@@ -215,8 +215,8 @@ namespace DOL.Tests
 		{
 			if (SendPlayerCreateMethod != null) SendPlayerCreateMethod(this, playerToCreate);
 		}
-		public Action<TestPacketLib, GameObject, Guild> SendObjectGuildIDMethod { get; set; }
-		public void SendObjectGuildID(GameObject obj, Guild guild)
+		public Action<TestPacketLib, GameObject, GS.Guild> SendObjectGuildIDMethod { get; set; }
+		public void SendObjectGuildID(GameObject obj, GS.Guild guild)
 		{
 			if (SendObjectGuildIDMethod != null) SendObjectGuildIDMethod(this, obj, guild);
 		}
@@ -378,13 +378,13 @@ namespace DOL.Tests
 		{
 			if (SendQuestRewardWindowMethod != null) SendQuestRewardWindowMethod(this, questNPC, player, quest);
 		}
-		public Action<TestPacketLib, GameNPC, GamePlayer, DataQuest> SendQuestOfferWindowDataMethod { get; set; }
-		public void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, DataQuest quest)
+		public Action<TestPacketLib, GameNPC, GamePlayer, GS.Quests.DataQuest> SendQuestOfferWindowDataMethod { get; set; }
+		public void SendQuestOfferWindow(GameNPC questNPC, GamePlayer player, GS.Quests.DataQuest quest)
 		{
 			if (SendQuestOfferWindowDataMethod != null) SendQuestOfferWindowDataMethod(this, questNPC, player, quest);
 		}
-		public Action<TestPacketLib, GameNPC, GamePlayer, DataQuest> SendQuestRewardWindowDataMethod { get; set; }
-		public void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, DataQuest quest)
+		public Action<TestPacketLib, GameNPC, GamePlayer, GS.Quests.DataQuest> SendQuestRewardWindowDataMethod { get; set; }
+		public void SendQuestRewardWindow(GameNPC questNPC, GamePlayer player, GS.Quests.DataQuest quest)
 		{
 			if (SendQuestRewardWindowDataMethod != null) SendQuestRewardWindowDataMethod(this, questNPC, player, quest);
 		}
@@ -433,8 +433,8 @@ namespace DOL.Tests
 		{
 			if (SendInventoryItemsUpdateDictMethod != null) SendInventoryItemsUpdateDictMethod(this, updateItems, windowType);
 		}
-		public Action<TestPacketLib, Region, IDoor> SendDoorStateMethod { get; set; }
-		public void SendDoorState(Region region, IDoor door)
+		public Action<TestPacketLib, GS.Region, IDoor> SendDoorStateMethod { get; set; }
+		public void SendDoorState(GS.Region region, IDoor door)
 		{
 			if (SendDoorStateMethod != null) SendDoorStateMethod(this, region, door);
 		}
@@ -523,8 +523,8 @@ namespace DOL.Tests
 		{
 			if (SendCloseTimerWindowMethod != null) SendCloseTimerWindowMethod(this);
 		}
-		public Action<TestPacketLib, int, List<Tuple<Specialization, List<Tuple<Skill, byte>>>>> SendCustomTrainerWindowMethod { get; set; }
-		public void SendCustomTrainerWindow(int type, List<Tuple<Specialization, List<Tuple<Skill, byte>>>> tree)
+		public Action<TestPacketLib, int, List<Tuple<GS.Specialization, List<Tuple<Skill, byte>>>>> SendCustomTrainerWindowMethod { get; set; }
+		public void SendCustomTrainerWindow(int type, List<Tuple<GS.Specialization, List<Tuple<Skill, byte>>>> tree)
 		{
 			if (SendCustomTrainerWindowMethod != null) SendCustomTrainerWindowMethod(this, type, tree);
 		}

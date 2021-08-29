@@ -66,7 +66,7 @@ namespace DOL.GS.Commands
 					info.Add(" Zone Waterlevel: " + client.Player.CurrentZone.Waterlevel);
 
 					zone = WorldMgr.GetZone(client.Player.CurrentZone.ID);
-					var dbZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(zone.ID).And(DB.Column("RegionID").IsEqualTo(zone.ZoneRegion.ID)));
+					var dbZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == zone.ID && x.RegionID == zone.ZoneRegion.ID);
 
 					if (dbZone != null)
 					{
@@ -100,7 +100,7 @@ namespace DOL.GS.Commands
 					else
 						zone.IsDivingEnabled = false;
 
-					var dbZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(zone.ID).And(DB.Column("RegionID").IsEqualTo(zone.ZoneRegion.ID)));
+					var dbZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == zone.ID && x.RegionID == zone.ZoneRegion.ID);
 					dbZone.DivingFlag = divingFlag;
 					GameServer.Instance.SaveDataObject(dbZone);
 
@@ -123,7 +123,7 @@ namespace DOL.GS.Commands
 					int waterlevel = Convert.ToInt32(args[2]);
 					zone.Waterlevel = waterlevel;
 
-					var dbZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(zone.ID).And(DB.Column("RegionID").IsEqualTo(zone.ZoneRegion.ID)));
+					var dbZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == zone.ID && x.RegionID == zone.ZoneRegion.ID);
 					dbZone.WaterLevel = waterlevel;
 					GameServer.Instance.SaveDataObject(dbZone);
 
@@ -216,9 +216,9 @@ namespace DOL.GS.Commands
             }
 
             //find the zone.
-            var dbZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(zone.ID).And(DB.Column("RegionID").IsEqualTo(zone.ZoneRegion.ID)));
-            //update the zone bonuses.
-            dbZone.Bountypoints = zone.BonusBountypoints;
+            var dbZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == zone.ID && x.RegionID == zone.ZoneRegion.ID);
+			//update the zone bonuses.
+			dbZone.Bountypoints = zone.BonusBountypoints;
             dbZone.Realmpoints = zone.BonusRealmpoints;
             dbZone.Coin = zone.BonusCoin;
             dbZone.Experience = zone.BonusExperience;

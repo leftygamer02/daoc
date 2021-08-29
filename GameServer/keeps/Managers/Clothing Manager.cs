@@ -111,8 +111,8 @@ namespace DOL.GS.Keeps
                 Albion_Archer.AddNPCEquipment(eInventorySlot.RightHandWeapon, 653);
                 Albion_Archer.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 59);
                 Albion_Archer = Albion_Archer.CloseTemplate();
-                Albion_Archer.GetItem(eInventorySlot.DistanceWeapon).Hand = (int)eHandFlag.Two;
-                Albion_Archer.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
+                Albion_Archer.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Albion_Archer.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
             }
             #endregion
             #region Caster
@@ -125,7 +125,7 @@ namespace DOL.GS.Keeps
                 Albion_Caster.AddNPCEquipment(eInventorySlot.RightHandWeapon, 13);
                 Albion_Caster.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 1170);
                 Albion_Caster = Albion_Caster.CloseTemplate();
-                Albion_Caster.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Albion_Caster.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Fighter
@@ -142,8 +142,8 @@ namespace DOL.GS.Keeps
                 Albion_Fighter.AddNPCEquipment(eInventorySlot.RightHandWeapon, 10);
                 Albion_Fighter.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 649);
                 Albion_Fighter = Albion_Fighter.CloseTemplate();
-                Albion_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Albion_Fighter.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Albion_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Albion_Fighter.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Commander
@@ -160,8 +160,8 @@ namespace DOL.GS.Keeps
                 Albion_Commander.AddNPCEquipment(eInventorySlot.RightHandWeapon, 10);
                 Albion_Commander.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 649);
                 Albion_Commander = Albion_Commander.CloseTemplate();
-                Albion_Commander.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Albion_Commander.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Albion_Commander.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Albion_Commander.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Lord
@@ -179,9 +179,9 @@ namespace DOL.GS.Keeps
                 Albion_Lord.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 649);
                 Albion_Lord.AddNPCEquipment(eInventorySlot.DistanceWeapon, 132);
                 Albion_Lord = Albion_Lord.CloseTemplate();
-                Albion_Lord.GetItem(eInventorySlot.DistanceWeapon).Hand = (int)eHandFlag.Two;
-                Albion_Lord.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Albion_Lord.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Albion_Lord.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Albion_Lord.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Albion_Lord.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Healer
@@ -197,7 +197,7 @@ namespace DOL.GS.Keeps
                 Albion_Healer.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 61);
                 Albion_Healer.AddNPCEquipment(eInventorySlot.RightHandWeapon, 3282);
                 Albion_Healer = Albion_Healer.CloseTemplate();
-                Albion_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
+                Albion_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
             }
             #endregion
             #region Stealther
@@ -213,7 +213,7 @@ namespace DOL.GS.Keeps
                 Albion_Stealther.AddNPCEquipment(eInventorySlot.RightHandWeapon, 653);
                 Albion_Stealther.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 653);
                 Albion_Stealther = Albion_Stealther.CloseTemplate();
-                Albion_Stealther.GetItem(eInventorySlot.LeftHandWeapon).Hand = (int)eHandFlag.Left;
+                Albion_Stealther.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Left;
                 Albion_Stealther.GetItem(eInventorySlot.LeftHandWeapon).SlotPosition = Slot.LEFTHAND;
             }
             #endregion
@@ -239,9 +239,9 @@ namespace DOL.GS.Keeps
                 Midgard_Archer.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 328);
                 Midgard_Archer.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 59);
                 Midgard_Archer = Midgard_Archer.CloseTemplate();
-                Midgard_Archer.GetItem(eInventorySlot.DistanceWeapon).Hand = (int)eHandFlag.Two;
-                Midgard_Archer.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
-                Midgard_Archer.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
+                Midgard_Archer.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Midgard_Archer.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Midgard_Archer.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
             }
             #endregion
             #region Caster
@@ -254,7 +254,7 @@ namespace DOL.GS.Keeps
                 Midgard_Caster.AddNPCEquipment(eInventorySlot.RightHandWeapon, 13);
                 Midgard_Caster.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 566);
                 Midgard_Caster = Midgard_Caster.CloseTemplate();
-                Midgard_Caster.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Midgard_Caster.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Fighter
@@ -271,8 +271,8 @@ namespace DOL.GS.Keeps
                 Midgard_Fighter.AddNPCEquipment(eInventorySlot.RightHandWeapon, 313);
                 Midgard_Fighter.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 572);
                 Midgard_Fighter = Midgard_Fighter.CloseTemplate();
-                Midgard_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Midgard_Fighter.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Midgard_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Midgard_Fighter.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Commander
@@ -289,8 +289,8 @@ namespace DOL.GS.Keeps
                 Midgard_Commander.AddNPCEquipment(eInventorySlot.RightHandWeapon, 313);
                 Midgard_Commander.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 572);
                 Midgard_Commander = Midgard_Commander.CloseTemplate();
-                Midgard_Commander.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Midgard_Commander.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Midgard_Commander.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Midgard_Commander.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Lord
@@ -308,11 +308,11 @@ namespace DOL.GS.Keeps
                 Midgard_Lord.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 572);
                 Midgard_Lord.AddNPCEquipment(eInventorySlot.DistanceWeapon, 564);
                 Midgard_Lord = Midgard_Lord.CloseTemplate();
-                Midgard_Lord.GetItem(eInventorySlot.DistanceWeapon).Hand = (int)eHandFlag.Two;
-                Midgard_Lord.GetItem(eInventorySlot.DistanceWeapon).ObjectType = (int)eObjectType.Longbow;
+                Midgard_Lord.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Midgard_Lord.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.ObjectType = (int)eObjectType.Longbow;
                 Midgard_Lord.GetItem(eInventorySlot.DistanceWeapon).SlotPosition = Slot.RANGED;
-                Midgard_Lord.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Midgard_Lord.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Midgard_Lord.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Midgard_Lord.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Healer
@@ -329,7 +329,7 @@ namespace DOL.GS.Keeps
                 Midgard_Healer.AddNPCEquipment(eInventorySlot.RightHandWeapon, 3335);
                 Midgard_Healer.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 3336);
                 Midgard_Healer = Midgard_Healer.CloseTemplate();
-                Midgard_Healer.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
+                Midgard_Healer.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
             }
             #endregion
             #region Hastener
@@ -341,7 +341,7 @@ namespace DOL.GS.Keeps
                 Midgard_Hastener.AddNPCEquipment(eInventorySlot.FeetArmor, 234);
                 Midgard_Hastener.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 228);
                 Midgard_Hastener = Midgard_Hastener.CloseTemplate();
-                Midgard_Hastener.GetItem(eInventorySlot.LeftHandWeapon).Hand = (int)eHandFlag.Left;
+                Midgard_Hastener.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Left;
                 Midgard_Hastener.GetItem(eInventorySlot.LeftHandWeapon).SlotPosition = Slot.LEFTHAND;
             }
             #endregion
@@ -359,7 +359,7 @@ namespace DOL.GS.Keeps
                 Midgard_Stealther.AddNPCEquipment(eInventorySlot.RightHandWeapon, 573);
                 Midgard_Stealther.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 577);
                 Midgard_Stealther = Midgard_Stealther.CloseTemplate();
-                Midgard_Stealther.GetItem(eInventorySlot.LeftHandWeapon).Hand = (int)eHandFlag.Left;
+                Midgard_Stealther.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Left;
                 Albion_Stealther.GetItem(eInventorySlot.LeftHandWeapon).SlotPosition = Slot.LEFTHAND;
             }
             #endregion
@@ -384,10 +384,10 @@ namespace DOL.GS.Keeps
                 Hibernia_Archer.AddNPCEquipment(eInventorySlot.RightHandWeapon, 643);
                 Hibernia_Archer.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 643);
                 Hibernia_Archer = Hibernia_Archer.CloseTemplate();
-                Hibernia_Archer.GetItem(eInventorySlot.DistanceWeapon).Hand = (int)eHandFlag.Two;
-                Hibernia_Archer.GetItem(eInventorySlot.DistanceWeapon).ObjectType = (int)eObjectType.RecurvedBow;
+                Hibernia_Archer.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Hibernia_Archer.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.ObjectType = (int)eObjectType.RecurvedBow;
                 Hibernia_Archer.GetItem(eInventorySlot.DistanceWeapon).SlotPosition = Slot.RANGED;
-                Hibernia_Archer.GetItem(eInventorySlot.LeftHandWeapon).Hand = (int)eHandFlag.Left;
+                Hibernia_Archer.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Left;
             }
             #endregion
             #region Caster
@@ -400,7 +400,7 @@ namespace DOL.GS.Keeps
                 Hibernia_Caster.AddNPCEquipment(eInventorySlot.RightHandWeapon, 13);
                 Hibernia_Caster.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 1176);
                 Hibernia_Caster = Hibernia_Caster.CloseTemplate();
-                Hibernia_Caster.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Hibernia_Caster.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Fighter
@@ -417,8 +417,8 @@ namespace DOL.GS.Keeps
                 Hibernia_Fighter.AddNPCEquipment(eInventorySlot.RightHandWeapon, 897);
                 Hibernia_Fighter.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 476);
                 Hibernia_Fighter = Hibernia_Fighter.CloseTemplate();
-                Hibernia_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Hibernia_Fighter.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Hibernia_Fighter.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Hibernia_Fighter.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Commander
@@ -435,8 +435,8 @@ namespace DOL.GS.Keeps
                 Hibernia_Commander.AddNPCEquipment(eInventorySlot.RightHandWeapon, 897);
                 Hibernia_Commander.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 476);
                 Hibernia_Commander = Hibernia_Commander.CloseTemplate();
-                Hibernia_Commander.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Hibernia_Commander.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Hibernia_Commander.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Hibernia_Commander.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Lord
@@ -453,11 +453,11 @@ namespace DOL.GS.Keeps
                 Hibernia_Lord.AddNPCEquipment(eInventorySlot.RightHandWeapon, 897);
                 Hibernia_Lord.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 476);
                 Hibernia_Lord.AddNPCEquipment(eInventorySlot.DistanceWeapon, 471);
-                Hibernia_Lord.GetItem(eInventorySlot.DistanceWeapon).Hand = (int)eHandFlag.Two;
-                Hibernia_Lord.GetItem(eInventorySlot.DistanceWeapon).ObjectType = (int)eObjectType.CompositeBow;
+                Hibernia_Lord.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
+                Hibernia_Lord.GetItem(eInventorySlot.DistanceWeapon).ItemTemplate.ObjectType = (int)eObjectType.CompositeBow;
                 Hibernia_Lord.GetItem(eInventorySlot.DistanceWeapon).SlotPosition = Slot.RANGED;
-                Hibernia_Lord.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
-                Hibernia_Lord.GetItem(eInventorySlot.TwoHandWeapon).Hand = (int)eHandFlag.Two;
+                Hibernia_Lord.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
+                Hibernia_Lord.GetItem(eInventorySlot.TwoHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Two;
             }
             #endregion
             #region Healer
@@ -473,7 +473,7 @@ namespace DOL.GS.Keeps
                 Hibernia_Healer.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 59);
                 Hibernia_Healer.AddNPCEquipment(eInventorySlot.RightHandWeapon, 3247);
                 Hibernia_Healer = Hibernia_Healer.CloseTemplate();
-                Hibernia_Healer.GetItem(eInventorySlot.LeftHandWeapon).ObjectType = (int)eObjectType.Shield;
+                Hibernia_Healer.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.ObjectType = (int)eObjectType.Shield;
             }
             #endregion
             #region Stealther
@@ -489,7 +489,7 @@ namespace DOL.GS.Keeps
                 Hibernia_Stealther.AddNPCEquipment(eInventorySlot.RightHandWeapon, 2685);
                 Hibernia_Stealther.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 2687);
                 Hibernia_Stealther = Hibernia_Stealther.CloseTemplate();
-                Hibernia_Stealther.GetItem(eInventorySlot.LeftHandWeapon).Hand = (int)eHandFlag.Left;
+                Hibernia_Stealther.GetItem(eInventorySlot.LeftHandWeapon).ItemTemplate.Hand = (int)eHandFlag.Left;
                 Albion_Stealther.GetItem(eInventorySlot.LeftHandWeapon).SlotPosition = Slot.LEFTHAND;
             }
             #endregion

@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using DOL.GS;
@@ -39,7 +40,7 @@ namespace DOL.GS
 			base.Init(player);
 
 			// Force caster form when creating this player in the world.
-			player.Model = (ushort)player.Client.Account.Characters[player.Client.ActiveCharIndex].CreationModel;
+			player.Model = (ushort)player.Client.Account.Characters.ElementAt(player.Client.ActiveCharIndex).CreationModel;
 			player.Shade(false);
 		}
 

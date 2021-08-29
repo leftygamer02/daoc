@@ -340,7 +340,11 @@ namespace DOL.GS.Housing
 					}
 
 					// create a new, blank permission
-					var permission = new DbHousePermissions(house.HouseNumber, i);
+					var permission = new DbHousePermissions()
+					{
+						HouseNumber = house.HouseNumber,
+
+					}; //house.HouseNumber, i);
 					house.PermissionLevels.Add(i, permission);
 
 					// add the permission to the database

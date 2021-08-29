@@ -44,8 +44,8 @@ namespace DOL.GS.Keeps
 			set { m_Patrol = value; }
 		}
 
-		private int m_templateID = 0;
-		public int TemplateID
+		private string m_templateID = string.Empty;
+		public string TemplateID
 		{
 			get { return m_templateID; }
 			set { m_templateID = value; }
@@ -881,8 +881,8 @@ namespace DOL.GS.Keeps
 					Component.Keep = keepArea.Keep;
 					m_dataObjectID = mobobject.Id;
 					// mob reload command might be reloading guard, so check to make sure it isn't already added
-					if (Component.Keep.Guards.ContainsKey(sKey) == false)
-						Component.Keep.Guards.Add(sKey, this);
+					if (Component.Keep.Guards.ContainsKey(sKey.ToString()) == false)
+						Component.Keep.Guards.Add(sKey.ToString(), this);
 					// break; This is a bad idea.  If there are multiple KeepAreas, we should put a guard on each
 				}
 			}
@@ -897,8 +897,8 @@ namespace DOL.GS.Keeps
 				if (Component.Keep != null)
 				{
 					int skey = m_dataObjectID;
-					if (Component.Keep.Guards.ContainsKey(skey))
-						Component.Keep.Guards.Remove(skey);
+					if (Component.Keep.Guards.ContainsKey(skey.ToString()))
+						Component.Keep.Guards.Remove(skey.ToString());
 					else if (log.IsWarnEnabled)
 						log.Warn($"Can't find {Position.ClassType} with dataObjectId {m_dataObjectID} in Component InternalID {Component.InternalID} Guard list.");
 				}
@@ -942,7 +942,7 @@ namespace DOL.GS.Keeps
 			{
 				if (area is KeepArea && Component != null)
 				{
-					Component.Keep.Guards.Remove(m_dataObjectID); //Remove(this.InternalID); LoadFromDatabase() adds using m_dataObjectID
+					Component.Keep.Guards.Remove(m_dataObjectID.ToString()); //Remove(this.InternalID); LoadFromDatabase() adds using m_dataObjectID
 																		  // break; This is a bad idea.  If there are multiple KeepAreas, we could end up with instantiated keep items that are no longer in the DB
 				}
 			}

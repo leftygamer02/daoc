@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Collections;
 using Atlas.DataLayer.Models;
@@ -50,22 +51,22 @@ namespace DOL.GS
 		{
 			m_factions = new Hashtable(1);
 
-			var dbfactions =	GameServer.Database.SelectAllObjects<DBFaction>();
-			foreach(DBFaction dbfaction in dbfactions)
+			var dbfactions = GameServer.Database.Factions.ToList();
+			foreach(var dbfaction in dbfactions)
 			{
 				Faction myfaction = new Faction();
 				myfaction.LoadFromDatabase(dbfaction);
-				m_factions.Add(dbfaction.ID,myfaction);
+				m_factions.Add(dbfaction.Id, myfaction);
 			}
 
-			var dblinkedfactions =	GameServer.Database.SelectAllObjects<DBLinkedFaction>();
-			foreach(DBLinkedFaction dblinkedfaction in dblinkedfactions)
+			var dblinkedfactions = GameServer.Database.LinkedFactions.ToList();
+			foreach(var dblinkedfaction in dblinkedfactions)
 			{
-				Faction faction = GetFactionByID(dblinkedfaction.LinkedFactionID);
+				Faction faction = GetFactionByID(dblinkedfaction.RelatedFactionID);
 				Faction linkedFaction = GetFactionByID(dblinkedfaction.FactionID);
 				if (faction == null || linkedFaction == null) 
 				{
-					log.Warn("Missing Faction or friend faction with Id :"+dblinkedfaction.LinkedFactionID+"/"+dblinkedfaction.FactionID);
+					log.Warn("Missing Faction or friend faction with Id :" + dblinkedfaction.RelatedFactionID + "/" + dblinkedfaction.FactionID);
 					continue;
 				}
 				if (dblinkedfaction.IsFriend)
@@ -74,8 +75,8 @@ namespace DOL.GS
 					faction.AddEnemyFaction(linkedFaction);
 			}
 
-			var dbfactionAggroLevels =	GameServer.Database.SelectAllObjects<DBFactionAggroLevel>();
-			foreach(DBFactionAggroLevel dbfactionAggroLevel in dbfactionAggroLevels)
+			var dbfactionAggroLevels = GameServer.Database.FactionAggroLevels.ToList();
+			foreach(var dbfactionAggroLevel in dbfactionAggroLevels)
 			{
 				Faction faction = GetFactionByID(dbfactionAggroLevel.FactionID);
 				if (faction == null)

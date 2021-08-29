@@ -11,7 +11,7 @@ namespace Atlas.DataLayer.Models
         public string EncounterID { get; set; }
         public string QuestID { get; set; }
         public string Name { get; set; }
-        public int Zone { get; set; }
+        public int ZoneID { get; set; }
         public int ScholarID { get; set; }
         public int ReuseTimer { get; set; }
         public int XPRate { get; set; }
@@ -32,6 +32,8 @@ namespace Atlas.DataLayer.Models
         public string MessageReceiveScrolls { get; set; }
         public string MessageReceiveBook { get; set; }
         public string Credit { get; set; }
+
+        public virtual Zone Zone { get; set; }
 
         public virtual ICollection<ArtifactBonus> ArtifactBonuses { get; set; }
 

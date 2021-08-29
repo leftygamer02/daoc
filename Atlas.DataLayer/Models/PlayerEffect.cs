@@ -18,6 +18,8 @@ namespace Atlas.DataLayer.Models
         public int Duration { get; set; }
         public string EffectType { get; set; }
         public string SpellLine { get; set; }
-        public string ChardID { get; set; }
+        public int CharacterID { get; set; }
+
+        public virtual Character Character { get; set; }
     }
 }

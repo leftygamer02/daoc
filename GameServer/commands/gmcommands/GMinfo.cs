@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -73,7 +74,7 @@ namespace DOL.GS.Commands
                         info.Add(" + Is Merchant ");
 						if (targetM.TradeItems != null)
 						{
-                            info.Add(" + Sell List: \n   " + targetM.TradeItems.ItemsListID);
+                            info.Add(" + Sell List: \n   " + targetM.TradeItems.ItemsListName);
 						}
 						else 
 							info.Add(" + Sell List:  Not Present !\n");
@@ -146,10 +147,10 @@ namespace DOL.GS.Commands
 					if (target.QuestListToGive.Count > 0)
 						info.Add(" + Quests to give:  " + target.QuestListToGive.Count);
 						
-					if (target.PathID != null && target.PathID.Length > 0)
+					if (target.PathID  > 0)
 						info.Add(" + Path: " + target.PathID);
 						
-					if (target.OwnerID != null && target.OwnerID.Length > 0)
+					if (target.OwnerID > 0)
 						info.Add(" + OwnerID: " + target.OwnerID);
 						
 					info.Add(" ");
@@ -219,8 +220,8 @@ namespace DOL.GS.Commands
 					info.Add(" + Active weapon slot: " + target.ActiveWeaponSlot);
 					info.Add(" + Visible weapon slot: " + target.VisibleActiveWeaponSlots);
 					
-					if (target.EquipmentTemplateID != null && target.EquipmentTemplateID.Length > 0)
-						info.Add(" + Equipment Template ID: " + target.EquipmentTemplateID);
+					if (!String.IsNullOrEmpty(target.EquipmentTemplateName))
+						info.Add(" + Equipment Template Name: " + target.EquipmentTemplateName);
 						
 					if (target.Inventory != null)
 						info.Add(" + Inventory: " + target.Inventory.AllItems.Count + " items");
@@ -298,10 +299,10 @@ namespace DOL.GS.Commands
 					info.Add("");
 					info.Add(" + Loot:");
 
-					var template = DOLDB<LootTemplate>.SelectObjects(DB.Column("TemplateName").IsEqualTo(target.Name));
-					foreach (LootTemplate loot in template)
+					var lootItems = GameServer.Database.LootTableItems.Where(x => x.LootTable.Name == target.Name);
+					foreach (var loot in lootItems)
 					{
-						ItemTemplate drop = GameServer.Database.FindObjectByKey<ItemTemplate>(loot.ItemTemplateID);
+						ItemTemplate drop = GameServer.Database.ItemTemplates.Find(loot.ItemTemplateID);
 
 						string message = "";
 						if (drop == null)
@@ -339,7 +340,7 @@ namespace DOL.GS.Commands
 					info.Add("  - Priv. Level : " + target.Client.Account.PrivLevel);
 					info.Add("  - Client Version: " + target.Client.Account.LastClientVersion);
 					info.Add(" ");
-					info.Add("  - Craftingskill : " + target.PrimaryCraftingSkill + "");
+					info.Add("  - Craftingskill : " + target.CraftingPrimarySkill + "");
 					info.Add("  - Model ID : " + target.Model);
 					info.Add("  - AFK Message: " + target.TempProperties.getProperty<string>(GamePlayer.AFK_MESSAGE) + "");
 					info.Add(" ");
@@ -413,7 +414,7 @@ namespace DOL.GS.Commands
 
 					info.Add("  ----- Wearing:");
 					foreach (InventoryItem item in target.Inventory.EquippedItems)
-						info.Add(" [" + GlobalConstants.SlotToName(item.ItemType) + "] " + item.Name);
+						info.Add(" [" + GlobalConstants.SlotToName(item.ItemTemplate.ItemType) + "] " + item.Name);
 					info.Add(" ");
 				}
 

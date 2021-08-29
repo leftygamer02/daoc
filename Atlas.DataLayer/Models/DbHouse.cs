@@ -33,7 +33,7 @@ namespace Atlas.DataLayer.Models
         public bool OutdoorGuildBanner { get; set; }
         public bool OutdoorGuildShield { get; set; }
         public bool Porch { get; set; }
-        public int OwnerID { get; set; }
+        public int? OwnerID { get; set; }
         public DateTime? LastPaid { get; set; }
         public long KeptMoney { get; set; }
         public bool NoPurge { get; set; }

@@ -282,23 +282,23 @@ namespace DOL.GS.Commands
             // It's important that we create a backup of each character before we start. If an error
             // occurs and / or the server crashes, we always have an character backup.
             CharacterBackup sourceBackup = new CharacterBackup(source);
-            sourceBackup.Character_ID += "-Rearranged"; // Easier for admins to find it.
+            sourceBackup.Rearranged = true; // Easier for admins to find it.
             GameServer.Instance.SaveDataObject(sourceBackup);
 
             CharacterBackup targetBackup = null;
             if (target != null)
             {
                 targetBackup = new CharacterBackup(target);
-                targetBackup.Character_ID += "-Rearranged"; // Easier for admins to find it.
+                targetBackup.Rearranged = true; // Easier for admins to find it.
                 GameServer.Instance.SaveDataObject(targetBackup);
             }
 
             // Time to modify the slots.
             lock (client)
             {
-                GameServer.Database.DeleteObject(source);
+                GameServer.Instance.DeleteDataObject(source);
                 if (target != null)
-                    GameServer.Database.DeleteObject(target);
+                    GameServer.Instance.DeleteDataObject(target);
 
                 source.AccountSlot = targetSlot;
                 if (target != null)
@@ -309,9 +309,9 @@ namespace DOL.GS.Commands
                     GameServer.Instance.SaveDataObject(target);
             }
 
-            GameServer.Database.DeleteObject(sourceBackup);
+            GameServer.Instance.DeleteDataObject(sourceBackup);
             if (targetBackup != null)
-                GameServer.Database.DeleteObject(targetBackup);
+                GameServer.Instance.DeleteDataObject(targetBackup);
 
             SlotChanged(client, source.Name, sourceSlot, source.AccountSlot);
         }

@@ -21,11 +21,13 @@ using System;
 using System.Linq;
 using System.Collections;
 
+using Atlas.DataLayer;
 using Atlas.DataLayer.Models;
 using DOL.GS;
 using DOL.GS.Movement;
 using DOL.GS.PacketHandler;
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.Keeps
 {
@@ -41,12 +43,12 @@ namespace DOL.GS.Keeps
 		/// <returns>The position object</returns>
 		public static KeepPosition GetUsablePosition(GameKeepGuard guard)
 		{
-			var filterClassType = DB.Column("ClassType").IsNotEqualTo("DOL.GS.Keeps.Banner");
-			var filterTemplateID = DB.Column("TemplateID").IsEqualTo(guard.TemplateID);
-			var filterComponentSkin = DB.Column("ComponentSkin").IsEqualTo(guard.Component.Skin);
-			var filterHeight = DB.Column("Height").IsLessOrEqualTo(guard.Component.Height);
-			return DOLDB<KeepPosition>.SelectObjects(filterClassType.And(filterTemplateID).And(filterComponentSkin).And(filterHeight))
-				.OrderByDescending(it => it.Height).FirstOrDefault();
+			return GameServer.Database.KeepPositions.Where(x => x.ClassType != "DOL.GS.Keeps.Banner" &&
+																x.TemplateID == guard.TemplateID &&
+																x.ComponentSkin == guard.Component.Skin &&
+																x.Height <= guard.Component.Height)
+													.OrderByDescending(x=> x.Height)
+													.FirstOrDefault();
 		}
 
 		/// <summary>
@@ -56,12 +58,12 @@ namespace DOL.GS.Keeps
 		/// <returns>The position object</returns>
 		public static KeepPosition GetUsablePosition(GameKeepBanner b)
 		{
-			var filterClassType = DB.Column("ClassType").IsNotEqualTo("DOL.GS.Keeps.Banner");
-			var filterTemplateID = DB.Column("TemplateID").IsEqualTo(b.TemplateID);
-			var filterComponentSkin = DB.Column("ComponentSkin").IsEqualTo(b.Component.Skin);
-			var filterHeight = DB.Column("Height").IsLessOrEqualTo(b.Component.Height);
-			return DOLDB<KeepPosition>.SelectObjects(filterClassType.And(filterTemplateID).And(filterComponentSkin).And(filterHeight))
-				.OrderByDescending(it => it.Height).FirstOrDefault();
+			return GameServer.Database.KeepPositions.Where(x => x.ClassType != "DOL.GS.Keeps.Banner" &&
+																x.TemplateID == b.TemplateID &&
+																x.ComponentSkin == b.Component.Skin &&
+																x.Height <= b.Component.Height)
+													.OrderByDescending(x => x.Height)
+													.FirstOrDefault();
 		}
 
 		/// <summary>
@@ -71,10 +73,9 @@ namespace DOL.GS.Keeps
 		/// <returns>The position object</returns>
 		public static KeepPosition GetPosition(GameKeepGuard guard)
 		{
-			var filterTemplateID = DB.Column("TemplateID").IsEqualTo(guard.TemplateID);
-			var filterComponentSkin = DB.Column("ComponentSkin").IsEqualTo(guard.Component.Skin);
-			var filterHeight = DB.Column("Height").IsLessOrEqualTo(guard.Component.Height);
-			return DOLDB<KeepPosition>.SelectObject(filterTemplateID.And(filterComponentSkin).And(filterHeight));
+			return GameServer.Database.KeepPositions.FirstOrDefault(x => x.TemplateID == guard.TemplateID &&
+																		 x.ComponentSkin == guard.Component.Skin &&
+																		 x.Height <= guard.Component.Height);
 		}
 
 
@@ -295,7 +296,7 @@ namespace DOL.GS.Keeps
 					list[position.Height] = null;
 				}
 			}
-			GameServer.Database.DeleteObject(position);
+			GameServer.Instance.DeleteDataObject(position);
 		}
 
 		public static void FillPositions()
@@ -315,27 +316,47 @@ namespace DOL.GS.Keeps
 		/// 
 		/// We need this because we store this all using our offset system
 		/// </summary>
+		/// <param name="pathname">The path name, which is the Patrol template ID</param>
+		/// <param name="component">The Component object</param>
+		/// <returns>The Patrol path</returns>
+		public static PathPoint LoadPatrolPath(string pathName, GameKeepComponent component)
+		{
+			var Path = GameServer.Database.Paths.Include(x => x.PathPoints).FirstOrDefault(x => x.PathName == pathName);
+
+			return LoadPatrolPath(Path, component);
+		}
+
+		/// <summary>
+		/// Method to retrieve the Patrol Path from the Patrol ID and Component
+		/// 
+		/// We need this because we store this all using our offset system
+		/// </summary>
 		/// <param name="pathID">The path ID, which is the Patrol ID</param>
 		/// <param name="component">The Component object</param>
 		/// <returns>The Patrol path</returns>
-		public static PathPoint LoadPatrolPath(string pathID, GameKeepComponent component)
+		public static PathPoint LoadPatrolPath(int pathID, GameKeepComponent component)
 		{
-			SortedList sorted = new SortedList();
-			pathID.Replace('\'', '/'); // we must replace the ', found no other way yet
-			var Path = DOLDB<Path>.SelectObject(DB.Column("PathID").IsEqualTo(pathID));
-			IList<PathPoint> pathpoints = null;
+			var Path = GameServer.Database.Paths.Include(x => x.PathPoints).FirstOrDefault(x => x.Id == pathID);
+
+			return LoadPatrolPath(Path, component);
+		}
+
+		private static PathPoint LoadPatrolPath(Path path, GameKeepComponent component)
+        {
+			SortedList sorted = new SortedList();			
+			IList<PathPoints> pathpoints = null;
 			ePathType pathType = ePathType.Once;
 
-			if (Path != null)
+			if (path != null)
 			{
-				pathType = (ePathType)Path.PathType;
+				pathType = (ePathType)path.PathType;
 			}
 			if (pathpoints == null)
 			{
-				pathpoints = DOLDB<PathPoint>.SelectObjects(DB.Column("PathID").IsEqualTo(pathID));
+				pathpoints = path.PathPoints.ToList();
 			}
 
-			foreach (PathPoint point in pathpoints)
+			foreach (var point in pathpoints)
 			{
 				sorted.Add(point.Step, point);
 			}
@@ -374,24 +395,33 @@ namespace DOL.GS.Keeps
 		/// <param name="pathID"></param>
 		/// <param name="path"></param>
 		/// <param name="component"></param>
-		public static void SavePatrolPath(string pathID, PathPoint path, GameKeepComponent component)
+		public static void SavePatrolPath(int pathID, PathPoint path, GameKeepComponent component)
 		{
 			if (path == null)
 				return;
 
-			pathID.Replace('\'', '/'); // we must replace the ', found no other way yet
-			GameServer.Database.DeleteObject(DOLDB<Path>.SelectObjects(DB.Column("PathID").IsEqualTo(pathID)));
+
+			GameServer.Instance.DeleteDataObject(GameServer.Database.Paths.Find(pathID));
 			PathPoint root = MovementMgr.FindFirstPathPoint(path);
 
 			//Set the current pathpoint to the rootpoint!
 			path = root;
-			Path dbp = new Path(pathID, ePathType.Loop);
+			Path dbp = new Path()
+			{
+				PathType = (int)ePathType.Loop
+			};
 			GameServer.Instance.SaveDataObject(dbp);
 
 			int i = 1;
 			do
 			{
-				PathPoint dbpp = new PathPoint(path.X, path.Y, path.Z, path.MaxSpeed);
+				var dbpp = new PathPoints()
+				{
+					X = path.X,
+					Y = path.Y,
+					Z = path.Z,
+					MaxSpeed = path.MaxSpeed
+				};
 				int x, y;
 				SaveXY(component, dbpp.X, dbpp.Y, out x, out y);
 				dbpp.X = x;

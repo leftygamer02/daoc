@@ -20,7 +20,6 @@ namespace Atlas.DataLayer.Models
         public string Size { get; set; }
         public string Level { get; set; }
         public int MaxSpeed { get; set; }
-        public int? EquipmentTemplateID { get; set; }
         public string ItemListName { get; set; }
         public int Flags { get; set; }
         public int MeleeDamageType { get; set; }
@@ -53,8 +52,8 @@ namespace Atlas.DataLayer.Models
         public int HouseNumber { get; set; }
         public int Realm { get; set; }
         public string Guild { get; set; }
+        public string EquipmentTemplateName { get; set; }
 
-        public virtual NpcEquipment EquipmentTemplate { get; set; }
         public virtual Race Race { get; set; }
         public virtual LootTable LootTable { get; set; }
 

@@ -143,23 +143,23 @@ namespace DOL.GS
 				InventoryItem item;
 				if ((item = Inventory.GetItem(eInventorySlot.TwoHandWeapon)) != null)
 				{
-					item.DPS_AF = (int)(Level * 3.3);
-					item.SPD_ABS = 50;
+					item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+					item.ItemTemplate.SPD_ABS = 50;
 				}
 				if ((item = Inventory.GetItem(eInventorySlot.RightHandWeapon)) != null)
 				{
-					item.DPS_AF = (int)(Level * 3.3);
-					item.SPD_ABS = 37;
+					item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+					item.ItemTemplate.SPD_ABS = 37;
 				}
 				if ((item = Inventory.GetItem(eInventorySlot.LeftHandWeapon)) != null)
 				{
-					item.DPS_AF = (int)(Level * 3.3);
-					item.SPD_ABS = 50;
+					item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+					item.ItemTemplate.SPD_ABS = 50;
 				}
 				if ((item = Inventory.GetItem(eInventorySlot.DistanceWeapon)) != null)
 				{
-					item.DPS_AF = (int)(Level * 3.3);
-					item.SPD_ABS = 50;
+					item.ItemTemplate.DPS_AF = (int)(Level * 3.3);
+					item.ItemTemplate.SPD_ABS = 50;
 					SwitchWeapon(eActiveWeaponSlot.Distance);
 					BroadcastLivingEquipmentUpdate();
 				}
@@ -465,7 +465,7 @@ namespace DOL.GS
 		{
 			if (weapon != null)
 			{
-				switch ((eWeaponDamageType)weapon.TypeDamage)
+				switch ((eWeaponDamageType)weapon.ItemTemplate.TypeDamage)
 				{
 						case eWeaponDamageType.Crush: return eDamageType.Crush;
 						case eWeaponDamageType.Slash: return eDamageType.Slash;
@@ -491,7 +491,7 @@ namespace DOL.GS
 				{
 					if (item != null)
 					{
-						weaponSpeed += item.SPD_ABS;
+						weaponSpeed += item.ItemTemplate.SPD_ABS;
 					}
 					else
 					{

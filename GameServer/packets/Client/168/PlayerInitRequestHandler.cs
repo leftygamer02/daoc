@@ -172,7 +172,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					{
 						try
 						{
-							IList<TempPropertiesManager.TempPropContainer> TempPropContainerList = TempPropertiesManager.TempPropContainerList.Where(item => item.OwnerID == player.DBCharacter.ObjectId).ToList();
+							IList<TempPropertiesManager.TempPropContainer> TempPropContainerList = TempPropertiesManager.TempPropContainerList.Where(item => item.OwnerID == player.DBCharacter.Id).ToList();
 
 							foreach (TempPropertiesManager.TempPropContainer container in TempPropContainerList)
 							{
@@ -250,12 +250,11 @@ namespace DOL.GS.PacketHandler.Client.v168
 						SendMessageAndMoveToSafeLocation(player);
 					}
 				}
-				var linkDeadPlayerIds = new string[WorldMgr.RvRLinkDeadPlayers.Count];
+				var linkDeadPlayerIds = new int[WorldMgr.RvRLinkDeadPlayers.Count];
 				WorldMgr.RvRLinkDeadPlayers.Keys.CopyTo(linkDeadPlayerIds, 0);
-				foreach (string playerId in linkDeadPlayerIds)
+				foreach (var playerId in linkDeadPlayerIds)
 				{
-					if (playerId != null &&
-					    DateTime.Now.Subtract(new TimeSpan(0, gracePeriodInMinutes, 0)) > WorldMgr.RvRLinkDeadPlayers[playerId])
+					if (playerId > 0 && DateTime.Now.Subtract(new TimeSpan(0, gracePeriodInMinutes, 0)) > WorldMgr.RvRLinkDeadPlayers[playerId])
 					{
 						WorldMgr.RvRLinkDeadPlayers.Remove(playerId);
 					}

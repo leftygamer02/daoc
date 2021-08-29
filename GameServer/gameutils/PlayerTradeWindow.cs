@@ -290,7 +290,7 @@ namespace DOL.GS
                 {
                     foreach (InventoryItem i in (ArrayList)m_owner.TradeWindow.TradeItems.Clone())
                     {
-                        if (i.ObjectType == (int)eObjectType.AlchemyTincture)
+                        if (i.ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture)
                         {
                             if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                             {
@@ -298,7 +298,7 @@ namespace DOL.GS
                                 break;
                             }
                         }
-						else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
+						else if (i.ItemTemplate.ObjectType == (int)eObjectType.SpellcraftGem)
 						{
 							if (m_owner.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
 							{
@@ -351,7 +351,7 @@ namespace DOL.GS
 				// allow admin and gm account opened windows to trade any item
 				if (this.m_owner.Client.Account.PrivLevel == 1)
 				{
-					if (!itemForTrade.IsDropable || !itemForTrade.IsPickable || itemForTrade.IsNotLosingDur || !itemForTrade.IsTradable)
+					if (!itemForTrade.ItemTemplate.IsDropable || !itemForTrade.ItemTemplate.IsPickable || itemForTrade.ItemTemplate.IsNotLosingDur || !itemForTrade.ItemTemplate.IsTradable)
 						return false;
 				}
 				if (TradeItems.Contains(itemForTrade))
@@ -493,7 +493,7 @@ namespace DOL.GS
                     {
                         foreach (InventoryItem i in (ArrayList)crafter.TradeWindow.TradeItems.Clone())
                         {
-                            if (i.ObjectType == (int)eObjectType.AlchemyTincture)
+                            if (i.ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture)
                             {
                                 if (m_owner.GetCraftingSkillValue(eCraftingSkill.Alchemy) > 0)
                                 {
@@ -501,7 +501,7 @@ namespace DOL.GS
                                     break;
                                 }
                             }
-                            else if (i.ObjectType == (int)eObjectType.SpellcraftGem)
+                            else if (i.ItemTemplate.ObjectType == (int)eObjectType.SpellcraftGem)
                             {
                                 if (crafter.GetCraftingSkillValue(eCraftingSkill.SpellCrafting) > 0)
                                 {
@@ -616,7 +616,7 @@ namespace DOL.GS
 
 						bool tradeSuccess = false;
 
-						if (item.IsDeleted)
+						if (item.Id <= 0)
 						{
 							tradeSuccess = partner.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
 						}
@@ -631,7 +631,7 @@ namespace DOL.GS
 						}
 						else
 						{
-                            InventoryLogging.LogInventoryAction(m_owner, partner, eInventoryActionType.Trade, item.Template, item.Count);
+                            InventoryLogging.LogInventoryAction(m_owner, partner, eInventoryActionType.Trade, item.ItemTemplate, item.Count);
 						    if (logTrade)
 						    {
 						        GameServer.Instance.LogGMAction("   Item: " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") -> " + partner.Name + "(" + partner.Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
@@ -648,7 +648,7 @@ namespace DOL.GS
 
 						bool tradeSuccess = false;
 
-						if (item.IsDeleted)
+						if (item.Id <= 0)
 						{
 							tradeSuccess = m_owner.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
 						}
@@ -663,7 +663,7 @@ namespace DOL.GS
 						}
 						else
 						{
-                            InventoryLogging.LogInventoryAction(partner, m_owner, eInventoryActionType.Trade, item.Template, item.Count);
+                            InventoryLogging.LogInventoryAction(partner, m_owner, eInventoryActionType.Trade, item.ItemTemplate, item.Count);
 						    if (logTrade)
 						    {
 						        GameServer.Instance.LogGMAction("   Item: " + partner.Name + "(" + partner.Client.Account.Name + ") -> " + m_owner.Name + "(" + m_owner.Client.Account.Name + ") : " + item.Name + "(" + item.Id + ")");
@@ -679,8 +679,8 @@ namespace DOL.GS
 					m_owner.Out.SendMessage("Trade Completed. " + myTradeItemsCount + " items for " + partnerTradeItemsCount + " items.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					partner.Out.SendMessage("Trade Completed. " + partnerTradeItemsCount + " items for " + myTradeItemsCount + " items.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-					m_owner.Inventory.SaveIntoDatabase(m_owner.InternalID);
-					partner.Inventory.SaveIntoDatabase(partner.InternalID);
+					m_owner.Inventory.SaveIntoDatabase(string.Empty); //parameter not used for player inventories
+					partner.Inventory.SaveIntoDatabase(string.Empty);
 				}
 
 				if(logTrade)

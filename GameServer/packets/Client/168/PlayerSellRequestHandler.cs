@@ -45,7 +45,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					return;
 
 				int itemCount = Math.Max(1, item.Count);
-				int packSize = Math.Max(1, item.PackSize);
+				int packSize = Math.Max(1, item.ItemTemplate.PackSize);
 
 				if (client.Player.TargetObject is GameMerchant merchant)
 				{

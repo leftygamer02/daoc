@@ -100,7 +100,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				return;
 			}
 
-			var door = DOLDB<DBDoor>.SelectObject(DB.Column("InternalID").IsEqualTo(doorID));
+			var door = GameServer.Database.Doors.FirstOrDefault(x => x.InternalID == doorID);
 			if (door != null)
 			{
 				if (doorType == 7 || doorType == 9)
@@ -180,8 +180,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			}
 			else
 			{
-				var door = new DBDoor();
-				door.ObjectId = null;
+				var door = new Door();
 				door.InternalID = m_handlerDoorID;
 				door.Name = "door";
 				door.Type = m_handlerDoorID/100000000;

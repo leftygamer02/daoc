@@ -46,7 +46,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					Character cachedCharacter = null;
 					foreach (Character accountChar in client.Account.Characters)
 					{
-						if (accountChar.ObjectId == client.Player.InternalID)
+						if (accountChar.Id == client.Player.InternalID)
 						{
 							cachedCharacter = accountChar;
 							break;
@@ -67,7 +67,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			client.Player = null;
 
 			//reset realm if no characters
-			if((client.Account.Characters == null || client.Account.Characters.Length <= 0) && client.Account.Realm != (int)eRealm.None)
+			if((client.Account.Characters == null || client.Account.Characters.Count <= 0) && client.Account.Realm != (int)eRealm.None)
 			{
 				client.Account.Realm = (int)eRealm.None;
 			}
@@ -143,7 +143,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					Character cachedCharacter = null;
 					foreach (Character accountChar in client.Account.Characters)
 					{
-						if (accountChar.ObjectId == client.Player.InternalID)
+						if (accountChar.Id == client.Player.InternalID)
 						{
 							cachedCharacter = accountChar;
 							break;
@@ -162,7 +162,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			client.Player = null;
 
 			//reset realm if no characters
-			if ((client.Account.Characters == null || client.Account.Characters.Length <= 0) && client.Account.Realm != (int)eRealm.None)
+			if ((client.Account.Characters == null || client.Account.Characters.Count <= 0) && client.Account.Realm != (int)eRealm.None)
 				client.Account.Realm = (int)eRealm.None;
 
 			//string accountName = packet.Readstring(24);

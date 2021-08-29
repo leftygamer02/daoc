@@ -53,12 +53,12 @@ namespace DOL.UnitTests.Gameserver
 
     public class FakeServer : GameServer
     {
-        private IObjectDatabase database = new FakeDatabase();
+        private Atlas.DataLayer.AtlasContext database = new Atlas.DataLayer.AtlasContext(Atlas.DataLayer.eConnectionType.SQLITE, string.Empty);
 
-        protected override IObjectDatabase DataBaseImpl => database;
+        protected override Atlas.DataLayer.AtlasContext DataBaseImpl => database;
         protected override void CheckAndInitDB() { }
         public override byte[] AcquirePacketBuffer() => new byte[] { };
-        public void SetDatabase(IObjectDatabase database) { this.database = database; }
+        public void SetDatabase(Atlas.DataLayer.AtlasContext database) { this.database = database; }
 
         public static void Load() => LoadTestDouble(new FakeServer());
     }

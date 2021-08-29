@@ -87,7 +87,7 @@ namespace DOL.GS.Commands
 							}
 
 							//Create the database entry...
-							DBInstanceXElement element = new DBInstanceXElement();
+							InstanceElement element = new InstanceElement();
 							element.Heading = client.Player.Heading;
 							element.X = client.Player.X;
 							element.Y = client.Player.Y;
@@ -100,7 +100,7 @@ namespace DOL.GS.Commands
 							try { npctemplate = int.Parse(args[3]); }
 							catch { }
 
-							element.NPCTemplate = npctemplate.ToString();
+							element.NpcTemplateID = npctemplate;
 
 							if (npctemplate > 0)
 							{
@@ -152,13 +152,13 @@ namespace DOL.GS.Commands
 								}
 
 								//Add to world...
-								obj.Name = element.ObjectId.Substring(0, 18);
-								obj.GuildName = element.ObjectId.Substring(18);
+								obj.Name = element.Id.ToString();
+								obj.GuildName = element.Id.ToString();
 
 								obj.X = element.X;
 								obj.Y = element.Y;
 								obj.Z = element.Z;
-								obj.Heading = element.Heading;
+								obj.Heading = (ushort)element.Heading;
 
 								obj.CurrentRegion = client.Player.CurrentRegion;
 
@@ -188,8 +188,8 @@ namespace DOL.GS.Commands
                         GameObject obj = client.Player.TargetObject;
                         if (obj == null)
                             return;
-                        string ObjectId = obj.Name + obj.GuildName;
-                        DataObject o = GameServer.Database.FindObjectByKey<DBInstanceXElement>(ObjectId);
+						int ObjectId = Int32.Parse(obj.Name);
+						var o = GameServer.Database.InstanceElements.Find(ObjectId);
 
                         if (o == null)
                         {
@@ -197,7 +197,7 @@ namespace DOL.GS.Commands
                             return;
                         }
 
-                        GameServer.Database.DeleteObject(o);
+                        GameServer.Instance.DeleteDataObject(o);
                         client.Out.SendMessage("Object removed!", eChatType.CT_Say, eChatLoc.CL_SystemWindow);
 
                         //Remove object...

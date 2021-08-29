@@ -239,14 +239,14 @@ namespace DOL.GS
 
 					m_guildBannerTemplate = new ItemTemplate();
 					m_guildBannerTemplate.CanDropAsLoot = false;
-					m_guildBannerTemplate.Id = guildIDNB;
+					m_guildBannerTemplate.KeyName = guildIDNB;
 					m_guildBannerTemplate.IsDropable = false;
 					m_guildBannerTemplate.IsPickable = true;
 					m_guildBannerTemplate.IsTradable = false;
 					m_guildBannerTemplate.IsIndestructible = true;
 					m_guildBannerTemplate.ItemType = 41;
 					m_guildBannerTemplate.Level = 1;
-					m_guildBannerTemplate.MaxCharges = 1;
+					//m_guildBannerTemplate.MaxCharges = 1;
 					m_guildBannerTemplate.MaxCount = 1;
 					m_guildBannerTemplate.Emblem = m_player.Guild.Emblem;
 					switch (m_player.Realm)

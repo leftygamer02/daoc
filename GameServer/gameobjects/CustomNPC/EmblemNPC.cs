@@ -59,8 +59,8 @@ namespace DOL.GS
 				return false;
 			}
 
-			if (item.ObjectType == (int) eObjectType.Shield
-				|| item.ItemType == Slot.CLOAK)
+			if (item.ItemTemplate.ObjectType == (int) eObjectType.Shield
+				|| item.ItemTemplate.ItemType == Slot.CLOAK)
 			{
 				if (t.Guild == null)
 				{
@@ -74,14 +74,14 @@ namespace DOL.GS
 				}
 				if (t.Level < 20) //if level of player < 20 so can not put emblem
 				{
-					if (t.PrimaryCraftingSkill == eCraftingSkill.NoCrafting)
+					if (t.CraftingPrimarySkill == eCraftingSkill.NoCrafting)
 					{
 						t.Out.SendMessage("You have to be at least level 20 or have 400 in a tradeskill to be able to wear an emblem.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						return false;
 					}
 					else
 					{
-						if (t.GetCraftingSkillValue(t.PrimaryCraftingSkill) < 400)
+						if (t.GetCraftingSkillValue(t.CraftingPrimarySkill) < 400)
 						{
 							t.Out.SendMessage("You have to be at least level 20 or have 400 in a tradeskill to be able to wear an emblem.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							return false;
@@ -119,7 +119,7 @@ namespace DOL.GS
 			InventoryItem item = (InventoryItem) itemWeak.Target;
 
 			if (item == null || item.SlotPosition == (int) eInventorySlot.Ground
-				|| item.OwnerID == null || item.OwnerID != player.InternalID)
+				|| item.CharacterID == null || item.CharacterID != player.InternalID)
 			{
 				player.Out.SendMessage("Invalid item.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return;

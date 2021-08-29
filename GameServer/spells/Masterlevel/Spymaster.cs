@@ -18,6 +18,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using DOL.GS.Effects;
@@ -105,31 +106,31 @@ namespace DOL.GS.Spells
             decoy.Y = caster.Y;
             decoy.Z = caster.Z;
             string TemplateId = "";
-            switch (caster.Realm)
-            {
-                case eRealm.Albion:
-                    decoy.Name = "Avalonian Unicorn Knight";
-                    decoy.Model = (ushort)m_rnd.Next(61, 68);
-                    TemplateId = "e3ead77b-22a7-4b7d-a415-92a29295dcf7";
-                    break;
-                case eRealm.Midgard:
-                    decoy.Name = "Kobold Elding Herra";
-                    decoy.Model = (ushort)m_rnd.Next(169, 184);
-                    TemplateId = "ee137bff-e83d-4423-8305-8defa2cbcd7a";
-                    break;
-                case eRealm.Hibernia:
-                    decoy.Name = "Elf Gilded Spear";
-                    decoy.Model = (ushort)m_rnd.Next(334, 349);
-                    TemplateId = "a4c798a2-186a-4bda-99ff-ccef228cb745";
-                    break;
-            }
-            GameNpcInventoryTemplate load = new GameNpcInventoryTemplate();
-            if (load.LoadFromDatabase(TemplateId))
-            {
-                decoy.EquipmentTemplateID = TemplateId;
-                decoy.Inventory = load;
-                decoy.BroadcastLivingEquipmentUpdate();
-            }
+            //switch (caster.Realm)
+            //{
+            //    case eRealm.Albion:
+            //        decoy.Name = "Avalonian Unicorn Knight";
+            //        decoy.Model = (ushort)m_rnd.Next(61, 68);
+            //        TemplateId = "e3ead77b-22a7-4b7d-a415-92a29295dcf7";
+            //        break;
+            //    case eRealm.Midgard:
+            //        decoy.Name = "Kobold Elding Herra";
+            //        decoy.Model = (ushort)m_rnd.Next(169, 184);
+            //        TemplateId = "ee137bff-e83d-4423-8305-8defa2cbcd7a";
+            //        break;
+            //    case eRealm.Hibernia:
+            //        decoy.Name = "Elf Gilded Spear";
+            //        decoy.Model = (ushort)m_rnd.Next(334, 349);
+            //        TemplateId = "a4c798a2-186a-4bda-99ff-ccef228cb745";
+            //        break;
+            //}
+            //GameNpcInventoryTemplate load = new GameNpcInventoryTemplate();
+            //if (load.LoadFromDatabase(TemplateId))
+            //{
+            //    decoy.EquipmentTemplateID = TemplateId;
+            //    decoy.Inventory = load;
+            //    decoy.BroadcastLivingEquipmentUpdate();
+            //}
             decoy.CurrentSpeed = 0;
             decoy.GuildName = "";
         }
@@ -398,16 +399,16 @@ namespace DOL.GS.Spells
         public EssenceFlareSpellHandler(GameLiving caster, Spell spell, SpellLine line)
             : base(caster, spell, line)
         {
-            ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>("Meschgift");
+            ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Meschgift");
             if (template != null)
             {
                 items.Add(GameInventoryItem.Create(template));
                 foreach (InventoryItem item in items)
                 {
-                    if (item.IsStackable)
+                    if (template.IsStackable)
                     {
                         item.Count = 1;
-                        item.Weight = item.Count * item.Weight;
+                        //item.Weight = item.Count * template.Weight;
                     }
                 }
             }

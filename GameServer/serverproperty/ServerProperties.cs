@@ -2494,7 +2494,7 @@ namespace DOL.GS.ServerProperties
 			get
 			{
 				var result = new Dictionary<string, Tuple<ServerPropertyAttribute, FieldInfo, ServerProperty>>();
-				var allProperties = GameServer.Database.SelectAllObjects<ServerProperty>();
+				var allProperties = GameServer.Database.ServerProperties.ToList();
 				
 				foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
 				{
@@ -2556,7 +2556,7 @@ namespace DOL.GS.ServerProperties
 			string key = attrib.Key;
 			
 			// Not Added to database...
-			if (!prop.IsPersisted)
+			if (prop.Id <= 0)
 			{
 				GameServer.Instance.SaveDataObject(prop);
 				log.DebugFormat("Cannot find server property {0} creating it", key);

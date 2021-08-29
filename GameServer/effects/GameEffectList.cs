@@ -168,12 +168,12 @@ namespace DOL.GS.Effects
 			if (player == null || player.DBCharacter == null || GameServer.Database == null)
 				return;
 
-			var effs = DOLDB<PlayerEffect>.SelectObjects(DB.Column("ChardID").IsEqualTo(player.ObjectId));
+			var effs = GameServer.Database.PlayerEffects.Where(x => x.CharacterID == player.ObjectId);
 			if (effs == null)
 				return;
 
 			foreach (PlayerEffect eff in effs)
-				GameServer.Database.DeleteObject(eff);
+				GameServer.Instance.DeleteDataObject(eff);
 
 			foreach (PlayerEffect eff in effs.GroupBy(e => e.Var1).Select(e => e.First()))
 			{
@@ -249,7 +249,7 @@ namespace DOL.GS.Effects
 						if (effx.SpellLine == GlobalSpellsLines.Reserved_Spells)
 							continue;
 	
-						effx.ChardID = player.ObjectId;
+						effx.CharacterID = player.ObjectId;
 						
 						GameServer.Instance.SaveDataObject(effx);
 					}

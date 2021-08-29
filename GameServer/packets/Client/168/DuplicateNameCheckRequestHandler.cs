@@ -36,7 +36,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			else
 				name = packet.ReadString(30);
 
-			var character = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(name));
+			var character = GameServer.Database.Characters.FirstOrDefault(x => x.Name == name);
 			byte result = 0;
 			// Bad Name check.
 			if (character != null)

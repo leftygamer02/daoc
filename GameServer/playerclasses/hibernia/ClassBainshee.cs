@@ -169,7 +169,7 @@ namespace DOL.GS.PlayerClass
 			
 			GameEventMgr.RemoveHandler(Player, GamePlayerEvent.RemoveFromWorld, m_WraithTriggerEvent);
 			
-			Player.Model = (ushort)Player.Client.Account.Characters[Player.Client.ActiveCharIndex].CreationModel;
+			Player.Model = (ushort)Player.Client.Account.Characters.ElementAt(Player.Client.ActiveCharIndex).CreationModel;
 			
 		}
 

@@ -61,8 +61,8 @@ namespace DOL.GS
 		public GuildBannerItem(InventoryItem item)
 			: base(item)
 		{
-			OwnerID = item.OwnerID;
-			ObjectId = item.ObjectId;
+			this.CharacterID = item.CharacterID;
+			this.Id = item.Id;
 		}
 
 		/// <summary>
@@ -119,7 +119,7 @@ namespace DOL.GS
 			// if picked up by an enemy then turn this into a trophy
 			if (realm != player.Realm)
 			{
-				ItemUnique template = new ItemUnique(Template);
+				ItemUnique template = new ItemUnique(ItemTemplate);
 				template.ClassType = "";
 				template.Model = trophyModel;
 				template.IsDropable = true;

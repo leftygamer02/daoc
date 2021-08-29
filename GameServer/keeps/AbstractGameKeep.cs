@@ -177,13 +177,13 @@ namespace DOL.GS.Keeps
 			}
 		}
 
-		public Dictionary<int, GameKeepDoor> Doors { get; set; } = new Dictionary<int, GameKeepDoor>();
+		public Dictionary<string, GameKeepDoor> Doors { get; set; } = new Dictionary<string, GameKeepDoor>();
 
 		public Keep DBKeep { get; set; }
 
-		public Dictionary<int, GameKeepGuard> Guards { get; } = new Dictionary<int, GameKeepGuard>();
+		public Dictionary<string, GameKeepGuard> Guards { get; } = new Dictionary<string, GameKeepGuard>();
 
-		public Dictionary<int, GameKeepBanner> Banners { get; set; } = new Dictionary<int, GameKeepBanner>();
+		public Dictionary<string, GameKeepBanner> Banners { get; set; } = new Dictionary<string, GameKeepBanner>();
 
 		public Dictionary<string, Patrol> Patrols { get; set; } = new Dictionary<string, Patrol>();
 
@@ -485,21 +485,21 @@ namespace DOL.GS.Keeps
 		/// <param name="area"></param>
 		public virtual void Remove(KeepArea area)
 		{
-			Dictionary<int, GameKeepGuard> guards = new Dictionary<int, GameKeepGuard>(Guards); // Use a shallow copy
+			Dictionary<string, GameKeepGuard> guards = new Dictionary<string, GameKeepGuard>(Guards); // Use a shallow copy
 			foreach (GameKeepGuard guard in guards.Values)
 			{
 				guard.Delete();
 				guard.DeleteFromDatabase();
 			}
 
-			Dictionary<int, GameKeepBanner> banners = new Dictionary<int, GameKeepBanner>(Banners); // Use a shallow copy
+			Dictionary<string, GameKeepBanner> banners = new Dictionary<string, GameKeepBanner>(Banners); // Use a shallow copy
 			foreach (GameKeepBanner banner in banners.Values)
 			{
 				banner.Delete();
 				banner.DeleteFromDatabase();
 			}
 
-			Dictionary<int, GameKeepDoor> doors = new Dictionary<int, GameKeepDoor>(Doors); // Use a shallow copy
+			Dictionary<string, GameKeepDoor> doors = new Dictionary<string, GameKeepDoor>(Doors); // Use a shallow copy
 			foreach (GameKeepDoor door in doors.Values)
 			{
 				door.Delete();

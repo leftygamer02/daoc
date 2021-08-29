@@ -401,10 +401,10 @@ namespace DOL.GS
 		/// Gets or sets the NotDisplayedInHerald for this player
 		/// (delegate to property in DBCharacter)
 		/// </summary>
-		public bool NotDisplayedInHerald
+		public byte NotDisplayedInHerald
 		{
-			get { return DBCharacter != null ? DBCharacter.NotDisplayedInHerald : false; }
-			set { if (DBCharacter != null) DBCharacter.NotDisplayedInHerald = value; }
+			get { return DBCharacter != null ? (DBCharacter.NotDisplayedInHerald ? 1 : 0) : 0; }
+			set { if (DBCharacter != null) DBCharacter.NotDisplayedInHerald = (value == 1 ? true : false); }
 		}
 		
 		/// <summary>
@@ -594,6 +594,15 @@ namespace DOL.GS
 		public string AccountName
 		{
 			get { return DBCharacter != null ? DBCharacter.Account.Name : string.Empty; }
+		}
+
+		/// <summary>
+		/// Gets AccountID for this player
+		/// (delegate to property in DBCharacter)
+		/// </summary>
+		public int AccountID
+		{
+			get { return DBCharacter != null ? DBCharacter.AccountID : 0; }
 		}
 
 		/// <summary>
@@ -9529,7 +9538,7 @@ namespace DOL.GS
 			if (source is GamePlayer)
 			{
 				var sender = source as GamePlayer;
-				foreach (string Name in IgnoreList)
+				foreach (string Name in IgnoreList.Select(x => x.IgnoreName))
 				{
 					if (sender.Name == Name && sender.Client.Account.PrivLevel < 2)
 						return true;
@@ -10318,7 +10327,7 @@ namespace DOL.GS
 		#region Group/Friendlist/guild
 
 		private Guild m_guild;
-		private Atlas.DataLayer.Models.GuildRank m_guildRank;
+		private GuildRank m_guildRank;
 
 		/// <summary>
 		/// Gets or sets the player's guild
@@ -10357,7 +10366,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets or sets the player's guild rank
 		/// </summary>
-		public Atlas.DataLayer.Models.GuildRank GuildRank
+		public GuildRank GuildRank
 		{
 			get { return m_guildRank; }
 			set
@@ -10418,23 +10427,20 @@ namespace DOL.GS
 		/// Gets or sets the IgnoreList of a Player
 		/// (delegate to PlayerCharacter)
 		/// </summary>
-		public ArrayList IgnoreList
+		public ICollection<CharacterIgnore> IgnoreList
 		{
 			get
 			{
-				if (SerializedIgnoreList.Length > 0)
-					return new ArrayList(SerializedIgnoreList);
-				return new ArrayList(0);
+				return DBCharacter.IgnoreList;
 			}
 			set
-			{
-				if (value == null)
-					SerializedIgnoreList = new string[0];
-				else
-					SerializedIgnoreList = value.OfType<string>().ToArray();
-				
+			{				
 				if (DBCharacter != null)
+                {
+					DBCharacter.IgnoreList = value;
 					GameServer.Instance.SaveDataObject(DBCharacter);
+				}
+					
 			}
 		}
 
@@ -10445,20 +10451,25 @@ namespace DOL.GS
 		/// <param name="remove">true to remove this friend, false to add it</param>
 		public void ModifyIgnoreList(string Name, bool remove)
 		{
-			ArrayList currentIgnores = IgnoreList;
-			if (remove && currentIgnores != null)
-			{
-				if (currentIgnores.Contains(Name))
+			var currentIgnores = IgnoreList;
+			var existing = currentIgnores.FirstOrDefault(x => x.IgnoreName == Name);
+			if (remove)
+			{				
+				if (existing != null)
 				{
-					currentIgnores.Remove(Name);
+					currentIgnores.Remove(existing);
 					IgnoreList = currentIgnores;
 				}
 			}
 			else
 			{
-				if (!currentIgnores.Contains(Name))
+				if (!currentIgnores.Contains(existing))
 				{
-					currentIgnores.Add(Name);
+					currentIgnores.Add(new CharacterIgnore()
+					{
+						CharacterID = DBCharacter.Id,
+						IgnoreName = Name,
+					});
 					IgnoreList = currentIgnores;
 				}
 			}
@@ -12065,24 +12076,40 @@ namespace DOL.GS
 				specs = m_specialization.Values.Where(s => s.AllowSave).ToList();
 				foreach (Specialization spec in specs)
 				{
-					if (sp.Length > 0)
-					{
-						sp.Append(";");
-					}
-					sp.AppendFormat("{0}|{1}", spec.KeyName, spec.GetSpecLevelForLiving(this));
+					var dbSpec = DBCharacter.Specs.FirstOrDefault(x => x.SpecLine == spec.KeyName);
+
+					if (dbSpec == null)
+                    {
+						dbSpec = new CharacterSpec()
+						{
+							SpecLine = spec.KeyName,
+							CharacterID = DBCharacter.Id
+						};
+						DBCharacter.Specs.Add(dbSpec);
+                    }
+					dbSpec.SpecLevel = spec.GetSpecLevelForLiving(this);
 				}
 			}
 			
 			// Build Serialized Ability List to save Order
 			foreach (Ability ability in m_usableSkills.Where(e => e.Item1 is Ability).Select(e => e.Item1).Cast<Ability>())
-			{					
+			{
 				if (ability != null)
 				{
-					if (ab.Length > 0)
+					var dbAbility = DBCharacter.Abilities.FirstOrDefault(x => x.Ability.KeyName == ability.KeyName);
+
+					if (dbAbility == null)
 					{
-						ab.Append(";");
+						dbAbility = new CharacterAbility()
+						{
+							AbilityID = ability.InternalID,
+							CharacterID = DBCharacter.Id,
+							IsDisabled = false,
+							IsRealmAbility = false,
+						};
+						DBCharacter.Abilities.Add(dbAbility);
 					}
-					ab.AppendFormat("{0}|{1}", ability.KeyName, ability.Level);
+					dbAbility.Level = ability.Level;
 				}
 			}
 
@@ -12096,26 +12123,38 @@ namespace DOL.GS
 			{
 				int duration = GetSkillDisabledDuration(skill);
 				
-				if (duration <= 0)
-					continue;
-				
 				if (skill is Spell)
 				{
 					Spell spl = (Spell)skill;
 					
-					if (disabledSpells.Length > 0)
-						disabledSpells.Append(";");
-					
-					disabledSpells.AppendFormat("{0}|{1}", spl.ID, duration);
+					var dbSpell = DBCharacter.DisabledSpells.FirstOrDefault(x => x.SpellID == spl.InternalID);
+
+					if (dbSpell == null)
+					{
+						dbSpell = new CharacterDisabledSpell()
+						{
+							CharacterID = DBCharacter.Id,
+							SpellID = spl.InternalID,							
+						};
+						DBCharacter.DisabledSpells.Add(dbSpell);
+					}
+					dbSpell.ReuseTime = duration;
+
+					if (duration <= 0)
+						DBCharacter.DisabledSpells.Remove(dbSpell);
+
 				}
 				else if (skill is Ability)
 				{
 					Ability ability = (Ability)skill;
 					
-					if (disabledAbilities.Length > 0)
-						disabledAbilities.Append(";");
-					
-					disabledAbilities.AppendFormat("{0}|{1}", ability.KeyName, duration);
+					var dbAbility = DBCharacter.Abilities.FirstOrDefault(x => x.AbilityID == ability.InternalID);
+
+					if (dbAbility != null)
+                    {
+						dbAbility.IsDisabled = duration > 0;
+						dbAbility.ReuseTime = duration > 0 ? duration : 0;
+                    }
 				}
 				else
 				{
@@ -12128,19 +12167,20 @@ namespace DOL.GS
 			
 			foreach (RealmAbility rab in m_realmAbilities)
 			{
-				if (sra.Length > 0)
-					sra.Append(";");
-				
-				sra.AppendFormat("{0}|{1}", rab.KeyName, rab.Level);
-			}
-			
-			if (DBCharacter != null)
-			{
-				DBCharacter.SerializedAbilities = ab.ToString();
-				DBCharacter.SerializedSpecs = sp.ToString();
-				DBCharacter.SerializedRealmAbilities = sra.ToString();
-				DBCharacter.DisabledSpells = disabledSpells.ToString();
-				DBCharacter.DisabledAbilities = disabledAbilities.ToString();
+				var dbAbility = DBCharacter.Abilities.FirstOrDefault(x => x.AbilityID == rab.InternalID && x.IsRealmAbility);
+
+				if (dbAbility == null)
+				{
+					dbAbility = new CharacterAbility()
+					{
+						AbilityID = rab.InternalID,
+						CharacterID = DBCharacter.Id,
+						IsDisabled = false,
+						IsRealmAbility = true,
+					};
+					DBCharacter.Abilities.Add(dbAbility);
+				}
+				dbAbility.Level = rab.Level;
 			}
 		}
 
@@ -12157,150 +12197,92 @@ namespace DOL.GS
 			
 			// first load spec's career
 			LoadClassSpecializations(false);
-			
-			//Load Remaining spec and levels from Database (custom spec can still be added here...)
-			string tmpStr = character.SerializedSpecs;
-			if (tmpStr != null && tmpStr.Length > 0)
-			{
-				foreach (string spec in Util.SplitCSV(tmpStr))
-				{
-					string[] values = spec.Split('|');
-					if (values.Length >= 2)
-					{
-						Specialization tempSpec = SkillBase.GetSpecialization(values[0], false);
 
-						if (tempSpec != null)
+			//Load Remaining spec and levels from Database (custom spec can still be added here...)
+			foreach (var spec in character.Specs)
+			{
+				var tempSpec = SkillBase.GetSpecialization(spec.SpecLine, false);
+
+				if (tempSpec != null)
+				{
+					if (tempSpec.AllowSave)
+					{
+						if (HasSpecialization(tempSpec.KeyName))
 						{
-							if (tempSpec.AllowSave)
-							{
-								int level;
-								if (int.TryParse(values[1], out level))
-								{
-									if (HasSpecialization(tempSpec.KeyName))
-									{
-										GetSpecializationByName(tempSpec.KeyName).Level = level;
-									}
-									else
-									{
-										tempSpec.Level = level;
-										AddSpecialization(tempSpec, false);
-									}
-								}
-								else if (log.IsErrorEnabled)
-								{
-									log.ErrorFormat("{0} : error in loading specs => '{1}'", Name, tmpStr);
-								}
-							}
+							GetSpecializationByName(tempSpec.KeyName).Level = spec.SpecLevel;
 						}
-						else if (log.IsErrorEnabled)
+						else
 						{
-							log.ErrorFormat("{0}: can't find spec '{1}'", Name, values[0]);
+							tempSpec.Level = spec.SpecLevel;
+							AddSpecialization(tempSpec, false);
 						}
 					}
 				}
+				else if (log.IsErrorEnabled)
+				{
+					log.ErrorFormat("{0}: can't find spec '{1}'", Name, spec.SpecLine);
+				}
 			}
-			
+
 			// Add Serialized Abilities to keep Database Order
 			// Custom Ability will be disabled as soon as they are not in any specs...
-			tmpStr = character.SerializedAbilities;
-			if (tmpStr != null && tmpStr.Length > 0 && m_usableSkills.Count == 0)
+			foreach (var dbAbility in character.Abilities.Where(x => !x.IsRealmAbility))
 			{
-				foreach (string abilities in Util.SplitCSV(tmpStr))
+				var ability = SkillBase.GetAbility(dbAbility.Ability.KeyName, dbAbility.Level);
+				if (ability != null)
 				{
-					string[] values = abilities.Split('|');
-					if (values.Length >= 2)
-					{
-						int level;
-						if (int.TryParse(values[1], out level))
-						{
-							Ability ability = SkillBase.GetAbility(values[0], level);
-							if (ability != null)
-							{
-								// this is for display order only
-								m_usableSkills.Add(new Tuple<Skill, Skill>(ability, ability));
-							}
-						}
-					}
+					// this is for display order only
+					m_usableSkills.Add(new Tuple<Skill, Skill>(ability, ability));
 				}
 			}
-			
+
 			// Retrieve Realm Abilities From Database to be handled by Career Spec
-			tmpStr = character.SerializedRealmAbilities;
-			if (tmpStr != null && tmpStr.Length > 0)
+			foreach (var dbAbility in character.Abilities.Where(x => x.IsRealmAbility))
 			{
-				foreach (string abilities in Util.SplitCSV(tmpStr))
+				Ability ability = SkillBase.GetAbility(dbAbility.Ability.KeyName, dbAbility.Level);
+				if (ability != null && ability is RealmAbility)
 				{
-					string[] values = abilities.Split('|');
-					if (values.Length >= 2)
-					{
-						int level;
-						if (int.TryParse(values[1], out level))
-						{
-							Ability ability = SkillBase.GetAbility(values[0], level);
-							if (ability != null && ability is RealmAbility)
-							{
-								// this enable realm abilities for Career Computing.
-								m_realmAbilities.Add((RealmAbility)ability);
-							}
-						}
-					}
+					// this enable realm abilities for Career Computing.
+					m_realmAbilities.Add((RealmAbility)ability);
 				}
 			}
 
 			// Load dependent skills
 			RefreshSpecDependantSkills(false);
-			
+
 			#endregion
 
 			#region disable ability
 			//Since we added all the abilities that this character has, let's now disable the disabled ones!
-			tmpStr = character.DisabledAbilities;
-			if (tmpStr != null && tmpStr.Length > 0)
+			foreach (var dbAbility in character.Abilities.Where(x => x.IsDisabled))
 			{
-				foreach (string str in Util.SplitCSV(tmpStr))
+				if (HasAbility(dbAbility.Ability.KeyName))
 				{
-					string[] values = str.Split('|');
-					if (values.Length >= 2)
-					{
-						string keyname = values[0];
-						int duration;
-						if (HasAbility(keyname) && int.TryParse(values[1], out duration))
-						{
-							DisableSkill(GetAbility(keyname), duration);
-						}
-						else if (log.IsErrorEnabled)
-						{
-							log.ErrorFormat("{0}: error in loading disabled abilities => '{1}'", Name, tmpStr);
-						}
-					}
+					DisableSkill(GetAbility(dbAbility.Ability.KeyName), (int)dbAbility.ReuseTime);
+				}
+				else if (log.IsErrorEnabled)
+				{
+					log.ErrorFormat("{0}: error in loading disabled abilities => '{1}'", Name, dbAbility.Ability.KeyName);
 				}
 			}
 
 			#endregion
-			
+
 			//Load the disabled spells
-			tmpStr = character.DisabledSpells;
-			if (!string.IsNullOrEmpty(tmpStr))
+			foreach (var dbSpell in character.DisabledSpells)
 			{
-				foreach (string str in Util.SplitCSV(tmpStr))
+				Spell sp = SkillBase.GetSpellByID(dbSpell.SpellID);
+				// disable
+				if (sp != null)
 				{
-					string[] values = str.Split('|');
-					int spellid;
-					int duration;
-					if (values.Length >= 2 && int.TryParse(values[0], out spellid) && int.TryParse(values[1], out duration))
-					{
-						Spell sp = SkillBase.GetSpellByID(spellid);
-						// disable
-						if (sp != null)
-							DisableSkill(sp, duration);
-					}
-					else if (log.IsErrorEnabled)
-					{
-						log.ErrorFormat("{0}: error in loading disabled spells => '{1}'", Name, tmpStr);
-					}
+					DisableSkill(sp, (int)dbSpell.ReuseTime);
+				}
+				else if (log.IsErrorEnabled)
+				{
+					log.ErrorFormat("{0}: error in loading disabled spells => '{1}'", Name, dbSpell.SpellID);
 				}
 			}
-						
+
 			CharacterClass.OnLevelUp(this, Level); // load all skills from DB first to keep the order
 			CharacterClass.OnRealmLevelUp(this);
 		}
@@ -12492,7 +12474,7 @@ namespace DOL.GS
 			if (MaxSpeedBase == 0)
 				MaxSpeedBase = PLAYER_BASE_SPEED;
 
-			m_inventory.LoadFromDatabase(InternalID);
+			m_inventory.LoadFromDatabase(string.Empty);
 
 			SwitchQuiver((eActiveQuiverSlot)(DBCharacter.ActiveWeaponSlot & 0xF0), false);
 			SwitchWeapon((eActiveWeaponSlot)(DBCharacter.ActiveWeaponSlot & 0x0F));
@@ -12617,7 +12599,7 @@ namespace DOL.GS
 					}
 				}
 				GameServer.Instance.SaveDataObject(DBCharacter);
-				Inventory.SaveIntoDatabase(InternalID);
+				Inventory.SaveIntoDatabase(string.Empty);
 
 				Character cachedCharacter = null;
 

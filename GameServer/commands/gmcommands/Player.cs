@@ -98,7 +98,7 @@ namespace DOL.GS.Commands
                         if (player == null)
                             player = client.Player;
 
-                        ArtifactMgr.GrantArtifactCredit(player, args[2]);
+                        ArtifactMgr.GrantArtifactCredit(player, Convert.ToInt32(args[2]));
                         break;
                     }
 
@@ -118,7 +118,7 @@ namespace DOL.GS.Commands
                         if (player == null)
                             player = client.Player;
 
-                        var character = DOLDB<Character>.SelectObject(DB.Column("Name").IsEqualTo(args[2]));
+                        var character = GameServer.Database.Characters.FirstOrDefault(x => x.Name == args[2]);
 
                         if (character != null)
                         {
@@ -610,7 +610,7 @@ namespace DOL.GS.Commands
                             {
                                 case "reset":
                                     {
-                                        player.Model = (ushort)player.Client.Account.Characters[player.Client.ActiveCharIndex].CreationModel;
+                                        player.Model = (ushort)player.Client.Account.Characters.FirstOrDefault(x => x.Id == player.DBCharacter.Id).CreationModel;
                                         client.Out.SendMessage("You changed " + player.Name + " back to his or her original model successfully!",
                                                                eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                                         player.Out.SendMessage(
@@ -1133,7 +1133,7 @@ namespace DOL.GS.Commands
 
                         if (args[2] == "list")
                         {
-                            string[] list = player.SerializedFriendsList;
+                            string[] list = player.GetFriends();
                             client.Out.SendCustomTextWindow(player.Name + "'s Friend List", list);
                             return;
                         }
@@ -2277,7 +2277,7 @@ namespace DOL.GS.Commands
 
 				foreach (InventoryItem item in player.Inventory.EquippedItems)
 				{
-					text.Add("     [" + GlobalConstants.SlotToName(item.ItemType) + "] " + item.Name + " (" + item.Id + ")");
+					text.Add("     [" + GlobalConstants.SlotToName(item.ItemTemplate.ItemType) + "] " + item.Name + " (" + item.Id + ")");
 				}
 				text.Add(" ");
 			}
@@ -2419,7 +2419,7 @@ namespace DOL.GS.Commands
 			{
 				text.Add("  - Master Levels :  Not Started");
 			}
-			text.Add("  - Craftingskill : " + player.PrimaryCraftingSkill + "");
+			text.Add("  - Craftingskill : " + player.CraftingPrimarySkill + "");
 			text.Add("  - Money : " + Money.GetString(player.GetCurrentMoney()) + "");
 			text.Add("  - Model ID : " + player.Model);
 			text.Add("  - Region OID : " + player.ObjectID);

@@ -178,11 +178,11 @@ namespace DOL.GS
 			get { return -this.MaxHealth / 10; }
 		}
 
-		private string m_itemId;
-		public string ItemId
+		private string m_keyName;
+		public string KeyName
 		{
-			get { return m_itemId; }
-			set { m_itemId = value; }
+			get { return m_keyName; }
+			set { m_keyName = value; }
 		} 
 		#endregion
 		#region public methode
@@ -498,8 +498,6 @@ namespace DOL.GS
 			ItemTemplate item = (ItemTemplate)obj;
             this.TranslationId = item.TranslationId;
 			this.Name = item.Name;
-            this.ExamineArticle = item.ExamineArticle;
-            this.MessageArticle = item.MessageArticle;
 			this.Model = (ushort)item.Model;
 		}
 

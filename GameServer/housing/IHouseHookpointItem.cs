@@ -15,6 +15,6 @@ namespace DOL.GS.Housing
 		bool Attach(House house, Atlas.DataLayer.Models.HouseHookpointItem hookedItem);
 		bool Detach(GamePlayer player);
 		int Index { get; }
-		String TemplateID { get; }
+		int TemplateID { get; }
 	}
 }

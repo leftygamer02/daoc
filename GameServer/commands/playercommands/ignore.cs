@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
  */
+using System.Linq;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Commands
@@ -38,8 +39,8 @@ namespace DOL.GS.Commands
         {
             if (args.Length < 2)
             {
-                string[] ignores = client.Player.SerializedIgnoreList;
-                client.Out.SendCustomTextWindow("Ignore List (snapshot)", ignores);
+                var ignores = client.Player.IgnoreList;
+                client.Out.SendCustomTextWindow("Ignore List (snapshot)", ignores.Select(x => x.IgnoreName).ToList());
                 return;
             }
 
@@ -51,7 +52,7 @@ namespace DOL.GS.Commands
             if (fclient == null)
             {
                 name = args[1];
-                if (client.Player.IgnoreList.Contains(name))
+                if (client.Player.IgnoreList.Any(x => x.IgnoreName == name)) 
                 {
                     client.Player.ModifyIgnoreList(name, true);
                     return;
@@ -82,7 +83,7 @@ namespace DOL.GS.Commands
                         }
 
                         name = fclient.Player.Name;
-                        if (client.Player.IgnoreList.Contains(name))
+                        if (client.Player.IgnoreList.Any(x => x.IgnoreName == name))
                         {
                            client.Player.ModifyIgnoreList(name, true);
                         }

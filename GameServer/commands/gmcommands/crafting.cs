@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using DOL.GS.PacketHandler;
 using DOL.Language;
@@ -68,7 +69,7 @@ namespace DOL.GS.Commands
 				{
 					List<string> list = new List<string>();
 					int salvageID = Convert.ToInt32(args[2]);
-					SalvageYield salvage = GameServer.Database.FindObjectByKey<SalvageYield>(salvageID);
+					SalvageYield salvage = GameServer.Database.SalvageYields.Find(salvageID);
 
 					if (salvage == null)
 					{
@@ -76,7 +77,7 @@ namespace DOL.GS.Commands
 						return;
 					}
 
-					ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(salvage.MaterialId_nb);
+					ItemTemplate template = GameServer.Database.ItemTemplates.Find(salvage.ItemTemplateID);
 					string materialName = "Not Found!";
 
 					if (template != null)
@@ -87,7 +88,7 @@ namespace DOL.GS.Commands
 					list.Add("SalvageYield ID: " + salvageID);
 					list.Add("     ObjectType: " + (salvage.ObjectType == 0 ? "Unused" : salvage.ObjectType.ToString()));
 					list.Add("   SalvageLevel: " + (salvage.SalvageLevel == 0 ? "Unused" : salvage.SalvageLevel.ToString()));
-					list.Add("       Material: " + materialName + " (" + salvage.MaterialId_nb + ")");
+					list.Add("       Material: " + materialName + " (" + salvage.ItemTemplate.KeyName + ")");
 					list.Add("          Count: " + (salvage.Count == 0 ? "Calculated" : salvage.Count.ToString()));
 					list.Add("          Realm: " + (salvage.Realm == 0 ? "Any" : GlobalConstants.RealmToName((eRealm)salvage.Realm)));
 					list.Add("      PackageID: " + salvage.PackageID);
@@ -112,7 +113,7 @@ namespace DOL.GS.Commands
 						if (args.Length > 6)
 							package = args[6];
 
-						ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(material);
+						ItemTemplate template = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == material);
 
 						if (template == null)
 						{
@@ -120,7 +121,7 @@ namespace DOL.GS.Commands
 							return;
 						}
 
-						SalvageYield salvage = GameServer.Database.FindObjectByKey<SalvageYield>(salvageID);
+						SalvageYield salvage = GameServer.Database.SalvageYields.Find(salvageID);
 
 						if (args[1].ToLower() == "salvageadd")
 						{
@@ -131,10 +132,9 @@ namespace DOL.GS.Commands
 							}
 
 							salvage = new SalvageYield();
-							if (salvageID > 0)
-								salvage.ID = salvageID;
 
-							salvage.MaterialId_nb = material;
+
+							salvage.ItemTemplateID = template.Id;
 							salvage.Count = Math.Max(1, count);
 							salvage.Realm = realm;
 
@@ -148,7 +148,7 @@ namespace DOL.GS.Commands
 							GameServer.Instance.SaveDataObject(salvage);
 
 							DisplayMessage(client, string.Format("Created SalvageYield ID: {0}, Material: {1}, Count: {2}, Realm: {3}, PackageID: {4}",
-																	salvage.ID, salvage.MaterialId_nb, salvage.Count, salvage.Realm, salvage.PackageID));
+																	salvage.Id, template.KeyName, salvage.Count, salvage.Realm, salvage.PackageID));
 						}
 						else
 						{
@@ -164,7 +164,7 @@ namespace DOL.GS.Commands
 								return;
 							}
 
-							salvage.MaterialId_nb = material;
+							salvage.ItemTemplateID = template.Id;
 							salvage.Count = Math.Max(1, count);
 							salvage.Realm = realm;
 
@@ -181,7 +181,7 @@ namespace DOL.GS.Commands
 							GameServer.Instance.SaveDataObject(salvage);
 
 							DisplayMessage(client, string.Format("Updated SalvageYield ID: {0}, Material: {1}, Count: {2}, Realm: {3}, PackageID: {4}",
-																	salvage.ID, salvage.MaterialId_nb, salvage.Count, salvage.Realm, salvage.PackageID));
+																	salvage.Id, template.KeyName, salvage.Count, salvage.Realm, salvage.PackageID));
 						}
 
 					}

@@ -30,7 +30,7 @@ namespace DOL.GS.Keeps
 		int Y { get;set;}
 		int Z { get;set;}
 		ushort Heading { get;set;}
-		int TemplateID { get;}
+		string TemplateID { get;}
 		GameKeepComponent Component { get; set;}
 		KeepPosition Position { get;set;}
 		void LoadFromPosition(KeepPosition position, GameKeepComponent component);

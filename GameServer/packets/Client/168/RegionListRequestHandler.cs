@@ -35,7 +35,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				slot += 100;
 			var character = client.Account.Characters.FirstOrDefault(c => c.AccountSlot == slot);
 
-			client.Out.SendRegions((ushort)character.Region);
+			client.Out.SendRegions((ushort)character.RegionID);
 		}
 	}
 }

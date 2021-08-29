@@ -81,7 +81,7 @@ namespace DOL.GS
 
 							if (item.ItemTemplate.CanUseEvery > 0)
 							{
-								item.SetCooldown();
+								item.CanUseAgainIn = item.Cooldown;
 							}
 
 							if (GetValidInventorySlot((eInventorySlot)item.SlotPosition) == eInventorySlot.Invalid)
@@ -193,7 +193,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="inventoryID">The inventory ID</param>
 		/// <returns>success</returns>
-		public override bool SaveIntoDatabase(int inventoryID)
+		public override bool SaveIntoDatabase(string inventoryID)
 		{
 			lock (m_items) // Mannen 10:56 PM 10/30/2006 - Fixing every lock(this)
 			{
@@ -238,38 +238,35 @@ namespace DOL.GS
 								continue;
 							}
 
-							if (currentItem.Dirty)
+							var realSlot = (int)item.Key;
+
+							if (currentItem.SlotPosition != realSlot)
 							{
-								var realSlot = (int) item.Key;
-
-								if (currentItem.SlotPosition != realSlot)
-								{
-									if (Log.IsErrorEnabled)
-										Log.Error("Item slot and real slot position are different. Item slot=" + currentItem.SlotPosition +
-										          " real slot=" + realSlot + " item ID=" + currentItem.Id);
-									currentItem.SlotPosition = realSlot; // just to be sure
-								}
-
-								// Check database to make sure player still owns this item before saving
-
-								InventoryItem checkItem = GameServer.Database.InventoryItems.Find(currentItem.Id);
-
-								if (checkItem == null || checkItem.CharacterID != m_player.InternalID)
-								{
-									if (checkItem != null)
-									{
-										Log.ErrorFormat("Item '{0}' : '{1}' does not have same owner id on save inventory.  Game Owner = '{2}' : '{3}', DB Owner = '{4}'", currentItem.Name, currentItem.CharacterID, m_player.Name, m_player.InternalID, checkItem.CharacterID);
-									}
-									else
-									{
-										Log.ErrorFormat("Item '{0}' : '{1}' not found in DBInventory for player '{2}'", currentItem.Name, currentItem.Id, m_player.Name);
-									}
-
-									continue;
-								}
-
-								GameServer.Instance.SaveDataObject(currentItem);
+								if (Log.IsErrorEnabled)
+									Log.Error("Item slot and real slot position are different. Item slot=" + currentItem.SlotPosition +
+											  " real slot=" + realSlot + " item ID=" + currentItem.Id);
+								currentItem.SlotPosition = realSlot; // just to be sure
 							}
+
+							// Check database to make sure player still owns this item before saving
+
+							InventoryItem checkItem = GameServer.Database.InventoryItems.Find(currentItem.Id);
+
+							if (checkItem == null || checkItem.CharacterID != m_player.InternalID)
+							{
+								if (checkItem != null)
+								{
+									Log.ErrorFormat("Item '{0}' : '{1}' does not have same owner id on save inventory.  Game Owner = '{2}' : '{3}', DB Owner = '{4}'", currentItem.Name, currentItem.CharacterID, m_player.Name, m_player.InternalID, checkItem.CharacterID);
+								}
+								else
+								{
+									Log.ErrorFormat("Item '{0}' : '{1}' not found in DBInventory for player '{2}'", currentItem.Name, currentItem.Id, m_player.Name);
+								}
+
+								continue;
+							}
+
+							GameServer.Instance.SaveDataObject(currentItem);
 						}
 						catch (Exception e)
 						{
@@ -828,7 +825,7 @@ namespace DOL.GS
 							}
 							break;
 						case eInventorySlot.DistanceWeapon:
-							//m_player.Out.SendDebugMessage("From: {0} to {1} ItemType={2}",fromSlot,toSlot,fromItem.ItemType);
+							//m_player.Out.SendDebugMessage("From: {0} to {1} ItemType={2}",fromSlot,toSlot,fromitem.ItemTemplate.ItemType);
 							if (fromItem.ItemTemplate.ItemType != (int) toSlot && fromItem.ItemTemplate.ObjectType != (int) eObjectType.Instrument)
 								//instruments can be used in ranged slot
 							{

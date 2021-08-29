@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using Atlas.DataLayer.Models;
@@ -32,7 +33,7 @@ namespace DOL.GS
 	{
 		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private readonly string _templateID;
+		private readonly int _templateID;
 		private readonly object _vaultLock = new object();
 		private Atlas.DataLayer.Models.HouseHookpointItem _hookedItem;
 
@@ -61,7 +62,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Template ID for this vault.
 		/// </summary>
-		public string TemplateID
+		public int TemplateID
 		{
 			get { return _templateID; }
 		}
@@ -81,16 +82,16 @@ namespace DOL.GS
             var hookedItem = new Atlas.DataLayer.Models.HouseHookpointItem
             {
                 HouseNumber = house.HouseNumber,
-                HookpointID = hookpointID,
+                HookpointID = (int)hookpointID,
                 Heading = (ushort)(heading % 4096),
                 ItemTemplateID = _templateID,
                 Index = (byte)Index
             };
 
-            var hpitem = DOLDB<Atlas.DataLayer.Models.HouseHookpointItem>.SelectObjects(DB.Column("HouseNumber").IsEqualTo(house.HouseNumber).And(DB.Column("HookpointID").IsEqualTo(hookpointID)));
+			var hpitem = GameServer.Database.HouseHookpointItems.FirstOrDefault(x => x.HouseNumber == house.HouseNumber && x.HookpointID == hookpointID);
 
 			// if there isn't anything already on this hookpoint then add it to the DB
-			if (hpitem.Count == 0)
+			if (hpitem == null)
 			{
 				GameServer.Instance.SaveDataObject(hookedItem);
 			}
@@ -112,7 +113,7 @@ namespace DOL.GS
 
 			_hookedItem = hookedItem;
 
-			IPoint3D position = house.GetHookpointLocation(hookedItem.HookpointID);
+			IPoint3D position = house.GetHookpointLocation((uint)hookedItem.HookpointID);
 			if (position == null)
 				return false;
 
@@ -156,7 +157,7 @@ namespace DOL.GS
 		#endregion
 
 
-		public override string GetOwner(GamePlayer player = null)
+		public override int? GetOwner(GamePlayer player = null)
 		{
 			return CurrentHouse.DatabaseItem.OwnerID;
 		}

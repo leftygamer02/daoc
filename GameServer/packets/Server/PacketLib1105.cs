@@ -127,12 +127,12 @@ namespace DOL.GS.PacketHandler
 						}
 					}
 					
-					foreach (Style st in spec.PretendStylesForLiving(player, player.MaxLevel))
+					foreach (Styles.Style st in spec.PretendStylesForLiving(player, player.MaxLevel))
 					{
 						toAdd.Add(new Tuple<int, int, Skill>((int)st.SkillType, st.InternalID, st));
 					}
 					
-					skillDictCache.Add(new Tuple<Specialization, List<Tuple<int, int, Skill>>>(spec, toAdd.OrderBy(e => (e.Item3 is Ability) ? ((Ability)e.Item3).SpecLevelRequirement : (((e.Item3 is Style) ? ((Style)e.Item3).SpecLevelRequirement : e.Item3.Level)) ).ToList()));
+					skillDictCache.Add(new Tuple<Specialization, List<Tuple<int, int, Skill>>>(spec, toAdd.OrderBy(e => (e.Item3 is Ability) ? ((Ability)e.Item3).SpecLevelRequirement : (((e.Item3 is Styles.Style) ? ((Styles.Style)e.Item3).SpecLevelRequirement : e.Item3.Level)) ).ToList()));
 				}
 				
 				
@@ -249,9 +249,9 @@ namespace DOL.GS.PacketHandler
 							pakskill.WriteByte((byte)(sp.SkillType == eSkillPage.Songs ? 0xFF : 0xFE)); // line
 							pakskill.WriteShort((ushort)sk.Item2); // ID
 						}
-						else if (sk.Item3 is Style)
+						else if (sk.Item3 is Styles.Style)
 						{
-							Style st = (Style)sk.Item3;
+							Styles.Style st = (Styles.Style)sk.Item3;
 							pakskill.WriteByte((byte)Math.Min(player.MaxLevel, st.SpecLevelRequirement));
 							// tooltip
 							pakskill.WriteShort((ushort)st.Icon);

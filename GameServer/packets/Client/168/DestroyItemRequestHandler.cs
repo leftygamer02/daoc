@@ -32,13 +32,13 @@ namespace DOL.GS.PacketHandler.Client.v168
 			InventoryItem item = client.Player.Inventory.GetItem((eInventorySlot)slot);
 			if (item != null)
 			{
-				if (item.IsIndestructible)
+				if (item.ItemTemplate.IsIndestructible)
 				{
-					client.Out.SendMessage($"You can't destroy {item.GetName(0, false)}!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					client.Out.SendMessage($"You can't destroy {item.ItemTemplate.GetName(0, false)}!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
 				}
 
-				if (item.Id == "ARelic")
+				if (item.ItemTemplate.KeyName == "ARelic")
 				{
 					client.Out.SendMessage("You cannot destroy a relic!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
@@ -53,7 +53,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (client.Player.Inventory.RemoveItem(item))
 				{
 					client.Out.SendMessage($"You destroy the {item.Name}.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					InventoryLogging.LogInventoryAction(client.Player, "(destroy)", eInventoryActionType.Other, item.Template, item.Count);
+					InventoryLogging.LogInventoryAction(client.Player, "(destroy)", eInventoryActionType.Other, item.ItemTemplate, item.Count);
 				}
 			}
 		}

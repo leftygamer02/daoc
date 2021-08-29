@@ -24,5 +24,12 @@ namespace Atlas.DataLayer.Models
         public int Realm { get; set; }
 
         public virtual Region Region { get; set; }
+
+        public virtual ICollection<Artifact> Artifacts { get; set; }
+
+        public Zone()
+        {
+            Artifacts = new HashSet<Artifact>();
+        }
     }
 }

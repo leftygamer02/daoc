@@ -79,7 +79,7 @@ namespace DOL.GS
                     spell.Damage = 2000* DragonDifficulty /100;
 					spell.RecastDelay = 10;
                     spell.DamageType = (int)eDamageType.Heat;
-                    spell.SpellID = 6001;
+                    spell.Id = 6001;
                     spell.Target = "Enemy";
                     spell.Type = "DirectDamage";
                     m_glareSpell = new Spell(spell, 70);
@@ -113,7 +113,7 @@ namespace DOL.GS
                     spell.Radius = 700;
                     spell.Damage = 2000* DragonDifficulty /100;
                     spell.DamageType = (int)eDamageType.Heat;
-                    spell.SpellID = 6002;
+                    spell.Id = 6002;
                     spell.Target = "Enemy";
                     spell.Type = "DirectDamage";
                     m_breathSpell = new Spell(spell, 70);
@@ -146,7 +146,7 @@ namespace DOL.GS
                     spell.Duration = 30;
                     spell.Damage = 0;
                     spell.DamageType = (int)eDamageType.Heat;
-                    spell.SpellID = 6003;
+                    spell.Id = 6003;
                     spell.Target = "Enemy";
                     spell.Type = "HeatResistDebuff";
                     spell.Message1 = "You feel more vulnerable to heat!";
@@ -185,7 +185,7 @@ namespace DOL.GS
 					spell.Duration = 90* DragonDifficulty /100;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Heat;
-					spell.SpellID = 6003;
+					spell.Id = 6003;
 					spell.Target = "Enemy";
 					spell.Type = "FumbleChanceDebuff";
 					m_meleeDebuffSpell = new Spell(spell, 70);
@@ -222,7 +222,7 @@ namespace DOL.GS
 					spell.Duration = 90* DragonDifficulty /100;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Heat;
-					spell.SpellID = 6003;
+					spell.Id = 6003;
 					spell.Target = "Enemy";
 					spell.Type = "Nearsight";
 					spell.Message1 = "You are blinded!";

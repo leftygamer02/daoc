@@ -162,16 +162,7 @@ namespace DOL.GS.PacketHandler.Client.v168
                 string description = newZone.Description;
                 string screenDescription = description;
 
-                var translation = LanguageMgr.GetTranslation(client, newZone) as DBLanguageZone;
-                if (translation != null)
-                {
-                    if (!Util.IsEmpty(translation.Description))
-                        description = translation.Description;
-
-                    if (!Util.IsEmpty(translation.ScreenDescription))
-                        screenDescription = translation.ScreenDescription;
-                }
-
+                
                 client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "PlayerPositionUpdateHandler.Entered", description),
 				                       eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 client.Out.SendMessage(screenDescription, eChatType.CT_ScreenCenterSmaller, eChatLoc.CL_SystemWindow);
@@ -266,10 +257,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 						{
 							if (ServerProperties.Properties.BAN_HACKERS && false) // banning disabled until this technique is proven accurate
 							{
-								DBBannedAccount b = new DBBannedAccount();
+								var b = new Ban();
 								b.Author = "SERVER";
 								b.Ip = client.TcpEndpointAddress;
-								b.Account = client.Account.Name;
+								b.AccountID = client.Account.Id;
 								b.DateBan = DateTime.Now;
 								b.Type = "B";
 								b.Reason = string.Format("Autoban MOVEHACK:(CPS:{0}, JT:{1}) on player:{2}", coordsPerSec, jumpDetect, client.Player.Name);
@@ -419,10 +410,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 							{
 								if (ServerProperties.Properties.BAN_HACKERS)
 								{
-									DBBannedAccount b = new DBBannedAccount();
+									var b = new Ban();
 									b.Author = "SERVER";
 									b.Ip = client.TcpEndpointAddress;
-									b.Account = client.Account.Name;
+									b.AccountID = client.Account.Id;
 									b.DateBan = DateTime.Now;
 									b.Type = "B";
 									b.Reason = string.Format("Autoban SH:({0},{1}) on player:{2}", SHcount, environmentTick - SHlastTick, client.Player.Name);
@@ -491,10 +482,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 					if (ServerProperties.Properties.BAN_HACKERS)
 					{
-						DBBannedAccount b = new DBBannedAccount();
+						var b = new Ban();
 						b.Author = "SERVER";
 						b.Ip = client.TcpEndpointAddress;
-						b.Account = client.Account.Name;
+						b.AccountID = client.Account.Id;
 						b.DateBan = DateTime.Now;
 						b.Type = "B";
 						b.Reason = string.Format("Autoban flying hack: on player:{0}", client.Player.Name);
@@ -855,16 +846,6 @@ namespace DOL.GS.PacketHandler.Client.v168
 				string description = newZone.Description;
 				string screenDescription = description;
 
-				var translation = LanguageMgr.GetTranslation(client, newZone) as DBLanguageZone;
-				if (translation != null)
-				{
-					if (!Util.IsEmpty(translation.Description))
-						description = translation.Description;
-
-					if (!Util.IsEmpty(translation.ScreenDescription))
-						screenDescription = translation.ScreenDescription;
-				}
-
 				client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "PlayerPositionUpdateHandler.Entered", description),
 									   eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				client.Out.SendMessage(screenDescription, eChatType.CT_ScreenCenterSmaller, eChatLoc.CL_SystemWindow);
@@ -953,10 +934,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 						{
 							if (ServerProperties.Properties.BAN_HACKERS && false) // banning disabled until this technique is proven accurate
 							{
-								DBBannedAccount b = new DBBannedAccount();
+								var b = new Ban();
 								b.Author = "SERVER";
 								b.Ip = client.TcpEndpointAddress;
-								b.Account = client.Account.Name;
+								b.AccountID = client.Account.Id;
 								b.DateBan = DateTime.Now;
 								b.Type = "B";
 								b.Reason = string.Format("Autoban MOVEHACK:(CPS:{0}, JT:{1}) on player:{2}", coordsPerSec, jumpDetect, client.Player.Name);
@@ -1080,10 +1061,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 					if (ServerProperties.Properties.BAN_HACKERS)
 					{
-						DBBannedAccount b = new DBBannedAccount();
+						var b = new Ban();
 						b.Author = "SERVER";
 						b.Ip = client.TcpEndpointAddress;
-						b.Account = client.Account.Name;
+						b.AccountID = client.Account.Id;
 						b.DateBan = DateTime.Now;
 						b.Type = "B";
 						b.Reason = string.Format("Autoban flying hack: on player:{0}", client.Player.Name);

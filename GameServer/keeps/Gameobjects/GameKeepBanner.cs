@@ -17,6 +17,7 @@
  *
  */
 using System;
+using System.Linq;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 
@@ -64,8 +65,8 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public const ushort HiberniaGuildModel = 680;
 
-		protected int m_templateID = 0;
-		public int TemplateID
+		protected string m_templateID = string.Empty;
+		public string TemplateID
 		{
 			get { return m_templateID; }
 		}
@@ -90,7 +91,7 @@ namespace DOL.GS.Keeps
 			{
 				if (Component.Keep != null)
 				{
-					Component.Keep.Banners.Remove(ObjectID);
+					Component.Keep.Banners.Remove(this.ObjectID.ToString());
 				}
 
 				Component.Delete();
@@ -117,9 +118,9 @@ namespace DOL.GS.Keeps
 					Component = new GameKeepComponent();
 					Component.Keep = keep;
 
-					if (keep.Banners.ContainsKey(sKey) == false)
+					if (keep.Banners.ContainsKey(sKey.ToString()) == false)
 					{
-						Component.Keep.Banners.Add(sKey, this);
+						Component.Keep.Banners.Add(sKey.ToString(), this);
 						if (this.Model == AlbionGuildModel || this.Model == MidgardGuildModel || this.Model == HiberniaGuildModel)
 							BannerType = eBannerType.Guild;
 						else BannerType = eBannerType.Realm;
@@ -141,7 +142,7 @@ namespace DOL.GS.Keeps
 			{
 				if (area is KeepArea)
 				{
-					Component.Keep.Banners.Remove(sKey);
+					Component.Keep.Banners.Remove(sKey.ToString());
 					// break; This is a bad idea.  If there are multiple KeepAreas, we could end up with a banner on left on one of them that has been deleted from the DB
 				}
 			}
@@ -157,7 +158,7 @@ namespace DOL.GS.Keeps
 			BannerType = (eBannerType)pos.TemplateType;
 
 			PositionMgr.LoadKeepItemPosition(pos, this);
-			int sKey = this.TemplateID;
+			string sKey = this.TemplateID;
 			if (component.Keep.Banners.ContainsKey(sKey) == false)
 			{
 				component.Keep.Banners.Add(sKey, this);

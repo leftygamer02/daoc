@@ -24,6 +24,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 using Atlas.DataLayer.Models;
 using DOL.Events;
@@ -366,7 +367,7 @@ namespace DOL.GS
 			{
 				m_account = value;
 				// Load Custom Params
-				this.InitFromCollection<AccountXCustomParam>(value.CustomParams, param => param.KeyName, param => param.Value);
+				this.InitFromCollection<AccountCustomParam>(value.AccountCustomParams, param => param.KeyName, param => param.Value);
 				GameEventMgr.Notify(GameClientEvent.AccountLoaded, this);
 			}
 		}
@@ -500,7 +501,7 @@ namespace DOL.GS
 			get { return m_customParams; }
 			set
 			{
-				Account.CustomParams = value.SelectMany(kv => kv.Value.Select(val => new AccountXCustomParam(Account.Name, kv.Key, val))).ToArray();
+				Account.AccountCustomParams = value.SelectMany(kv => kv.Value.Select(val => new AccountCustomParam() { AccountID = Account.Id, KeyName = kv.Key, Value = val })).ToArray();
 				m_customParams = value;
 			}
 		}
@@ -648,8 +649,13 @@ namespace DOL.GS
 		public void LoadPlayer(int accountindex, string playerClass)
 		{
 			// refreshing Account to load any changes from the DB
-			GameServer.Database.FillObjectRelations(m_account);
-			Character dolChar = m_account.Characters[accountindex];
+			m_account = GameServer.Database.Accounts
+								.Include(x => x.Characters)
+								.Include(x => x.Appeals)
+								.Include(x => x.Bans)
+								.FirstOrDefault(x => x.Id == m_account.Id);
+
+			Character dolChar = m_account.Characters.FirstOrDefault(x => x.AccountSlot == accountindex);
 			LoadPlayer(dolChar, playerClass);
 		}
 
@@ -663,7 +669,7 @@ namespace DOL.GS
 			m_activeCharIndex = 0;
 			foreach (var ch in Account.Characters)
 			{
-				if (ch.ObjectId == dolChar.ObjectId)
+				if (ch.Id == dolChar.Id)
 					break;
 				m_activeCharIndex++;
 			}
@@ -723,11 +729,11 @@ namespace DOL.GS
 					if (Properties.KICK_IDLE_PLAYER_STATUS)
 					{
 						//Time playing
-						var connectedtime = DateTime.Now.Subtract(m_account.LastLogin).TotalMinutes;
+						var connectedtime = DateTime.Now.Subtract(m_account.LastLogin.Value).TotalMinutes;
 						//Lets get our player from DB.
-						var getp = GameServer.Database.FindObjectByKey<Character>(m_player.InternalID);
+						var getp = GameServer.Database.Characters.Find(m_player.InternalID);
 						//Let get saved poistion from DB.
-						int[] oldloc = { getp.Xpos, getp.Ypos, getp.Zpos, getp.Direction, getp.Region };
+						int[] oldloc = { getp.Xpos, getp.Ypos, getp.Zpos, getp.Direction, getp.RegionID };
 						//Lets get current player Gloc.
 						int[] currentloc = { m_player.X, m_player.Y, m_player.Z, m_player.Heading, m_player.CurrentRegionID };
 						//Compapre Old and Current.

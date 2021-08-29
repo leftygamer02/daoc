@@ -471,7 +471,7 @@ namespace DOL.GS
 					{
 						player.Inventory.RemoveCountFromStack(item, de.Value.Value);
 					}
-					InventoryLogging.LogInventoryAction(player, "(craft)", eInventoryActionType.Craft, item.Template, de.Value.HasValue ? de.Value.Value : item.Count);
+					InventoryLogging.LogInventoryAction(player, "(craft)", eInventoryActionType.Craft, item.ItemTemplate, de.Value.HasValue ? de.Value.Value : item.Count);
 				}
 			}
 			player.Inventory.CommitChanges();
@@ -499,7 +499,7 @@ namespace DOL.GS
 					if (item.Count >= product.MaxCount)
 						continue;
 
-					int countFree = item.MaxCount - item.Count;
+					int countFree = item.ItemTemplate.MaxCount - item.Count;
 					if (count > countFree)
 					{
 						changedSlots.Add(item.SlotPosition, countFree); // existing item should be changed
@@ -541,7 +541,7 @@ namespace DOL.GS
 						newItem = player.Inventory.GetItem((eInventorySlot)slot.Key);
 						if (newItem != null && player.Inventory.AddCountToStack(newItem, countToAdd))
 						{
-							InventoryLogging.LogInventoryAction("(craft)", player, eInventoryActionType.Other, newItem.Template, countToAdd);
+							InventoryLogging.LogInventoryAction("(craft)", player, eInventoryActionType.Other, newItem.ItemTemplate, countToAdd);
 							// count incremented, continue with next change
 							continue;
 						}
@@ -556,7 +556,7 @@ namespace DOL.GS
 						ItemUnique unique = new ItemUnique(product);
 						GameServer.Instance.SaveDataObject(unique);
 						newItem = GameInventoryItem.Create(unique);
-						newItem.Quality = GetQuality(player, recipe.Level);
+						newItem.ItemTemplate.Quality = GetQuality(player, recipe.Level);
 					}
 
 					newItem.IsCrafted = true;
@@ -566,7 +566,7 @@ namespace DOL.GS
 					if (slot.Key > 0)	// Create new item in the backpack
 					{
 						player.Inventory.AddItem((eInventorySlot)slot.Key, newItem);
-						InventoryLogging.LogInventoryAction("(craft)", player, eInventoryActionType.Craft, newItem.Template, newItem.Count);
+						InventoryLogging.LogInventoryAction("(craft)", player, eInventoryActionType.Craft, newItem.ItemTemplate, newItem.Count);
 					}
 					else					// Create new item on the ground
 					{
@@ -577,9 +577,9 @@ namespace DOL.GS
 
 				player.Inventory.CommitChanges();
 
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.BuildCraftedItem.Successfully", product.Name, newItem.Quality), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.BuildCraftedItem.Successfully", product.Name, newItem.ItemTemplate.Quality), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
 
-				if (recipe.IsForUniqueProduct && newItem.Quality == 100)
+				if (recipe.IsForUniqueProduct && newItem.ItemTemplate.Quality == 100)
 				{
 					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.BuildCraftedItem.Masterpiece"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					player.Out.SendPlaySound(eSoundType.Craft, 0x04);

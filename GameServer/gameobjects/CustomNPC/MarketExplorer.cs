@@ -47,7 +47,7 @@ namespace DOL.GS
             return true;
         }
 
-		public virtual string GetOwner(GamePlayer player)
+		public virtual int? GetOwner(GamePlayer player)
 		{
 			return player.InternalID;
 		}

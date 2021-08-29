@@ -162,7 +162,7 @@ namespace DOL.GS
 					spell.Damage = 2000 * DragonDifficulty /100;
 					spell.RecastDelay = 10;
 					spell.DamageType = (int)eDamageType.Spirit;
-					spell.SpellID = 6021;
+					spell.Id = 6021;
 					spell.Target = "Enemy";
 					spell.Type = "DirectDamage";
 					m_glareSpell = new Spell(spell, 70);
@@ -196,7 +196,7 @@ namespace DOL.GS
 					spell.Radius = 700;
 					spell.Damage = 2000 * DragonDifficulty /100;
 					spell.DamageType = (int)eDamageType.Spirit;
-					spell.SpellID = 6022;
+					spell.Id = 6022;
 					spell.Target = "Enemy";
 					spell.Type = "DirectDamage";
 					m_breathSpell = new Spell(spell, 70);
@@ -229,7 +229,7 @@ namespace DOL.GS
 					spell.Duration = 30* DragonDifficulty /100;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Spirit;
-					spell.SpellID = 6023;
+					spell.Id = 6023;
 					spell.Target = "Enemy";
 					spell.Type = "SpiritResistDebuff";
 					spell.Message1 = "You feel more vulnerable to spirit magic!";
@@ -267,7 +267,7 @@ namespace DOL.GS
 					spell.Duration = 90* DragonDifficulty /100;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Spirit;
-					spell.SpellID = 6003;
+					spell.Id = 6003;
 					spell.Target = "Enemy";
 					spell.Type = "FumbleChanceDebuff";
 					m_meleeDebuffSpell = new Spell(spell, 70);
@@ -303,7 +303,7 @@ namespace DOL.GS
 					spell.Duration = 90* DragonDifficulty /100;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Spirit;
-					spell.SpellID = 6003;
+					spell.Id = 6003;
 					spell.Target = "Enemy";
 					spell.Type = "Nearsight";
 					spell.Message1 = "You are blinded!";

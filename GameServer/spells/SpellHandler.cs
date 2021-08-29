@@ -275,7 +275,7 @@ namespace DOL.GS.Spells
 		{
 			InventoryItem instrument = Caster.AttackWeapon;
 			// From patch 1.97:  Flutes, Lutes, and Drums will now be able to play any song type, and will no longer be limited to specific songs.
-			if (instrument == null || instrument.ObjectType != (int)eObjectType.Instrument ) // || (instrument.DPS_AF != 4 && instrument.DPS_AF != m_spell.InstrumentRequirement))
+			if (instrument == null || instrument.ItemTemplate.ObjectType != (int)eObjectType.Instrument ) // || (instrument.DPS_AF != 4 && instrument.DPS_AF != m_spell.InstrumentRequirement))
 			{
 				return false;
 			}
@@ -2567,8 +2567,8 @@ namespace DOL.GS.Spells
 				InventoryItem instrument = Caster.AttackWeapon;
 				if (instrument != null)
 				{
-					duration *= 1.0 + Math.Min(1.0, instrument.Level / (double)Caster.Level); // up to 200% duration for songs
-					duration *= instrument.Condition / (double)instrument.MaxCondition * instrument.Quality / 100;
+					duration *= 1.0 + Math.Min(1.0, instrument.ItemTemplate.Level / (double)Caster.Level); // up to 200% duration for songs
+					duration *= instrument.Condition / (double)instrument.ItemTemplate.MaxCondition * instrument.ItemTemplate.Quality / 100;
 				}
 			}
 
@@ -3005,7 +3005,7 @@ namespace DOL.GS.Spells
 				GamePlayer playerCaster = Caster as GamePlayer;
 				if (playerCaster != null)
 				{
-					int itemSpellLevel = m_spellItem.Template.LevelRequirement > 0 ? m_spellItem.Template.LevelRequirement : Math.Min(playerCaster.MaxLevel, m_spellItem.Level);
+					int itemSpellLevel = m_spellItem.ItemTemplate.LevelRequirement > 0 ? m_spellItem.ItemTemplate.LevelRequirement : Math.Min(playerCaster.MaxLevel, m_spellItem.ItemTemplate.Level);
 					return 100 - (85 + ((itemSpellLevel - target.Level) / 2));
 				}
 			}

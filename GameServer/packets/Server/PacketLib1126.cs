@@ -98,7 +98,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteIntLowEndian(0);
 				pak.WriteIntLowEndian(0);
 				pak.WriteIntLowEndian(0);
-				if (m_gameClient.Account.Characters == null || m_gameClient.Account.Characters.Length == 0)
+				if (m_gameClient.Account.Characters == null || m_gameClient.Account.Characters.Count == 0)
 				{
 					SendTCP(pak);
 					return;
@@ -113,29 +113,29 @@ namespace DOL.GS.PacketHandler
 					}
 					catch (Exception ex)
 					{
-						log.Error($"SendCharacterOverview - Duplicate char in slot? Slot: {c.AccountSlot}, Account: {c.AccountName}", ex);
+						log.Error($"SendCharacterOverview - Duplicate char in slot? Slot: {c.AccountSlot}, Account: {c.Account.Name}", ex);
 					}
 				}
-				var itemsByOwnerID = new Dictionary<string, Dictionary<eInventorySlot, InventoryItem>>();
+				var itemsByOwnerID = new Dictionary<int, Dictionary<eInventorySlot, InventoryItem>>();
 
 				if (charsBySlot.Any())
 				{
-					var filterBySlotPosition = DB.Column("SlotPosition").IsGreaterOrEqualTo((int)eInventorySlot.MinEquipable)
-						.And(DB.Column("SlotPosition").IsLessOrEqualTo((int)eInventorySlot.MaxEquipable));
-					var allItems = DOLDB<InventoryItem>.SelectObjects(DB.Column("OwnerID").IsIn(charsBySlot.Values.Select(c => c.ObjectId)).And(filterBySlotPosition));
+					var allItems = GameServer.Database.InventoryItems.Where(x => x.Character.AccountID == m_gameClient.Account.Id &&
+																					 x.SlotPosition >= (int)eInventorySlot.MinEquipable &&
+																					 x.SlotPosition <= (int)eInventorySlot.MaxEquipable);
 
 					foreach (InventoryItem item in allItems)
 					{
 						try
 						{
-							if (!itemsByOwnerID.ContainsKey(item.OwnerID))
-								itemsByOwnerID.Add(item.OwnerID, new Dictionary<eInventorySlot, InventoryItem>());
+							if (!itemsByOwnerID.ContainsKey(item.CharacterID.Value))
+								itemsByOwnerID.Add(item.CharacterID.Value, new Dictionary<eInventorySlot, InventoryItem>());
 
-							itemsByOwnerID[item.OwnerID].Add((eInventorySlot)item.SlotPosition, item);
+							itemsByOwnerID[item.CharacterID.Value].Add((eInventorySlot)item.SlotPosition, item);
 						}
 						catch (Exception ex)
 						{
-							log.Error($"SendCharacterOverview - Duplicate item on character? OwnerID: {item.OwnerID}, SlotPosition: {item.SlotPosition}, Account: {m_gameClient.Account.Name}", ex);
+							log.Error($"SendCharacterOverview - Duplicate item on character? OwnerID: {item.CharacterID}, SlotPosition: {item.SlotPosition}, Account: {m_gameClient.Account.Name}", ex);
 						}
 					}
 				}
@@ -152,7 +152,7 @@ namespace DOL.GS.PacketHandler
 
 					Dictionary<eInventorySlot, InventoryItem> charItems = null;
 
-					if (!itemsByOwnerID.TryGetValue(c.ObjectId, out charItems))
+					if (!itemsByOwnerID.TryGetValue(c.Id, out charItems))
 						charItems = new Dictionary<eInventorySlot, InventoryItem>();
 
 					byte extensionTorso = 0;
@@ -161,14 +161,14 @@ namespace DOL.GS.PacketHandler
 
 					InventoryItem item = null;
 					if (charItems.TryGetValue(eInventorySlot.TorsoArmor, out item))
-						extensionTorso = item.Extension;
+						extensionTorso = (byte)item.ItemTemplate.Extension;
 					if (charItems.TryGetValue(eInventorySlot.HandsArmor, out item))
-						extensionGloves = item.Extension;
+						extensionGloves = (byte)item.ItemTemplate.Extension;
 					if (charItems.TryGetValue(eInventorySlot.FeetArmor, out item))
-						extensionBoots = item.Extension;
+						extensionBoots = (byte)item.ItemTemplate.Extension;
 
 					string locationDescription = string.Empty;
-					Region region = WorldMgr.GetRegion((ushort)c.Region);
+					Region region = WorldMgr.GetRegion((ushort)c.RegionID);
 					if (region != null)
 						locationDescription = m_gameClient.GetTranslatedSpotDescription(region, c.Xpos, c.Ypos, c.Zpos);
 					string classname = "";
@@ -220,23 +220,23 @@ namespace DOL.GS.PacketHandler
 					pak.WritePascalStringIntLE(c.Name);
 					pak.WriteIntLowEndian(0x18);
 					pak.WriteByte(1); // always 1 ?
-					pak.WriteByte(c.EyeSize); // seems to be : 0xF0 = eyes, 0x0F = nose
-					pak.WriteByte(c.LipSize); // seems to be : 0xF0 = lips, 0xF = jaw
-					pak.WriteByte(c.EyeColor); // seems to be : 0xF0 = eye color, 0x0F = skin tone
-					pak.WriteByte(c.HairColor);
-					pak.WriteByte(c.FaceType); // seems to be : 0xF0 = face
-					pak.WriteByte(c.HairStyle); // seems to be : 0xF0 = hair
+					pak.WriteByte((byte)c.EyeSize); // seems to be : 0xF0 = eyes, 0x0F = nose
+					pak.WriteByte((byte)c.LipSize); // seems to be : 0xF0 = lips, 0xF = jaw
+					pak.WriteByte((byte)c.EyeColor); // seems to be : 0xF0 = eye color, 0x0F = skin tone
+					pak.WriteByte((byte)c.HairColor);
+					pak.WriteByte((byte)c.FaceType); // seems to be : 0xF0 = face
+					pak.WriteByte((byte)c.HairStyle); // seems to be : 0xF0 = hair
 					pak.WriteByte((byte)((extensionBoots << 4) | extensionGloves));
 					pak.WriteByte((byte)((extensionTorso << 4) | (c.IsCloakHoodUp ? 0x1 : 0x0)));
-					pak.WriteByte(c.CustomisationStep); //1 = auto generate config, 2= config ended by player, 3= enable config to player
-					pak.WriteByte(c.MoodType);
+					pak.WriteByte((byte)c.CustomisationStep); //1 = auto generate config, 2= config ended by player, 3= enable config to player
+					pak.WriteByte((byte)c.MoodType);
 					pak.Fill(0x0, 13);
 					pak.WritePascalStringIntLE(locationDescription);
 					pak.WritePascalStringIntLE(classname);
 					pak.WritePascalStringIntLE(racename);
 					pak.WriteShortLowEndian((ushort)c.CurrentModel);
 
-					pak.WriteByte((byte)c.Region);
+					pak.WriteByte((byte)c.RegionID);
 					if (region == null || (int)m_gameClient.ClientType > region.Expansion)
 						pak.WriteByte(0x00);
 					else

@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using Atlas.DataLayer.Models;
+using Atlas.DataLayer;
 using DOL.GS.Movement;
 using DOL.GS.PacketHandler;
 
@@ -372,7 +373,7 @@ namespace DOL.GS.Commands
 					if (template != null && template.Name.ToLower() == ticket.ToLower())
 					{
 						ticketFound = true;
-						pathname = template.Id;
+						pathname = template.KeyName;
 						break;
 					}
 
