@@ -350,7 +350,7 @@ namespace DOL.GS
 			m_dbConnectionString = string.Format("Data Source={0};Version=3;Pooling=False;Cache Size=1073741824;Journal Mode=Off;Synchronous=Off;Foreign Keys=True;Default Timeout=60",
 			                                     Path.Combine(m_rootDirectory, "dol.sqlite3.db"));
 			m_autoSave = true;
-			m_saveInterval = 10;
+			m_saveInterval = 1;
 			m_maxClientCount = 500;
 
 			// Get count of CPUs

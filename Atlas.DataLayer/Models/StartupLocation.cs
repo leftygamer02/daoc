@@ -17,7 +17,7 @@ namespace Atlas.DataLayer.Models
         public int Realm { get; set; }
         public int RaceID { get; set; }
         public int ClassID { get; set; }
-        public int ClientRegionID { get; set; }
+        public int? ClientRegionID { get; set; }
 
         public virtual Region Region { get; set; }
         public virtual Region ClientRegion { get; set; }

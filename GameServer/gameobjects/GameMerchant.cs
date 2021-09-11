@@ -371,7 +371,7 @@ namespace DOL.GS
 			}
 
 			npcTemplate.Name = Name;
-			npcTemplate.Guild = GuildName;
+			npcTemplate.GuildName = GuildName;
 			merchant.X = X;
 			merchant.Y = Y;
 			merchant.Z = Z;

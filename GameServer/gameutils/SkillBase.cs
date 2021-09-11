@@ -541,7 +541,7 @@ namespace DOL.GS
 			m_syncLockUpdates.EnterWriteLock();
 			try
 			{
-				var specs = GameServer.Database.Specializations.Include(x => x.SpellLines).ToList();
+				var specs = GameServer.Database.Specializations.Include(x => x.SpellLines).Include(x => x.Styles).ToList();
 				
 				int count = 0;
 				

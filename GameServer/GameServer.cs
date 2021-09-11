@@ -713,16 +713,9 @@ namespace DOL.GS
 				if (!InitComponent(AreaMgr.LoadAllAreas(), "Areas"))
 					return false;
 
-				//---------------------------------------------------------------
-				//Enable Worldsave timer now
-				if (m_timer != null)
-				{
-					m_timer.Change(Timeout.Infinite, Timeout.Infinite);
-					m_timer.Dispose();
-				}
-				m_timer = new Timer(SaveTimerProc, null, SaveInterval * MINUTE_CONV, Timeout.Infinite);
-				if (log.IsInfoEnabled)
-					log.Info("World save timer: true");
+				
+				//OLD SAVE TIMER SPOT
+
 
 				//---------------------------------------------------------------
 				//Load all boats
@@ -780,6 +773,21 @@ namespace DOL.GS
 				{
 					log.InfoFormat("Not Loading Quest Manager : Obeying Server Property <load_quests> - {0}", Properties.LOAD_QUESTS);
 				}
+
+
+				//---------------------------------------------------------------
+				//Enable Worldsave timer now
+				if (m_timer != null)
+				{
+					m_timer.Change(Timeout.Infinite, Timeout.Infinite);
+					m_timer.Dispose();
+				}
+				m_timer = new Timer(SaveTimerProc, null, SaveInterval * MINUTE_CONV, Timeout.Infinite);
+				if (log.IsInfoEnabled)
+					log.Info("World save timer: true");
+
+				SaveTimerProc(null); //save all now
+
 
 				//---------------------------------------------------------------
 				//Notify our scripts that everything went fine!
@@ -1465,8 +1473,11 @@ namespace DOL.GS
 					//BoatMgr.SaveAllBoats();
 
 					//FactionMgr.SaveAllAggroToFaction();
-
+					saveCount = WorldMgr.GetAllPlayingClientsCount();
 					m_database.SaveChanges();
+
+					m_database.Dispose();
+					m_database = new Atlas.DataLayer.AtlasContext(Configuration.DBType, Configuration.DBConnectionString);
 
 					// 2008-01-29 Kakuri - Obsolete
 					//m_database.WriteDatabaseTables();
@@ -1501,52 +1512,108 @@ namespace DOL.GS
 			return new Atlas.DataLayer.AtlasContext(Configuration.DBType, Configuration.DBConnectionString);
 		}
 
+        //public T SaveDataObject<T>(T obj) where T : class, IDataObject
+        //{
+        //    using (var db = GetNewDbContext())
+        //    {
+        //        var entity = db.Set<T>().Find(obj.Id);
+
+        //        if (entity != null)
+        //        {
+        //            foreach (var prop in typeof(T).GetProperties())
+        //            {
+        //                if (prop.Name == "Id")
+        //                    continue;
+        //                prop.SetValue(entity, prop.GetValue(obj));
+        //            }
+
+        //            entity.ModifyDate = DateTime.Now;
+        //        }
+        //        else
+        //        {
+        //            obj.CreateDate = DateTime.Now;
+        //            obj.ModifyDate = DateTime.Now;
+        //            db.Set<T>().Add(obj);
+
+        //            entity = obj;
+        //        }
+
+        //        db.SaveChanges();
+
+        //        return entity;
+        //    }
+        //}
+
+        //public T SaveDataObject<T>(T obj) where T : class, IDataObject
+        //{
+        //    var db = GameServer.Database;
+
+        //    var entity = db.Set<T>().Find(obj.Id);
+
+        //    if (entity != null)
+        //    {
+        //        foreach (var prop in typeof(T).GetProperties())
+        //        {
+        //            if (prop.Name == "Id")
+        //                continue;
+        //            prop.SetValue(entity, prop.GetValue(obj));
+        //        }
+
+        //        entity.ModifyDate = DateTime.Now;
+        //    }
+        //    else
+        //    {
+        //        obj.CreateDate = DateTime.Now;
+        //        obj.ModifyDate = DateTime.Now;
+        //        db.Set<T>().Add(obj);
+
+        //        entity = obj;
+        //    }
+
+        //    //db.SaveChanges();
+
+        //    return entity;
+        //}
+
 		public T SaveDataObject<T>(T obj) where T : class, IDataObject
-        {
-			using (var db = GetNewDbContext())
+        {			
+			var db = GameServer.Database;
+
+			if (db == null || db.IsDisposed)
+				return obj;
+
+			if (!db.ChangeTracker.Entries<T>().Any(x => x.Entity.Id == obj.Id))
             {
-				var entity = db.Set<T>().Find(obj.Id);
-
-				if (entity != null)
-                {
-					foreach (var prop in typeof(T).GetProperties())
-					{
-						if (prop.Name == "Id")
-							continue;
-						prop.SetValue(entity, prop.GetValue(obj));
-					}
-
-					entity.ModifyDate = DateTime.Now;
-				}
-                else
-                {
-					obj.CreateDate = DateTime.Now;
-					obj.ModifyDate = DateTime.Now;
-					db.Set<T>().Add(obj);
-
-					entity = obj;
-                }
-				
-				db.SaveChanges();
-
-				return entity;
+				db.Set<T>().Update(obj);
             }
-        }
 
-		public bool DeleteDataObject<T>(T obj) where T : class, IDataObject
+			if (obj.Id <= 0)
+			{
+				obj.CreateDate = DateTime.Now;
+				db.Set<T>().Add(obj);
+			}
+
+			obj.ModifyDate = DateTime.Now;
+
+			//db.SaveChanges();
+
+			return obj;
+		}
+
+        public bool DeleteDataObject<T>(T obj) where T : class, IDataObject
 		{
             try
             {
-				using (var db = GetNewDbContext())
-				{
-					var entity = db.Set<T>().Find(obj.Id);
+				var db = m_database;
 
-					if (entity != null)
-					{
-						db.Set<T>().Remove(entity);
-						db.SaveChanges();
-					}
+				var entity = db.Set<T>().Find(obj.Id);
+
+				if (entity != null)
+				{
+					db.Set<T>().Remove(entity);
+					//db.SaveChanges();
 				}
+
 				return true;
 			}
 			catch
@@ -1558,17 +1625,15 @@ namespace DOL.GS
 
 		public void DeleteDataObjects<T>(IEnumerable<T> objs) where T : class, IDataObject
 		{
-			using (var db = GetNewDbContext())
+			var db = m_database;
+			foreach (var obj in objs)
 			{
-				foreach (var obj in objs)
-                {
-					var entity = db.Set<T>().Find(obj.Id);
+				var entity = db.Set<T>().Find(obj.Id);
 
-					if (entity != null)
-					{
-						db.Set<T>().Remove(entity);
-						db.SaveChanges();
-					}
+				if (entity != null)
+				{
+					db.Set<T>().Remove(entity);
+					//db.SaveChanges();
 				}
 			}
 		}

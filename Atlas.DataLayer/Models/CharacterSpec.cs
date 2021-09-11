@@ -11,7 +11,9 @@ namespace Atlas.DataLayer.Models
         public int CharacterID { get; set; }
         public string SpecLine { get; set; }
         public int SpecLevel { get; set; }
+        public int SpecializationID { get; set; }
 
         public virtual Character Character { get; set; }
+        public virtual Specialization Specialization { get; set; }
     }
 }

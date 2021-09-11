@@ -185,12 +185,12 @@ namespace DOL.GS
 			m_inventory = data.EquipmentTemplateName;
 			m_aggroLevel = (byte)data.AggroLevel;
 			m_aggroRange = data.AggroRange;
-			m_race = (ushort)data.RaceID;
+			m_race = (ushort)(data.RaceID ?? 0);
 			m_bodyType = (ushort)data.BodyType;
 			m_maxdistance = data.MaxDistance;
 			m_tetherRange = data.TetherRange;
 			m_visibleActiveWeaponSlot = (byte)data.VisibleWeaponSlots;
-			m_realm = data.Realm;
+			m_realm = data.Realm ?? 0;
 		}
 
 

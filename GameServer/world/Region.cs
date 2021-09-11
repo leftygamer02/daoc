@@ -31,6 +31,7 @@ using DOL.GS.Keeps;
 using DOL.GS.Utils;
 using DOL.GS.ServerProperties;
 using log4net;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS
 {
@@ -803,6 +804,7 @@ namespace DOL.GS
 
             if (mobObjs.Length > 0)
             {
+
                 foreach (var mob in mobObjs)
                 {
                     GameNPC myMob = null;
@@ -813,13 +815,23 @@ namespace DOL.GS
                     
                     // load template if any
                     INpcTemplate template = null;
-                    if(mob.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplateID > 0)
+                    //var mob = GameServer.Database.SpawnPoints
+                    //    .Include(x => x.SpawnGroup)
+                    //    .ThenInclude(x => x.NpcSpawnGroups)
+                    //    .FirstOrDefault(x => x.Id == mobObj.Id);
+
+                    if(mob.SpawnGroup.NpcSpawnGroups.Any())
                     {
                     	template = NpcTemplateMgr.GetTemplate(mob.SpawnGroup.NpcSpawnGroups.FirstOrDefault().NpcTemplateID);
                     }
                     
+                    if (template == null)
+                    {
+                        continue;
+                    }
+                    
 
-                    if (Properties.USE_NPCGUILDSCRIPTS && template.GuildName.Length > 0 && template.Realm >= 0 && template.Realm <= (int)eRealm._Last)
+                    if (Properties.USE_NPCGUILDSCRIPTS && !String.IsNullOrEmpty(template.GuildName) && template.Realm >= 0 && template.Realm <= (int)eRealm._Last)
                     {
                         Type type = ScriptMgr.FindNPCGuildScriptClass(template.GuildName, (eRealm)template.Realm);
                         if (type != null)
@@ -841,11 +853,11 @@ namespace DOL.GS
   
                     if (myMob == null)
                     {
-                    	if(template != null && template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != "DOL.GS.GameNPC" && template.ReplaceMobValues)
+                    	if(template != null && !String.IsNullOrEmpty(template.ClassType) && template.ClassType != "DOL.GS.GameNPC" && template.ReplaceMobValues)
                     	{
                 			classtype = template.ClassType;
                     	}
-                        else if (template.ClassType != null && template.ClassType.Length > 0 && template.ClassType != "DOL.GS.GameNPC")
+                        else if (!String.IsNullOrEmpty(template.ClassType) && template.ClassType != "DOL.GS.GameNPC")
                         {
                             classtype = template.ClassType;
                         }

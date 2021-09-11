@@ -1062,8 +1062,8 @@ namespace DOL.GS
 		/// </summary>
 		protected const int MINHEALTHPERCENTFORRANGEDATTACK = 70;
 
-		private int m_pathID;
-		public int PathID
+		private int? m_pathID;
+		public int? PathID
 		{
 			get { return m_pathID; }
 			set { m_pathID = value; }
@@ -2039,19 +2039,40 @@ namespace DOL.GS
 			m_maxSpeedBase = (short)NPCTemplate.MaxSpeed;
 			m_currentSpeed = 0;
 			CurrentRegionID = (ushort)dbMobPoint.RegionID;
-			Realm = (eRealm)dbNpc.Realm;			
+			Realm = (eRealm)(dbNpc.Realm ?? 0);
 			Flags = (eFlags)NPCTemplate.Flags;
 			m_packageID = dbNpc.PackageID;
 
-			var models = Util.SplitCSV(NPCTemplate.Model);
-			Model = (ushort)Int16.Parse(models[Util.Random(models.Count - 1)]);
+			var models = Util.SplitCSV(NPCTemplate.Model, true)
+									.Where(x => Int16.TryParse(x, out short i) == true && i > 0)
+									.Select(x => Int16.Parse(x))
+									.ToList();
+			try
+			{
+				Model = (ushort)models[Util.Random(models.Count - 1)];
+			}
+			catch
+            {
+				log.ErrorFormat("GameNPC error in LoadFromDatabase: invalid model number '{0}' for NPC {1} ({2})", NPCTemplate.Model, dbNpc.Name, dbNpc.Id);
+			}
+			
 
-			var sizes = Util.SplitCSV(NPCTemplate.Size);
+			var sizes = Util.SplitCSV(NPCTemplate.Size, true);
 			Size = (byte)Int16.Parse(sizes[Util.Random(sizes.Count - 1)]);
 
 			// Skip Level.set calling AutoSetStats() so it doesn't load the DB entry we already have
-			var levels = Util.SplitCSV(dbNpc.Level);
-			m_level = (byte)Int16.Parse(levels[Util.Random(levels.Count - 1)]); ;
+			var levels = Util.SplitCSV(dbNpc.Level, true);
+
+            try
+            {
+				m_level = (byte)Int16.Parse(levels[Util.Random(levels.Count - 1)]);
+			}
+			catch
+            {
+				log.ErrorFormat("GameNPC error in LoadFromDatabase: invalid level '{0}' for NPC {1} ({2})", dbNpc.Level, dbNpc.Name, dbNpc.Id);
+				m_level = 51;
+			}
+			
 			AutoSetStats(dbNpc);
 			Level = m_level;
 
@@ -2063,7 +2084,7 @@ namespace DOL.GS
 			m_activeWeaponSlot = eActiveWeaponSlot.Standard;
 			ActiveQuiverSlot = eActiveQuiverSlot.None;
 
-			m_faction = FactionMgr.GetFactionByID(dbNpc.FactionID);
+			m_faction = FactionMgr.GetFactionByID(dbNpc.FactionID ?? 0);
 			LoadEquipmentTemplateFromDatabase(dbNpc.EquipmentTemplateName);
 
 			if (dbMobPoint.RespawnInterval == -1)
@@ -2075,7 +2096,7 @@ namespace DOL.GS
 			m_pathID = dbMobPoint.PathID;
 			this.Path = dbMobPoint.Path;
 
-			if (dbNpc.Brain != "")
+			if (!String.IsNullOrEmpty(dbNpc.Brain))
 			{
 				try
 				{
@@ -2137,9 +2158,9 @@ namespace DOL.GS
 				}
 			}
 
-			m_race = (short)dbNpc.RaceID;
+			m_race = (short)(dbNpc.RaceID ?? 0);
 			m_bodyType = (ushort)dbNpc.BodyType;
-			m_houseNumber = (ushort)dbNpc.HouseNumber;
+			m_houseNumber = (ushort)(dbNpc.HouseNumber ?? 0);
 			m_maxdistance = dbNpc.MaxDistance;
 			m_roamingRange = dbMobPoint.RoamingRange;
 			m_isCloakHoodUp = dbMobPoint.IsCloakHoodUp;

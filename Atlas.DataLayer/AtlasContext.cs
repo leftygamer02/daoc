@@ -40,6 +40,13 @@ namespace Atlas.DataLayer
             }
         }
 
+        public bool IsDisposed { get; private set; }
+        public override void Dispose()
+        {
+            IsDisposed = true;
+            base.Dispose();
+        }
+
         public eConnectionType ConnectionType { get { return engine; } }
 
         public DbSet<Ability> Abilities { get; set; }
@@ -209,6 +216,9 @@ namespace Atlas.DataLayer
 
             modelBuilder.Entity<ItemTemplate>()
                 .HasIndex(p => p.KeyName).IsUnique();
+
+            modelBuilder.Entity<NpcEquipment>()
+                .HasIndex(p => p.EquipmentTemplateName);
 
             modelBuilder.Entity<Path>()                
                 .HasMany(p => p.PathPoints)

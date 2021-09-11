@@ -60,15 +60,17 @@
   <ItemGroup>
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.ServiceProcess" />
-    <PackageReference Include="log4net" Version="2.0.12" ExcludeAssets="Runtime" />
     <ProjectReference Include="..\Atlas.DataLayer\Atlas.DataLayer.csproj" />
-    <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase" Private="False" ExcludeAssets="All" />
-    <ProjectReference Include="..\GameServer\GameServer.csproj" Name="GameServer" Private="False" ExcludeAssets="All" />
+    <ProjectReference Include="..\DOLBase\DOLBase.csproj" />
+    <ProjectReference Include="..\GameServer\GameServer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="DOLServer.exe.config" CopyToOutputDirectory="Always" />
     <Content Include="icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.12" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

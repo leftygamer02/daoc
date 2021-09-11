@@ -17,12 +17,16 @@
  *
  */
 using System;
+using log4net;
+using System.Reflection;
 
 namespace DOL.GS.PacketHandler.Client.v168
 {
 	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.CreateNPCRequest, "Handles requests for npcs(0x72) in game", eClientStatus.PlayerInGame)]
 	public class NPCCreationRequestHandler : IPacketHandler
 	{
+		private readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 		public void HandlePacket(GameClient client, GSPacketIn packet)
 		{
 			if (client.Player == null)
@@ -36,15 +40,20 @@ namespace DOL.GS.PacketHandler.Client.v168
 				id = packet.ReadShortLowEndian(); // Dre: disassembled game.dll show a write of uint, is it a wip in the game.dll?
 			else
 				id = packet.ReadShort();
+
+			//log.Info($"Handling NPC request: Npc Id - {id}, Client Name - {client.Account.Name}");
+
 			GameNPC npc = region.GetObject(id) as GameNPC;
 			if (npc == null || !client.Player.IsWithinRadius(npc, WorldMgr.OBJ_UPDATE_DISTANCE))
 			{
+				log.Info($"Handling NPC request: Npc Id - {id} - NOT FOUND! Sending ObjectDelete");
 				client.Out.SendObjectDelete(id);
 				return;
 			}
 
 			if(npc != null)
 			{
+				//log.Info($"Handling NPC request: Npc Name - {npc.Name} - Found! Sending NPCCreate");
 				Tuple<ushort, ushort> key = new Tuple<ushort, ushort>(npc.CurrentRegionID, (ushort)npc.ObjectID);
 				
 				long updatetime;

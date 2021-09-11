@@ -421,7 +421,7 @@ namespace DOL.GS
 			m_instrumentRequirement = dbspell.InstrumentRequirement;
 			m_spellGroup = dbspell.SpellGroup;
 			m_effectGroup = dbspell.EffectGroup;
-			m_subSpellID = dbspell.SubSpellID;
+			m_subSpellID = dbspell.SubSpellID ?? 0;
 			m_moveCast = dbspell.MoveCast;
 			m_uninterruptible = dbspell.Uninterruptible;
 			m_isfocus = dbspell.IsFocus;

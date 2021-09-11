@@ -145,9 +145,9 @@ namespace DOL.GS
                     }
                     
 
-                    if (dbNpc.Guild.Length > 0 && dbNpc.Realm >= 0 && dbNpc.Realm <= (int)eRealm._Last)
+                    if (!String.IsNullOrEmpty(dbNpc.GuildName) && dbNpc.Realm >= 0 && (dbNpc.Realm ?? 0) <= (int)eRealm._Last)
                     {
-                        Type type = ScriptMgr.FindNPCGuildScriptClass(dbNpc.Guild, (eRealm)dbNpc.Realm);
+                        Type type = ScriptMgr.FindNPCGuildScriptClass(dbNpc.GuildName, (eRealm)(dbNpc.Realm ?? 0));
                         if (type != null)
                         {
                             try

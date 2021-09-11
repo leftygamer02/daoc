@@ -1961,7 +1961,6 @@ namespace DOL.GS.PacketHandler
 		}
 		public virtual void SendNPCCreate(GameNPC npc)
 		{
-
 			if (m_gameClient.Player == null || npc.IsVisibleTo(m_gameClient.Player) == false)
 				return;
 
@@ -2069,11 +2068,16 @@ namespace DOL.GS.PacketHandler
 
 				pak.WritePascalString(name);
 
-				if (guildName.Length > 47)
+				if (!String.IsNullOrEmpty(guildName) && guildName.Length > 47)
 					pak.WritePascalString(guildName.Substring(0, 47));
 				else pak.WritePascalString(guildName);
 
 				pak.WriteByte(0x00);
+
+				if (npc.Name == "Meara")
+                {
+					log.Info($"Send NPC Create packate: {pak.ToHumanReadable()}");
+                }
 				SendTCP(pak);
 			}
 			/* removed, hack fix for client spamming requests for npcupdates/ creates
@@ -2099,7 +2103,7 @@ namespace DOL.GS.PacketHandler
 			}
 		}
 		public virtual void SendObjectCreate(GameObject obj)
-		{
+		{			
 			if (obj == null)
 				return;
 
@@ -2198,6 +2202,7 @@ namespace DOL.GS.PacketHandler
 		public virtual void SendObjectUpdate(GameObject obj)
 		{
 			Zone z = obj.CurrentZone;
+			//log.Info($"Sending Object Update: object {obj.Name}");
 
 			if (z == null ||
 				m_gameClient.Player == null ||
@@ -2308,6 +2313,11 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte((byte)z.ZoneSkinID);
 				//Dinberg:Instances - targetZone already accomodates for this feat.
 				pak.WriteByte((byte)targetZone);
+				if (obj.Name == "Meara")
+                {
+					log.Info($"Send Object Update Packet - {pak.ToHumanReadable()}");
+				}
+				
 				SendUDP(pak);
 			}
 			// Update Cache

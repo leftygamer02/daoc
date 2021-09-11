@@ -908,7 +908,7 @@ namespace DOL.GS
 
 			// Dinberg: this will eventually need to be changed so that it moves them to the location they TP'ed in.
 			// DamienOphyr: Overwrite current position with Bind position in database, MoveTo() is inoperant
-			if (CurrentRegion.IsInstance)
+			if (CurrentRegion != null && CurrentRegion.IsInstance)
 			{
 				DBCharacter.RegionID = BindRegion;
 				DBCharacter.Xpos = BindXpos;
@@ -12083,7 +12083,8 @@ namespace DOL.GS
 						dbSpec = new CharacterSpec()
 						{
 							SpecLine = spec.KeyName,
-							CharacterID = DBCharacter.Id
+							CharacterID = DBCharacter.Id,
+							SpecializationID = spec.ID
 						};
 						DBCharacter.Specs.Add(dbSpec);
                     }
@@ -12619,7 +12620,13 @@ namespace DOL.GS
 
 
 				if (m_mlSteps != null)
-					GameServer.Instance.SaveDataObject<CharacterMasterLevel>((CharacterMasterLevel)m_mlSteps.OfType<CharacterMasterLevel>());
+                {
+					foreach (var step in m_mlSteps.OfType<CharacterMasterLevel>())
+                    {
+						GameServer.Instance.SaveDataObject(step);
+					}
+                }
+					
 
 				if (log.IsInfoEnabled)
 					log.InfoFormat("{0} saved!", DBCharacter.Name);

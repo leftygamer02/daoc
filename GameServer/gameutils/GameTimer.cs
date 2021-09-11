@@ -489,7 +489,7 @@ namespace DOL.GS
 					str.Append(timer.ToString());
 					str.Append("\n\n");
 					str.Append("Timer thread:\n");
-					str.Append(Util.FormatStackTrace(Util.GetThreadStack(m_timeThread)));
+					//str.Append(Util.FormatStackTrace(Util.GetThreadStack(m_timeThread)));
 
 					string packetStacks = PacketHandler.PacketProcessor.GetConnectionThreadpoolStacks();
 					if (packetStacks.Length > 0)
@@ -499,10 +499,10 @@ namespace DOL.GS
 					}
 
 					str.Append("\n\nNPC update thread:\n");
-					str.Append(Util.FormatStackTrace(WorldMgr.GetNpcUpdateStacktrace()));
+					//str.Append(Util.FormatStackTrace(WorldMgr.GetNpcUpdateStacktrace()));
 
 					str.Append("\n\nRelocation thread:\n");
-					str.Append(Util.FormatStackTrace(WorldMgr.GetRelocateRegionsStacktrace()));
+					//str.Append(Util.FormatStackTrace(WorldMgr.GetRelocateRegionsStacktrace()));
 
 					str.Append("\n\n");
 
@@ -519,17 +519,6 @@ namespace DOL.GS
 				}
 			}
 			
-			[Obsolete("Use GetFormattedStackTrace() instead.")]
-			public StackTrace GetStacktrace()
-			{
-				if (m_timeThread == null)
-					return null;
-				
-				lock (m_lockObject)
-				{
-					return Util.GetThreadStack(m_timeThread);
-				}
-			}
 #endif
 			public string GetFormattedStackTrace()
 			{
@@ -888,7 +877,7 @@ namespace DOL.GS
 									
 #if MonitorCallbacks
 									m_currentTimer = current;
-									m_timerTickStart = callbackStart;
+									m_timerTickStart = (int)callbackStart;
 									t.Change(200, 100);
 #endif
 

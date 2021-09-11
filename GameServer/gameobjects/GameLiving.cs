@@ -1769,7 +1769,7 @@ namespace DOL.GS
 				if (weapon != null)
 				{
 					weaponTypeToUse = new InventoryItem();
-					weaponTypeToUse.ItemTemplate.ObjectType = weapon.ItemTemplate.ObjectType;
+					weaponTypeToUse.ItemTemplate = weapon.ItemTemplate;
 					weaponTypeToUse.SlotPosition = weapon.SlotPosition;
 
 					if ((this is GamePlayer) && Realm == eRealm.Albion
@@ -3012,7 +3012,7 @@ namespace DOL.GS
 		/// <param name="weapon"></param>
 		public virtual void CheckWeaponMagicalEffect(AttackData ad, InventoryItem weapon)
 		{
-			if (weapon == null)
+			if (weapon == null || !weapon.Spells.Any())
 				return;
 
 			// Proc chance is 2.5% per SPD, i.e. 10% for a 3.5 SPD weapon. - Tolakram, changed average speed to 3.5

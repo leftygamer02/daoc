@@ -34,6 +34,8 @@ using DOL.Network;
 
 using log4net;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace DOL.GS
 {
 	/// <summary>
@@ -655,7 +657,11 @@ namespace DOL.GS
 								.Include(x => x.Bans)
 								.FirstOrDefault(x => x.Id == m_account.Id);
 
-			Character dolChar = m_account.Characters.FirstOrDefault(x => x.AccountSlot == accountindex);
+			Character dolChar = GameServer.Database.Characters
+										.Include(x => x.Specs)
+										.Include(x=>x.Abilities)
+										.Include(x => x.DisabledSpells)
+										.FirstOrDefault(x => x.AccountID == m_account.Id && x.AccountSlot == accountindex);
 			LoadPlayer(dolChar, playerClass);
 		}
 

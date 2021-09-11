@@ -10,7 +10,7 @@ namespace Atlas.DataLayer.Models
     {
         public string PathName { get; set; }
         public int PathType { get; set; }
-        public int RegionID { get; set; }
+        public int? RegionID { get; set; }
 
         public virtual Region Region { get; set; }
 

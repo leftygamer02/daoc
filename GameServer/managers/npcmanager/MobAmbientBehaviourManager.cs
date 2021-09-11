@@ -62,7 +62,7 @@ namespace DOL.GS
                 throw new ArgumentNullException(nameof(database));
             }
 
-            AmbientBehaviour = database.MobBehaviors
+            AmbientBehaviour = database.MobBehaviors.ToList()
                 .GroupBy(x => x.Source)
                 .ToDictionary(key => key.Key.ToLower(), value => value.ToArray());
         }

@@ -27,6 +27,7 @@ using System.Threading;
 using Atlas.DataLayer.Models;
 using DOL.GS.ServerProperties;
 using log4net;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.PacketHandler.Client.v168
 {
@@ -287,7 +288,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					}
 					else
 					{
-						playerAccount = GameServer.Database.Accounts.FirstOrDefault(x => x.Name == userName);
+						playerAccount = GameServer.Database.Accounts.Include(x => x.Characters).FirstOrDefault(x => x.Name == userName);
 
 						client.PingTime = DateTime.Now.Ticks;
 

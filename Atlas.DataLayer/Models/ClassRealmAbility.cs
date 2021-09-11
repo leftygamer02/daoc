@@ -10,6 +10,7 @@ namespace Atlas.DataLayer.Models
     {
         public int ClassID { get; set; }
         public int AbilityID { get; set; }
+        public int AbilityOrder { get; set; }
 
         public virtual Ability Ability { get; set; }
     }

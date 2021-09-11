@@ -38,7 +38,7 @@ namespace Atlas.DataLayer.Models
         public int InstrumentRequirement { get; set; }
         public int SpellGroup { get; set; }
         public int EffectGroup { get; set; }
-        public int SubSpellID { get; set; }
+        public int? SubSpellID { get; set; }
         public bool MoveCast { get; set; }
         public bool Uninterruptible { get; set; }
         public bool IsPrimary { get; set; }

@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using DOL.Events;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.PacketHandler.Client.v168
 {
@@ -123,7 +124,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (((client.Player == null && client.Account.Characters != null) || (client.Player != null && client.Player.Name.ToLower() != charName.ToLower()))
 					&& client.ClientState == GameClient.eClientState.CharScreen)
 				{
-					var character = client.Account.Characters.FirstOrDefault(x => x.Name == charName);
+					var character = GameServer.Database.Characters
+											.Include(x => x.Specs)
+											.Include(x => x.Abilities)
+											.FirstOrDefault(x => x.AccountID == client.Account.Id && x.Name == charName);
 
 					if (character != null)
                     {

@@ -10,7 +10,7 @@ namespace Atlas.DataLayer.Models
     {
         public int RegionID { get; set; }
         public int SpawnGroupID { get; set; }
-        public int PathID { get; set; }
+        public int? PathID { get; set; }
         public int? OwnerID { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
@@ -26,6 +26,5 @@ namespace Atlas.DataLayer.Models
         public virtual Region Region { get; set; }
         public virtual SpawnGroup SpawnGroup { get; set; }
         public virtual Path Path { get; set; }
-        public virtual Character Character { get; set; }
     }
 }

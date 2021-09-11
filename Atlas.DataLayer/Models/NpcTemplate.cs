@@ -40,7 +40,7 @@ namespace Atlas.DataLayer.Models
         public string Abilities { get; set; }
         public int AggroLevel { get; set; }
         public int AggroRange { get; set; }
-        public int RaceID { get; set; }
+        public int? RaceID { get; set; }
         public int BodyType { get; set; }
         public int MaxDistance { get; set; }
         public int TetherRange { get; set; }
@@ -48,10 +48,9 @@ namespace Atlas.DataLayer.Models
         public string PackageID { get; set; }
         public int? LootTableID { get; set; }
         public string Brain { get; set; }
-        public int FactionID { get; set; }
-        public int HouseNumber { get; set; }
-        public int Realm { get; set; }
-        public string Guild { get; set; }
+        public int? FactionID { get; set; }
+        public int? HouseNumber { get; set; }
+        public int? Realm { get; set; }
         public string EquipmentTemplateName { get; set; }
 
         public virtual Race Race { get; set; }

@@ -32,6 +32,8 @@ using DOL.GS.Utils;
 using DOL.Config;
 using DOL.GS.Housing;
 
+using Microsoft.EntityFrameworkCore;
+
 using log4net;
 
 namespace DOL.GS
@@ -371,7 +373,12 @@ namespace DOL.GS
 			bool hasFrontierRegion = false;
 
 			var regions = new List<RegionData>(512);
-			foreach (var dbRegion in GameServer.Database.Regions)
+			foreach (var dbRegion in GameServer.Database.Regions
+												.Include(x => x.SpawnGroups)
+												.ThenInclude(x => x.NpcSpawnGroups)
+												.ThenInclude(x => x.NpcTemplate)
+												.Include(x => x.SpawnGroups)
+												.ThenInclude(x => x.SpawnPoints).ToList())
 			{
 				var data = new RegionData();
 
@@ -389,12 +396,14 @@ namespace DOL.GS
 
 				hasFrontierRegion |= data.IsFrontier;
 
-				List<SpawnPoint> mobs;
+				//List<SpawnPoint> mobs;
 
-				if (!mobsByRegionId.TryGetValue(data.Id, out mobs))
-					data.Mobs = new SpawnPoint[0];
-				else
-					data.Mobs = mobs.ToArray();
+				//if (!mobsByRegionId.TryGetValue(data.Id, out mobs))
+				//	data.Mobs = new SpawnPoint[0];
+				//else
+				//	data.Mobs = mobs.ToArray();
+
+				data.Mobs = dbRegion.SpawnGroups.SelectMany(x => x.SpawnPoints).ToArray();
 
 				regions.Add(data);
 
@@ -525,11 +534,20 @@ namespace DOL.GS
 				long merchants = 0;
 				long items = 0;
 				long bindpoints = 0;
-				regionsData.AsParallel().WithDegreeOfParallelism(GameServer.Instance.Configuration.CPUUse << 2).ForAll(data => {
-				                                	Region reg;
-				                                	if (m_regions.TryGetValue(data.Id, out reg))
-				                                		reg.LoadFromDatabase(data.Mobs, ref mobs, ref merchants, ref items, ref bindpoints);
-				                                });
+				//regionsData.AsParallel().WithDegreeOfParallelism(GameServer.Instance.Configuration.CPUUse << 2).ForAll(data => {
+				//                                	Region reg;
+				//                                	if (m_regions.TryGetValue(data.Id, out reg))
+				//                                		reg.LoadFromDatabase(data.Mobs, ref mobs, ref merchants, ref items, ref bindpoints);
+				//                                });
+
+				foreach (var region in regionsData)
+                {
+					if (m_regions.TryGetValue(region.Id, out Region reg))
+                    {
+						reg.LoadFromDatabase(region.Mobs, ref mobs, ref merchants, ref items, ref bindpoints);
+                    }
+                }
+
 
 				if (log.IsInfoEnabled)
 				{

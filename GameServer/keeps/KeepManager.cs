@@ -150,25 +150,41 @@ namespace DOL.GS.Keeps
 
 				if (keepcomponents != null)
 				{
-					keepcomponents
-					.GroupBy(x => x.KeepID)
-					.AsParallel()
-					.ForAll(components =>
-					{
-						foreach (var component in components)
-						{
-							AbstractGameKeep keep = GetKeepByID(component.KeepID);
-							if (keep == null)
-							{
-								//missingKeeps = true;
-								continue;
-							}
+					//keepcomponents
+					//.GroupBy(x => x.KeepID)
+					//.AsParallel()
+					//.ForAll(components =>
+					//{
+					//	foreach (var component in components)
+					//	{
+					//		AbstractGameKeep keep = GetKeepByID(component.KeepID);
+					//		if (keep == null)
+					//		{
+					//			//missingKeeps = true;
+					//			continue;
+					//		}
 
-							GameKeepComponent gamecomponent = keep.CurrentRegion.CreateGameKeepComponent();
-							gamecomponent.LoadFromDatabase(component, keep);
-							keep.KeepComponents.Add(gamecomponent);
+					//		GameKeepComponent gamecomponent = keep.CurrentRegion.CreateGameKeepComponent();
+					//		gamecomponent.LoadFromDatabase(component, keep);
+					//		keep.KeepComponents.Add(gamecomponent);
+					//	}
+					//});
+
+					foreach (var component in keepcomponents)
+					{
+						AbstractGameKeep keep = GetKeepByID(component.KeepID);
+						if (keep == null)
+						{
+							//missingKeeps = true;
+							continue;
 						}
-					});
+
+						GameKeepComponent gamecomponent = keep.CurrentRegion.CreateGameKeepComponent();
+						gamecomponent.LoadFromDatabase(component, keep);
+						keep.KeepComponents.Add(gamecomponent);
+					}
+
+
 				}
 
 				/*if (missingKeeps && log.IsWarnEnabled)

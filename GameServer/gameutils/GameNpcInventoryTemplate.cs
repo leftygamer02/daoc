@@ -125,7 +125,7 @@ namespace DOL.GS
 		}
 
 		/// <summary>
-		/// Adds item to template reusing iventory  item instances from other templates.
+		/// Adds item to template reusing inventory  item instances from other templates.
 		/// </summary>
 		/// <param name="slot">The equipment slot</param>
 		/// <param name="model">The equipment model</param>
@@ -150,7 +150,7 @@ namespace DOL.GS
 					{
 						//50% chance to keep the item we have
 						if (Util.Chance(50))
-							return false;
+							return true;
 						//Let's remove the old item!
 						m_items.Remove(slot);
 					}
@@ -335,26 +335,32 @@ namespace DOL.GS
 
 			lock (m_items)
 			{
-				IList<NpcEquipment> npcEquip;
+				List<NpcEquipment> npcEquip = new List<NpcEquipment>();
 
-				if (m_npcEquipmentCache.ContainsKey(templateName))
-					npcEquip = m_npcEquipmentCache[templateName];
-				else
-					npcEquip = GameServer.Database.NpcEquipments.Where(x => x.EquipmentTemplateName == templateName).ToList();
+				var templateNames = templateName.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-				if (npcEquip == null || npcEquip.Count == 0)
-				{
-					if (log.IsWarnEnabled)
-						log.Warn(string.Format("Failed loading NPC inventory template: {0}", templateName));
-					return false;
-				}
+				foreach (var temp in templateNames)
+                {
+					if (m_npcEquipmentCache.ContainsKey(temp))
+						npcEquip.AddRange(m_npcEquipmentCache[templateName]);
+					else
+						npcEquip.AddRange(GameServer.Database.NpcEquipments.Where(x => x.EquipmentTemplateName == temp).ToList());
+
+					if (npcEquip == null || npcEquip.Count == 0)
+					{
+						if (log.IsWarnEnabled)
+							log.Warn(string.Format("Failed loading NPC inventory template: {0}", templateName));
+						return false;
+					}
+				}				
 
 				foreach (var npcItem in npcEquip)
 				{
 					if (!AddNPCEquipment((eInventorySlot)npcItem.Slot, npcItem.Model, npcItem.Color, npcItem.Effect, npcItem.Extension, npcItem.Emblem))
 					{
 						if (log.IsWarnEnabled)
-							log.Warn("Error adding NPC equipment for templateID " + templateName + ", ModelID=" + npcItem.Model + ", slot=" + npcItem.Slot);
+							log.Warn("Error adding NPC equipment ModelID=" + npcItem.Model + ", slot=" + npcItem.Slot);
+						//log.Warn("Error adding NPC equipment for templateID " + templateName + ", ModelID=" + npcItem.Model + ", slot=" + npcItem.Slot);
 					}
 				}
 			}

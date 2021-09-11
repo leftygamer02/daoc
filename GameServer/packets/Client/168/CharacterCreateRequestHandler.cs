@@ -28,6 +28,7 @@ using DOL.GS;
 using DOL.GS.ServerProperties;
 
 using log4net;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace DOL.GS.PacketHandler.Client.v168
@@ -265,7 +266,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 		{
 			Account account = client.Account;
 			var ch = new Character();
-			ch.Account.Name = account.Name;
+			//ch.Account = account;
+			ch.AccountID = account.Id;
 			ch.Name = pdata.CharName;
 
 			if (pdata.CustomMode == 0x01)
@@ -389,13 +391,13 @@ namespace DOL.GS.PacketHandler.Client.v168
 			// Log creation
 			AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.CharacterCreate, "", pdata.CharName);
 
-			client.Account.Characters = null;
+			client.Account.Characters.Add(ch);
 
 			if (log.IsInfoEnabled)
 				log.InfoFormat("Character {0} created on Account {1}!", pdata.CharName, account);
 
-			// Reload Account Relations
-			client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
+			//// Reload Account Relations
+			//client.Account = GameServer.Database.Accounts.Include(x => x.Characters).FirstOrDefault(x => x.Id == client.Account.Id);
 
 			return true;
 		}
@@ -987,7 +989,15 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			ch.CreationModel = pdata.CreationModel;
 			ch.CurrentModel = ch.CreationModel;
-			ch.RegionID = pdata.Region;
+			
+			if (pdata.Realm == (int)eRealm.Hibernia)
+            {
+				ch.RegionID = 201;
+				ch.Xpos = 31200;
+				ch.Ypos = 33400;
+				ch.Zpos = 8000;
+			}
+			
 
 			ch.Strength = pdata.Strength;
 			ch.Dexterity = pdata.Dexterity;
@@ -1061,12 +1071,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 			// Log creation
 			AuditMgr.AddAuditEntry(client, AuditType.Account, AuditSubtype.CharacterCreate, string.Empty, pdata.CharName);
 
-			client.Account.Characters = null;
+			client.Account.Characters.Add(ch);
 
 			log.Info($"Character {pdata.CharName} created on Account {account}!");
 
 			// Reload Account Relations
-			client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
+			//client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
 			return true;
 		}
 

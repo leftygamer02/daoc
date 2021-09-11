@@ -294,6 +294,8 @@ namespace DOL.GS.Housing
                 GameServer.Instance.SaveDataObject(newitem);
                 slot += 1;
             }
+
+            
         }
 
         private static void CheckItemTemplate(string name, string id, int model, int objtype, int copper, int dps, int spd,

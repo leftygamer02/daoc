@@ -46,16 +46,16 @@ namespace DOL.GS.PacketHandler.Client.v168
 		{
 			ushort jumpSpotId = packet.ReadShort();
 
-			eRealm targetRealm = client.Player.Realm;
+			int targetRealm = (int)client.Player.Realm;
 
 			if (client.Player.CurrentRegion.Expansion == (int)eClientExpansion.TrialsOfAtlantis && client.Player.CurrentZone.Realm != eRealm.None)
 			{
 				// if we are in TrialsOfAtlantis then base the target jump on the current region realm instead of the players realm
 				// this is only used if zone table has the proper realms defined, otherwise it reverts to old behavior - Tolakram
-                targetRealm = client.Player.CurrentZone.Realm;
+                targetRealm = (int)client.Player.CurrentZone.Realm;
 			}
-			
-			var zonePoint = GameServer.Database.ZonePoints.FirstOrDefault(x => x.Id == jumpSpotId && (x.Realm == (int)targetRealm || x.Realm <= 0));
+
+			var zonePoint = GameServer.Database.ZonePoints.FirstOrDefault(x => x.ClientID == jumpSpotId && (x.Realm == targetRealm || x.Realm <= 0));
 
 			if (zonePoint == null || zonePoint.TargetRegionID <= 0)
 			{

@@ -16,9 +16,10 @@ namespace Atlas.DataLayer.Models
         public int SourceX { get; set; }
         public int SourceY { get; set; }
         public int SourceZ { get; set; }
-        public int SourceRegionID { get; set; }
+        public int? SourceRegionID { get; set; }
         public int Realm { get; set; }
         public string ClassType { get; set; }
+        public int ClientID { get; set; }
 
         public virtual Region TargetRegion { get; set; }
         public virtual Region SourceRegion { get; set; }

@@ -81,16 +81,20 @@ namespace Atlas.DataLayer.Models
 			OwnerLot = template.OwnerLot;
 			ItemBonus = template.ItemBonus;
 
-			this.Spells = template.Spells.Select(x => new InventoryItemSpell()
-			{
-				Charges = x.Charges,
-				IsPoison = x.IsPoison,
-				MaxCharges = x.MaxCharges,
-				ProcChance = x.ProcChance,
-				SpellID = x.SpellID
-			}).ToList();
+			if (template?.Spells != null)
+            {
+				this.Spells = template.Spells.Select(x => new InventoryItemSpell()
+				{
+					Charges = x.Charges,
+					IsPoison = x.IsPoison,
+					MaxCharges = x.MaxCharges,
+					ProcChance = x.ProcChance,
+					SpellID = x.SpellID
+				}).ToList();
+			}
 
-			this.Bonuses = template.Bonuses.ToList();
+			if (template?.Bonuses != null)
+				this.Bonuses = template.Bonuses.ToList();
 
 		}
 
