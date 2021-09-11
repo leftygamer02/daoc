@@ -2313,10 +2313,6 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte((byte)z.ZoneSkinID);
 				//Dinberg:Instances - targetZone already accomodates for this feat.
 				pak.WriteByte((byte)targetZone);
-				if (obj.Name == "Meara")
-                {
-					log.Info($"Send Object Update Packet - {pak.ToHumanReadable()}");
-				}
 				
 				SendUDP(pak);
 			}

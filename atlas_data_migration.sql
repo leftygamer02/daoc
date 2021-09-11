@@ -4,8 +4,8 @@ INSERT INTO newatlas.regions (Id, NAME, Description, IP,PORT,EXPANSION,housingen
 SELECT RegionID, NAME, Description, ip, PORT, EXPANSION, housingenabled,divingenabled,waterlevel,classtype, isfrontier,NOW(), NOW() FROM atlas.regions ORDER BY RegionID;
 
 /* Copy zones */
-INSERT INTO newatlas.zones (RegionID, NAME, IsLava, DivingFlag,WaterLevel,OffsetY, OffsetX, Width, Height, Experience, Realmpoints, Bountypoints, Coin,Realm,CreateDate, ModifyDate)
-SELECT r2.Id,zones.NAME, zones.IsLava,zones.DivingFlag,zones.WaterLevel, zones.OffsetY, zones.OffsetX, zones.Width, zones.Height, zones.Experience, zones.Realmpoints, zones.Bountypoints,zones.Coin, zones.Realm, NOW(), NOW() 
+INSERT INTO newatlas.zones (Id,RegionID, NAME, IsLava, DivingFlag,WaterLevel,OffsetY, OffsetX, Width, Height, Experience, Realmpoints, Bountypoints, Coin,Realm,CreateDate, ModifyDate)
+SELECT zones.ZoneID, r2.Id,zones.NAME, zones.IsLava,zones.DivingFlag,zones.WaterLevel, zones.OffsetY, zones.OffsetX, zones.Width, zones.Height, zones.Experience, zones.Realmpoints, zones.Bountypoints,zones.Coin, zones.Realm, NOW(), NOW() 
 FROM atlas.zones
 INNER JOIN atlas.regions r1 ON zones.RegionID = r1.RegionID
 INNER JOIN newatlas.regions r2 ON r1.Name = r2.Name;
