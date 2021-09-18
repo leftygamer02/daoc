@@ -134,6 +134,7 @@ namespace DOL.GS
 	/// </summary>		
 	public interface IGameInventory
 	{
+		bool			LoadFromDatabase(int templateID);
 		bool            LoadFromDatabase(string templateName);
 		bool            SaveIntoDatabase(string templateName);
 

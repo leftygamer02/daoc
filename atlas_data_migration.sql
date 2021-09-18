@@ -3,6 +3,8 @@
 INSERT INTO newatlas.regions (Id, NAME, Description, IP,PORT,EXPANSION,housingenabled, divingenabled,waterlevel,classtype,isfrontier,createdate, modifydate)
 SELECT RegionID, NAME, Description, ip, PORT, EXPANSION, housingenabled,divingenabled,waterlevel,classtype, isfrontier,NOW(), NOW() FROM atlas.regions ORDER BY RegionID;
 
+ALTER TABLE newatlas.`zones` CHANGE COLUMN `Id` `Id` INT(11) NOT NULL FIRST;
+
 /* Copy zones */
 INSERT INTO newatlas.zones (Id,RegionID, NAME, IsLava, DivingFlag,WaterLevel,OffsetY, OffsetX, Width, Height, Experience, Realmpoints, Bountypoints, Coin,Realm,CreateDate, ModifyDate)
 SELECT zones.ZoneID, r2.Id,zones.NAME, zones.IsLava,zones.DivingFlag,zones.WaterLevel, zones.OffsetY, zones.OffsetX, zones.Width, zones.Height, zones.Experience, zones.Realmpoints, zones.Bountypoints,zones.Coin, zones.Realm, NOW(), NOW() 
@@ -338,49 +340,61 @@ INNER JOIN newatlas.paths p2 ON p1.PathID = p2.PathName;
 INSERT INTO newatlas.npcequipments (Slot, Model, Color, Effect, Extension, Emblem, EquipmentTemplateName,CreateDate, ModifyDate)
 SELECT Slot,Model,Color,Effect,Extension, Emblem,TemplateID,NOW(),NOW() FROM atlas.npcequipment;
 
-/* Copy NPC Templates */
+/* Create temporary fields and indexed */
 ALTER TABLE newatlas.npctemplates ADD COLUMN OldId TEXT NULL;
-ALTER TABLE newatlas.npctemplates	ADD INDEX `OldId` (`OldId`);
-ALTER TABLE newatlas.spawngroups ADD INDEX `Name_RegionId` (`Name`, `RegionId`);
+ALTER TABLE newatlas.npctemplates ADD COLUMN OldMobId TEXT NULL;
+ALTER TABLE newatlas.npctemplates ADD INDEX `OldMobId` (`OldMobId`);
+ALTER TABLE newatlas.npctemplates ADD INDEX `OldId` (`OldId`);
+ALTER TABLE newatlas.spawngroups ADD COLUMN OldMobId TEXT NULL;
+ALTER TABLE newatlas.spawngroups ADD INDEX `OldMobId` (`OldMobId`);
 
-/*INSERT INTO newatlas.npctemplates (NAME, Suffix, ClassType, GuildName, ExamineArticle, MessageArticle, Model, Gender, Size, LEVEL, maxSpeed, ItemListName, Flags, 
-MeleeDamageType, ParryChance,EvadeChance,BlockChance,LeftHandSwingChance,spells,styles,Strength,Constitution,Dexterity,Quickness,Intelligence,Piety, Charisma,
-Empathy,abilities,Aggrolevel,aggrorange, RaceID,BodyType,MaxDistance,TetherRange,VisibleWeaponSlots,PackageID,EquipmentTemplateName,CreateDate,ModifyDate, OldId)
-SELECT NAME, Suffix, ClassType, GuildName, ExamineArticle, MessageArticle, Model, Gender, Size, LEVEL, maxSpeed, ItemsListTemplateID, Flags, 
-MeleeDamageType, ParryChance,EvadeChance,BlockChance,LeftHandSwingChance,spells,styles,Strength,Constitution,Dexterity,Quickness,Intelligence,Piety, Charisma,
-Empathy,abilities,Aggrolevel,aggrorange, Race,BodyType,MaxDistance,TetherRange,VisibleWeaponSlots,PackageID, EquipmentTemplateID, NOW(),NOW(), TemplateId
-FROM atlas.npctemplate;*/
+/* link mobs to npc templates in old atlas db */
+UPDATE atlas.mob SET npctemplateid = (SELECT MAX(templateid) FROM atlas.npctemplate WHERE npctemplate.name = mob.name)
+WHERE mob.npctemplateid = -1 
+AND EXISTS (SELECT 1 FROM atlas.npctemplate WHERE npctemplate.name = mob.name);
 
+
+
+/* Copy NPC Templates */
 INSERT INTO newatlas.npctemplates (NAME, Suffix, ClassType, GuildName, ExamineArticle, MessageArticle, Model, Gender, Size, LEVEL, maxSpeed, ItemListName, Flags, 
 MeleeDamageType, ParryChance,EvadeChance,BlockChance,LeftHandSwingChance,spells,styles,Strength,Constitution,Dexterity,Quickness,Intelligence,Piety, Charisma,
 Empathy,abilities,Aggrolevel,aggrorange, RaceID,BodyType,MaxDistance,TetherRange,VisibleWeaponSlots,PackageID,EquipmentTemplateName,
 Brain, FactionID, HouseNumber, Realm, 
-CreateDate,ModifyDate, OldId)
-SELECT m.NAME, m.Suffix, m.ClassType, npc.GuildName, m.ExamineArticle, m.MessageArticle, m.Model, m.Gender, m.Size, npc.LEVEL, npc.MaxSpeed, npc.ItemsListTemplateID, m.Flags, 
-m.MeleeDamageType, npc.ParryChance,npc.EvadeChance,npc.BlockChance,npc.LeftHandSwingChance,npc.spells,npc.styles,m.Strength,m.Constitution,m.Dexterity,m.Quickness,m.Intelligence,m.Piety, m.Charisma,
-m.Empathy,abilities,m.Aggrolevel,m.aggrorange, m.Race,m.BodyType,m.MaxDistance,npc.TetherRange,m.VisibleWeaponSlots,m.PackageID, npc.EquipmentTemplateID,
+CreateDate,ModifyDate, OldId, OldMobId)
+SELECT m.NAME, m.Suffix, m.ClassType, npc.GuildName, m.ExamineArticle, m.MessageArticle, m.Model, m.Gender, m.Size, 
+CASE WHEN npc.LEVEL IS NULL THEN m.`Level` ELSE npc.LEVEL END, 
+CASE WHEN npc.MaxSpeed IS NULL THEN m.Speed ELSE npc.MaxSpeed END, 
+CASE WHEN npc.ItemsListTemplateID IS NULL THEN m.ItemsListTemplateID ELSE npc.ItemsListTemplateID END, 
+m.Flags, 
+m.MeleeDamageType, 
+CASE WHEN npc.ParryChance IS NULL THEN 0 ELSE npc.ParryChance END,
+CASE WHEN npc.EvadeChance IS NULL THEN 0 ELSE npc.EvadeChance END,
+CASE WHEN npc.BlockChance IS NULL THEN 0 ELSE npc.BlockChance END,
+CASE WHEN npc.LeftHandSwingChance IS NULL THEN 0 ELSE npc.LeftHandSwingChance END,
+npc.spells,npc.styles,
+m.Strength,m.Constitution,m.Dexterity,m.Quickness,m.Intelligence,m.Piety, m.Charisma,
+m.Empathy,abilities,m.Aggrolevel,m.aggrorange, 
+CASE WHEN m.Race > 0 THEN m.Race > 0 WHEN npc.Race > 0 THEN npc.Race ELSE NULL END AS Race,
+m.BodyType,m.MaxDistance,
+CASE WHEN npc.TetherRange IS NULL THEN m.MaxDistance ELSE npc.tetherrange END,
+m.VisibleWeaponSlots,m.PackageID, 
+CASE WHEN m.EquipmentTemplateID IS NULL OR m.EquipmentTemplateID = '' THEN npc.EquipmentTemplateID ELSE m.EquipmentTemplateID END,
 m.Brain, m.FactionID, m.HouseNumber, m.Realm,
-NOW(),NOW(), m.NPCTemplateId
+NOW(),NOW(), m.NPCTemplateId, m.Mob_ID
 FROM atlas.mob m
-INNER JOIN atlas.npctemplate npc ON m.NPCTemplateID = npc.TemplateId;
+LEFT JOIN atlas.npctemplate npc ON m.NPCTemplateID = npc.TemplateId;
 
 
 /* Create Spawn Groups from Mob table */
-INSERT INTO newatlas.spawngroups (ClassType, NAME, DayNightSpawn, RegionId, CreateDate, ModifyDate)
-SELECT ClassType,NAME, 0,Region, NOW(),NOW() FROM atlas.mob 
-WHERE Region IN (SELECT Id FROM newatlas.regions)
-GROUP BY `NAME`, region;
+INSERT INTO newatlas.spawngroups (ClassType, NAME, DayNightSpawn, RegionId, CreateDate, ModifyDate, OldMobId)
+SELECT ClassType,NAME, 0,Region, NOW(),NOW(), Mob_ID FROM atlas.mob 
+WHERE Region IN (SELECT Id FROM newatlas.regions);
 
-/* Create NPC Spawn Group from Mob table */
+/* Create NPC Spawn Groups from Mob table */
 INSERT INTO newatlas.npcspawngroup (NpcTemplateID, SpawnGroupID, SpawnChance, CreateDate, ModifyDate)
-SELECT npcId, SpawnId, 100, NOW(), NOW() 
-FROM (
-	SELECT (SELECT MAX(id) FROM newatlas.npctemplates WHERE OldId = m.NPCTemplateID) AS npcId, sp.Id AS SpawnId
-	FROM atlas.Mob m
-	INNER JOIN newatlas.SpawnGroups sp ON m.Name = sp.Name AND m.region = sp.RegionID
-	GROUP BY m.Name, m.Region, m.NPCTemplateID
-) AS A
-WHERE npcId IS NOT NULL;
+SELECT npc.Id, sg.Id, 100, NOW(), NOW() FROM newatlas.spawngroups sg
+INNER JOIN atlas.mob m ON m.Mob_ID = sg.OldMobId
+INNER JOIN newatlas.npctemplates npc ON npc.OldMobId = m.Mob_ID;
 
 /* Create Spawn Points from Mob table */
 INSERT INTO newatlas.spawnpoints (RegionID, SpawnGroupID, PathID, X,Y,Z,Heading, AggroLevel, AggroRange, MaxDistance,
@@ -388,12 +402,35 @@ RoamingRange, RespawnInterval, IsCloakHoodUp, CreateDate, ModifyDate)
 SELECT sp.RegionId,sp.Id,p.Id, m.X,m.Y,m.Z,m.Heading, m.AggroLevel, m.AggroRange, m.MaxDistance, m.RoamingRange, m.RespawnInterval,
 m.IsCloakHoodUp,NOW(),NOW()
 FROM atlas.Mob m
-INNER JOIN newatlas.SpawnGroups sp ON m.Name = sp.Name AND m.region = sp.RegionID
-LEFT JOIN newatlas.Paths p ON p.PathName = m.PathID
-GROUP BY m.Name, m.Region, m.NPCTemplateID;
+INNER JOIN newatlas.SpawnGroups sp ON m.Mob_ID = sp.OldMobId  -- m.Name = sp.Name AND m.region = sp.RegionID
+LEFT JOIN newatlas.Paths p ON p.PathName = m.PathID;
 
+/* Copy starterequipement */
+INSERT INTO newatlas.StarterEquipment (ClassIDs, ItemTemplateID, CreateDate, ModifyDate)
+SELECT se.class, it.Id,NOW(),NOW() FROM atlas.starterequipment se
+INNER JOIN newatlas.itemtemplates it ON se.TemplateID = it.keyname;
+
+/* Copy merchant items */
+INSERT INTO newatlas.Merchantitems (ItemListName, ItemTemplateID, PageNumber, SlotPosition, CreateDate, ModifyDate)
+SELECT mi.ItemListID, it.Id, mi.PageNumber, mi.SlotPosition, NOW(),NOW() 
+FROM atlas.merchantitem mi
+INNER JOIN newatlas.itemtemplates it ON mi.ItemTemplateID = it.keyname;
+
+/* Create loot tables from loot templates */
+INSERT INTO newatlas.loottables (NAME, DropCount, CreateDate, ModifyDate)
+SELECT LootTemplateName, DropCount, NOW(),NOW() FROM atlas.mobxloottemplate;
+
+/* Create loot table items from loottemplates */
+INSERT INTO newatlas.loottableitems (LootTableID, ItemTemplateID, Chance, COUNT, CreateDate, ModifyDate)
+SELECT lt2.Id, it.Id, lt.chance, lt.count, NOW(),NOW() FROM atlas.loottemplate lt
+INNER JOIN newatlas.loottables lt2 ON lt.TemplateName = lt2.Name
+INNER JOIN newatlas.ItemTemplates it ON it.keyName = lt.ItemTemplateID;
+
+/* Set loot table id in npc templates */
+UPDATE newatlas.npctemplates SET LootTableId = (SELECT Max(Id) FROM newatlas.loottables WHERE loottables.Name = npctemplates.Name);
+
+/* Remove temporary fields and indexed */
 ALTER TABLE newatlas.npctemplates DROP OldId;
-
-
-
+ALTER TABLE newatlas.npctemplates DROP OldMobId;
+ALTER TABLE newatlas.spawngroups DROP OldMobId;
 

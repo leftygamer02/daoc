@@ -26,6 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace DOL.GS.PacketHandler
 {
@@ -127,9 +128,11 @@ namespace DOL.GS.PacketHandler
 
 					if (charsBySlot.Any())
 					{
-						var allItems = GameServer.Database.InventoryItems.Where(x => x.Character.AccountID == m_gameClient.Account.Id &&
+						var allItems = GameServer.Database.InventoryItems
+														  .Include(x => x.ItemTemplate)
+														  .Where(x => x.Character.AccountID == m_gameClient.Account.Id &&
 																					 x.SlotPosition >= (int)eInventorySlot.MinEquipable &&
-																					 x.SlotPosition <= (int)eInventorySlot.MaxEquipable); 						
+																					 x.SlotPosition <= (int)eInventorySlot.MaxEquipable);
 
 						foreach (InventoryItem item in allItems)
 						{

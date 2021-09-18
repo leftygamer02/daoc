@@ -403,7 +403,7 @@ namespace DOL.GS
 		/// </summary>
 		public byte NotDisplayedInHerald
 		{
-			get { return DBCharacter != null ? (DBCharacter.NotDisplayedInHerald ? 1 : 0) : 0; }
+			get { return (byte)(DBCharacter != null && !DBCharacter.NotDisplayedInHerald ? 1 : 0); }
 			set { if (DBCharacter != null) DBCharacter.NotDisplayedInHerald = (value == 1 ? true : false); }
 		}
 		
@@ -12097,7 +12097,7 @@ namespace DOL.GS
 			{
 				if (ability != null)
 				{
-					var dbAbility = DBCharacter.Abilities.FirstOrDefault(x => x.Ability.KeyName == ability.KeyName);
+					var dbAbility = DBCharacter.Abilities.FirstOrDefault(x => x.Ability != null && x.Ability.KeyName == ability.KeyName);
 
 					if (dbAbility == null)
 					{
@@ -12224,6 +12224,12 @@ namespace DOL.GS
 					log.ErrorFormat("{0}: can't find spec '{1}'", Name, spec.SpecLine);
 				}
 			}
+
+			//foreach (var ab in m_specialization.Values.SelectMany(s => s.GetAbilitiesForLiving(this)))
+   //         {
+			//	// this is for display order only
+			//	m_usableSkills.Add(new Tuple<Skill, Skill>(ab, ab));
+			//}
 
 			// Add Serialized Abilities to keep Database Order
 			// Custom Ability will be disabled as soon as they are not in any specs...
@@ -12475,7 +12481,7 @@ namespace DOL.GS
 			if (MaxSpeedBase == 0)
 				MaxSpeedBase = PLAYER_BASE_SPEED;
 
-			m_inventory.LoadFromDatabase(string.Empty);
+			m_inventory.LoadFromDatabase(DBCharacter.Id);
 
 			SwitchQuiver((eActiveQuiverSlot)(DBCharacter.ActiveWeaponSlot & 0xF0), false);
 			SwitchWeapon((eActiveWeaponSlot)(DBCharacter.ActiveWeaponSlot & 0x0F));

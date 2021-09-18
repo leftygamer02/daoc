@@ -183,7 +183,7 @@ namespace DOL.GS
 
 			if (!ignoreZ)
 			{
-				int dz = Z - point.Z;
+				int dz = (Z - point.Z) / 2; // z-coordinates seem to be a bit off sometimes, /2 to add a bit of wiggle room
 
 				dist += ((long) dz)*dz;
 

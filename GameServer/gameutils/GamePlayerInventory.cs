@@ -70,9 +70,9 @@ namespace DOL.GS
 					// in addition, a player with a housing vault may still have an item in cache that may have been
 					// removed by another player with the appropriate house permission.  - Tolakram
 					var items = GameServer.Database.InventoryItems
-													.Include(x=>x.ItemTemplate)
-													.Where(x => x.CharacterID == inventoryID && 
-														  (x.SlotPosition == (int)eInventorySlot.LastVault || (x.SlotPosition >= 500 && x.SlotPosition < 600)));
+													.Include(x => x.ItemTemplate)
+													.Where(x => x.CharacterID == inventoryID &&
+														  (x.SlotPosition <= (int)eInventorySlot.LastVault || (x.SlotPosition >= 500 && x.SlotPosition < 600)));
 					foreach (InventoryItem item in items)
 					{
 						try
@@ -310,7 +310,7 @@ namespace DOL.GS
 		protected bool AddItem(eInventorySlot slot, InventoryItem item, bool addObject)
 		{
 			int savePosition = item.SlotPosition;
-			int saveOwnerID = item.CharacterID.Value;
+			int saveOwnerID = m_player.DBCharacter.Id;
 
 			if (!base.AddItem(slot, item))
 				return false;
@@ -326,30 +326,32 @@ namespace DOL.GS
 
 			if (canPersist)
 			{
-				if (addObject)
-				{
-					if (GameServer.Instance.SaveDataObject(item).Id <= 0)
-					{
-						m_player.Out.SendMessage("Error adding item to the database, item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						Log.ErrorFormat("Error adding item {0}:{1} for player {2} into the database during AddItem!", item.Id, item.Name, m_player.Name);
-						m_items.Remove(slot);
-						item.SlotPosition = savePosition;
-						item.CharacterID = saveOwnerID;
-						return false;
-					}
-				}
-				else
-				{
-					if (GameServer.Instance.SaveDataObject(item).Id <= 0)
-					{
-						m_player.Out.SendMessage("Error saving item to the database, this item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						Log.ErrorFormat("Error saving item {0}:{1} for player {2} into the database during AddItem!", item.Id, item.Name, m_player.Name);
-						m_items.Remove(slot);
-						item.SlotPosition = savePosition;
-						item.CharacterID = saveOwnerID;
-						return false;
-					}
-				}
+				GameServer.Instance.SaveDataObject(item);
+
+				//if (addObject)
+				//{
+				//	if (GameServer.Instance.SaveDataObject(item).Id <= 0)
+				//	{
+				//		m_player.Out.SendMessage("Error adding item to the database, item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				//		Log.ErrorFormat("Error adding item {0}:{1} for player {2} into the database during AddItem!", item.Id, item.Name, m_player.Name);
+				//		m_items.Remove(slot);
+				//		item.SlotPosition = savePosition;
+				//		item.CharacterID = saveOwnerID;
+				//		return false;
+				//	}
+				//}
+				//else
+				//{
+				//	if (GameServer.Instance.SaveDataObject(item).Id <= 0)
+				//	{
+				//		m_player.Out.SendMessage("Error saving item to the database, this item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				//		Log.ErrorFormat("Error saving item {0}:{1} for player {2} into the database during AddItem!", item.Id, item.Name, m_player.Name);
+				//		m_items.Remove(slot);
+				//		item.SlotPosition = savePosition;
+				//		item.CharacterID = saveOwnerID;
+				//		return false;
+				//	}
+				//}
 			}
 
 			if (IsEquippedSlot((eInventorySlot)item.SlotPosition))

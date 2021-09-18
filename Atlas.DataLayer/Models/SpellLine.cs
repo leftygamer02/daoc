@@ -8,7 +8,7 @@ namespace Atlas.DataLayer.Models
 {
     public class SpellLine : DataObjectBase
     {
-        public int SpecializationID { get; set; }
+        public int? SpecializationID { get; set; }
         public string KeyName { get; set; }
         public string Name { get; set; }
         public string SpecKeyName { get; set; }

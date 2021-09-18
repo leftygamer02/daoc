@@ -127,6 +127,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					var character = GameServer.Database.Characters
 											.Include(x => x.Specs)
 											.Include(x => x.Abilities)
+											.ThenInclude(x => x.Ability)
 											.FirstOrDefault(x => x.AccountID == client.Account.Id && x.Name == charName);
 
 					if (character != null)

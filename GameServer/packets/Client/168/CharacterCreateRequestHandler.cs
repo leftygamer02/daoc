@@ -399,6 +399,20 @@ namespace DOL.GS.PacketHandler.Client.v168
 			//// Reload Account Relations
 			//client.Account = GameServer.Database.Accounts.Include(x => x.Characters).FirstOrDefault(x => x.Id == client.Account.Id);
 
+			//add starter equipment
+			var starterEquipment = GameServer.Database.StarterEquipments
+													  .Include(x => x.ItemTemplate)
+													  .ToList()
+													  .Where(x => x.ClassIDs.Split(';').Any(x => x == ch.Class.ToString()));
+
+			var player = new GamePlayer(client, ch);
+			foreach (var template in starterEquipment.Select(x=>x.ItemTemplate))
+            {
+				var item = GameInventoryItem.Create(template);
+				player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
+			}
+
+			player.SaveIntoDatabase();
 			return true;
 		}
 
@@ -1077,6 +1091,24 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			// Reload Account Relations
 			//client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
+
+
+			//add starter equipment
+			var starterEquipment = GameServer.Database.StarterEquipments
+													  .Include(x => x.ItemTemplate)
+													  .ToList()
+													  .Where(x => x.ClassIDs.Split(';').Any(x => x == ch.Class.ToString()));
+
+			client.Player = new GamePlayer(client, ch);
+			foreach (var template in starterEquipment.Select(x => x.ItemTemplate))
+			{
+				var item = GameInventoryItem.Create(template);
+				client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
+			}
+
+			client.Player.SaveIntoDatabase();
+			GameServer.Instance.SaveDataObject(ch);
+
 			return true;
 		}
 

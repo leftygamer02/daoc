@@ -1476,8 +1476,7 @@ namespace DOL.GS
 					saveCount = WorldMgr.GetAllPlayingClientsCount();
 					m_database.SaveChanges();
 
-					m_database.Dispose();
-					m_database = new Atlas.DataLayer.AtlasContext(Configuration.DBType, Configuration.DBConnectionString);
+					
 
 					// 2008-01-29 Kakuri - Obsolete
 					//m_database.WriteDatabaseTables();
@@ -1499,6 +1498,9 @@ namespace DOL.GS
 				if (m_timer != null)
 					m_timer.Change(SaveInterval * MINUTE_CONV, Timeout.Infinite);
 				GameEventMgr.Notify(GameServerEvent.WorldSave);
+
+				m_database.Dispose();
+				m_database = new Atlas.DataLayer.AtlasContext(Configuration.DBType, Configuration.DBConnectionString);
 			}
 		}
 
@@ -1595,7 +1597,10 @@ namespace DOL.GS
 
 			obj.ModifyDate = DateTime.Now;
 
-			//db.SaveChanges();
+			if (obj is Account || obj is Character || obj is InventoryItem)
+            {
+				db.SaveChanges();
+			}		
 
 			return obj;
 		}

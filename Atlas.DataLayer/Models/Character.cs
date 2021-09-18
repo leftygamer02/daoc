@@ -192,6 +192,7 @@ namespace Atlas.DataLayer.Models
             CharacterTasks = new HashSet<CharacterTask>();
             PlayerEffects = new HashSet<PlayerEffect>();
             SinglePermissions = new HashSet<SinglePermission>();
+            //InventoryItems = new HashSet<InventoryItem>();
         }
 
     }

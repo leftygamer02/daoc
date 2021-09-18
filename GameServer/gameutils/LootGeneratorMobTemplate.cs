@@ -187,7 +187,7 @@ namespace DOL.GS
 				return lootList;
 
 			// Using Name + Realm (if ALLOW_CROSS_REALM_ITEMS) for the key to try and prevent duplicate drops
-			foreach (var lootTemplate in lootTemplates)
+			foreach (var lootTemplate in lootTemplates.ToList())
 			{
 				ItemTemplate drop = lootTemplate.ItemTemplate;
 

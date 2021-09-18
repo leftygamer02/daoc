@@ -93,7 +93,7 @@ namespace DOL.GS
 		{
 			get 
 			{
-				if (this.Id <= 0)
+				if (ItemTemplate == null || ItemTemplate.KeyName == InventoryItem.BLANK_ITEM)
 					return false;
 
 				return true;

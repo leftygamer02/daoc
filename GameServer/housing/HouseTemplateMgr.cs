@@ -268,6 +268,7 @@ namespace DOL.GS.Housing
             var merchantitems = GameServer.Database.MerchantItems.Where(x => x.ItemListName == itemListName).ToList();
 
             int slot = 0;
+            var itemAdded = false;
             foreach (var keyName in itemKeyNames)
             {
                 if (merchantitems.Any(x => x.ItemTemplate.KeyName == keyName))
@@ -292,10 +293,12 @@ namespace DOL.GS.Housing
                 };
 
                 GameServer.Instance.SaveDataObject(newitem);
+                itemAdded = true;
                 slot += 1;
             }
 
-            
+            if (itemAdded)
+                GameServer.Database.SaveChanges();            
         }
 
         private static void CheckItemTemplate(string name, string id, int model, int objtype, int copper, int dps, int spd,

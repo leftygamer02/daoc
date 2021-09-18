@@ -135,6 +135,11 @@ namespace DOL.GS
 				RegisterLootGenerator(baseGenerator, null, null, null, 0);
 				if (log.IsInfoEnabled)
 					log.Info("No LootGenerator found, adding LootGeneratorMoney for all mobs as default.");
+
+				var mobTemplateGenerator = new LootGeneratorMobTemplate();
+				RegisterLootGenerator(mobTemplateGenerator, null, null, null, 0);
+				if (log.IsInfoEnabled)
+					log.Info("No LootGenerator found, adding LootGeneratorMobTemplate for all mobs as default.");
 			}
 
 			if (log.IsInfoEnabled)
@@ -465,7 +470,13 @@ namespace DOL.GS
 			ILootGenerator exclusiveGenerator = null;
 
 			IList nameGenerators = (IList)m_mobNameGenerators[mob.Name];
-			IList guildGenerators = (IList)m_mobGuildGenerators[mob.GuildName];
+
+			IList guildGenerators = null;
+			if (!String.IsNullOrEmpty(mob.GuildName))
+            {
+				guildGenerators = (IList)m_mobGuildGenerators[mob.GuildName];
+			}
+			
 			IList regionGenerators = (IList)m_mobRegionGenerators[(int)mob.CurrentRegionID];
 			IList factionGenerators = null;
 			if (mob.Faction != null)

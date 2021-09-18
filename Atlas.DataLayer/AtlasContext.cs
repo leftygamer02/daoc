@@ -145,7 +145,7 @@ namespace Atlas.DataLayer
         public DbSet<SpellEffect> SpellEffects { get; set; }
         public DbSet<SpellLine> SpellLines { get; set; }
         public DbSet<SpellLineSpell> SpellLineSpells { get; set; }
-        public DbSet<StarterEquipment> StartEquipments { get; set; }
+        public DbSet<StarterEquipment> StarterEquipments { get; set; }
         public DbSet<StartupLocation> StartupLocations { get; set; }
         public DbSet<Style> Styles { get; set; }
         public DbSet<StyleSpell> StyleSpells { get; set; }
