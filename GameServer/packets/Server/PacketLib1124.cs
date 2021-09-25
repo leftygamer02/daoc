@@ -453,12 +453,12 @@ namespace DOL.GS.PacketHandler
 							pak.WriteShortLowEndian((ushort)(twoHandWeapon != null ? twoHandWeapon.ItemTemplate.Model : 0));
 							pak.WriteShortLowEndian((ushort)(distanceWeapon != null ? distanceWeapon.ItemTemplate.Model : 0));
 
-							if (c.ActiveWeaponSlot == (byte)DOL.GS.GameLiving.eActiveWeaponSlot.TwoHanded)
+							if (c.ActiveWeaponSlot == (byte)DOL.GS.eActiveWeaponSlot.TwoHanded)
 							{
 								pak.WriteByte(0x02);
 								pak.WriteByte(0x02);
 							}
-							else if (c.ActiveWeaponSlot == (byte)DOL.GS.GameLiving.eActiveWeaponSlot.Distance)
+							else if (c.ActiveWeaponSlot == (byte)DOL.GS.eActiveWeaponSlot.Distance)
 							{
 								pak.WriteByte(0x03);
 								pak.WriteByte(0x03);
@@ -750,23 +750,23 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte(0); // unknown
 					pak.WriteByte(0); // unknown
 
-					for (int i = 0; i < m_gameClient.Player.ConcentrationEffects.Count; i++)
-					{
-						IConcentrationEffect effect = m_gameClient.Player.ConcentrationEffects[i];
-						pak.WriteByte((byte)i);
-						pak.WriteByte(0); // unknown
-						pak.WriteByte(effect.Concentration);
-						pak.WriteShort(effect.Icon);
-						if (effect.Name.Length > 14)
-							pak.WritePascalString(effect.Name.Substring(0, 12) + "..");
-						else
-							pak.WritePascalString(effect.Name);
-						if (effect.OwnerName.Length > 14)
-							pak.WritePascalString(effect.OwnerName.Substring(0, 12) + "..");
-						else
-							pak.WritePascalString(effect.OwnerName);
-					}
-				}
+                    for (int i = 0; i < m_gameClient.Player.ConcentrationEffects.Count; i++)
+                    {
+                        IConcentrationEffect effect = m_gameClient.Player.ConcentrationEffects[i];
+                        pak.WriteByte((byte)i);
+                        pak.WriteByte(0); // unknown
+                        pak.WriteByte(effect.Concentration);
+                        pak.WriteShort(effect.Icon);
+                        if (effect.Name.Length > 14)
+                            pak.WritePascalString(effect.Name.Substring(0, 12) + "..");
+                        else
+                            pak.WritePascalString(effect.Name);
+                        if (effect.OwnerName.Length > 14)
+                            pak.WritePascalString(effect.OwnerName.Substring(0, 12) + "..");
+                        else
+                            pak.WritePascalString(effect.OwnerName);
+                    }
+                }
 				SendTCP(pak);
 			}
 
@@ -1268,7 +1268,7 @@ namespace DOL.GS.PacketHandler
 				if (windowType == eInventoryWindowType.HouseVault && houseVault != null)
 					pak.WriteByte((byte)(houseVault.Index + 1));    // Add the vault number to the window caption
 				else
-					pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
+					pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.rangeAttackComponent.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
 																																	  // ^ in 1.89b+, 0 bit - showing hooded cloack, if not hooded not show cloack at all ?
 				pak.WriteByte(m_gameClient.Player.VisibleActiveWeaponSlots);
 				pak.WriteByte((byte)windowType);
@@ -1302,7 +1302,7 @@ namespace DOL.GS.PacketHandler
 				}
 				else
 				{
-					pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
+					pak.WriteByte((byte)((m_gameClient.Player.IsCloakHoodUp ? 0x01 : 0x00) | (int)m_gameClient.Player.rangeAttackComponent.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
 				}
 
 				pak.WriteByte((byte)m_gameClient.Player.VisibleActiveWeaponSlots);
@@ -1537,7 +1537,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte((byte)living.VisibleActiveWeaponSlots);
 				pak.WriteByte((byte)living.CurrentSpeed); // new in 189b+, speed
 				pak.WriteByte((byte)((living.IsCloakInvisible ? 0x01 : 0x00) | (living.IsHelmInvisible ? 0x02 : 0x00))); // new in 189b+, cloack/helm visibility
-				pak.WriteByte((byte)((living.IsCloakHoodUp ? 0x01 : 0x00) | (int)living.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
+				pak.WriteByte((byte)((living.IsCloakHoodUp ? 0x01 : 0x00) | (int)living.rangeAttackComponent.ActiveQuiverSlot)); //bit0 is hood up bit4 to 7 is active quiver
 
 				if (items != null)
 				{
@@ -2357,25 +2357,46 @@ namespace DOL.GS.PacketHandler
 
 				if (pet != null)
 				{
-					lock (pet.EffectList)
-					{
-						ArrayList icons = new ArrayList();
-						foreach (IGameEffect effect in pet.EffectList)
-						{
-							if (icons.Count >= 8)
-								break;
-							if (effect.Icon == 0)
-								continue;
-							icons.Add(effect.Icon);
-						}
-						pak.WriteByte((byte)icons.Count); // effect count
-														  // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
-						foreach (ushort icon in icons)
-						{
-							pak.WriteShort(icon);
-						}
-					}
-				}
+					//lock (pet.EffectList)
+					//{
+					//	ArrayList icons = new ArrayList();
+					//	foreach (IGameEffect effect in pet.EffectList)
+					//	{
+					//		if (icons.Count >= 8)
+					//			break;
+					//		if (effect.Icon == 0)
+					//			continue;
+					//		icons.Add(effect.Icon);
+					//	}
+					//	pak.WriteByte((byte)icons.Count); // effect count
+					//									  // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
+					//	foreach (ushort icon in icons)
+					//	{
+					//		pak.WriteShort(icon);
+					//	}
+					//}
+                    lock (pet.EffectList)
+                    {
+                        ArrayList icons = new ArrayList();
+                        foreach (var effects in pet.effectListComponent.Effects.Values)
+                        {
+							foreach (ECSGameEffect effect in effects)
+							{
+								if (icons.Count >= 8)
+									break;
+								if (effect.Icon == 0)
+									continue;
+								icons.Add(effect.Icon);
+							}
+                        }
+                        pak.WriteByte((byte)icons.Count); // effect count
+                                                          // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
+                        foreach (ushort icon in icons)
+                        {
+                            pak.WriteShort(icon);
+                        }
+                    }
+                }
 				else
 					pak.WriteByte((byte)0); // effect count
 				SendTCP(pak);
@@ -3385,6 +3406,7 @@ namespace DOL.GS.PacketHandler
 
 		public virtual void SendSpellEffectAnimation(GameObject spellCaster, GameObject spellTarget, ushort spellid, ushort boltTime, bool noSound, byte success)
 		{
+			Console.WriteLine($"Spell Effect sent at {GameLoop.GameLoopTime}");
 			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.SpellEffectAnimation)))
 			{
 				pak.WriteShort((ushort)spellCaster.ObjectID);
@@ -3843,12 +3865,12 @@ namespace DOL.GS.PacketHandler
 				int fxcount = 0;
 				int entriesCount = 0;
 
-				pak.WriteByte(0); // effects count set in the end
+				pak.WriteByte(0); // effects count set in the end0
 				pak.WriteByte(0); // unknown
 				pak.WriteByte(Icons); // unknown
 				pak.WriteByte(0); // unknown
 
-				foreach (IGameEffect effect in m_gameClient.Player.EffectList)
+				foreach (ECSGameEffect effect in m_gameClient.Player.effectListComponent.GetAllEffects()/*Effects.Values*/.Where(e => e.EffectType != eEffect.Pulse))
 				{
 					if (effect.Icon != 0)
 					{
@@ -3859,53 +3881,113 @@ namespace DOL.GS.PacketHandler
 						}
 
 						// store tooltip update for gamespelleffect.
-						if (ForceTooltipUpdate && effect is GameSpellEffect gameEffect)
+						if (ForceTooltipUpdate && effect is ECSGameEffect gameEffect)
 						{
 							tooltipSpellHandlers.Add(gameEffect.SpellHandler);
 						}
 
 						//						log.DebugFormat("adding [{0}] '{1}'", fxcount-1, effect.Name);
 						pak.WriteByte((byte)(fxcount - 1)); // icon index
-						pak.WriteByte((effect is GameSpellEffect || effect.Icon > 5000) ? (byte)(fxcount - 1) : (byte)0xff);
+						pak.WriteByte((effect is ECSGameEffect || effect.Icon > 5000) ? (byte)(fxcount - 1) : (byte)0xff);
 
 						byte ImmunByte = 0;
-						var gsp = effect as GameSpellEffect;
-						if (gsp != null && gsp.IsDisabled)
-							ImmunByte = 1;
+						var gsp = effect as ECSGameEffect;
+                        // if (gsp != null && gsp.IsDisabled)
+                        // 	ImmunByte = 1;
+                        if (gsp is ECSImmunityEffect || gsp.IsDisabled)
+                            ImmunByte = 1;
+						//todo this should be the ImmunByte
 						pak.WriteByte(ImmunByte); // new in 1.73; if non zero says "protected by" on right click
 
 						// bit 0x08 adds "more..." to right click info
 						pak.WriteShort(effect.Icon);
-						//pak.WriteShort(effect.IsFading ? (ushort)1 : (ushort)(effect.RemainingTime / 1000));
-						pak.WriteShort((ushort)(effect.RemainingTime / 1000));
-						if (effect is GameSpellEffect)
-							pak.WriteShort((ushort)((GameSpellEffect)effect).Spell.InternalID); //v1.110+ send the spell ID for delve info in active icon
+						pak.WriteShort((ushort)((effect.SpellHandler.Spell.IsPulsing ? effect.GetRemainingTimeForClient() : effect.Duration) / 1000));
+						if (effect is ECSGameEffect || effect is ECSImmunityEffect)
+							pak.WriteShort((ushort)((ECSGameEffect)effect).Icon); //v1.110+ send the spell ID for delve info in active icon
 						else
 							pak.WriteShort(0);//don't override existing tooltip ids
 
 						byte flagNegativeEffect = 0;
-						if (effect is StaticEffect)
-						{
-							if (((StaticEffect)effect).HasNegativeEffect)
-							{
-								flagNegativeEffect = 1;
-							}
-						}
-						else if (effect is GameSpellEffect)
-						{
-							if (!((GameSpellEffect)effect).SpellHandler.HasPositiveEffect)
-							{
-								flagNegativeEffect = 1;
-							}
-						}
+                        
+						// if (effect is StaticEffect)
+						// {
+						// 	if (((StaticEffect)effect).HasNegativeEffect)
+						// 	{
+						// 		flagNegativeEffect = 1;
+						// 	}
+						// }
+						// else if (effect is GameSpellEffect)
+						// {
+						// 	if (!((GameSpellEffect)effect).SpellHandler.HasPositiveEffect)
+						// 	{
+						// 		flagNegativeEffect = 1;
+						// 	}
+						// }
 						pak.WriteByte(flagNegativeEffect);
 
-						pak.WritePascalString(effect.Name);
+						pak.WritePascalString(effect.SpellHandler.Spell.Name);
 						entriesCount++;
 					}
 				}
 
-				int oldCount = lastUpdateEffectsCount;
+                foreach (IGameEffect effect in m_gameClient.Player.EffectList)
+                {
+                    if (effect.Icon != 0)
+                    {
+                        fxcount++;
+                        if (changedEffects != null && !changedEffects.Contains(effect))
+                        {
+                            continue;
+                        }
+
+                        // store tooltip update for gamespelleffect.
+                        if (ForceTooltipUpdate && effect is GameSpellEffect gameEffect)
+                        {
+                            tooltipSpellHandlers.Add(gameEffect.SpellHandler);
+                        }
+
+                        //						log.DebugFormat("adding [{0}] '{1}'", fxcount-1, effect.Name);
+                        pak.WriteByte((byte)(fxcount - 1)); // icon index
+                        pak.WriteByte((effect is GameSpellEffect || effect.Icon > 5000) ? (byte)(fxcount - 1) : (byte)0xff);
+
+                        byte ImmunByte = 0;
+                        var gsp = effect as GameSpellEffect;
+                        if (gsp != null && gsp.IsDisabled)
+                            ImmunByte = 1;
+                        pak.WriteByte(ImmunByte); // new in 1.73; if non zero says "protected by" on right click
+
+                        // bit 0x08 adds "more..." to right click info
+                        pak.WriteShort(effect.Icon);
+                        //pak.WriteShort(effect.IsFading ? (ushort)1 : (ushort)(effect.RemainingTime / 1000));
+                        pak.WriteShort((ushort)(effect.RemainingTime / 1000));
+                        if (effect is GameSpellEffect)
+                            pak.WriteShort((ushort)((GameSpellEffect)effect).Spell.InternalID); //v1.110+ send the spell ID for delve info in active icon
+                        else
+                            pak.WriteShort(0);//don't override existing tooltip ids
+
+                        byte flagNegativeEffect = 0;
+                        if (effect is StaticEffect)
+                        {
+                            if (((StaticEffect)effect).HasNegativeEffect)
+                            {
+                                flagNegativeEffect = 1;
+                            }
+                        }
+                        else if (effect is GameSpellEffect)
+                        {
+                            if (!((GameSpellEffect)effect).SpellHandler.HasPositiveEffect)
+                            {
+                                flagNegativeEffect = 1;
+                            }
+                        }
+                        pak.WriteByte(flagNegativeEffect);
+
+                        pak.WritePascalString(effect.Name);
+                        entriesCount++;
+                    }
+                }
+
+                int oldCount = lastUpdateEffectsCount;
 				lastUpdateEffectsCount = fxcount;
 
 				while (oldCount > fxcount)
@@ -4288,7 +4370,7 @@ namespace DOL.GS.PacketHandler
 						if (fx is GameSpellEffect)
 						{
 							GameSpellEffect effect = (GameSpellEffect)fx;
-							if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == "Chamber"))
+							if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == (byte)eSpellType.Chamber))
 							{
 								ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
 								sortList[chamber.EffectSlot] = effect;
@@ -4310,19 +4392,19 @@ namespace DOL.GS.PacketHandler
 							}
 							else if (chamber.PrimarySpell != null && chamber.SecondarySpell != null)
 							{
-								if (chamber.SecondarySpell.SpellType == "Lifedrain")
+								if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Lifedrain)
 									pak.WriteByte(0x11);
-								else if (chamber.SecondarySpell.SpellType.IndexOf("SpeedDecrease") != -1)
+								else if (chamber.SecondarySpell.SpellType.ToString().IndexOf("SpeedDecrease") != -1)
 									pak.WriteByte(0x33);
-								else if (chamber.SecondarySpell.SpellType == "PowerRegenBuff")
+								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.PowerRegenBuff)
 									pak.WriteByte(0x77);
-								else if (chamber.SecondarySpell.SpellType == "DirectDamage")
+								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DirectDamage)
 									pak.WriteByte(0x66);
-								else if (chamber.SecondarySpell.SpellType == "SpreadHeal")
+								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.SpreadHeal)
 									pak.WriteByte(0x55);
-								else if (chamber.SecondarySpell.SpellType == "Nearsight")
+								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Nearsight)
 									pak.WriteByte(0x44);
-								else if (chamber.SecondarySpell.SpellType == "DamageOverTime")
+								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DamageOverTime)
 									pak.WriteByte(0x22);
 							}
 						}
@@ -4710,21 +4792,37 @@ namespace DOL.GS.PacketHandler
 			if (updateIcons)
 			{
 				pak.WriteByte((byte)(0x80 | living.GroupIndex));
-				lock (living.EffectList)
-				{
-					byte i = 0;
-					foreach (IGameEffect effect in living.EffectList)
-						if (effect is GameSpellEffect)
-							i++;
-					pak.WriteByte(i);
-					foreach (IGameEffect effect in living.EffectList)
-						if (effect is GameSpellEffect)
-						{
-							pak.WriteByte(0);
-							pak.WriteShort(effect.Icon);
-						}
-				}
-			}
+				//lock (living.EffectList)
+				//{
+				//	byte i = 0;
+				//	foreach (IGameEffect effect in living.EffectList)
+				//		if (effect is GameSpellEffect)
+				//			i++;
+				//	pak.WriteByte(i);
+				//	foreach (IGameEffect effect in living.EffectList)
+				//		if (effect is GameSpellEffect)
+				//		{
+				//			pak.WriteByte(0);
+				//			pak.WriteShort(effect.Icon);
+				//		}
+				//}
+                lock (living.effectListComponent.Effects.Values)
+                {
+                    byte i = 0;
+                    foreach (var effect in living.effectListComponent.GetAllEffects())//.Effects.Values)
+						//foreach (ECSGameEffect effect in effects)
+							if (effect is ECSGameEffect && !effect.IsDisabled)
+								i++;
+                    pak.WriteByte(i);
+                    foreach (var effect in living.effectListComponent.GetAllEffects())//.Effects.Values)
+						//foreach (ECSGameEffect effect in effects)
+							if (effect is ECSGameEffect && !effect.IsDisabled)
+							{
+								pak.WriteByte(0);
+								pak.WriteShort(effect.Icon);
+							}
+                }
+            }
 			if (updateMap)
 				WriteGroupMemberMapUpdate(pak, living);
 		}

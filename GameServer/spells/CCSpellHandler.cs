@@ -57,28 +57,28 @@ namespace DOL.GS.Spells
 		/// duration spells only
 		/// </summary>
 		/// <param name="effect"></param>
-		public override void OnEffectStart(GameSpellEffect effect)
-		{
-			base.OnEffectStart(effect);
+		//public override void OnEffectStart(GameSpellEffect effect)
+		//{
+		//	base.OnEffectStart(effect);
 
-			MessageToLiving(effect.Owner, Spell.Message1, eChatType.CT_Spell);
-			MessageToCaster(Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell);
-			Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell, effect.Owner, m_caster);
+		//	MessageToLiving(effect.Owner, Spell.Message1, eChatType.CT_Spell);
+		//	MessageToCaster(Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell);
+		//	Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell, effect.Owner, m_caster);
 
-			GamePlayer player = effect.Owner as GamePlayer;
-			if(player != null)
-			{
-				player.Client.Out.SendUpdateMaxSpeed();
-				if(player.Group != null)
-					player.Group.UpdateMember(player, false, false);
-			}
-			else
-			{
-				effect.Owner.StopAttack();
-			}
+		//	GamePlayer player = effect.Owner as GamePlayer;
+		//	if(player != null)
+		//	{
+		//		player.Client.Out.SendUpdateMaxSpeed();
+		//		if(player.Group != null)
+		//			player.Group.UpdateMember(player, false, false);
+		//	}
+		//	else
+		//	{
+		//		effect.Owner.attackComponent.LivingStopAttack();
+		//	}
 
-			effect.Owner.Notify(GameLivingEvent.CrowdControlled, effect.Owner);
-		}
+		//	effect.Owner.Notify(GameLivingEvent.CrowdControlled, effect.Owner);
+		//}
 
 		/// <summary>
 		/// When an applied effect expires.
@@ -131,7 +131,7 @@ namespace DOL.GS.Spells
 			}
 
 
-			if (Spell.SpellType.ToLower() != "stylestun")
+			if (Spell.SpellType != (byte)eSpellType.StyleStun)
 			{
 				// capping duration adjustment to 100%, live cap unknown - Tolakram
 				int hitChance = Math.Min(200, CalculateToHitChance(target));
@@ -212,12 +212,12 @@ namespace DOL.GS.Spells
 
 		public override void OnEffectStart(GameSpellEffect effect)
 		{
-			effect.Owner.IsMezzed = true;
-			effect.Owner.StopAttack();
-			effect.Owner.StopCurrentSpellcast();
-			effect.Owner.DisableTurning(true);
-			GameEventMgr.AddHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
-			base.OnEffectStart(effect);
+			//effect.Owner.IsMezzed = true;
+			//effect.Owner.attackComponent.LivingStopAttack();
+			//effect.Owner.StopCurrentSpellcast();
+			//effect.Owner.DisableTurning(true);
+			////GameEventMgr.AddHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
+			//base.OnEffectStart(effect);
 		}
 
 		/// <summary>
@@ -311,9 +311,9 @@ namespace DOL.GS.Spells
 		/// <returns>immunity duration in milliseconds</returns>
 		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
 		{
-			GameEventMgr.RemoveHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
-			effect.Owner.IsMezzed = false;
-			effect.Owner.DisableTurning(false);
+			//GameEventMgr.RemoveHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
+			//effect.Owner.IsMezzed = false;
+			//effect.Owner.DisableTurning(false);
 			return base.OnEffectExpires(effect,noMessages);
 		}
 		
@@ -355,7 +355,7 @@ namespace DOL.GS.Spells
 
 //
 
-			if (target.HasAbility(Abilities.MezzImmunity))
+			if (target.effectListComponent.Effects.ContainsKey(eEffect.MezImmunity))//target.HasAbility(Abilities.MezzImmunity))
 			{
 				MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
 				SendEffectAnimation(target, 0, false, 0);
@@ -370,8 +370,9 @@ namespace DOL.GS.Spells
 				return;
 			}
 			//Do nothing when already mez, but inform caster
-			GameSpellEffect mezz = SpellHandler.FindEffectOnTarget(target, "Mesmerize");
-			if(mezz != null)
+			//GameSpellEffect mezz = SpellHandler.FindEffectOnTarget(target, "Mesmerize");
+            target.effectListComponent.Effects.TryGetValue(eEffect.Mez, out var mezz);
+            if (mezz != null)
 			{
 				MessageToCaster("Your target is already mezzed!", eChatType.CT_SpellResisted);
 //				SendEffectAnimation(target, 0, false, 0);
@@ -409,51 +410,51 @@ namespace DOL.GS.Spells
 			return (int)duration;
 		}
 
-		protected virtual void OnAttacked(DOLEvent e, object sender, EventArgs arguments)
-		{
-			AttackedByEnemyEventArgs attackArgs = arguments as AttackedByEnemyEventArgs;
-			GameLiving living = sender as GameLiving;
-			if (attackArgs == null) return;
-			if (living == null) return;
+		//protected virtual void OnAttacked(DOLEvent e, object sender, EventArgs arguments)
+		//{
+		//	AttackedByEnemyEventArgs attackArgs = arguments as AttackedByEnemyEventArgs;
+		//	GameLiving living = sender as GameLiving;
+		//	if (attackArgs == null) return;
+		//	if (living == null) return;
 
-			bool remove = false;
+		//	bool remove = false;
 
-			if (attackArgs.AttackData.AttackType != AttackData.eAttackType.Spell)
-			{
-				switch (attackArgs.AttackData.AttackResult)
-				{
-					case GameLiving.eAttackResult.HitStyle:
-					case GameLiving.eAttackResult.HitUnstyled:
-					case GameLiving.eAttackResult.Blocked:
-					case GameLiving.eAttackResult.Evaded:
-					case GameLiving.eAttackResult.Fumbled:
-					case GameLiving.eAttackResult.Missed:
-					case GameLiving.eAttackResult.Parried:
-						remove = true;
-						break;
-				}
-			}
-			//If the spell was resisted - then we don't break mezz
-			else if (!attackArgs.AttackData.IsSpellResisted)
-			{
-				//temporary fix for DirectDamageDebuff not breaking mez
-				if (attackArgs.AttackData.SpellHandler is PropertyChangingSpell && attackArgs.AttackData.SpellHandler.HasPositiveEffect == false && attackArgs.AttackData.Damage > 0)
-					remove = true;
-				//debuffs/shears dont interrupt mez, neither does recasting mez
-				else if (attackArgs.AttackData.SpellHandler is PropertyChangingSpell || attackArgs.AttackData.SpellHandler is MesmerizeSpellHandler
-				         || attackArgs.AttackData.SpellHandler is NearsightSpellHandler || attackArgs.AttackData.SpellHandler.HasPositiveEffect) return;
+		//	if (attackArgs.AttackData.AttackType != AttackData.eAttackType.Spell)
+		//	{
+		//		switch (attackArgs.AttackData.AttackResult)
+		//		{
+		//			case eAttackResult.HitStyle:
+		//			case eAttackResult.HitUnstyled:
+		//			case eAttackResult.Blocked:
+		//			case eAttackResult.Evaded:
+		//			case eAttackResult.Fumbled:
+		//			case eAttackResult.Missed:
+		//			case eAttackResult.Parried:
+		//				remove = true;
+		//				break;
+		//		}
+		//	}
+		//	//If the spell was resisted - then we don't break mezz
+		//	else if (!attackArgs.AttackData.IsSpellResisted)
+		//	{
+		//		//temporary fix for DirectDamageDebuff not breaking mez
+		//		if (attackArgs.AttackData.SpellHandler is PropertyChangingSpell && attackArgs.AttackData.SpellHandler.HasPositiveEffect == false && attackArgs.AttackData.Damage > 0)
+		//			remove = true;
+		//		//debuffs/shears dont interrupt mez, neither does recasting mez
+		//		else if (attackArgs.AttackData.SpellHandler is PropertyChangingSpell || attackArgs.AttackData.SpellHandler is MesmerizeSpellHandler
+		//		         || attackArgs.AttackData.SpellHandler is NearsightSpellHandler || attackArgs.AttackData.SpellHandler.HasPositiveEffect) return;
 
-				if (attackArgs.AttackData.AttackResult == GameLiving.eAttackResult.Missed || attackArgs.AttackData.AttackResult == GameLiving.eAttackResult.HitUnstyled)
-					remove = true;
-			}
+		//		if (attackArgs.AttackData.AttackResult == eAttackResult.Missed || attackArgs.AttackData.AttackResult == eAttackResult.HitUnstyled)
+		//			remove = true;
+		//	}
 
-			if (remove)
-			{
-				GameSpellEffect effect = SpellHandler.FindEffectOnTarget(living, this);
-				if (effect != null)
-					effect.Cancel(false);//call OnEffectExpires
-			}
-		}
+		//	if (remove)
+		//	{
+		//		GameSpellEffect effect = SpellHandler.FindEffectOnTarget(living, this);
+		//		if (effect != null)
+		//			effect.Cancel(false);//call OnEffectExpires
+		//	}
+		//}
 
 		// constructor
 		public MesmerizeSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) {}
@@ -495,11 +496,11 @@ namespace DOL.GS.Spells
 
 		public override void OnEffectStart(GameSpellEffect effect)
 		{
-			effect.Owner.IsStunned=true;
-			effect.Owner.StopAttack();
-			effect.Owner.StopCurrentSpellcast();
-			effect.Owner.DisableTurning(true);
-			base.OnEffectStart(effect);
+			//effect.Owner.IsStunned=true;
+			//effect.Owner.attackComponent.LivingStopAttack();
+			//effect.Owner.StopCurrentSpellcast();
+			//effect.Owner.DisableTurning(true);
+			//base.OnEffectStart(effect);
 		}
 
 		/// <summary>
@@ -524,14 +525,14 @@ namespace DOL.GS.Spells
 
 		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
-			if (target.HasAbility(Abilities.StunImmunity))
+			if (target.effectListComponent.Effects.ContainsKey(eEffect.StunImmunity))//target.HasAbility(Abilities.StunImmunity))
 			{
 				MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
 				base.OnSpellResisted(target);
 				return;
 			}
 			//Ceremonial bracer dont intercept physical stun
-			if(Spell.SpellType.ToLower() != "stylestun" )
+			if(Spell.SpellType != (byte)eSpellType.StyleStun)
 			{
 				GameSpellEffect stunblock = SpellHandler.FindEffectOnTarget(target, "CeremonialBracerStun");
 				if (stunblock != null)
@@ -575,7 +576,7 @@ namespace DOL.GS.Spells
 		{
 			if (Spell.EffectGroup != 0 || compare.Spell.EffectGroup != 0)
 				return Spell.EffectGroup == compare.Spell.EffectGroup;
-			if (compare.Spell.SpellType == "StyleStun") return true;
+			if (compare.Spell.SpellType == (byte)eSpellType.StyleStun) return true;
 			return base.IsOverwritable(compare);
 		}
 

@@ -4,7 +4,7 @@ using Atlas.DataLayer.Models;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 
-namespace DOL.UnitTests.Gameserver
+namespace DOL.Tests.Unit.Gameserver
 {
     public class FakePlayer : GamePlayer
     {
@@ -144,10 +144,13 @@ namespace DOL.UnitTests.Gameserver
         public void SetAggressionState(eAggressionState state) { }
         public void Stay() { }
         public override void Think() { }
+
+        public override void KillFSM() { }
     }
 
     public class FakeBrain : ABrain
     {
         public override void Think() { }
+        public override void KillFSM() { }
     }
 }

@@ -112,7 +112,7 @@ namespace DOL.GS
         /// Starts a melee or ranged attack on a given target.
         /// </summary>
         /// <param name="attackTarget">The object to attack.</param>
-        public override void StartAttack(GameObject attackTarget)
+        public void StartAttack(GameObject attackTarget)
         {
             // Don't allow ranged attacks
             if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
@@ -132,7 +132,7 @@ namespace DOL.GS
                 else
                     SwitchWeapon(eActiveWeaponSlot.Standard);
             }
-            base.StartAttack(attackTarget);
+            attackComponent.StartAttack(attackTarget);
         }
 
         /// <summary>

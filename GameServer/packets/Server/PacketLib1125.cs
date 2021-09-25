@@ -341,12 +341,12 @@ namespace DOL.GS.PacketHandler
 							pak.WriteByte((byte)c.Realm); // moved                            
 							pak.WriteByte((byte)((((c.Race & 0x10) << 2) + (c.Race & 0x0F)) | (c.Gender << 4)));
 
-							if (c.ActiveWeaponSlot == (byte)GameLiving.eActiveWeaponSlot.TwoHanded)
+							if (c.ActiveWeaponSlot == (byte)eActiveWeaponSlot.TwoHanded)
 							{
 								pak.WriteByte(0x02);
 								pak.WriteByte(0x02);
 							}
-							else if (c.ActiveWeaponSlot == (byte)GameLiving.eActiveWeaponSlot.Distance)
+							else if (c.ActiveWeaponSlot == (byte)eActiveWeaponSlot.Distance)
 							{
 								pak.WriteByte(0x03);
 								pak.WriteByte(0x03);
@@ -483,19 +483,36 @@ namespace DOL.GS.PacketHandler
 			if (updateIcons)
 			{
 				pak.WriteByte((byte)(0x80 | living.GroupIndex));
-				lock (living.EffectList)
-				{
-					pak.WriteByte((byte)living.EffectList.OfType<GameSpellEffect>().Count());
-					foreach (var effect in living.EffectList)
-					{
-						if (effect is GameSpellEffect)
+				//lock (living.EffectList)
+				//{
+				//	pak.WriteByte((byte)living.EffectList.OfType<GameSpellEffect>().Count());
+				//	foreach (var effect in living.EffectList)
+				//	{
+				//		if (effect is GameSpellEffect)
+				//		{
+				//			pak.WriteByte(0);
+				//			pak.WriteShort(effect.Icon);
+				//		}
+				//	}
+				//}
+                lock (living.effectListComponent.Effects.Values)
+                {
+                    byte i = 0;
+                    foreach (var effect in living.effectListComponent.GetAllEffects())//Effects.Values)
+																					   //foreach (ECSGameEffect effect in effects)
+						if (effect is ECSGameEffect && !effect.IsDisabled)
+								i++;
+                    pak.WriteByte(i);
+
+                    foreach (var effect in living.effectListComponent.GetAllEffects())//Effects.Values)
+						//foreach (ECSGameEffect effect in effects)
+						if (effect is ECSGameEffect && !effect.IsDisabled)
 						{
 							pak.WriteByte(0);
 							pak.WriteShort(effect.Icon);
 						}
-					}
-				}
-			}
+                }
+            }
 		}
 
 		/// <summary>

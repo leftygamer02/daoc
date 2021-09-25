@@ -197,7 +197,7 @@ namespace DOL.GS.Spells
                 rezImmune.Start(player);
 
 				IList<GameObject> attackers;
-				lock (player.Attackers) { attackers = new List<GameObject>(player.Attackers); }
+				lock (player.attackComponent.Attackers) { attackers = new List<GameObject>(player.attackComponent.Attackers); }
 
 				foreach (GameObject attacker in attackers)
 				{
@@ -205,7 +205,7 @@ namespace DOL.GS.Spells
 						attacker.Notify(
 							GameLivingEvent.EnemyHealed,
 							attacker,
-							new EnemyHealedEventArgs(living, m_caster, GameLiving.eHealthChangeType.Spell, living.Health));
+							new EnemyHealedEventArgs(living, m_caster, eHealthChangeType.Spell, living.Health));
 				}
 
 				GamePlayer casterPlayer = Caster as GamePlayer;
@@ -310,7 +310,7 @@ namespace DOL.GS.Spells
 
 				var list = new List<string>();
 
-				list.Add("Function: " + (Spell.SpellType == "" ? "(not implemented)" : Spell.SpellType));
+				list.Add("Function: " + (Spell.SpellType.ToString() == "" ? "(not implemented)" : Spell.SpellType.ToString()));
 				list.Add(" "); //empty line
 				list.Add(Spell.Description);
 				list.Add(" "); //empty line

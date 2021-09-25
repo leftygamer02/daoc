@@ -105,7 +105,7 @@ namespace DOL.GS
 			return base.HasAbility(keyName);
 		}
 
-		public override int AttackRange
+		public int AttackRange
 		{
 			get { return 400; }
 			set { }
@@ -148,7 +148,7 @@ namespace DOL.GS
 			}
 		}
 
-		public override double AttackDamage(InventoryItem weapon)
+		public double AttackDamage(InventoryItem weapon)
 		{
 			return base.AttackDamage(weapon) * 1.0 * DragonDifficulty / 100;
 		}
@@ -827,7 +827,7 @@ namespace DOL.GS
 					spell.RecastDelay = 10;
 					spell.Id = 6000;
 					spell.Target = "Enemy";
-					spell.Type = "Stun";
+					spell.Type = eSpellType.Stun.ToString();
 					spell.Message1 = "You cannot move!";
 					spell.Message2 = "{0} cannot seem to move!";
 					m_stun = new Spell(spell, 70);

@@ -29,6 +29,7 @@ using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using DOL.GS.RealmAbilities;
 using DOL.GS.SkillHandler;
+using DOL.GS.SpellEffects;
 using DOL.Language;
 
 using log4net;
@@ -42,6 +43,19 @@ namespace DOL.GS.Spells
 	public class SpellHandler : ISpellHandler
 	{
 		private static readonly ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+		
+		//GameLoop Methods
+		private eCastState castState;
+		private double _castFinishedTickTime;
+		//todo create this list when loading spell
+		private List<IEffectComponent> _spellEffectComponents = new List<IEffectComponent>();
+		public GameLiving GetTarget()
+        {
+			return m_spellTarget;
+        }
+
+		// Max number of Concentration spells that a single caster is allowed to cast.
+		public const int MAX_CONC_SPELLS = 20;
 
 		/// <summary>
 		/// Maximum number of sub-spells to get delve info for.
@@ -86,6 +100,8 @@ namespace DOL.GS.Spells
 		/// Shall we start the reuse timer
 		/// </summary>
 		protected bool m_startReuseTimer = true;
+
+		private long _castStartTick;		
 
 		public bool StartReuseTimer
 		{
@@ -151,6 +167,9 @@ namespace DOL.GS.Spells
 
 		protected bool m_ignoreDamageCap = false;
 
+
+		private long _calculatedCastTime = 0;
+
 		/// <summary>
 		/// Does this spell ignore any damage cap?
 		/// </summary>
@@ -185,7 +204,6 @@ namespace DOL.GS.Spells
 		/// The CastingCompleteEvent
 		/// </summary>
 		public event CastingCompleteCallback CastingCompleteEvent;
-		//public event SpellEndsCallback SpellEndsEvent;
 
 		/// <summary>
 		/// spell handler constructor
@@ -260,7 +278,7 @@ namespace DOL.GS.Spells
 			{
 				if (Spell.IsFocus)
 				{
-					FocusSpellAction(null, Caster, null);
+					//FocusSpellAction(null, Caster, null);
 				}
 				MessageToCaster("You do not have enough mana and your spell was cancelled.", eChatType.CT_SpellExpires);
 				effect.Cancel(false);
@@ -268,7 +286,7 @@ namespace DOL.GS.Spells
 		}
 
 		/// <summary>
-		/// Checks if caster holds the right instrument for this spell
+		/// Checks if caster holds the right instrument for this 
 		/// </summary>
 		/// <returns>true if right instrument</returns>
 		protected bool CheckInstrument()
@@ -288,7 +306,7 @@ namespace DOL.GS.Spells
 		/// <param name="living">owner of pulsing spell</param>
 		/// <param name="spellType">type of spell to cancel</param>
 		/// <returns>true if any spells were canceled</returns>
-		public virtual bool CancelPulsingSpell(GameLiving living, string spellType)
+		public virtual bool CancelPulsingSpell(GameLiving living, byte spellType)
 		{
 			lock (living.ConcentrationEffects)
 			{
@@ -313,6 +331,8 @@ namespace DOL.GS.Spells
 		/// <param name="living"></param>
 		public static void CancelAllPulsingSpells(GameLiving living)
 		{
+			//[Takii] I updated this method so things would compile but the only call to it is currently commented and its unclear if we want to keep it.
+
 			List<IConcentrationEffect> pulsingSpells = new List<IConcentrationEffect>();
 
 			GamePlayer player = living as GamePlayer;
@@ -321,14 +341,14 @@ namespace DOL.GS.Spells
 			{
 				for (int i = 0; i < living.ConcentrationEffects.Count; i++)
 				{
-					PulsingSpellEffect effect = living.ConcentrationEffects[i] as PulsingSpellEffect;
+					ECSPulseEffect effect = living.ConcentrationEffects[i] as ECSPulseEffect;
 					if (effect == null)
 						continue;
 
-					if ( player != null && player.CharacterClass.MaxPulsingSpells > 1 )
-						pulsingSpells.Add( effect );
+					if (player != null && player.CharacterClass.MaxPulsingSpells > 1)
+						pulsingSpells.Add(effect);
 					else
-						effect.Cancel(false);
+						EffectService.RequestCancelEffect(effect);
 				}
 			}
 
@@ -342,9 +362,13 @@ namespace DOL.GS.Spells
 			// will prevent us from knowing which spell is the oldest and should be canceled - we can go ahead and simply
 			// cancel the last spell in the list (which will result in inconsistent behavior) or change the code that adds
 			// spells to ConcentrationEffects so that it enforces predictable ordering.
-			if ( pulsingSpells.Count > 1 )
+			if (pulsingSpells.Count > 1)
 			{
-				pulsingSpells[pulsingSpells.Count - 1].Cancel( false );
+				ECSPulseEffect effect = pulsingSpells[pulsingSpells.Count - 1] as ECSPulseEffect;
+				if (effect != null)
+				{
+					EffectService.RequestCancelEffect(effect);
+				}
 			}
 		}
 
@@ -387,11 +411,38 @@ namespace DOL.GS.Spells
 			return CastSpell(targetObject);
 		}
 
-		/// <summary>
-		/// called whenever the player clicks on a spell icon
-		/// or a GameLiving wants to cast a spell
-		/// </summary>
-		public virtual bool CastSpell()
+
+		public virtual void CreateECSEffect(GameLiving target, double effectiveness)
+		{
+			
+			//IECSGameEffect effect;
+			int freq = Spell != null ? Spell.Frequency : 0;
+            // return new GameSpellEffect(this, CalculateEffectDuration(target, effectiveness), freq, effectiveness);
+
+            ECSGameEffect effect = new ECSGameEffect(target,this,Spell.Duration == 0 ? 0 : CalculateEffectDuration(target,effectiveness),freq,effectiveness,Spell.Icon);
+
+			EntityManager.AddEffect(effect);
+
+		}
+
+        public virtual void CreateECSPulseEffect(GameLiving target, double effectiveness)
+        {
+
+            //IECSGameEffect effect;
+            int freq = Spell != null ? Spell.Frequency : 0;
+            // return new GameSpellEffect(this, CalculateEffectDuration(target, effectiveness), freq, effectiveness);
+
+            ECSPulseEffect effect = new ECSPulseEffect(target, this, Spell.Duration == 0 ? 0 : CalculateEffectDuration(target, effectiveness), freq, effectiveness, Spell.Icon);
+
+            EntityManager.AddEffect(effect);
+
+        }
+
+        /// <summary>
+        /// called whenever the player clicks on a spell icon
+        /// or a GameLiving wants to cast a spell
+        /// </summary>
+        public virtual bool CastSpell()
 		{
 			return CastSpell(Caster.TargetObject as GameLiving);
 		}
@@ -550,10 +601,16 @@ namespace DOL.GS.Spells
 			if (Spell.MoveCast)
 				return;
 
-			InterruptCasting();
+			
+            
 			if (Caster is GamePlayer)
-				(Caster as GamePlayer).Out.SendMessage(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "SpellHandler.CasterMove"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-		}
+                if (castState != eCastState.Focusing)
+				    (Caster as GamePlayer).Out.SendMessage(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "SpellHandler.CasterMove"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                else
+                    Caster.CancelFocusSpell(true);
+
+            InterruptCasting();
+        }
 
 		/// <summary>
 		/// This sends the spell messages to the player/target.
@@ -585,7 +642,7 @@ namespace DOL.GS.Spells
 			}
 			if (Spell.Uninterruptible)
 				return false;
-			if (Caster.EffectList.CountOfType(typeof(QuickCastEffect), typeof(MasteryofConcentrationEffect), typeof(FacilitatePainworkingEffect)) > 0)
+			if (Caster.EffectList.CountOfType(typeof(QuickCastEffect), typeof(MasteryofConcentrationEffect), typeof(FacilitatePainworkingEffect)) > 0 || Caster.effectListComponent.Effects.ContainsKey(eEffect.FacilitatePainworking))
 				return false;
 			if (IsCasting && Stage < 2)
 			{
@@ -618,15 +675,39 @@ namespace DOL.GS.Spells
 			{
 				return false;
 			}
-
-			if (!m_caster.IsAlive)
+ 
+            if (!m_caster.IsAlive)
 			{
 				if (!quiet) MessageToCaster("You are dead and can't cast!", eChatType.CT_System);
 				return false;
 			}
 
+            if (m_spell.Pulse != 0 && m_spell.Frequency > 0)
+            {
+                if (Spell.IsPulsing && Caster.LastPulseCast != null && Caster.LastPulseCast.Equals(Spell))
+                {
+                    if (Spell.InstrumentRequirement == 0)
+                        MessageToCaster("You cancel your effect.", eChatType.CT_Spell);
+                    else
+                        MessageToCaster("You stop playing your song.", eChatType.CT_Spell);
 
-			if (m_caster is GamePlayer)
+					Caster.effectListComponent.Effects.TryGetValue(eEffect.Pulse, out var pEffects);//.Where(effect => effect.Value.SpellHandler.Spell.Equals(Spell)).FirstOrDefault();        //.FirstOrDefault();
+					ECSGameEffect cancelEffect = pEffects.Where(effect => effect.SpellHandler.Spell.Equals(Spell)).FirstOrDefault();
+						
+                    if (cancelEffect != null)
+                    {
+						EffectService.RequestCancelEffect(cancelEffect);
+                        Caster.LastPulseCast = null;
+                        Console.WriteLine("Canceling Effect " + cancelEffect.SpellHandler.Spell.Name);
+                    }
+                    else
+                        Console.WriteLine("Error Canceling Effect");
+
+                    return false;
+                }
+            }
+
+            if (m_caster is GamePlayer)
 			{
 				long nextSpellAvailTime = m_caster.TempProperties.getProperty<long>(GamePlayer.NEXT_SPELL_AVAIL_TIME_BECAUSE_USE_POTION);
 
@@ -651,7 +732,7 @@ namespace DOL.GS.Spells
 			}
 
 			GameSpellEffect Phaseshift = FindEffectOnTarget(Caster, "Phaseshift");
-			if (Phaseshift != null && (Spell.InstrumentRequirement == 0 || Spell.SpellType == "Mesmerize"))
+			if (Phaseshift != null && (Spell.InstrumentRequirement == 0 || Spell.SpellType == (byte)eSpellType.Mesmerize))
 			{
 				if (!quiet) MessageToCaster("You're phaseshifted and can't cast a spell", eChatType.CT_System);
 				return false;
@@ -674,7 +755,7 @@ namespace DOL.GS.Spells
 				}
 			}
 
-			if (selectedTarget!=null && selectedTarget.HasAbility("DamageImmunity") && Spell.SpellType == "DirectDamage" && Spell.Radius == 0)
+			if (selectedTarget!=null && selectedTarget.HasAbility("DamageImmunity") && Spell.SpellType == (byte)eSpellType.DirectDamage && Spell.Radius == 0)
 			{
 				if (!quiet) MessageToCaster(selectedTarget.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
 				return false;
@@ -701,7 +782,7 @@ namespace DOL.GS.Spells
 			{
 				if (m_caster.CanCastInCombat(Spell) == false)
 				{
-					m_caster.StopAttack();
+					m_caster.attackComponent.LivingStopAttack();
 					return false;
 				}
 			}
@@ -735,6 +816,7 @@ namespace DOL.GS.Spells
 
 			String targetType = m_spell.Target.ToLower();
 
+			
 			//[Ganrod] Nidel: Can cast pet spell on all Pet/Turret/Minion (our pet)
 			if (targetType.Equals("pet"))
 			{
@@ -801,7 +883,7 @@ namespace DOL.GS.Spells
 							return false;
 						}
 
-						if (m_spell.SpellType == "Charm" && m_spell.CastTime == 0 && m_spell.Pulse != 0)
+						if (m_spell.SpellType == (byte)eSpellType.Charm && m_spell.CastTime == 0 && m_spell.Pulse != 0)
 							break;
 
 						if (m_caster.IsObjectInFront(selectedTarget, 180) == false)
@@ -856,7 +938,7 @@ namespace DOL.GS.Spells
 			}
 
 			//Ryan: don't want mobs to have reductions in mana
-			if (Spell.Power != 0 && m_caster is GamePlayer && (m_caster as GamePlayer).CharacterClass.ID != (int)eCharacterClass.Savage && m_caster.Mana < PowerCost(selectedTarget) && Spell.SpellType != "Archery")
+			if (Spell.Power != 0 && m_caster is GamePlayer && (m_caster as GamePlayer).CharacterClass.ID != (int)eCharacterClass.Savage && m_caster.Mana < PowerCost(selectedTarget) && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				if (!quiet) MessageToCaster("You don't have enough power to cast that!", eChatType.CT_SpellResisted);
 				return false;
@@ -870,9 +952,9 @@ namespace DOL.GS.Spells
 					return false;
 				}
 
-				if (m_caster.ConcentrationEffects.ConcSpellsCount >= 50)
+				if (m_caster.ConcentrationEffects.ConcSpellsCount >= MAX_CONC_SPELLS)
 				{
-					if (!quiet) MessageToCaster("You can only cast up to 50 simultaneous concentration spells!", eChatType.CT_SpellResisted);
+					if (!quiet) MessageToCaster($"You can only cast up to {MAX_CONC_SPELLS} simultaneous concentration spells!", eChatType.CT_SpellResisted);
 					return false;
 				}
 			}
@@ -955,7 +1037,7 @@ namespace DOL.GS.Spells
 				MessageToCaster("You can't see your target from here!", eChatType.CT_SpellResisted);
 				if(Spell.IsFocus && Spell.IsHarmful)
 				{
-					FocusSpellAction(null, Caster, null);
+					FocusSpellAction(/*null, Caster, null*/);
 				}
 			}
 
@@ -1109,12 +1191,12 @@ namespace DOL.GS.Spells
 				}
 			}
 
-			if (m_caster.Mana <= 0 && Spell.Power != 0 && Spell.SpellType != "Archery")
+			if (m_caster.Mana <= 0 && Spell.Power != 0 && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				MessageToCaster("You have exhausted all of your power and cannot cast spells!", eChatType.CT_SpellResisted);
 				return false;
 			}
-			if (Spell.Power != 0 && m_caster.Mana < PowerCost(target) && Spell.SpellType != "Archery")
+			if (Spell.Power != 0 && m_caster.Mana < PowerCost(target) && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				MessageToCaster("You don't have enough power to cast that!", eChatType.CT_SpellResisted);
 				return false;
@@ -1126,9 +1208,9 @@ namespace DOL.GS.Spells
 				return false;
 			}
 
-			if (m_caster is GamePlayer && m_spell.Concentration > 0 && m_caster.ConcentrationEffects.ConcSpellsCount >= 50)
+			if (m_caster is GamePlayer && m_spell.Concentration > 0 && m_caster.ConcentrationEffects.ConcSpellsCount >= MAX_CONC_SPELLS)
 			{
-				MessageToCaster("You can only cast up to 50 simultaneous concentration spells!", eChatType.CT_SpellResisted);
+				MessageToCaster($"You can only cast up to {MAX_CONC_SPELLS} simultaneous concentration spells!", eChatType.CT_SpellResisted);
 				return false;
 			}
 
@@ -1313,12 +1395,12 @@ namespace DOL.GS.Spells
 				}
 			}
 
-			if (m_caster.Mana <= 0 && Spell.Power != 0 && Spell.SpellType != "Archery")
+			if (m_caster.Mana <= 0 && Spell.Power != 0 && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				if (!quiet) MessageToCaster("You have exhausted all of your power and cannot cast spells!", eChatType.CT_SpellResisted);
 				return false;
 			}
-			if (Spell.Power != 0 && m_caster.Mana < PowerCost(target) && Spell.SpellType != "Archery")
+			if (Spell.Power != 0 && m_caster.Mana < PowerCost(target) && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				if (!quiet) MessageToCaster("You don't have enough power to cast that!", eChatType.CT_SpellResisted);
 				return false;
@@ -1330,9 +1412,15 @@ namespace DOL.GS.Spells
 				return false;
 			}
 
-			if (m_caster is GamePlayer && m_spell.Concentration > 0 && m_caster.ConcentrationEffects.ConcSpellsCount >= 50)
+			if (m_caster is GamePlayer && m_spell.Concentration > 0 && m_caster.ConcentrationEffects.ConcSpellsCount >= MAX_CONC_SPELLS)
 			{
-				if (!quiet) MessageToCaster("You can only cast up to 50 simultaneous concentration spells!", eChatType.CT_SpellResisted);
+				if (!quiet) MessageToCaster($"You can only cast up to {MAX_CONC_SPELLS} simultaneous concentration spells!", eChatType.CT_SpellResisted);
+				return false;
+			}
+			
+			if ((m_caster.IsMoving || m_caster.IsStrafing) && !Spell.MoveCast)
+			{
+				CasterMoves();
 				return false;
 			}
 
@@ -1415,7 +1503,7 @@ namespace DOL.GS.Spells
 					if (target == null || target.ObjectState != GameObject.eObjectState.Active)
 					{
 						if (Caster is GamePlayer && !quiet)
-							MessageToCaster("You must select a target for this spell!", eChatType.CT_SpellResisted);
+							MessageToCaster("FYou must select a target for this spell!", eChatType.CT_SpellResisted);
 						return false;
 					}
 
@@ -1489,12 +1577,12 @@ namespace DOL.GS.Spells
 				}
 			}
 
-			if (m_caster.Mana <= 0 && Spell.Power != 0 && Spell.SpellType != "Archery")
+			if (m_caster.Mana <= 0 && Spell.Power != 0 && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				if (!quiet) MessageToCaster("You have exhausted all of your power and cannot cast spells!", eChatType.CT_SpellResisted);
 				return false;
 			}
-			if (Spell.Power != 0 && m_caster.Mana < PowerCost(target) && Spell.SpellType != "Archery")
+			if (Spell.Power != 0 && m_caster.Mana < PowerCost(target) && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				if (!quiet) MessageToCaster("You don't have enough power to cast that!", eChatType.CT_SpellResisted);
 				return false;
@@ -1506,9 +1594,9 @@ namespace DOL.GS.Spells
 				return false;
 			}
 
-			if (m_caster is GamePlayer && m_spell.Concentration > 0 && m_caster.ConcentrationEffects.ConcSpellsCount >= 50)
+			if (m_caster is GamePlayer && m_spell.Concentration > 0 && m_caster.ConcentrationEffects.ConcSpellsCount >= MAX_CONC_SPELLS)
 			{
-				if (!quiet) MessageToCaster("You can only cast up to 50 simultaneous concentration spells!", eChatType.CT_SpellResisted);
+				if (!quiet) MessageToCaster($"You can only cast up to {MAX_CONC_SPELLS} simultaneous concentration spells!", eChatType.CT_SpellResisted);
 				return false;
 			}
 
@@ -1517,6 +1605,100 @@ namespace DOL.GS.Spells
 
 
 		#endregion
+
+		//This is called after our pre-cast checks are done (Range, valid target, mana pre-req, and standing still?) and checks for the casting states
+		public void Tick(long currentTick)
+		{
+			switch (castState)
+			{
+				case eCastState.Precast:
+					if (Spell.Target == "Self")
+                    {
+						// Self spells should ignore whatever we actually have selected.
+						m_spellTarget = Caster;
+					}
+                    else
+                    {
+						m_spellTarget = Caster?.TargetObject as GameLiving;
+                    }
+
+                    if (CheckBeginCast(m_spellTarget))
+					{
+						m_started = Caster.CurrentRegion.Time;
+						_castStartTick = currentTick;
+						if (Spell.IsInstantCast)
+						{
+							castState = eCastState.Finished;
+						}
+						else
+						{
+							SendCastAnimation();
+							castState = eCastState.Casting;
+						}
+					}
+					else
+					{
+						castState = eCastState.Cleanup;
+					}
+					break;
+				case eCastState.Casting:
+					if (!CheckDuringCast(m_spellTarget))
+					{
+						castState = eCastState.Interrupted;
+					}
+					if (_castStartTick + _calculatedCastTime  < currentTick)
+					{
+						castState = eCastState.Finished;
+					}
+					break;
+				case eCastState.Interrupted:
+					InterruptCasting();
+					SendInterruptCastAnimation();
+					castState = eCastState.Cleanup;
+					break;
+                case eCastState.Focusing:
+                    if ((Caster is GamePlayer && (Caster as GamePlayer).IsStrafing) || Caster.IsMoving)
+                    {
+                        CasterMoves();
+                        castState = eCastState.Cleanup;
+                    }
+                    break;
+            }
+
+			//Process cast on same tick if finished.
+			if (castState == eCastState.Finished)
+			{
+				FinishSpellCast(m_spellTarget);
+                if (Spell.IsFocus)
+                    castState = eCastState.Focusing;
+                else
+				    castState = eCastState.Cleanup;
+			}
+			
+			if (castState == eCastState.Cleanup)
+			{
+				CleanupSpellCast();
+			}
+			
+		}
+
+		public void CleanupSpellCast()
+		{
+			if (Caster is GamePlayer p)
+			{
+				if(p.castingComponent.queuedSpellHandler != null)
+                {
+					p.castingComponent.spellHandler = p.castingComponent.queuedSpellHandler;
+					p.castingComponent.queuedSpellHandler = null;
+                } else
+                {
+					p.castingComponent.spellHandler = null;
+				}
+				
+			}
+		}
+
+		
 
 		/// <summary>
 		/// Calculates the power to cast the spell
@@ -1625,6 +1807,7 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public virtual void InterruptCasting()
 		{
+			castState = eCastState.Interrupted;
 			if (m_interrupted || !IsCasting)
 				return;
 
@@ -1792,8 +1975,15 @@ namespace DOL.GS.Spells
 		/// </summary>
 		public virtual void SendCastAnimation()
 		{
-			ushort castTime = (ushort)(CalculateCastingTime() / 100);
-			SendCastAnimation(castTime);
+            if (Spell.CastTime == 0)
+            {
+                SendCastAnimation(0);
+            }
+            else
+            {
+				ushort castTime = (ushort)(CalculateCastingTime() / 100);
+                SendCastAnimation(castTime);
+            }
 		}
 
 		/// <summary>
@@ -1802,7 +1992,10 @@ namespace DOL.GS.Spells
 		/// <param name="castTime">The cast time</param>
 		public virtual void SendCastAnimation(ushort castTime)
 		{
-			foreach (GamePlayer player in m_caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+			_calculatedCastTime = castTime * 100;
+            Console.WriteLine($"Cast Animation - CastTime Sent to Clients: {castTime} CalcTime: {_calculatedCastTime} Predicted Tick: {GameLoop.GameLoopTime + _calculatedCastTime}");
+
+            foreach (GamePlayer player in m_caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			{
 				if (player == null)
 					continue;
@@ -1881,23 +2074,33 @@ namespace DOL.GS.Spells
 				}
 			}
 
-			if (m_spell.Pulse != 0 && m_spell.Frequency > 0)
-			{
-				CancelAllPulsingSpells(Caster);
-				PulsingSpellEffect pulseeffect = new PulsingSpellEffect(this);
-				pulseeffect.Start();
-				// show animation on caster for positive spells, negative shows on every StartSpell
-				if (m_spell.Target == "Self" || m_spell.Target == "Group")
-					SendEffectAnimation(Caster, 0, false, 1);
-				if (m_spell.Target == "Pet")
-					SendEffectAnimation(target, 0, false,1);
-			}
+            //CancelAllPulsingSpells(Caster);
+            //PulsingSpellEffect pulseeffect = new PulsingSpellEffect(this);
+            //pulseeffect.Start();
+            //// show animation on caster for positive spells, negative shows on every StartSpell
+            //if (m_spell.Target == "Self" || m_spell.Target == "Group")
+            //	SendEffectAnimation(Caster, 0, false, 1);
+            //if (m_spell.Target == "Pet")
+            //	SendEffectAnimation(target, 0, false,1);
 
-			StartSpell(target); // and action
+            if (Spell.IsPulsing)
+            {
+                if (Caster.effectListComponent.Effects.TryGetValue(eEffect.Pulse, out var existingEffects))
+                {
+                    Caster.effectListComponent.Effects.Remove(eEffect.Pulse);
+                    Caster.ConcentrationEffects.Remove(existingEffects.FirstOrDefault());
+                }
+
+                CreateECSPulseEffect(Caster, Caster.Effectiveness);
+                Caster.LastPulseCast = Spell;
+            }
+
+            //CreateSpellEffects();
+            StartSpell(target); // and action
 
 			//Dinberg: This is where I moved the warlock part (previously found in gameplayer) to prevent
 			//cancelling before the spell was fired.
-			if (m_spell.SpellType != "Powerless" && m_spell.SpellType != "Range" && m_spell.SpellType != "Uninterruptable")
+			if (m_spell.SpellType != (byte)eSpellType.Powerless && m_spell.SpellType != (byte)eSpellType.Range && m_spell.SpellType != (byte)eSpellType.Uninterruptable)
 			{
 				GameSpellEffect effect = SpellHandler.FindEffectOnTarget(m_caster, "Powerless");
 				if (effect == null)
@@ -1979,14 +2182,14 @@ namespace DOL.GS.Spells
 					switch (newtarget)
 					{
 						case 0: // Apply on heal single
-							if (m_spell.SpellType.ToLower() == "heal" && modifiedTarget == "realm")
+							if (m_spell.SpellType == (byte)eSpellType.Heal && modifiedTarget == "realm")
 							{
 								modifiedTarget = "group";
 								targetchanged = true;
 							}
 							break;
 						case 1: // Apply on heal group
-							if (m_spell.SpellType.ToLower() == "heal" && modifiedTarget == "group")
+							if (m_spell.SpellType == (byte)eSpellType.Heal && modifiedTarget == "group")
 							{
 								modifiedTarget = "realm";
 								modifiedRadius = (ushort)m_spell.Range;
@@ -2025,7 +2228,7 @@ namespace DOL.GS.Spells
 			{
 				modifiedTarget = "enemy";
 				//[Ganrod] Nidel: can cast TurretPBAoE on selected Pet/Turret
-				if (Spell.SpellType.ToLower() != "TurretPBAoE".ToLower())
+				if (Spell.SpellType != (byte)eSpellType.TurretPBAoE)
 				{
 					target = Caster.ControlledBrain.Body;
 				}
@@ -2039,7 +2242,7 @@ namespace DOL.GS.Spells
 				case "area":
 					//Dinberg - fix for animists turrets, where before a radius of zero meant that no targets were ever
 					//selected!
-					if (Spell.SpellType == "SummonAnimistPet" || Spell.SpellType == "SummonAnimistFnF")
+					if (Spell.SpellType == (byte)eSpellType.SummonAnimistPet || Spell.SpellType == (byte)eSpellType.SummonAnimistFnF)
 					{
 						list.Add(Caster);
 					}
@@ -2148,7 +2351,7 @@ namespace DOL.GS.Spells
 				case "enemy":
 					if (modifiedRadius > 0)
 					{
-						if (Spell.SpellType.ToLower() != "TurretPBAoE".ToLower() && (target == null || Spell.Range == 0))
+						if (Spell.SpellType != (byte)eSpellType.TurretPBAoE && (target == null || Spell.Range == 0))
 							target = Caster;
 						if (target == null) return null;
 						foreach (GamePlayer player in target.GetPlayersInRadius(modifiedRadius))
@@ -2441,8 +2644,9 @@ namespace DOL.GS.Spells
 		/// <param name="target">The current target object</param>
 		public virtual bool StartSpell(GameLiving target)
 		{
+
             // For PBAOE spells always set the target to the caster
-			if (Spell.SpellType.ToLower() != "TurretPBAoE".ToLower() && (target == null || (Spell.Radius > 0 && Spell.Range == 0)))
+			if (Spell.SpellType != (byte)eSpellType.TurretPBAoE && (target == null || (Spell.Radius > 0 && Spell.Range == 0)))
 			{
 				target = Caster;
 			}
@@ -2541,6 +2745,7 @@ namespace DOL.GS.Spells
 			CastSubSpells(target);
 			return true;
 		}
+		
 		/// <summary>
 		/// Calculate the variance due to the radius of the spell
 		/// </summary>
@@ -2599,11 +2804,13 @@ namespace DOL.GS.Spells
 		/// <param name="effectiveness">factor from 0..1 (0%-100%)</param>
 		public virtual void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
+            
+
             if (target is GamePlayer)
 			{
 				GameSpellEffect effect1;
 				effect1 = SpellHandler.FindEffectOnTarget(target, "Phaseshift");
-				if ((effect1 != null && (Spell.SpellType != "SpreadHeal" || Spell.SpellType != "Heal" || Spell.SpellType != "SpeedEnhancement")))
+				if ((effect1 != null && (Spell.SpellType != (byte)eSpellType.SpreadHeal || Spell.SpellType != (byte)eSpellType.Heal || Spell.SpellType != (byte)eSpellType.SpeedEnhancement)))
 				{
 					MessageToCaster(target.Name + " is Phaseshifted and can't be effected by this Spell!", eChatType.CT_SpellResisted);
 					return;
@@ -2617,17 +2824,17 @@ namespace DOL.GS.Spells
 
 				if (Spell.Radius == 0)
 				{
-					switch (Spell.SpellType.ToLower())
+					switch (Spell.SpellType)
 					{
-						case "archery":
-						case "bolt":
-						case "bomber":
-						case "damagespeeddecrease":
-						case "directdamage":
-						case "magicalstrike":
-						case "siegearrow":
-						case "summontheurgistpet":
-						case "directdamagewithdebuff":
+						case (byte)eSpellType.Archery:
+						case (byte)eSpellType.Bolt:
+						case (byte)eSpellType.Bomber:
+						case (byte)eSpellType.DamageSpeedDecrease:
+						case (byte)eSpellType.DirectDamage:
+						case (byte)eSpellType.MagicalStrike:
+						case (byte)eSpellType.SiegeArrow:
+						case (byte)eSpellType.SummonTheurgistPet:
+						case (byte)eSpellType.DirectDamageWithDebuff:
 							isAllowed = true;
 							break;
 					}
@@ -2674,13 +2881,14 @@ namespace DOL.GS.Spells
 				ad.Target = target;
 				ad.AttackType = AttackData.eAttackType.Spell;
 				ad.SpellHandler = this;
-				ad.AttackResult = GameLiving.eAttackResult.HitUnstyled;
+				ad.AttackResult = eAttackResult.HitUnstyled;
 				ad.IsSpellResisted = false;
 
 				m_lastAttackData = ad;
+                //target.OnAttack(ad);
 
-				// Treat non-damaging effects as attacks to trigger an immediate response and BAF
-				if (ad.Damage == 0 && ad.Target is GameNPC)
+                // Treat non-damaging effects as attacks to trigger an immediate response and BAF
+                if (ad.Damage == 0 && ad.Target is GameNPC)
 				{
 					IOldAggressiveBrain aggroBrain = ((GameNPC)ad.Target).Brain as IOldAggressiveBrain;
 					if (aggroBrain != null)
@@ -2746,6 +2954,14 @@ namespace DOL.GS.Spells
 				return false;
 			return true;
 		}
+		public virtual bool IsOverwritable(ECSGameEffect compare)
+		{
+			if (Spell.EffectGroup != 0 || compare.SpellHandler.Spell.EffectGroup != 0)
+				return Spell.EffectGroup == compare.SpellHandler.Spell.EffectGroup;
+			if (compare.SpellHandler.Spell.SpellType != Spell.SpellType)
+				return false;
+			return true;
+		}
 
 		/// <summary>
 		/// Determines wether this spell can be disabled
@@ -2786,96 +3002,102 @@ namespace DOL.GS.Spells
 		/// <param name="effectiveness"></param>
 		public virtual void OnDurationEffectApply(GameLiving target, double effectiveness)
 		{
-			if (!target.IsAlive || target.EffectList == null)
-				return;
-			
-			eChatType noOverwrite = (Spell.Pulse == 0) ? eChatType.CT_SpellResisted : eChatType.CT_SpellPulse;
-			GameSpellEffect neweffect = CreateSpellEffect(target, effectiveness);
-			
-			// Iterate through Overwritable Effect
-			var overwritenEffects = target.EffectList.OfType<GameSpellEffect>().Where(effect => effect.SpellHandler != null && effect.SpellHandler.IsOverwritable(neweffect));
-			
-			// Store Overwritable or Cancellable
-			var enable = true;
-			var cancellableEffects = new List<GameSpellEffect>(1);
-			GameSpellEffect overwriteEffect = null;
-			
-			foreach (var ovEffect in overwritenEffects)
-			{					
-				// If we can cancel spell effect we don't need to overwrite it
-				if (ovEffect.SpellHandler.IsCancellable(neweffect))
-				{
-					// Spell is better than existing "Cancellable" or it should start disabled
-					if (IsCancellableEffectBetter(ovEffect, neweffect))
-						cancellableEffects.Add(ovEffect);
-					else
-						enable = false;
-				}
-				else
-				{
-					// Check for Overwriting.
-					if (IsNewEffectBetter(ovEffect, neweffect))
-					{
-						// New Spell is overwriting this one.
-						overwriteEffect = ovEffect;
-					}
-					else
-					{
-						// Old Spell is Better than new one
-						SendSpellResistAnimation(target);
-						if (target == Caster)
-						{
-							if (ovEffect.ImmunityState)
-								MessageToCaster("You can't have that effect again yet!", noOverwrite);
-							else
-								MessageToCaster("You already have that effect. Wait until it expires. Spell failed.", noOverwrite);
-						}
-						else
-						{
-							if (ovEffect.ImmunityState)
-							{
-								this.MessageToCaster(noOverwrite, "{0} can't have that effect again yet!", ovEffect.Owner != null ? ovEffect.Owner.GetName(0, true) : "(null)");
-							}
-							else
-							{
-								this.MessageToCaster(noOverwrite, "{0} already has that effect.", target.GetName(0, true));
-								MessageToCaster("Wait until it expires. Spell Failed.", noOverwrite);
-							}
-						}
-						// Prevent Adding.
-						return;
-					}
-				}
+			if (!target.IsAlive || target.effectListComponent == null)
+			{
+			return;
 			}
 
-			// Register Effect list Changes
-			target.EffectList.BeginChanges();
-			try
-			{
-				// Check for disabled effect
-				foreach (var disableEffect in cancellableEffects)
-					disableEffect.DisableEffect(false);
-				
-				if (overwriteEffect != null)
-				{
-					if (enable)
-						overwriteEffect.Overwrite(neweffect);
-					else
-						overwriteEffect.OverwriteDisabled(neweffect);
-				}
-				else
-				{
-					if (enable)
-						neweffect.Start(target);
-					else
-						neweffect.StartDisabled(target);
-				}
-			}
-			finally
-			{
-				target.EffectList.CommitChanges();
-			}
-		}
+            // eChatType noOverwrite = (Spell.Pulse == 0) ? eChatType.CT_SpellResisted : eChatType.CT_SpellPulse;
+            //CreateECSEffect(target, effectiveness);
+
+            CreateECSEffect(target, Caster.Effectiveness);
+            
+            // GameSpellEffect neweffect = CreateSpellEffect(target, effectiveness);
+            //
+            // // Iterate through Overwritable Effect
+            // var overwritenEffects = target.EffectList.OfType<GameSpellEffect>().Where(effect => effect.SpellHandler != null && effect.SpellHandler.IsOverwritable(neweffect));
+            //
+            // // Store Overwritable or Cancellable
+            // var enable = true;
+            // var cancellableEffects = new List<GameSpellEffect>(1);
+            // GameSpellEffect overwriteEffect = null;
+            //
+            // foreach (var ovEffect in overwritenEffects)
+            // {					
+            // 	// If we can cancel spell effect we don't need to overwrite it
+            // 	if (ovEffect.SpellHandler.IsCancellable(neweffect))
+            // 	{
+            // 		// Spell is better than existing "Cancellable" or it should start disabled
+            // 		if (IsCancellableEffectBetter(ovEffect, neweffect))
+            // 			cancellableEffects.Add(ovEffect);
+            // 		else
+            // 			enable = false;
+            // 	}
+            // 	else
+            // 	{
+            // 		// Check for Overwriting.
+            // 		if (IsNewEffectBetter(ovEffect, neweffect))
+            // 		{
+            // 			// New Spell is overwriting this one.
+            // 			overwriteEffect = ovEffect;
+            // 		}
+            // 		else
+            // 		{
+            // 			// Old Spell is Better than new one
+            // 			SendSpellResistAnimation(target);
+            // 			if (target == Caster)
+            // 			{
+            // 				if (ovEffect.ImmunityState)
+            // 					MessageToCaster("You can't have that effect again yet!", noOverwrite);
+            // 				else
+            // 					MessageToCaster("You already have that effect. Wait until it expires. Spell failed.", noOverwrite);
+            // 			}
+            // 			else
+            // 			{
+            // 				if (ovEffect.ImmunityState)
+            // 				{
+            // 					this.MessageToCaster(noOverwrite, "{0} can't have that effect again yet!", ovEffect.Owner != null ? ovEffect.Owner.GetName(0, true) : "(null)");
+            // 				}
+            // 				else
+            // 				{
+            // 					this.MessageToCaster(noOverwrite, "{0} already has that effect.", target.GetName(0, true));
+            // 					MessageToCaster("Wait until it expires. Spell Failed.", noOverwrite);
+            // 				}
+            // 			}
+            // 			// Prevent Adding.
+            // 			return;
+            // 		}
+            // 	}
+            // }
+            //
+            // // Register Effect list Changes
+            // target.EffectList.BeginChanges();
+            // try
+            // {
+            // 	// Check for disabled effect
+            // 	foreach (var disableEffect in cancellableEffects)
+            // 		disableEffect.DisableEffect(false);
+            // 	
+            // 	if (overwriteEffect != null)
+            // 	{
+            // 		if (enable)
+            // 			overwriteEffect.Overwrite(neweffect);
+            // 		else
+            // 			overwriteEffect.OverwriteDisabled(neweffect);
+            // 	}
+            // 	else
+            // 	{
+            // 		if (enable)
+            // 		neweffect.Start(target);
+            // 		else
+            // 			neweffect.StartDisabled(target);
+            // 	}
+            // }
+            // finally
+            // {
+            // 	target.EffectList.CommitChanges();
+            // }
+        }
 		
 		/// <summary>
 		/// Called when Effect is Added to target Effect List
@@ -2896,7 +3118,7 @@ namespace DOL.GS.Spells
 			{
 				if (Spell.IsFocus)
 				{
-					FocusSpellAction(null, Caster, null);
+					FocusSpellAction(/*null, Caster, null*/);
 				}
 				// Re-Enable Cancellable Effects.
 				var enableEffect = effect.Owner.EffectList.OfType<GameSpellEffect>()
@@ -2947,19 +3169,19 @@ namespace DOL.GS.Spells
 				SendEffectAnimation(effect.Owner, 0, false, 1);
 			if (Spell.IsFocus) // Add Event handlers for focus spell
 			{
-				GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.RemoveHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.RemoveHandler(effect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.RemoveHandler(effect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
 				Caster.TempProperties.setProperty(FOCUS_SPELL, effect);
-				GameEventMgr.AddHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.AddHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.AddHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.AddHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.AddHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
-				GameEventMgr.AddHandler(effect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.AddHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.AddHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.AddHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.AddHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.AddHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
+				//GameEventMgr.AddHandler(effect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
 			}
 		}
 
@@ -3079,7 +3301,7 @@ namespace DOL.GS.Spells
 			ad.Target = target;
 			ad.AttackType = AttackData.eAttackType.Spell;
 			ad.SpellHandler = this;
-			ad.AttackResult = GameLiving.eAttackResult.Missed;
+			ad.AttackResult = eAttackResult.Missed;
 			ad.IsSpellResisted = true;
 			target.OnAttackedByEnemy(ad);
 			
@@ -3093,7 +3315,7 @@ namespace DOL.GS.Spells
 		{
 			// Spells that would have caused damage or are not instant will still
 			// interrupt a casting player.
-			if(!(Spell.SpellType.IndexOf("debuff", StringComparison.OrdinalIgnoreCase) >= 0 && Spell.CastTime == 0))
+			if(!(Spell.SpellType.ToString().IndexOf("debuff", StringComparison.OrdinalIgnoreCase) >= 0 && Spell.CastTime == 0))
 				target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);			
 		}
 		
@@ -3155,43 +3377,71 @@ namespace DOL.GS.Spells
 			}
 		}
 
-		/// <summary>
-		/// Hold events for focus spells
-		/// </summary>
-		/// <param name="e"></param>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		protected virtual void FocusSpellAction(DOLEvent e, object sender, EventArgs args)
-		{
-			GameLiving living = sender as GameLiving;
-			if (living == null) return;
+        /// <summary>
+        /// Hold events for focus spells
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        //protected virtual void FocusSpellAction(DOLEvent e, object sender, EventArgs args)
+        //{
+        //	GameLiving living = sender as GameLiving;
+        //	if (living == null) return;
 
-			GameSpellEffect currentEffect = (GameSpellEffect)living.TempProperties.getProperty<object>(FOCUS_SPELL, null);
-			if (currentEffect == null)
-				return;
+        //	GameSpellEffect currentEffect = (GameSpellEffect)living.TempProperties.getProperty<object>(FOCUS_SPELL, null);
+        //	if (currentEffect == null)
+        //		return;
 
-			GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
-			GameEventMgr.RemoveHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
-			GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
-			GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
-			GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
-			GameEventMgr.RemoveHandler(currentEffect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
-			Caster.TempProperties.removeProperty(FOCUS_SPELL);
+        //	//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
+        //	//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
+        //	//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
+        //	//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+        //	//GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
+        //	//GameEventMgr.RemoveHandler(currentEffect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+        //	Caster.TempProperties.removeProperty(FOCUS_SPELL);
 
-			CancelPulsingSpell(Caster, currentEffect.Spell.SpellType);
-			currentEffect.Cancel(false);
+        //	CancelPulsingSpell(Caster, currentEffect.Spell.SpellType);
+        //	currentEffect.Cancel(false);
 
-			MessageToCaster(String.Format("You lose your focus on your {0} spell.", currentEffect.Spell.Name), eChatType.CT_SpellExpires);
+        //	MessageToCaster(String.Format("You lose your focus on your {0} spell.", currentEffect.Spell.Name), eChatType.CT_SpellExpires);
 
-			if (e == GameLivingEvent.Moving)
-				MessageToCaster("You move and interrupt your focus!", eChatType.CT_Important);
-		}
-		#endregion
+        //	if (e == GameLivingEvent.Moving)
+        //		MessageToCaster("You move and interrupt your focus!", eChatType.CT_Important);
+        //}
+        public virtual void FocusSpellAction(bool moving = false)
+        {
+            //GameLiving living = sender as GameLiving;
+            //if (living == null) return;
 
-		/// <summary>
-		/// Ability to cast a spell
-		/// </summary>
-		public ISpellCastingAbilityHandler Ability
+            //GameSpellEffect currentEffect = (GameSpellEffect)Caster.TempProperties.getProperty<object>(FOCUS_SPELL, null);
+            //if (currentEffect == null)
+            //    return;
+
+            //GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
+            //GameEventMgr.RemoveHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
+            //GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
+            //GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+            //GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
+            //GameEventMgr.RemoveHandler(currentEffect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
+            castState = eCastState.Cleanup;
+            Caster.TempProperties.removeProperty(FOCUS_SPELL);
+            Caster.LastPulseCast = null;
+            
+            //CancelPulsingSpell(Caster, currentEffect.Spell.SpellType);
+            //currentEffect.Cancel(false);
+
+            MessageToCaster(String.Format("You lose your focus on your {0} spell.", /*currentEffect.*/Spell.Name), eChatType.CT_SpellExpires);
+
+            //if (e == GameLivingEvent.Moving)
+            if (moving)
+                MessageToCaster("You move and interrupt your focus!", eChatType.CT_Important);
+        }
+        #endregion
+
+        /// <summary>
+        /// Ability to cast a spell
+        /// </summary>
+        public ISpellCastingAbilityHandler Ability
 		{
 			get { return m_ability; }
 			set { m_ability = value; }
@@ -3323,7 +3573,7 @@ namespace DOL.GS.Spells
 					if (fx is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)fx).ImmunityState)
 						continue; // ignore immunity effects
 
-					if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == spellType) && (effect.SpellHandler.Spell.Name == spellName))
+					if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType.ToString() == spellType) && (effect.SpellHandler.Spell.Name == spellName))
 					{
 						return effect;
 					}
@@ -3351,7 +3601,7 @@ namespace DOL.GS.Spells
 					GameSpellEffect effect = (GameSpellEffect)fx;
 					if (fx is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)fx).ImmunityState)
 						continue; // ignore immunity effects
-					if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == spellType))
+					if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType.ToString() == spellType))
 					{
 						return effect;
 					}
@@ -3731,7 +3981,7 @@ namespace DOL.GS.Spells
 			if (!(caster is GamePlayer && target is GamePlayer))
 			{
 				hitchance -= (int)(m_caster.GetConLevel(target) * ServerProperties.Properties.PVE_SPELL_CONHITPERCENT);
-				hitchance += Math.Max(0, target.Attackers.Count - 1) * ServerProperties.Properties.MISSRATE_REDUCTION_PER_ATTACKERS;
+				hitchance += Math.Max(0, target.attackComponent.Attackers.Count - 1) * ServerProperties.Properties.MISSRATE_REDUCTION_PER_ATTACKERS;
 			}
 
 			// [Freya] Nidel: Harpy Cloak : They have less chance of landing melee attacks, and spells have a greater chance of affecting them.
@@ -3790,7 +4040,7 @@ namespace DOL.GS.Spells
 			ad.Target = target;
 			ad.AttackType = AttackData.eAttackType.Spell;
 			ad.SpellHandler = this;
-			ad.AttackResult = GameLiving.eAttackResult.HitUnstyled;
+			ad.AttackResult = eAttackResult.HitUnstyled;
 
 			double minVariance;
 			double maxVariance;
@@ -3862,7 +4112,7 @@ namespace DOL.GS.Spells
 			 */
 			int resiPierce = Caster.GetModified(eProperty.ResistPierce);
 			GamePlayer ply = Caster as GamePlayer;
-			if (resiPierce > 0 && Spell.SpellType != "Archery")
+			if (resiPierce > 0 && Spell.SpellType != (byte)eSpellType.Archery)
 			{
 				//substract max ItemBonus of property of target, but atleast 0.
 				primaryResistModifier -= Math.Max(0, Math.Min(ad.Target.ItemBonus[(int)property], resiPierce));
@@ -3983,7 +4233,7 @@ namespace DOL.GS.Spells
 		/// <param name="attackResult"></param>
 		public virtual void DamageTarget(AttackData ad, bool showEffectAnimation, int attackResult)
 		{
-			ad.AttackResult = GameLiving.eAttackResult.HitUnstyled;
+			ad.AttackResult = eAttackResult.HitUnstyled;
 			if (showEffectAnimation)
 			{
 				SendEffectAnimation(ad.Target, 0, false, 1);

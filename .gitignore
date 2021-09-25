@@ -64,3 +64,5 @@ bld/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+=======
+.idea/

@@ -72,7 +72,14 @@ namespace DOL.AI.Brain
 			{
 				GamePlayer playerowner = GetPlayerOwner();
 
-				if (playerowner != null && (GameTimer.GetTickCount() - playerowner.Client.GameObjectUpdateArray[new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID)]) > ThinkInterval)
+                long lastUpdate = 0;
+                if (!playerowner.Client.GameObjectUpdateArray.TryGetValue(new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID), out lastUpdate))
+                {
+                    playerowner.Client.GameObjectUpdateArray.Add(new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID), lastUpdate);
+                }
+
+
+                if (playerowner != null && (GameTimer.GetTickCount() - playerowner.Client.GameObjectUpdateArray[new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID)]) > ThinkInterval)
 				{
 					playerowner.Out.SendObjectUpdate(Body);
 				}
@@ -128,7 +135,7 @@ namespace DOL.AI.Brain
 
                 if (petSpell.ParentSpell != null)
                 {
-                    if (petSpell.ParentSpell.IsInstantCast && petSpell.Spell.IsInstantCast)
+                    if (/*petSpell.ParentSpell.IsInstantCast && */petSpell.Spell.IsInstantCast && !petSpell.Spell.IsHarmful)
                     {
                         CastSpell(petSpell.Spell, petSpell.SpellLine, petSpell.Target);
                     }

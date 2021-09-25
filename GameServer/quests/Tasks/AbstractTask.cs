@@ -365,7 +365,7 @@ namespace DOL.GS.Quests
 		public virtual void FinishTask()
 		{
 			if (RewardXP>0)
-				m_taskPlayer.GainExperience(GameLiving.eXPSource.Task, RewardXP);
+				m_taskPlayer.GainExperience(eXPSource.Task, RewardXP);
 
             if (RewardMoney > 0)
             {

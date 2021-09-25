@@ -49,16 +49,24 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public override void Think()
 		{
-		  GamePlayer playerowner = GetPlayerOwner();
-			if (playerowner != null && (GameTimer.GetTickCount() - playerowner.Client.GameObjectUpdateArray[new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID)]) > ThinkInterval)
-		  {
-			playerowner.Out.SendObjectUpdate(Body);
-		  }
+			GamePlayer playerowner = GetPlayerOwner();
 
-		  if(!CheckSpells(eCheckSpellType.Defensive))
-		  {
-		  	AttackMostWanted();
-		  }
+			long lastUpdate = 0;
+			if (!playerowner.Client.GameObjectUpdateArray.TryGetValue(new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID), out lastUpdate))
+			{
+				playerowner.Client.GameObjectUpdateArray.Add(new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID), lastUpdate);
+			}
+
+
+			if (playerowner != null && (GameTimer.GetTickCount() - playerowner.Client.GameObjectUpdateArray[new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID)]) > ThinkInterval)
+			{
+				playerowner.Out.SendObjectUpdate(Body);
+			}
+
+			if(!CheckSpells(eCheckSpellType.Defensive))
+			{
+		  		AttackMostWanted();
+			}
 		}
 
 
@@ -89,10 +97,10 @@ namespace DOL.AI.Brain
 		{
 			switch(spell.SpellType)
 			{
-				case "HeatColdMatterBuff":
-				case "BodySpiritEnergyBuff":
-				case "ArmorAbsorptionBuff":
-				case "AblativeArmor":
+				case (byte)eSpellType.HeatColdMatterBuff:
+				case (byte)eSpellType.BodySpiritEnergyBuff:
+				case (byte)eSpellType.ArmorAbsorptionBuff:
+				case (byte)eSpellType.AblativeArmor:
 				  TrustCast(spell, eCheckSpellType.Defensive);
 					return true;
 			}
@@ -103,18 +111,18 @@ namespace DOL.AI.Brain
 		{
 			switch(spell.SpellType)
 			{
-				case "DirectDamage":
-				case "DamageSpeedDecrease":
-				case "SpeedDecrease":
-				case "Taunt":
-				case "MeleeDamageDebuff":
+				case (byte)eSpellType.DirectDamage:
+				case (byte)eSpellType.DamageSpeedDecrease:
+				case (byte)eSpellType.SpeedDecrease:
+				case (byte)eSpellType.Taunt:
+				case (byte)eSpellType.MeleeDamageDebuff:
 					TrustCast(spell, eCheckSpellType.Offensive);
 					return true;
 			}
 			return false;
 		}
 
-		protected override void AttackMostWanted()
+		public override void AttackMostWanted()
 		{
 			CheckSpells(eCheckSpellType.Offensive);
 		}

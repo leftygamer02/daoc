@@ -389,7 +389,7 @@ namespace DOL.GS
 		/// <param name="ad">information about the attack</param>
 		public override void OnAttackedByEnemy(AttackData ad)
 		{
-			if (!HasEffect(typeof(FacilitatePainworkingEffect)) &&
+			if (!effectListComponent.Effects.ContainsKey(eEffect.FacilitatePainworking)/*HasEffect(typeof(FacilitatePainworkingEffect))*/ &&
 				ad != null && ad.Attacker != null && ChanceSpellInterrupt(ad.Attacker))
 			{
 				if (Brain is NecromancerPetBrain necroBrain)
@@ -406,12 +406,13 @@ namespace DOL.GS
 			base.OnAttackedByEnemy(ad);
 		}
 
-		/// <summary>
-		/// Called when the necro pet attacks, which interrupts current spells being cast
-		/// </summary>
-		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield, bool ignoreLOS)
+
+        /// <summary>
+        /// Called when the necro pet attacks, which interrupts current spells being cast
+        /// </summary>
+        public AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield, bool ignoreLOS)
 		{
-			if (!HasEffect(typeof(FacilitatePainworkingEffect)))
+			if (!effectListComponent.Effects.ContainsKey(eEffect.FacilitatePainworking)/*HasEffect(typeof(FacilitatePainworkingEffect))*/)
 			{
 				StopCurrentSpellcast();
 
@@ -432,7 +433,7 @@ namespace DOL.GS
                 tBrain.CheckAttackSpellQueue();
             }
 
-			return base.MakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield, ignoreLOS);
+			return attackComponent.LivingMakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield, ignoreLOS);
 		}
 
 		/// <summary>
@@ -548,7 +549,7 @@ namespace DOL.GS
 				{
 					switch (spell.SpellType)
 					{
-						case "StrengthBuff":
+						case (byte)eSpellType.StrengthBuff:
 							{
 								if (strBuff == null)
 									strBuff = spell;
@@ -556,7 +557,7 @@ namespace DOL.GS
 									strBuff = (strBuff.Level < spell.Level) ? spell : strBuff;
 							}
 							break;
-						case "DexterityBuff":
+						case (byte)eSpellType.DexterityBuff:
 							{
 								if (dexBuff == null)
 									dexBuff = spell;
@@ -596,7 +597,7 @@ namespace DOL.GS
 
 			Spell tauntSpell = null;
 			foreach (Spell spell in chantsList)
-				if (spell.SpellType == "Taunt" && spell.Level <= Level)
+				if (spell.SpellType == (byte)eSpellType.Taunt && spell.Level <= Level)
 					tauntSpell = spell;
 
 			if (tauntSpell != null && GetSkillDisabledDuration(tauntSpell) == 0)

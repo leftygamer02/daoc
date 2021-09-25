@@ -202,7 +202,7 @@ namespace DOL.GS.Spells
             }
 
             amount = Math.Round(amount);
-            int heal = target.ChangeHealth(Caster, GameLiving.eHealthChangeType.Spell, (int)amount);
+            int heal = target.ChangeHealth(Caster, eHealthChangeType.Spell, (int)amount);
 
             #region PVP DAMAGE
 
@@ -236,7 +236,7 @@ namespace DOL.GS.Spells
                 int POURCENTAGE_SOIN_RP = ServerProperties.Properties.HEAL_PVP_DAMAGE_VALUE_RP; // ...% de bonus RP pour les soins effectués
 
                 if (m_spell.Pulse == 0 && m_caster.CurrentRegionID != 242 && // On Exclu zone COOP
-                    m_spell.SpellType.ToLower() != "spreadheal" && target != m_caster &&
+                    m_spell.SpellType != (byte)eSpellType.SpreadHeal && target != m_caster &&
                     m_spellLine.KeyName != GlobalSpellsLines.Item_Spells &&
                     m_spellLine.KeyName != GlobalSpellsLines.Potions_Effects &&
                     m_spellLine.KeyName != GlobalSpellsLines.Combat_Styles_Effect &&
@@ -344,7 +344,7 @@ namespace DOL.GS.Spells
 			if (target is Keeps.GameKeepComponent || target is Keeps.GameKeepDoor)
 				return false;
 
-			int heal = target.ChangeHealth(Caster, GameLiving.eHealthChangeType.Spell, (int)Math.Round(amount));
+			int heal = target.ChangeHealth(Caster, eHealthChangeType.Spell, (int)Math.Round(amount));
 
 			if (m_caster == target && heal > 0)
 			{

@@ -23,6 +23,7 @@ using DOL.GS;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using log4net;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -616,13 +617,26 @@ namespace DOL.GS
 
 						bool tradeSuccess = false;
 
+						InventoryItem itemtoadd = item;
+
+						// If PLayer is not Infiltrator (9), Shadowblade (23), Nightshade (49), remove Envenom bonus before add the item in the inventory
+						if (item.Spells.Any(x => x.IsPoison) && !(partner.CharacterClass.ID == 9 || partner.CharacterClass.ID == 23 || partner.CharacterClass.ID == 49))
+						{
+							itemtoadd = GameInventoryItem.Create(itemtoadd);
+
+							foreach (var poison in itemtoadd.Spells.Where(x => x.IsPoison).ToList())
+                            {
+								itemtoadd.Spells.Remove(poison);
+							}							
+						}
+
 						if (item.Id <= 0)
 						{
-							tradeSuccess = partner.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
+							tradeSuccess = partner.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, itemtoadd);
 						}
 						else
 						{
-							tradeSuccess = partner.Inventory.AddTradeItem(eInventorySlot.FirstEmptyBackpack, item);
+							tradeSuccess = partner.Inventory.AddTradeItem(eInventorySlot.FirstEmptyBackpack, itemtoadd);
 						}
 
 						if (!tradeSuccess)
@@ -648,13 +662,26 @@ namespace DOL.GS
 
 						bool tradeSuccess = false;
 
+						InventoryItem itemtoadd = item;
+
+						// If PLayer is not Infiltrator (9), Shadowblade (23), Nightshade (49), remove Envenom bonus before add the item in the inventory
+						if (item.Spells.Any(x => x.IsPoison) && !(partner.CharacterClass.ID == 9 || partner.CharacterClass.ID == 23 || partner.CharacterClass.ID == 49))
+						{
+							itemtoadd = GameInventoryItem.Create(itemtoadd);
+
+							foreach (var poison in itemtoadd.Spells.Where(x => x.IsPoison).ToList())
+							{
+								itemtoadd.Spells.Remove(poison);
+							}
+						}
+
 						if (item.Id <= 0)
 						{
-							tradeSuccess = m_owner.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
+							tradeSuccess = m_owner.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, itemtoadd);
 						}
 						else
 						{
-							tradeSuccess = m_owner.Inventory.AddTradeItem(eInventorySlot.FirstEmptyBackpack, item);
+							tradeSuccess = m_owner.Inventory.AddTradeItem(eInventorySlot.FirstEmptyBackpack, itemtoadd);
 						}
 
 						if (!tradeSuccess)

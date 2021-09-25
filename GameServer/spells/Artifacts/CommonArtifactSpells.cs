@@ -234,7 +234,7 @@ namespace DOL.GS.Spells
     [SpellHandlerAttribute("ABSDamageShield")]
     public class ABSDamageShield : AblativeArmorSpellHandler
     {
-        protected override void OnDamageAbsorbed(AttackData ad, int DamageAmount)
+        public override void OnDamageAbsorbed(AttackData ad, int DamageAmount)
         {
             AttackData newad = new AttackData();
             newad.Attacker = ad.Target;
@@ -242,7 +242,7 @@ namespace DOL.GS.Spells
             newad.Damage = DamageAmount;
             newad.DamageType = Spell.DamageType;
             newad.AttackType = AttackData.eAttackType.Spell;
-            newad.AttackResult = GameLiving.eAttackResult.HitUnstyled;
+            newad.AttackResult = eAttackResult.HitUnstyled;
             newad.SpellHandler = this;
             newad.Target.OnAttackedByEnemy(newad);
             newad.Attacker.DealDamage(newad);

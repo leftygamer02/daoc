@@ -348,7 +348,7 @@ namespace DOL.GS
 						{
 							lock (plr.EffectList)
 							{
-								GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType);
+								GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
 								if (check != null)
 									check.Cancel(false);
 							}
@@ -367,7 +367,7 @@ namespace DOL.GS
 					{
 						lock (plr.EffectList)
 						{
-							GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType);
+							GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
 							if (check == null)
 							{
 								ISpellHandler handler = ScriptMgr.CreateSpellHandler(plr, RelicSpell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
@@ -401,7 +401,7 @@ namespace DOL.GS
 					{
 						lock (plr.EffectList)
 						{
-							GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType);
+							GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
 							if (check != null)
 								check.Cancel(false);
 						}

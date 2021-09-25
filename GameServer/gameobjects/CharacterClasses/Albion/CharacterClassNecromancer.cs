@@ -149,8 +149,8 @@ namespace DOL.GS
 				{
 					GameNPC pet = Player.ControlledBrain.Body;
 					List<GameObject> attackerList;
-					lock (Player.Attackers)
-						attackerList = new List<GameObject>(Player.Attackers);
+					lock (Player.attackComponent.Attackers)
+						attackerList = new List<GameObject>(Player.attackComponent.Attackers);
 
 					foreach (GameObject obj in attackerList)
 					{
@@ -162,7 +162,7 @@ namespace DOL.GS
 								IOldAggressiveBrain brain = npc.Brain as IOldAggressiveBrain;
 								if (brain != null)
 								{
-									npc.AddAttacker(pet);
+									npc.attackComponent.AddAttacker(pet);
 									npc.StopAttack();
 									brain.AddToAggroList(pet, (int) (brain.GetAggroAmountForLiving(Player) + 1));
 								}
@@ -223,7 +223,7 @@ namespace DOL.GS
                         int powerCost = spellHandler.PowerCost(Player);
 
                         if (powerCost > 0)
-							Player.ChangeMana(Player, GameLiving.eManaChangeType.Spell, -powerCost);
+							Player.ChangeMana(Player, eManaChangeType.Spell, -powerCost);
                     }
 
                     return;

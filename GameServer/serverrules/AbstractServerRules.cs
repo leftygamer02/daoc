@@ -451,17 +451,17 @@ namespace DOL.GS.ServerRules
 
 						if (spell.Radius == 0)
 						{
-							switch (spell.SpellType.ToLower())
+							switch (spell.SpellType)
 							{
-								case "archery":
-								case "bolt":
-								case "bomber":
-								case "damagespeeddecrease":
-								case "directdamage":
-								case "magicalstrike":
-								case "siegearrow":
-								case "summontheurgistpet":
-								case "directdamagewithdebuff":
+                                case (byte)eSpellType.Archery:
+								case (byte)eSpellType.Bolt:
+								case (byte)eSpellType.Bomber:
+                                case (byte)eSpellType.DamageSpeedDecrease:
+                                case (byte)eSpellType.DirectDamage:
+                                case (byte)eSpellType.MagicalStrike:
+                                case (byte)eSpellType.SiegeArrow:
+                                case (byte)eSpellType.SummonTheurgistPet:
+                                case (byte)eSpellType.DirectDamageWithDebuff:
 									isAllowed = true;
 									break;
 							}
@@ -1323,7 +1323,7 @@ namespace DOL.GS.ServerRules
 							xpReward = (long)(xpReward * 0.25);
 
 						//XP Rate is handled in GainExperience
-						living.GainExperience(GameLiving.eXPSource.NPC, xpReward, campBonus, groupExp, outpostXP, true, true, true);
+						living.GainExperience(eXPSource.NPC, xpReward, campBonus, groupExp, outpostXP, true, true, true);
 					}
 				}
 			}
@@ -1446,10 +1446,10 @@ namespace DOL.GS.ServerRules
 					if (xpReward > expCap)
 						xpReward = expCap;
 
-					GameLiving.eXPSource xpSource = GameLiving.eXPSource.NPC;
+					eXPSource xpSource = eXPSource.NPC;
 					if (killedLiving is GamePlayer)
 					{
-						xpSource = GameLiving.eXPSource.Player;
+						xpSource = eXPSource.Player;
 					}
 
 					if (xpReward > 0)
@@ -1664,7 +1664,7 @@ namespace DOL.GS.ServerRules
 					}
 					xpReward += outpostXP;
 
-					living.GainExperience(GameLiving.eXPSource.Player, xpReward);
+					living.GainExperience(eXPSource.Player, xpReward);
 
 					//gold
 					if (living is GamePlayer)
@@ -1680,7 +1680,7 @@ namespace DOL.GS.ServerRules
 						InventoryLogging.LogInventoryAction(killer, player, eInventoryActionType.Other, money);
 					}
 
-					if (killedPlayer.ReleaseType != GamePlayer.eReleaseType.Duel && expGainPlayer != null)
+					if (killedPlayer.ReleaseType != eReleaseType.Duel && expGainPlayer != null)
 					{
 						switch ((eRealm)killedPlayer.Realm)
 						{

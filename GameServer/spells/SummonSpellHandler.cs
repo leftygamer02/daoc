@@ -20,6 +20,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using DOL.AI.Brain;
 using DOL.Events;
@@ -134,9 +135,9 @@ namespace DOL.GS.Spells
 				return;
 			}
 
-			GameSpellEffect effect = CreateSpellEffect(target, effectiveness);
+			//GameSpellEffect effect = CreateSpellEffect(target, effectiveness);            
 
-			IControlledBrain brain = null;
+            IControlledBrain brain = null;
 			if (template.ClassType != null && template.ClassType.Length > 0)
 			{
 				Assembly asm = Assembly.GetExecutingAssembly();
@@ -189,9 +190,10 @@ namespace DOL.GS.Spells
 			if (DOL.GS.ServerProperties.Properties.PET_SCALE_SPELL_MAX_LEVEL > 0)
 				m_pet.Spells = template.Spells; // Have to scale spells again now that the pet level has been assigned
 
-			effect.Start(m_pet);
+            //effect.Start(m_pet);
+            CreateECSEffect(m_pet, effectiveness);
 
-			Caster.OnPetSummoned(m_pet);
+            Caster.OnPetSummoned(m_pet);
 		}
 
 		public override int CalculateSpellResistChance(GameLiving target)
@@ -240,9 +242,12 @@ namespace DOL.GS.Spells
 
             GameEventMgr.RemoveHandler(pet, GameLivingEvent.PetReleased, new DOLEventHandler(OnNpcReleaseCommand));
 
-            GameSpellEffect effect = FindEffectOnTarget(pet, this);
-            if (effect != null)
-                effect.Cancel(false);
+            //GameSpellEffect effect = FindEffectOnTarget(pet, this);
+            pet.effectListComponent.Effects.TryGetValue(eEffect.Pet, out var petEffect);
+            EffectService.RequestCancelEffect(petEffect.FirstOrDefault());
+            //if (effect != null)
+            //    effect.Cancel(false);
+
 		}
 
 		/// <summary>
@@ -254,7 +259,8 @@ namespace DOL.GS.Spells
 			{
 				var list = new List<string>();
 
-				list.Add("Function: " + (Spell.SpellType == "" ? "(not implemented)" : Spell.SpellType));
+                // TODO: Fix no spellType
+				//list.Add("Function: " + (Spell.SpellType == "" ? "(not implemented)" : Spell.SpellType));
 				list.Add(" "); //empty line
 				list.Add(Spell.Description);
 				list.Add(" "); //empty line

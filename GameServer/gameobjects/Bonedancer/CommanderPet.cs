@@ -172,9 +172,10 @@ namespace DOL.GS
 		/// <summary>
 		/// Adds additional aggro to melee attacks if pet is set to taunt
 		/// </summary>
-		protected override AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield)
+		public AttackData MakeAttack(GameObject target, InventoryItem weapon, Styles.Style style, double effectiveness, int interruptDuration, bool dualWield)
+
 		{
-			AttackData ad = base.MakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield);
+			AttackData ad = attackComponent.LivingMakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield);
 
 			if (Taunting && ServerProperties.Properties.PET_BD_COMMANDER_TAUNT_VALUE > 100
 				&& (ad.AttackResult == eAttackResult.HitStyle || ad.AttackResult == eAttackResult.HitUnstyled)
@@ -530,7 +531,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Thrust;
 				temp.SPD_ABS = 45;
 				temp.ItemType = (int)eInventorySlot.DistanceWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Distance;
+				temp.Hand = (int)eActiveWeaponSlot.Distance;
 			}
 			else if (weaponType == eWeaponType.OneHandAxe)
 			{
@@ -541,7 +542,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 37;
 				temp.ItemType = (int)eInventorySlot.RightHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Standard;
+				temp.Hand = (int)eActiveWeaponSlot.Standard;
 			}
 			else if (weaponType == eWeaponType.OneHandHammer)
 			{
@@ -552,7 +553,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Crush;
 				temp.SPD_ABS = 37;
 				temp.ItemType = (int)eInventorySlot.RightHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Standard;
+				temp.Hand = (int)eActiveWeaponSlot.Standard;
 			}
 			else if (weaponType == eWeaponType.OneHandSword)
 			{
@@ -563,7 +564,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 34;
 				temp.ItemType = (int)eInventorySlot.RightHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.Standard;
+				temp.Hand = (int)eActiveWeaponSlot.Standard;
 			}
 			else if (weaponType == eWeaponType.TwoHandAxe)
 			{
@@ -574,7 +575,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 50;
 				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
+				temp.Hand = (int)eActiveWeaponSlot.TwoHanded;
 			}
 			else if (weaponType == eWeaponType.TwoHandHammer)
 			{
@@ -585,7 +586,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Crush;
 				temp.SPD_ABS = 50;
 				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
+				temp.Hand = (int)eActiveWeaponSlot.TwoHanded;
 			}
 			else if (weaponType == eWeaponType.TwoHandSword)
 			{
@@ -596,7 +597,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Slash;
 				temp.SPD_ABS = 45;
 				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
+				temp.Hand = (int)eActiveWeaponSlot.TwoHanded;
 			}
 			else if (weaponType == eWeaponType.Staff)
 			{
@@ -607,7 +608,7 @@ namespace DOL.GS
 				temp.TypeDamage = (int)eDamageType.Crush;
 				temp.SPD_ABS = 50;
 				temp.ItemType = (int)eInventorySlot.TwoHandWeapon;
-				temp.Hand = (int)GameLiving.eActiveWeaponSlot.TwoHanded;
+				temp.Hand = (int)eActiveWeaponSlot.TwoHanded;
 			}
 			else
 				return null;
@@ -792,22 +793,22 @@ namespace DOL.GS
 			{
 				if (spell != null)
 				{
-					switch (spell.SpellType.ToUpper())
+					switch (spell.SpellType)
 					{
-						case "DAMAGEOVERTIME":
+                        case (byte)eSpellType.DamageOverTime:
 							CommSpellDot = spell;
 							break;
-						case "DIRECTDAMAGE":
+                        case (byte)eSpellType.DirectDamage:
 							CommSpellDamage = spell;
 							break;
-						case "DIRECTDAMAGEWITHDEBUFF":
+                        case (byte)eSpellType.DirectDamageWithDebuff:
 							CommSpellDamageDebuff = spell;
 							break;
-						case "DISEASE":
+                        case (byte)eSpellType.Disease:
 							CommSpellDebuff = spell;
 							break;
-						case "LIFEDRAIN":
-						case "DAMAGESPEEDDECREASE":
+                        case (byte)eSpellType.Lifedrain:
+                        case (byte)eSpellType.DamageSpeedDecrease:
 							CommSpellOther = spell;
 							break;
 					}
