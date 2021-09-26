@@ -7,7 +7,7 @@
 using System;
 using System.Linq;
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using System.Collections.Generic;
 
 namespace DOL.GS.Commands

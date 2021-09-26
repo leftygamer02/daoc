@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.GameEvents
 {
@@ -67,23 +67,28 @@ namespace DOL.GS.GameEvents
 			if (chArgs == null)
 				return;
 			
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 			
 			// Add all Crafting skills at level 1
-			var collectionAllCraftingSkills = new List<string>();
 			foreach (int craftingSkillId in Enum.GetValues(typeof(eCraftingSkill)))
 			{
 				if (craftingSkillId > 0)
 				{
-					collectionAllCraftingSkills.Add(string.Format("{0}|1", craftingSkillId));
+					ch.CraftingSkills.Add(new CharacterCraftingSkill()
+					{
+						AllowAdd = true,
+						CharacterID = ch.Id,
+						CraftingSkill = craftingSkillId,
+						SkillLevel = 1,
+					});
+
 					if (craftingSkillId == (int)eCraftingSkill._Last)
 						break;
 				}
 			}
 			
 			// Set Primary Skill to Basic.
-			ch.SerializedCraftingSkills = string.Join(";", collectionAllCraftingSkills);
-			ch.CraftingPrimarySkill = (int)eCraftingSkill.BasicCrafting;
+			ch.PrimaryCraftingSkill = (int)eCraftingSkill.BasicCrafting;
 		}
 
 	}

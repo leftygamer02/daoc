@@ -1,5 +1,5 @@
 using System;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using System.Collections;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;

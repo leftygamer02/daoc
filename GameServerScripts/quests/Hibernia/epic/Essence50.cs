@@ -37,7 +37,7 @@
 
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -186,52 +186,52 @@ namespace DOL.GS.Quests.Hibernia
 
 			#region Item Declarations
 
-			Moonstone = GameServer.Database.FindObjectByKey<ItemTemplate>("Moonstone");
+			Moonstone = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Moonstone");
 			if (Moonstone == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Moonstone , creating it ...");
 				Moonstone = new ItemTemplate();
-				Moonstone.Id_nb = "Moonstone";
+				Moonstone.KeyName = "Moonstone";
 				Moonstone.Name = "Moonstone";
 				Moonstone.Level = 8;
-				Moonstone.Item_Type = 29;
+				Moonstone.ItemType = 29;
 				Moonstone.Model = 514;
 				Moonstone.IsDropable = false;
 				Moonstone.IsPickable = false;
 				Moonstone.DPS_AF = 0;
 				Moonstone.SPD_ABS = 0;
-				Moonstone.Object_Type = 41;
+				Moonstone.ObjectType = 41;
 				Moonstone.Hand = 0;
-				Moonstone.Type_Damage = 0;
+				Moonstone.TypeDamage = 0;
 				Moonstone.Quality = 100;
 				Moonstone.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(Moonstone);
+					GameServer.Instance.SaveDataObject(Moonstone);
 				}
 
 			}
 // end item			
-			BardEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("BardEpicBoots");
+			BardEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BardEpicBoots");
 			if (BardEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bards Epic Boots , creating it ...");
 				BardEpicBoots = new ItemTemplate();
-				BardEpicBoots.Id_nb = "BardEpicBoots";
+				BardEpicBoots.KeyName = "BardEpicBoots";
 				BardEpicBoots.Name = "Moonsung Boots";
 				BardEpicBoots.Level = 50;
-				BardEpicBoots.Item_Type = 23;
+				BardEpicBoots.ItemType = 23;
 				BardEpicBoots.Model = 738;
 				BardEpicBoots.IsDropable = true;
 				BardEpicBoots.IsPickable = true;
 				BardEpicBoots.DPS_AF = 100;
 				BardEpicBoots.SPD_ABS = 19;
-				BardEpicBoots.Object_Type = 37;
+				BardEpicBoots.ObjectType = 37;
 				BardEpicBoots.Quality = 100;
 				BardEpicBoots.Weight = 22;
-				BardEpicBoots.Bonus = 35;
+				BardEpicBoots.ItemBonus = 35;
 				BardEpicBoots.MaxCondition = 50000;
 				BardEpicBoots.MaxDurability = 50000;
 				BardEpicBoots.Condition = 50000;
@@ -251,31 +251,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BardEpicBoots);
+					GameServer.Instance.SaveDataObject(BardEpicBoots);
 				}
 
 			}
 //end item
 			//Moonsung Coif 
-			BardEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("BardEpicHelm");
+			BardEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BardEpicHelm");
 			if (BardEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bards Epic Helm , creating it ...");
 				BardEpicHelm = new ItemTemplate();
-				BardEpicHelm.Id_nb = "BardEpicHelm";
+				BardEpicHelm.KeyName = "BardEpicHelm";
 				BardEpicHelm.Name = "Moonsung Coif";
 				BardEpicHelm.Level = 50;
-				BardEpicHelm.Item_Type = 21;
+				BardEpicHelm.ItemType = 21;
 				BardEpicHelm.Model = 1292; //NEED TO WORK ON..
 				BardEpicHelm.IsDropable = true;
 				BardEpicHelm.IsPickable = true;
 				BardEpicHelm.DPS_AF = 100;
 				BardEpicHelm.SPD_ABS = 19;
-				BardEpicHelm.Object_Type = 37;
+				BardEpicHelm.ObjectType = 37;
 				BardEpicHelm.Quality = 100;
 				BardEpicHelm.Weight = 22;
-				BardEpicHelm.Bonus = 35;
+				BardEpicHelm.ItemBonus = 35;
 				BardEpicHelm.MaxCondition = 50000;
 				BardEpicHelm.MaxDurability = 50000;
 				BardEpicHelm.Condition = 50000;
@@ -295,32 +295,32 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BardEpicHelm);
+					GameServer.Instance.SaveDataObject(BardEpicHelm);
 				}
 
 
 			}
 //end item
 			//Moonsung Gloves 
-			BardEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("BardEpicGloves");
+			BardEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BardEpicGloves");
 			if (BardEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bards Epic Gloves , creating it ...");
 				BardEpicGloves = new ItemTemplate();
-				BardEpicGloves.Id_nb = "BardEpicGloves";
+				BardEpicGloves.KeyName = "BardEpicGloves";
 				BardEpicGloves.Name = "Moonsung Gloves ";
 				BardEpicGloves.Level = 50;
-				BardEpicGloves.Item_Type = 22;
+				BardEpicGloves.ItemType = 22;
 				BardEpicGloves.Model = 737;
 				BardEpicGloves.IsDropable = true;
 				BardEpicGloves.IsPickable = true;
 				BardEpicGloves.DPS_AF = 100;
 				BardEpicGloves.SPD_ABS = 19;
-				BardEpicGloves.Object_Type = 37;
+				BardEpicGloves.ObjectType = 37;
 				BardEpicGloves.Quality = 100;
 				BardEpicGloves.Weight = 22;
-				BardEpicGloves.Bonus = 35;
+				BardEpicGloves.ItemBonus = 35;
 				BardEpicGloves.MaxCondition = 50000;
 				BardEpicGloves.MaxDurability = 50000;
 				BardEpicGloves.Condition = 50000;
@@ -340,30 +340,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BardEpicGloves);
+					GameServer.Instance.SaveDataObject(BardEpicGloves);
 				}
 
 			}
 			//Moonsung Hauberk 
-			BardEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("BardEpicVest");
+			BardEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BardEpicVest");
 			if (BardEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bards Epic Vest , creating it ...");
 				BardEpicVest = new ItemTemplate();
-				BardEpicVest.Id_nb = "BardEpicVest";
+				BardEpicVest.KeyName = "BardEpicVest";
 				BardEpicVest.Name = "Moonsung Hauberk";
 				BardEpicVest.Level = 50;
-				BardEpicVest.Item_Type = 25;
+				BardEpicVest.ItemType = 25;
 				BardEpicVest.Model = 734;
 				BardEpicVest.IsDropable = true;
 				BardEpicVest.IsPickable = true;
 				BardEpicVest.DPS_AF = 100;
 				BardEpicVest.SPD_ABS = 19;
-				BardEpicVest.Object_Type = 37;
+				BardEpicVest.ObjectType = 37;
 				BardEpicVest.Quality = 100;
 				BardEpicVest.Weight = 22;
-				BardEpicVest.Bonus = 35;
+				BardEpicVest.ItemBonus = 35;
 				BardEpicVest.MaxCondition = 50000;
 				BardEpicVest.MaxDurability = 50000;
 				BardEpicVest.Condition = 50000;
@@ -383,30 +383,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BardEpicVest);
+					GameServer.Instance.SaveDataObject(BardEpicVest);
 				}
 
 			}
 			//Moonsung Legs 
-			BardEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("BardEpicLegs");
+			BardEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BardEpicLegs");
 			if (BardEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bards Epic Legs , creating it ...");
 				BardEpicLegs = new ItemTemplate();
-				BardEpicLegs.Id_nb = "BardEpicLegs";
+				BardEpicLegs.KeyName = "BardEpicLegs";
 				BardEpicLegs.Name = "Moonsung Legs";
 				BardEpicLegs.Level = 50;
-				BardEpicLegs.Item_Type = 27;
+				BardEpicLegs.ItemType = 27;
 				BardEpicLegs.Model = 735;
 				BardEpicLegs.IsDropable = true;
 				BardEpicLegs.IsPickable = true;
 				BardEpicLegs.DPS_AF = 100;
 				BardEpicLegs.SPD_ABS = 19;
-				BardEpicLegs.Object_Type = 37;
+				BardEpicLegs.ObjectType = 37;
 				BardEpicLegs.Quality = 100;
 				BardEpicLegs.Weight = 22;
-				BardEpicLegs.Bonus = 35;
+				BardEpicLegs.ItemBonus = 35;
 				BardEpicLegs.MaxCondition = 50000;
 				BardEpicLegs.MaxDurability = 50000;
 				BardEpicLegs.Condition = 50000;
@@ -426,30 +426,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BardEpicLegs);
+					GameServer.Instance.SaveDataObject(BardEpicLegs);
 				}
 
 			}
 			//Moonsung Sleeves 
-			BardEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("BardEpicArms");
+			BardEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BardEpicArms");
 			if (BardEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bard Epic Arms , creating it ...");
 				BardEpicArms = new ItemTemplate();
-				BardEpicArms.Id_nb = "BardEpicArms";
+				BardEpicArms.KeyName = "BardEpicArms";
 				BardEpicArms.Name = "Moonsung Sleeves";
 				BardEpicArms.Level = 50;
-				BardEpicArms.Item_Type = 28;
+				BardEpicArms.ItemType = 28;
 				BardEpicArms.Model = 736;
 				BardEpicArms.IsDropable = true;
 				BardEpicArms.IsPickable = true;
 				BardEpicArms.DPS_AF = 100;
 				BardEpicArms.SPD_ABS = 19;
-				BardEpicArms.Object_Type = 37;
+				BardEpicArms.ObjectType = 37;
 				BardEpicArms.Quality = 100;
 				BardEpicArms.Weight = 22;
-				BardEpicArms.Bonus = 35;
+				BardEpicArms.ItemBonus = 35;
 				BardEpicArms.MaxCondition = 50000;
 				BardEpicArms.MaxDurability = 50000;
 				BardEpicArms.Condition = 50000;
@@ -469,30 +469,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BardEpicArms);
+					GameServer.Instance.SaveDataObject(BardEpicArms);
 				}
 
 			}
 //Champion Epic Sleeves End
-			ChampionEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ChampionEpicBoots");
+			ChampionEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ChampionEpicBoots");
 			if (ChampionEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Champions Epic Boots , creating it ...");
 				ChampionEpicBoots = new ItemTemplate();
-				ChampionEpicBoots.Id_nb = "ChampionEpicBoots";
+				ChampionEpicBoots.KeyName = "ChampionEpicBoots";
 				ChampionEpicBoots.Name = "Moonglow Boots";
 				ChampionEpicBoots.Level = 50;
-				ChampionEpicBoots.Item_Type = 23;
+				ChampionEpicBoots.ItemType = 23;
 				ChampionEpicBoots.Model = 814;
 				ChampionEpicBoots.IsDropable = true;
 				ChampionEpicBoots.IsPickable = true;
 				ChampionEpicBoots.DPS_AF = 100;
 				ChampionEpicBoots.SPD_ABS = 27;
-				ChampionEpicBoots.Object_Type = 38;
+				ChampionEpicBoots.ObjectType = 38;
 				ChampionEpicBoots.Quality = 100;
 				ChampionEpicBoots.Weight = 22;
-				ChampionEpicBoots.Bonus = 35;
+				ChampionEpicBoots.ItemBonus = 35;
 				ChampionEpicBoots.MaxCondition = 50000;
 				ChampionEpicBoots.MaxDurability = 50000;
 				ChampionEpicBoots.Condition = 50000;
@@ -512,31 +512,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ChampionEpicBoots);
+					GameServer.Instance.SaveDataObject(ChampionEpicBoots);
 				}
 
 			}
 //end item
 			//Moonglow Coif 
-			ChampionEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ChampionEpicHelm");
+			ChampionEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ChampionEpicHelm");
 			if (ChampionEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Champions Epic Helm , creating it ...");
 				ChampionEpicHelm = new ItemTemplate();
-				ChampionEpicHelm.Id_nb = "ChampionEpicHelm";
+				ChampionEpicHelm.KeyName = "ChampionEpicHelm";
 				ChampionEpicHelm.Name = "Moonglow Coif";
 				ChampionEpicHelm.Level = 50;
-				ChampionEpicHelm.Item_Type = 21;
+				ChampionEpicHelm.ItemType = 21;
 				ChampionEpicHelm.Model = 1292; //NEED TO WORK ON..
 				ChampionEpicHelm.IsDropable = true;
 				ChampionEpicHelm.IsPickable = true;
 				ChampionEpicHelm.DPS_AF = 100;
 				ChampionEpicHelm.SPD_ABS = 27;
-				ChampionEpicHelm.Object_Type = 38;
+				ChampionEpicHelm.ObjectType = 38;
 				ChampionEpicHelm.Quality = 100;
 				ChampionEpicHelm.Weight = 22;
-				ChampionEpicHelm.Bonus = 35;
+				ChampionEpicHelm.ItemBonus = 35;
 				ChampionEpicHelm.MaxCondition = 50000;
 				ChampionEpicHelm.MaxDurability = 50000;
 				ChampionEpicHelm.Condition = 50000;
@@ -556,31 +556,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ChampionEpicHelm);
+					GameServer.Instance.SaveDataObject(ChampionEpicHelm);
 				}
 
 			}
 //end item
 			//Moonglow Gloves 
-			ChampionEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ChampionEpicGloves");
+			ChampionEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ChampionEpicGloves");
 			if (ChampionEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Champions Epic Gloves , creating it ...");
 				ChampionEpicGloves = new ItemTemplate();
-				ChampionEpicGloves.Id_nb = "ChampionEpicGloves";
+				ChampionEpicGloves.KeyName = "ChampionEpicGloves";
 				ChampionEpicGloves.Name = "Moonglow Gloves ";
 				ChampionEpicGloves.Level = 50;
-				ChampionEpicGloves.Item_Type = 22;
+				ChampionEpicGloves.ItemType = 22;
 				ChampionEpicGloves.Model = 813;
 				ChampionEpicGloves.IsDropable = true;
 				ChampionEpicGloves.IsPickable = true;
 				ChampionEpicGloves.DPS_AF = 100;
 				ChampionEpicGloves.SPD_ABS = 27;
-				ChampionEpicGloves.Object_Type = 38;
+				ChampionEpicGloves.ObjectType = 38;
 				ChampionEpicGloves.Quality = 100;
 				ChampionEpicGloves.Weight = 22;
-				ChampionEpicGloves.Bonus = 35;
+				ChampionEpicGloves.ItemBonus = 35;
 				ChampionEpicGloves.MaxCondition = 50000;
 				ChampionEpicGloves.MaxDurability = 50000;
 				ChampionEpicGloves.Condition = 50000;
@@ -600,30 +600,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ChampionEpicGloves);
+					GameServer.Instance.SaveDataObject(ChampionEpicGloves);
 				}
 
 			}
 			//Moonglow Hauberk 
-			ChampionEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ChampionEpicVest");
+			ChampionEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ChampionEpicVest");
 			if (ChampionEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Champions Epic Vest , creating it ...");
 				ChampionEpicVest = new ItemTemplate();
-				ChampionEpicVest.Id_nb = "ChampionEpicVest";
+				ChampionEpicVest.KeyName = "ChampionEpicVest";
 				ChampionEpicVest.Name = "Moonglow Brestplate";
 				ChampionEpicVest.Level = 50;
-				ChampionEpicVest.Item_Type = 25;
+				ChampionEpicVest.ItemType = 25;
 				ChampionEpicVest.Model = 810;
 				ChampionEpicVest.IsDropable = true;
 				ChampionEpicVest.IsPickable = true;
 				ChampionEpicVest.DPS_AF = 100;
 				ChampionEpicVest.SPD_ABS = 27;
-				ChampionEpicVest.Object_Type = 38;
+				ChampionEpicVest.ObjectType = 38;
 				ChampionEpicVest.Quality = 100;
 				ChampionEpicVest.Weight = 22;
-				ChampionEpicVest.Bonus = 35;
+				ChampionEpicVest.ItemBonus = 35;
 				ChampionEpicVest.MaxCondition = 50000;
 				ChampionEpicVest.MaxDurability = 50000;
 				ChampionEpicVest.Condition = 50000;
@@ -643,30 +643,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ChampionEpicVest);
+					GameServer.Instance.SaveDataObject(ChampionEpicVest);
 				}
 
 			}
 			//Moonglow Legs 
-			ChampionEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ChampionEpicLegs");
+			ChampionEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ChampionEpicLegs");
 			if (ChampionEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Champions Epic Legs , creating it ...");
 				ChampionEpicLegs = new ItemTemplate();
-				ChampionEpicLegs.Id_nb = "ChampionEpicLegs";
+				ChampionEpicLegs.KeyName = "ChampionEpicLegs";
 				ChampionEpicLegs.Name = "Moonglow Legs";
 				ChampionEpicLegs.Level = 50;
-				ChampionEpicLegs.Item_Type = 27;
+				ChampionEpicLegs.ItemType = 27;
 				ChampionEpicLegs.Model = 811;
 				ChampionEpicLegs.IsDropable = true;
 				ChampionEpicLegs.IsPickable = true;
 				ChampionEpicLegs.DPS_AF = 100;
 				ChampionEpicLegs.SPD_ABS = 27;
-				ChampionEpicLegs.Object_Type = 38;
+				ChampionEpicLegs.ObjectType = 38;
 				ChampionEpicLegs.Quality = 100;
 				ChampionEpicLegs.Weight = 22;
-				ChampionEpicLegs.Bonus = 35;
+				ChampionEpicLegs.ItemBonus = 35;
 				ChampionEpicLegs.MaxCondition = 50000;
 				ChampionEpicLegs.MaxDurability = 50000;
 				ChampionEpicLegs.Condition = 50000;
@@ -686,30 +686,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ChampionEpicLegs);
+					GameServer.Instance.SaveDataObject(ChampionEpicLegs);
 				}
 
 			}
 			//Moonglow Sleeves 
-			ChampionEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ChampionEpicArms");
+			ChampionEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ChampionEpicArms");
 			if (ChampionEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Champion Epic Arms , creating it ...");
 				ChampionEpicArms = new ItemTemplate();
-				ChampionEpicArms.Id_nb = "ChampionEpicArms";
+				ChampionEpicArms.KeyName = "ChampionEpicArms";
 				ChampionEpicArms.Name = "Moonglow Sleeves";
 				ChampionEpicArms.Level = 50;
-				ChampionEpicArms.Item_Type = 28;
+				ChampionEpicArms.ItemType = 28;
 				ChampionEpicArms.Model = 812;
 				ChampionEpicArms.IsDropable = true;
 				ChampionEpicArms.IsPickable = true;
 				ChampionEpicArms.DPS_AF = 100;
 				ChampionEpicArms.SPD_ABS = 27;
-				ChampionEpicArms.Object_Type = 38;
+				ChampionEpicArms.ObjectType = 38;
 				ChampionEpicArms.Quality = 100;
 				ChampionEpicArms.Weight = 22;
-				ChampionEpicArms.Bonus = 35;
+				ChampionEpicArms.ItemBonus = 35;
 				ChampionEpicArms.MaxCondition = 50000;
 				ChampionEpicArms.MaxDurability = 50000;
 				ChampionEpicArms.Condition = 50000;
@@ -729,29 +729,29 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ChampionEpicArms);
+					GameServer.Instance.SaveDataObject(ChampionEpicArms);
 				}
 
 			}
-			NightshadeEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("NightshadeEpicBoots");
+			NightshadeEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NightshadeEpicBoots");
 			if (NightshadeEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Nightshade Epic Boots , creating it ...");
 				NightshadeEpicBoots = new ItemTemplate();
-				NightshadeEpicBoots.Id_nb = "NightshadeEpicBoots";
+				NightshadeEpicBoots.KeyName = "NightshadeEpicBoots";
 				NightshadeEpicBoots.Name = "Moonlit Boots";
 				NightshadeEpicBoots.Level = 50;
-				NightshadeEpicBoots.Item_Type = 23;
+				NightshadeEpicBoots.ItemType = 23;
 				NightshadeEpicBoots.Model = 750;
 				NightshadeEpicBoots.IsDropable = true;
 				NightshadeEpicBoots.IsPickable = true;
 				NightshadeEpicBoots.DPS_AF = 100;
 				NightshadeEpicBoots.SPD_ABS = 10;
-				NightshadeEpicBoots.Object_Type = 33;
+				NightshadeEpicBoots.ObjectType = 33;
 				NightshadeEpicBoots.Quality = 100;
 				NightshadeEpicBoots.Weight = 22;
-				NightshadeEpicBoots.Bonus = 35;
+				NightshadeEpicBoots.ItemBonus = 35;
 				NightshadeEpicBoots.MaxCondition = 50000;
 				NightshadeEpicBoots.MaxDurability = 50000;
 				NightshadeEpicBoots.Condition = 50000;
@@ -771,31 +771,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(NightshadeEpicBoots);
+					GameServer.Instance.SaveDataObject(NightshadeEpicBoots);
 				}
 
 			}
 //end item
 			//Moonlit Coif 
-			NightshadeEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("NightshadeEpicHelm");
+			NightshadeEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NightshadeEpicHelm");
 			if (NightshadeEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Nightshade Epic Helm , creating it ...");
 				NightshadeEpicHelm = new ItemTemplate();
-				NightshadeEpicHelm.Id_nb = "NightshadeEpicHelm";
+				NightshadeEpicHelm.KeyName = "NightshadeEpicHelm";
 				NightshadeEpicHelm.Name = "Moonlit Helm";
 				NightshadeEpicHelm.Level = 50;
-				NightshadeEpicHelm.Item_Type = 21;
+				NightshadeEpicHelm.ItemType = 21;
 				NightshadeEpicHelm.Model = 1292; //NEED TO WORK ON..
 				NightshadeEpicHelm.IsDropable = true;
 				NightshadeEpicHelm.IsPickable = true;
 				NightshadeEpicHelm.DPS_AF = 100;
 				NightshadeEpicHelm.SPD_ABS = 10;
-				NightshadeEpicHelm.Object_Type = 33;
+				NightshadeEpicHelm.ObjectType = 33;
 				NightshadeEpicHelm.Quality = 100;
 				NightshadeEpicHelm.Weight = 22;
-				NightshadeEpicHelm.Bonus = 35;
+				NightshadeEpicHelm.ItemBonus = 35;
 				NightshadeEpicHelm.MaxCondition = 50000;
 				NightshadeEpicHelm.MaxDurability = 50000;
 				NightshadeEpicHelm.Condition = 50000;
@@ -815,31 +815,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(NightshadeEpicHelm);
+					GameServer.Instance.SaveDataObject(NightshadeEpicHelm);
 				}
 
 			}
 //end item
 			//Moonlit Gloves 
-			NightshadeEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("NightshadeEpicGloves");
+			NightshadeEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NightshadeEpicGloves");
 			if (NightshadeEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Nightshade Epic Gloves , creating it ...");
 				NightshadeEpicGloves = new ItemTemplate();
-				NightshadeEpicGloves.Id_nb = "NightshadeEpicGloves";
+				NightshadeEpicGloves.KeyName = "NightshadeEpicGloves";
 				NightshadeEpicGloves.Name = "Moonlit Gloves ";
 				NightshadeEpicGloves.Level = 50;
-				NightshadeEpicGloves.Item_Type = 22;
+				NightshadeEpicGloves.ItemType = 22;
 				NightshadeEpicGloves.Model = 749;
 				NightshadeEpicGloves.IsDropable = true;
 				NightshadeEpicGloves.IsPickable = true;
 				NightshadeEpicGloves.DPS_AF = 100;
 				NightshadeEpicGloves.SPD_ABS = 10;
-				NightshadeEpicGloves.Object_Type = 33;
+				NightshadeEpicGloves.ObjectType = 33;
 				NightshadeEpicGloves.Quality = 100;
 				NightshadeEpicGloves.Weight = 22;
-				NightshadeEpicGloves.Bonus = 35;
+				NightshadeEpicGloves.ItemBonus = 35;
 				NightshadeEpicGloves.MaxCondition = 50000;
 				NightshadeEpicGloves.MaxDurability = 50000;
 				NightshadeEpicGloves.Condition = 50000;
@@ -859,30 +859,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(NightshadeEpicGloves);
+					GameServer.Instance.SaveDataObject(NightshadeEpicGloves);
 				}
 
 			}
 			//Moonlit Hauberk 
-			NightshadeEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("NightshadeEpicVest");
+			NightshadeEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NightshadeEpicVest");
 			if (NightshadeEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Nightshade Epic Vest , creating it ...");
 				NightshadeEpicVest = new ItemTemplate();
-				NightshadeEpicVest.Id_nb = "NightshadeEpicVest";
+				NightshadeEpicVest.KeyName = "NightshadeEpicVest";
 				NightshadeEpicVest.Name = "Moonlit Leather Jerking";
 				NightshadeEpicVest.Level = 50;
-				NightshadeEpicVest.Item_Type = 25;
+				NightshadeEpicVest.ItemType = 25;
 				NightshadeEpicVest.Model = 746;
 				NightshadeEpicVest.IsDropable = true;
 				NightshadeEpicVest.IsPickable = true;
 				NightshadeEpicVest.DPS_AF = 100;
 				NightshadeEpicVest.SPD_ABS = 10;
-				NightshadeEpicVest.Object_Type = 33;
+				NightshadeEpicVest.ObjectType = 33;
 				NightshadeEpicVest.Quality = 100;
 				NightshadeEpicVest.Weight = 22;
-				NightshadeEpicVest.Bonus = 35;
+				NightshadeEpicVest.ItemBonus = 35;
 				NightshadeEpicVest.MaxCondition = 50000;
 				NightshadeEpicVest.MaxDurability = 50000;
 				NightshadeEpicVest.Condition = 50000;
@@ -899,30 +899,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(NightshadeEpicVest);
+					GameServer.Instance.SaveDataObject(NightshadeEpicVest);
 				}
 
 			}
 			//Moonlit Legs 
-			NightshadeEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("NightshadeEpicLegs");
+			NightshadeEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NightshadeEpicLegs");
 			if (NightshadeEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Nightshade Epic Legs , creating it ...");
 				NightshadeEpicLegs = new ItemTemplate();
-				NightshadeEpicLegs.Id_nb = "NightshadeEpicLegs";
+				NightshadeEpicLegs.KeyName = "NightshadeEpicLegs";
 				NightshadeEpicLegs.Name = "Moonlit Leggings";
 				NightshadeEpicLegs.Level = 50;
-				NightshadeEpicLegs.Item_Type = 27;
+				NightshadeEpicLegs.ItemType = 27;
 				NightshadeEpicLegs.Model = 747;
 				NightshadeEpicLegs.IsDropable = true;
 				NightshadeEpicLegs.IsPickable = true;
 				NightshadeEpicLegs.DPS_AF = 100;
 				NightshadeEpicLegs.SPD_ABS = 10;
-				NightshadeEpicLegs.Object_Type = 33;
+				NightshadeEpicLegs.ObjectType = 33;
 				NightshadeEpicLegs.Quality = 100;
 				NightshadeEpicLegs.Weight = 22;
-				NightshadeEpicLegs.Bonus = 35;
+				NightshadeEpicLegs.ItemBonus = 35;
 				NightshadeEpicLegs.MaxCondition = 50000;
 				NightshadeEpicLegs.MaxDurability = 50000;
 				NightshadeEpicLegs.Condition = 50000;
@@ -942,30 +942,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(NightshadeEpicLegs);
+					GameServer.Instance.SaveDataObject(NightshadeEpicLegs);
 				}
 
 			}
 			//Moonlit Sleeves 
-			NightshadeEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("NightshadeEpicArms");
+			NightshadeEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NightshadeEpicArms");
 			if (NightshadeEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Nightshade Epic Arms , creating it ...");
 				NightshadeEpicArms = new ItemTemplate();
-				NightshadeEpicArms.Id_nb = "NightshadeEpicArms";
+				NightshadeEpicArms.KeyName = "NightshadeEpicArms";
 				NightshadeEpicArms.Name = "Moonlit Sleeves";
 				NightshadeEpicArms.Level = 50;
-				NightshadeEpicArms.Item_Type = 28;
+				NightshadeEpicArms.ItemType = 28;
 				NightshadeEpicArms.Model = 748;
 				NightshadeEpicArms.IsDropable = true;
 				NightshadeEpicArms.IsPickable = true;
 				NightshadeEpicArms.DPS_AF = 100;
 				NightshadeEpicArms.SPD_ABS = 10;
-				NightshadeEpicArms.Object_Type = 33;
+				NightshadeEpicArms.ObjectType = 33;
 				NightshadeEpicArms.Quality = 100;
 				NightshadeEpicArms.Weight = 22;
-				NightshadeEpicArms.Bonus = 35;
+				NightshadeEpicArms.ItemBonus = 35;
 				NightshadeEpicArms.MaxCondition = 50000;
 				NightshadeEpicArms.MaxDurability = 50000;
 				NightshadeEpicArms.Condition = 50000;
@@ -985,29 +985,29 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-                    GameServer.Database.AddObject(NightshadeEpicArms);
+                    GameServer.Instance.SaveDataObject(NightshadeEpicArms);
 				}
 
 			}
-			EnchanterEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("EnchanterEpicBoots");
+			EnchanterEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EnchanterEpicBoots");
 			if (EnchanterEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Enchanter Epic Boots , creating it ...");
 				EnchanterEpicBoots = new ItemTemplate();
-				EnchanterEpicBoots.Id_nb = "EnchanterEpicBoots";
+				EnchanterEpicBoots.KeyName = "EnchanterEpicBoots";
 				EnchanterEpicBoots.Name = "Moonspun Boots";
 				EnchanterEpicBoots.Level = 50;
-				EnchanterEpicBoots.Item_Type = 23;
+				EnchanterEpicBoots.ItemType = 23;
 				EnchanterEpicBoots.Model = 382;
 				EnchanterEpicBoots.IsDropable = true;
 				EnchanterEpicBoots.IsPickable = true;
 				EnchanterEpicBoots.DPS_AF = 50;
 				EnchanterEpicBoots.SPD_ABS = 0;
-				EnchanterEpicBoots.Object_Type = 32;
+				EnchanterEpicBoots.ObjectType = 32;
 				EnchanterEpicBoots.Quality = 100;
 				EnchanterEpicBoots.Weight = 22;
-				EnchanterEpicBoots.Bonus = 35;
+				EnchanterEpicBoots.ItemBonus = 35;
 				EnchanterEpicBoots.MaxCondition = 50000;
 				EnchanterEpicBoots.MaxDurability = 50000;
 				EnchanterEpicBoots.Condition = 50000;
@@ -1027,31 +1027,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EnchanterEpicBoots);
+					GameServer.Instance.SaveDataObject(EnchanterEpicBoots);
 				}
 
 			}
 //end item
 			//Moonspun Coif 
-			EnchanterEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("EnchanterEpicHelm");
+			EnchanterEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EnchanterEpicHelm");
 			if (EnchanterEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Enchanter Epic Helm , creating it ...");
 				EnchanterEpicHelm = new ItemTemplate();
-				EnchanterEpicHelm.Id_nb = "EnchanterEpicHelm";
+				EnchanterEpicHelm.KeyName = "EnchanterEpicHelm";
 				EnchanterEpicHelm.Name = "Moonspun Cap";
 				EnchanterEpicHelm.Level = 50;
-				EnchanterEpicHelm.Item_Type = 21;
+				EnchanterEpicHelm.ItemType = 21;
 				EnchanterEpicHelm.Model = 1298; //NEED TO WORK ON..
 				EnchanterEpicHelm.IsDropable = true;
 				EnchanterEpicHelm.IsPickable = true;
 				EnchanterEpicHelm.DPS_AF = 50;
 				EnchanterEpicHelm.SPD_ABS = 0;
-				EnchanterEpicHelm.Object_Type = 32;
+				EnchanterEpicHelm.ObjectType = 32;
 				EnchanterEpicHelm.Quality = 100;
 				EnchanterEpicHelm.Weight = 22;
-				EnchanterEpicHelm.Bonus = 35;
+				EnchanterEpicHelm.ItemBonus = 35;
 				EnchanterEpicHelm.MaxCondition = 50000;
 				EnchanterEpicHelm.MaxDurability = 50000;
 				EnchanterEpicHelm.Condition = 50000;
@@ -1071,31 +1071,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EnchanterEpicHelm);
+					GameServer.Instance.SaveDataObject(EnchanterEpicHelm);
 				}
 
 			}
 //end item
 			//Moonspun Gloves 
-			EnchanterEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("EnchanterEpicGloves");
+			EnchanterEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EnchanterEpicGloves");
 			if (EnchanterEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Enchanter Epic Gloves , creating it ...");
 				EnchanterEpicGloves = new ItemTemplate();
-				EnchanterEpicGloves.Id_nb = "EnchanterEpicGloves";
+				EnchanterEpicGloves.KeyName = "EnchanterEpicGloves";
 				EnchanterEpicGloves.Name = "Moonspun Gloves ";
 				EnchanterEpicGloves.Level = 50;
-				EnchanterEpicGloves.Item_Type = 22;
+				EnchanterEpicGloves.ItemType = 22;
 				EnchanterEpicGloves.Model = 381;
 				EnchanterEpicGloves.IsDropable = true;
 				EnchanterEpicGloves.IsPickable = true;
 				EnchanterEpicGloves.DPS_AF = 50;
 				EnchanterEpicGloves.SPD_ABS = 0;
-				EnchanterEpicGloves.Object_Type = 32;
+				EnchanterEpicGloves.ObjectType = 32;
 				EnchanterEpicGloves.Quality = 100;
 				EnchanterEpicGloves.Weight = 22;
-				EnchanterEpicGloves.Bonus = 35;
+				EnchanterEpicGloves.ItemBonus = 35;
 				EnchanterEpicGloves.MaxCondition = 50000;
 				EnchanterEpicGloves.MaxDurability = 50000;
 				EnchanterEpicGloves.Condition = 50000;
@@ -1115,30 +1115,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EnchanterEpicGloves);
+					GameServer.Instance.SaveDataObject(EnchanterEpicGloves);
 				}
 
 			}
 			//Moonspun Hauberk 
-			EnchanterEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("EnchanterEpicVest");
+			EnchanterEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EnchanterEpicVest");
 			if (EnchanterEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Enchanter Epic Vest , creating it ...");
 				EnchanterEpicVest = new ItemTemplate();
-				EnchanterEpicVest.Id_nb = "EnchanterEpicVest";
+				EnchanterEpicVest.KeyName = "EnchanterEpicVest";
 				EnchanterEpicVest.Name = "Moonspun Vest";
 				EnchanterEpicVest.Level = 50;
-				EnchanterEpicVest.Item_Type = 25;
+				EnchanterEpicVest.ItemType = 25;
 				EnchanterEpicVest.Model = 781;
 				EnchanterEpicVest.IsDropable = true;
 				EnchanterEpicVest.IsPickable = true;
 				EnchanterEpicVest.DPS_AF = 50;
 				EnchanterEpicVest.SPD_ABS = 0;
-				EnchanterEpicVest.Object_Type = 32;
+				EnchanterEpicVest.ObjectType = 32;
 				EnchanterEpicVest.Quality = 100;
 				EnchanterEpicVest.Weight = 22;
-				EnchanterEpicVest.Bonus = 35;
+				EnchanterEpicVest.ItemBonus = 35;
 				EnchanterEpicVest.MaxCondition = 50000;
 				EnchanterEpicVest.MaxDurability = 50000;
 				EnchanterEpicVest.Condition = 50000;
@@ -1155,30 +1155,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EnchanterEpicVest);
+					GameServer.Instance.SaveDataObject(EnchanterEpicVest);
 				}
 
 			}
 			//Moonspun Legs 
-			EnchanterEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("EnchanterEpicLegs");
+			EnchanterEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EnchanterEpicLegs");
 			if (EnchanterEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Enchanter Epic Legs , creating it ...");
 				EnchanterEpicLegs = new ItemTemplate();
-				EnchanterEpicLegs.Id_nb = "EnchanterEpicLegs";
+				EnchanterEpicLegs.KeyName = "EnchanterEpicLegs";
 				EnchanterEpicLegs.Name = "Moonspun Pants";
 				EnchanterEpicLegs.Level = 50;
-				EnchanterEpicLegs.Item_Type = 27;
+				EnchanterEpicLegs.ItemType = 27;
 				EnchanterEpicLegs.Model = 379;
 				EnchanterEpicLegs.IsDropable = true;
 				EnchanterEpicLegs.IsPickable = true;
 				EnchanterEpicLegs.DPS_AF = 50;
 				EnchanterEpicLegs.SPD_ABS = 0;
-				EnchanterEpicLegs.Object_Type = 32;
+				EnchanterEpicLegs.ObjectType = 32;
 				EnchanterEpicLegs.Quality = 100;
 				EnchanterEpicLegs.Weight = 22;
-				EnchanterEpicLegs.Bonus = 35;
+				EnchanterEpicLegs.ItemBonus = 35;
 				EnchanterEpicLegs.MaxCondition = 50000;
 				EnchanterEpicLegs.MaxDurability = 50000;
 				EnchanterEpicLegs.Condition = 50000;
@@ -1198,30 +1198,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EnchanterEpicLegs);
+					GameServer.Instance.SaveDataObject(EnchanterEpicLegs);
 				}
 
 			}
 			//Moonspun Sleeves 
-			EnchanterEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("EnchanterEpicArms");
+			EnchanterEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EnchanterEpicArms");
 			if (EnchanterEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Enchanter Epic Arms , creating it ...");
 				EnchanterEpicArms = new ItemTemplate();
-				EnchanterEpicArms.Id_nb = "EnchanterEpicArms";
+				EnchanterEpicArms.KeyName = "EnchanterEpicArms";
 				EnchanterEpicArms.Name = "Moonspun Sleeves";
 				EnchanterEpicArms.Level = 50;
-				EnchanterEpicArms.Item_Type = 28;
+				EnchanterEpicArms.ItemType = 28;
 				EnchanterEpicArms.Model = 380;
 				EnchanterEpicArms.IsDropable = true;
 				EnchanterEpicArms.IsPickable = true;
 				EnchanterEpicArms.DPS_AF = 50;
 				EnchanterEpicArms.SPD_ABS = 0;
-				EnchanterEpicArms.Object_Type = 32;
+				EnchanterEpicArms.ObjectType = 32;
 				EnchanterEpicArms.Quality = 100;
 				EnchanterEpicArms.Weight = 22;
-				EnchanterEpicArms.Bonus = 35;
+				EnchanterEpicArms.ItemBonus = 35;
 				EnchanterEpicArms.MaxCondition = 50000;
 				EnchanterEpicArms.MaxDurability = 50000;
 				EnchanterEpicArms.Condition = 50000;
@@ -1241,7 +1241,7 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EnchanterEpicArms);
+					GameServer.Instance.SaveDataObject(EnchanterEpicArms);
 				}
 
 			}
@@ -1463,7 +1463,7 @@ namespace DOL.GS.Quests.Hibernia
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Brigit.Name && gArgs.Item.Id_nb == Moonstone.Id_nb)
+				if (gArgs.Target.Name == Brigit.Name && gArgs.Item.KeyName == Moonstone.KeyName)
 				{
 					Brigit.SayTo(player, "You have earned this Epic Armour!");
 					FinishQuest();

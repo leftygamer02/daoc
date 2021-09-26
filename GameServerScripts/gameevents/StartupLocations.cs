@@ -30,7 +30,7 @@ using System.Linq;
 using System.Reflection;
 using log4net;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 
@@ -83,7 +83,7 @@ namespace DOL.GS.GameEvents
 		{
 			m_cachedLocations.Clear();
 			
-			foreach (var obj in GameServer.Database.SelectAllObjects<StartupLocation>())
+			foreach (var obj in GameServer.Database.StartupLocations.ToList())
 				m_cachedLocations.Add(obj);
 		}
 
@@ -98,7 +98,7 @@ namespace DOL.GS.GameEvents
 			if (chArgs == null)
 				return;
 			
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 			
 			try
 			{
@@ -120,7 +120,7 @@ namespace DOL.GS.GameEvents
 				if (dbStartupLocation == null)
 				{
 					log.WarnFormat("startup location not found: account={0}; char name={1}; region={2}; realm={3}; class={4} ({5}); race={6} ({7}); version={8}",
-					             ch.AccountName, ch.Name, ch.Region, ch.Realm, ch.Class, (eCharacterClass) ch.Class, ch.Race, (eRace)ch.Race, chArgs.GameClient.Version);
+					             ch.Account.Name, ch.Name, ch.Region, ch.Realm, ch.Class, (eCharacterClass) ch.Class, ch.Race, (eRace)ch.Race, chArgs.GameClient.Version);
 				}
 				else
 				{
@@ -136,7 +136,7 @@ namespace DOL.GS.GameEvents
 			{
 				if (log.IsErrorEnabled)
 					log.ErrorFormat("StartupLocations script: error changing location. account={0}; char name={1}; region={2}; realm={3}; class={4} ({5}); race={6} ({7}); version={8}; {9}",
-					                ch.AccountName, ch.Name, ch.Region, ch.Realm, ch.Class, (eCharacterClass) ch.Class, ch.Race, (eRace)ch.Race, chArgs.GameClient.Version, e);
+					                ch.Account.Name, ch.Name, ch.Region, ch.Realm, ch.Class, (eCharacterClass) ch.Class, ch.Race, (eRace)ch.Race, chArgs.GameClient.Version, e);
 			}
 		}
 
@@ -151,14 +151,14 @@ namespace DOL.GS.GameEvents
 			if (chArgs == null)
 				return;
 			
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 			
 			// check if location looks ok.
 			if (ch.Xpos == 0 && ch.Ypos == 0 && ch.Zpos == 0)
 			{
 				// This character needs to be fixed !
 				CharacterCreation(ev, sender, args);
-				GameServer.Database.SaveObject(ch);
+				GameServer.Instance.SaveDataObject(ch);
 				return;
 			}
 			
@@ -167,27 +167,27 @@ namespace DOL.GS.GameEvents
 			{
 				// This Bind needs to be fixed !
 				BindCharacter(ch);
-				GameServer.Database.SaveObject(ch);
+				GameServer.Instance.SaveDataObject(ch);
 			}
 		}
 		
-		public static IList<StartupLocation> GetAllStartupLocationForCharacter(DOLCharacters ch, GameClient.eClientVersion cli)
+		public static IList<StartupLocation> GetAllStartupLocationForCharacter(Character ch, GameClient.eClientVersion cli)
 		{
 			return m_cachedLocations.Where(sl => sl.MinVersion <= (int)cli)
 				.Where(sl => sl.ClassID == 0 || sl.ClassID == ch.Class)
 				.Where(sl => sl.RaceID == 0 || sl.RaceID == ch.Race)
-				.Where(sl => sl.RealmID == 0 || sl.RealmID == ch.Realm)
-				.Where(sl => sl.ClientRegionID == 0 || sl.ClientRegionID == ch.Region)
+				.Where(sl => sl.Realm == 0 || sl.Realm == ch.Realm)
+				.Where(sl => sl.ClientRegionID == 0 || sl.ClientRegionID == ch.RegionID)
 				.OrderByDescending(sl => sl.MinVersion).ThenByDescending(sl => sl.ClientRegionID)
-				.ThenByDescending(sl => sl.RealmID).ThenByDescending(sl => sl.ClassID)
+				.ThenByDescending(sl => sl.Realm).ThenByDescending(sl => sl.ClassID)
 				.ThenByDescending(sl => sl.RaceID).ToList();
 		}
 		
 		public static StartupLocation GetNonTutorialLocation(GamePlayer player)
 		{
 			try
-			{
-				return GetAllStartupLocationForCharacter(player.Client.Account.Characters[player.Client.ActiveCharIndex], player.Client.Version).First(sl => sl.ClientRegionID != TUTORIAL_REGIONID);
+			{				
+				return GetAllStartupLocationForCharacter(player.Client.Account.Characters.ElementAt(player.Client.ActiveCharIndex), player.Client.Version).First(sl => sl.ClientRegionID != TUTORIAL_REGIONID);
 			}
 			catch
 			{
@@ -200,9 +200,9 @@ namespace DOL.GS.GameEvents
 		/// Binds character to current location
 		/// </summary>
 		/// <param name="ch"></param>
-		public static void BindCharacter(DOLCharacters ch)
+		public static void BindCharacter(Character ch)
 		{
-			ch.BindRegion = ch.Region;
+			ch.BindRegion = ch.RegionID;
 			ch.BindHeading = ch.Direction;
 			ch.BindXpos = ch.Xpos;
 			ch.BindYpos = ch.Ypos;

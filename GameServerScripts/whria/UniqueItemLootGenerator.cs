@@ -37,7 +37,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.AI.Brain;
 
@@ -87,7 +87,7 @@ namespace DOL.GS
 						}
 						
 						item.AllowAdd = true;
-						GameServer.Database.AddObject(item);
+						GameServer.Instance.SaveDataObject(item);
 						InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(item);
 						client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
 						client.Player.Out.SendMessage("Generated: " + item.Name, eChatType.CT_System, eChatLoc.CL_SystemWindow);

@@ -19,7 +19,7 @@
 
 using System.Collections.Generic;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Database.Attributes;
 using log4net;
 
@@ -177,7 +177,7 @@ namespace DOL.GS.DatabaseUpdate
 
                     foreach (DBLanguageSystem lngObj in lngObjs)
                     {
-                        GameServer.Database.AddObject(lngObj);
+                        GameServer.Instance.SaveDataObject(lngObj);
 
                         if (log.IsWarnEnabled)
                             log.Warn("Moving sentence from 'language' to 'languagesystem'. ( Language <" + lngObj.Language +

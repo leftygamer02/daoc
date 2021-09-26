@@ -32,7 +32,7 @@
 
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -165,53 +165,53 @@ namespace DOL.GS.Quests.Albion
 
 			#region defineItems
 
-			statue_of_arawn = GameServer.Database.FindObjectByKey<ItemTemplate>("statue_of_arawn");
+			statue_of_arawn = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "statue_of_arawn");
 			if (statue_of_arawn == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Statue of Arawn, creating it ...");
 				statue_of_arawn = new ItemTemplate();
-				statue_of_arawn.Id_nb = "statue_of_arawn";
+				statue_of_arawn.KeyName = "statue_of_arawn";
 				statue_of_arawn.Name = "Statue of Arawn";
 				statue_of_arawn.Level = 8;
-				statue_of_arawn.Item_Type = 29;
+				statue_of_arawn.ItemType = 29;
 				statue_of_arawn.Model = 593;
 				statue_of_arawn.IsDropable = false;
 				statue_of_arawn.IsPickable = false;
 				statue_of_arawn.DPS_AF = 0;
 				statue_of_arawn.SPD_ABS = 0;
-				statue_of_arawn.Object_Type = 41;
+				statue_of_arawn.ObjectType = 41;
 				statue_of_arawn.Hand = 0;
-				statue_of_arawn.Type_Damage = 0;
+				statue_of_arawn.TypeDamage = 0;
 				statue_of_arawn.Quality = 100;
 				statue_of_arawn.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(statue_of_arawn);
+					GameServer.Instance.SaveDataObject(statue_of_arawn);
 				}
 
 			}
 // end item
 			ItemTemplate i = null;
-			ClericEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ClericEpicBoots");
+			ClericEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ClericEpicBoots");
 			if (ClericEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Clerics Epic Boots , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "ClericEpicBoots";
+				i.KeyName = "ClericEpicBoots";
 				i.Name = "Boots of Defiant Soul";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 717;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -231,32 +231,32 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ClericEpicBoots = i;
 
 			}
 //end item
 			//of the Defiant Soul  Coif 
-			ClericEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ClericEpicHelm");
+			ClericEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ClericEpicHelm");
 			if (ClericEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Clerics Epic Helm , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "ClericEpicHelm";
+				i.KeyName = "ClericEpicHelm";
 				i.Name = "Coif of Defiant Soul";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -276,7 +276,7 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ClericEpicHelm = i;
@@ -284,25 +284,25 @@ namespace DOL.GS.Quests.Albion
 			}
 //end item
 			//of the Defiant Soul  Gloves 
-			ClericEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ClericEpicGloves");
+			ClericEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ClericEpicGloves");
 			if (ClericEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Clerics Epic Gloves , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "ClericEpicGloves";
+				i.KeyName = "ClericEpicGloves";
 				i.Name = "Gauntlets of Defiant Soul";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 716;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -322,32 +322,32 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ClericEpicGloves = i;
 
 			}
 			//of the Defiant Soul  Hauberk 
-			ClericEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ClericEpicVest");
+			ClericEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ClericEpicVest");
 			if (ClericEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Clerics Epic Vest , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "ClericEpicVest";
+				i.KeyName = "ClericEpicVest";
 				i.Name = "Habergeon of Defiant Soul";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 713;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -367,31 +367,31 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ClericEpicVest = i;
 
 			}
 			//of the Defiant Soul  Legs 
-			ClericEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ClericEpicLegs");
+			ClericEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ClericEpicLegs");
 			if (ClericEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Clerics Epic Legs , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "ClericEpicLegs";
+				i.KeyName = "ClericEpicLegs";
 				i.Name = "Chaussess of Defiant Soul";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 714;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -411,32 +411,32 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ClericEpicLegs = i;
 
 			}
 			//of the Defiant Soul  Sleeves 
-			ClericEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ClericEpicArms");
+			ClericEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ClericEpicArms");
 			if (ClericEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Cleric Epic Arms , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "ClericEpicArms";
+				i.KeyName = "ClericEpicArms";
 				i.Name = "Sleeves of Defiant Soul";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 715;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -456,31 +456,31 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ClericEpicArms = i;
 			}
 
-			PaladinEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("PaladinEpicBoots");
+			PaladinEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "PaladinEpicBoots");
 			if (PaladinEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Paladin Epic Boots , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "PaladinEpicBoots";
+				i.KeyName = "PaladinEpicBoots";
 				i.Name = "Sabaton of the Iron Will";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 697;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 34;
-				i.Object_Type = 36;
+				i.ObjectType = 36;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -500,7 +500,7 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				PaladinEpicBoots = i;
@@ -508,25 +508,25 @@ namespace DOL.GS.Quests.Albion
 			}
 //end item
 			//of the Iron Will Coif 
-			PaladinEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("PaladinEpicHelm");
+			PaladinEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "PaladinEpicHelm");
 			if (PaladinEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Paladin Epic Helm , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "PaladinEpicHelm";
+				i.KeyName = "PaladinEpicHelm";
 				i.Name = "Hounskull of the Iron Will";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 34;
-				i.Object_Type = 36;
+				i.ObjectType = 36;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -546,7 +546,7 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				PaladinEpicHelm = i;
@@ -554,25 +554,25 @@ namespace DOL.GS.Quests.Albion
 			}
 //end item
 			//of the Iron Will Gloves 
-			PaladinEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("PaladinEpicGloves");
+			PaladinEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "PaladinEpicGloves");
 			if (PaladinEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Paladin Epic Gloves , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "PaladinEpicGloves";
+				i.KeyName = "PaladinEpicGloves";
 				i.Name = "Gauntlets of the Iron Will";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 696;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 34;
-				i.Object_Type = 36;
+				i.ObjectType = 36;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -592,32 +592,32 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				PaladinEpicGloves = i;
 
 			}
 			//of the Iron Will Hauberk 
-			PaladinEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("PaladinEpicVest");
+			PaladinEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "PaladinEpicVest");
 			if (PaladinEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Paladin Epic Vest , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "PaladinEpicVest";
+				i.KeyName = "PaladinEpicVest";
 				i.Name = "Curiass of the Iron Will";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 693;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 34;
-				i.Object_Type = 36;
+				i.ObjectType = 36;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -637,32 +637,32 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				PaladinEpicVest = i;
 
 			}
 			//of the Iron Will Legs 
-			PaladinEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("PaladinEpicLegs");
+			PaladinEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "PaladinEpicLegs");
 			if (PaladinEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Paladin Epic Legs , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "PaladinEpicLegs";
+				i.KeyName = "PaladinEpicLegs";
 				i.Name = "Greaves of the Iron Will";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 694;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 34;
-				i.Object_Type = 36;
+				i.ObjectType = 36;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -682,32 +682,32 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				PaladinEpicLegs = i;
 
 			}
 			//of the Iron Will Sleeves 
-			PaladinEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("PaladinEpicArms");
+			PaladinEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "PaladinEpicArms");
 			if (PaladinEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Paladin Epic Arms , creating it ...");
 				i = new ItemTemplate();
-				i.Id_nb = "PaladinEpicArms";
+				i.KeyName = "PaladinEpicArms";
 				i.Name = "Spaulders of the Iron Will";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 695;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 34;
-				i.Object_Type = 36;
+				i.ObjectType = 36;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -727,7 +727,7 @@ namespace DOL.GS.Quests.Albion
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				PaladinEpicArms = i;
@@ -969,7 +969,7 @@ namespace DOL.GS.Quests.Albion
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Roben.Name && gArgs.Item.Id_nb == statue_of_arawn.Id_nb)
+				if (gArgs.Target.Name == Roben.Name && gArgs.Item.KeyName == statue_of_arawn.KeyName)
 				{
 					Roben.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
 

@@ -25,7 +25,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DOL.GS;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.Language;
@@ -60,42 +60,17 @@ namespace DOL.GS.Scripts
         public override IList GetExamineMessages(GamePlayer player)
         {
             string TrainerClassName = "";
-            switch (player.Client.Account.Language)
-            {
-                case "DE":
-                    {
-                        var translation = (DBLanguageNPC)LanguageMgr.GetTranslation(player.Client.Account.Language, this);
-
-                        if (translation != null)
-                        {
-                            int index = -1;
-                            if (translation.GuildName.Length > 0)
-                                index = translation.GuildName.IndexOf("-Ausbilder");
-                            if (index >= 0)
-                                TrainerClassName = translation.GuildName.Substring(0, index);
-                        }
-                        else
-                        {
-                            TrainerClassName = GuildName;
-                        }
-                    }
-                    break;
-                default:
-                    {
-                        int index = -1;
-                        if (GuildName.Length > 0)
-                            index = GuildName.IndexOf(" Trainer");
-                        if (index >= 0)
-                            TrainerClassName = GuildName.Substring(0, index);
-                    }
-                    break;
-            }
+            int index = -1;
+            if (GuildName.Length > 0)
+                index = GuildName.IndexOf(" Trainer");
+            if (index >= 0)
+                TrainerClassName = GuildName.Substring(0, index);
 
             IList list = new ArrayList();
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.YouTarget",
-                                                GetName(0, false, player.Client.Account.Language, this)));
+                                                GetName(0, false)));
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.YouExamine",
-                                                GetName(0, false, player.Client.Account.Language, this), GetPronoun(0, true, player.Client.Account.Language),
+                                                GetName(0, false), GetPronoun(0, true, player.Client.Account.Language),
                                                 GetAggroLevelString(player, false), TrainerClassName));
             list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.GetExamineMessages.RightClick"));
             return list;
@@ -115,7 +90,7 @@ namespace DOL.GS.Scripts
             GamePlayer player = source as GamePlayer;
             if (player != null)
             {
-                switch (item.Id_nb)
+                switch (item.ItemTemplate.KeyName)
                 {
                     case "token_solo":
                         {
@@ -213,7 +188,7 @@ namespace DOL.GS.Scripts
                     case "respec_single":
                         {
                             player.Inventory.RemoveCountFromStack(item, 1);
-                            InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+                            InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
                             player.RespecAmountSingleSkill++;
                             player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.ReceiveItem.RespecSingle"), eChatType.CT_System, eChatLoc.CL_PopupWindow);
                             return true;
@@ -221,7 +196,7 @@ namespace DOL.GS.Scripts
                     case "respec_full":
                         {
                             player.Inventory.RemoveCountFromStack(item, 1);
-                            InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+                            InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
                             player.RespecAmountAllSkill++;
                             player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.ReceiveItem.RespecFull", item.Name), eChatType.CT_System, eChatLoc.CL_PopupWindow);
                             return true;
@@ -229,7 +204,7 @@ namespace DOL.GS.Scripts
                     case "respec_realm":
                         {
                             player.Inventory.RemoveCountFromStack(item, 1);
-                            InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.Template);
+                            InventoryLogging.LogInventoryAction(player, this, eInventoryActionType.Merchant, item.ItemTemplate);
                             player.RespecAmountRealmSkill++;
                             player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameTrainer.ReceiveItem.RespecRealm"), eChatType.CT_System, eChatLoc.CL_PopupWindow);
                             return true;

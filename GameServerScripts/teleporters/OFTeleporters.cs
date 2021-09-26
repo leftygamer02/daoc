@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Spells;
 using DOL.AI;
 using DOL.GS.Effects;
@@ -135,7 +135,7 @@ namespace DOL.GS.Scripts
                         {
                             if (necklace != null)
                             {
-                                switch (necklace.Id_nb)
+                                switch (necklace.KeyName)
                                 {
                                     case OdinID: PortLocation = new GameLocation("Odin Alb", 100, 596364, 631509, 5971); break;
                                     case EmainID: PortLocation = new GameLocation("Emain Alb", 200, 475835, 343661, 4080); break;
@@ -150,7 +150,7 @@ namespace DOL.GS.Scripts
                         {
                             if (necklace != null)
                             {
-                                switch (necklace.Id_nb)
+                                switch (necklace.KeyName)
                                 {
                                     case HadrianID: PortLocation = new GameLocation("Hadrian Mid", 1, 655200, 293217, 4879); break;
                                     case EmainID: PortLocation = new GameLocation("Emain Mid", 200, 474107, 295199, 3871); break;
@@ -168,7 +168,7 @@ namespace DOL.GS.Scripts
                         {
                             if (necklace != null)
                             {
-                                switch (necklace.Id_nb)
+                                switch (necklace.KeyName)
                                 {
                                     case OdinID: PortLocation = new GameLocation("Odin Hib", 100, 596055, 581400, 6031); break;
                                     case HadrianID: PortLocation = new GameLocation("Hadrian Hib", 1, 605743, 293676, 4839); break;

@@ -17,7 +17,7 @@
  *
  */
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using log4net;
 
 namespace DOL.GS.DatabaseUpdate
@@ -61,7 +61,7 @@ namespace DOL.GS.DatabaseUpdate
                 if (property.Key == "use_new_language_system")
                     unlsFound = true;
 
-                GameServer.Database.DeleteObject(property);
+                GameServer.Instance.DeleteDataObject(property);
 
                 if (aclkFound && unlsFound)
                     break;

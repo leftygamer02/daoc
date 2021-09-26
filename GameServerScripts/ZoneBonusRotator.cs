@@ -1,4 +1,4 @@
-﻿using DOL.Database;
+﻿using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -45,12 +45,12 @@ namespace DOL.GS.Scripts
         private static int currentHiberniaZone;
         private static int currentHiberniaZoneSI;
 
-        private static Zones albDBZone;
-        private static Zones albDBZoneSI;
-        private static Zones midDBZone;
-        private static Zones midDBZoneSI;
-        private static Zones hibDBZone;
-        private static Zones hibDBZoneSI;
+        private static Atlas.DataLayer.Models.Zone albDBZone;
+        private static Atlas.DataLayer.Models.Zone albDBZoneSI;
+        private static Atlas.DataLayer.Models.Zone midDBZone;
+        private static Atlas.DataLayer.Models.Zone midDBZoneSI;
+        private static Atlas.DataLayer.Models.Zone hibDBZone;
+        private static Atlas.DataLayer.Models.Zone hibDBZoneSI;
 
         private static SimpleScheduler scheduler = new SimpleScheduler();
 
@@ -94,42 +94,42 @@ namespace DOL.GS.Scripts
         public static void GetZones()
         {
             // Get Albion ZoneID's
-            foreach (Zones zone in DOLDB<Zones>.SelectObjects(DB.Column("RegionID").IsEqualTo(ALBION_CLASSIC_ID)))
+            foreach (var zone in GameServer.Database.Zones.Where(x => x.RegionID == ALBION_CLASSIC_ID))
             {
-                if (!albionRvRZones.Contains(zone.ZoneID))
+                if (!albionRvRZones.Contains(zone.Id))
                 {
-                    albionClassicZones.Add(zone.ZoneID);
+                    albionClassicZones.Add(zone.Id);
                 }
             }
-            foreach (Zones zone in DOLDB<Zones>.SelectObjects(DB.Column("RegionID").IsEqualTo(ALBION_SI_ID)))
+            foreach (var zone in GameServer.Database.Zones.Where(x => x.RegionID == ALBION_SI_ID))
             {
-                albionSIZones.Add(zone.ZoneID);
+                albionSIZones.Add(zone.Id);
             }
 
             // Get Midgard ZoneID's
-            foreach (Zones zone in DOLDB<Zones>.SelectObjects(DB.Column("RegionID").IsEqualTo(MIDGARD_CLASSIC_ID)))
+            foreach (var zone in GameServer.Database.Zones.Where(x => x.RegionID == MIDGARD_CLASSIC_ID))
             {
-                if (!midgardRvRZones.Contains(zone.ZoneID))
+                if (!midgardRvRZones.Contains(zone.Id))
                 {
-                    midgardClassicZones.Add(zone.ZoneID);
+                    midgardClassicZones.Add(zone.Id);
                 }
             }
-            foreach (Zones zone in DOLDB<Zones>.SelectObjects(DB.Column("RegionID").IsEqualTo(MIDGARD_SI_ID)))
+            foreach (var zone in GameServer.Database.Zones.Where(x => x.RegionID == MIDGARD_SI_ID))
             {
-                midgardSIZones.Add(zone.ZoneID);
+                midgardSIZones.Add(zone.Id);
             }
 
             // Get Hibernia ZoneID's
-            foreach (Zones zone in DOLDB<Zones>.SelectObjects(DB.Column("RegionID").IsEqualTo(HIBERNIA_CLASSIC_ID)))
+            foreach (var zone in GameServer.Database.Zones.Where(x => x.RegionID == HIBERNIA_CLASSIC_ID))
             {
-                if (!hiberniaRvRZones.Contains(zone.ZoneID))
+                if (!hiberniaRvRZones.Contains(zone.Id))
                 {
-                    hiberniaClassicZones.Add(zone.ZoneID);
+                    hiberniaClassicZones.Add(zone.Id);
                 }
             }
-            foreach (Zones zone in DOLDB<Zones>.SelectObjects(DB.Column("RegionID").IsEqualTo(HIBERNIA_SI_ID)))
+            foreach (var zone in GameServer.Database.Zones.Where(x => x.RegionID == HIBERNIA_SI_ID))
             {
-                hiberniaSIZones.Add(zone.ZoneID);
+                hiberniaSIZones.Add(zone.Id);
             }
         }
         public static void PlayerEntered(DOLEvent e, object sender, EventArgs arguments)
@@ -144,12 +144,12 @@ namespace DOL.GS.Scripts
 
             GetNextPvEZones();
 
-            albDBZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(albionClassicZones[currentAlbionZone]));
-            albDBZoneSI = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(albionSIZones[currentAlbionZoneSI]));
-            midDBZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(midgardClassicZones[currentMidgardZone]));
-            midDBZoneSI = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(midgardSIZones[currentMidgardZoneSI]));
-            hibDBZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(hiberniaClassicZones[currentHiberniaZone]));
-            hibDBZoneSI = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(hiberniaSIZones[currentHiberniaZoneSI]));
+            albDBZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == albionClassicZones[currentAlbionZone]);
+            albDBZoneSI = GameServer.Database.Zones.FirstOrDefault(x => x.Id == albionSIZones[currentAlbionZoneSI]);
+            midDBZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == midgardClassicZones[currentMidgardZone]);
+            midDBZoneSI = GameServer.Database.Zones.FirstOrDefault(x => x.Id == midgardSIZones[currentMidgardZoneSI]);
+            hibDBZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == hiberniaClassicZones[currentHiberniaZone]);
+            hibDBZoneSI = GameServer.Database.Zones.FirstOrDefault(x => x.Id == hiberniaSIZones[currentHiberniaZoneSI]);
 
             // Set XP Bonuses in DB
             albDBZone.Experience = PvEExperienceBonusAmount;
@@ -160,12 +160,12 @@ namespace DOL.GS.Scripts
             hibDBZoneSI.Experience = PvEExperienceBonusAmount;
 
             // Save XP Bonuses in DB
-            GameServer.Database.SaveObject(albDBZone);
-            GameServer.Database.SaveObject(albDBZoneSI);
-            GameServer.Database.SaveObject(midDBZone);
-            GameServer.Database.SaveObject(midDBZoneSI);
-            GameServer.Database.SaveObject(hibDBZone);
-            GameServer.Database.SaveObject(hibDBZoneSI);
+            GameServer.Instance.SaveDataObject(albDBZone);
+            GameServer.Instance.SaveDataObject(albDBZoneSI);
+            GameServer.Instance.SaveDataObject(midDBZone);
+            GameServer.Instance.SaveDataObject(midDBZoneSI);
+            GameServer.Instance.SaveDataObject(hibDBZone);
+            GameServer.Instance.SaveDataObject(hibDBZoneSI);
 
             // Update Bonuses In-Game
             WorldMgr.Zones[(ushort)albionClassicZones[currentAlbionZone]].BonusExperience = PvEExperienceBonusAmount;
@@ -197,11 +197,11 @@ namespace DOL.GS.Scripts
                 case 1:
                     foreach (int i in albionRvRZones)
                     {
-                        Zones zone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(i));
+                        var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == i);
                         zone.Experience = RvRExperienceBonusAmount;
                         zone.Realmpoints = RPBonusAmount;
                         zone.Bountypoints = BPBonusAmount;
-                        GameServer.Database.SaveObject(zone);
+                        GameServer.Instance.SaveDataObject(zone);
 
                         WorldMgr.Zones[(ushort)i].BonusExperience = RvRExperienceBonusAmount;
                         WorldMgr.Zones[(ushort)i].BonusRealmpoints = RPBonusAmount;
@@ -211,11 +211,11 @@ namespace DOL.GS.Scripts
                 case 2:
                     foreach (int i in midgardRvRZones)
                     {
-                        Zones zone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(i));
+                        var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == i);
                         zone.Experience = RvRExperienceBonusAmount;
                         zone.Realmpoints = RPBonusAmount;
                         zone.Bountypoints = BPBonusAmount;
-                        GameServer.Database.SaveObject(zone);
+                        GameServer.Instance.SaveDataObject(zone);
 
                         WorldMgr.Zones[(ushort)i].BonusExperience = RvRExperienceBonusAmount;
                         WorldMgr.Zones[(ushort)i].BonusRealmpoints = RPBonusAmount;
@@ -225,11 +225,11 @@ namespace DOL.GS.Scripts
                 case 3:
                     foreach (int i in hiberniaRvRZones)
                     {
-                        Zones zone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(i));
+                        var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == i);
                         zone.Experience = RvRExperienceBonusAmount;
                         zone.Realmpoints = RPBonusAmount;
                         zone.Bountypoints = BPBonusAmount;
-                        GameServer.Database.SaveObject(zone);
+                        GameServer.Instance.SaveDataObject(zone);
 
                         WorldMgr.Zones[(ushort)i].BonusExperience = RvRExperienceBonusAmount;
                         WorldMgr.Zones[(ushort)i].BonusRealmpoints = RPBonusAmount;
@@ -368,11 +368,11 @@ namespace DOL.GS.Scripts
                 case 1:
                     foreach (int i in albionRvRZones)
                     {
-                        Zones zone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(i));
+                        var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == i);
                         zone.Experience = 0;
                         zone.Realmpoints = 0;
                         zone.Bountypoints = 0;
-                        GameServer.Database.SaveObject(zone);
+                        GameServer.Instance.SaveDataObject(zone);
 
                         WorldMgr.Zones[(ushort)i].BonusExperience = 0;
                         WorldMgr.Zones[(ushort)i].BonusRealmpoints = 0;
@@ -382,11 +382,11 @@ namespace DOL.GS.Scripts
                 case 2:
                     foreach (int i in midgardRvRZones)
                     {
-                        Zones zone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(i));
+                        var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == i);
                         zone.Experience = 0;
                         zone.Realmpoints = 0;
                         zone.Bountypoints = 0;
-                        GameServer.Database.SaveObject(zone);
+                        GameServer.Instance.SaveDataObject(zone);
 
                         WorldMgr.Zones[(ushort)i].BonusExperience = 0;
                         WorldMgr.Zones[(ushort)i].BonusRealmpoints = 0;
@@ -396,11 +396,11 @@ namespace DOL.GS.Scripts
                 case 3:
                     foreach (int i in hiberniaRvRZones)
                     {
-                        Zones zone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(i));
+                        var zone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == i);
                         zone.Experience = 0;
                         zone.Realmpoints = 0;
                         zone.Bountypoints = 0;
-                        GameServer.Database.SaveObject(zone);
+                        GameServer.Instance.SaveDataObject(zone);
 
                         WorldMgr.Zones[(ushort)i].BonusExperience = 0;
                         WorldMgr.Zones[(ushort)i].BonusRealmpoints = 0;
@@ -413,12 +413,12 @@ namespace DOL.GS.Scripts
         private static void ClearPvEZones()
         {
             // Clear PvE Zones
-            albDBZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(albionClassicZones[currentAlbionZone]));
-            albDBZoneSI = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(albionSIZones[currentAlbionZoneSI]));
-            midDBZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(midgardClassicZones[currentMidgardZone]));
-            midDBZoneSI = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(midgardSIZones[currentMidgardZoneSI]));
-            hibDBZone = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(hiberniaClassicZones[currentHiberniaZone]));
-            hibDBZoneSI = DOLDB<Zones>.SelectObject(DB.Column("ZoneID").IsEqualTo(hiberniaSIZones[currentHiberniaZoneSI]));
+            albDBZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == albionClassicZones[currentAlbionZone]);
+            albDBZoneSI = GameServer.Database.Zones.FirstOrDefault(x => x.Id == albionSIZones[currentAlbionZoneSI]);
+            midDBZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == midgardClassicZones[currentMidgardZone]);
+            midDBZoneSI = GameServer.Database.Zones.FirstOrDefault(x => x.Id == midgardSIZones[currentMidgardZoneSI]);
+            hibDBZone = GameServer.Database.Zones.FirstOrDefault(x => x.Id == hiberniaClassicZones[currentHiberniaZone]);
+            hibDBZoneSI = GameServer.Database.Zones.FirstOrDefault(x => x.Id == hiberniaSIZones[currentHiberniaZoneSI]);
 
             albDBZone.Experience = 0;
             albDBZoneSI.Experience = 0;
@@ -427,12 +427,12 @@ namespace DOL.GS.Scripts
             hibDBZone.Experience = 0;
             hibDBZoneSI.Experience = 0;
 
-            GameServer.Database.SaveObject(albDBZone);
-            GameServer.Database.SaveObject(albDBZoneSI);
-            GameServer.Database.SaveObject(midDBZone);
-            GameServer.Database.SaveObject(midDBZoneSI);
-            GameServer.Database.SaveObject(hibDBZone);
-            GameServer.Database.SaveObject(midDBZoneSI);
+            GameServer.Instance.SaveDataObject(albDBZone);
+            GameServer.Instance.SaveDataObject(albDBZoneSI);
+            GameServer.Instance.SaveDataObject(midDBZone);
+            GameServer.Instance.SaveDataObject(midDBZoneSI);
+            GameServer.Instance.SaveDataObject(hibDBZone);
+            GameServer.Instance.SaveDataObject(midDBZoneSI);
 
             WorldMgr.Zones[(ushort)albionClassicZones[currentAlbionZone]].BonusExperience = 0;
             WorldMgr.Zones[(ushort)albionSIZones[currentAlbionZoneSI]].BonusExperience = 0;

@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Timers;
 using DOL.GS;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Scripts;
 using DOL.Events;
 using DOL.GS.PacketHandler;

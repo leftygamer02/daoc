@@ -1,5 +1,6 @@
 ﻿//Author : Unknown
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Reflection;
@@ -7,8 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using DOL.Events;
-using DOL.Database;
-using DOL.Database.Attributes;
+using Atlas.DataLayer.Models;
 using DOL.AI.Brain;
 
 using DOL.GS;
@@ -24,94 +24,6 @@ using log4net;
  * Using the example above: /vote 1 for 1vs1, /vote 2 for 2vs2
  */
 
-#region database table and object Voting
-
-namespace DOL.Database
-{
-    [DataTable(TableName = "Voting")]
-    public class DBVoting : DataObject
-    {
-        private string m_VoteID;
-        private string[] m_Options = new string[0];
-        private string m_Description = string.Empty;
-
-        [PrimaryKey]
-        public string VoteID
-        {
-            get { return m_VoteID; }
-            set
-            {
-                Dirty = true;
-                m_VoteID = value;
-            }
-        }
-
-        [DataElement(AllowDbNull = true)]
-        public string OptionStr
-        {
-            get { return string.Join(";", Options); }
-            set
-            {
-                if (value == null || value.Length == 0)
-                    m_Options = new string[0];
-                else
-                    m_Options = value.Split(';');
-            }
-        }
-
-        public string[] Options
-        {
-            get { return m_Options; }
-            set
-            {
-                Dirty = true;
-                m_Options = (value == null || value.Length == 0) ? new string[0] : value;
-            }
-        }
-
-        public bool AddOption(string choice)
-        {
-            if (choice != null && choice.Trim().Length == 0)
-                return false;
-
-            string[] array = new string[m_Options.Length + 1];
-            m_Options.CopyTo(array, 0);
-            array[m_Options.Length] = choice;
-            m_Options = array;
-            Dirty = true;
-
-            return true;
-        }
-
-        [DataElement(AllowDbNull = true)]
-        public string Description
-        {
-            get { return m_Description; }
-            set
-            {
-                Dirty = true;
-                m_Description = value;
-            }
-        }
-
-        public void AddDescription(string line)
-        {
-            if (Description.Length > 0)
-                Description = Description + "\n" + line;
-            else
-                Description = line;
-        }
-
-        public bool AutoSave
-        {
-            get { return false; }
-            set { }
-        }
-
-    }
-}
-
-#endregion
 
 #region PS Voting Manager
 
@@ -128,8 +40,8 @@ namespace DOL.GS.Scripts
         public static readonly string PLY_TEMP_PROP_KEY = "Player.TempProp.Voting.Key";
         public static readonly string GM_TEMP_PROP_KEY = "GM.TempProp.Voting.Key";
 
-        private static DBVoting m_Current = null;
-        public static DBVoting CurrentVotingInProgress
+        private static Voting m_Current = null;
+        public static Voting CurrentVotingInProgress
         {
             get { return m_Current; }
             //set { m_Current = value; }
@@ -147,7 +59,7 @@ namespace DOL.GS.Scripts
 
         #endregion
 
-        public static void BeginVoting(GamePlayer aGM, DBVoting aVoting)
+        public static void BeginVoting(GamePlayer aGM, Voting aVoting)
         {
             m_Current = aVoting;
             m_Dura = STD_VOTING_DURATION;
@@ -210,7 +122,7 @@ namespace DOL.GS.Scripts
             if (m_Timer != null)
                 m_Timer.Dispose();
             m_Timer = null;
-            DBVoting voting = m_Current;
+            var voting = m_Current;
             m_Current = null;
 
             string msg = "Voting ended!";
@@ -222,94 +134,98 @@ namespace DOL.GS.Scripts
             // get list of clients depending on server type
             foreach (GameClient serverClient in WorldMgr.GetAllPlayingClients())
                 lock (clients)
-            {
-                // counting the votes for each option
-                uint count = 0;
-                ArrayList votes = new ArrayList();
-                for (int i = 0; i < voting.Options.Length; i++)
-                    votes.Add(new KVP(voting.Options[i], 0));
-
-                foreach (GameClient client in clients)
                 {
-                    client.Out.SendMessage(msg, eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-                    client.Out.SendMessage(msg, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
-                    client.Out.SendPlaySound(eSoundType.Craft, 0x04);
+                    // counting the votes for each option
+                    uint count = 0;
+                    ArrayList votes = new ArrayList();                    
 
-                    int vote = client.Player.TempProperties.getProperty(PLY_TEMP_PROP_KEY, -1);
-                    client.Player.TempProperties.removeProperty(PLY_TEMP_PROP_KEY);
-                    if (vote >= 0 && vote < voting.Options.Length)
+                    for (int i = 0; i < voting.Options.Length; i++)
+                        votes.Add(new KVP(voting.Options[i], 0));
+
+                    foreach (GameClient client in clients)
                     {
-                        ((KVP)votes[vote]).Value++;
-                        ++count;
+                        client.Out.SendMessage(msg, eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+                        client.Out.SendMessage(msg, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+                        client.Out.SendPlaySound(eSoundType.Craft, 0x04);
+
+                        int vote = client.Player.TempProperties.getProperty(PLY_TEMP_PROP_KEY, -1);
+                        client.Player.TempProperties.removeProperty(PLY_TEMP_PROP_KEY);
+                        if (vote >= 0 && vote < voting.Options.Length)
+                        {
+                            ((KVP)votes[vote]).Value++;
+                            ++count;
+                        }
                     }
-                }
 
-                // generating result
-                StringBuilder msg1 = new StringBuilder(); // for PrivLevel < GM
-                StringBuilder msg2 = new StringBuilder(); // for PrivLevel >= GM
-                string tmp = string.Format(
-                    "Altogether {0} of {1} players voted ({2}%).\n",
-                    count, clients.Count, PDivide(count, clients.Count));
-                msg1.Append(tmp);
-                msg2.Append("VoteID: ").Append(voting.VoteID).Append("\n").Append(tmp);
-                if (voting.Description != string.Empty)
-                    msg2.Append("\n").Append(voting.Description).Append("\n");
+                    // generating result
+                    StringBuilder msg1 = new StringBuilder(); // for PrivLevel < GM
+                    StringBuilder msg2 = new StringBuilder(); // for PrivLevel >= GM
+                    string tmp = string.Format(
+                        "Altogether {0} of {1} players voted ({2}%).\n",
+                        count, clients.Count, PDivide(count, clients.Count));
+                    msg1.Append(tmp);
+                    msg2.Append("VoteID: ").Append(voting.Id).Append("\n").Append(tmp);
+                    if (voting.Description != string.Empty)
+                        msg2.Append("\n").Append(voting.Description).Append("\n");
 
-                votes.Sort(new SortByKVP());
-                votes.Reverse();
-                foreach (KVP kvp in votes)
-                {
+                    votes.Sort(new SortByKVP());
+                    votes.Reverse();
+                    foreach (KVP kvp in votes)
+                    {
+                        tmp = string.Format(
+                            "- {0}: {1} ({2}%)\n",
+                            kvp.Key, kvp.Value, PDivide(kvp.Value, clients.Count));
+                        msg1.Append(tmp);
+                        msg2.Append(tmp);
+                    }
                     tmp = string.Format(
-                        "- {0}: {1} ({2}%)\n",
-                        kvp.Key, kvp.Value, PDivide(kvp.Value, clients.Count));
+                        "{0} players did not vote ({1}%).\n",
+                        (clients.Count - count), PDivide(clients.Count - count, clients.Count));
                     msg1.Append(tmp);
                     msg2.Append(tmp);
-                }
-                tmp = string.Format(
-                    "{0} players did not vote ({1}%).\n",
-                    (clients.Count - count), PDivide(clients.Count - count, clients.Count));
-                msg1.Append(tmp);
-                msg2.Append(tmp);
-                string str1 = msg1.ToString();
-                string str2 = msg2.ToString();
-                string[] array1 = str1.Split('\n');
-                string[] array2 = str2.Split('\n');
+                    string str1 = msg1.ToString();
+                    string str2 = msg2.ToString();
+                    string[] array1 = str1.Split('\n');
+                    string[] array2 = str2.Split('\n');
 
 
-                foreach (GameClient client in clients)
-                {
-                    if (client.Account.PrivLevel <= (uint)ePrivLevel.GM)
+                    foreach (GameClient client in clients)
                     {
-                        client.Out.SendCustomTextWindow("Voting", array1);
-                        client.Out.SendMessage(str1, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+                        if (client.Account.PrivLevel <= (uint)ePrivLevel.GM)
+                        {
+                            client.Out.SendCustomTextWindow("Voting", array1);
+                            client.Out.SendMessage(str1, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+                        }
+                        else
+                        {
+                            client.Out.SendCustomTextWindow("Voting", array2);
+                            client.Out.SendMessage(str2, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+                        }
                     }
-                    else
-                    {
-                        client.Out.SendCustomTextWindow("Voting", array2);
-                        client.Out.SendMessage(str2, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
-                    }
+                    m_Result = str2;
                 }
-                m_Result = str2;
-            }
         }
 
-        public static void ShowVoting(GamePlayer player, DBVoting voting)
+        public static void ShowVoting(GamePlayer player, Voting voting)
         {
             if (voting == null || player == null) return;
             StringBuilder sb = new StringBuilder();
             if (player.Client.Account.PrivLevel >= (uint)ePrivLevel.GM)
-                sb.Append("VoteID: ").Append(voting.VoteID).Append("\n");
+                sb.Append("VoteID: ").Append(voting.Id).Append("\n");
             if (voting.Description != string.Empty)
                 sb.Append("\n").Append(voting.Description).Append("\n");
             sb.Append("\nOptions:\n");
+
+            var options = voting.OptionStr.Split(";");
+
             int i = 0;
-            foreach (string option in voting.Options)
+            foreach (string option in options)
                 sb.Append("- ").Append(++i).Append(": ").Append(option).Append("\n");
             if (voting == CurrentVotingInProgress)
             {
                 int vote = player.TempProperties.getProperty(PLY_TEMP_PROP_KEY, -1);
-                if (vote >= 0 && vote < voting.Options.Length)
-                    sb.Append("\nYou vote for: ").Append(voting.Options[vote]).Append("\n");
+                if (vote >= 0 && vote < options.Length)
+                    sb.Append("\nYou vote for: ").Append(options[vote]).Append("\n");
                 else
                     sb.Append("\nYou did not vote yet!\nUse /vote 1 | 2 | ... x to vote for an option.\n");
                 sb.Append("\nVoting ends in " + m_Dura + " seconds...");
@@ -441,7 +357,7 @@ namespace DOL.GS.Commands
             if (args.Length > 1)
                 try
                 {
-
+                    
                     int vote = int.Parse(args[1]) - 1;
                     player.Out.SendMessage("You vote for '" + VotingMgr.CurrentVotingInProgress.Options[vote] + "'.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     player.TempProperties.setProperty(VotingMgr.PLY_TEMP_PROP_KEY, vote);
@@ -505,7 +421,7 @@ namespace DOL.GS.Commands
                 #region /gmvote create
                 case "create":
                     {
-                        player.TempProperties.setProperty(VotingMgr.GM_TEMP_PROP_KEY, new DBVoting());
+                        player.TempProperties.setProperty(VotingMgr.GM_TEMP_PROP_KEY, new Voting());
                         player.Out.SendMessage("You created an empty voting. Please customize it.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     }
                     break;
@@ -513,7 +429,7 @@ namespace DOL.GS.Commands
                 #region /gmvote add
                 case "add":
                     {
-                        DBVoting voting = (DBVoting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
+                        var voting = (Voting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
                         if (voting == null)
                         {
                             player.Out.SendMessage("You didnt created an empty voting. Please use /gmvote create before!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -527,7 +443,7 @@ namespace DOL.GS.Commands
                 #region /gmvote desc
                 case "desc":
                     {
-                        DBVoting voting = (DBVoting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
+                        var voting = (Voting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
                         if (voting == null)
                         {
                             player.Out.SendMessage("You didnt created an empty voting. Please use /gmvote create before!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -542,11 +458,11 @@ namespace DOL.GS.Commands
                 #region /gmvote start
                 case "start":
                     {
-                        DBVoting voting;
+                        Voting voting;
                         if (param != string.Empty)
-                            voting = (DBVoting)GameServer.Database.FindObjectByKey<DBVoting> (GameServer.Database.Escape(param));
+                            voting = GameServer.Database.Voting.FirstOrDefault(x => x.Description == param);
                         else
-                            voting = (DBVoting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
+                            voting = (Voting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
 
                         if (voting == null)
                         {
@@ -586,11 +502,11 @@ namespace DOL.GS.Commands
                 #region /gmvote list
                 case "list":
                     {
-                        DBVoting[] votings;
+                        Voting[] votings;
                         if (param != string.Empty)
-                            votings = (DBVoting[])GameServer.Database.SelectObjects<DBVoting> ("VoteID LIKE '%" + GameServer.Database.Escape(param) + "%'");
+                            votings = GameServer.Database.Voting.Where(x => x.Id.ToString().Contains(param)).ToArray();
                         else
-                            votings = (DBVoting[])GameServer.Database.SelectAllObjects<DBVoting>();
+                            votings = GameServer.Database.Voting.ToArray();
 
                         if (votings == null || votings.Length == 0)
                         {
@@ -599,19 +515,19 @@ namespace DOL.GS.Commands
                         }
                         else
                             player.Out.SendMessage("Found " + votings.Length + " votings.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        foreach (DBVoting voting in votings)
-                            player.Out.SendMessage("Voting: '" + voting.VoteID + "'.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        foreach (var voting in votings)
+                            player.Out.SendMessage("Voting: '" + voting.Id + "'.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     }
                     break;
                 #endregion
                 #region /gmvote info
                 case "info":
                     {
-                        DBVoting voting;
+                        Voting voting;
                         if (param != string.Empty)
-                            voting = (DBVoting)GameServer.Database.FindObjectByKey<DBVoting> (GameServer.Database.Escape(param));
+                            voting = GameServer.Database.Voting.FirstOrDefault(x => x.Id.ToString() == param);
                         else
-                            voting = (DBVoting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
+                            voting = (Voting)player.TempProperties.getProperty<object>(VotingMgr.GM_TEMP_PROP_KEY, null);
 
                         if (voting == null)
                         {

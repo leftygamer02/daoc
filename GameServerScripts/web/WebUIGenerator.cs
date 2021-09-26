@@ -17,10 +17,11 @@
  *
  */
 using System;
+using System.Linq;
 using System.Collections;
 using System.IO;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.GS;
@@ -90,7 +91,8 @@ namespace DOL.GS.Scripts
 		/// <param name="dir">Parent directory</param>
 		private static void CopyFromTemplate(WebUIDir dir)
 		{
-			string path = dir.m_path.Replace("."+Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"template", "."+Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"generated");
+			char separator = System.IO.Path.DirectorySeparatorChar;
+			string path = dir.m_path.Replace("." + separator + "webui" + separator + "template", "." + separator + "webui" + separator + "generated");
 
 			if (!Directory.Exists(path))
 			{
@@ -105,7 +107,7 @@ namespace DOL.GS.Scripts
 			foreach (string s in dir.m_files)
 			{
 				FileInfo fi = new FileInfo(s);
-				string fpath = s.Replace("."+Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"template", "."+Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"generated");
+				string fpath = s.Replace("." + separator + "webui" + separator + "template", "." + separator + "webui" + separator + "generated");
 
 				if (fi.Extension.IndexOf("html") != -1 || fi.Extension.IndexOf("htm") != -1)
 				{
@@ -124,7 +126,8 @@ namespace DOL.GS.Scripts
 		/// <param name="fname">The template file name</param>
 		private static void GenerateJS(string fname)
 		{
-			string path = fname.Replace(Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"template", Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"generated");
+			char separator = System.IO.Path.DirectorySeparatorChar;
+			string path = fname.Replace(separator + "webui"+ separator + "template", separator + "webui"+ separator + "generated");
 			string buf = "";
 
 			using (StreamReader rdr = File.OpenText(fname))
@@ -190,25 +193,25 @@ namespace DOL.GS.Scripts
 			m_js.AppendFormat("var numAdminsConnected = {0}", admin);
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numAccts = {0}", GameServer.Database.GetObjectCount<Account>());
+			m_js.AppendFormat("var numAccts = {0}", GameServer.Database.Accounts.Count());
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numMobs = {0}", GameServer.Database.GetObjectCount<Mob>());
+			m_js.AppendFormat("var numMobs = {0}", GameServer.Database.SpawnPoints.Count());
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numInvItems = {0}", GameServer.Database.GetObjectCount<InventoryItem>());
+			m_js.AppendFormat("var numInvItems = {0}", GameServer.Database.InventoryItems.Count());
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numPlrChars = {0}", GameServer.Database.GetObjectCount<DOLCharacters>());
+			m_js.AppendFormat("var numPlrChars = {0}", GameServer.Database.Characters.Count());
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numMerchantItems = {0}", GameServer.Database.GetObjectCount<MerchantItem>());
+			m_js.AppendFormat("var numMerchantItems = {0}", GameServer.Database.MerchantItems.Count());
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numItemTemplates = {0}", GameServer.Database.GetObjectCount<ItemTemplate>());
+			m_js.AppendFormat("var numItemTemplates = {0}", GameServer.Database.ItemTemplates.Count());
 			m_js.Append(nl.NewLine);
 
-			m_js.AppendFormat("var numWorldObjects = {0}", GameServer.Database.GetObjectCount<WorldObject>());
+			m_js.AppendFormat("var numWorldObjects = {0}", GameServer.Database.WorldObjects.Count());
 			m_js.Append(nl.NewLine);
 
 			m_js.AppendFormat("var srvrType = \"{0}\"", GameServer.Instance.Configuration.ServerType.ToString());
@@ -468,13 +471,13 @@ namespace DOL.GS.Scripts
 			try
 			{
 				InitJS();
-
+				char separator = System.IO.Path.DirectorySeparatorChar;
 				WebUIDir root = new WebUIDir();
-				root.m_path = "."+Path.DirectorySeparatorChar+"webui"+Path.DirectorySeparatorChar+"template";
+				root.m_path = "."+ separator + "webui"+ separator + "template";
 
-				if (!Directory.Exists("."+Path.DirectorySeparatorChar+"webui"))
+				if (!Directory.Exists("."+ separator + "webui"))
 				{
-					Directory.CreateDirectory("."+Path.DirectorySeparatorChar+"webui");
+					Directory.CreateDirectory("."+ separator + "webui");
 				}
 
 				ParseDirectory(root);

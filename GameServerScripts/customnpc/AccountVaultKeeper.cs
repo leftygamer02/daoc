@@ -10,9 +10,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.Housing;
 using DOL.GS.PacketHandler;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -54,25 +55,25 @@ namespace DOL.GS
         private static ItemTemplate GetDummyVaultItem(GamePlayer player)
         {
             ItemTemplate vaultItem = new ItemTemplate();
-            vaultItem.Object_Type = (int)eObjectType.HouseVault;
-            vaultItem.Id_nb = "alb_vault";
+            vaultItem.ObjectType = (int)eObjectType.HouseVault;
+            vaultItem.KeyName = "alb_vault";
             vaultItem.Name = "Albion Vault";
             vaultItem.Model = 1489;
 
             switch (player.Realm)
             {
                 /*case eRealm.Albion:
-                    vaultItem.Id_nb = "alb_vault";
+                    vaultItem.KeyName = "alb_vault";
                     vaultItem.Name = "Albion Vault";
                     vaultItem.Model = 1489;
                     break;*/
                 case eRealm.Hibernia:
-                    vaultItem.Id_nb = "hib_vault";
+                    vaultItem.KeyName = "hib_vault";
                     vaultItem.Name = "Hibernia Vault";
                     vaultItem.Model = 1491;
                     break;
                 case eRealm.Midgard:
-                    vaultItem.Id_nb = "mid_vault";
+                    vaultItem.KeyName = "mid_vault";
                     vaultItem.Name = "Midgard Vault";
                     vaultItem.Model = 1493;
                     break;
@@ -166,7 +167,7 @@ namespace DOL.GS
             m_vaultOwner = vaultOwner;
             m_vaultNumber = vaultNumber;
 
-            DBHouse dbh = new DBHouse();
+            var dbh = new DbHouse();
             //was allowsave = false but uhh i replaced with allowadd = false
             dbh.AllowAdd = false;
             dbh.GuildHouse = false;
@@ -194,12 +195,12 @@ namespace DOL.GS
             sqlQuery += "SlotPosition >= " + FirstDBSlot + " AND ";
             sqlQuery += "SlotPosition <= " + LastDBSlot;
 
-            return (GameServer.Database.SelectObjects<InventoryItem>(sqlQuery));
+            return (GameServer.Database.InventoryItems.Where(x => x.CharacterID.ToString() == m_vaultOwner && x.SlotPosition >= FirstDBSlot && x.SlotPosition <= LastDBSlot).ToList());
         }
 
-        public override string GetOwner(GamePlayer player)
+        public override int? GetOwner(GamePlayer player)
         {
-            return player.Client.Account.Name;
+            return player.Client.Account.Id;
         }
         protected override void NotifyObservers(GamePlayer player, IDictionary<int, InventoryItem> updateItems)
         {

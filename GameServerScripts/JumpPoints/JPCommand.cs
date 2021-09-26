@@ -28,7 +28,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Commands
@@ -74,8 +74,8 @@ namespace DOL.GS.Commands
                 client.Out.SendMessage("Usage : /jp add <name>", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 return;
             }
-            
-            DBJumpPoint p = GameServer.Database.SelectObjects<DBJumpPoint>("Name = @Name", new QueryParameter("@Name", args[2])).FirstOrDefault();
+
+            var p = GameServer.Database.JumpPoints.FirstOrDefault(x => x.Name == args[2]);
             
             if(p != null)
             {
@@ -83,26 +83,26 @@ namespace DOL.GS.Commands
                 return;
             }
             
-            p = new DBJumpPoint();
+            p = new JumpPoint();
             p.Xpos = client.Player.X;
             p.Ypos = client.Player.Y;
             p.Zpos = client.Player.Z;
-            p.Region = client.Player.CurrentRegionID;
+            p.RegionID = client.Player.CurrentRegionID;
             p.Heading = client.Player.Heading;
             p.Name = args[2];
 
-            GameServer.Database.AddObject(p);
+            GameServer.Instance.SaveDataObject(p);
             
             SendSystemMessage(client,"JumpPoint added with name '" + args[2] + "'");            
         }
 
         private void ListJumpPoints(GameClient client)
         {
-        	var col = GameServer.Database.SelectAllObjects<DBJumpPoint>();
+            var col = GameServer.Database.JumpPoints.ToList();
             
             SendSystemMessage(client,"----------List of JumpPoints----------");
 
-            foreach (DBJumpPoint p in col)
+            foreach (var p in col)
             {
                 SendSystemMessage(client, p.Name);
             }            
@@ -116,7 +116,7 @@ namespace DOL.GS.Commands
                 return;
             }
 
-            DBJumpPoint p = GameServer.Database.SelectObjects<DBJumpPoint>("Name = @Name", new QueryParameter("@Name", args[2])).FirstOrDefault();;
+            var p = GameServer.Database.JumpPoints.FirstOrDefault(x => x.Name == args[2]);
 
             if(p == null)
             {
@@ -124,7 +124,7 @@ namespace DOL.GS.Commands
                 return;
             }
             
-            GameServer.Database.DeleteObject(p);
+            GameServer.Instance.DeleteDataObject(p);
             SendSystemMessage(client, "Removed JumpPoint with name '" + args[2] + "'");            
         }
 
@@ -132,16 +132,16 @@ namespace DOL.GS.Commands
         {
             if (args.Length == 4 && args[2] == "to")
             {
-                DBJumpPoint p = GameServer.Database.SelectObjects<DBJumpPoint>("Name = @Name", new QueryParameter("@Name", args[3])).FirstOrDefault();
+                var p = GameServer.Database.JumpPoints.FirstOrDefault(x => x.Name == args[3]);
 
-                if(p == null)
+                if (p == null)
                 {
                     SendSystemMessage(client, "No JumpPoint with name '" + args[3] + "' found");
                     return;
                 }
-                if (CheckExpansion(client, client, p.Region))
+                if (CheckExpansion(client, client, (ushort)p.RegionID))
                 {
-                	client.Player.MoveTo(p.Region, p.Xpos, p.Ypos, p.Zpos, p.Heading);
+                	client.Player.MoveTo((ushort)p.RegionID, p.Xpos, p.Ypos, p.Zpos, (ushort)p.Heading);
                 }                
             }            
             else

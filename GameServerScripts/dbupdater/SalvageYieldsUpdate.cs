@@ -19,7 +19,7 @@
 using System;
 using System.Collections;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.DatabaseUpdate
 {
@@ -54,11 +54,11 @@ namespace DOL.GS.DatabaseUpdate
 					salvageYield.ID = ++count; // start at 1
 					salvageYield.ObjectType = salvage.ObjectType;
 					salvageYield.SalvageLevel = salvage.SalvageLevel;
-					salvageYield.MaterialId_nb = salvage.Id_nb;
+					salvageYield.MaterialId_nb = salvage.KeyName;
 					salvageYield.Count = 0;
 					salvageYield.Realm = salvage.Realm;
 					salvageYield.PackageID = SalvageYield.LEGACY_SALVAGE_ID;
-					GameServer.Database.AddObject(salvageYield);
+					GameServer.Instance.SaveDataObject(salvageYield);
 				}
 			}
 

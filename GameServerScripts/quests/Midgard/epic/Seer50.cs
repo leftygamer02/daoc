@@ -37,7 +37,7 @@
 
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -208,80 +208,80 @@ namespace DOL.GS.Quests.Midgard
 
 			#region defineItems
 
-			ball_of_flame = GameServer.Database.FindObjectByKey<ItemTemplate>("ball_of_flame");
+			ball_of_flame = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ball_of_flame");
 			if (ball_of_flame == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find ball_of_flame , creating it ...");
 				ball_of_flame = new ItemTemplate();
-				ball_of_flame.Id_nb = "ball_of_flame";
+				ball_of_flame.KeyName = "ball_of_flame";
 				ball_of_flame.Name = "Ball of Flame";
 				ball_of_flame.Level = 8;
-				ball_of_flame.Item_Type = 29;
+				ball_of_flame.ItemType = 29;
 				ball_of_flame.Model = 601;
 				ball_of_flame.IsDropable = false;
 				ball_of_flame.IsPickable = false;
 				ball_of_flame.DPS_AF = 0;
 				ball_of_flame.SPD_ABS = 0;
-				ball_of_flame.Object_Type = 41;
+				ball_of_flame.ObjectType = 41;
 				ball_of_flame.Hand = 0;
-				ball_of_flame.Type_Damage = 0;
+				ball_of_flame.TypeDamage = 0;
 				ball_of_flame.Quality = 100;
 				ball_of_flame.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ball_of_flame);
+					GameServer.Instance.SaveDataObject(ball_of_flame);
 				}
 			}
 
 // end item
-			sealed_pouch = GameServer.Database.FindObjectByKey<ItemTemplate>("sealed_pouch");
+			sealed_pouch = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "sealed_pouch");
 			if (sealed_pouch == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sealed Pouch , creating it ...");
 				sealed_pouch = new ItemTemplate();
-				sealed_pouch.Id_nb = "sealed_pouch";
+				sealed_pouch.KeyName = "sealed_pouch";
 				sealed_pouch.Name = "Sealed Pouch";
 				sealed_pouch.Level = 8;
-				sealed_pouch.Item_Type = 29;
+				sealed_pouch.ItemType = 29;
 				sealed_pouch.Model = 488;
 				sealed_pouch.IsDropable = false;
 				sealed_pouch.IsPickable = false;
 				sealed_pouch.DPS_AF = 0;
 				sealed_pouch.SPD_ABS = 0;
-				sealed_pouch.Object_Type = 41;
+				sealed_pouch.ObjectType = 41;
 				sealed_pouch.Hand = 0;
-				sealed_pouch.Type_Damage = 0;
+				sealed_pouch.TypeDamage = 0;
 				sealed_pouch.Quality = 100;
 				sealed_pouch.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(sealed_pouch);
+					GameServer.Instance.SaveDataObject(sealed_pouch);
 				}
 			}
 // end item
 
 			//Valhalla Touched Boots
-			HealerEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("HealerEpicBoots");
+			HealerEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HealerEpicBoots");
 			if (HealerEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Healers Epic Boots , creating it ...");
 				HealerEpicBoots = new ItemTemplate();
-				HealerEpicBoots.Id_nb = "HealerEpicBoots";
+				HealerEpicBoots.KeyName = "HealerEpicBoots";
 				HealerEpicBoots.Name = "Valhalla Touched Boots";
 				HealerEpicBoots.Level = 50;
-				HealerEpicBoots.Item_Type = 23;
+				HealerEpicBoots.ItemType = 23;
 				HealerEpicBoots.Model = 702;
 				HealerEpicBoots.IsDropable = true;
 				HealerEpicBoots.IsPickable = true;
 				HealerEpicBoots.DPS_AF = 100;
 				HealerEpicBoots.SPD_ABS = 27;
-				HealerEpicBoots.Object_Type = 35;
+				HealerEpicBoots.ObjectType = 35;
 				HealerEpicBoots.Quality = 100;
 				HealerEpicBoots.Weight = 22;
-				HealerEpicBoots.Bonus = 35;
+				HealerEpicBoots.ItemBonus = 35;
 				HealerEpicBoots.MaxCondition = 50000;
 				HealerEpicBoots.MaxDurability = 50000;
 				HealerEpicBoots.Condition = 50000;
@@ -301,30 +301,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HealerEpicBoots);
+					GameServer.Instance.SaveDataObject(HealerEpicBoots);
 				}
 			}
 //end item
 			//Valhalla Touched Coif 
-			HealerEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("HealerEpicHelm");
+			HealerEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HealerEpicHelm");
 			if (HealerEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Healers Epic Helm , creating it ...");
 				HealerEpicHelm = new ItemTemplate();
-				HealerEpicHelm.Id_nb = "HealerEpicHelm";
+				HealerEpicHelm.KeyName = "HealerEpicHelm";
 				HealerEpicHelm.Name = "Valhalla Touched Coif";
 				HealerEpicHelm.Level = 50;
-				HealerEpicHelm.Item_Type = 21;
+				HealerEpicHelm.ItemType = 21;
 				HealerEpicHelm.Model = 1291; //NEED TO WORK ON..
 				HealerEpicHelm.IsDropable = true;
 				HealerEpicHelm.IsPickable = true;
 				HealerEpicHelm.DPS_AF = 100;
 				HealerEpicHelm.SPD_ABS = 27;
-				HealerEpicHelm.Object_Type = 35;
+				HealerEpicHelm.ObjectType = 35;
 				HealerEpicHelm.Quality = 100;
 				HealerEpicHelm.Weight = 22;
-				HealerEpicHelm.Bonus = 35;
+				HealerEpicHelm.ItemBonus = 35;
 				HealerEpicHelm.MaxCondition = 50000;
 				HealerEpicHelm.MaxDurability = 50000;
 				HealerEpicHelm.Condition = 50000;
@@ -344,31 +344,31 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HealerEpicHelm);
+					GameServer.Instance.SaveDataObject(HealerEpicHelm);
 				}
 
 			}
 //end item
 			//Valhalla Touched Gloves 
-			HealerEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("HealerEpicGloves");
+			HealerEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HealerEpicGloves");
 			if (HealerEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Healers Epic Gloves , creating it ...");
 				HealerEpicGloves = new ItemTemplate();
-				HealerEpicGloves.Id_nb = "HealerEpicGloves";
+				HealerEpicGloves.KeyName = "HealerEpicGloves";
 				HealerEpicGloves.Name = "Valhalla Touched Gloves ";
 				HealerEpicGloves.Level = 50;
-				HealerEpicGloves.Item_Type = 22;
+				HealerEpicGloves.ItemType = 22;
 				HealerEpicGloves.Model = 701;
 				HealerEpicGloves.IsDropable = true;
 				HealerEpicGloves.IsPickable = true;
 				HealerEpicGloves.DPS_AF = 100;
 				HealerEpicGloves.SPD_ABS = 27;
-				HealerEpicGloves.Object_Type = 35;
+				HealerEpicGloves.ObjectType = 35;
 				HealerEpicGloves.Quality = 100;
 				HealerEpicGloves.Weight = 22;
-				HealerEpicGloves.Bonus = 35;
+				HealerEpicGloves.ItemBonus = 35;
 				HealerEpicGloves.MaxCondition = 50000;
 				HealerEpicGloves.MaxDurability = 50000;
 				HealerEpicGloves.Condition = 50000;
@@ -388,30 +388,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HealerEpicGloves);
+					GameServer.Instance.SaveDataObject(HealerEpicGloves);
 				}
 
 			}
 			//Valhalla Touched Hauberk 
-			HealerEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("HealerEpicVest");
+			HealerEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HealerEpicVest");
 			if (HealerEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Healers Epic Vest , creating it ...");
 				HealerEpicVest = new ItemTemplate();
-				HealerEpicVest.Id_nb = "HealerEpicVest";
+				HealerEpicVest.KeyName = "HealerEpicVest";
 				HealerEpicVest.Name = "Valhalla Touched Haukberk";
 				HealerEpicVest.Level = 50;
-				HealerEpicVest.Item_Type = 25;
+				HealerEpicVest.ItemType = 25;
 				HealerEpicVest.Model = 698;
 				HealerEpicVest.IsDropable = true;
 				HealerEpicVest.IsPickable = true;
 				HealerEpicVest.DPS_AF = 100;
 				HealerEpicVest.SPD_ABS = 27;
-				HealerEpicVest.Object_Type = 35;
+				HealerEpicVest.ObjectType = 35;
 				HealerEpicVest.Quality = 100;
 				HealerEpicVest.Weight = 22;
-				HealerEpicVest.Bonus = 35;
+				HealerEpicVest.ItemBonus = 35;
 				HealerEpicVest.MaxCondition = 50000;
 				HealerEpicVest.MaxDurability = 50000;
 				HealerEpicVest.Condition = 50000;
@@ -431,30 +431,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HealerEpicVest);
+					GameServer.Instance.SaveDataObject(HealerEpicVest);
 				}
 
 			}
 			//Valhalla Touched Legs 
-			HealerEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("HealerEpicLegs");
+			HealerEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HealerEpicLegs");
 			if (HealerEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Healers Epic Legs , creating it ...");
 				HealerEpicLegs = new ItemTemplate();
-				HealerEpicLegs.Id_nb = "HealerEpicLegs";
+				HealerEpicLegs.KeyName = "HealerEpicLegs";
 				HealerEpicLegs.Name = "Valhalla Touched Legs";
 				HealerEpicLegs.Level = 50;
-				HealerEpicLegs.Item_Type = 27;
+				HealerEpicLegs.ItemType = 27;
 				HealerEpicLegs.Model = 699;
 				HealerEpicLegs.IsDropable = true;
 				HealerEpicLegs.IsPickable = true;
 				HealerEpicLegs.DPS_AF = 100;
 				HealerEpicLegs.SPD_ABS = 27;
-				HealerEpicLegs.Object_Type = 35;
+				HealerEpicLegs.ObjectType = 35;
 				HealerEpicLegs.Quality = 100;
 				HealerEpicLegs.Weight = 22;
-				HealerEpicLegs.Bonus = 35;
+				HealerEpicLegs.ItemBonus = 35;
 				HealerEpicLegs.MaxCondition = 50000;
 				HealerEpicLegs.MaxDurability = 50000;
 				HealerEpicLegs.Condition = 50000;
@@ -474,30 +474,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HealerEpicLegs);
+					GameServer.Instance.SaveDataObject(HealerEpicLegs);
 				}
 
 			}
 			//Valhalla Touched Sleeves 
-			HealerEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("HealerEpicArms");
+			HealerEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HealerEpicArms");
 			if (HealerEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Healer Epic Arms , creating it ...");
 				HealerEpicArms = new ItemTemplate();
-				HealerEpicArms.Id_nb = "HealerEpicArms";
+				HealerEpicArms.KeyName = "HealerEpicArms";
 				HealerEpicArms.Name = "Valhalla Touched Sleeves";
 				HealerEpicArms.Level = 50;
-				HealerEpicArms.Item_Type = 28;
+				HealerEpicArms.ItemType = 28;
 				HealerEpicArms.Model = 700;
 				HealerEpicArms.IsDropable = true;
 				HealerEpicArms.IsPickable = true;
 				HealerEpicArms.DPS_AF = 100;
 				HealerEpicArms.SPD_ABS = 27;
-				HealerEpicArms.Object_Type = 35;
+				HealerEpicArms.ObjectType = 35;
 				HealerEpicArms.Quality = 100;
 				HealerEpicArms.Weight = 22;
-				HealerEpicArms.Bonus = 35;
+				HealerEpicArms.ItemBonus = 35;
 				HealerEpicArms.MaxCondition = 50000;
 				HealerEpicArms.MaxDurability = 50000;
 				HealerEpicArms.Condition = 50000;
@@ -517,30 +517,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HealerEpicArms);
+					GameServer.Instance.SaveDataObject(HealerEpicArms);
 				}
 
 			}
 			//Subterranean Boots 
-			ShamanEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ShamanEpicBoots");
+			ShamanEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ShamanEpicBoots");
 			if (ShamanEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Shaman Epic Boots , creating it ...");
 				ShamanEpicBoots = new ItemTemplate();
-				ShamanEpicBoots.Id_nb = "ShamanEpicBoots";
+				ShamanEpicBoots.KeyName = "ShamanEpicBoots";
 				ShamanEpicBoots.Name = "Subterranean Boots";
 				ShamanEpicBoots.Level = 50;
-				ShamanEpicBoots.Item_Type = 23;
+				ShamanEpicBoots.ItemType = 23;
 				ShamanEpicBoots.Model = 770;
 				ShamanEpicBoots.IsDropable = true;
 				ShamanEpicBoots.IsPickable = true;
 				ShamanEpicBoots.DPS_AF = 100;
 				ShamanEpicBoots.SPD_ABS = 27;
-				ShamanEpicBoots.Object_Type = 35;
+				ShamanEpicBoots.ObjectType = 35;
 				ShamanEpicBoots.Quality = 100;
 				ShamanEpicBoots.Weight = 22;
-				ShamanEpicBoots.Bonus = 35;
+				ShamanEpicBoots.ItemBonus = 35;
 				ShamanEpicBoots.MaxCondition = 50000;
 				ShamanEpicBoots.MaxDurability = 50000;
 				ShamanEpicBoots.Condition = 50000;
@@ -557,30 +557,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ShamanEpicBoots);
+					GameServer.Instance.SaveDataObject(ShamanEpicBoots);
 				}
 
 			}
 			//Subterranean Coif 
-			ShamanEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ShamanEpicHelm");
+			ShamanEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ShamanEpicHelm");
 			if (ShamanEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Shaman Epic Helm , creating it ...");
 				ShamanEpicHelm = new ItemTemplate();
-				ShamanEpicHelm.Id_nb = "ShamanEpicHelm";
+				ShamanEpicHelm.KeyName = "ShamanEpicHelm";
 				ShamanEpicHelm.Name = "Subterranean Coif";
 				ShamanEpicHelm.Level = 50;
-				ShamanEpicHelm.Item_Type = 21;
+				ShamanEpicHelm.ItemType = 21;
 				ShamanEpicHelm.Model = 63; //NEED TO WORK ON..
 				ShamanEpicHelm.IsDropable = true;
 				ShamanEpicHelm.IsPickable = true;
 				ShamanEpicHelm.DPS_AF = 100;
 				ShamanEpicHelm.SPD_ABS = 27;
-				ShamanEpicHelm.Object_Type = 35;
+				ShamanEpicHelm.ObjectType = 35;
 				ShamanEpicHelm.Quality = 100;
 				ShamanEpicHelm.Weight = 22;
-				ShamanEpicHelm.Bonus = 35;
+				ShamanEpicHelm.ItemBonus = 35;
 				ShamanEpicHelm.MaxCondition = 50000;
 				ShamanEpicHelm.MaxDurability = 50000;
 				ShamanEpicHelm.Condition = 50000;
@@ -600,30 +600,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ShamanEpicHelm);
+					GameServer.Instance.SaveDataObject(ShamanEpicHelm);
 				}
 
 			}
 			//Subterranean Gloves 
-			ShamanEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ShamanEpicGloves");
+			ShamanEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ShamanEpicGloves");
 			if (ShamanEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Shaman Epic Gloves , creating it ...");
 				ShamanEpicGloves = new ItemTemplate();
-				ShamanEpicGloves.Id_nb = "ShamanEpicGloves";
+				ShamanEpicGloves.KeyName = "ShamanEpicGloves";
 				ShamanEpicGloves.Name = "Subterranean Gloves";
 				ShamanEpicGloves.Level = 50;
-				ShamanEpicGloves.Item_Type = 22;
+				ShamanEpicGloves.ItemType = 22;
 				ShamanEpicGloves.Model = 769;
 				ShamanEpicGloves.IsDropable = true;
 				ShamanEpicGloves.IsPickable = true;
 				ShamanEpicGloves.DPS_AF = 100;
 				ShamanEpicGloves.SPD_ABS = 27;
-				ShamanEpicGloves.Object_Type = 35;
+				ShamanEpicGloves.ObjectType = 35;
 				ShamanEpicGloves.Quality = 100;
 				ShamanEpicGloves.Weight = 22;
-				ShamanEpicGloves.Bonus = 35;
+				ShamanEpicGloves.ItemBonus = 35;
 				ShamanEpicGloves.MaxCondition = 50000;
 				ShamanEpicGloves.MaxDurability = 50000;
 				ShamanEpicGloves.Condition = 50000;
@@ -643,30 +643,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ShamanEpicGloves);
+					GameServer.Instance.SaveDataObject(ShamanEpicGloves);
 				}
 
 			}
 			//Subterranean Hauberk 
-			ShamanEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ShamanEpicVest");
+			ShamanEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ShamanEpicVest");
 			if (ShamanEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Shaman Epic Vest , creating it ...");
 				ShamanEpicVest = new ItemTemplate();
-				ShamanEpicVest.Id_nb = "ShamanEpicVest";
+				ShamanEpicVest.KeyName = "ShamanEpicVest";
 				ShamanEpicVest.Name = "Subterranean Hauberk";
 				ShamanEpicVest.Level = 50;
-				ShamanEpicVest.Item_Type = 25;
+				ShamanEpicVest.ItemType = 25;
 				ShamanEpicVest.Model = 766;
 				ShamanEpicVest.IsDropable = true;
 				ShamanEpicVest.IsPickable = true;
 				ShamanEpicVest.DPS_AF = 100;
 				ShamanEpicVest.SPD_ABS = 27;
-				ShamanEpicVest.Object_Type = 35;
+				ShamanEpicVest.ObjectType = 35;
 				ShamanEpicVest.Quality = 100;
 				ShamanEpicVest.Weight = 22;
-				ShamanEpicVest.Bonus = 35;
+				ShamanEpicVest.ItemBonus = 35;
 				ShamanEpicVest.MaxCondition = 50000;
 				ShamanEpicVest.MaxDurability = 50000;
 				ShamanEpicVest.Condition = 50000;
@@ -686,30 +686,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ShamanEpicVest);
+					GameServer.Instance.SaveDataObject(ShamanEpicVest);
 				}
 
 			}
 			//Subterranean Legs 
-			ShamanEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ShamanEpicLegs");
+			ShamanEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ShamanEpicLegs");
 			if (ShamanEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Shaman Epic Legs , creating it ...");
 				ShamanEpicLegs = new ItemTemplate();
-				ShamanEpicLegs.Id_nb = "ShamanEpicLegs";
+				ShamanEpicLegs.KeyName = "ShamanEpicLegs";
 				ShamanEpicLegs.Name = "Subterranean Legs";
 				ShamanEpicLegs.Level = 50;
-				ShamanEpicLegs.Item_Type = 27;
+				ShamanEpicLegs.ItemType = 27;
 				ShamanEpicLegs.Model = 767;
 				ShamanEpicLegs.IsDropable = true;
 				ShamanEpicLegs.IsPickable = true;
 				ShamanEpicLegs.DPS_AF = 100;
 				ShamanEpicLegs.SPD_ABS = 27;
-				ShamanEpicLegs.Object_Type = 35;
+				ShamanEpicLegs.ObjectType = 35;
 				ShamanEpicLegs.Quality = 100;
 				ShamanEpicLegs.Weight = 22;
-				ShamanEpicLegs.Bonus = 35;
+				ShamanEpicLegs.ItemBonus = 35;
 				ShamanEpicLegs.MaxCondition = 50000;
 				ShamanEpicLegs.MaxDurability = 50000;
 				ShamanEpicLegs.Condition = 50000;
@@ -729,30 +729,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ShamanEpicLegs);
+					GameServer.Instance.SaveDataObject(ShamanEpicLegs);
 				}
 
 			}
 			//Subterranean Sleeves 
-			ShamanEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ShamanEpicArms");
+			ShamanEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ShamanEpicArms");
 			if (ShamanEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Shaman Epic Arms , creating it ...");
 				ShamanEpicArms = new ItemTemplate();
-				ShamanEpicArms.Id_nb = "ShamanEpicArms";
+				ShamanEpicArms.KeyName = "ShamanEpicArms";
 				ShamanEpicArms.Name = "Subterranean Sleeves";
 				ShamanEpicArms.Level = 50;
-				ShamanEpicArms.Item_Type = 28;
+				ShamanEpicArms.ItemType = 28;
 				ShamanEpicArms.Model = 768;
 				ShamanEpicArms.IsDropable = true;
 				ShamanEpicArms.IsPickable = true;
 				ShamanEpicArms.DPS_AF = 100;
 				ShamanEpicArms.SPD_ABS = 27;
-				ShamanEpicArms.Object_Type = 35;
+				ShamanEpicArms.ObjectType = 35;
 				ShamanEpicArms.Quality = 100;
 				ShamanEpicArms.Weight = 22;
-				ShamanEpicArms.Bonus = 35;
+				ShamanEpicArms.ItemBonus = 35;
 				ShamanEpicArms.MaxCondition = 50000;
 				ShamanEpicArms.MaxDurability = 50000;
 				ShamanEpicArms.Condition = 50000;
@@ -773,7 +773,7 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ShamanEpicArms);
+					GameServer.Instance.SaveDataObject(ShamanEpicArms);
 				}
 
 			}
@@ -1035,7 +1035,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Inaksha.Name && gArgs.Item.Id_nb == ball_of_flame.Id_nb)
+				if (gArgs.Target.Name == Inaksha.Name && gArgs.Item.KeyName == ball_of_flame.KeyName)
 				{
 					RemoveItem(Inaksha, player, ball_of_flame);
 					Inaksha.SayTo(player, "So it seems Logan's [dead]");
@@ -1047,7 +1047,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 4 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Miri.Name && gArgs.Item.Id_nb == sealed_pouch.Id_nb)
+				if (gArgs.Target.Name == Miri.Name && gArgs.Item.KeyName == sealed_pouch.KeyName)
 				{
 					Miri.SayTo(player, "You have earned this Epic Armour!");
 					FinishQuest();

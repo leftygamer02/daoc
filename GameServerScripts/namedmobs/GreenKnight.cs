@@ -5,7 +5,7 @@
  * Script is for interacting with players.
  */
 using System;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Database.Attributes;
 using DOL.GS;
 using DOL.GS.Effects;

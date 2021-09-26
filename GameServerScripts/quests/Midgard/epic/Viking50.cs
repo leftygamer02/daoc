@@ -35,7 +35,7 @@
 
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -238,78 +238,78 @@ namespace DOL.GS.Quests.Midgard
 
 			#region defineItems
 
-			tome_enchantments = GameServer.Database.FindObjectByKey<ItemTemplate>("tome_enchantments");
+			tome_enchantments = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "tome_enchantments");
 			if (tome_enchantments == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Tome of Enchantments , creating it ...");
 				tome_enchantments = new ItemTemplate();
-				tome_enchantments.Id_nb = "tome_enchantments";
+				tome_enchantments.KeyName = "tome_enchantments";
 				tome_enchantments.Name = "Tome of Enchantments";
 				tome_enchantments.Level = 8;
-				tome_enchantments.Item_Type = 0;
+				tome_enchantments.ItemType = 0;
 				tome_enchantments.Model = 500;
 				tome_enchantments.IsDropable = false;
 				tome_enchantments.IsPickable = false;
 				tome_enchantments.DPS_AF = 0;
 				tome_enchantments.SPD_ABS = 0;
-				tome_enchantments.Object_Type = 0;
+				tome_enchantments.ObjectType = 0;
 				tome_enchantments.Hand = 0;
-				tome_enchantments.Type_Damage = 0;
+				tome_enchantments.TypeDamage = 0;
 				tome_enchantments.Quality = 100;
 				tome_enchantments.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(tome_enchantments);
+					GameServer.Instance.SaveDataObject(tome_enchantments);
 				}
 
 			}
 
-			sealed_pouch = GameServer.Database.FindObjectByKey<ItemTemplate>("sealed_pouch");
+			sealed_pouch = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "sealed_pouch");
 			if (sealed_pouch == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sealed Pouch , creating it ...");
 				sealed_pouch = new ItemTemplate();
-				sealed_pouch.Id_nb = "sealed_pouch";
+				sealed_pouch.KeyName = "sealed_pouch";
 				sealed_pouch.Name = "Sealed Pouch";
 				sealed_pouch.Level = 8;
-				sealed_pouch.Item_Type = 29;
+				sealed_pouch.ItemType = 29;
 				sealed_pouch.Model = 488;
 				sealed_pouch.IsDropable = false;
 				sealed_pouch.IsPickable = false;
 				sealed_pouch.DPS_AF = 0;
 				sealed_pouch.SPD_ABS = 0;
-				sealed_pouch.Object_Type = 41;
+				sealed_pouch.ObjectType = 41;
 				sealed_pouch.Hand = 0;
-				sealed_pouch.Type_Damage = 0;
+				sealed_pouch.TypeDamage = 0;
 				sealed_pouch.Quality = 100;
 				sealed_pouch.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(sealed_pouch);
+					GameServer.Instance.SaveDataObject(sealed_pouch);
 				}
 			}
 
-			WarriorEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("WarriorEpicBoots");
+			WarriorEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WarriorEpicBoots");
 			if (WarriorEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warrior Epic Boots , creating it ...");
 				WarriorEpicBoots = new ItemTemplate();
-				WarriorEpicBoots.Id_nb = "WarriorEpicBoots";
+				WarriorEpicBoots.KeyName = "WarriorEpicBoots";
 				WarriorEpicBoots.Name = "Tyr's Might Boots";
 				WarriorEpicBoots.Level = 50;
-				WarriorEpicBoots.Item_Type = 23;
+				WarriorEpicBoots.ItemType = 23;
 				WarriorEpicBoots.Model = 780;
 				WarriorEpicBoots.IsDropable = true;
 				WarriorEpicBoots.IsPickable = true;
 				WarriorEpicBoots.DPS_AF = 100;
 				WarriorEpicBoots.SPD_ABS = 27;
-				WarriorEpicBoots.Object_Type = 35;
+				WarriorEpicBoots.ObjectType = 35;
 				WarriorEpicBoots.Quality = 100;
 				WarriorEpicBoots.Weight = 22;
-				WarriorEpicBoots.Bonus = 35;
+				WarriorEpicBoots.ItemBonus = 35;
 				WarriorEpicBoots.MaxCondition = 50000;
 				WarriorEpicBoots.MaxDurability = 50000;
 				WarriorEpicBoots.Durability = 50000;
@@ -329,30 +329,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WarriorEpicBoots);
+					GameServer.Instance.SaveDataObject(WarriorEpicBoots);
 				}
 
 			}
 //end item
-			WarriorEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("WarriorEpicHelm");
+			WarriorEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WarriorEpicHelm");
 			if (WarriorEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warrior Epic Helm , creating it ...");
 				WarriorEpicHelm = new ItemTemplate();
-				WarriorEpicHelm.Id_nb = "WarriorEpicHelm";
+				WarriorEpicHelm.KeyName = "WarriorEpicHelm";
 				WarriorEpicHelm.Name = "Tyr's Might Coif";
 				WarriorEpicHelm.Level = 50;
-				WarriorEpicHelm.Item_Type = 21;
+				WarriorEpicHelm.ItemType = 21;
 				WarriorEpicHelm.Model = 832; //NEED TO WORK ON..
 				WarriorEpicHelm.IsDropable = true;
 				WarriorEpicHelm.IsPickable = true;
 				WarriorEpicHelm.DPS_AF = 100;
 				WarriorEpicHelm.SPD_ABS = 27;
-				WarriorEpicHelm.Object_Type = 35;
+				WarriorEpicHelm.ObjectType = 35;
 				WarriorEpicHelm.Quality = 100;
 				WarriorEpicHelm.Weight = 22;
-				WarriorEpicHelm.Bonus = 35;
+				WarriorEpicHelm.ItemBonus = 35;
 				WarriorEpicHelm.MaxCondition = 50000;
 				WarriorEpicHelm.MaxDurability = 50000;
 				WarriorEpicHelm.Condition = 50000;
@@ -372,30 +372,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WarriorEpicHelm);
+					GameServer.Instance.SaveDataObject(WarriorEpicHelm);
 				}
 
 			}
 //end item
-			WarriorEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("WarriorEpicGloves");
+			WarriorEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WarriorEpicGloves");
 			if (WarriorEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warrior Epic Gloves , creating it ...");
 				WarriorEpicGloves = new ItemTemplate();
-				WarriorEpicGloves.Id_nb = "WarriorEpicGloves";
+				WarriorEpicGloves.KeyName = "WarriorEpicGloves";
 				WarriorEpicGloves.Name = "Tyr's Might Gloves";
 				WarriorEpicGloves.Level = 50;
-				WarriorEpicGloves.Item_Type = 22;
+				WarriorEpicGloves.ItemType = 22;
 				WarriorEpicGloves.Model = 779;
 				WarriorEpicGloves.IsDropable = true;
 				WarriorEpicGloves.IsPickable = true;
 				WarriorEpicGloves.DPS_AF = 100;
 				WarriorEpicGloves.SPD_ABS = 27;
-				WarriorEpicGloves.Object_Type = 35;
+				WarriorEpicGloves.ObjectType = 35;
 				WarriorEpicGloves.Quality = 100;
 				WarriorEpicGloves.Weight = 22;
-				WarriorEpicGloves.Bonus = 35;
+				WarriorEpicGloves.ItemBonus = 35;
 				WarriorEpicGloves.MaxCondition = 50000;
 				WarriorEpicGloves.MaxDurability = 50000;
 				WarriorEpicGloves.Condition = 50000;
@@ -415,30 +415,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WarriorEpicGloves);
+					GameServer.Instance.SaveDataObject(WarriorEpicGloves);
 				}
 
 			}
 
-			WarriorEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("WarriorEpicVest");
+			WarriorEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WarriorEpicVest");
 			if (WarriorEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warrior Epic Vest , creating it ...");
 				WarriorEpicVest = new ItemTemplate();
-				WarriorEpicVest.Id_nb = "WarriorEpicVest";
+				WarriorEpicVest.KeyName = "WarriorEpicVest";
 				WarriorEpicVest.Name = "Tyr's Might Hauberk";
 				WarriorEpicVest.Level = 50;
-				WarriorEpicVest.Item_Type = 25;
+				WarriorEpicVest.ItemType = 25;
 				WarriorEpicVest.Model = 776;
 				WarriorEpicVest.IsDropable = true;
 				WarriorEpicVest.IsPickable = true;
 				WarriorEpicVest.DPS_AF = 100;
 				WarriorEpicVest.SPD_ABS = 27;
-				WarriorEpicVest.Object_Type = 35;
+				WarriorEpicVest.ObjectType = 35;
 				WarriorEpicVest.Quality = 100;
 				WarriorEpicVest.Weight = 22;
-				WarriorEpicVest.Bonus = 35;
+				WarriorEpicVest.ItemBonus = 35;
 				WarriorEpicVest.MaxCondition = 50000;
 				WarriorEpicVest.MaxDurability = 50000;
 				WarriorEpicVest.Condition = 50000;
@@ -458,30 +458,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WarriorEpicVest);
+					GameServer.Instance.SaveDataObject(WarriorEpicVest);
 				}
 
 			}
 
-			WarriorEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("WarriorEpicLegs");
+			WarriorEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WarriorEpicLegs");
 			if (WarriorEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warrior Epic Legs , creating it ...");
 				WarriorEpicLegs = new ItemTemplate();
-				WarriorEpicLegs.Id_nb = "WarriorEpicLegs";
+				WarriorEpicLegs.KeyName = "WarriorEpicLegs";
 				WarriorEpicLegs.Name = "Tyr's Might Legs";
 				WarriorEpicLegs.Level = 50;
-				WarriorEpicLegs.Item_Type = 27;
+				WarriorEpicLegs.ItemType = 27;
 				WarriorEpicLegs.Model = 777;
 				WarriorEpicLegs.IsDropable = true;
 				WarriorEpicLegs.IsPickable = true;
 				WarriorEpicLegs.DPS_AF = 100;
 				WarriorEpicLegs.SPD_ABS = 27;
-				WarriorEpicLegs.Object_Type = 35;
+				WarriorEpicLegs.ObjectType = 35;
 				WarriorEpicLegs.Quality = 100;
 				WarriorEpicLegs.Weight = 22;
-				WarriorEpicLegs.Bonus = 35;
+				WarriorEpicLegs.ItemBonus = 35;
 				WarriorEpicLegs.MaxCondition = 50000;
 				WarriorEpicLegs.MaxDurability = 50000;
 				WarriorEpicLegs.Condition = 50000;
@@ -501,30 +501,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WarriorEpicLegs);
+					GameServer.Instance.SaveDataObject(WarriorEpicLegs);
 				}
 
 			}
 
-			WarriorEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("WarriorEpicArms");
+			WarriorEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WarriorEpicArms");
 			if (WarriorEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warrior Epic Arms , creating it ...");
 				WarriorEpicArms = new ItemTemplate();
-				WarriorEpicArms.Id_nb = "WarriorEpicArms";
+				WarriorEpicArms.KeyName = "WarriorEpicArms";
 				WarriorEpicArms.Name = "Tyr's Might Sleeves";
 				WarriorEpicArms.Level = 50;
-				WarriorEpicArms.Item_Type = 28;
+				WarriorEpicArms.ItemType = 28;
 				WarriorEpicArms.Model = 778;
 				WarriorEpicArms.IsDropable = true;
 				WarriorEpicArms.IsPickable = true;
 				WarriorEpicArms.DPS_AF = 100;
 				WarriorEpicArms.SPD_ABS = 27;
-				WarriorEpicArms.Object_Type = 35;
+				WarriorEpicArms.ObjectType = 35;
 				WarriorEpicArms.Quality = 100;
 				WarriorEpicArms.Weight = 22;
-				WarriorEpicArms.Bonus = 35;
+				WarriorEpicArms.ItemBonus = 35;
 				WarriorEpicArms.MaxCondition = 50000;
 				WarriorEpicArms.MaxDurability = 50000;
 				WarriorEpicArms.Condition = 50000;
@@ -544,29 +544,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WarriorEpicArms);
+					GameServer.Instance.SaveDataObject(WarriorEpicArms);
 				}
 
 			}
-			BerserkerEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("BerserkerEpicBoots");
+			BerserkerEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BerserkerEpicBoots");
 			if (BerserkerEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Berserker Epic Boots , creating it ...");
 				BerserkerEpicBoots = new ItemTemplate();
-				BerserkerEpicBoots.Id_nb = "BerserkerEpicBoots";
+				BerserkerEpicBoots.KeyName = "BerserkerEpicBoots";
 				BerserkerEpicBoots.Name = "Courage Bound Boots";
 				BerserkerEpicBoots.Level = 50;
-				BerserkerEpicBoots.Item_Type = 23;
+				BerserkerEpicBoots.ItemType = 23;
 				BerserkerEpicBoots.Model = 755;
 				BerserkerEpicBoots.IsDropable = true;
 				BerserkerEpicBoots.IsPickable = true;
 				BerserkerEpicBoots.DPS_AF = 100;
 				BerserkerEpicBoots.SPD_ABS = 19;
-				BerserkerEpicBoots.Object_Type = 34;
+				BerserkerEpicBoots.ObjectType = 34;
 				BerserkerEpicBoots.Quality = 100;
 				BerserkerEpicBoots.Weight = 22;
-				BerserkerEpicBoots.Bonus = 35;
+				BerserkerEpicBoots.ItemBonus = 35;
 				BerserkerEpicBoots.MaxCondition = 50000;
 				BerserkerEpicBoots.MaxDurability = 50000;
 				BerserkerEpicBoots.Condition = 50000;
@@ -586,30 +586,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BerserkerEpicBoots);
+					GameServer.Instance.SaveDataObject(BerserkerEpicBoots);
 				}
 
 			}
 //end item
-			BerserkerEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("BerserkerEpicHelm");
+			BerserkerEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BerserkerEpicHelm");
 			if (BerserkerEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Berserker Epic Helm , creating it ...");
 				BerserkerEpicHelm = new ItemTemplate();
-				BerserkerEpicHelm.Id_nb = "BerserkerEpicHelm";
+				BerserkerEpicHelm.KeyName = "BerserkerEpicHelm";
 				BerserkerEpicHelm.Name = "Courage Bound Helm";
 				BerserkerEpicHelm.Level = 50;
-				BerserkerEpicHelm.Item_Type = 21;
+				BerserkerEpicHelm.ItemType = 21;
 				BerserkerEpicHelm.Model = 829; //NEED TO WORK ON..
 				BerserkerEpicHelm.IsDropable = true;
 				BerserkerEpicHelm.IsPickable = true;
 				BerserkerEpicHelm.DPS_AF = 100;
 				BerserkerEpicHelm.SPD_ABS = 19;
-				BerserkerEpicHelm.Object_Type = 34;
+				BerserkerEpicHelm.ObjectType = 34;
 				BerserkerEpicHelm.Quality = 100;
 				BerserkerEpicHelm.Weight = 22;
-				BerserkerEpicHelm.Bonus = 35;
+				BerserkerEpicHelm.ItemBonus = 35;
 				BerserkerEpicHelm.MaxCondition = 50000;
 				BerserkerEpicHelm.MaxDurability = 50000;
 				BerserkerEpicHelm.Condition = 50000;
@@ -629,29 +629,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BerserkerEpicHelm);
+					GameServer.Instance.SaveDataObject(BerserkerEpicHelm);
 				}
 			}
 //end item
-			BerserkerEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("BerserkerEpicGloves");
+			BerserkerEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BerserkerEpicGloves");
 			if (BerserkerEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Berserker Epic Gloves , creating it ...");
 				BerserkerEpicGloves = new ItemTemplate();
-				BerserkerEpicGloves.Id_nb = "BerserkerEpicGloves";
+				BerserkerEpicGloves.KeyName = "BerserkerEpicGloves";
 				BerserkerEpicGloves.Name = "Courage Bound Gloves";
 				BerserkerEpicGloves.Level = 50;
-				BerserkerEpicGloves.Item_Type = 22;
+				BerserkerEpicGloves.ItemType = 22;
 				BerserkerEpicGloves.Model = 754;
 				BerserkerEpicGloves.IsDropable = true;
 				BerserkerEpicGloves.IsPickable = true;
 				BerserkerEpicGloves.DPS_AF = 100;
 				BerserkerEpicGloves.SPD_ABS = 19;
-				BerserkerEpicGloves.Object_Type = 34;
+				BerserkerEpicGloves.ObjectType = 34;
 				BerserkerEpicGloves.Quality = 100;
 				BerserkerEpicGloves.Weight = 22;
-				BerserkerEpicGloves.Bonus = 35;
+				BerserkerEpicGloves.ItemBonus = 35;
 				BerserkerEpicGloves.MaxCondition = 50000;
 				BerserkerEpicGloves.MaxDurability = 50000;
 				BerserkerEpicGloves.Condition = 50000;
@@ -671,29 +671,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BerserkerEpicGloves);
+					GameServer.Instance.SaveDataObject(BerserkerEpicGloves);
 				}
 			}
 
-			BerserkerEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("BerserkerEpicVest");
+			BerserkerEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BerserkerEpicVest");
 			if (BerserkerEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Berserker Epic Vest , creating it ...");
 				BerserkerEpicVest = new ItemTemplate();
-				BerserkerEpicVest.Id_nb = "BerserkerEpicVest";
+				BerserkerEpicVest.KeyName = "BerserkerEpicVest";
 				BerserkerEpicVest.Name = "Courage Bound Jerkin";
 				BerserkerEpicVest.Level = 50;
-				BerserkerEpicVest.Item_Type = 25;
+				BerserkerEpicVest.ItemType = 25;
 				BerserkerEpicVest.Model = 751;
 				BerserkerEpicVest.IsDropable = true;
 				BerserkerEpicVest.IsPickable = true;
 				BerserkerEpicVest.DPS_AF = 100;
 				BerserkerEpicVest.SPD_ABS = 19;
-				BerserkerEpicVest.Object_Type = 34;
+				BerserkerEpicVest.ObjectType = 34;
 				BerserkerEpicVest.Quality = 100;
 				BerserkerEpicVest.Weight = 22;
-				BerserkerEpicVest.Bonus = 35;
+				BerserkerEpicVest.ItemBonus = 35;
 				BerserkerEpicVest.MaxCondition = 50000;
 				BerserkerEpicVest.MaxDurability = 50000;
 				BerserkerEpicVest.Condition = 50000;
@@ -713,29 +713,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BerserkerEpicVest);
+					GameServer.Instance.SaveDataObject(BerserkerEpicVest);
 				}
 			}
 
-			BerserkerEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("BerserkerEpicLegs");
+			BerserkerEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BerserkerEpicLegs");
 			if (BerserkerEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Berserker Epic Legs , creating it ...");
 				BerserkerEpicLegs = new ItemTemplate();
-				BerserkerEpicLegs.Id_nb = "BerserkerEpicLegs";
+				BerserkerEpicLegs.KeyName = "BerserkerEpicLegs";
 				BerserkerEpicLegs.Name = "Courage Bound Leggings";
 				BerserkerEpicLegs.Level = 50;
-				BerserkerEpicLegs.Item_Type = 27;
+				BerserkerEpicLegs.ItemType = 27;
 				BerserkerEpicLegs.Model = 752;
 				BerserkerEpicLegs.IsDropable = true;
 				BerserkerEpicLegs.IsPickable = true;
 				BerserkerEpicLegs.DPS_AF = 100;
 				BerserkerEpicLegs.SPD_ABS = 19;
-				BerserkerEpicLegs.Object_Type = 34;
+				BerserkerEpicLegs.ObjectType = 34;
 				BerserkerEpicLegs.Quality = 100;
 				BerserkerEpicLegs.Weight = 22;
-				BerserkerEpicLegs.Bonus = 35;
+				BerserkerEpicLegs.ItemBonus = 35;
 				BerserkerEpicLegs.MaxCondition = 50000;
 				BerserkerEpicLegs.MaxDurability = 50000;
 				BerserkerEpicLegs.Condition = 50000;
@@ -755,29 +755,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BerserkerEpicLegs);
+					GameServer.Instance.SaveDataObject(BerserkerEpicLegs);
 				}
 			}
 
-			BerserkerEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("BerserkerEpicArms");
+			BerserkerEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BerserkerEpicArms");
 			if (BerserkerEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Berserker Epic Arms , creating it ...");
 				BerserkerEpicArms = new ItemTemplate();
-				BerserkerEpicArms.Id_nb = "BerserkerEpicArms";
+				BerserkerEpicArms.KeyName = "BerserkerEpicArms";
 				BerserkerEpicArms.Name = "Courage Bound Sleeves";
 				BerserkerEpicArms.Level = 50;
-				BerserkerEpicArms.Item_Type = 28;
+				BerserkerEpicArms.ItemType = 28;
 				BerserkerEpicArms.Model = 753;
 				BerserkerEpicArms.IsDropable = true;
 				BerserkerEpicArms.IsPickable = true;
 				BerserkerEpicArms.DPS_AF = 100;
 				BerserkerEpicArms.SPD_ABS = 19;
-				BerserkerEpicArms.Object_Type = 34;
+				BerserkerEpicArms.ObjectType = 34;
 				BerserkerEpicArms.Quality = 100;
 				BerserkerEpicArms.Weight = 22;
-				BerserkerEpicArms.Bonus = 35;
+				BerserkerEpicArms.ItemBonus = 35;
 				BerserkerEpicArms.MaxCondition = 50000;
 				BerserkerEpicArms.MaxDurability = 50000;
 				BerserkerEpicArms.Condition = 50000;
@@ -797,29 +797,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(BerserkerEpicArms);
+					GameServer.Instance.SaveDataObject(BerserkerEpicArms);
 				}
 
 			}
-			ThaneEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ThaneEpicBoots");
+			ThaneEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ThaneEpicBoots");
 			if (ThaneEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Thane Epic Boots , creating it ...");
 				ThaneEpicBoots = new ItemTemplate();
-				ThaneEpicBoots.Id_nb = "ThaneEpicBoots";
+				ThaneEpicBoots.KeyName = "ThaneEpicBoots";
 				ThaneEpicBoots.Name = "Storm Touched Boots";
 				ThaneEpicBoots.Level = 50;
-				ThaneEpicBoots.Item_Type = 23;
+				ThaneEpicBoots.ItemType = 23;
 				ThaneEpicBoots.Model = 791;
 				ThaneEpicBoots.IsDropable = true;
 				ThaneEpicBoots.IsPickable = true;
 				ThaneEpicBoots.DPS_AF = 100;
 				ThaneEpicBoots.SPD_ABS = 27;
-				ThaneEpicBoots.Object_Type = 35;
+				ThaneEpicBoots.ObjectType = 35;
 				ThaneEpicBoots.Quality = 100;
 				ThaneEpicBoots.Weight = 22;
-				ThaneEpicBoots.Bonus = 35;
+				ThaneEpicBoots.ItemBonus = 35;
 				ThaneEpicBoots.MaxCondition = 50000;
 				ThaneEpicBoots.MaxDurability = 50000;
 				ThaneEpicBoots.Condition = 50000;
@@ -839,30 +839,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ThaneEpicBoots);
+					GameServer.Instance.SaveDataObject(ThaneEpicBoots);
 				}
 
 			}
 //end item
-			ThaneEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ThaneEpicHelm");
+			ThaneEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ThaneEpicHelm");
 			if (ThaneEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Thane Epic Helm , creating it ...");
 				ThaneEpicHelm = new ItemTemplate();
-				ThaneEpicHelm.Id_nb = "ThaneEpicHelm";
+				ThaneEpicHelm.KeyName = "ThaneEpicHelm";
 				ThaneEpicHelm.Name = "Storm Touched Coif";
 				ThaneEpicHelm.Level = 50;
-				ThaneEpicHelm.Item_Type = 21;
+				ThaneEpicHelm.ItemType = 21;
 				ThaneEpicHelm.Model = 834;
 				ThaneEpicHelm.IsDropable = true;
 				ThaneEpicHelm.IsPickable = true;
 				ThaneEpicHelm.DPS_AF = 100;
 				ThaneEpicHelm.SPD_ABS = 27;
-				ThaneEpicHelm.Object_Type = 35;
+				ThaneEpicHelm.ObjectType = 35;
 				ThaneEpicHelm.Quality = 100;
 				ThaneEpicHelm.Weight = 22;
-				ThaneEpicHelm.Bonus = 35;
+				ThaneEpicHelm.ItemBonus = 35;
 				ThaneEpicHelm.MaxCondition = 50000;
 				ThaneEpicHelm.MaxDurability = 50000;
 				ThaneEpicHelm.Condition = 50000;
@@ -883,30 +883,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ThaneEpicHelm);
+					GameServer.Instance.SaveDataObject(ThaneEpicHelm);
 				}
 
 			}
 //end item
-			ThaneEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ThaneEpicGloves");
+			ThaneEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ThaneEpicGloves");
 			if (ThaneEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Thane Epic Gloves , creating it ...");
 				ThaneEpicGloves = new ItemTemplate();
-				ThaneEpicGloves.Id_nb = "ThaneEpicGloves";
+				ThaneEpicGloves.KeyName = "ThaneEpicGloves";
 				ThaneEpicGloves.Name = "Storm Touched Gloves";
 				ThaneEpicGloves.Level = 50;
-				ThaneEpicGloves.Item_Type = 22;
+				ThaneEpicGloves.ItemType = 22;
 				ThaneEpicGloves.Model = 790;
 				ThaneEpicGloves.IsDropable = true;
 				ThaneEpicGloves.IsPickable = true;
 				ThaneEpicGloves.DPS_AF = 100;
 				ThaneEpicGloves.SPD_ABS = 27;
-				ThaneEpicGloves.Object_Type = 35;
+				ThaneEpicGloves.ObjectType = 35;
 				ThaneEpicGloves.Quality = 100;
 				ThaneEpicGloves.Weight = 22;
-				ThaneEpicGloves.Bonus = 35;
+				ThaneEpicGloves.ItemBonus = 35;
 				ThaneEpicGloves.MaxCondition = 50000;
 				ThaneEpicGloves.MaxDurability = 50000;
 				ThaneEpicGloves.Condition = 50000;
@@ -926,30 +926,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ThaneEpicGloves);
+					GameServer.Instance.SaveDataObject(ThaneEpicGloves);
 				}
 
 			}
 
-			ThaneEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ThaneEpicVest");
+			ThaneEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ThaneEpicVest");
 			if (ThaneEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Thane Epic Vest , creating it ...");
 				ThaneEpicVest = new ItemTemplate();
-				ThaneEpicVest.Id_nb = "ThaneEpicVest";
+				ThaneEpicVest.KeyName = "ThaneEpicVest";
 				ThaneEpicVest.Name = "Storm Touched Hauberk";
 				ThaneEpicVest.Level = 50;
-				ThaneEpicVest.Item_Type = 25;
+				ThaneEpicVest.ItemType = 25;
 				ThaneEpicVest.Model = 787;
 				ThaneEpicVest.IsDropable = true;
 				ThaneEpicVest.IsPickable = true;
 				ThaneEpicVest.DPS_AF = 100;
 				ThaneEpicVest.SPD_ABS = 27;
-				ThaneEpicVest.Object_Type = 35;
+				ThaneEpicVest.ObjectType = 35;
 				ThaneEpicVest.Quality = 100;
 				ThaneEpicVest.Weight = 22;
-				ThaneEpicVest.Bonus = 35;
+				ThaneEpicVest.ItemBonus = 35;
 				ThaneEpicVest.MaxCondition = 50000;
 				ThaneEpicVest.MaxDurability = 50000;
 				ThaneEpicVest.Condition = 50000;
@@ -970,29 +970,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ThaneEpicVest);
+					GameServer.Instance.SaveDataObject(ThaneEpicVest);
 				}
 			}
 
-			ThaneEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ThaneEpicLegs");
+			ThaneEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ThaneEpicLegs");
 			if (ThaneEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Thane Epic Legs , creating it ...");
 				ThaneEpicLegs = new ItemTemplate();
-				ThaneEpicLegs.Id_nb = "ThaneEpicLegs";
+				ThaneEpicLegs.KeyName = "ThaneEpicLegs";
 				ThaneEpicLegs.Name = "Storm Touched Legs";
 				ThaneEpicLegs.Level = 50;
-				ThaneEpicLegs.Item_Type = 27;
+				ThaneEpicLegs.ItemType = 27;
 				ThaneEpicLegs.Model = 788;
 				ThaneEpicLegs.IsDropable = true;
 				ThaneEpicLegs.IsPickable = true;
 				ThaneEpicLegs.DPS_AF = 100;
 				ThaneEpicLegs.SPD_ABS = 27;
-				ThaneEpicLegs.Object_Type = 35;
+				ThaneEpicLegs.ObjectType = 35;
 				ThaneEpicLegs.Quality = 100;
 				ThaneEpicLegs.Weight = 22;
-				ThaneEpicLegs.Bonus = 35;
+				ThaneEpicLegs.ItemBonus = 35;
 				ThaneEpicLegs.MaxCondition = 50000;
 				ThaneEpicLegs.MaxDurability = 50000;
 				ThaneEpicLegs.Condition = 50000;
@@ -1012,29 +1012,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ThaneEpicLegs);
+					GameServer.Instance.SaveDataObject(ThaneEpicLegs);
 				}
 			}
 
-			ThaneEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ThaneEpicArms");
+			ThaneEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ThaneEpicArms");
 			if (ThaneEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Thane Epic Arms , creating it ...");
 				ThaneEpicArms = new ItemTemplate();
-				ThaneEpicArms.Id_nb = "ThaneEpicArms";
+				ThaneEpicArms.KeyName = "ThaneEpicArms";
 				ThaneEpicArms.Name = "Storm Touched Sleeves";
 				ThaneEpicArms.Level = 50;
-				ThaneEpicArms.Item_Type = 28;
+				ThaneEpicArms.ItemType = 28;
 				ThaneEpicArms.Model = 789;
 				ThaneEpicArms.IsDropable = true;
 				ThaneEpicArms.IsPickable = true;
 				ThaneEpicArms.DPS_AF = 100;
 				ThaneEpicArms.SPD_ABS = 27;
-				ThaneEpicArms.Object_Type = 35;
+				ThaneEpicArms.ObjectType = 35;
 				ThaneEpicArms.Quality = 100;
 				ThaneEpicArms.Weight = 22;
-				ThaneEpicArms.Bonus = 35;
+				ThaneEpicArms.ItemBonus = 35;
 				ThaneEpicArms.MaxCondition = 50000;
 				ThaneEpicArms.MaxDurability = 50000;
 				ThaneEpicArms.Condition = 50000;
@@ -1054,29 +1054,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ThaneEpicArms);
+					GameServer.Instance.SaveDataObject(ThaneEpicArms);
 				}
 			}
 			//Valhalla Touched Boots
-			SkaldEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("SkaldEpicBoots");
+			SkaldEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SkaldEpicBoots");
 			if (SkaldEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Skalds Epic Boots , creating it ...");
 				SkaldEpicBoots = new ItemTemplate();
-				SkaldEpicBoots.Id_nb = "SkaldEpicBoots";
+				SkaldEpicBoots.KeyName = "SkaldEpicBoots";
 				SkaldEpicBoots.Name = "Battlesung Boots";
 				SkaldEpicBoots.Level = 50;
-				SkaldEpicBoots.Item_Type = 23;
+				SkaldEpicBoots.ItemType = 23;
 				SkaldEpicBoots.Model = 775;
 				SkaldEpicBoots.IsDropable = true;
 				SkaldEpicBoots.IsPickable = true;
 				SkaldEpicBoots.DPS_AF = 100;
 				SkaldEpicBoots.SPD_ABS = 27;
-				SkaldEpicBoots.Object_Type = 35;
+				SkaldEpicBoots.ObjectType = 35;
 				SkaldEpicBoots.Quality = 100;
 				SkaldEpicBoots.Weight = 22;
-				SkaldEpicBoots.Bonus = 35;
+				SkaldEpicBoots.ItemBonus = 35;
 				SkaldEpicBoots.MaxCondition = 50000;
 				SkaldEpicBoots.MaxDurability = 50000;
 				SkaldEpicBoots.Condition = 50000;
@@ -1096,30 +1096,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SkaldEpicBoots);
+					GameServer.Instance.SaveDataObject(SkaldEpicBoots);
 				}
 			}
 //end item
 			//Valhalla Touched Coif 
-			SkaldEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("SkaldEpicHelm");
+			SkaldEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SkaldEpicHelm");
 			if (SkaldEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Skalds Epic Helm , creating it ...");
 				SkaldEpicHelm = new ItemTemplate();
-				SkaldEpicHelm.Id_nb = "SkaldEpicHelm";
+				SkaldEpicHelm.KeyName = "SkaldEpicHelm";
 				SkaldEpicHelm.Name = "Battlesung Coif";
 				SkaldEpicHelm.Level = 50;
-				SkaldEpicHelm.Item_Type = 21;
+				SkaldEpicHelm.ItemType = 21;
 				SkaldEpicHelm.Model = 832; //NEED TO WORK ON..
 				SkaldEpicHelm.IsDropable = true;
 				SkaldEpicHelm.IsPickable = true;
 				SkaldEpicHelm.DPS_AF = 100;
 				SkaldEpicHelm.SPD_ABS = 27;
-				SkaldEpicHelm.Object_Type = 35;
+				SkaldEpicHelm.ObjectType = 35;
 				SkaldEpicHelm.Quality = 100;
 				SkaldEpicHelm.Weight = 22;
-				SkaldEpicHelm.Bonus = 35;
+				SkaldEpicHelm.ItemBonus = 35;
 				SkaldEpicHelm.MaxCondition = 50000;
 				SkaldEpicHelm.MaxDurability = 50000;
 				SkaldEpicHelm.Condition = 50000;
@@ -1136,30 +1136,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SkaldEpicHelm);
+					GameServer.Instance.SaveDataObject(SkaldEpicHelm);
 				}
 			}
 //end item
 			//Valhalla Touched Gloves 
-			SkaldEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("SkaldEpicGloves");
+			SkaldEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SkaldEpicGloves");
 			if (SkaldEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Skalds Epic Gloves , creating it ...");
 				SkaldEpicGloves = new ItemTemplate();
-				SkaldEpicGloves.Id_nb = "SkaldEpicGloves";
+				SkaldEpicGloves.KeyName = "SkaldEpicGloves";
 				SkaldEpicGloves.Name = "Battlesung Gloves";
 				SkaldEpicGloves.Level = 50;
-				SkaldEpicGloves.Item_Type = 22;
+				SkaldEpicGloves.ItemType = 22;
 				SkaldEpicGloves.Model = 774;
 				SkaldEpicGloves.IsDropable = true;
 				SkaldEpicGloves.IsPickable = true;
 				SkaldEpicGloves.DPS_AF = 100;
 				SkaldEpicGloves.SPD_ABS = 27;
-				SkaldEpicGloves.Object_Type = 35;
+				SkaldEpicGloves.ObjectType = 35;
 				SkaldEpicGloves.Quality = 100;
 				SkaldEpicGloves.Weight = 22;
-				SkaldEpicGloves.Bonus = 35;
+				SkaldEpicGloves.ItemBonus = 35;
 				SkaldEpicGloves.MaxCondition = 50000;
 				SkaldEpicGloves.MaxDurability = 50000;
 				SkaldEpicGloves.Condition = 50000;
@@ -1179,30 +1179,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SkaldEpicGloves);
+					GameServer.Instance.SaveDataObject(SkaldEpicGloves);
 				}
 
 			}
 			//Valhalla Touched Hauberk 
-			SkaldEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("SkaldEpicVest");
+			SkaldEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SkaldEpicVest");
 			if (SkaldEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Skalds Epic Vest , creating it ...");
 				SkaldEpicVest = new ItemTemplate();
-				SkaldEpicVest.Id_nb = "SkaldEpicVest";
+				SkaldEpicVest.KeyName = "SkaldEpicVest";
 				SkaldEpicVest.Name = "Battlesung Hauberk";
 				SkaldEpicVest.Level = 50;
-				SkaldEpicVest.Item_Type = 25;
+				SkaldEpicVest.ItemType = 25;
 				SkaldEpicVest.Model = 771;
 				SkaldEpicVest.IsDropable = true;
 				SkaldEpicVest.IsPickable = true;
 				SkaldEpicVest.DPS_AF = 100;
 				SkaldEpicVest.SPD_ABS = 27;
-				SkaldEpicVest.Object_Type = 35;
+				SkaldEpicVest.ObjectType = 35;
 				SkaldEpicVest.Quality = 100;
 				SkaldEpicVest.Weight = 22;
-				SkaldEpicVest.Bonus = 35;
+				SkaldEpicVest.ItemBonus = 35;
 				SkaldEpicVest.MaxCondition = 50000;
 				SkaldEpicVest.MaxDurability = 50000;
 				SkaldEpicVest.Condition = 50000;
@@ -1222,29 +1222,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SkaldEpicVest);
+					GameServer.Instance.SaveDataObject(SkaldEpicVest);
 				}
 			}
 			//Valhalla Touched Legs 
-			SkaldEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("SkaldEpicLegs");
+			SkaldEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SkaldEpicLegs");
 			if (SkaldEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Skalds Epic Legs , creating it ...");
 				SkaldEpicLegs = new ItemTemplate();
-				SkaldEpicLegs.Id_nb = "SkaldEpicLegs";
+				SkaldEpicLegs.KeyName = "SkaldEpicLegs";
 				SkaldEpicLegs.Name = "Battlesung Legs";
 				SkaldEpicLegs.Level = 50;
-				SkaldEpicLegs.Item_Type = 27;
+				SkaldEpicLegs.ItemType = 27;
 				SkaldEpicLegs.Model = 772;
 				SkaldEpicLegs.IsDropable = true;
 				SkaldEpicLegs.IsPickable = true;
 				SkaldEpicLegs.DPS_AF = 100;
 				SkaldEpicLegs.SPD_ABS = 27;
-				SkaldEpicLegs.Object_Type = 35;
+				SkaldEpicLegs.ObjectType = 35;
 				SkaldEpicLegs.Quality = 100;
 				SkaldEpicLegs.Weight = 22;
-				SkaldEpicLegs.Bonus = 35;
+				SkaldEpicLegs.ItemBonus = 35;
 				SkaldEpicLegs.MaxCondition = 50000;
 				SkaldEpicLegs.MaxDurability = 50000;
 				SkaldEpicLegs.Condition = 50000;
@@ -1264,29 +1264,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SkaldEpicLegs);
+					GameServer.Instance.SaveDataObject(SkaldEpicLegs);
 				}
 			}
 			//Valhalla Touched Sleeves 
-			SkaldEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("SkaldEpicArms");
+			SkaldEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SkaldEpicArms");
 			if (SkaldEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Skald Epic Arms , creating it ...");
 				SkaldEpicArms = new ItemTemplate();
-				SkaldEpicArms.Id_nb = "SkaldEpicArms";
+				SkaldEpicArms.KeyName = "SkaldEpicArms";
 				SkaldEpicArms.Name = "Battlesung Sleeves";
 				SkaldEpicArms.Level = 50;
-				SkaldEpicArms.Item_Type = 28;
+				SkaldEpicArms.ItemType = 28;
 				SkaldEpicArms.Model = 773;
 				SkaldEpicArms.IsDropable = true;
 				SkaldEpicArms.IsPickable = true;
 				SkaldEpicArms.DPS_AF = 100;
 				SkaldEpicArms.SPD_ABS = 27;
-				SkaldEpicArms.Object_Type = 35;
+				SkaldEpicArms.ObjectType = 35;
 				SkaldEpicArms.Quality = 100;
 				SkaldEpicArms.Weight = 22;
-				SkaldEpicArms.Bonus = 35;
+				SkaldEpicArms.ItemBonus = 35;
 				SkaldEpicArms.MaxCondition = 50000;
 				SkaldEpicArms.MaxDurability = 50000;
 				SkaldEpicArms.Condition = 50000;
@@ -1306,29 +1306,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SkaldEpicArms);
+					GameServer.Instance.SaveDataObject(SkaldEpicArms);
 				}
 			}
 			//Subterranean Boots 
-			SavageEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("SavageEpicBoots");
+			SavageEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SavageEpicBoots");
 			if (SavageEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Savage Epic Boots , creating it ...");
 				SavageEpicBoots = new ItemTemplate();
-				SavageEpicBoots.Id_nb = "SavageEpicBoots";
+				SavageEpicBoots.KeyName = "SavageEpicBoots";
 				SavageEpicBoots.Name = "Kelgor's Battle Boots";
 				SavageEpicBoots.Level = 50;
-				SavageEpicBoots.Item_Type = 23;
+				SavageEpicBoots.ItemType = 23;
 				SavageEpicBoots.Model = 1196;
 				SavageEpicBoots.IsDropable = true;
 				SavageEpicBoots.IsPickable = true;
 				SavageEpicBoots.DPS_AF = 100;
 				SavageEpicBoots.SPD_ABS = 27;
-				SavageEpicBoots.Object_Type = 34;
+				SavageEpicBoots.ObjectType = 34;
 				SavageEpicBoots.Quality = 100;
 				SavageEpicBoots.Weight = 22;
-				SavageEpicBoots.Bonus = 35;
+				SavageEpicBoots.ItemBonus = 35;
 				SavageEpicBoots.MaxCondition = 50000;
 				SavageEpicBoots.MaxDurability = 50000;
 				SavageEpicBoots.Condition = 50000;
@@ -1348,29 +1348,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SavageEpicBoots);
+					GameServer.Instance.SaveDataObject(SavageEpicBoots);
 				}
 			}
 			//Subterranean Coif 
-			SavageEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("SavageEpicHelm");
+			SavageEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SavageEpicHelm");
 			if (SavageEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Savage Epic Helm , creating it ...");
 				SavageEpicHelm = new ItemTemplate();
-				SavageEpicHelm.Id_nb = "SavageEpicHelm";
+				SavageEpicHelm.KeyName = "SavageEpicHelm";
 				SavageEpicHelm.Name = "Kelgor's Battle Helm";
 				SavageEpicHelm.Level = 50;
-				SavageEpicHelm.Item_Type = 21;
+				SavageEpicHelm.ItemType = 21;
 				SavageEpicHelm.Model = 831; //NEED TO WORK ON..
 				SavageEpicHelm.IsDropable = true;
 				SavageEpicHelm.IsPickable = true;
 				SavageEpicHelm.DPS_AF = 100;
 				SavageEpicHelm.SPD_ABS = 19;
-				SavageEpicHelm.Object_Type = 34;
+				SavageEpicHelm.ObjectType = 34;
 				SavageEpicHelm.Quality = 100;
 				SavageEpicHelm.Weight = 22;
-				SavageEpicHelm.Bonus = 35;
+				SavageEpicHelm.ItemBonus = 35;
 				SavageEpicHelm.MaxCondition = 50000;
 				SavageEpicHelm.MaxDurability = 50000;
 				SavageEpicHelm.Condition = 50000;
@@ -1390,29 +1390,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SavageEpicHelm);
+					GameServer.Instance.SaveDataObject(SavageEpicHelm);
 				}
 			}
 			//Subterranean Gloves 
-			SavageEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("SavageEpicGloves");
+			SavageEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SavageEpicGloves");
 			if (SavageEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Savage Epic Gloves , creating it ...");
 				SavageEpicGloves = new ItemTemplate();
-				SavageEpicGloves.Id_nb = "SavageEpicGloves";
+				SavageEpicGloves.KeyName = "SavageEpicGloves";
 				SavageEpicGloves.Name = "Kelgor's Battle Gauntlets";
 				SavageEpicGloves.Level = 50;
-				SavageEpicGloves.Item_Type = 22;
+				SavageEpicGloves.ItemType = 22;
 				SavageEpicGloves.Model = 1195;
 				SavageEpicGloves.IsDropable = true;
 				SavageEpicGloves.IsPickable = true;
 				SavageEpicGloves.DPS_AF = 100;
 				SavageEpicGloves.SPD_ABS = 19;
-				SavageEpicGloves.Object_Type = 34;
+				SavageEpicGloves.ObjectType = 34;
 				SavageEpicGloves.Quality = 100;
 				SavageEpicGloves.Weight = 22;
-				SavageEpicGloves.Bonus = 35;
+				SavageEpicGloves.ItemBonus = 35;
 				SavageEpicGloves.MaxCondition = 50000;
 				SavageEpicGloves.MaxDurability = 50000;
 				SavageEpicGloves.Condition = 50000;
@@ -1432,29 +1432,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SavageEpicGloves);
+					GameServer.Instance.SaveDataObject(SavageEpicGloves);
 				}
 			}
 			//Subterranean Hauberk 
-			SavageEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("SavageEpicVest");
+			SavageEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SavageEpicVest");
 			if (SavageEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Savage Epic Vest , creating it ...");
 				SavageEpicVest = new ItemTemplate();
-				SavageEpicVest.Id_nb = "SavageEpicVest";
+				SavageEpicVest.KeyName = "SavageEpicVest";
 				SavageEpicVest.Name = "Kelgor's Battle Vest";
 				SavageEpicVest.Level = 50;
-				SavageEpicVest.Item_Type = 25;
+				SavageEpicVest.ItemType = 25;
 				SavageEpicVest.Model = 1192;
 				SavageEpicVest.IsDropable = true;
 				SavageEpicVest.IsPickable = true;
 				SavageEpicVest.DPS_AF = 100;
 				SavageEpicVest.SPD_ABS = 19;
-				SavageEpicVest.Object_Type = 34;
+				SavageEpicVest.ObjectType = 34;
 				SavageEpicVest.Quality = 100;
 				SavageEpicVest.Weight = 22;
-				SavageEpicVest.Bonus = 35;
+				SavageEpicVest.ItemBonus = 35;
 				SavageEpicVest.MaxCondition = 50000;
 				SavageEpicVest.MaxDurability = 50000;
 				SavageEpicVest.Condition = 50000;
@@ -1474,29 +1474,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SavageEpicVest);
+					GameServer.Instance.SaveDataObject(SavageEpicVest);
 				}
 			}
 			//Subterranean Legs 
-			SavageEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("SavageEpicLegs");
+			SavageEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SavageEpicLegs");
 			if (SavageEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Savage Epic Legs , creating it ...");
 				SavageEpicLegs = new ItemTemplate();
-				SavageEpicLegs.Id_nb = "SavageEpicLegs";
+				SavageEpicLegs.KeyName = "SavageEpicLegs";
 				SavageEpicLegs.Name = "Kelgor's Battle Leggings";
 				SavageEpicLegs.Level = 50;
-				SavageEpicLegs.Item_Type = 27;
+				SavageEpicLegs.ItemType = 27;
 				SavageEpicLegs.Model = 1193;
 				SavageEpicLegs.IsDropable = true;
 				SavageEpicLegs.IsPickable = true;
 				SavageEpicLegs.DPS_AF = 100;
 				SavageEpicLegs.SPD_ABS = 19;
-				SavageEpicLegs.Object_Type = 34;
+				SavageEpicLegs.ObjectType = 34;
 				SavageEpicLegs.Quality = 100;
 				SavageEpicLegs.Weight = 22;
-				SavageEpicLegs.Bonus = 35;
+				SavageEpicLegs.ItemBonus = 35;
 				SavageEpicLegs.MaxCondition = 50000;
 				SavageEpicLegs.MaxDurability = 50000;
 				SavageEpicLegs.Condition = 50000;
@@ -1516,29 +1516,29 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SavageEpicLegs);
+					GameServer.Instance.SaveDataObject(SavageEpicLegs);
 				}
 			}
 			//Subterranean Sleeves 
-			SavageEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("SavageEpicArms");
+			SavageEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SavageEpicArms");
 			if (SavageEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Savage Epic Arms , creating it ...");
 				SavageEpicArms = new ItemTemplate();
-				SavageEpicArms.Id_nb = "SavageEpicArms";
+				SavageEpicArms.KeyName = "SavageEpicArms";
 				SavageEpicArms.Name = "Kelgor's Battle Sleeves";
 				SavageEpicArms.Level = 50;
-				SavageEpicArms.Item_Type = 28;
+				SavageEpicArms.ItemType = 28;
 				SavageEpicArms.Model = 1194;
 				SavageEpicArms.IsDropable = true;
 				SavageEpicArms.IsPickable = true;
 				SavageEpicArms.DPS_AF = 100;
 				SavageEpicArms.SPD_ABS = 19;
-				SavageEpicArms.Object_Type = 34;
+				SavageEpicArms.ObjectType = 34;
 				SavageEpicArms.Quality = 100;
 				SavageEpicArms.Weight = 22;
-				SavageEpicArms.Bonus = 35;
+				SavageEpicArms.ItemBonus = 35;
 				SavageEpicArms.MaxCondition = 50000;
 				SavageEpicArms.MaxDurability = 50000;
 				SavageEpicArms.Condition = 50000;
@@ -1558,30 +1558,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(SavageEpicArms);
+					GameServer.Instance.SaveDataObject(SavageEpicArms);
 				}
 
 			}
 			#region Valkyrie
-			ValkyrieEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ValkyrieEpicBoots");
+			ValkyrieEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValkyrieEpicBoots");
 			if (ValkyrieEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Valkyrie Epic Boots , creating it ...");
 				ValkyrieEpicBoots = new ItemTemplate();
-				ValkyrieEpicBoots.Id_nb = "ValkyrieEpicBoots";
+				ValkyrieEpicBoots.KeyName = "ValkyrieEpicBoots";
 				ValkyrieEpicBoots.Name = "Battle Maiden's Boots";
 				ValkyrieEpicBoots.Level = 50;
-				ValkyrieEpicBoots.Item_Type = 23;
+				ValkyrieEpicBoots.ItemType = 23;
 				ValkyrieEpicBoots.Model = 2932;
 				ValkyrieEpicBoots.IsDropable = true;
 				ValkyrieEpicBoots.IsPickable = true;
 				ValkyrieEpicBoots.DPS_AF = 100;
 				ValkyrieEpicBoots.SPD_ABS = 27;
-				ValkyrieEpicBoots.Object_Type = 35;
+				ValkyrieEpicBoots.ObjectType = 35;
 				ValkyrieEpicBoots.Quality = 100;
 				ValkyrieEpicBoots.Weight = 22;
-				ValkyrieEpicBoots.Bonus = 35;
+				ValkyrieEpicBoots.ItemBonus = 35;
 				ValkyrieEpicBoots.MaxCondition = 50000;
 				ValkyrieEpicBoots.MaxDurability = 50000;
 				ValkyrieEpicBoots.Durability = 50000;
@@ -1608,30 +1608,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ValkyrieEpicBoots);
+					GameServer.Instance.SaveDataObject(ValkyrieEpicBoots);
 				}
 
 			}
 			//end item
-			ValkyrieEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ValkyrieEpicHelm");
+			ValkyrieEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValkyrieEpicHelm");
 			if (ValkyrieEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Valkyrie Epic Helm , creating it ...");
 				ValkyrieEpicHelm = new ItemTemplate();
-				ValkyrieEpicHelm.Id_nb = "ValkyrieEpicHelm";
+				ValkyrieEpicHelm.KeyName = "ValkyrieEpicHelm";
 				ValkyrieEpicHelm.Name = "Battle Maiden's Coif";
 				ValkyrieEpicHelm.Level = 50;
-				ValkyrieEpicHelm.Item_Type = 21;
+				ValkyrieEpicHelm.ItemType = 21;
 				ValkyrieEpicHelm.Model = 2951; //NEED TO WORK ON..
 				ValkyrieEpicHelm.IsDropable = true;
 				ValkyrieEpicHelm.IsPickable = true;
 				ValkyrieEpicHelm.DPS_AF = 100;
 				ValkyrieEpicHelm.SPD_ABS = 27;
-				ValkyrieEpicHelm.Object_Type = 35;
+				ValkyrieEpicHelm.ObjectType = 35;
 				ValkyrieEpicHelm.Quality = 100;
 				ValkyrieEpicHelm.Weight = 22;
-				ValkyrieEpicHelm.Bonus = 35;
+				ValkyrieEpicHelm.ItemBonus = 35;
 				ValkyrieEpicHelm.MaxCondition = 50000;
 				ValkyrieEpicHelm.MaxDurability = 50000;
 				ValkyrieEpicHelm.Condition = 50000;
@@ -1658,30 +1658,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ValkyrieEpicHelm);
+					GameServer.Instance.SaveDataObject(ValkyrieEpicHelm);
 				}
 
 			}
 			//end item
-			ValkyrieEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ValkyrieEpicGloves");
+			ValkyrieEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValkyrieEpicGloves");
 			if (ValkyrieEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Valkyrie Epic Gloves , creating it ...");
 				ValkyrieEpicGloves = new ItemTemplate();
-				ValkyrieEpicGloves.Id_nb = "ValkyrieEpicGloves";
+				ValkyrieEpicGloves.KeyName = "ValkyrieEpicGloves";
 				ValkyrieEpicGloves.Name = "Battle Maiden's Gloves";
 				ValkyrieEpicGloves.Level = 50;
-				ValkyrieEpicGloves.Item_Type = 22;
+				ValkyrieEpicGloves.ItemType = 22;
 				ValkyrieEpicGloves.Model = 2931;
 				ValkyrieEpicGloves.IsDropable = true;
 				ValkyrieEpicGloves.IsPickable = true;
 				ValkyrieEpicGloves.DPS_AF = 100;
 				ValkyrieEpicGloves.SPD_ABS = 27;
-				ValkyrieEpicGloves.Object_Type = 35;
+				ValkyrieEpicGloves.ObjectType = 35;
 				ValkyrieEpicGloves.Quality = 100;
 				ValkyrieEpicGloves.Weight = 22;
-				ValkyrieEpicGloves.Bonus = 35;
+				ValkyrieEpicGloves.ItemBonus = 35;
 				ValkyrieEpicGloves.MaxCondition = 50000;
 				ValkyrieEpicGloves.MaxDurability = 50000;
 				ValkyrieEpicGloves.Condition = 50000;
@@ -1708,30 +1708,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ValkyrieEpicGloves);
+					GameServer.Instance.SaveDataObject(ValkyrieEpicGloves);
 				}
 
 			}
 
-			ValkyrieEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ValkyrieEpicVest");
+			ValkyrieEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValkyrieEpicVest");
 			if (ValkyrieEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Valkyrie Epic Vest , creating it ...");
 				ValkyrieEpicVest = new ItemTemplate();
-				ValkyrieEpicVest.Id_nb = "ValkyrieEpicVest";
+				ValkyrieEpicVest.KeyName = "ValkyrieEpicVest";
 				ValkyrieEpicVest.Name = "Battle Maiden's Hauberk";
 				ValkyrieEpicVest.Level = 50;
-				ValkyrieEpicVest.Item_Type = 25;
+				ValkyrieEpicVest.ItemType = 25;
 				ValkyrieEpicVest.Model = 2928;
 				ValkyrieEpicVest.IsDropable = true;
 				ValkyrieEpicVest.IsPickable = true;
 				ValkyrieEpicVest.DPS_AF = 100;
 				ValkyrieEpicVest.SPD_ABS = 27;
-				ValkyrieEpicVest.Object_Type = 35;
+				ValkyrieEpicVest.ObjectType = 35;
 				ValkyrieEpicVest.Quality = 100;
 				ValkyrieEpicVest.Weight = 22;
-				ValkyrieEpicVest.Bonus = 35;
+				ValkyrieEpicVest.ItemBonus = 35;
 				ValkyrieEpicVest.MaxCondition = 50000;
 				ValkyrieEpicVest.MaxDurability = 50000;
 				ValkyrieEpicVest.Condition = 50000;
@@ -1758,30 +1758,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ValkyrieEpicVest);
+					GameServer.Instance.SaveDataObject(ValkyrieEpicVest);
 				}
 
 			}
 
-			ValkyrieEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ValkyrieEpicLegs");
+			ValkyrieEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValkyrieEpicLegs");
 			if (ValkyrieEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Valkyrie Epic Legs , creating it ...");
 				ValkyrieEpicLegs = new ItemTemplate();
-				ValkyrieEpicLegs.Id_nb = "ValkyrieEpicLegs";
+				ValkyrieEpicLegs.KeyName = "ValkyrieEpicLegs";
 				ValkyrieEpicLegs.Name = "Battle Maiden's Legs";
 				ValkyrieEpicLegs.Level = 50;
-				ValkyrieEpicLegs.Item_Type = 27;
+				ValkyrieEpicLegs.ItemType = 27;
 				ValkyrieEpicLegs.Model = 2929;
 				ValkyrieEpicLegs.IsDropable = true;
 				ValkyrieEpicLegs.IsPickable = true;
 				ValkyrieEpicLegs.DPS_AF = 100;
 				ValkyrieEpicLegs.SPD_ABS = 27;
-				ValkyrieEpicLegs.Object_Type = 35;
+				ValkyrieEpicLegs.ObjectType = 35;
 				ValkyrieEpicLegs.Quality = 100;
 				ValkyrieEpicLegs.Weight = 22;
-				ValkyrieEpicLegs.Bonus = 35;
+				ValkyrieEpicLegs.ItemBonus = 35;
 				ValkyrieEpicLegs.MaxCondition = 50000;
 				ValkyrieEpicLegs.MaxDurability = 50000;
 				ValkyrieEpicLegs.Condition = 50000;
@@ -1808,30 +1808,30 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ValkyrieEpicLegs);
+					GameServer.Instance.SaveDataObject(ValkyrieEpicLegs);
 				}
 
 			}
 
-			ValkyrieEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ValkyrieEpicArms");
+			ValkyrieEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValkyrieEpicArms");
 			if (ValkyrieEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Valkyrie Epic Arms , creating it ...");
 				ValkyrieEpicArms = new ItemTemplate();
-				ValkyrieEpicArms.Id_nb = "ValkyrieEpicArms";
+				ValkyrieEpicArms.KeyName = "ValkyrieEpicArms";
 				ValkyrieEpicArms.Name = "Battle Maiden's Sleeves";
 				ValkyrieEpicArms.Level = 50;
-				ValkyrieEpicArms.Item_Type = 28;
+				ValkyrieEpicArms.ItemType = 28;
 				ValkyrieEpicArms.Model = 2930;
 				ValkyrieEpicArms.IsDropable = true;
 				ValkyrieEpicArms.IsPickable = true;
 				ValkyrieEpicArms.DPS_AF = 100;
 				ValkyrieEpicArms.SPD_ABS = 27;
-				ValkyrieEpicArms.Object_Type = 35;
+				ValkyrieEpicArms.ObjectType = 35;
 				ValkyrieEpicArms.Quality = 100;
 				ValkyrieEpicArms.Weight = 22;
-				ValkyrieEpicArms.Bonus = 35;
+				ValkyrieEpicArms.ItemBonus = 35;
 				ValkyrieEpicArms.MaxCondition = 50000;
 				ValkyrieEpicArms.MaxDurability = 50000;
 				ValkyrieEpicArms.Condition = 50000;
@@ -1858,7 +1858,7 @@ namespace DOL.GS.Quests.Midgard
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(ValkyrieEpicArms);
+					GameServer.Instance.SaveDataObject(ValkyrieEpicArms);
 				}
 
 			}
@@ -1866,12 +1866,12 @@ namespace DOL.GS.Quests.Midgard
 
             // Graveen: we assume items are existing in the DB
             // TODO: insert here creation of items if they do not exists
-            MaulerMidEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerMidEpicBoots");
-            MaulerMidEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerMidEpicHelm");
-            MaulerMidEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerMidEpicGloves");
-            MaulerMidEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerMidEpicVest");
-            MaulerMidEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerMidEpicLegs");
-            MaulerMidEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerMidEpicArms");
+            MaulerMidEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerMidEpicBoots");
+            MaulerMidEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerMidEpicHelm");
+            MaulerMidEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerMidEpicGloves");
+            MaulerMidEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerMidEpicVest");
+            MaulerMidEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerMidEpicLegs");
+            MaulerMidEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerMidEpicArms");
 
 //Item Descriptions End
 
@@ -2158,7 +2158,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
         		GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Lynnleigh.Name && gArgs.Item.Id_nb == tome_enchantments.Id_nb)
+				if (gArgs.Target.Name == Lynnleigh.Name && gArgs.Item.KeyName == tome_enchantments.KeyName)
 				{
 					RemoveItem(Lynnleigh, player, tome_enchantments);
 					Lynnleigh.SayTo(player, "Take this sealed pouch to Elizabeth in Mularn for your reward!");
@@ -2170,7 +2170,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 3 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Elizabeth.Name && gArgs.Item.Id_nb == sealed_pouch.Id_nb)
+				if (gArgs.Target.Name == Elizabeth.Name && gArgs.Item.KeyName == sealed_pouch.KeyName)
 				{
 					RemoveItem(Elizabeth, player, sealed_pouch);
 					Elizabeth.SayTo(player, "There are six parts to your reward, so make sure you have room for them. Just let me know when you are ready, and then you can [take them] with our thanks!");

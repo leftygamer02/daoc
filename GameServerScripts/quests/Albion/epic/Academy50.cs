@@ -33,7 +33,7 @@
 using System;
 using System.Reflection;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -256,53 +256,53 @@ namespace DOL.GS.Quests.Albion
 
 			#region Item Declarations
 
-			sealed_pouch = GameServer.Database.FindObjectByKey<ItemTemplate>("sealed_pouch");
+			sealed_pouch = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "sealed_pouch");
 			if (sealed_pouch == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sealed Pouch , creating it ...");
 				sealed_pouch = new ItemTemplate();
-				sealed_pouch.Id_nb = "sealed_pouch";
+				sealed_pouch.KeyName = "sealed_pouch";
 				sealed_pouch.Name = "Sealed Pouch";
 				sealed_pouch.Level = 8;
-				sealed_pouch.Item_Type = 29;
+				sealed_pouch.ItemType = 29;
 				sealed_pouch.Model = 488;
 				sealed_pouch.IsDropable = false;
 				sealed_pouch.IsPickable = false;
 				sealed_pouch.DPS_AF = 0;
 				sealed_pouch.SPD_ABS = 0;
-				sealed_pouch.Object_Type = 41;
+				sealed_pouch.ObjectType = 41;
 				sealed_pouch.Hand = 0;
-				sealed_pouch.Type_Damage = 0;
+				sealed_pouch.TypeDamage = 0;
 				sealed_pouch.Quality = 100;
 				sealed_pouch.Weight = 12;
 
 				
-					GameServer.Database.AddObject(sealed_pouch);
+					GameServer.Instance.SaveDataObject(sealed_pouch);
 			}
 // end item
 
 			ItemTemplate item = null;
 
-			WizardEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("WizardEpicBoots");
+			WizardEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WizardEpicBoots");
 			if (WizardEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Wizards Epic Boots , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "WizardEpicBoots";
+				item.KeyName = "WizardEpicBoots";
 				item.Name = "Bernor's Numinous Boots";
 				item.Level = 50;
-				item.Item_Type = 23;
+				item.ItemType = 23;
 				item.Model = 143;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -321,31 +321,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Energy;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				WizardEpicBoots = item;
 			}
 //end item
 			//Bernor's Numinous Coif 
-			WizardEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("WizardEpicHelm");
+			WizardEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WizardEpicHelm");
 			if (WizardEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Wizards Epic Helm , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "WizardEpicHelm";
+				item.KeyName = "WizardEpicHelm";
 				item.Name = "Bernor's Numinous Cap";
 				item.Level = 50;
-				item.Item_Type = 21;
+				item.ItemType = 21;
 				item.Model = 1290; //NEED TO WORK ON..
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -364,31 +364,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Spirit;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				WizardEpicHelm = item;
 			}
 //end item
 			//Bernor's Numinous Gloves 
-			WizardEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("WizardEpicGloves");
+			WizardEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WizardEpicGloves");
 			if (WizardEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Wizards Epic Gloves , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "WizardEpicGloves";
+				item.KeyName = "WizardEpicGloves";
 				item.Name = "Bernor's Numinous Gloves ";
 				item.Level = 50;
-				item.Item_Type = 22;
+				item.ItemType = 22;
 				item.Model = 142;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -407,31 +407,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Heat;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				WizardEpicGloves = item;
 			}
 
 			//Bernor's Numinous Hauberk 
-			WizardEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("WizardEpicVest");
+			WizardEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WizardEpicVest");
 			if (WizardEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Wizards Epic Vest , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "WizardEpicVest";
+				item.KeyName = "WizardEpicVest";
 				item.Name = "Bernor's Numinous Robes";
 				item.Level = 50;
-				item.Item_Type = 25;
+				item.ItemType = 25;
 				item.Model = 798;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -447,31 +447,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus3Type = (int) eProperty.MaxHealth;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				WizardEpicVest = item;
 
 			}
 			//Bernor's Numinous Legs 
-			WizardEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("WizardEpicLegs");
+			WizardEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WizardEpicLegs");
 			if (WizardEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Wizards Epic Legs , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "WizardEpicLegs";
+				item.KeyName = "WizardEpicLegs";
 				item.Name = "Bernor's Numinous Pants";
 				item.Level = 50;
-				item.Item_Type = 27;
+				item.ItemType = 27;
 				item.Model = 140;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -487,31 +487,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus3Type = (int) eResist.Energy;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				WizardEpicLegs = item;
 
 			}
 			//Bernor's Numinous Sleeves 
-			WizardEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("WizardEpicArms");
+			WizardEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WizardEpicArms");
 			if (WizardEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Wizard Epic Arms , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "WizardEpicArms";
+				item.KeyName = "WizardEpicArms";
 				item.Name = "Bernor's Numinous Sleeves";
 				item.Level = 50;
-				item.Item_Type = 28;
+				item.ItemType = 28;
 				item.Model = 141;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -527,31 +527,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus3Type = (int) eStat.INT;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				WizardEpicArms = item;
 
 			}
 //Minstrel Epic Sleeves End
-			MinstrelEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("MinstrelEpicBoots");
+			MinstrelEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MinstrelEpicBoots");
 			if (MinstrelEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Minstrels Epic Boots , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "MinstrelEpicBoots";
+				item.KeyName = "MinstrelEpicBoots";
 				item.Name = "Boots of Coruscating Harmony";
 				item.Level = 50;
-				item.Item_Type = 23;
+				item.ItemType = 23;
 				item.Model = 727;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 100;
 				item.SPD_ABS = 27;
-				item.Object_Type = 35;
+				item.ObjectType = 35;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -570,32 +570,32 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Cold;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				MinstrelEpicBoots = item;
 
 			}
 //end item
 			//of Coruscating Harmony  Coif 
-			MinstrelEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("MinstrelEpicHelm");
+			MinstrelEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MinstrelEpicHelm");
 			if (MinstrelEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Minstrels Epic Helm , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "MinstrelEpicHelm";
+				item.KeyName = "MinstrelEpicHelm";
 				item.Name = "Coif of Coruscating Harmony";
 				item.Level = 50;
-				item.Item_Type = 21;
+				item.ItemType = 21;
 				item.Model = 1290; //NEED TO WORK ON..
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 100;
 				item.SPD_ABS = 27;
-				item.Object_Type = 35;
+				item.ObjectType = 35;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -614,32 +614,32 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Energy;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				MinstrelEpicHelm = item;
 
 			}
 //end item
 			//of Coruscating Harmony  Gloves 
-			MinstrelEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("MinstrelEpicGloves");
+			MinstrelEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MinstrelEpicGloves");
 			if (MinstrelEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Minstrels Epic Gloves , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "MinstrelEpicGloves";
+				item.KeyName = "MinstrelEpicGloves";
 				item.Name = "Gauntlets of Coruscating Harmony";
 				item.Level = 50;
-				item.Item_Type = 22;
+				item.ItemType = 22;
 				item.Model = 726;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 100;
 				item.SPD_ABS = 27;
-				item.Object_Type = 35;
+				item.ObjectType = 35;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -658,31 +658,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Heat;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				MinstrelEpicGloves = item;
 
 			}
 			//of Coruscating Harmony  Hauberk 
-			MinstrelEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("MinstrelEpicVest");
+			MinstrelEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MinstrelEpicVest");
 			if (MinstrelEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Minstrels Epic Vest , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "MinstrelEpicVest";
+				item.KeyName = "MinstrelEpicVest";
 				item.Name = "Habergeon of Coruscating Harmony";
 				item.Level = 50;
-				item.Item_Type = 25;
+				item.ItemType = 25;
 				item.Model = 723;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 100;
 				item.SPD_ABS = 27;
-				item.Object_Type = 35;
+				item.ObjectType = 35;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -701,31 +701,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Energy;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				MinstrelEpicVest = item;
 
 			}
 			//of Coruscating Harmony  Legs 
-			MinstrelEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("MinstrelEpicLegs");
+			MinstrelEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MinstrelEpicLegs");
 			if (MinstrelEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Minstrels Epic Legs , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "MinstrelEpicLegs";
+				item.KeyName = "MinstrelEpicLegs";
 				item.Name = "Chaussess of Coruscating Harmony";
 				item.Level = 50;
-				item.Item_Type = 27;
+				item.ItemType = 27;
 				item.Model = 724;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 100;
 				item.SPD_ABS = 27;
-				item.Object_Type = 35;
+				item.ObjectType = 35;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -744,31 +744,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Heat;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				MinstrelEpicLegs = item;
 
 			}
 			//of Coruscating Harmony  Sleeves 
-			MinstrelEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("MinstrelEpicArms");
+			MinstrelEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MinstrelEpicArms");
 			if (MinstrelEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Minstrel Epic Arms , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "MinstrelEpicArms";
+				item.KeyName = "MinstrelEpicArms";
 				item.Name = "Sleeves of Coruscating Harmony";
 				item.Level = 50;
-				item.Item_Type = 28;
+				item.ItemType = 28;
 				item.Model = 725;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 100;
 				item.SPD_ABS = 27;
-				item.Object_Type = 35;
+				item.ObjectType = 35;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -787,30 +787,30 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Body;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				MinstrelEpicArms = item;
 			}
 
-			SorcerorEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("SorcerorEpicBoots");
+			SorcerorEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SorcerorEpicBoots");
 			if (SorcerorEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sorceror Epic Boots , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "SorcerorEpicBoots";
+				item.KeyName = "SorcerorEpicBoots";
 				item.Name = "Boots of Mental Acuity";
 				item.Level = 50;
-				item.Item_Type = 23;
+				item.ItemType = 23;
 				item.Model = 143;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -829,32 +829,32 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Energy;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				SorcerorEpicBoots = item;
 
 			}
 //end item
 			//of Mental Acuity Coif 
-			SorcerorEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("SorcerorEpicHelm");
+			SorcerorEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SorcerorEpicHelm");
 			if (SorcerorEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sorceror Epic Helm , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "SorcerorEpicHelm";
+				item.KeyName = "SorcerorEpicHelm";
 				item.Name = "Cap of Mental Acuity";
 				item.Level = 50;
-				item.Item_Type = 21;
+				item.ItemType = 21;
 				item.Model = 1290; //NEED TO WORK ON..
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -873,32 +873,32 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Thrust;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				SorcerorEpicHelm = item;
 
 			}
 //end item
 			//of Mental Acuity Gloves 
-			SorcerorEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("SorcerorEpicGloves");
+			SorcerorEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SorcerorEpicGloves");
 			if (SorcerorEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sorceror Epic Gloves , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "SorcerorEpicGloves";
+				item.KeyName = "SorcerorEpicGloves";
 				item.Name = "Gloves of Mental Acuity";
 				item.Level = 50;
-				item.Item_Type = 22;
+				item.ItemType = 22;
 				item.Model = 142;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -917,31 +917,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Heat;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				SorcerorEpicGloves = item;
 
 			}
 			//of Mental Acuity Hauberk 
-			SorcerorEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("SorcerorEpicVest");
+			SorcerorEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SorcerorEpicVest");
 			if (SorcerorEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sorceror Epic Vest , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "SorcerorEpicVest";
+				item.KeyName = "SorcerorEpicVest";
 				item.Name = "Vest of Mental Acuity";
 				item.Level = 50;
-				item.Item_Type = 25;
+				item.ItemType = 25;
 				item.Model = 804;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -957,31 +957,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus3Type = (int) eProperty.MaxHealth;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				SorcerorEpicVest = item;
 
 			}
 			//of Mental Acuity Legs 
-			SorcerorEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("SorcerorEpicLegs");
+			SorcerorEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SorcerorEpicLegs");
 			if (SorcerorEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sorceror Epic Legs , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "SorcerorEpicLegs";
+				item.KeyName = "SorcerorEpicLegs";
 				item.Name = "Pants of Mental Acuity";
 				item.Level = 50;
-				item.Item_Type = 27;
+				item.ItemType = 27;
 				item.Model = 140;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -1000,31 +1000,31 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus4Type = (int) eResist.Spirit;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				SorcerorEpicLegs = item;
 
 			}
 			//of Mental Acuity Sleeves 
-			SorcerorEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("SorcerorEpicArms");
+			SorcerorEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "SorcerorEpicArms");
 			if (SorcerorEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sorceror Epic Arms , creating it ...");
 				item = new ItemTemplate();
-				item.Id_nb = "SorcerorEpicArms";
+				item.KeyName = "SorcerorEpicArms";
 				item.Name = "Sleeves of Mental Acuity";
 				item.Level = 50;
-				item.Item_Type = 28;
+				item.ItemType = 28;
 				item.Model = 141;
 				item.IsDropable = true;
 				item.IsPickable = true;
 				item.DPS_AF = 50;
 				item.SPD_ABS = 0;
-				item.Object_Type = 32;
+				item.ObjectType = 32;
 				item.Quality = 100;
 				item.Weight = 22;
-				item.Bonus = 35;
+				item.ItemBonus = 35;
 				item.MaxCondition = 50000;
 				item.MaxDurability = 50000;
 				item.Condition = 50000;
@@ -1040,7 +1040,7 @@ namespace DOL.GS.Quests.Albion
 				item.Bonus3Type = (int) eStat.INT;
 
 				
-					GameServer.Database.AddObject(item);
+					GameServer.Instance.SaveDataObject(item);
 
 				SorcerorEpicArms = item;
 			}
@@ -1356,7 +1356,7 @@ namespace DOL.GS.Quests.Albion
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Ferowl.Name && gArgs.Item.Id_nb == sealed_pouch.Id_nb)
+				if (gArgs.Target.Name == Ferowl.Name && gArgs.Item.KeyName == sealed_pouch.KeyName)
 				{
 					Ferowl.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
 					FinishQuest();

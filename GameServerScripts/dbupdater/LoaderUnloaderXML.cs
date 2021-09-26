@@ -25,7 +25,7 @@ using System.Xml.Serialization;
 using System.Reflection;
 using System.IO;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Database.Attributes;
 
 using log4net;

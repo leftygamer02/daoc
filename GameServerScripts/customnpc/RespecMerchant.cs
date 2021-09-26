@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 using DOL.GS.PacketHandler;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using log4net;
 using DOL.AI.Brain;

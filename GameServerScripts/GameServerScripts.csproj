@@ -33,8 +33,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="log4net" Version="2.0.12" />
+        <ProjectReference Include="..\Atlas.DataLayer\Atlas.DataLayer.csproj" />
         <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase" />
-        <ProjectReference Include="..\DOLDatabase\DOLDatabase.csproj" Name="DOLDatabase" />
         <ProjectReference Include="..\GameServer\GameServer.csproj" Name="GameServer" />
     </ItemGroup>
     <Target Name="CopyFiles" AfterTargets="AfterBuild">

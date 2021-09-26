@@ -14,8 +14,9 @@
 */
 
 using System;
+using System.Linq;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -98,7 +99,7 @@ namespace DOL.GS.Quests.Hibernia
 		{
 		}
 
-		public Harmony_50(GamePlayer questingPlayer, DBQuest dbQuest)
+		public Harmony_50(GamePlayer questingPlayer, Quest dbQuest)
 			: base(questingPlayer, dbQuest)
 		{
 		}
@@ -186,70 +187,87 @@ namespace DOL.GS.Quests.Hibernia
 
 			#region Item Declarations
 
-			Horn = GameServer.Database.FindObjectByKey<ItemTemplate>("Horn");
+			Horn = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "Horn");
 			if (Horn == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Horn , creating it ...");
 				Horn = new ItemTemplate();
-				Horn.Id_nb = "Horn";
+				Horn.KeyName = "Horn";
 				Horn.Name = "Horn";
 				Horn.Level = 8;
-				Horn.Item_Type = 29;
+				Horn.ItemType = 29;
 				Horn.Model = 586;
 				Horn.IsDropable = false;
 				Horn.IsPickable = false;
 				Horn.DPS_AF = 0;
 				Horn.SPD_ABS = 0;
-				Horn.Object_Type = 41;
+				Horn.ObjectType = 41;
 				Horn.Hand = 0;
-				Horn.Type_Damage = 0;
+				Horn.TypeDamage = 0;
 				Horn.Quality = 100;
 				Horn.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(Horn);
+					GameServer.Instance.SaveDataObject(Horn);
 				}
 
 			}
 			// end item
 			ItemTemplate i = null;
 
-			DruidEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("DruidEpicBoots");
+			DruidEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DruidEpicBoots");
 			if (DruidEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "DruidEpicBoots";
+				i.KeyName = "DruidEpicBoots";
 				i.Name = "Sidhe Scale Boots";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 743;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 38;
+				i.ObjectType = 38;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 9;
-				i.Bonus1Type = (int)eStat.CON;
-
-				i.Bonus2 = 9;
-				i.Bonus2Type = (int)eStat.QUI;
-
-				i.Bonus3 = 14;
-				i.Bonus3Type = (int)eResist.Body;
-
-				i.Bonus4 = 36;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.CON,
+					BonusValue = 9
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.QUI,
+					BonusValue = 9
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eResist.Body,
+					BonusValue = 14
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 36
+				});
+								
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				DruidEpicBoots = i;
@@ -257,285 +275,408 @@ namespace DOL.GS.Quests.Hibernia
 			}
 			//end item
 			//Sidhe Scale Coif
-			DruidEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("DruidEpicHelm");
+			DruidEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DruidEpicHelm");
 			if (DruidEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "DruidEpicHelm";
+				i.KeyName = "DruidEpicHelm";
 				i.Name = "Sidhe Scale Coif";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1292; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 38;
+				i.ObjectType = 38;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.EMP;
-
-				i.Bonus2 = 3;
-				i.Bonus2Type = (int)eProperty.Skill_Nurture;
-
-				i.Bonus3 = 3;
-				i.Bonus3Type = (int)eProperty.Skill_Nature;
-
-				i.Bonus4 = 27;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.EMP,
+					BonusValue = 15
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eProperty.Skill_Nurture,
+					BonusValue = 3
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eProperty.Skill_Nature,
+					BonusValue = 3
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 27
+				});
+				
+
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 				DruidEpicHelm = i;
 
 			}
 			//end item
 			//Sidhe Scale Gloves
-			DruidEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("DruidEpicGloves");
+			DruidEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DruidEpicGloves");
 			if (DruidEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "DruidEpicGloves";
+				i.KeyName = "DruidEpicGloves";
 				i.Name = "Sidhe Scale Gloves ";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 742;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 38;
+				i.ObjectType = 38;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 3;
-				i.Bonus1Type = (int)eProperty.Skill_Regrowth;
-
-				i.Bonus2 = 6;
-				i.Bonus2Type = (int)eProperty.MaxMana;
-
-				i.Bonus3 = 12;
-				i.Bonus3Type = (int)eStat.DEX;
-
-				i.Bonus4 = 12;
-				i.Bonus4Type = (int)eStat.EMP;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eProperty.Skill_Regrowth,
+					BonusValue = 3
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eProperty.MaxMana,
+					BonusValue = 6
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eStat.DEX,
+					BonusValue = 12
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eStat.EMP,
+					BonusValue = 12
+				});
+
+				
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 				DruidEpicGloves = i;
 
 			}
 			//Sidhe Scale Hauberk
-			DruidEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("DruidEpicVest");
+			DruidEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DruidEpicVest");
 			if (DruidEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "DruidEpicVest";
+				i.KeyName = "DruidEpicVest";
 				i.Name = "Sidhe Scale Breastplate";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 739;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 38;
+				i.ObjectType = 38;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.EMP;
-
-				i.Bonus2 = 3;
-				i.Bonus2Type = (int)eProperty.Skill_Nature;
-
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Slash;
-
-				i.Bonus4 = 30;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.EMP,
+					BonusValue = 15
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eProperty.Skill_Nature,
+					BonusValue = 3
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eResist.Slash,
+					BonusValue = 10
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 30
+				});
+								
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 				DruidEpicVest = i;
 
 			}
 			//Sidhe Scale Legs
-			DruidEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("DruidEpicLegs");
+			DruidEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DruidEpicLegs");
 			if (DruidEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "DruidEpicLegs";
+				i.KeyName = "DruidEpicLegs";
 				i.Name = "Sidhe Scale Leggings";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 740;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 38;
+				i.ObjectType = 38;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 57;
-				i.Bonus1Type = (int)eProperty.MaxHealth;
-
-				i.Bonus2 = 8;
-				i.Bonus2Type = (int)eResist.Crush;
-
-				i.Bonus3 = 8;
-				i.Bonus3Type = (int)eResist.Spirit;
-
-				i.Bonus4 = 8;
-				i.Bonus4Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 57
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eResist.Crush,
+					BonusValue = 8
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eResist.Spirit,
+					BonusValue = 8
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Cold,
+					BonusValue = 8
+				});
+
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				DruidEpicLegs = i;
 
 			}
 			//Sidhe Scale Sleeves
-			DruidEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("DruidEpicArms");
+			DruidEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "DruidEpicArms");
 			if (DruidEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "DruidEpicArms";
+				i.KeyName = "DruidEpicArms";
 				i.Name = "Sidhe Scale Sleeves";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 741;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 38;
+				i.ObjectType = 38;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 13;
-				i.Bonus1Type = (int)eStat.CON;
-
-				i.Bonus2 = 13;
-				i.Bonus2Type = (int)eStat.STR;
-
-				i.Bonus3 = 13;
-				i.Bonus3Type = (int)eStat.EMP;
-
-				i.Bonus4 = 8;
-				i.Bonus4Type = (int)eResist.Matter;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.CON,
+					BonusValue = 13
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.STR,
+					BonusValue = 13
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eStat.EMP,
+					BonusValue = 13
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Matter,
+					BonusValue = 8
+				});
+
+				
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				DruidEpicArms = i;
 
 			}
 			//Blademaster Epic Sleeves End
-			BlademasterEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("BlademasterEpicBoots");
+			BlademasterEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BlademasterEpicBoots");
 			if (BlademasterEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BlademasterEpicBoots";
+				i.KeyName = "BlademasterEpicBoots";
 				i.Name = "Sidhe Studded Boots";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 786;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 19;
-				i.Object_Type = 37;
+				i.ObjectType = 37;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.DEX;
-
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.QUI;
-
-				i.Bonus3 = 24;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
-
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.DEX,
+					BonusValue = 12
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.QUI,
+					BonusValue = 15
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 24
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Cold,
+					BonusValue = 10
+				});
+								
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BlademasterEpicBoots = i;
 
 			}
 			//end item
 			//Sidhe Studded Coif
-			BlademasterEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("BlademasterEpicHelm");
+			BlademasterEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BlademasterEpicHelm");
 			if (BlademasterEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BlademasterEpicHelm";
+				i.KeyName = "BlademasterEpicHelm";
 				i.Name = "Sidhe Studded Helm";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1292; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 19;
-				i.Object_Type = 37;
+				i.ObjectType = 37;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 30;
-				i.Bonus1Type = (int)eProperty.MaxHealth;
-
-				i.Bonus2 = 10;
-				i.Bonus2Type = (int)eResist.Spirit;
-
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Heat;
-
-				i.Bonus4 = 16;
-				i.Bonus4Type = (int)eStat.QUI;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 30
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eResist.Spirit,
+					BonusValue = 10
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eResist.Heat,
+					BonusValue = 10
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eStat.QUI,
+					BonusValue = 16
+				});
+
+				
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				BlademasterEpicHelm = i;
@@ -543,245 +684,305 @@ namespace DOL.GS.Quests.Hibernia
 			}
 			//end item
 			//Sidhe Studded Gloves
-			BlademasterEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("BlademasterEpicGloves");
+			BlademasterEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BlademasterEpicGloves");
 			if (BlademasterEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BlademasterEpicGloves";
+				i.KeyName = "BlademasterEpicGloves";
 				i.Name = "Sidhe Studded Gloves ";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 785;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 19;
-				i.Object_Type = 37;
+				i.ObjectType = 37;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.DEX;
-
-				i.Bonus2 = 13;
-				i.Bonus2Type = (int)eStat.STR;
-
-				i.Bonus3 = 3;
-				i.Bonus3Type = (int)eProperty.Skill_Celtic_Dual;
-
-				i.Bonus4 = 3;
-				i.Bonus4Type = (int)eProperty.Skill_Parry;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.DEX,
+					BonusValue = 15
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.STR,
+					BonusValue = 13
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eProperty.Skill_Celtic_Dual,
+					BonusValue = 3
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eProperty.Skill_Parry,
+					BonusValue = 3
+				});
+
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				BlademasterEpicGloves = i;
 
 			}
 			//Sidhe Studded Hauberk
-			BlademasterEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("BlademasterEpicVest");
+			BlademasterEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BlademasterEpicVest");
 			if (BlademasterEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BlademasterEpicVest";
+				i.KeyName = "BlademasterEpicVest";
 				i.Name = "Sidhe Studded Hauberk";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 782;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 19;
-				i.Object_Type = 37;
+				i.ObjectType = 37;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.CON;
-
-				i.Bonus2 = 12;
-				i.Bonus2Type = (int)eStat.DEX;
-
-				i.Bonus3 = 33;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
-
-				i.Bonus4 = 8;
-				i.Bonus4Type = (int)eResist.Slash;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.CON,
+					BonusValue = 12
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.DEX,
+					BonusValue = 12
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 33
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Slash,
+					BonusValue = 8
+				});
+
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				BlademasterEpicVest = i;
 
 			}
 			//Sidhe Studded Legs
-			BlademasterEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("BlademasterEpicLegs");
+			BlademasterEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BlademasterEpicLegs");
 			if (BlademasterEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BlademasterEpicLegs";
+				i.KeyName = "BlademasterEpicLegs";
 				i.Name = "Sidhe Studded Leggings";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 783;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 19;
-				i.Object_Type = 37;
+				i.ObjectType = 37;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.QUI;
-
-				i.Bonus2 = 12;
-				i.Bonus2Type = (int)eStat.STR;
-
-				i.Bonus3 = 27;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
-
-				i.Bonus4 = 12;
-				i.Bonus4Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.QUI,
+					BonusValue = 12
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.STR,
+					BonusValue = 12
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 27
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Cold,
+					BonusValue = 12
+				});
+
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				BlademasterEpicLegs = i;
 
 			}
 			//Sidhe Studded Sleeves
-			BlademasterEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("BlademasterEpicArms");
+			BlademasterEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BlademasterEpicArms");
 			if (BlademasterEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BlademasterEpicArms";
+				i.KeyName = "BlademasterEpicArms";
 				i.Name = "Sidhe Studded Sleeves";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 784;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 19;
-				i.Object_Type = 37;
+				i.ObjectType = 37;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 18;
-				i.Bonus1Type = (int)eStat.CON;
-
-				i.Bonus2 = 16;
-				i.Bonus2Type = (int)eStat.STR;
-
-				i.Bonus3 = 8;
-				i.Bonus3Type = (int)eResist.Cold;
-
-				i.Bonus4 = 8;
-				i.Bonus4Type = (int)eResist.Heat;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.CON,
+					BonusValue = 18
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eStat.STR,
+					BonusValue = 16
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eResist.Cold,
+					BonusValue = 8
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Heat,
+					BonusValue = 8
+				});
+
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				BlademasterEpicArms = i;
 
 			}
-			AnimistEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("AnimistEpicBoots");
+			AnimistEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "AnimistEpicBoots");
 			if (AnimistEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "AnimistEpicBoots";
+				i.KeyName = "AnimistEpicBoots";
 				i.Name = "Brightly Woven Boots";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 382;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				i.Bonus2 = 12;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				i.Bonus3 = 27;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 27 });
 
-				i.Bonus4 = 12;
-				i.Bonus4Type = (int)eResist.Matter;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Matter, BonusValue = 12 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				AnimistEpicBoots = i;
 
 			}
 			//end item
 			//Brightly Woven Coif
-			AnimistEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("AnimistEpicHelm");
+			AnimistEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "AnimistEpicHelm");
 			if (AnimistEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "AnimistEpicHelm";
+				i.KeyName = "AnimistEpicHelm";
 				i.Name = "Brightly Woven Cap";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1292; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 18;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 18 });
 
-				i.Bonus2 = 4;
-				i.Bonus2Type = (int)eProperty.Skill_Arboreal;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Skill_Arboreal, BonusValue = 4 });
 
-				i.Bonus3 = 21;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 21 });
 
-				i.Bonus4 = 8;
-				i.Bonus4Type = (int)eResist.Thrust;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Thrust, BonusValue = 8 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				AnimistEpicHelm = i;
@@ -789,666 +990,602 @@ namespace DOL.GS.Quests.Hibernia
 			}
 			//end item
 			//Brightly Woven Gloves
-			AnimistEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("AnimistEpicGloves");
+			AnimistEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "AnimistEpicGloves");
 			if (AnimistEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "AnimistEpicGloves";
+				i.KeyName = "AnimistEpicGloves";
 				i.Name = "Brightly Woven Gloves ";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 381;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 10;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				i.Bonus2 = 9;
-				i.Bonus2Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.INT, BonusValue = 9 });
 
-				i.Bonus3 = 4;
-				i.Bonus3Type = (int)eProperty.Skill_Creeping;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.Skill_Creeping, BonusValue = 4 });
 
-				i.Bonus4 = 30;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				AnimistEpicGloves = i;
 
 			}
 			//Brightly Woven Hauberk
-			AnimistEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("AnimistEpicVest");
+			AnimistEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "AnimistEpicVest");
 			if (AnimistEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "AnimistEpicVest";
+				i.KeyName = "AnimistEpicVest";
 				i.Name = "Brightly Woven Robe";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 1186;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				i.Bonus2 = 30;
-				i.Bonus2Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
-				i.Bonus3 = 6;
-				i.Bonus3Type = (int)eProperty.MaxMana;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxMana, BonusValue = 6 });
 
-				i.Bonus4 = 8;
-				i.Bonus4Type = (int)eResist.Body;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Body, BonusValue = 8 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				AnimistEpicVest = i;
 
 			}
 			//Brightly Woven Legs
-			AnimistEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("AnimistEpicLegs");
+			AnimistEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "AnimistEpicLegs");
 			if (AnimistEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "AnimistEpicLegs";
+				i.KeyName = "AnimistEpicLegs";
 				i.Name = "Brightly Woven Pants";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 379;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 16;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Cold, BonusValue = 10 });
 
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eResist.Body;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Body, BonusValue = 10 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				AnimistEpicLegs = i;
 
 			}
 			//Brightly Woven Sleeves
-			AnimistEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("AnimistEpicArms");
+			AnimistEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "AnimistEpicArms");
 			if (AnimistEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "AnimistEpicArms";
+				i.KeyName = "AnimistEpicArms";
 				i.Name = "Brightly Woven Sleeves";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 380;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 10;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				i.Bonus2 = 27;
-				i.Bonus2Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.MaxHealth, BonusValue = 27 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 10 });
 
-				i.Bonus4 = 4;
-				i.Bonus4Type = (int)eProperty.Skill_Mana;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_Mana, BonusValue = 4 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				AnimistEpicArms = i;
 
 			}
-			MentalistEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("MentalistEpicBoots");
+			MentalistEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MentalistEpicBoots");
 			if (MentalistEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MentalistEpicBoots";
+				i.KeyName = "MentalistEpicBoots";
 				i.Name = "Sidhe Woven Boots";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 382;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				i.Bonus2 = 12;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				i.Bonus3 = 12;
-				i.Bonus3Type = (int)eResist.Matter;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Matter, BonusValue = 12 });
 
-				i.Bonus4 = 27;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 27 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				MentalistEpicBoots = i;
 
 			}
 			//end item
 			//Sidhe Woven Coif
-			MentalistEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("MentalistEpicHelm");
+			MentalistEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MentalistEpicHelm");
 			if (MentalistEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MentalistEpicHelm";
+				i.KeyName = "MentalistEpicHelm";
 				i.Name = "Sidhe Woven Cap";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1298; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 18;
-				i.Bonus1Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.INT, BonusValue = 18 });
 
-				i.Bonus2 = 4;
-				i.Bonus2Type = (int)eProperty.Skill_Mentalism;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Skill_Mentalism, BonusValue = 4 });
 
-				i.Bonus3 = 8;
-				i.Bonus3Type = (int)eResist.Thrust;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 8 });
 
-				i.Bonus4 = 21;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 21 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				MentalistEpicHelm = i;
 
 			}
 			//end item
 			//Sidhe Woven Gloves
-			MentalistEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("MentalistEpicGloves");
+			MentalistEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MentalistEpicGloves");
 			if (MentalistEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MentalistEpicGloves";
+				i.KeyName = "MentalistEpicGloves";
 				i.Name = "Sidhe Woven Gloves ";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 381;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 30;
-				i.Bonus1Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
-				i.Bonus2 = 4;
-				i.Bonus2Type = (int)eProperty.Skill_Light;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Skill_Light, BonusValue = 4 });
 
-				i.Bonus3 = 9;
-				i.Bonus3Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 9 });
 
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.DEX, BonusValue = 10 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				MentalistEpicGloves = i;
 
 			}
 			//Sidhe Woven Hauberk
-			MentalistEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("MentalistEpicVest");
+			MentalistEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MentalistEpicVest");
 			if (MentalistEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MentalistEpicVest";
+				i.KeyName = "MentalistEpicVest";
 				i.Name = "Sidhe Woven Vest";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 745;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				i.Bonus2 = 8;
-				i.Bonus2Type = (int)eResist.Body;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Body, BonusValue = 8 });
 
-				i.Bonus3 = 30;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
-				i.Bonus4 = 6;
-				i.Bonus4Type = (int)eProperty.MaxMana;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxMana, BonusValue = 6 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				MentalistEpicVest = i;
 
 			}
 			//Sidhe Woven Legs
-			MentalistEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("MentalistEpicLegs");
+			MentalistEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MentalistEpicLegs");
 			if (MentalistEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MentalistEpicLegs";
+				i.KeyName = "MentalistEpicLegs";
 				i.Name = "Sidhe Woven Pants";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 379;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 16;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Cold, BonusValue = 10 });
 
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eResist.Body;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Body, BonusValue = 10 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				MentalistEpicLegs = i;
 
 			}
 			//Sidhe Woven Sleeves
-			MentalistEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("MentalistEpicArms");
+			MentalistEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MentalistEpicArms");
 			if (MentalistEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MentalistEpicArms";
+				i.KeyName = "MentalistEpicArms";
 				i.Name = "Sidhe Woven Sleeves";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 380;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 10;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				i.Bonus2 = 27;
-				i.Bonus2Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.MaxHealth, BonusValue = 27 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 10 });
 
-				i.Bonus4 = 4;
-				i.Bonus4Type = (int)eProperty.Skill_Mana;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_Mana, BonusValue = 4 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				MentalistEpicArms = i;
 
 			}
-			ValewalkerEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ValewalkerEpicBoots");
+			ValewalkerEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValewalkerEpicBoots");
 			if (ValewalkerEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ValewalkerEpicBoots";
+				i.KeyName = "ValewalkerEpicBoots";
 				i.Name = "Boots of the Misty Glade";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 382;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				i.Bonus2 = 10;
-				i.Bonus2Type = (int)eResist.Matter;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Matter, BonusValue = 10 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Heat;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
-				i.Bonus4 = 33;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ValewalkerEpicBoots = i;
 
 			}
 			//end item
 			//Misty Glade Coif
-			ValewalkerEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ValewalkerEpicHelm");
+			ValewalkerEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValewalkerEpicHelm");
 			if (ValewalkerEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ValewalkerEpicHelm";
+				i.KeyName = "ValewalkerEpicHelm";
 				i.Name = "Cap of the Misty Glade";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1292; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 3;
-				i.Bonus1Type = (int)eProperty.Skill_Arboreal;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Arboreal, BonusValue = 3 });
 
-				i.Bonus2 = 6;
-				i.Bonus2Type = (int)eProperty.MaxMana;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.MaxMana, BonusValue = 6 });
 
-				i.Bonus3 = 12;
-				i.Bonus3Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				i.Bonus4 = 12;
-				i.Bonus4Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.INT, BonusValue = 12 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ValewalkerEpicHelm = i;
 
 			}
 			//end item
 			//Misty Glade Gloves
-			ValewalkerEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ValewalkerEpicGloves");
+			ValewalkerEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValewalkerEpicGloves");
 			if (ValewalkerEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ValewalkerEpicGloves";
+				i.KeyName = "ValewalkerEpicGloves";
 				i.Name = "Gloves of the Misty Glades";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 381;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 3;
-				i.Bonus1Type = (int)eProperty.Skill_Parry;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Parry, BonusValue = 3 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				i.Bonus3 = 15;
-				i.Bonus3Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eResist.Crush;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Crush, BonusValue = 10 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ValewalkerEpicGloves = i;
 
 			}
 			//Misty Glade Hauberk
-			ValewalkerEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ValewalkerEpicVest");
+			ValewalkerEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValewalkerEpicVest");
 			if (ValewalkerEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ValewalkerEpicVest";
+				i.KeyName = "ValewalkerEpicVest";
 				i.Name = "Robe of the Misty Glade";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 1003;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 13;
-				i.Bonus1Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.INT, BonusValue = 13 });
 
-				i.Bonus2 = 13;
-				i.Bonus2Type = (int)eStat.STR;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.STR, BonusValue = 13 });
 
-				i.Bonus3 = 4;
-				i.Bonus3Type = (int)eProperty.Skill_Arboreal;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.Skill_Arboreal, BonusValue = 4 });
 
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eResist.Energy;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Energy, BonusValue = 10 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ValewalkerEpicVest = i;
 
 			}
 			//Misty Glade Legs
-			ValewalkerEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ValewalkerEpicLegs");
+			ValewalkerEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValewalkerEpicLegs");
 			if (ValewalkerEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ValewalkerEpicLegs";
+				i.KeyName = "ValewalkerEpicLegs";
 				i.Name = "Pants of the Misty Glade";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 379;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Crush;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 10 });
 
-				i.Bonus4 = 18;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 18 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ValewalkerEpicLegs = i;
 
 			}
 			//Misty Glade Sleeves
-			ValewalkerEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ValewalkerEpicArms");
+			ValewalkerEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ValewalkerEpicArms");
 			if (ValewalkerEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ValewalkerEpicArms";
+				i.KeyName = "ValewalkerEpicArms";
 				i.Name = "Sleeves of the Misty Glade";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 380;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
 				i.Durability = 50000;
 
-				i.Bonus1 = 3;
-				i.Bonus1Type = (int)eProperty.Skill_Scythe;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Scythe, BonusValue = 3 });
 
-				i.Bonus2 = 10;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 10 });
 
-				i.Bonus4 = 33;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				ValewalkerEpicArms = i;
 
 			}
 
 			#region Vampiir
-			VampiirEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("VampiirEpicBoots");
+			VampiirEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "VampiirEpicBoots");
 			if (VampiirEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "VampiirEpicBoots";
+				i.KeyName = "VampiirEpicBoots";
 				i.Name = "Archfiend Etched Boots";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 2927;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 10;
-				i.Object_Type = (int)eObjectType.Leather;
+				i.ObjectType = (int)eObjectType.Leather;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1461,42 +1598,38 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Hits: 24 pts
 				 */
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.STR;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 12 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Thrust;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 10 });
 
-				i.Bonus4 = 24;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				VampiirEpicBoots = i;
 
 			}
 			//end item
 			//Misty Glade Coif
-			VampiirEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("VampiirEpicHelm");
+			VampiirEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "VampiirEpicHelm");
 			if (VampiirEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "VampiirEpicHelm";
+				i.KeyName = "VampiirEpicHelm";
 				i.Name = "Archfiend Etched Helm";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1292; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 10;
-				i.Object_Type = (int)eObjectType.Leather;
+				i.ObjectType = (int)eObjectType.Leather;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1509,42 +1642,38 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Hits: 30 pts
 				 */
 
-				i.Bonus1 = 6;
-				i.Bonus1Type = (int)eStat.STR;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 6 });
 
-				i.Bonus2 = 16;
-				i.Bonus2Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				i.Bonus3 = 6;
-				i.Bonus3Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 6 });
 
-				i.Bonus4 = 30;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				VampiirEpicHelm = i;
 
 			}
 			//end item
 			//Misty Glade Gloves
-			VampiirEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("VampiirEpicGloves");
+			VampiirEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "VampiirEpicGloves");
 			if (VampiirEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "VampiirEpicGloves";
+				i.KeyName = "VampiirEpicGloves";
 				i.Name = "Archfiend Etched Gloves";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 2926;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 10;
-				i.Object_Type = (int)eObjectType.Leather;
+				i.ObjectType = (int)eObjectType.Leather;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1557,41 +1686,37 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Shadow Mastery: +5 pts
 				 */
 
-				i.Bonus1 = 12;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				i.Bonus2 = 13;
-				i.Bonus2Type = (int)eStat.QUI;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 13 });
 
-				i.Bonus3 = 2;
-				i.Bonus3Type = (int)eProperty.Skill_Dementia;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.Skill_Dementia, BonusValue = 2 });
 
-				i.Bonus4 = 5;
-				i.Bonus4Type = (int)eProperty.Skill_ShadowMastery;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_ShadowMastery, BonusValue = 5 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				VampiirEpicGloves = i;
 
 			}
 			//Misty Glade Hauberk
-			VampiirEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("VampiirEpicVest");
+			VampiirEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "VampiirEpicVest");
 			if (VampiirEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "VampiirEpicVest";
+				i.KeyName = "VampiirEpicVest";
 				i.Name = "Archfiend Etched Vest";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 2923;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 10;
-				i.Object_Type = (int)eObjectType.Leather;
+				i.ObjectType = (int)eObjectType.Leather;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1604,41 +1729,37 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Hits: 30 pts
 				 */
 
-				i.Bonus1 = 10;
-				i.Bonus1Type = (int)eStat.STR;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 10 });
 
-				i.Bonus2 = 10;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eStat.QUI;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.QUI, BonusValue = 10 });
 
-				i.Bonus4 = 30;
-				i.Bonus4Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				VampiirEpicVest = i;
 
 			}
 			//Misty Glade Legs
-			VampiirEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("VampiirEpicLegs");
+			VampiirEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "VampiirEpicLegs");
 			if (VampiirEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "VampiirEpicLegs";
+				i.KeyName = "VampiirEpicLegs";
 				i.Name = "Archfiend Etched Leggings";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 2924;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 10;
-				i.Object_Type = (int)eObjectType.Leather;
+				i.ObjectType = (int)eObjectType.Leather;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1651,41 +1772,37 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Slash Resist: 10%
 				 */
 
-				i.Bonus1 = 16;
-				i.Bonus1Type = (int)eStat.CON ;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus3 = 10;
-				i.Bonus3Type = (int)eResist.Crush;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 10 });
 
-				i.Bonus4 = 10;
-				i.Bonus4Type = (int)eResist.Slash;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Slash, BonusValue = 10 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				VampiirEpicLegs = i;
 
 			}
 			//Misty Glade Sleeves
-			VampiirEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("VampiirEpicArms");
+			VampiirEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "VampiirEpicArms");
 			if (VampiirEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "VampiirEpicArms";
+				i.KeyName = "VampiirEpicArms";
 				i.Name = "Archfiend Etched Sleeves";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 2925;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 10;
-				i.Object_Type = (int)eObjectType.Leather;
+				i.ObjectType = (int)eObjectType.Leather;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1698,42 +1815,38 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Vampiiric Embrace: +4 pts
 				 */
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.STR;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 15 });
 
-				i.Bonus2 = 15;
-				i.Bonus2Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus3 = 6;
-				i.Bonus3Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Cold, BonusValue = 6 });
 
-				i.Bonus4 = 4;
-				i.Bonus4Type = (int)eProperty.Skill_VampiiricEmbrace;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_VampiiricEmbrace, BonusValue = 4 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				VampiirEpicArms = i;
 
 			}
 			#endregion
 			#region Bainshee
-			BainsheeEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("BainsheeEpicBoots");
+			BainsheeEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BainsheeEpicBoots");
 			if (BainsheeEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BainsheeEpicBoots";
+				i.KeyName = "BainsheeEpicBoots";
 				i.Name = "Boots of the Keening Spirit";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 2952;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1748,49 +1861,43 @@ namespace DOL.GS.Quests.Hibernia
 				 * hit cap 40
 				 */
 
-				i.Bonus1 = 18;
-				i.Bonus1Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.INT, BonusValue = 18 });
 
-				i.Bonus2 = 6;
-				i.Bonus2Type = (int)eResist.Cold;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Cold, BonusValue = 6 });
 
-				i.Bonus3 = 40;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 40 });
 
-				i.Bonus4 = 6;
-				i.Bonus4Type = (int)eResist.Heat;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 6 });
 
-				i.Bonus5 = 5;
-				i.Bonus5Type = (int)eProperty.IntCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 5, BonusType = (int)eProperty.IntCapBonus, BonusValue = 5 });
 
-				i.Bonus6 = 40;
-				i.Bonus6Type = (int)eProperty.MaxHealthCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 6, BonusType = (int)eProperty.MaxHealthCapBonus, BonusValue = 40 });
 
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BainsheeEpicBoots = i;
 
 			}
 			//end item
 			//Misty Glade Coif
-			BainsheeEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("BainsheeEpicHelm");
+			BainsheeEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BainsheeEpicHelm");
 			if (BainsheeEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BainsheeEpicHelm";
+				i.KeyName = "BainsheeEpicHelm";
 				i.Name = "Wreath of the Keening Spirit";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1292; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1805,48 +1912,73 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Constitution attribute cap: 5
 				 */
 
-				i.Bonus1 = 18;
-				i.Bonus1Type = (int)eStat.CON;
-
-				i.Bonus2 = 6;
-				i.Bonus2Type = (int)eResist.Body;
-
-				i.Bonus3 = 40;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
-
-				i.Bonus4 = 6;
-				i.Bonus4Type = (int)eResist.Energy;
-
-				i.Bonus5 = 40;
-				i.Bonus4Type = (int)eProperty.MaxHealthCapBonus;
-
-				i.Bonus6 = 5;
-				i.Bonus4Type = (int)eProperty.ConCapBonus;
+				i.Bonuses.Add(new ItemBonus()
 				{
-					GameServer.Database.AddObject(i);
+					BonusOrder = 1,
+					BonusType = (int)eStat.CON,
+					BonusValue = 18
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 2,
+					BonusType = (int)eResist.Body,
+					BonusValue = 6
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 3,
+					BonusType = (int)eProperty.MaxHealth,
+					BonusValue = 40
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 4,
+					BonusType = (int)eResist.Energy,
+					BonusValue = 6
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 5,
+					BonusType = (int)eProperty.MaxHealthCapBonus,
+					BonusValue = 40
+				});
+
+				i.Bonuses.Add(new ItemBonus()
+				{
+					BonusOrder = 6,
+					BonusType = (int)eProperty.ConCapBonus,
+					BonusValue = 5
+				});
+				
+				{
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BainsheeEpicHelm = i;
 
 			}
 			//end item
 			//Misty Glade Gloves
-			BainsheeEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("BainsheeEpicGloves");
+			BainsheeEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BainsheeEpicGloves");
 			if (BainsheeEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BainsheeEpicGloves";
+				i.KeyName = "BainsheeEpicGloves";
 				i.Name = "Gloves of the Keening Spirit";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 2950;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1861,48 +1993,42 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Power Pool: 6%
 				 */
 
-				i.Bonus1 = 18;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 18 });
 
-				i.Bonus2 = 6;
-				i.Bonus2Type = (int)eResist.Matter;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Matter, BonusValue = 6 });
 
-				i.Bonus3 = 6;
-				i.Bonus3Type = (int)eResist.Spirit;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Spirit, BonusValue = 6 });
 
-				i.Bonus4 = 6;
-				i.Bonus4Type = (int)eProperty.MaxMana;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxMana, BonusValue = 6 });
 
-				i.Bonus5 = 5;
-				i.Bonus5Type = (int)eProperty.DexCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 5, BonusType = (int)eProperty.DexCapBonus, BonusValue = 5 });
 
-				i.Bonus6 = 6;
-				i.Bonus6Type = (int)eProperty.PowerPool;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 6, BonusType = (int)eProperty.PowerPool, BonusValue = 6 });
 
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BainsheeEpicGloves = i;
 
 			}
 			//Keening Spirit Hauberk
-			BainsheeEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("BainsheeEpicVest");
+			BainsheeEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BainsheeEpicVest");
 			if (BainsheeEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BainsheeEpicVest";
+				i.KeyName = "BainsheeEpicVest";
 				i.Name = "Robe of the Keening Spirit";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 2922;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1917,47 +2043,41 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Hit Points bonus cap: 40
 				 */
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.INT;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.INT, BonusValue = 15 });
 
-				i.Bonus2 = 7;
-				i.Bonus2Type = (int)eResist.Crush;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Crush, BonusValue = 7 });
 
-				i.Bonus3 = 40;
-				i.Bonus3Type = (int)eProperty.MaxHealth;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 40 });
 
-				i.Bonus4 = 3;
-				i.Bonus4Type = (int)eProperty.AllMagicSkills;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.AllMagicSkills, BonusValue = 3 });
 
-				i.Bonus5 = 5;
-				i.Bonus5Type = (int)eProperty.IntCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 5, BonusType = (int)eProperty.IntCapBonus, BonusValue = 5 });
 
-				i.Bonus6 = 40;
-				i.Bonus6Type = (int)eProperty.MaxHealthCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 6, BonusType = (int)eProperty.MaxHealthCapBonus, BonusValue = 40 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BainsheeEpicVest = i;
 
 			}
 			//Keening Spirit Legs
-			BainsheeEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("BainsheeEpicLegs");
+			BainsheeEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BainsheeEpicLegs");
 			if (BainsheeEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BainsheeEpicLegs";
+				i.KeyName = "BainsheeEpicLegs";
 				i.Name = "Pants of the Keening Spirit";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 2949;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1972,47 +2092,41 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Power bonus cap: 6
 				 */
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.CON;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				i.Bonus2 = 7;
-				i.Bonus2Type = (int)eResist.Thrust;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Thrust, BonusValue = 7 });
 
-				i.Bonus3 = 6;
-				i.Bonus3Type = (int)eProperty.PowerPool;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.PowerPool, BonusValue = 6 });
 
-				i.Bonus4 = 5;
-				i.Bonus4Type = (int)eProperty.IntCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.IntCapBonus, BonusValue = 5 });
 
-				i.Bonus5 = 5;
-				i.Bonus5Type = (int)eProperty.ConCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 5, BonusType = (int)eProperty.ConCapBonus, BonusValue = 5 });
 
-				i.Bonus6 = 6;
-				i.Bonus6Type = (int)eProperty.PowerPoolCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 6, BonusType = (int)eProperty.PowerPoolCapBonus, BonusValue = 6 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BainsheeEpicLegs = i;
 
 			}
 			//Keening Spirit Sleeves
-			BainsheeEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("BainsheeEpicArms");
+			BainsheeEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "BainsheeEpicArms");
 			if (BainsheeEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "BainsheeEpicArms";
+				i.KeyName = "BainsheeEpicArms";
 				i.Name = "Sleeves of the Keening Spirit";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 2948;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -2027,25 +2141,19 @@ namespace DOL.GS.Quests.Hibernia
 				 *   Power bonus cap: 6
 				 */
 
-				i.Bonus1 = 15;
-				i.Bonus1Type = (int)eStat.DEX;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				i.Bonus2 = 7;
-				i.Bonus2Type = (int)eResist.Slash;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Slash, BonusValue = 7 });
 
-				i.Bonus3 = 3;
-				i.Bonus3Type = (int)eProperty.AllMagicSkills;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.AllMagicSkills, BonusValue = 3 });
 
-				i.Bonus4 = 6;
-				i.Bonus4Type = (int)eProperty.PowerPool;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.PowerPool, BonusValue = 6 });
 
-				i.Bonus5 = 7;
-				i.Bonus5Type = (int)eProperty.DexCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 5, BonusType = (int)eProperty.DexCapBonus, BonusValue = 7 });
 
-				i.Bonus6 = 6;
-				i.Bonus6Type = (int)eProperty.PowerPoolCapBonus;
+				i.Bonuses.Add(new ItemBonus() { BonusOrder = 6, BonusType = (int)eProperty.PowerPoolCapBonus, BonusValue = 6 });
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				BainsheeEpicArms = i;
 
@@ -2270,7 +2378,7 @@ namespace DOL.GS.Quests.Hibernia
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs)args;
-				if (gArgs.Target.Name == Revelin.Name && gArgs.Item.Id_nb == Horn.Id_nb)
+				if (gArgs.Target.Name == Revelin.Name && gArgs.Item.ItemTemplate.KeyName == Horn.KeyName)
 				{
 					Revelin.SayTo(player, "You have earned this Epic Armour!");
 					FinishQuest();

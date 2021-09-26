@@ -35,7 +35,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using DOL.Events;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS
@@ -144,9 +144,9 @@ namespace DOL.GS
 		{
 			this.Realm = (int)realm;
 			this.Level = level;
-			this.Object_Type = (int)type;
-			this.Item_Type = (int)slot;
-			this.Type_Damage = (int)dmg;
+			this.ObjectType = (int)type;
+			this.ItemType = (int)slot;
+			this.TypeDamage = (int)dmg;
 			
 			// shouldn't need more Randomized public set values
 			
@@ -170,9 +170,9 @@ namespace DOL.GS
 			//item bonus
 			int temp = this.Level - 15;
 			temp -= temp % 5;
-			this.Bonus = temp;
-			if (this.Bonus < 0)
-				this.Bonus = 0;
+			this.ItemBonus = temp;
+			if (this.ItemBonus < 0)
+				this.ItemBonus = 0;
 
 			//constants
 			int condition = this.Level * 2000;
@@ -211,7 +211,7 @@ namespace DOL.GS
 		
 		private void GenerateItemStats()
 		{
-			eObjectType type = (eObjectType)this.Object_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
 
 			//special property for instrument
 			if (type == eObjectType.Instrument)
@@ -249,7 +249,7 @@ namespace DOL.GS
 				case eObjectType.ThrustWeapon:
 				case eObjectType.FistWraps: //Maulers
 					{
-						if ((eInventorySlot)this.Item_Type == eInventorySlot.LeftHandWeapon)
+						if ((eInventorySlot)this.ItemType == eInventorySlot.LeftHandWeapon)
 							this.Hand = 2;
 						break;
 					}
@@ -265,7 +265,7 @@ namespace DOL.GS
 				case eObjectType.Hammer:
 				case eObjectType.Axe:
 					{
-						if ((eInventorySlot)this.Item_Type == eInventorySlot.TwoHandWeapon)
+						if ((eInventorySlot)this.ItemType == eInventorySlot.TwoHandWeapon)
 							this.Hand = 1;
 						break;
 					}
@@ -360,7 +360,7 @@ namespace DOL.GS
 			}
 
 			// Magical items have at least 1 bonus
-			if (this.Object_Type == (int)eObjectType.Magical && number < 1)
+			if (this.ObjectType == (int)eObjectType.Magical && number < 1)
 				number = 1;
 
 
@@ -423,7 +423,7 @@ namespace DOL.GS
 		
 		private bool CanAddFocus()
 		{
-			if (this.Object_Type == (int)eObjectType.Staff)
+			if (this.ObjectType == (int)eObjectType.Staff)
 			{
 				if (this.Bonus1Type != 0)
 					return false;
@@ -590,7 +590,7 @@ namespace DOL.GS
 
 		private bool StatIsValidForObjectType(eProperty property)
 		{
-			switch ((eObjectType)this.Object_Type)
+			switch ((eObjectType)this.ObjectType)
 			{
 				case eObjectType.Magical: 
 					return StatIsValidForRealm(property);
@@ -637,7 +637,7 @@ namespace DOL.GS
 
 		private bool SkillIsValidForObjectType(eProperty property)
 		{
-			switch ((eObjectType)this.Object_Type)
+			switch ((eObjectType)this.ObjectType)
 			{
 				case eObjectType.Magical: 
 					return true;
@@ -686,7 +686,7 @@ namespace DOL.GS
 		{
 			int level = this.Level;
 			eRealm realm = (eRealm)this.Realm;
-			eObjectType type = (eObjectType)this.Object_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
 
 			switch (property)
 			{
@@ -1354,7 +1354,7 @@ namespace DOL.GS
 		{
 			int level = this.Level;
 			eRealm realm = (eRealm)this.Realm;
-			eObjectType type = (eObjectType)this.Object_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
 
 			switch (property)
 			{
@@ -1396,14 +1396,14 @@ namespace DOL.GS
 				//healer things
 				case eProperty.Skill_Smiting:
 					{
-						if ((type == eObjectType.Shield && this.Type_Damage < 3) || type == eObjectType.CrushingWeapon)
+						if ((type == eObjectType.Shield && this.TypeDamage < 3) || type == eObjectType.CrushingWeapon)
 							return true;
 						break;
 					}
 				case eProperty.Skill_Enhancement:
 				case eProperty.Skill_Rejuvenation:
 					{
-						if ((type == eObjectType.Staff && this.Description == "friar") || (type == eObjectType.Shield && this.Type_Damage < 3) || type == eObjectType.CrushingWeapon)
+						if ((type == eObjectType.Staff && this.Description == "friar") || (type == eObjectType.Shield && this.TypeDamage < 3) || type == eObjectType.CrushingWeapon)
 							return true;
 						break;
 					}
@@ -1414,7 +1414,7 @@ namespace DOL.GS
 				case eProperty.Skill_Nature:
 				case eProperty.Skill_Regrowth:
 					{
-						if (type == eObjectType.Hammer || (type == eObjectType.Shield && this.Type_Damage < 2) || type == eObjectType.Blunt || type == eObjectType.Blades)
+						if (type == eObjectType.Hammer || (type == eObjectType.Shield && this.TypeDamage < 2) || type == eObjectType.Blunt || type == eObjectType.Blades)
 							return true;
 						break;
 					}
@@ -1456,7 +1456,7 @@ namespace DOL.GS
 					}
 				case eProperty.Skill_Battlesongs:
 					{
-						if (type == eObjectType.Sword || type == eObjectType.Axe || type == eObjectType.Hammer || (type == eObjectType.Shield && this.Type_Damage < 3))
+						if (type == eObjectType.Sword || type == eObjectType.Axe || type == eObjectType.Hammer || (type == eObjectType.Shield && this.TypeDamage < 3))
 							return true;
 						break;
 					}
@@ -1509,7 +1509,7 @@ namespace DOL.GS
 				case eProperty.Skill_Crushing:
 					{
 						if (type == eObjectType.CrushingWeapon || 
-							((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.Type_Damage == (int)eDamageType.Crush) || 
+							((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.TypeDamage == (int)eDamageType.Crush) || 
 							type == eObjectType.Shield)
 							return true;
 						break;
@@ -1546,7 +1546,7 @@ namespace DOL.GS
 					}
 				case eProperty.Skill_Instruments:
 					{
-						if (type == eObjectType.Instrument || (type == eObjectType.Shield && this.Type_Damage == 1))
+						if (type == eObjectType.Instrument || (type == eObjectType.Shield && this.TypeDamage == 1))
 							return true;
 						break;
 					}
@@ -1564,7 +1564,7 @@ namespace DOL.GS
 					}
 				case eProperty.Skill_Music:
 					{
-						if (type == eObjectType.Blades || type == eObjectType.Blunt || (type == eObjectType.Shield && this.Type_Damage == 1) || type == eObjectType.Instrument)
+						if (type == eObjectType.Blades || type == eObjectType.Blunt || (type == eObjectType.Shield && this.TypeDamage == 1) || type == eObjectType.Instrument)
 							return true;
 						break;
 					}
@@ -1631,7 +1631,7 @@ namespace DOL.GS
 				case eProperty.Skill_Slashing:
 					{
 						if (type == eObjectType.SlashingWeapon ||
-							((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.Type_Damage == (int)eDamageType.Slash) ||
+							((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.TypeDamage == (int)eDamageType.Slash) ||
 							type == eObjectType.Shield)
 							return true;
 						break;
@@ -1650,7 +1650,7 @@ namespace DOL.GS
 					}
 				case eProperty.Skill_Stealth:
 					{
-						if (type == eObjectType.Longbow || type == eObjectType.RecurvedBow || type == eObjectType.CompositeBow || (realm == eRealm.Albion && type == eObjectType.Shield && this.Type_Damage == 1) || type == eObjectType.Spear || type == eObjectType.Sword || type == eObjectType.Axe || type == eObjectType.LeftAxe || type == eObjectType.SlashingWeapon || type == eObjectType.ThrustWeapon || type == eObjectType.Piercing || type == eObjectType.Blades || (realm == eRealm.Albion && type == eObjectType.Instrument))
+						if (type == eObjectType.Longbow || type == eObjectType.RecurvedBow || type == eObjectType.CompositeBow || (realm == eRealm.Albion && type == eObjectType.Shield && this.TypeDamage == 1) || type == eObjectType.Spear || type == eObjectType.Sword || type == eObjectType.Axe || type == eObjectType.LeftAxe || type == eObjectType.SlashingWeapon || type == eObjectType.ThrustWeapon || type == eObjectType.Piercing || type == eObjectType.Blades || (realm == eRealm.Albion && type == eObjectType.Instrument))
 							return true;
 						break;
 					}
@@ -1669,7 +1669,7 @@ namespace DOL.GS
 				case eProperty.Skill_Thrusting:
 					{
 						if (type == eObjectType.ThrustWeapon ||
-							((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.Type_Damage == (int)eDamageType.Thrust) ||
+							((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.TypeDamage == (int)eDamageType.Thrust) ||
 							type == eObjectType.Shield)
 							return true;
 						break;
@@ -1717,7 +1717,7 @@ namespace DOL.GS
 				case eProperty.AllMagicSkills:
 					{
 						//scouts, armsmen, paladins, mercs, blademasters, heroes, zerks, warriors do not need this.
-						if (type == eObjectType.Longbow || type == eObjectType.CelticSpear || type == eObjectType.PolearmWeapon || type == eObjectType.TwoHandedWeapon || type == eObjectType.Crossbow || (type == eObjectType.Shield && this.Type_Damage > 2))
+						if (type == eObjectType.Longbow || type == eObjectType.CelticSpear || type == eObjectType.PolearmWeapon || type == eObjectType.TwoHandedWeapon || type == eObjectType.Crossbow || (type == eObjectType.Shield && this.TypeDamage > 2))
 							return false;
 						else
 							return true;
@@ -1800,7 +1800,7 @@ namespace DOL.GS
 		private bool StatIsValidForArmor(eProperty property)
 		{
 			eRealm realm = (eRealm)this.Realm;
-			eObjectType type = (eObjectType)this.Object_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
 
 			switch (property)
 			{
@@ -1924,7 +1924,7 @@ namespace DOL.GS
 		private bool StatIsValidForWeapon(eProperty property)
 		{
 			eRealm realm = (eRealm)this.Realm;
-			eObjectType type = (eObjectType)this.Object_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
 
 			switch (type)
 			{
@@ -1947,11 +1947,11 @@ namespace DOL.GS
 							return false;
 						else if (realm == eRealm.Hibernia && (property == eProperty.Piety || property == eProperty.PieCapBonus))
 							return false;
-						else if ((realm == eRealm.Albion || realm == eRealm.Hibernia) && this.Type_Damage > 1 && (property == eProperty.Charisma || property == eProperty.ChaCapBonus))
+						else if ((realm == eRealm.Albion || realm == eRealm.Hibernia) && this.TypeDamage > 1 && (property == eProperty.Charisma || property == eProperty.ChaCapBonus))
 							return false;
-						else if (realm == eRealm.Midgard && this.Type_Damage > 2 && (property == eProperty.Charisma || property == eProperty.ChaCapBonus))
+						else if (realm == eRealm.Midgard && this.TypeDamage > 2 && (property == eProperty.Charisma || property == eProperty.ChaCapBonus))
 							return false;
-						else if (this.Type_Damage > 2 && property == eProperty.MaxMana)
+						else if (this.TypeDamage > 2 && property == eProperty.MaxMana)
 							return false;
 
 						break;
@@ -2335,7 +2335,7 @@ namespace DOL.GS
 			// tolakram - reset speeds based on data from allakhazam 1-26-2008
 			// removed specific left hand speed - left hand usable set based on speed in GenerateItemNameModel
 
-			switch ((eObjectType)this.Object_Type)
+			switch ((eObjectType)this.ObjectType)
 			{
 				case eObjectType.SlashingWeapon:
 				case eObjectType.CrushingWeapon:
@@ -2458,7 +2458,7 @@ namespace DOL.GS
 					}
 				case eObjectType.Shield:
 					{
-						switch (this.Type_Damage)
+						switch (this.TypeDamage)
 						{
 							case 1:
 								this.SPD_ABS = 30;
@@ -2494,8 +2494,8 @@ namespace DOL.GS
 
 		public void GenerateItemWeight()
 		{
-			eObjectType type = (eObjectType)this.Object_Type;
-			eInventorySlot slot = (eInventorySlot)this.Item_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
+			eInventorySlot slot = (eInventorySlot)this.ItemType;
 			
 			switch (type)
 			{
@@ -2616,7 +2616,7 @@ namespace DOL.GS
 					this.Weight = 40;
 					return;
 				case eObjectType.Shield:
-					switch (this.Type_Damage)
+					switch (this.TypeDamage)
 					{
 						case 1:
 							this.Weight = 31;
@@ -2655,10 +2655,10 @@ namespace DOL.GS
 		
 		private void GenerateItemNameModel()
 		{
-			eInventorySlot slot = (eInventorySlot)this.Item_Type;
-			eDamageType damage = (eDamageType)this.Type_Damage;
+			eInventorySlot slot = (eInventorySlot)this.ItemType;
+			eDamageType damage = (eDamageType)this.TypeDamage;
 			eRealm realm = (eRealm)this.Realm;
-			eObjectType type = (eObjectType)this.Object_Type;
+			eObjectType type = (eObjectType)this.ObjectType;
 
 			string name = "No Name";
 			int model = 488;
@@ -3005,14 +3005,14 @@ namespace DOL.GS
 							name = "Short Sword";
 							model = 445;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 30)
 						{
 							name = "Falcata";
 							model = 444;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 33)
 						{
@@ -3040,14 +3040,14 @@ namespace DOL.GS
 							name = "Club";
 							model = 449;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 35)
 						{
 							name = "Mace";
 							model = 450;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 40)
 						{
@@ -3115,14 +3115,14 @@ namespace DOL.GS
 							name = "Hammer";
 							model = 12;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 35)
 						{
 							name = "Mace";
 							model = 13;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 40)
 						{
@@ -3286,7 +3286,7 @@ namespace DOL.GS
 						}
 						// all hand to hand weapons usable in left hand
 						this.Hand = 2; // allow left hand
-						this.Item_Type = Slot.LEFTHAND;
+						this.ItemType = Slot.LEFTHAND;
 						break;
 					}
 				case eObjectType.Instrument:
@@ -3480,14 +3480,14 @@ namespace DOL.GS
 							name = "Dirk";
 							model = 454;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 27)
 						{
 							name = "Stiletto";
 							model = 456;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 30)
 						{
@@ -3591,7 +3591,7 @@ namespace DOL.GS
 							name = "Dagger";
 							model = 1;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 30)
 						{
@@ -3606,7 +3606,7 @@ namespace DOL.GS
 								model = 3;
 							}
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 32)
 						{
@@ -3778,21 +3778,21 @@ namespace DOL.GS
 							name = "Dirk";
 							model = 21;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 28)
 						{
 							name = "Stiletto";
 							model = 71;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 30)
 						{
 							name = "Main Gauche";
 							model = 25;
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 36)
 						{
@@ -3870,7 +3870,7 @@ namespace DOL.GS
 							model = 3476;
 							this.Effect = 102; // smoke
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else if (this.SPD_ABS < 35)
 						{
@@ -3878,7 +3878,7 @@ namespace DOL.GS
 							model = 3477;
 							this.Effect = 48; // fire
 							this.Hand = 2; // allow left hand
-							this.Item_Type = Slot.LEFTHAND;
+							this.ItemType = Slot.LEFTHAND;
 						}
 						else
 						{

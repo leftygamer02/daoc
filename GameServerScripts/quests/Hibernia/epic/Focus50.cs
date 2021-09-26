@@ -32,7 +32,7 @@
 
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -185,52 +185,52 @@ namespace DOL.GS.Quests.Hibernia
 
 			#region Item Declarations
 
-			GreenMaw_key = GameServer.Database.FindObjectByKey<ItemTemplate>("GreenMaw_key");
+			GreenMaw_key = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "GreenMaw_key");
 			if (GreenMaw_key == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find GreenMaw's Key , creating it ...");
 				GreenMaw_key = new ItemTemplate();
-				GreenMaw_key.Id_nb = "GreenMaw_key";
+				GreenMaw_key.KeyName = "GreenMaw_key";
 				GreenMaw_key.Name = "GreenMaw's Key";
 				GreenMaw_key.Level = 8;
-				GreenMaw_key.Item_Type = 29;
+				GreenMaw_key.ItemType = 29;
 				GreenMaw_key.Model = 583;
 				GreenMaw_key.IsDropable = false;
 				GreenMaw_key.IsPickable = false;
 				GreenMaw_key.DPS_AF = 0;
 				GreenMaw_key.SPD_ABS = 0;
-				GreenMaw_key.Object_Type = 41;
+				GreenMaw_key.ObjectType = 41;
 				GreenMaw_key.Hand = 0;
-				GreenMaw_key.Type_Damage = 0;
+				GreenMaw_key.TypeDamage = 0;
 				GreenMaw_key.Quality = 100;
 				GreenMaw_key.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(GreenMaw_key);
+					GameServer.Instance.SaveDataObject(GreenMaw_key);
 				}
 
 			}
 // end item			
-			RangerEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("RangerEpicBoots");
+			RangerEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "RangerEpicBoots");
 			if (RangerEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Rangers Epic Boots , creating it ...");
 				RangerEpicBoots = new ItemTemplate();
-				RangerEpicBoots.Id_nb = "RangerEpicBoots";
+				RangerEpicBoots.KeyName = "RangerEpicBoots";
 				RangerEpicBoots.Name = "Mist Shrouded Boots";
 				RangerEpicBoots.Level = 50;
-				RangerEpicBoots.Item_Type = 23;
+				RangerEpicBoots.ItemType = 23;
 				RangerEpicBoots.Model = 819;
 				RangerEpicBoots.IsDropable = true;
 				RangerEpicBoots.IsPickable = true;
 				RangerEpicBoots.DPS_AF = 100;
 				RangerEpicBoots.SPD_ABS = 19;
-				RangerEpicBoots.Object_Type = 37;
+				RangerEpicBoots.ObjectType = 37;
 				RangerEpicBoots.Quality = 100;
 				RangerEpicBoots.Weight = 22;
-				RangerEpicBoots.Bonus = 35;
+				RangerEpicBoots.ItemBonus = 35;
 				RangerEpicBoots.MaxCondition = 50000;
 				RangerEpicBoots.MaxDurability = 50000;
 				RangerEpicBoots.Condition = 50000;
@@ -250,31 +250,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(RangerEpicBoots);
+					GameServer.Instance.SaveDataObject(RangerEpicBoots);
 				}
 
 			}
 //end item
 			//Mist Shrouded Coif 
-			RangerEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("RangerEpicHelm");
+			RangerEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "RangerEpicHelm");
 			if (RangerEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Rangers Epic Helm , creating it ...");
 				RangerEpicHelm = new ItemTemplate();
-				RangerEpicHelm.Id_nb = "RangerEpicHelm";
+				RangerEpicHelm.KeyName = "RangerEpicHelm";
 				RangerEpicHelm.Name = "Mist Shrouded Helm";
 				RangerEpicHelm.Level = 50;
-				RangerEpicHelm.Item_Type = 21;
+				RangerEpicHelm.ItemType = 21;
 				RangerEpicHelm.Model = 1292; //NEED TO WORK ON..
 				RangerEpicHelm.IsDropable = true;
 				RangerEpicHelm.IsPickable = true;
 				RangerEpicHelm.DPS_AF = 100;
 				RangerEpicHelm.SPD_ABS = 19;
-				RangerEpicHelm.Object_Type = 37;
+				RangerEpicHelm.ObjectType = 37;
 				RangerEpicHelm.Quality = 100;
 				RangerEpicHelm.Weight = 22;
-				RangerEpicHelm.Bonus = 35;
+				RangerEpicHelm.ItemBonus = 35;
 				RangerEpicHelm.MaxCondition = 50000;
 				RangerEpicHelm.MaxDurability = 50000;
 				RangerEpicHelm.Condition = 50000;
@@ -294,31 +294,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(RangerEpicHelm);
+					GameServer.Instance.SaveDataObject(RangerEpicHelm);
 				}
 
 			}
 //end item
 			//Mist Shrouded Gloves 
-			RangerEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("RangerEpicGloves");
+			RangerEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "RangerEpicGloves");
 			if (RangerEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Rangers Epic Gloves , creating it ...");
 				RangerEpicGloves = new ItemTemplate();
-				RangerEpicGloves.Id_nb = "RangerEpicGloves";
+				RangerEpicGloves.KeyName = "RangerEpicGloves";
 				RangerEpicGloves.Name = "Mist Shrouded Gloves ";
 				RangerEpicGloves.Level = 50;
-				RangerEpicGloves.Item_Type = 22;
+				RangerEpicGloves.ItemType = 22;
 				RangerEpicGloves.Model = 818;
 				RangerEpicGloves.IsDropable = true;
 				RangerEpicGloves.IsPickable = true;
 				RangerEpicGloves.DPS_AF = 100;
 				RangerEpicGloves.SPD_ABS = 19;
-				RangerEpicGloves.Object_Type = 37;
+				RangerEpicGloves.ObjectType = 37;
 				RangerEpicGloves.Quality = 100;
 				RangerEpicGloves.Weight = 22;
-				RangerEpicGloves.Bonus = 35;
+				RangerEpicGloves.ItemBonus = 35;
 				RangerEpicGloves.MaxCondition = 50000;
 				RangerEpicGloves.MaxDurability = 50000;
 				RangerEpicGloves.Condition = 50000;
@@ -338,30 +338,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(RangerEpicGloves);
+					GameServer.Instance.SaveDataObject(RangerEpicGloves);
 				}
 
 			}
 			//Mist Shrouded Hauberk 
-			RangerEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("RangerEpicVest");
+			RangerEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "RangerEpicVest");
 			if (RangerEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Rangers Epic Vest , creating it ...");
 				RangerEpicVest = new ItemTemplate();
-				RangerEpicVest.Id_nb = "RangerEpicVest";
+				RangerEpicVest.KeyName = "RangerEpicVest";
 				RangerEpicVest.Name = "Mist Shrouded Hauberk";
 				RangerEpicVest.Level = 50;
-				RangerEpicVest.Item_Type = 25;
+				RangerEpicVest.ItemType = 25;
 				RangerEpicVest.Model = 815;
 				RangerEpicVest.IsDropable = true;
 				RangerEpicVest.IsPickable = true;
 				RangerEpicVest.DPS_AF = 100;
 				RangerEpicVest.SPD_ABS = 19;
-				RangerEpicVest.Object_Type = 37;
+				RangerEpicVest.ObjectType = 37;
 				RangerEpicVest.Quality = 100;
 				RangerEpicVest.Weight = 22;
-				RangerEpicVest.Bonus = 35;
+				RangerEpicVest.ItemBonus = 35;
 				RangerEpicVest.MaxCondition = 50000;
 				RangerEpicVest.MaxDurability = 50000;
 				RangerEpicVest.Condition = 50000;
@@ -381,30 +381,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(RangerEpicVest);
+					GameServer.Instance.SaveDataObject(RangerEpicVest);
 				}
 
 			}
 			//Mist Shrouded Legs 
-			RangerEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("RangerEpicLegs");
+			RangerEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "RangerEpicLegs");
 			if (RangerEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Rangers Epic Legs , creating it ...");
 				RangerEpicLegs = new ItemTemplate();
-				RangerEpicLegs.Id_nb = "RangerEpicLegs";
+				RangerEpicLegs.KeyName = "RangerEpicLegs";
 				RangerEpicLegs.Name = "Mist Shrouded Leggings";
 				RangerEpicLegs.Level = 50;
-				RangerEpicLegs.Item_Type = 27;
+				RangerEpicLegs.ItemType = 27;
 				RangerEpicLegs.Model = 816;
 				RangerEpicLegs.IsDropable = true;
 				RangerEpicLegs.IsPickable = true;
 				RangerEpicLegs.DPS_AF = 100;
 				RangerEpicLegs.SPD_ABS = 19;
-				RangerEpicLegs.Object_Type = 37;
+				RangerEpicLegs.ObjectType = 37;
 				RangerEpicLegs.Quality = 100;
 				RangerEpicLegs.Weight = 22;
-				RangerEpicLegs.Bonus = 35;
+				RangerEpicLegs.ItemBonus = 35;
 				RangerEpicLegs.MaxCondition = 50000;
 				RangerEpicLegs.MaxDurability = 50000;
 				RangerEpicLegs.Condition = 50000;
@@ -424,31 +424,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(RangerEpicLegs);
+					GameServer.Instance.SaveDataObject(RangerEpicLegs);
 				}
 				;
 
 			}
 			//Mist Shrouded Sleeves 
-			RangerEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("RangerEpicArms");
+			RangerEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "RangerEpicArms");
 			if (RangerEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Ranger Epic Arms , creating it ...");
 				RangerEpicArms = new ItemTemplate();
-				RangerEpicArms.Id_nb = "RangerEpicArms";
+				RangerEpicArms.KeyName = "RangerEpicArms";
 				RangerEpicArms.Name = "Mist Shrouded Sleeves";
 				RangerEpicArms.Level = 50;
-				RangerEpicArms.Item_Type = 28;
+				RangerEpicArms.ItemType = 28;
 				RangerEpicArms.Model = 817;
 				RangerEpicArms.IsDropable = true;
 				RangerEpicArms.IsPickable = true;
 				RangerEpicArms.DPS_AF = 100;
 				RangerEpicArms.SPD_ABS = 19;
-				RangerEpicArms.Object_Type = 37;
+				RangerEpicArms.ObjectType = 37;
 				RangerEpicArms.Quality = 100;
 				RangerEpicArms.Weight = 22;
-				RangerEpicArms.Bonus = 35;
+				RangerEpicArms.ItemBonus = 35;
 				RangerEpicArms.MaxCondition = 50000;
 				RangerEpicArms.MaxDurability = 50000;
 				RangerEpicArms.Condition = 50000;
@@ -468,30 +468,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(RangerEpicArms);
+					GameServer.Instance.SaveDataObject(RangerEpicArms);
 				}
 
 			}
 //Hero Epic Sleeves End
-			HeroEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("HeroEpicBoots");
+			HeroEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HeroEpicBoots");
 			if (HeroEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Heros Epic Boots , creating it ...");
 				HeroEpicBoots = new ItemTemplate();
-				HeroEpicBoots.Id_nb = "HeroEpicBoots";
+				HeroEpicBoots.KeyName = "HeroEpicBoots";
 				HeroEpicBoots.Name = "Misted Boots";
 				HeroEpicBoots.Level = 50;
-				HeroEpicBoots.Item_Type = 23;
+				HeroEpicBoots.ItemType = 23;
 				HeroEpicBoots.Model = 712;
 				HeroEpicBoots.IsDropable = true;
 				HeroEpicBoots.IsPickable = true;
 				HeroEpicBoots.DPS_AF = 100;
 				HeroEpicBoots.SPD_ABS = 27;
-				HeroEpicBoots.Object_Type = 38;
+				HeroEpicBoots.ObjectType = 38;
 				HeroEpicBoots.Quality = 100;
 				HeroEpicBoots.Weight = 22;
-				HeroEpicBoots.Bonus = 35;
+				HeroEpicBoots.ItemBonus = 35;
 				HeroEpicBoots.MaxCondition = 50000;
 				HeroEpicBoots.MaxDurability = 50000;
 				HeroEpicBoots.Condition = 50000;
@@ -511,31 +511,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HeroEpicBoots);
+					GameServer.Instance.SaveDataObject(HeroEpicBoots);
 				}
 
 			}
 //end item
 			//Misted Coif 
-			HeroEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("HeroEpicHelm");
+			HeroEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HeroEpicHelm");
 			if (HeroEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Heros Epic Helm , creating it ...");
 				HeroEpicHelm = new ItemTemplate();
-				HeroEpicHelm.Id_nb = "HeroEpicHelm";
+				HeroEpicHelm.KeyName = "HeroEpicHelm";
 				HeroEpicHelm.Name = "Misted Coif";
 				HeroEpicHelm.Level = 50;
-				HeroEpicHelm.Item_Type = 21;
+				HeroEpicHelm.ItemType = 21;
 				HeroEpicHelm.Model = 1292; //NEED TO WORK ON..
 				HeroEpicHelm.IsDropable = true;
 				HeroEpicHelm.IsPickable = true;
 				HeroEpicHelm.DPS_AF = 100;
 				HeroEpicHelm.SPD_ABS = 27;
-				HeroEpicHelm.Object_Type = 38;
+				HeroEpicHelm.ObjectType = 38;
 				HeroEpicHelm.Quality = 100;
 				HeroEpicHelm.Weight = 22;
-				HeroEpicHelm.Bonus = 35;
+				HeroEpicHelm.ItemBonus = 35;
 				HeroEpicHelm.MaxCondition = 50000;
 				HeroEpicHelm.MaxDurability = 50000;
 				HeroEpicHelm.Condition = 50000;
@@ -555,31 +555,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HeroEpicHelm);
+					GameServer.Instance.SaveDataObject(HeroEpicHelm);
 				}
 
 			}
 //end item
 			//Misted Gloves 
-			HeroEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("HeroEpicGloves");
+			HeroEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HeroEpicGloves");
 			if (HeroEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Heros Epic Gloves , creating it ...");
 				HeroEpicGloves = new ItemTemplate();
-				HeroEpicGloves.Id_nb = "HeroEpicGloves";
+				HeroEpicGloves.KeyName = "HeroEpicGloves";
 				HeroEpicGloves.Name = "Misted Gloves ";
 				HeroEpicGloves.Level = 50;
-				HeroEpicGloves.Item_Type = 22;
+				HeroEpicGloves.ItemType = 22;
 				HeroEpicGloves.Model = 711;
 				HeroEpicGloves.IsDropable = true;
 				HeroEpicGloves.IsPickable = true;
 				HeroEpicGloves.DPS_AF = 100;
 				HeroEpicGloves.SPD_ABS = 27;
-				HeroEpicGloves.Object_Type = 38;
+				HeroEpicGloves.ObjectType = 38;
 				HeroEpicGloves.Quality = 100;
 				HeroEpicGloves.Weight = 22;
-				HeroEpicGloves.Bonus = 35;
+				HeroEpicGloves.ItemBonus = 35;
 				HeroEpicGloves.MaxCondition = 50000;
 				HeroEpicGloves.MaxDurability = 50000;
 				HeroEpicGloves.Condition = 50000;
@@ -599,30 +599,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HeroEpicGloves);
+					GameServer.Instance.SaveDataObject(HeroEpicGloves);
 				}
 
 			}
 			//Misted Hauberk 
-			HeroEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("HeroEpicVest");
+			HeroEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HeroEpicVest");
 			if (HeroEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Heros Epic Vest , creating it ...");
 				HeroEpicVest = new ItemTemplate();
-				HeroEpicVest.Id_nb = "HeroEpicVest";
+				HeroEpicVest.KeyName = "HeroEpicVest";
 				HeroEpicVest.Name = "Misted Hauberk";
 				HeroEpicVest.Level = 50;
-				HeroEpicVest.Item_Type = 25;
+				HeroEpicVest.ItemType = 25;
 				HeroEpicVest.Model = 708;
 				HeroEpicVest.IsDropable = true;
 				HeroEpicVest.IsPickable = true;
 				HeroEpicVest.DPS_AF = 100;
 				HeroEpicVest.SPD_ABS = 27;
-				HeroEpicVest.Object_Type = 38;
+				HeroEpicVest.ObjectType = 38;
 				HeroEpicVest.Quality = 100;
 				HeroEpicVest.Weight = 22;
-				HeroEpicVest.Bonus = 35;
+				HeroEpicVest.ItemBonus = 35;
 				HeroEpicVest.MaxCondition = 50000;
 				HeroEpicVest.MaxDurability = 50000;
 				HeroEpicVest.Condition = 50000;
@@ -639,30 +639,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HeroEpicVest);
+					GameServer.Instance.SaveDataObject(HeroEpicVest);
 				}
 
 			}
 			//Misted Legs 
-			HeroEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("HeroEpicLegs");
+			HeroEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HeroEpicLegs");
 			if (HeroEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Heros Epic Legs , creating it ...");
 				HeroEpicLegs = new ItemTemplate();
-				HeroEpicLegs.Id_nb = "HeroEpicLegs";
+				HeroEpicLegs.KeyName = "HeroEpicLegs";
 				HeroEpicLegs.Name = "Misted Leggings";
 				HeroEpicLegs.Level = 50;
-				HeroEpicLegs.Item_Type = 27;
+				HeroEpicLegs.ItemType = 27;
 				HeroEpicLegs.Model = 709;
 				HeroEpicLegs.IsDropable = true;
 				HeroEpicLegs.IsPickable = true;
 				HeroEpicLegs.DPS_AF = 100;
 				HeroEpicLegs.SPD_ABS = 27;
-				HeroEpicLegs.Object_Type = 38;
+				HeroEpicLegs.ObjectType = 38;
 				HeroEpicLegs.Quality = 100;
 				HeroEpicLegs.Weight = 22;
-				HeroEpicLegs.Bonus = 35;
+				HeroEpicLegs.ItemBonus = 35;
 				HeroEpicLegs.MaxCondition = 50000;
 				HeroEpicLegs.MaxDurability = 50000;
 				HeroEpicLegs.Condition = 50000;
@@ -682,30 +682,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HeroEpicLegs);
+					GameServer.Instance.SaveDataObject(HeroEpicLegs);
 				}
 
 			}
 			//Misted Sleeves 
-			HeroEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("HeroEpicArms");
+			HeroEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HeroEpicArms");
 			if (HeroEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Hero Epic Arms , creating it ...");
 				HeroEpicArms = new ItemTemplate();
-				HeroEpicArms.Id_nb = "HeroEpicArms";
+				HeroEpicArms.KeyName = "HeroEpicArms";
 				HeroEpicArms.Name = "Misted Sleeves";
 				HeroEpicArms.Level = 50;
-				HeroEpicArms.Item_Type = 28;
+				HeroEpicArms.ItemType = 28;
 				HeroEpicArms.Model = 710;
 				HeroEpicArms.IsDropable = true;
 				HeroEpicArms.IsPickable = true;
 				HeroEpicArms.DPS_AF = 100;
 				HeroEpicArms.SPD_ABS = 27;
-				HeroEpicArms.Object_Type = 38;
+				HeroEpicArms.ObjectType = 38;
 				HeroEpicArms.Quality = 100;
 				HeroEpicArms.Weight = 22;
-				HeroEpicArms.Bonus = 35;
+				HeroEpicArms.ItemBonus = 35;
 				HeroEpicArms.MaxCondition = 50000;
 				HeroEpicArms.MaxDurability = 50000;
 				HeroEpicArms.Condition = 50000;
@@ -725,29 +725,29 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(HeroEpicArms);
+					GameServer.Instance.SaveDataObject(HeroEpicArms);
 				}
 
 			}
-			WardenEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("WardenEpicBoots");
+			WardenEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WardenEpicBoots");
 			if (WardenEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warden Epic Boots , creating it ...");
 				WardenEpicBoots = new ItemTemplate();
-				WardenEpicBoots.Id_nb = "WardenEpicBoots";
+				WardenEpicBoots.KeyName = "WardenEpicBoots";
 				WardenEpicBoots.Name = "Mystical Boots";
 				WardenEpicBoots.Level = 50;
-				WardenEpicBoots.Item_Type = 23;
+				WardenEpicBoots.ItemType = 23;
 				WardenEpicBoots.Model = 809;
 				WardenEpicBoots.IsDropable = true;
 				WardenEpicBoots.IsPickable = true;
 				WardenEpicBoots.DPS_AF = 100;
 				WardenEpicBoots.SPD_ABS = 27;
-				WardenEpicBoots.Object_Type = 38;
+				WardenEpicBoots.ObjectType = 38;
 				WardenEpicBoots.Quality = 100;
 				WardenEpicBoots.Weight = 22;
-				WardenEpicBoots.Bonus = 35;
+				WardenEpicBoots.ItemBonus = 35;
 				WardenEpicBoots.MaxCondition = 50000;
 				WardenEpicBoots.MaxDurability = 50000;
 				WardenEpicBoots.Condition = 50000;
@@ -767,31 +767,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WardenEpicBoots);
+					GameServer.Instance.SaveDataObject(WardenEpicBoots);
 				}
 
 			}
 //end item
 			//Mystical Coif 
-			WardenEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("WardenEpicHelm");
+			WardenEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WardenEpicHelm");
 			if (WardenEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warden Epic Helm , creating it ...");
 				WardenEpicHelm = new ItemTemplate();
-				WardenEpicHelm.Id_nb = "WardenEpicHelm";
+				WardenEpicHelm.KeyName = "WardenEpicHelm";
 				WardenEpicHelm.Name = "Mystical Coif";
 				WardenEpicHelm.Level = 50;
-				WardenEpicHelm.Item_Type = 21;
+				WardenEpicHelm.ItemType = 21;
 				WardenEpicHelm.Model = 1292; //NEED TO WORK ON..
 				WardenEpicHelm.IsDropable = true;
 				WardenEpicHelm.IsPickable = true;
 				WardenEpicHelm.DPS_AF = 100;
 				WardenEpicHelm.SPD_ABS = 27;
-				WardenEpicHelm.Object_Type = 38;
+				WardenEpicHelm.ObjectType = 38;
 				WardenEpicHelm.Quality = 100;
 				WardenEpicHelm.Weight = 22;
-				WardenEpicHelm.Bonus = 35;
+				WardenEpicHelm.ItemBonus = 35;
 				WardenEpicHelm.MaxCondition = 50000;
 				WardenEpicHelm.MaxDurability = 50000;
 				WardenEpicHelm.Condition = 50000;
@@ -811,31 +811,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WardenEpicHelm);
+					GameServer.Instance.SaveDataObject(WardenEpicHelm);
 				}
 
 			}
 //end item
 			//Mystical Gloves 
-			WardenEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("WardenEpicGloves");
+			WardenEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WardenEpicGloves");
 			if (WardenEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warden Epic Gloves , creating it ...");
 				WardenEpicGloves = new ItemTemplate();
-				WardenEpicGloves.Id_nb = "WardenEpicGloves";
+				WardenEpicGloves.KeyName = "WardenEpicGloves";
 				WardenEpicGloves.Name = "Mystical Gloves ";
 				WardenEpicGloves.Level = 50;
-				WardenEpicGloves.Item_Type = 22;
+				WardenEpicGloves.ItemType = 22;
 				WardenEpicGloves.Model = 808;
 				WardenEpicGloves.IsDropable = true;
 				WardenEpicGloves.IsPickable = true;
 				WardenEpicGloves.DPS_AF = 100;
 				WardenEpicGloves.SPD_ABS = 27;
-				WardenEpicGloves.Object_Type = 38;
+				WardenEpicGloves.ObjectType = 38;
 				WardenEpicGloves.Quality = 100;
 				WardenEpicGloves.Weight = 22;
-				WardenEpicGloves.Bonus = 35;
+				WardenEpicGloves.ItemBonus = 35;
 				WardenEpicGloves.MaxCondition = 50000;
 				WardenEpicGloves.MaxDurability = 50000;
 				WardenEpicGloves.Condition = 50000;
@@ -856,30 +856,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WardenEpicGloves);
+					GameServer.Instance.SaveDataObject(WardenEpicGloves);
 				}
 
 			}
 			//Mystical Hauberk 
-			WardenEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("WardenEpicVest");
+			WardenEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WardenEpicVest");
 			if (WardenEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warden Epic Vest , creating it ...");
 				WardenEpicVest = new ItemTemplate();
-				WardenEpicVest.Id_nb = "WardenEpicVest";
+				WardenEpicVest.KeyName = "WardenEpicVest";
 				WardenEpicVest.Name = "Mystical Hauberk";
 				WardenEpicVest.Level = 50;
-				WardenEpicVest.Item_Type = 25;
+				WardenEpicVest.ItemType = 25;
 				WardenEpicVest.Model = 805;
 				WardenEpicVest.IsDropable = true;
 				WardenEpicVest.IsPickable = true;
 				WardenEpicVest.DPS_AF = 100;
 				WardenEpicVest.SPD_ABS = 27;
-				WardenEpicVest.Object_Type = 38;
+				WardenEpicVest.ObjectType = 38;
 				WardenEpicVest.Quality = 100;
 				WardenEpicVest.Weight = 22;
-				WardenEpicVest.Bonus = 35;
+				WardenEpicVest.ItemBonus = 35;
 				WardenEpicVest.MaxCondition = 50000;
 				WardenEpicVest.MaxDurability = 50000;
 				WardenEpicVest.Condition = 50000;
@@ -899,30 +899,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WardenEpicVest);
+					GameServer.Instance.SaveDataObject(WardenEpicVest);
 				}
 
 			}
 			//Mystical Legs 
-			WardenEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("WardenEpicLegs");
+			WardenEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WardenEpicLegs");
 			if (WardenEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warden Epic Legs , creating it ...");
 				WardenEpicLegs = new ItemTemplate();
-				WardenEpicLegs.Id_nb = "WardenEpicLegs";
+				WardenEpicLegs.KeyName = "WardenEpicLegs";
 				WardenEpicLegs.Name = "Mystical Legs";
 				WardenEpicLegs.Level = 50;
-				WardenEpicLegs.Item_Type = 27;
+				WardenEpicLegs.ItemType = 27;
 				WardenEpicLegs.Model = 806;
 				WardenEpicLegs.IsDropable = true;
 				WardenEpicLegs.IsPickable = true;
 				WardenEpicLegs.DPS_AF = 100;
 				WardenEpicLegs.SPD_ABS = 27;
-				WardenEpicLegs.Object_Type = 38;
+				WardenEpicLegs.ObjectType = 38;
 				WardenEpicLegs.Quality = 100;
 				WardenEpicLegs.Weight = 22;
-				WardenEpicLegs.Bonus = 35;
+				WardenEpicLegs.ItemBonus = 35;
 				WardenEpicLegs.MaxCondition = 50000;
 				WardenEpicLegs.MaxDurability = 50000;
 				WardenEpicLegs.Condition = 50000;
@@ -942,30 +942,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WardenEpicLegs);
+					GameServer.Instance.SaveDataObject(WardenEpicLegs);
 				}
 
 			}
 			//Mystical Sleeves 
-			WardenEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("WardenEpicArms");
+			WardenEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "WardenEpicArms");
 			if (WardenEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Warden Epic Arms , creating it ...");
 				WardenEpicArms = new ItemTemplate();
-				WardenEpicArms.Id_nb = "WardenEpicArms";
+				WardenEpicArms.KeyName = "WardenEpicArms";
 				WardenEpicArms.Name = "Mystical Sleeves";
 				WardenEpicArms.Level = 50;
-				WardenEpicArms.Item_Type = 28;
+				WardenEpicArms.ItemType = 28;
 				WardenEpicArms.Model = 807;
 				WardenEpicArms.IsDropable = true;
 				WardenEpicArms.IsPickable = true;
 				WardenEpicArms.DPS_AF = 100;
 				WardenEpicArms.SPD_ABS = 27;
-				WardenEpicArms.Object_Type = 38;
+				WardenEpicArms.ObjectType = 38;
 				WardenEpicArms.Quality = 100;
 				WardenEpicArms.Weight = 22;
-				WardenEpicArms.Bonus = 35;
+				WardenEpicArms.ItemBonus = 35;
 				WardenEpicArms.MaxCondition = 50000;
 				WardenEpicArms.MaxDurability = 50000;
 				WardenEpicArms.Condition = 50000;
@@ -985,29 +985,29 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(WardenEpicArms);
+					GameServer.Instance.SaveDataObject(WardenEpicArms);
 				}
 
 			}
-			EldritchEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("EldritchEpicBoots");
+			EldritchEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EldritchEpicBoots");
 			if (EldritchEpicBoots == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Eldritch Epic Boots , creating it ...");
 				EldritchEpicBoots = new ItemTemplate();
-				EldritchEpicBoots.Id_nb = "EldritchEpicBoots";
+				EldritchEpicBoots.KeyName = "EldritchEpicBoots";
 				EldritchEpicBoots.Name = "Mistwoven Boots";
 				EldritchEpicBoots.Level = 50;
-				EldritchEpicBoots.Item_Type = 23;
+				EldritchEpicBoots.ItemType = 23;
 				EldritchEpicBoots.Model = 382;
 				EldritchEpicBoots.IsDropable = true;
 				EldritchEpicBoots.IsPickable = true;
 				EldritchEpicBoots.DPS_AF = 50;
 				EldritchEpicBoots.SPD_ABS = 0;
-				EldritchEpicBoots.Object_Type = 32;
+				EldritchEpicBoots.ObjectType = 32;
 				EldritchEpicBoots.Quality = 100;
 				EldritchEpicBoots.Weight = 22;
-				EldritchEpicBoots.Bonus = 35;
+				EldritchEpicBoots.ItemBonus = 35;
 				EldritchEpicBoots.MaxCondition = 50000;
 				EldritchEpicBoots.MaxDurability = 50000;
 				EldritchEpicBoots.Condition = 50000;
@@ -1027,31 +1027,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EldritchEpicBoots);
+					GameServer.Instance.SaveDataObject(EldritchEpicBoots);
 				}
 
 			}
 //end item
 			//Mist Woven Coif 
-			EldritchEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("EldritchEpicHelm");
+			EldritchEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EldritchEpicHelm");
 			if (EldritchEpicHelm == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Eldritch Epic Helm , creating it ...");
 				EldritchEpicHelm = new ItemTemplate();
-				EldritchEpicHelm.Id_nb = "EldritchEpicHelm";
+				EldritchEpicHelm.KeyName = "EldritchEpicHelm";
 				EldritchEpicHelm.Name = "Mistwoven Cap";
 				EldritchEpicHelm.Level = 50;
-				EldritchEpicHelm.Item_Type = 21;
+				EldritchEpicHelm.ItemType = 21;
 				EldritchEpicHelm.Model = 1298; //NEED TO WORK ON..
 				EldritchEpicHelm.IsDropable = true;
 				EldritchEpicHelm.IsPickable = true;
 				EldritchEpicHelm.DPS_AF = 50;
 				EldritchEpicHelm.SPD_ABS = 0;
-				EldritchEpicHelm.Object_Type = 32;
+				EldritchEpicHelm.ObjectType = 32;
 				EldritchEpicHelm.Quality = 100;
 				EldritchEpicHelm.Weight = 22;
-				EldritchEpicHelm.Bonus = 35;
+				EldritchEpicHelm.ItemBonus = 35;
 				EldritchEpicHelm.MaxCondition = 50000;
 				EldritchEpicHelm.MaxDurability = 50000;
 				EldritchEpicHelm.Condition = 50000;
@@ -1071,31 +1071,31 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EldritchEpicHelm);
+					GameServer.Instance.SaveDataObject(EldritchEpicHelm);
 				}
 
 			}
 //end item
 			//Mist Woven Gloves 
-			EldritchEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("EldritchEpicGloves");
+			EldritchEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EldritchEpicGloves");
 			if (EldritchEpicGloves == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Eldritch Epic Gloves , creating it ...");
 				EldritchEpicGloves = new ItemTemplate();
-				EldritchEpicGloves.Id_nb = "EldritchEpicGloves";
+				EldritchEpicGloves.KeyName = "EldritchEpicGloves";
 				EldritchEpicGloves.Name = "Mistwoven Gloves ";
 				EldritchEpicGloves.Level = 50;
-				EldritchEpicGloves.Item_Type = 22;
+				EldritchEpicGloves.ItemType = 22;
 				EldritchEpicGloves.Model = 381;
 				EldritchEpicGloves.IsDropable = true;
 				EldritchEpicGloves.IsPickable = true;
 				EldritchEpicGloves.DPS_AF = 50;
 				EldritchEpicGloves.SPD_ABS = 0;
-				EldritchEpicGloves.Object_Type = 32;
+				EldritchEpicGloves.ObjectType = 32;
 				EldritchEpicGloves.Quality = 100;
 				EldritchEpicGloves.Weight = 22;
-				EldritchEpicGloves.Bonus = 35;
+				EldritchEpicGloves.ItemBonus = 35;
 				EldritchEpicGloves.MaxCondition = 50000;
 				EldritchEpicGloves.MaxDurability = 50000;
 				EldritchEpicGloves.Condition = 50000;
@@ -1115,30 +1115,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EldritchEpicGloves);
+					GameServer.Instance.SaveDataObject(EldritchEpicGloves);
 				}
 
 			}
 			//Mist Woven Hauberk 
-			EldritchEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("EldritchEpicVest");
+			EldritchEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EldritchEpicVest");
 			if (EldritchEpicVest == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Eldritch Epic Vest , creating it ...");
 				EldritchEpicVest = new ItemTemplate();
-				EldritchEpicVest.Id_nb = "EldritchEpicVest";
+				EldritchEpicVest.KeyName = "EldritchEpicVest";
 				EldritchEpicVest.Name = "Mistwoven Vest";
 				EldritchEpicVest.Level = 50;
-				EldritchEpicVest.Item_Type = 25;
+				EldritchEpicVest.ItemType = 25;
 				EldritchEpicVest.Model = 744;
 				EldritchEpicVest.IsDropable = true;
 				EldritchEpicVest.IsPickable = true;
 				EldritchEpicVest.DPS_AF = 50;
 				EldritchEpicVest.SPD_ABS = 0;
-				EldritchEpicVest.Object_Type = 32;
+				EldritchEpicVest.ObjectType = 32;
 				EldritchEpicVest.Quality = 100;
 				EldritchEpicVest.Weight = 22;
-				EldritchEpicVest.Bonus = 35;
+				EldritchEpicVest.ItemBonus = 35;
 				EldritchEpicVest.MaxCondition = 50000;
 				EldritchEpicVest.MaxDurability = 50000;
 				EldritchEpicVest.Condition = 50000;
@@ -1155,30 +1155,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EldritchEpicVest);
+					GameServer.Instance.SaveDataObject(EldritchEpicVest);
 				}
 
 			}
 			//Mist Woven Legs 
-			EldritchEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("EldritchEpicLegs");
+			EldritchEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EldritchEpicLegs");
 			if (EldritchEpicLegs == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Eldritch Epic Legs , creating it ...");
 				EldritchEpicLegs = new ItemTemplate();
-				EldritchEpicLegs.Id_nb = "EldritchEpicLegs";
+				EldritchEpicLegs.KeyName = "EldritchEpicLegs";
 				EldritchEpicLegs.Name = "Mistwoven Pants";
 				EldritchEpicLegs.Level = 50;
-				EldritchEpicLegs.Item_Type = 27;
+				EldritchEpicLegs.ItemType = 27;
 				EldritchEpicLegs.Model = 379;
 				EldritchEpicLegs.IsDropable = true;
 				EldritchEpicLegs.IsPickable = true;
 				EldritchEpicLegs.DPS_AF = 50;
 				EldritchEpicLegs.SPD_ABS = 0;
-				EldritchEpicLegs.Object_Type = 32;
+				EldritchEpicLegs.ObjectType = 32;
 				EldritchEpicLegs.Quality = 100;
 				EldritchEpicLegs.Weight = 22;
-				EldritchEpicLegs.Bonus = 35;
+				EldritchEpicLegs.ItemBonus = 35;
 				EldritchEpicLegs.MaxCondition = 50000;
 				EldritchEpicLegs.MaxDurability = 50000;
 				EldritchEpicLegs.Condition = 50000;
@@ -1198,30 +1198,30 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EldritchEpicLegs);
+					GameServer.Instance.SaveDataObject(EldritchEpicLegs);
 				}
 
 			}
 			//Mist Woven Sleeves 
-			EldritchEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("EldritchEpicArms");
+			EldritchEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "EldritchEpicArms");
 			if (EldritchEpicArms == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Eldritch Epic Arms , creating it ...");
 				EldritchEpicArms = new ItemTemplate();
-				EldritchEpicArms.Id_nb = "EldritchEpicArms";
+				EldritchEpicArms.KeyName = "EldritchEpicArms";
 				EldritchEpicArms.Name = "Mistwoven Sleeves";
 				EldritchEpicArms.Level = 50;
-				EldritchEpicArms.Item_Type = 28;
+				EldritchEpicArms.ItemType = 28;
 				EldritchEpicArms.Model = 380;
 				EldritchEpicArms.IsDropable = true;
 				EldritchEpicArms.IsPickable = true;
 				EldritchEpicArms.DPS_AF = 50;
 				EldritchEpicArms.SPD_ABS = 0;
-				EldritchEpicArms.Object_Type = 32;
+				EldritchEpicArms.ObjectType = 32;
 				EldritchEpicArms.Quality = 100;
 				EldritchEpicArms.Weight = 22;
-				EldritchEpicArms.Bonus = 35;
+				EldritchEpicArms.ItemBonus = 35;
 				EldritchEpicArms.MaxCondition = 50000;
 				EldritchEpicArms.MaxDurability = 50000;
 				EldritchEpicArms.Condition = 50000;
@@ -1241,7 +1241,7 @@ namespace DOL.GS.Quests.Hibernia
 
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(EldritchEpicArms);
+					GameServer.Instance.SaveDataObject(EldritchEpicArms);
 				}
 
 			}
@@ -1250,12 +1250,12 @@ namespace DOL.GS.Quests.Hibernia
 
             // Graveen: we assume items are existing in the DB
             // TODO: insert here creation of items if they do not exists
-            MaulerHibEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerHibEpicBoots");
-            MaulerHibEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerHibEpicHelm");
-            MaulerHibEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerHibEpicGloves");
-            MaulerHibEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerHibEpicVest");
-            MaulerHibEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerHibEpicLegs");
-            MaulerHibEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("MaulerHibEpicArms");
+            MaulerHibEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerHibEpicBoots");
+            MaulerHibEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerHibEpicHelm");
+            MaulerHibEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerHibEpicGloves");
+            MaulerHibEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerHibEpicVest");
+            MaulerHibEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerHibEpicLegs");
+            MaulerHibEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MaulerHibEpicArms");
 
 //Item Descriptions End
 
@@ -1483,7 +1483,7 @@ namespace DOL.GS.Quests.Hibernia
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
             {
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Ainrebh.Name && gArgs.Item.Id_nb == GreenMaw_key.Id_nb)
+				if (gArgs.Target.Name == Ainrebh.Name && gArgs.Item.KeyName == GreenMaw_key.KeyName)
 				{
 					Ainrebh.SayTo(player, "You have earned this Epic Armour!");
 					FinishQuest();

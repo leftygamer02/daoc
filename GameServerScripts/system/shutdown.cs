@@ -9,7 +9,7 @@ using System.Threading;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Commands
 {

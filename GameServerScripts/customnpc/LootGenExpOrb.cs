@@ -19,7 +19,7 @@
  */
 using System;
 using DOL.AI.Brain;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {
@@ -31,7 +31,7 @@ namespace DOL.GS
     public class LootGeneratorExpOrb : LootGeneratorBase
     {
 
-        private static ItemTemplate m_token_many = GameServer.Database.FindObjectByKey<ItemTemplate>("token_many");
+        private static ItemTemplate m_token_many = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "token_many");
 
         /// <summary>
         /// Generate loot for given mob

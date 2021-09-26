@@ -20,7 +20,7 @@ using System;
 
 using DOL.Events;
 using DOL.GS.ServerProperties;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.GameEvents
 {
@@ -94,7 +94,7 @@ namespace DOL.GS.GameEvents
 			if (chArgs == null)
 				return;
 			
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 
 			// Property BPS
 			if (STARTING_BPS > 0)

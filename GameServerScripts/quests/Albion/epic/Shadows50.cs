@@ -15,7 +15,7 @@
 
 using System;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -178,52 +178,52 @@ namespace DOL.GS.Quests.Albion
 			#region Item Declarations
 
 			#region misc
-			sealed_pouch = GameServer.Database.FindObjectByKey<ItemTemplate>("sealed_pouch");
+			sealed_pouch = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "sealed_pouch");
 			if (sealed_pouch == null)
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Sealed Pouch , creating it ...");
 				sealed_pouch = new ItemTemplate();
-				sealed_pouch.Id_nb = "sealed_pouch";
+				sealed_pouch.KeyName = "sealed_pouch";
 				sealed_pouch.Name = "Sealed Pouch";
 				sealed_pouch.Level = 8;
-				sealed_pouch.Item_Type = 29;
+				sealed_pouch.ItemType = 29;
 				sealed_pouch.Model = 488;
 				sealed_pouch.IsDropable = false;
 				sealed_pouch.IsPickable = false;
 				sealed_pouch.DPS_AF = 0;
 				sealed_pouch.SPD_ABS = 0;
-				sealed_pouch.Object_Type = 41;
+				sealed_pouch.ObjectType = 41;
 				sealed_pouch.Hand = 0;
-				sealed_pouch.Type_Damage = 0;
+				sealed_pouch.TypeDamage = 0;
 				sealed_pouch.Quality = 100;
 				sealed_pouch.Weight = 12;
 				if (SAVE_INTO_DATABASE)
 				{
-					GameServer.Database.AddObject(sealed_pouch);
+					GameServer.Instance.SaveDataObject(sealed_pouch);
 				}
 			}
 			#endregion
 			// end item
 			ItemTemplate i = null;
 			#region Mercenary
-			MercenaryEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("MercenaryEpicBoots");
+			MercenaryEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MercenaryEpicBoots");
 			if (MercenaryEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MercenaryEpicBoots";
+				i.KeyName = "MercenaryEpicBoots";
 				i.Name = "Boots of the Shadowy Embers";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 722;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -242,7 +242,7 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 9;
 				i.Bonus4Type = (int)eStat.STR;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				MercenaryEpicBoots = i;
@@ -250,23 +250,23 @@ namespace DOL.GS.Quests.Albion
 			}
 			//end item
 			// of the Shadowy Embers  Coif
-			MercenaryEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("MercenaryEpicHelm");
+			MercenaryEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MercenaryEpicHelm");
 			if (MercenaryEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MercenaryEpicHelm";
+				i.KeyName = "MercenaryEpicHelm";
 				i.Name = "Coif of the Shadowy Embers";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -285,7 +285,7 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Thrust;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				MercenaryEpicHelm = i;
@@ -293,23 +293,23 @@ namespace DOL.GS.Quests.Albion
 			}
 			//end item
 			// of the Shadowy Embers  Gloves
-			MercenaryEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("MercenaryEpicGloves");
+			MercenaryEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MercenaryEpicGloves");
 			if (MercenaryEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MercenaryEpicGloves";
+				i.KeyName = "MercenaryEpicGloves";
 				i.Name = "Gauntlets of the Shadowy Embers";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 721;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -328,30 +328,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Matter;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				MercenaryEpicGloves = i;
 
 			}
 			// of the Shadowy Embers  Hauberk
-			MercenaryEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("MercenaryEpicVest");
+			MercenaryEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MercenaryEpicVest");
 			if (MercenaryEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MercenaryEpicVest";
+				i.KeyName = "MercenaryEpicVest";
 				i.Name = "Haurberk of the Shadowy Embers";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 718;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -370,30 +370,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 6;
 				i.Bonus4Type = (int)eResist.Thrust;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				MercenaryEpicVest = i;
 
 			}
 			// of the Shadowy Embers  Legs
-			MercenaryEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("MercenaryEpicLegs");
+			MercenaryEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MercenaryEpicLegs");
 			if (MercenaryEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MercenaryEpicLegs";
+				i.KeyName = "MercenaryEpicLegs";
 				i.Name = "Chausses of the Shadowy Embers";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 719;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -412,30 +412,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Slash;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				MercenaryEpicLegs = i;
 
 			}
 			// of the Shadowy Embers  Sleeves
-			MercenaryEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("MercenaryEpicArms");
+			MercenaryEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "MercenaryEpicArms");
 			if (MercenaryEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "MercenaryEpicArms";
+				i.KeyName = "MercenaryEpicArms";
 				i.Name = "Sleeves of the Shadowy Embers";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 720;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -454,7 +454,7 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 12;
 				i.Bonus4Type = (int)eStat.QUI;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				MercenaryEpicArms = i;
@@ -462,23 +462,23 @@ namespace DOL.GS.Quests.Albion
 			#endregion
 			#region Reaver
 			//Reaver Epic Sleeves End
-			ReaverEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("ReaverEpicBoots");
+			ReaverEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ReaverEpicBoots");
 			if (ReaverEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ReaverEpicBoots";
+				i.KeyName = "ReaverEpicBoots";
 				i.Name = "Boots of Murky Secrets";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 1270;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -497,7 +497,7 @@ namespace DOL.GS.Quests.Albion
 				//                    i.Bonus4 = 10;
 				//                    i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ReaverEpicBoots = i;
@@ -505,23 +505,23 @@ namespace DOL.GS.Quests.Albion
 			}
 			//end item
 			//of Murky Secrets Coif
-			ReaverEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("ReaverEpicHelm");
+			ReaverEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ReaverEpicHelm");
 			if (ReaverEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ReaverEpicHelm";
+				i.KeyName = "ReaverEpicHelm";
 				i.Name = "Coif of Murky Secrets";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -540,7 +540,7 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Thrust;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ReaverEpicHelm = i;
@@ -548,23 +548,23 @@ namespace DOL.GS.Quests.Albion
 			}
 			//end item
 			//of Murky Secrets Gloves
-			ReaverEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("ReaverEpicGloves");
+			ReaverEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ReaverEpicGloves");
 			if (ReaverEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ReaverEpicGloves";
+				i.KeyName = "ReaverEpicGloves";
 				i.Name = "Gauntlets of Murky Secrets";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 1271;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -583,30 +583,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Crush;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ReaverEpicGloves = i;
 
 			}
 			//of Murky Secrets Hauberk
-			ReaverEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("ReaverEpicVest");
+			ReaverEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ReaverEpicVest");
 			if (ReaverEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ReaverEpicVest";
+				i.KeyName = "ReaverEpicVest";
 				i.Name = "Hauberk of Murky Secrets";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 1267;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -625,30 +625,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 6;
 				i.Bonus4Type = (int)eResist.Thrust;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ReaverEpicVest = i;
 
 			}
 			//of Murky Secrets Legs
-			ReaverEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("ReaverEpicLegs");
+			ReaverEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ReaverEpicLegs");
 			if (ReaverEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ReaverEpicLegs";
+				i.KeyName = "ReaverEpicLegs";
 				i.Name = "Chausses of Murky Secrets";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 1268;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -667,30 +667,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Slash;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ReaverEpicLegs = i;
 
 			}
 			//of Murky Secrets Sleeves
-			ReaverEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("ReaverEpicArms");
+			ReaverEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "ReaverEpicArms");
 			if (ReaverEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "ReaverEpicArms";
+				i.KeyName = "ReaverEpicArms";
 				i.Name = "Sleeves of Murky Secrets";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 1269;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 100;
 				i.SPD_ABS = 27;
-				i.Object_Type = 35;
+				i.ObjectType = 35;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -709,30 +709,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 4;
 				i.Bonus4Type = (int)eProperty.Skill_Slashing;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				ReaverEpicArms = i;
 			}
 			#endregion
 			#region Infiltrator
-			InfiltratorEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("InfiltratorEpicBoots");
+			InfiltratorEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "InfiltratorEpicBoots");
 			if (InfiltratorEpicBoots == null)
 			{
 				InfiltratorEpicBoots = new ItemTemplate();
-				InfiltratorEpicBoots.Id_nb = "InfiltratorEpicBoots";
+				InfiltratorEpicBoots.KeyName = "InfiltratorEpicBoots";
 				InfiltratorEpicBoots.Name = "Shadow-Woven Boots";
 				InfiltratorEpicBoots.Level = 50;
-				InfiltratorEpicBoots.Item_Type = 23;
+				InfiltratorEpicBoots.ItemType = 23;
 				InfiltratorEpicBoots.Model = 796;
 				InfiltratorEpicBoots.IsDropable = true;
 				InfiltratorEpicBoots.IsPickable = true;
 				InfiltratorEpicBoots.DPS_AF = 100;
 				InfiltratorEpicBoots.SPD_ABS = 10;
-				InfiltratorEpicBoots.Object_Type = 33;
+				InfiltratorEpicBoots.ObjectType = 33;
 				InfiltratorEpicBoots.Quality = 100;
 				InfiltratorEpicBoots.Weight = 22;
-				InfiltratorEpicBoots.Bonus = 35;
+				InfiltratorEpicBoots.ItemBonus = 35;
 				InfiltratorEpicBoots.MaxCondition = 50000;
 				InfiltratorEpicBoots.MaxDurability = 50000;
 				InfiltratorEpicBoots.Condition = 50000;
@@ -750,29 +750,29 @@ namespace DOL.GS.Quests.Albion
 				InfiltratorEpicBoots.Bonus4 = 13;
 				InfiltratorEpicBoots.Bonus4Type = (int)eStat.CON;
 				{
-					GameServer.Database.AddObject(InfiltratorEpicBoots);
+					GameServer.Instance.SaveDataObject(InfiltratorEpicBoots);
 				}
 
 			}
 			//end item
 			//Shadow-Woven Coif
-			InfiltratorEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("InfiltratorEpicHelm");
+			InfiltratorEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "InfiltratorEpicHelm");
 			if (InfiltratorEpicHelm == null)
 			{
 				InfiltratorEpicHelm = new ItemTemplate();
-				InfiltratorEpicHelm.Id_nb = "InfiltratorEpicHelm";
+				InfiltratorEpicHelm.KeyName = "InfiltratorEpicHelm";
 				InfiltratorEpicHelm.Name = "Shadow-Woven Coif";
 				InfiltratorEpicHelm.Level = 50;
-				InfiltratorEpicHelm.Item_Type = 21;
+				InfiltratorEpicHelm.ItemType = 21;
 				InfiltratorEpicHelm.Model = 1290; //NEED TO WORK ON..
 				InfiltratorEpicHelm.IsDropable = true;
 				InfiltratorEpicHelm.IsPickable = true;
 				InfiltratorEpicHelm.DPS_AF = 100;
 				InfiltratorEpicHelm.SPD_ABS = 10;
-				InfiltratorEpicHelm.Object_Type = 33;
+				InfiltratorEpicHelm.ObjectType = 33;
 				InfiltratorEpicHelm.Quality = 100;
 				InfiltratorEpicHelm.Weight = 22;
-				InfiltratorEpicHelm.Bonus = 35;
+				InfiltratorEpicHelm.ItemBonus = 35;
 				InfiltratorEpicHelm.MaxCondition = 50000;
 				InfiltratorEpicHelm.MaxDurability = 50000;
 				InfiltratorEpicHelm.Condition = 50000;
@@ -790,29 +790,29 @@ namespace DOL.GS.Quests.Albion
 				InfiltratorEpicHelm.Bonus4 = 13;
 				InfiltratorEpicHelm.Bonus4Type = (int)eStat.STR;
 				{
-					GameServer.Database.AddObject(InfiltratorEpicHelm);
+					GameServer.Instance.SaveDataObject(InfiltratorEpicHelm);
 				}
 
 			}
 			//end item
 			//Shadow-Woven Gloves
-			InfiltratorEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("InfiltratorEpicGloves");
+			InfiltratorEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "InfiltratorEpicGloves");
 			if (InfiltratorEpicGloves == null)
 			{
 				InfiltratorEpicGloves = new ItemTemplate();
-				InfiltratorEpicGloves.Id_nb = "InfiltratorEpicGloves";
+				InfiltratorEpicGloves.KeyName = "InfiltratorEpicGloves";
 				InfiltratorEpicGloves.Name = "Shadow-Woven Gloves";
 				InfiltratorEpicGloves.Level = 50;
-				InfiltratorEpicGloves.Item_Type = 22;
+				InfiltratorEpicGloves.ItemType = 22;
 				InfiltratorEpicGloves.Model = 795;
 				InfiltratorEpicGloves.IsDropable = true;
 				InfiltratorEpicGloves.IsPickable = true;
 				InfiltratorEpicGloves.DPS_AF = 100;
 				InfiltratorEpicGloves.SPD_ABS = 10;
-				InfiltratorEpicGloves.Object_Type = 33;
+				InfiltratorEpicGloves.ObjectType = 33;
 				InfiltratorEpicGloves.Quality = 100;
 				InfiltratorEpicGloves.Weight = 22;
-				InfiltratorEpicGloves.Bonus = 35;
+				InfiltratorEpicGloves.ItemBonus = 35;
 				InfiltratorEpicGloves.MaxCondition = 50000;
 				InfiltratorEpicGloves.MaxDurability = 50000;
 				InfiltratorEpicGloves.Condition = 50000;
@@ -831,28 +831,28 @@ namespace DOL.GS.Quests.Albion
 				InfiltratorEpicGloves.Bonus4 = 3;
 				InfiltratorEpicGloves.Bonus4Type = (int)eProperty.Skill_Critical_Strike;
 				{
-					GameServer.Database.AddObject(InfiltratorEpicGloves);
+					GameServer.Instance.SaveDataObject(InfiltratorEpicGloves);
 				}
 
 			}
 			//Shadow-Woven Hauberk
-			InfiltratorEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("InfiltratorEpicVest");
+			InfiltratorEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "InfiltratorEpicVest");
 			if (InfiltratorEpicVest == null)
 			{
 				InfiltratorEpicVest = new ItemTemplate();
-				InfiltratorEpicVest.Id_nb = "InfiltratorEpicVest";
+				InfiltratorEpicVest.KeyName = "InfiltratorEpicVest";
 				InfiltratorEpicVest.Name = "Shadow-Woven Jerkin";
 				InfiltratorEpicVest.Level = 50;
-				InfiltratorEpicVest.Item_Type = 25;
+				InfiltratorEpicVest.ItemType = 25;
 				InfiltratorEpicVest.Model = 792;
 				InfiltratorEpicVest.IsDropable = true;
 				InfiltratorEpicVest.IsPickable = true;
 				InfiltratorEpicVest.DPS_AF = 100;
 				InfiltratorEpicVest.SPD_ABS = 10;
-				InfiltratorEpicVest.Object_Type = 33;
+				InfiltratorEpicVest.ObjectType = 33;
 				InfiltratorEpicVest.Quality = 100;
 				InfiltratorEpicVest.Weight = 22;
-				InfiltratorEpicVest.Bonus = 35;
+				InfiltratorEpicVest.ItemBonus = 35;
 				InfiltratorEpicVest.MaxCondition = 50000;
 				InfiltratorEpicVest.MaxDurability = 50000;
 				InfiltratorEpicVest.Condition = 50000;
@@ -870,28 +870,28 @@ namespace DOL.GS.Quests.Albion
 				InfiltratorEpicVest.Bonus4 = 8;
 				InfiltratorEpicVest.Bonus4Type = (int)eResist.Body;
 				{
-					GameServer.Database.AddObject(InfiltratorEpicVest);
+					GameServer.Instance.SaveDataObject(InfiltratorEpicVest);
 				}
 
 			}
 			//Shadow-Woven Legs
-			InfiltratorEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("InfiltratorEpicLegs");
+			InfiltratorEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "InfiltratorEpicLegs");
 			if (InfiltratorEpicLegs == null)
 			{
 				InfiltratorEpicLegs = new ItemTemplate();
-				InfiltratorEpicLegs.Id_nb = "InfiltratorEpicLegs";
+				InfiltratorEpicLegs.KeyName = "InfiltratorEpicLegs";
 				InfiltratorEpicLegs.Name = "Shadow-Woven Leggings";
 				InfiltratorEpicLegs.Level = 50;
-				InfiltratorEpicLegs.Item_Type = 27;
+				InfiltratorEpicLegs.ItemType = 27;
 				InfiltratorEpicLegs.Model = 793;
 				InfiltratorEpicLegs.IsDropable = true;
 				InfiltratorEpicLegs.IsPickable = true;
 				InfiltratorEpicLegs.DPS_AF = 100;
 				InfiltratorEpicLegs.SPD_ABS = 10;
-				InfiltratorEpicLegs.Object_Type = 33;
+				InfiltratorEpicLegs.ObjectType = 33;
 				InfiltratorEpicLegs.Quality = 100;
 				InfiltratorEpicLegs.Weight = 22;
-				InfiltratorEpicLegs.Bonus = 35;
+				InfiltratorEpicLegs.ItemBonus = 35;
 				InfiltratorEpicLegs.MaxCondition = 50000;
 				InfiltratorEpicLegs.MaxDurability = 50000;
 				InfiltratorEpicLegs.Condition = 50000;
@@ -909,28 +909,28 @@ namespace DOL.GS.Quests.Albion
 				InfiltratorEpicLegs.Bonus4 = 6;
 				InfiltratorEpicLegs.Bonus4Type = (int)eResist.Crush;
 				{
-					GameServer.Database.AddObject(InfiltratorEpicLegs);
+					GameServer.Instance.SaveDataObject(InfiltratorEpicLegs);
 				}
 
 			}
 			//Shadow-Woven Sleeves
-			InfiltratorEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("InfiltratorEpicArms");
+			InfiltratorEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "InfiltratorEpicArms");
 			if (InfiltratorEpicArms == null)
 			{
 				InfiltratorEpicArms = new ItemTemplate();
-				InfiltratorEpicArms.Id_nb = "InfiltratorEpicArms";
+				InfiltratorEpicArms.KeyName = "InfiltratorEpicArms";
 				InfiltratorEpicArms.Name = "Shadow-Woven Sleeves";
 				InfiltratorEpicArms.Level = 50;
-				InfiltratorEpicArms.Item_Type = 28;
+				InfiltratorEpicArms.ItemType = 28;
 				InfiltratorEpicArms.Model = 794;
 				InfiltratorEpicArms.IsDropable = true;
 				InfiltratorEpicArms.IsPickable = true;
 				InfiltratorEpicArms.DPS_AF = 100;
 				InfiltratorEpicArms.SPD_ABS = 10;
-				InfiltratorEpicArms.Object_Type = 33;
+				InfiltratorEpicArms.ObjectType = 33;
 				InfiltratorEpicArms.Quality = 100;
 				InfiltratorEpicArms.Weight = 22;
-				InfiltratorEpicArms.Bonus = 35;
+				InfiltratorEpicArms.ItemBonus = 35;
 				InfiltratorEpicArms.MaxCondition = 50000;
 				InfiltratorEpicArms.MaxDurability = 50000;
 				InfiltratorEpicArms.Condition = 50000;
@@ -948,29 +948,29 @@ namespace DOL.GS.Quests.Albion
 				InfiltratorEpicArms.Bonus4 = 4;
 				InfiltratorEpicArms.Bonus4Type = (int)eResist.Slash;
 				{
-					GameServer.Database.AddObject(InfiltratorEpicArms);
+					GameServer.Instance.SaveDataObject(InfiltratorEpicArms);
 				}
 
 			}
 			#endregion
 			#region Cabalist
-			CabalistEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("CabalistEpicBoots");
+			CabalistEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "CabalistEpicBoots");
 			if (CabalistEpicBoots == null)
 			{
 				CabalistEpicBoots = new ItemTemplate();
-				CabalistEpicBoots.Id_nb = "CabalistEpicBoots";
+				CabalistEpicBoots.KeyName = "CabalistEpicBoots";
 				CabalistEpicBoots.Name = "Warm Boots of the Construct";
 				CabalistEpicBoots.Level = 50;
-				CabalistEpicBoots.Item_Type = 23;
+				CabalistEpicBoots.ItemType = 23;
 				CabalistEpicBoots.Model = 143;
 				CabalistEpicBoots.IsDropable = true;
 				CabalistEpicBoots.IsPickable = true;
 				CabalistEpicBoots.DPS_AF = 50;
 				CabalistEpicBoots.SPD_ABS = 0;
-				CabalistEpicBoots.Object_Type = 32;
+				CabalistEpicBoots.ObjectType = 32;
 				CabalistEpicBoots.Quality = 100;
 				CabalistEpicBoots.Weight = 22;
-				CabalistEpicBoots.Bonus = 35;
+				CabalistEpicBoots.ItemBonus = 35;
 				CabalistEpicBoots.MaxCondition = 50000;
 				CabalistEpicBoots.MaxDurability = 50000;
 				CabalistEpicBoots.Condition = 50000;
@@ -988,29 +988,29 @@ namespace DOL.GS.Quests.Albion
 				CabalistEpicBoots.Bonus4 = 8;
 				CabalistEpicBoots.Bonus4Type = (int)eResist.Thrust;
 				{
-					GameServer.Database.AddObject(CabalistEpicBoots);
+					GameServer.Instance.SaveDataObject(CabalistEpicBoots);
 				}
 
 			}
 			//end item
 			//Warm of the Construct Coif
-			CabalistEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("CabalistEpicHelm");
+			CabalistEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "CabalistEpicHelm");
 			if (CabalistEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "CabalistEpicHelm";
+				i.KeyName = "CabalistEpicHelm";
 				i.Name = "Warm Coif of the Construct";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1028,30 +1028,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Matter;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				CabalistEpicHelm = i;
 
 			}
 			//end item
 			//Warm of the Construct Gloves
-			CabalistEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("CabalistEpicGloves");
+			CabalistEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "CabalistEpicGloves");
 			if (CabalistEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "CabalistEpicGloves";
+				i.KeyName = "CabalistEpicGloves";
 				i.Name = "Warm Gloves of the Construct";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 142;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1069,30 +1069,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 10;
 				i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				CabalistEpicGloves = i;
 
 			}
 			//Warm of the Construct Hauberk
-			CabalistEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("CabalistEpicVest");
+			CabalistEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "CabalistEpicVest");
 			if (CabalistEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "CabalistEpicVest";
+				i.KeyName = "CabalistEpicVest";
 				i.Name = "Warm Robe of the Construct";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 682;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1110,30 +1110,30 @@ namespace DOL.GS.Quests.Albion
 				//                    i.Bonus4 = 10;
 				//                    i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				CabalistEpicVest = i;
 
 			}
 			//Warm of the Construct Legs
-			CabalistEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("CabalistEpicLegs");
+			CabalistEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "CabalistEpicLegs");
 			if (CabalistEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "CabalistEpicLegs";
+				i.KeyName = "CabalistEpicLegs";
 				i.Name = "Warm Leggings of the Construct";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 140;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1152,30 +1152,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Matter;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				CabalistEpicLegs = i;
 
 			}
 			//Warm of the Construct Sleeves
-			CabalistEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("CabalistEpicArms");
+			CabalistEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "CabalistEpicArms");
 			if (CabalistEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "CabalistEpicArms";
+				i.KeyName = "CabalistEpicArms";
 				i.Name = "Warm Sleeves of the Construct";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 141;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1194,30 +1194,30 @@ namespace DOL.GS.Quests.Albion
 				//                    i.Bonus4 = 10;
 				//                    i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				CabalistEpicArms = i;
 
 			}
 			#endregion
 			#region Necromancer
-			NecromancerEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("NecromancerEpicBoots");
+			NecromancerEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NecromancerEpicBoots");
 			if (NecromancerEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "NecromancerEpicBoots";
+				i.KeyName = "NecromancerEpicBoots";
 				i.Name = "Boots of Forbidden Rites";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 143;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1236,30 +1236,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Thrust;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				NecromancerEpicBoots = i;
 			}
 			//end item
 			//of Forbidden Rites Coif
-			NecromancerEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("NecromancerEpicHelm");
+			NecromancerEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NecromancerEpicHelm");
 			if (NecromancerEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "NecromancerEpicHelm";
+				i.KeyName = "NecromancerEpicHelm";
 				i.Name = "Cap of Forbidden Rites";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1278,30 +1278,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Matter;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				NecromancerEpicHelm = i;
 
 			}
 			//end item
 			//of Forbidden Rites Gloves
-			NecromancerEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("NecromancerEpicGloves");
+			NecromancerEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NecromancerEpicGloves");
 			if (NecromancerEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "NecromancerEpicGloves";
+				i.KeyName = "NecromancerEpicGloves";
 				i.Name = "Gloves of Forbidden Rites";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 142;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1320,29 +1320,29 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 10;
 				i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				NecromancerEpicGloves = i;
 
 			}
 			//of Forbidden Rites Hauberk
-			NecromancerEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("NecromancerEpicVest");
+			NecromancerEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NecromancerEpicVest");
 			if (NecromancerEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "NecromancerEpicVest";
+				i.KeyName = "NecromancerEpicVest";
 				i.Name = "Robe of Forbidden Rites";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 1266;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1361,30 +1361,30 @@ namespace DOL.GS.Quests.Albion
 				//                    i.Bonus4 = 10;
 				//                    i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				NecromancerEpicVest = i;
 
 			}
 			//of Forbidden Rites Legs
-			NecromancerEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("NecromancerEpicLegs");
+			NecromancerEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NecromancerEpicLegs");
 			if (NecromancerEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "NecromancerEpicLegs";
+				i.KeyName = "NecromancerEpicLegs";
 				i.Name = "Leggings of Forbidden Rites";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 140;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1403,29 +1403,29 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Matter;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				NecromancerEpicLegs = i;
 
 			}
 			//of Forbidden Rites Sleeves
-			NecromancerEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("NecromancerEpicArms");
+			NecromancerEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "NecromancerEpicArms");
 			if (NecromancerEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "NecromancerEpicArms";
+				i.KeyName = "NecromancerEpicArms";
 				i.Name = "Sleeves of Forbidden Rites";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 141;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1444,30 +1444,30 @@ namespace DOL.GS.Quests.Albion
 				//                    i.Bonus4 = 10;
 				//                    i.Bonus4Type = (int)eResist.Energy;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				NecromancerEpicArms = i;
 				//Item Descriptions End
 			}
 			#endregion
 			#region Heretic
-			HereticEpicBoots = GameServer.Database.FindObjectByKey<ItemTemplate>("HereticEpicBoots");
+			HereticEpicBoots = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HereticEpicBoots");
 			if (HereticEpicBoots == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "HereticEpicBoots";
+				i.KeyName = "HereticEpicBoots";
 				i.Name = "Boots of the Zealous Renegade";
 				i.Level = 50;
-				i.Item_Type = 23;
+				i.ItemType = 23;
 				i.Model = 143;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1492,30 +1492,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Heat;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				HereticEpicBoots = i;
 			}
 			//end item
 			//of Forbidden Rites Coif
-			HereticEpicHelm = GameServer.Database.FindObjectByKey<ItemTemplate>("HereticEpicHelm");
+			HereticEpicHelm = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HereticEpicHelm");
 			if (HereticEpicHelm == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "HereticEpicHelm";
+				i.KeyName = "HereticEpicHelm";
 				i.Name = "Cap of the Zealous Renegade";
 				i.Level = 50;
-				i.Item_Type = 21;
+				i.ItemType = 21;
 				i.Model = 1290; //NEED TO WORK ON..
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1540,30 +1540,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 48;
 				i.Bonus4Type = (int)eProperty.MaxHealth;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				HereticEpicHelm = i;
 
 			}
 			//end item
 			//of Forbidden Rites Gloves
-			HereticEpicGloves = GameServer.Database.FindObjectByKey<ItemTemplate>("HereticEpicGloves");
+			HereticEpicGloves = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HereticEpicGloves");
 			if (HereticEpicGloves == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "HereticEpicGloves";
+				i.KeyName = "HereticEpicGloves";
 				i.Name = "Gloves of the Zealous Renegade";
 				i.Level = 50;
-				i.Item_Type = 22;
+				i.ItemType = 22;
 				i.Model = 142;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1584,29 +1584,29 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus3Type = (int)eResist.Cold;
 
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				HereticEpicGloves = i;
 
 			}
 			//of Forbidden Rites Hauberk
-			HereticEpicVest = GameServer.Database.FindObjectByKey<ItemTemplate>("HereticEpicVest");
+			HereticEpicVest = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HereticEpicVest");
 			if (HereticEpicVest == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "HereticEpicVest";
+				i.KeyName = "HereticEpicVest";
 				i.Name = "Robe of the Zealous Renegade";
 				i.Level = 50;
-				i.Item_Type = 25;
+				i.ItemType = 25;
 				i.Model = 2921;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1631,30 +1631,30 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Cold;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 
 				HereticEpicVest = i;
 
 			}
 			//of Forbidden Rites Legs
-			HereticEpicLegs = GameServer.Database.FindObjectByKey<ItemTemplate>("HereticEpicLegs");
+			HereticEpicLegs = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HereticEpicLegs");
 			if (HereticEpicLegs == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "HereticEpicLegs";
+				i.KeyName = "HereticEpicLegs";
 				i.Name = "Pants of the Zealous Renegade";
 				i.Level = 50;
-				i.Item_Type = 27;
+				i.ItemType = 27;
 				i.Model = 140;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1679,29 +1679,29 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 8;
 				i.Bonus4Type = (int)eResist.Matter;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				HereticEpicLegs = i;
 
 			}
 			//of Forbidden Rites Sleeves
-			HereticEpicArms = GameServer.Database.FindObjectByKey<ItemTemplate>("HereticEpicArms");
+			HereticEpicArms = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == "HereticEpicArms");
 			if (HereticEpicArms == null)
 			{
 				i = new ItemTemplate();
-				i.Id_nb = "HereticEpicArms";
+				i.KeyName = "HereticEpicArms";
 				i.Name = "Sleeves of the Zealous Renegade";
 				i.Level = 50;
-				i.Item_Type = 28;
+				i.ItemType = 28;
 				i.Model = 141;
 				i.IsDropable = true;
 				i.IsPickable = true;
 				i.DPS_AF = 50;
 				i.SPD_ABS = 0;
-				i.Object_Type = 32;
+				i.ObjectType = 32;
 				i.Quality = 100;
 				i.Weight = 22;
-				i.Bonus = 35;
+				i.ItemBonus = 35;
 				i.MaxCondition = 50000;
 				i.MaxDurability = 50000;
 				i.Condition = 50000;
@@ -1726,7 +1726,7 @@ namespace DOL.GS.Quests.Albion
 				i.Bonus4 = 6;
 				i.Bonus4Type = (int)eProperty.Skill_Flexible_Weapon;
 				{
-					GameServer.Database.AddObject(i);
+					GameServer.Instance.SaveDataObject(i);
 				}
 				HereticEpicArms = i;
 				//Item Descriptions End
@@ -1957,7 +1957,7 @@ namespace DOL.GS.Quests.Albion
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs)args;
-				if (gArgs.Target.Name == Lidmann.Name && gArgs.Item.Id_nb == sealed_pouch.Id_nb)
+				if (gArgs.Target.Name == Lidmann.Name && gArgs.Item.KeyName == sealed_pouch.KeyName)
 				{
 					Lidmann.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
 					FinishQuest();

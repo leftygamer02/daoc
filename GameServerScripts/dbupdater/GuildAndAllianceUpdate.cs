@@ -19,7 +19,7 @@
 using System;
 using System.Linq;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 using log4net;
 
@@ -75,7 +75,7 @@ namespace DOL.GS.DatabaseUpdate
 						log.WarnFormat("Alliance (ID:{0}, Name:{1}) can't resolve its Leading Guild !", pair.Alliance.ObjectId, pair.Alliance.AllianceName);
 				}
 				
-				var saved = GameServer.Database.SaveObject(alliancesWithLeader.Select(pair => pair.Alliance));
+				var saved = GameServer.Instance.SaveDataObject(alliancesWithLeader.Select(pair => pair.Alliance));
 				
 				if (saved && log.IsInfoEnabled)
 					log.InfoFormat("Finished saving Alliances without Leader successfully!");

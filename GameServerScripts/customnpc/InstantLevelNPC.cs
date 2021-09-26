@@ -13,7 +13,7 @@ using DOL.GS.PacketHandler;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using log4net;
 
 

@@ -8,7 +8,7 @@ using System.Threading;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Commands
 {
@@ -68,7 +68,7 @@ namespace DOL.GS.Commands
             {
                 InventoryItem item = player.Inventory.GetItem(FromSlot);
 
-                if (!GlobalConstants.IsWeapon(item.Object_Type))
+                if (!GlobalConstants.IsWeapon(item.ObjectType))
                 {
                     DisplayMessage(player.Client, "That is not a weapon!");
                     DisplaySyntax(player.Client);

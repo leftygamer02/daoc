@@ -19,7 +19,7 @@
 using System;
 using System.Reflection;
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.Language;
 using DOL.GS.ServerProperties;
@@ -105,7 +105,7 @@ namespace DOL.GS.GameEvents
 			if (chArgs == null)
 				return;
 			
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 			Account account = chArgs.GameClient.Account;
 			
 			if ((ePrivLevel)account.PrivLevel == ePrivLevel.Player)
@@ -113,7 +113,7 @@ namespace DOL.GS.GameEvents
 				var guildname = LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, string.Format("Guild.StartupGuild.{0}", GlobalConstants.RealmToName((eRealm)ch.Realm)));
 				ch.GuildID = GuildMgr.GuildNameToGuildID(guildname);
 
-				if (ch.GuildID != "")
+				if (ch.GuildID.HasValue)
 					ch.GuildRank = 8;
 			}
 		}

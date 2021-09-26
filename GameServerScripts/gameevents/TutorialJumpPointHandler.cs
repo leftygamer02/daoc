@@ -17,7 +17,7 @@
  *
  */
 using System;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL.GS.ServerRules;
@@ -47,7 +47,7 @@ namespace DOL.GS.GameEvents
 				targetPoint.TargetY = loc.YPos;
 				targetPoint.TargetZ = loc.ZPos;
 				targetPoint.TargetHeading = (ushort)loc.Heading;
-				targetPoint.TargetRegion = (ushort)loc.Region;
+				targetPoint.TargetRegionID = loc.Region;
 				return true;
 			}
 
