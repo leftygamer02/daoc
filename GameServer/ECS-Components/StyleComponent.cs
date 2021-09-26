@@ -1,4 +1,4 @@
-﻿using DOL.Database;
+﻿using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using DOL.GS.Styles;
@@ -24,7 +24,7 @@ namespace DOL.GS
         /// <summary>
 		/// Holds all styles of the player
 		/// </summary>
-		protected readonly Dictionary<int, Style> m_styles = new Dictionary<int, Style>();
+		protected readonly Dictionary<int, Styles.Style> m_styles = new Dictionary<int, Styles.Style>();
 
         /// <summary>
         /// Used to lock the style list
@@ -37,7 +37,7 @@ namespace DOL.GS
 		/// </summary>
 		public IList GetStyleList()
         {
-            List<Style> list = new List<Style>();
+            List<Styles.Style> list = new List<Styles.Style>();
             lock (lockStyleList)
             {
                 list = m_styles.Values.OrderBy(x => x.SpecLevelRequirement).ThenBy(y => y.ID).ToList();
@@ -48,16 +48,16 @@ namespace DOL.GS
         /// <summary>
 		/// Holds the Style that this living should use next
 		/// </summary>
-		protected Style m_nextCombatStyle;
+		protected Styles.Style m_nextCombatStyle;
         /// <summary>
         /// Holds the backup style for the style that the living should use next
         /// </summary>
-        protected Style m_nextCombatBackupStyle;
+        protected Styles.Style m_nextCombatBackupStyle;
 
         /// <summary>
         /// Gets or Sets the next combat style to use
         /// </summary>
-        public Style NextCombatStyle
+        public Styles.Style NextCombatStyle
         {
             get { return m_nextCombatStyle; }
             set { m_nextCombatStyle = value; }
@@ -65,7 +65,7 @@ namespace DOL.GS
         /// <summary>
         /// Gets or Sets the next combat backup style to use
         /// </summary>
-        public Style NextCombatBackupStyle
+        public Styles.Style NextCombatBackupStyle
         {
             get { return m_nextCombatBackupStyle; }
             set { m_nextCombatBackupStyle = value; }
@@ -86,7 +86,7 @@ namespace DOL.GS
             set { if ((owner as GamePlayer).DBCharacter != null) (owner as GamePlayer).DBCharacter.CancelStyle = value; }
         }
 
-        public void ExecuteWeaponStyle(Style style)
+        public void ExecuteWeaponStyle(Styles.Style style)
         {
             StyleProcessor.TryToUseStyle(owner, style);
         }
@@ -95,7 +95,7 @@ namespace DOL.GS
         /// Decides which style living will use in this moment
         /// </summary>
         /// <returns>Style to use or null if none</returns>
-        public Style GetStyleToUse()
+        public Styles.Style GetStyleToUse()
         {
             InventoryItem weapon;
             if (NextCombatStyle == null) return null;
@@ -115,7 +115,7 @@ namespace DOL.GS
 		/// Picks a style, prioritizing reactives an	d chains over positionals and anytimes
 		/// </summary>
 		/// <returns>Selected style</returns>
-		public Style NPCGetStyleToUse()
+		public Styles.Style NPCGetStyleToUse()
         {
             var p = owner as GameNPC;
             if (p.Styles == null || p.Styles.Count < 1 || p.TargetObject == null)
@@ -126,12 +126,12 @@ namespace DOL.GS
             //	default 20% style chance means the defensive style only happens
             //	2% of the time, and a chain from it only happens 0.4% of the time.
             if (p.StylesChain != null && p.StylesChain.Count > 0)
-                foreach (Style s in p.StylesChain)
+                foreach (Styles.Style s in p.StylesChain)
                     if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
                         return s;
 
             if (p.StylesDefensive != null && p.StylesDefensive.Count > 0)
-                foreach (Style s in p.StylesDefensive)
+                foreach (Styles.Style s in p.StylesDefensive)
                     if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon)
                         && p.CheckStyleStun(s)) // Make sure we don't spam stun styles like Brutalize
                         return s;
@@ -143,21 +143,21 @@ namespace DOL.GS
                 //	e.g. a mob with both Pincer and Ice Storm side styles will use both of them.
                 if (p.StylesBack != null && p.StylesBack.Count > 0)
                 {
-                    Style s = p.StylesBack[Util.Random(0, p.StylesBack.Count - 1)];
+                    Styles.Style s = p.StylesBack[Util.Random(0, p.StylesBack.Count - 1)];
                     if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
                         return s;
                 }
 
                 if (p.StylesSide != null && p.StylesSide.Count > 0)
                 {
-                    Style s = p.StylesSide[Util.Random(0, p.StylesSide.Count - 1)];
+                    Styles.Style s = p.StylesSide[Util.Random(0, p.StylesSide.Count - 1)];
                     if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
                         return s;
                 }
 
                 if (p.StylesFront != null && p.StylesFront.Count > 0)
                 {
-                    Style s = p.StylesFront[Util.Random(0, p.StylesFront.Count - 1)];
+                    Styles.Style s = p.StylesFront[Util.Random(0, p.StylesFront.Count - 1)];
                     if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
                         return s;
                 }
@@ -176,7 +176,7 @@ namespace DOL.GS
 		/// <param name="delveInfo"></param>
 		/// <param name="style"></param>
 		/// <returns></returns>
-		public void DelveWeaponStyle(IList<string> delveInfo, Style style)
+		public void DelveWeaponStyle(IList<string> delveInfo, Styles.Style style)
         {
             StyleProcessor.DelveWeaponStyle(delveInfo, style, owner as GamePlayer);
         }
@@ -189,7 +189,7 @@ namespace DOL.GS
             }
         }
 
-        public void AddStyle(Style st, bool notify)
+        public void AddStyle(Styles.Style st, bool notify)
         {
             var p = owner as GamePlayer;
 
@@ -206,19 +206,19 @@ namespace DOL.GS
                     // Verbose
                     if (notify)
                     {
-                        Style style = st;
+                        Styles.Style style = st;
                         p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.YouLearn", style.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
                         string message = null;
 
-                        if (Style.eOpening.Offensive == style.OpeningRequirementType)
+                        if (Styles.Style.eOpening.Offensive == style.OpeningRequirementType)
                         {
                             switch (style.AttackResultRequirement)
                             {
-                                case Style.eAttackResultRequirement.Style:
-                                case Style.eAttackResultRequirement.Hit: // TODO: make own message for hit after styles DB is updated
+                                case Styles.Style.eAttackResultRequirement.Style:
+                                case Styles.Style.eAttackResultRequirement.Hit: // TODO: make own message for hit after styles DB is updated
 
-                                    Style reqStyle = SkillBase.GetStyleByID(style.OpeningRequirementValue, p.CharacterClass.ID);
+                                    Styles.Style reqStyle = SkillBase.GetStyleByID(style.OpeningRequirementValue, p.CharacterClass.ID);
 
                                     if (reqStyle == null)
                                         message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterStyle", "(style " + style.OpeningRequirementValue + " not found)");
@@ -226,46 +226,46 @@ namespace DOL.GS
                                     else message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterStyle", reqStyle.Name);
 
                                     break;
-                                case Style.eAttackResultRequirement.Miss:
+                                case Styles.Style.eAttackResultRequirement.Miss:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterMissed");
                                     break;
-                                case Style.eAttackResultRequirement.Parry:
+                                case Styles.Style.eAttackResultRequirement.Parry:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterParried");
                                     break;
-                                case Style.eAttackResultRequirement.Block:
+                                case Styles.Style.eAttackResultRequirement.Block:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterBlocked");
                                     break;
-                                case Style.eAttackResultRequirement.Evade:
+                                case Styles.Style.eAttackResultRequirement.Evade:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterEvaded");
                                     break;
-                                case Style.eAttackResultRequirement.Fumble:
+                                case Styles.Style.eAttackResultRequirement.Fumble:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.AfterFumbles");
                                     break;
                             }
                         }
-                        else if (Style.eOpening.Defensive == style.OpeningRequirementType)
+                        else if (Styles.Style.eOpening.Defensive == style.OpeningRequirementType)
                         {
                             switch (style.AttackResultRequirement)
                             {
-                                case Style.eAttackResultRequirement.Miss:
+                                case Styles.Style.eAttackResultRequirement.Miss:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetMisses");
                                     break;
-                                case Style.eAttackResultRequirement.Hit:
+                                case Styles.Style.eAttackResultRequirement.Hit:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetHits");
                                     break;
-                                case Style.eAttackResultRequirement.Parry:
+                                case Styles.Style.eAttackResultRequirement.Parry:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetParried");
                                     break;
-                                case Style.eAttackResultRequirement.Block:
+                                case Styles.Style.eAttackResultRequirement.Block:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetBlocked");
                                     break;
-                                case Style.eAttackResultRequirement.Evade:
+                                case Styles.Style.eAttackResultRequirement.Evade:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetEvaded");
                                     break;
-                                case Style.eAttackResultRequirement.Fumble:
+                                case Styles.Style.eAttackResultRequirement.Fumble:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetFumbles");
                                     break;
-                                case Style.eAttackResultRequirement.Style:
+                                case Styles.Style.eAttackResultRequirement.Style:
                                     message = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.RefreshSpec.TargetStyle");
                                     break;
                             }

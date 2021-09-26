@@ -3854,7 +3854,7 @@ namespace DOL.GS
 			if( this is GamePlayer && player != null && IsObjectInFront( ad.Attacker, 120 ) && player.HasAbility( Abilities.Shield ) )
 			{
 				lefthand = Inventory.GetItem( eInventorySlot.LeftHandWeapon );
-				if( lefthand != null && ( player.attackComponent.AttackWeapon == null || player.attackComponent.AttackWeapon.Item_Type == Slot.RIGHTHAND || player.attackComponent.AttackWeapon.Item_Type == Slot.LEFTHAND ) )
+				if( lefthand != null && ( player.attackComponent.AttackWeapon == null || player.attackComponent.AttackWeapon.ItemTemplate.ItemType == Slot.RIGHTHAND || player.attackComponent.AttackWeapon.ItemTemplate.ItemType == Slot.LEFTHAND ) )
 				{
 					if( lefthand.ItemTemplate.ObjectType == (int)eObjectType.Shield && IsObjectInFront( ad.Attacker, 120 ) )
 						blockChance = GetModified( eProperty.BlockChance ) * lefthand.ItemTemplate.Quality * 0.01;

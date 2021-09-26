@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 
 namespace ECS.Debug

@@ -1,4 +1,4 @@
-﻿using DOL.Database;
+﻿using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.GS.Spells;
@@ -122,7 +122,7 @@ namespace DOL.GS
             InventoryItem weapon = p.attackComponent.AttackWeapon;
             if (weapon != null)
             {
-                switch ((eObjectType)weapon.Object_Type)
+                switch ((eObjectType)weapon.ItemTemplate.ObjectType)
                 {
                     case eObjectType.Crossbow:
                     case eObjectType.Longbow:
@@ -143,9 +143,9 @@ namespace DOL.GS
 
                                 if (ammo == null) return false;
 
-                                if (weapon.Object_Type == (int)eObjectType.Crossbow)
-                                    return ammo.Object_Type == (int)eObjectType.Bolt;
-                                return ammo.Object_Type == (int)eObjectType.Arrow;
+                                if (weapon.ItemTemplate.ObjectType == (int)eObjectType.Crossbow)
+                                    return ammo.ItemTemplate.ObjectType == (int)eObjectType.Bolt;
+                                return ammo.ItemTemplate.ObjectType == (int)eObjectType.Arrow;
                             }
                         }
                         break;
@@ -175,7 +175,7 @@ namespace DOL.GS
                     InventoryItem weapon = owner.attackComponent.AttackWeapon;
                     if (weapon != null)
                     {
-                        switch (weapon.Object_Type)
+                        switch (weapon.ItemTemplate.ObjectType)
                         {
                             case (int)eObjectType.Thrown: ammo = owner.Inventory.GetItem(eInventorySlot.DistanceWeapon); break;
                             case (int)eObjectType.Crossbow:
@@ -192,7 +192,7 @@ namespace DOL.GS
                                         case eActiveQuiverSlot.Fourth: ammo = owner.Inventory.GetItem(eInventorySlot.FourthQuiver); break;
                                         case eActiveQuiverSlot.None:
                                             eObjectType findType = eObjectType.Arrow;
-                                            if (weapon.Object_Type == (int)eObjectType.Crossbow)
+                                            if (weapon.ItemTemplate.ObjectType == (int)eObjectType.Crossbow)
                                                 findType = eObjectType.Bolt;
 
                                             ammo = owner.Inventory.GetFirstItemByObjectType((int)findType, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
@@ -260,7 +260,7 @@ namespace DOL.GS
                     p.TempProperties.setProperty(RANGE_ATTACK_HOLD_START, holdStart);
                 }
                 //DOLConsole.WriteLine("Holding.... ("+holdStart+") "+(Environment.TickCount - holdStart));
-                if ((GameLoop.GameLoopTime - holdStart) > 15000 && p.attackComponent.AttackWeapon.Object_Type != (int)eObjectType.Crossbow)
+                if ((GameLoop.GameLoopTime - holdStart) > 15000 && p.attackComponent.AttackWeapon.ItemTemplate.ObjectType != (int)eObjectType.Crossbow)
                 {
                     p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.TooTired"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     return eCheckRangeAttackStateResult.Stop; //Stop the attack

@@ -5537,26 +5537,26 @@ namespace DOL.GS
 				StopCurrentSpellcast();
 			}
 
-			switch (slot)
-			{
-				//case eActiveWeaponSlot.Standard:
-				//	// remove endurance remove handler
-				//	if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
-				//		GameEventMgr.RemoveHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(RangeAttackHandler));
-				//	break;
+			//switch (slot)
+			//{
+   //             case eActiveWeaponSlot.Standard:
+   //                 // remove endurance remove handler
+   //                 if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
+   //                     GameEventMgr.RemoveHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(RangeAttackHandler));
+   //                 break;
 
-				//case eActiveWeaponSlot.TwoHanded:
-				//	// remove endurance remove handler
-				//	if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
-				//		GameEventMgr.RemoveHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(RangeAttackHandler));
-				//	break;
+   //             case eActiveWeaponSlot.TwoHanded:
+   //                 // remove endurance remove handler
+   //                 if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
+   //                     GameEventMgr.RemoveHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(RangeAttackHandler));
+   //                 break;
 
-				//case eActiveWeaponSlot.Distance:
-				//	// add endurance remove handler
-				//	if (ActiveWeaponSlot != eActiveWeaponSlot.Distance)
-				//		GameEventMgr.AddHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(RangeAttackHandler));
-				//	break;
-			}
+   //             case eActiveWeaponSlot.Distance:
+   //                 // add endurance remove handler
+   //                 if (ActiveWeaponSlot != eActiveWeaponSlot.Distance)
+   //                     GameEventMgr.AddHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(RangeAttackHandler));
+   //                 break;
+   //         }
 
 
 

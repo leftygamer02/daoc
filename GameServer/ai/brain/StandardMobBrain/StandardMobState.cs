@@ -356,17 +356,21 @@ public class StandardMobState_PATROLLING : StandardMobState
         }
 
         //handle patrol logic
-        PathPoint path = MovementMgr.LoadPath(_brain.Body.PathID);
-        if (path != null)
+        if (_brain.Body.Path != null)
         {
-            _brain.Body.CurrentWayPoint = path;
-            _brain.Body.MoveOnPath((short)path.MaxSpeed);
+            PathPoint path = MovementMgr.LoadPath(_brain.Body.Path.PathName);
+            if (path != null)
+            {
+                _brain.Body.CurrentWayPoint = path;
+                _brain.Body.MoveOnPath((short)path.MaxSpeed);
+            }
+            else
+            {
+                log.ErrorFormat("Path {0} not found for mob {1}.", _brain.Body.PathID, _brain.Body.Name);
+                _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
+            }
         }
-        else
-        {
-            log.ErrorFormat("Path {0} not found for mob {1}.", _brain.Body.PathID, _brain.Body.Name);
-            _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
-        }
+        
 
         base.Think();
     }

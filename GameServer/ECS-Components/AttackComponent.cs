@@ -475,7 +475,7 @@ namespace DOL.GS
                     //ammo damage bonus
                     if (p.rangeAttackComponent?.RangeAttackAmmo != null)
                     {
-                        switch ((p.rangeAttackComponent?.RangeAttackAmmo.SPD_ABS) & 0x3)
+                        switch ((p.rangeAttackComponent?.RangeAttackAmmo.ItemTemplate.SPD_ABS) & 0x3)
                         {
                             case 0: damage *= 0.85; break; //Blunt       (light) -15%
                                                            //case 1: damage *= 1;	break; //Bodkin     (medium)   0%
@@ -2546,7 +2546,7 @@ namespace DOL.GS
                             double ammoDamageBonus = 1;
                             if (p.rangeAttackComponent.RangeAttackAmmo != null)
                             {
-                                switch ((p.rangeAttackComponent.RangeAttackAmmo.SPD_ABS) & 0x3)
+                                switch ((p.rangeAttackComponent.RangeAttackAmmo.ItemTemplate.SPD_ABS) & 0x3)
                                 {
                                     case 0: ammoDamageBonus = 0.85; break;  //Blunt       (light) -15%
                                     case 1: ammoDamageBonus = 1; break;     //Bodkin     (medium)   0%

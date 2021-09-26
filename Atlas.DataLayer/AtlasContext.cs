@@ -150,6 +150,7 @@ namespace Atlas.DataLayer
         public DbSet<Style> Styles { get; set; }
         public DbSet<StyleSpell> StyleSpells { get; set; }
         public DbSet<Teleport> Teleports { get; set; }
+        public DbSet<Voting> Voting { get; set; }
         public DbSet<WorldObject> WorldObjects { get; set; }
         public DbSet<ZonePoint> ZonePoints { get; set; }
         public DbSet<Zone> Zones { get; set; }

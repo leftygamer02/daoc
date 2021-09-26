@@ -1,5 +1,4 @@
 ﻿using DOL.AI.Brain;
-using DOL.Database;
 using DOL.GS.Effects;
 using DOL.GS.Styles;
 using System;
@@ -9,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static DOL.GS.GameLiving;
 using static DOL.GS.GameObject;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {
@@ -78,7 +78,7 @@ namespace DOL.GS
                 int ticksToTarget = 1;
                 int interruptDuration = 0;
                 int leftHandSwingCount = 0;
-                Style combatStyle = null;
+                Styles.Style combatStyle = null;
                 InventoryItem attackWeapon = owner.attackComponent.AttackWeapon;
                 InventoryItem leftWeapon = (owner.Inventory == null) ? null : owner.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
                 GameObject attackTarget = null;

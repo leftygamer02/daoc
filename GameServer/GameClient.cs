@@ -34,8 +34,6 @@ using DOL.Network;
 
 using log4net;
 
-using Microsoft.EntityFrameworkCore;
-
 namespace DOL.GS
 {
 	/// <summary>
