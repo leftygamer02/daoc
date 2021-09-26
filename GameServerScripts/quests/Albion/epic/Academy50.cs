@@ -38,6 +38,7 @@ using DOL.Events;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using log4net;
+using System.Linq;
 
 namespace DOL.GS.Quests.Albion
 {
@@ -92,7 +93,7 @@ namespace DOL.GS.Quests.Albion
 		{
 		}
 
-		public Academy_50(GamePlayer questingPlayer, DBQuest dbQuest) : base(questingPlayer, dbQuest)
+		public Academy_50(GamePlayer questingPlayer, Quest dbQuest) : base(questingPlayer, dbQuest)
 		{
 		}
 
@@ -308,17 +309,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eProperty.Skill_Cold;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Cold, BonusValue = 4 });
 
-				item.Bonus2 = 22;
-				item.Bonus2Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 22 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Body;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Body, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Energy;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Energy, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -351,17 +348,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 13;
-				item.Bonus1Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				item.Bonus2 = 21;
-				item.Bonus2Type = (int) eStat.INT;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.INT, BonusValue = 21 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Thrust;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Spirit;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Spirit, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -394,17 +387,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 16;
-				item.Bonus1Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				item.Bonus2 = 18;
-				item.Bonus2Type = (int) eStat.INT;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.INT, BonusValue = 18 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Matter;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Heat;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -437,14 +426,11 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eResist.Cold;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eResist.Cold, BonusValue = 4 });
 
-				item.Bonus2 = 14;
-				item.Bonus2Type = (int) eProperty.PowerRegenerationRate;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 14 });
 
-				item.Bonus3 = 24;
-				item.Bonus3Type = (int) eProperty.MaxHealth;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -477,14 +463,11 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eProperty.Skill_Fire;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Fire, BonusValue = 4 });
 
-				item.Bonus2 = 8;
-				item.Bonus2Type = (int) eResist.Cold;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Cold, BonusValue = 8 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Energy;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Energy, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -517,14 +500,11 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eProperty.Skill_Earth;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Earth, BonusValue = 4 });
 
-				item.Bonus2 = 18;
-				item.Bonus2Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 18 });
 
-				item.Bonus3 = 16;
-				item.Bonus3Type = (int) eStat.INT;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 16 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -557,17 +537,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 7;
-				item.Bonus1Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 7 });
 
-				item.Bonus2 = 27;
-				item.Bonus2Type = (int) eStat.QUI;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 27 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Slash;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Slash, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Cold;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Cold, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -601,17 +577,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 16;
-				item.Bonus1Type = (int) eStat.CON;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				item.Bonus2 = 18;
-				item.Bonus2Type = (int) eStat.CHR;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CHR, BonusValue = 18 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Thrust;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Energy;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Energy, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -645,17 +617,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 15;
-				item.Bonus1Type = (int) eStat.CON;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				item.Bonus2 = 19;
-				item.Bonus2Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 19 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Crush;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Heat;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -688,17 +656,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 6;
-				item.Bonus1Type = (int) eResist.Cold;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eResist.Cold, BonusValue = 6 });
 
-				item.Bonus2 = 8;
-				item.Bonus2Type = (int) eProperty.PowerRegenerationRate;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 8 });
 
-				item.Bonus3 = 39;
-				item.Bonus3Type = (int) eProperty.MaxHealth;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 39 });
 
-				item.Bonus4 = 6;
-				item.Bonus4Type = (int) eResist.Energy;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Energy, BonusValue = 6 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -731,17 +695,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 15;
-				item.Bonus1Type = (int) eStat.STR;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 15 });
 
-				item.Bonus2 = 19;
-				item.Bonus2Type = (int) eStat.CON;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 19 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Body;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Body, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Heat;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -774,17 +734,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 16;
-				item.Bonus1Type = (int) eStat.STR;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 16 });
 
-				item.Bonus2 = 21;
-				item.Bonus2Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 21 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Crush;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Body;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Body, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -816,17 +772,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eProperty.Focus_Matter;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Matter, BonusValue = 4 });
 
-				item.Bonus2 = 22;
-				item.Bonus2Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 22 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Matter;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Energy;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Energy, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -860,17 +812,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 13;
-				item.Bonus1Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				item.Bonus2 = 21;
-				item.Bonus2Type = (int) eStat.INT;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.INT, BonusValue = 21 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Slash;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Slash, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Thrust;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Thrust, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -904,17 +852,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 16;
-				item.Bonus1Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				item.Bonus2 = 18;
-				item.Bonus2Type = (int) eStat.INT;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.INT, BonusValue = 18 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Cold;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Cold, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Heat;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -947,14 +891,11 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eResist.Spirit;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eResist.Spirit, BonusValue = 4 });
 
-				item.Bonus2 = 14;
-				item.Bonus2Type = (int) eProperty.PowerRegenerationRate;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 14 });
 
-				item.Bonus3 = 24;
-				item.Bonus3Type = (int) eProperty.MaxHealth;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -987,17 +928,13 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eProperty.Focus_Mind;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Mind, BonusValue = 4 });
 
-				item.Bonus2 = 19;
-				item.Bonus2Type = (int) eStat.CON;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 19 });
 
-				item.Bonus3 = 8;
-				item.Bonus3Type = (int) eResist.Body;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Body, BonusValue = 8 });
 
-				item.Bonus4 = 8;
-				item.Bonus4Type = (int) eResist.Spirit;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Spirit, BonusValue = 8 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -1030,14 +967,11 @@ namespace DOL.GS.Quests.Albion
 				item.Condition = 50000;
 				item.Durability = 50000;
 
-				item.Bonus1 = 4;
-				item.Bonus1Type = (int) eProperty.Focus_Body;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Body, BonusValue = 4 });
 
-				item.Bonus2 = 16;
-				item.Bonus2Type = (int) eStat.DEX;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				item.Bonus3 = 18;
-				item.Bonus3Type = (int) eStat.INT;
+				item.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 18 });
 
 				
 					GameServer.Instance.SaveDataObject(item);
@@ -1356,7 +1290,7 @@ namespace DOL.GS.Quests.Albion
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Ferowl.Name && gArgs.Item.KeyName == sealed_pouch.KeyName)
+				if (gArgs.Target.Name == Ferowl.Name && gArgs.Item.ItemTemplate.KeyName == sealed_pouch.KeyName)
 				{
 					Ferowl.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
 					FinishQuest();

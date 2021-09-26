@@ -37,6 +37,7 @@ using System.Reflection;
 using DOL.Events;
 using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -425,7 +426,7 @@ namespace DOL.GS
 		{
 			if (this.ObjectType == (int)eObjectType.Staff)
 			{
-				if (this.Bonus1Type != 0)
+				if (this.Bonuses.Any())
 					return false;
 
 				if (this.Realm == (int)eRealm.Albion && this.Description == "friar")
@@ -2035,46 +2036,17 @@ namespace DOL.GS
 				amount = Math.Min(50, amount);
 			}
 
-			if (this.Bonus1 == 0)
-			{
-				this.Bonus1 = amount;
-				this.Bonus1Type = (int)property;
+			var maxBonusOrder = this.Bonuses.Any() ? this.Bonuses.Max(x => x.BonusOrder) : 0;
 
-				if (property == eProperty.AllFocusLevels)
-					this.Name = "Focus " + this.Name;
-			}
-			else if (this.Bonus2 == 0)
-			{
-				this.Bonus2 = amount;
-				this.Bonus2Type = (int)property;
-			}
-			else if (this.Bonus3 == 0)
-			{
-				this.Bonus3 = amount;
-				this.Bonus3Type = (int)property;
-			}
-			else if (this.Bonus4 == 0)
-			{
-				this.Bonus4 = amount;
-				this.Bonus4Type = (int)property;
-			}
-			else if (this.Bonus5 == 0)
-			{
-				this.Bonus5 = amount;
-				this.Bonus5Type = (int)property;
-			}
+			this.Bonuses.Add(new ItemBonus() { BonusOrder = maxBonusOrder + 1, BonusType = (int)property, BonusValue = amount });
+
+			if (maxBonusOrder == 0 && property == eProperty.AllFocusLevels)
+				this.Name = "Focus " + this.Name;
 		}
 
 		private bool BonusExists(eProperty property)
 		{
-			if (this.Bonus1Type == (int)property ||
-				this.Bonus2Type == (int)property ||
-				this.Bonus3Type == (int)property ||
-				this.Bonus4Type == (int)property ||
-				this.Bonus5Type == (int)property)
-				return true;
-
-			return false;
+			return this.Bonuses.Any(x => x.BonusType == (int)property);
 		}
 
 		private int GetBonusAmount(eBonusType type, eProperty property)

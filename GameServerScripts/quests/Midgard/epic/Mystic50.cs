@@ -41,6 +41,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Atlas.DataLayer.Models;
 using DOL.Events;
@@ -103,7 +104,7 @@ namespace DOL.GS.Quests.Midgard
 		{
 		}
 
-		public Mystic_50(GamePlayer questingPlayer, DBQuest dbQuest) : base(questingPlayer, dbQuest)
+		public Mystic_50(GamePlayer questingPlayer, Quest dbQuest) : base(questingPlayer, dbQuest)
 		{
 		}
 
@@ -212,6 +213,7 @@ namespace DOL.GS.Quests.Midgard
 				kelics_totem.TypeDamage = 0;
 				kelics_totem.Quality = 100;
 				kelics_totem.Weight = 12;
+
 				if (SAVE_INTO_DATABASE)
 				{
 					GameServer.Instance.SaveDataObject(kelics_totem);
@@ -243,17 +245,13 @@ namespace DOL.GS.Quests.Midgard
 				SpiritmasterEpicBoots.Condition = 50000;
 				SpiritmasterEpicBoots.Durability = 50000;
 
-				SpiritmasterEpicBoots.Bonus1 = 16;
-				SpiritmasterEpicBoots.Bonus1Type = (int) eStat.CON;
+				SpiritmasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				SpiritmasterEpicBoots.Bonus2 = 16;
-				SpiritmasterEpicBoots.Bonus2Type = (int) eStat.DEX;
+				SpiritmasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				SpiritmasterEpicBoots.Bonus3 = 8;
-				SpiritmasterEpicBoots.Bonus3Type = (int) eResist.Matter;
+				SpiritmasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				SpiritmasterEpicBoots.Bonus4 = 10;
-				SpiritmasterEpicBoots.Bonus4Type = (int) eResist.Heat;
+				SpiritmasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -286,17 +284,13 @@ namespace DOL.GS.Quests.Midgard
 				SpiritmasterEpicHelm.Condition = 50000;
 				SpiritmasterEpicHelm.Durability = 50000;
 
-				SpiritmasterEpicHelm.Bonus1 = 4;
-				SpiritmasterEpicHelm.Bonus1Type = (int) eProperty.Focus_Darkness;
+				SpiritmasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Darkness, BonusValue = 4 });
 
-				SpiritmasterEpicHelm.Bonus2 = 4;
-				SpiritmasterEpicHelm.Bonus2Type = (int) eProperty.Focus_Suppression;
+				SpiritmasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Focus_Suppression, BonusValue = 4 });
 
-				SpiritmasterEpicHelm.Bonus3 = 13;
-				SpiritmasterEpicHelm.Bonus3Type = (int) eStat.PIE;
+				SpiritmasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				SpiritmasterEpicHelm.Bonus4 = 4;
-				SpiritmasterEpicHelm.Bonus4Type = (int) eProperty.PowerRegenerationRate;
+				SpiritmasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 4 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -329,17 +323,13 @@ namespace DOL.GS.Quests.Midgard
 				SpiritmasterEpicGloves.Condition = 50000;
 				SpiritmasterEpicGloves.Durability = 50000;
 
-				SpiritmasterEpicGloves.Bonus1 = 4;
-				SpiritmasterEpicGloves.Bonus1Type = (int) eProperty.Focus_Summoning;
+				SpiritmasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Summoning, BonusValue = 4 });
 
-				SpiritmasterEpicGloves.Bonus2 = 13;
-				SpiritmasterEpicGloves.Bonus2Type = (int) eStat.DEX;
+				SpiritmasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				SpiritmasterEpicGloves.Bonus3 = 12;
-				SpiritmasterEpicGloves.Bonus3Type = (int) eStat.PIE;
+				SpiritmasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.PIE, BonusValue = 12 });
 
-				SpiritmasterEpicGloves.Bonus4 = 4;
-				SpiritmasterEpicGloves.Bonus4Type = (int) eProperty.PowerRegenerationRate;
+				SpiritmasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 4 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -372,17 +362,13 @@ namespace DOL.GS.Quests.Midgard
 				SpiritmasterEpicVest.Condition = 50000;
 				SpiritmasterEpicVest.Durability = 50000;
 
-				SpiritmasterEpicVest.Bonus1 = 12;
-				SpiritmasterEpicVest.Bonus1Type = (int) eStat.DEX;
+				SpiritmasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				SpiritmasterEpicVest.Bonus2 = 13;
-				SpiritmasterEpicVest.Bonus2Type = (int) eStat.PIE;
+				SpiritmasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				SpiritmasterEpicVest.Bonus3 = 12;
-				SpiritmasterEpicVest.Bonus3Type = (int) eResist.Slash;
+				SpiritmasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Slash, BonusValue = 12 });
 
-				SpiritmasterEpicVest.Bonus4 = 24;
-				SpiritmasterEpicVest.Bonus4Type = (int) eProperty.MaxHealth;
+				SpiritmasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -415,17 +401,13 @@ namespace DOL.GS.Quests.Midgard
 				SpiritmasterEpicLegs.Condition = 50000;
 				SpiritmasterEpicLegs.Durability = 50000;
 
-				SpiritmasterEpicLegs.Bonus1 = 13;
-				SpiritmasterEpicLegs.Bonus1Type = (int) eStat.CON;
+				SpiritmasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 13 });
 
-				SpiritmasterEpicLegs.Bonus2 = 13;
-				SpiritmasterEpicLegs.Bonus2Type = (int) eStat.DEX;
+				SpiritmasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				SpiritmasterEpicLegs.Bonus3 = 12;
-				SpiritmasterEpicLegs.Bonus3Type = (int) eResist.Crush;
+				SpiritmasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 12 });
 
-				SpiritmasterEpicLegs.Bonus4 = 24;
-				SpiritmasterEpicLegs.Bonus4Type = (int) eProperty.MaxHealth;
+				SpiritmasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -458,17 +440,13 @@ namespace DOL.GS.Quests.Midgard
 				SpiritmasterEpicArms.Condition = 50000;
 				SpiritmasterEpicArms.Durability = 50000;
 
-				SpiritmasterEpicArms.Bonus1 = 9;
-				SpiritmasterEpicArms.Bonus1Type = (int) eStat.PIE;
+				SpiritmasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.PIE, BonusValue = 9 });
 
-				SpiritmasterEpicArms.Bonus2 = 6;
-				SpiritmasterEpicArms.Bonus2Type = (int) eResist.Thrust;
+				SpiritmasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Thrust, BonusValue = 6 });
 
-				SpiritmasterEpicArms.Bonus3 = 12;
-				SpiritmasterEpicArms.Bonus3Type = (int) eProperty.MaxHealth;
+				SpiritmasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 12 });
 
-				SpiritmasterEpicArms.Bonus4 = 8;
-				SpiritmasterEpicArms.Bonus4Type = (int) eResist.Heat;
+				SpiritmasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -500,17 +478,13 @@ namespace DOL.GS.Quests.Midgard
 				RunemasterEpicBoots.Condition = 50000;
 				RunemasterEpicBoots.Durability = 50000;
 
-				RunemasterEpicBoots.Bonus1 = 16;
-				RunemasterEpicBoots.Bonus1Type = (int) eStat.CON;
+				RunemasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				RunemasterEpicBoots.Bonus2 = 16;
-				RunemasterEpicBoots.Bonus2Type = (int) eStat.DEX;
+				RunemasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				RunemasterEpicBoots.Bonus3 = 8;
-				RunemasterEpicBoots.Bonus3Type = (int) eResist.Matter;
+				RunemasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				RunemasterEpicBoots.Bonus4 = 10;
-				RunemasterEpicBoots.Bonus4Type = (int) eResist.Heat;
+				RunemasterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -542,17 +516,13 @@ namespace DOL.GS.Quests.Midgard
 				RunemasterEpicHelm.Condition = 50000;
 				RunemasterEpicHelm.Durability = 50000;
 
-				RunemasterEpicHelm.Bonus1 = 4;
-				RunemasterEpicHelm.Bonus1Type = (int) eProperty.Focus_Darkness;
+				RunemasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Darkness, BonusValue = 4 });
 
-				RunemasterEpicHelm.Bonus2 = 4;
-				RunemasterEpicHelm.Bonus2Type = (int) eProperty.Focus_Suppression;
+				RunemasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Focus_Suppression, BonusValue = 4 });
 
-				RunemasterEpicHelm.Bonus3 = 13;
-				RunemasterEpicHelm.Bonus3Type = (int) eStat.PIE;
+				RunemasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				RunemasterEpicHelm.Bonus4 = 4;
-				RunemasterEpicHelm.Bonus4Type = (int) eProperty.PowerRegenerationRate;
+				RunemasterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 4 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -584,17 +554,13 @@ namespace DOL.GS.Quests.Midgard
 				RunemasterEpicGloves.Condition = 50000;
 				RunemasterEpicGloves.Durability = 50000;
 
-				RunemasterEpicGloves.Bonus1 = 4;
-				RunemasterEpicGloves.Bonus1Type = (int) eProperty.Focus_Summoning;
+				RunemasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Summoning, BonusValue = 4 });
 
-				RunemasterEpicGloves.Bonus2 = 13;
-				RunemasterEpicGloves.Bonus2Type = (int) eStat.DEX;
+				RunemasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				RunemasterEpicGloves.Bonus3 = 12;
-				RunemasterEpicGloves.Bonus3Type = (int) eStat.PIE;
+				RunemasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.PIE, BonusValue = 12 });
 
-				RunemasterEpicGloves.Bonus4 = 6;
-				RunemasterEpicGloves.Bonus4Type = (int) eProperty.PowerRegenerationRate;
+				RunemasterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 6 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -626,17 +592,13 @@ namespace DOL.GS.Quests.Midgard
 				RunemasterEpicVest.Condition = 50000;
 				RunemasterEpicVest.Durability = 50000;
 
-				RunemasterEpicVest.Bonus1 = 12;
-				RunemasterEpicVest.Bonus1Type = (int) eStat.DEX;
+				RunemasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				RunemasterEpicVest.Bonus2 = 13;
-				RunemasterEpicVest.Bonus2Type = (int) eStat.PIE;
+				RunemasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				RunemasterEpicVest.Bonus3 = 12;
-				RunemasterEpicVest.Bonus3Type = (int) eResist.Slash;
+				RunemasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Slash, BonusValue = 12 });
 
-				RunemasterEpicVest.Bonus4 = 24;
-				RunemasterEpicVest.Bonus4Type = (int) eProperty.MaxHealth;
+				RunemasterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -668,17 +630,13 @@ namespace DOL.GS.Quests.Midgard
 				RunemasterEpicLegs.Condition = 50000;
 				RunemasterEpicLegs.Durability = 50000;
 
-				RunemasterEpicLegs.Bonus1 = 13;
-				RunemasterEpicLegs.Bonus1Type = (int) eStat.CON;
+				RunemasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 13 });
 
-				RunemasterEpicLegs.Bonus2 = 13;
-				RunemasterEpicLegs.Bonus2Type = (int) eStat.DEX;
+				RunemasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				RunemasterEpicLegs.Bonus3 = 12;
-				RunemasterEpicLegs.Bonus3Type = (int) eResist.Crush;
+				RunemasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 12 });
 
-				RunemasterEpicLegs.Bonus4 = 24;
-				RunemasterEpicLegs.Bonus4Type = (int) eProperty.MaxHealth;
+				RunemasterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -710,17 +668,13 @@ namespace DOL.GS.Quests.Midgard
 				RunemasterEpicArms.Condition = 50000;
 				RunemasterEpicArms.Durability = 50000;
 
-				RunemasterEpicArms.Bonus1 = 9;
-				RunemasterEpicArms.Bonus1Type = (int) eStat.PIE;
+				RunemasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.PIE, BonusValue = 9 });
 
-				RunemasterEpicArms.Bonus2 = 6;
-				RunemasterEpicArms.Bonus2Type = (int) eResist.Thrust;
+				RunemasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Thrust, BonusValue = 6 });
 
-				RunemasterEpicArms.Bonus3 = 12;
-				RunemasterEpicArms.Bonus3Type = (int) eProperty.MaxHealth;
+				RunemasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 12 });
 
-				RunemasterEpicArms.Bonus4 = 8;
-				RunemasterEpicArms.Bonus4Type = (int) eResist.Heat;
+				RunemasterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -752,17 +706,13 @@ namespace DOL.GS.Quests.Midgard
 				BonedancerEpicBoots.Condition = 50000;
 				BonedancerEpicBoots.Durability = 50000;
 
-				BonedancerEpicBoots.Bonus1 = 16;
-				BonedancerEpicBoots.Bonus1Type = (int) eStat.CON;
+				BonedancerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				BonedancerEpicBoots.Bonus2 = 16;
-				BonedancerEpicBoots.Bonus2Type = (int) eStat.DEX;
+				BonedancerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				BonedancerEpicBoots.Bonus3 = 8;
-				BonedancerEpicBoots.Bonus3Type = (int) eResist.Matter;
+				BonedancerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				BonedancerEpicBoots.Bonus4 = 10;
-				BonedancerEpicBoots.Bonus4Type = (int) eResist.Heat;
+				BonedancerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -795,17 +745,13 @@ namespace DOL.GS.Quests.Midgard
 				BonedancerEpicHelm.Condition = 50000;
 				BonedancerEpicHelm.Durability = 50000;
 
-				BonedancerEpicHelm.Bonus1 = 4;
-				BonedancerEpicHelm.Bonus1Type = (int) eProperty.Focus_Suppression;
+				BonedancerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Suppression, BonusValue = 4 });
 
-				BonedancerEpicHelm.Bonus2 = 13;
-				BonedancerEpicHelm.Bonus2Type = (int) eStat.PIE;
+				BonedancerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				BonedancerEpicHelm.Bonus3 = 4;
-				BonedancerEpicHelm.Bonus3Type = (int) eProperty.PowerRegenerationRate;
+				BonedancerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 4 });
 
-				BonedancerEpicHelm.Bonus4 = 4;
-				BonedancerEpicHelm.Bonus4Type = (int) eProperty.Focus_BoneArmy;
+				BonedancerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Focus_BoneArmy, BonusValue = 4 });
 
 
 				if (SAVE_INTO_DATABASE)
@@ -839,17 +785,13 @@ namespace DOL.GS.Quests.Midgard
 				BonedancerEpicGloves.Condition = 50000;
 				BonedancerEpicGloves.Durability = 50000;
 
-				BonedancerEpicGloves.Bonus1 = 4;
-				BonedancerEpicGloves.Bonus1Type = (int) eProperty.Focus_Darkness;
+				BonedancerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Darkness, BonusValue = 4 });
 
-				BonedancerEpicGloves.Bonus2 = 13;
-				BonedancerEpicGloves.Bonus2Type = (int) eStat.DEX;
+				BonedancerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				BonedancerEpicGloves.Bonus3 = 12;
-				BonedancerEpicGloves.Bonus3Type = (int) eStat.PIE;
+				BonedancerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.PIE, BonusValue = 12 });
 
-				BonedancerEpicGloves.Bonus4 = 6;
-				BonedancerEpicGloves.Bonus4Type = (int) eProperty.PowerRegenerationRate;
+				BonedancerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 6 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -881,17 +823,13 @@ namespace DOL.GS.Quests.Midgard
 				BonedancerEpicVest.Condition = 50000;
 				BonedancerEpicVest.Durability = 50000;
 
-				BonedancerEpicVest.Bonus1 = 12;
-				BonedancerEpicVest.Bonus1Type = (int) eStat.DEX;
+				BonedancerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				BonedancerEpicVest.Bonus2 = 13;
-				BonedancerEpicVest.Bonus2Type = (int) eStat.PIE;
+				BonedancerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				BonedancerEpicVest.Bonus3 = 12;
-				BonedancerEpicVest.Bonus3Type = (int) eResist.Slash;
+				BonedancerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Slash, BonusValue = 12 });
 
-				BonedancerEpicVest.Bonus4 = 24;
-				BonedancerEpicVest.Bonus4Type = (int) eProperty.MaxHealth;
+				BonedancerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -923,17 +861,13 @@ namespace DOL.GS.Quests.Midgard
 				BonedancerEpicLegs.Condition = 50000;
 				BonedancerEpicLegs.Durability = 50000;
 
-				BonedancerEpicLegs.Bonus1 = 13;
-				BonedancerEpicLegs.Bonus1Type = (int) eStat.CON;
+				BonedancerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 13 });
 
-				BonedancerEpicLegs.Bonus2 = 13;
-				BonedancerEpicLegs.Bonus2Type = (int) eStat.DEX;
+				BonedancerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				BonedancerEpicLegs.Bonus3 = 12;
-				BonedancerEpicLegs.Bonus3Type = (int) eResist.Crush;
+				BonedancerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 12 });
 
-				BonedancerEpicLegs.Bonus4 = 24;
-				BonedancerEpicLegs.Bonus4Type = (int) eProperty.MaxHealth;
+				BonedancerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -966,17 +900,13 @@ namespace DOL.GS.Quests.Midgard
 				BonedancerEpicArms.Condition = 50000;
 				BonedancerEpicArms.Durability = 50000;
 
-				BonedancerEpicArms.Bonus1 = 9;
-				BonedancerEpicArms.Bonus1Type = (int) eStat.PIE;
+				BonedancerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.PIE, BonusValue = 9 });
 
-				BonedancerEpicArms.Bonus2 = 6;
-				BonedancerEpicArms.Bonus2Type = (int) eResist.Thrust;
+				BonedancerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Thrust, BonusValue = 6 });
 
-				BonedancerEpicArms.Bonus3 = 12;
-				BonedancerEpicArms.Bonus3Type = (int) eProperty.MaxHealth;
+				BonedancerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 12 });
 
-				BonedancerEpicArms.Bonus4 = 8;
-				BonedancerEpicArms.Bonus4Type = (int) eResist.Heat;
+				BonedancerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1016,17 +946,13 @@ namespace DOL.GS.Quests.Midgard
 				 *   Heat Resist: 10%
 				 */
 
-				WarlockEpicBoots.Bonus1 = 16;
-				WarlockEpicBoots.Bonus1Type = (int)eStat.CON;
+				WarlockEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				WarlockEpicBoots.Bonus2 = 8;
-				WarlockEpicBoots.Bonus2Type = (int)eResist.Matter;
+				WarlockEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				WarlockEpicBoots.Bonus3 = 48;
-				WarlockEpicBoots.Bonus3Type = (int)eProperty.MaxHealth;
+				WarlockEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 48 });
 
-				WarlockEpicBoots.Bonus4 = 10;
-				WarlockEpicBoots.Bonus4Type = (int)eResist.Heat;
+				WarlockEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1066,17 +992,13 @@ namespace DOL.GS.Quests.Midgard
 				 *   Hexing: +4 pts
 				 */
 
-				WarlockEpicHelm.Bonus1 = 13;
-				WarlockEpicHelm.Bonus1Type = (int)eStat.PIE;
+				WarlockEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				WarlockEpicHelm.Bonus2 = 4;
-				WarlockEpicHelm.Bonus2Type = (int)eProperty.MaxMana;
+				WarlockEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.MaxMana, BonusValue = 4 });
 
-				WarlockEpicHelm.Bonus3 = 4;
-				WarlockEpicHelm.Bonus3Type = (int)eProperty.Skill_Cursing;
+				WarlockEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.Skill_Cursing, BonusValue = 4 });
 
-				WarlockEpicHelm.Bonus4 = 4;
-				WarlockEpicHelm.Bonus4Type = (int)eProperty.Skill_Hexing;
+				WarlockEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_Hexing, BonusValue = 4 });
 
 
 				if (SAVE_INTO_DATABASE)
@@ -1117,17 +1039,13 @@ namespace DOL.GS.Quests.Midgard
 				 *   Hexing: +4 pts
 				 */
 
-				WarlockEpicGloves.Bonus1 = 13;
-				WarlockEpicGloves.Bonus1Type = (int)eStat.CON;
+				WarlockEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 13 });
 
-				WarlockEpicGloves.Bonus2 = 12;
-				WarlockEpicGloves.Bonus2Type = (int)eStat.PIE;
+				WarlockEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 12 });
 
-				WarlockEpicGloves.Bonus3 = 4;
-				WarlockEpicGloves.Bonus3Type = (int)eProperty.MaxMana;
+				WarlockEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxMana, BonusValue = 4 });
 
-				WarlockEpicGloves.Bonus4 = 4;
-				WarlockEpicGloves.Bonus4Type = (int)eProperty.Skill_Hexing;
+				WarlockEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_Hexing, BonusValue = 4 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1166,17 +1084,13 @@ namespace DOL.GS.Quests.Midgard
 				 *   Hits: 24 pts
 				 */
 
-				WarlockEpicVest.Bonus1 = 12;
-				WarlockEpicVest.Bonus1Type = (int)eStat.CON;
+				WarlockEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				WarlockEpicVest.Bonus2 = 13;
-				WarlockEpicVest.Bonus2Type = (int)eStat.PIE;
+				WarlockEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				WarlockEpicVest.Bonus3 = 12;
-				WarlockEpicVest.Bonus3Type = (int)eResist.Slash;
+				WarlockEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Slash, BonusValue = 12 });
 
-				WarlockEpicVest.Bonus4 = 24;
-				WarlockEpicVest.Bonus4Type = (int)eProperty.MaxHealth;
+				WarlockEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1215,17 +1129,13 @@ namespace DOL.GS.Quests.Midgard
 				 *   Hits: 24 pts
 				 */
 
-				WarlockEpicLegs.Bonus1 = 13;
-				WarlockEpicLegs.Bonus1Type = (int)eStat.CON;
+				WarlockEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 13 });
 
-				WarlockEpicLegs.Bonus2 = 13;
-				WarlockEpicLegs.Bonus2Type = (int)eStat.PIE;
+				WarlockEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.PIE, BonusValue = 13 });
 
-				WarlockEpicLegs.Bonus3 = 12;
-				WarlockEpicLegs.Bonus3Type = (int)eResist.Crush;
+				WarlockEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 12 });
 
-				WarlockEpicLegs.Bonus4 = 24;
-				WarlockEpicLegs.Bonus4Type = (int)eProperty.MaxHealth;
+				WarlockEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1265,17 +1175,13 @@ namespace DOL.GS.Quests.Midgard
 				 *   Heat Resist: 8%
 				 */
 
-				WarlockEpicArms.Bonus1 = 9;
-				WarlockEpicArms.Bonus1Type = (int)eStat.PIE;
+				WarlockEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.PIE, BonusValue = 9 });
 
-				WarlockEpicArms.Bonus2 = 6;
-				WarlockEpicArms.Bonus2Type = (int)eResist.Thrust;
+				WarlockEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Thrust, BonusValue = 6 });
 
-				WarlockEpicArms.Bonus3 = 12;
-				WarlockEpicArms.Bonus3Type = (int)eProperty.MaxMana;
+				WarlockEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxMana, BonusValue = 12 });
 
-				WarlockEpicArms.Bonus4 = 8;
-				WarlockEpicArms.Bonus4Type = (int)eResist.Heat;
+				WarlockEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1528,7 +1434,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Danica.Name && gArgs.Item.KeyName == kelics_totem.KeyName)
+				if (gArgs.Target.Name == Danica.Name && gArgs.Item.ItemTemplate.KeyName == kelics_totem.KeyName)
 				{
 					RemoveItem(Danica, player, kelics_totem);
 					Danica.SayTo(player, "Ah, I can see how he wore the curse around the totem. I can now break the curse that is destroying the clan!");

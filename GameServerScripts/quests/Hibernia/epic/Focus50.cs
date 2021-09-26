@@ -31,6 +31,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Atlas.DataLayer.Models;
 using DOL.Events;
@@ -99,7 +100,7 @@ namespace DOL.GS.Quests.Hibernia
 		{
 		}
 
-		public Focus_50(GamePlayer questingPlayer, DBQuest dbQuest) : base(questingPlayer, dbQuest)
+		public Focus_50(GamePlayer questingPlayer, Quest dbQuest) : base(questingPlayer, dbQuest)
 		{
 		}
 
@@ -236,17 +237,13 @@ namespace DOL.GS.Quests.Hibernia
 				RangerEpicBoots.Condition = 50000;
 				RangerEpicBoots.Durability = 50000;
 
-				RangerEpicBoots.Bonus1 = 13;
-				RangerEpicBoots.Bonus1Type = (int) eStat.DEX;
+				RangerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				RangerEpicBoots.Bonus2 = 12;
-				RangerEpicBoots.Bonus2Type = (int) eStat.QUI;
+				RangerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 12 });
 
-				RangerEpicBoots.Bonus3 = 8;
-				RangerEpicBoots.Bonus3Type = (int) eResist.Thrust;
+				RangerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 8 });
 
-				RangerEpicBoots.Bonus4 = 30;
-				RangerEpicBoots.Bonus4Type = (int) eProperty.MaxHealth;
+				RangerEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -280,17 +277,13 @@ namespace DOL.GS.Quests.Hibernia
 				RangerEpicHelm.Condition = 50000;
 				RangerEpicHelm.Durability = 50000;
 
-				RangerEpicHelm.Bonus1 = 19;
-				RangerEpicHelm.Bonus1Type = (int) eStat.DEX;
+				RangerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 19 });
 
-				RangerEpicHelm.Bonus2 = 10;
-				RangerEpicHelm.Bonus2Type = (int) eResist.Spirit;
+				RangerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Spirit, BonusValue = 10 });
 
-				RangerEpicHelm.Bonus3 = 27;
-				RangerEpicHelm.Bonus3Type = (int) eProperty.MaxHealth;
+				RangerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 27 });
 
-				RangerEpicHelm.Bonus4 = 10;
-				RangerEpicHelm.Bonus4Type = (int) eResist.Energy;
+				RangerEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Energy, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -324,17 +317,13 @@ namespace DOL.GS.Quests.Hibernia
 				RangerEpicGloves.Condition = 50000;
 				RangerEpicGloves.Durability = 50000;
 
-				RangerEpicGloves.Bonus1 = 3;
-				RangerEpicGloves.Bonus1Type = (int) eProperty.Skill_RecurvedBow;
+				RangerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_RecurvedBow, BonusValue = 3 });
 
-				RangerEpicGloves.Bonus2 = 15;
-				RangerEpicGloves.Bonus2Type = (int) eStat.DEX;
+				RangerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				RangerEpicGloves.Bonus3 = 15;
-				RangerEpicGloves.Bonus3Type = (int) eStat.QUI;
+				RangerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.QUI, BonusValue = 15 });
 
-				RangerEpicGloves.Bonus4 = 10;
-				RangerEpicGloves.Bonus4Type = (int) eResist.Crush;
+				RangerEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Crush, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -367,17 +356,13 @@ namespace DOL.GS.Quests.Hibernia
 				RangerEpicVest.Condition = 50000;
 				RangerEpicVest.Durability = 50000;
 
-				RangerEpicVest.Bonus1 = 7;
-				RangerEpicVest.Bonus1Type = (int) eStat.STR;
+				RangerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 7 });
 
-				RangerEpicVest.Bonus2 = 7;
-				RangerEpicVest.Bonus2Type = (int) eStat.DEX;
+				RangerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 7 });
 
-				RangerEpicVest.Bonus3 = 7;
-				RangerEpicVest.Bonus3Type = (int) eStat.QUI;
+				RangerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.QUI, BonusValue = 7 });
 
-				RangerEpicVest.Bonus4 = 48;
-				RangerEpicVest.Bonus4Type = (int) eProperty.MaxHealth;
+				RangerEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 48 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -410,17 +395,13 @@ namespace DOL.GS.Quests.Hibernia
 				RangerEpicLegs.Condition = 50000;
 				RangerEpicLegs.Durability = 50000;
 
-				RangerEpicLegs.Bonus1 = 12;
-				RangerEpicLegs.Bonus1Type = (int) eStat.STR;
+				RangerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 12 });
 
-				RangerEpicLegs.Bonus2 = 12;
-				RangerEpicLegs.Bonus2Type = (int) eStat.CON;
+				RangerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				RangerEpicLegs.Bonus3 = 12;
-				RangerEpicLegs.Bonus3Type = (int) eResist.Body;
+				RangerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Body, BonusValue = 12 });
 
-				RangerEpicLegs.Bonus4 = 39;
-				RangerEpicLegs.Bonus4Type = (int) eProperty.MaxHealth;
+				RangerEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 39 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -454,17 +435,13 @@ namespace DOL.GS.Quests.Hibernia
 				RangerEpicArms.Condition = 50000;
 				RangerEpicArms.Durability = 50000;
 
-				RangerEpicArms.Bonus1 = 12;
-				RangerEpicArms.Bonus1Type = (int) eStat.STR;
+				RangerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 12 });
 
-				RangerEpicArms.Bonus2 = 12;
-				RangerEpicArms.Bonus2Type = (int) eStat.DEX;
+				RangerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 12 });
 
-				RangerEpicArms.Bonus3 = 10;
-				RangerEpicArms.Bonus3Type = (int) eResist.Spirit;
+				RangerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Spirit, BonusValue = 10 });
 
-				RangerEpicArms.Bonus4 = 30;
-				RangerEpicArms.Bonus4Type = (int) eProperty.MaxHealth;
+				RangerEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -497,17 +474,13 @@ namespace DOL.GS.Quests.Hibernia
 				HeroEpicBoots.Condition = 50000;
 				HeroEpicBoots.Durability = 50000;
 
-				HeroEpicBoots.Bonus1 = 12;
-				HeroEpicBoots.Bonus1Type = (int) eStat.CON;
+				HeroEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				HeroEpicBoots.Bonus2 = 12;
-				HeroEpicBoots.Bonus2Type = (int) eStat.QUI;
+				HeroEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 12 });
 
-				HeroEpicBoots.Bonus3 = 8;
-				HeroEpicBoots.Bonus3Type = (int) eResist.Spirit;
+				HeroEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Spirit, BonusValue = 8 });
 
-				HeroEpicBoots.Bonus4 = 33;
-				HeroEpicBoots.Bonus4Type = (int) eProperty.MaxHealth;
+				HeroEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -541,17 +514,13 @@ namespace DOL.GS.Quests.Hibernia
 				HeroEpicHelm.Condition = 50000;
 				HeroEpicHelm.Durability = 50000;
 
-				HeroEpicHelm.Bonus1 = 15;
-				HeroEpicHelm.Bonus1Type = (int) eStat.STR;
+				HeroEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 15 });
 
-				HeroEpicHelm.Bonus2 = 8;
-				HeroEpicHelm.Bonus2Type = (int) eResist.Spirit;
+				HeroEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Spirit, BonusValue = 8 });
 
-				HeroEpicHelm.Bonus3 = 48;
-				HeroEpicHelm.Bonus3Type = (int) eProperty.MaxHealth;
+				HeroEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 48 });
 
-				HeroEpicHelm.Bonus4 = 8;
-				HeroEpicHelm.Bonus4Type = (int) eResist.Heat;
+				HeroEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 8 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -585,17 +554,13 @@ namespace DOL.GS.Quests.Hibernia
 				HeroEpicGloves.Condition = 50000;
 				HeroEpicGloves.Durability = 50000;
 
-				HeroEpicGloves.Bonus1 = 2;
-				HeroEpicGloves.Bonus1Type = (int) eProperty.Skill_Shields;
+				HeroEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Shields, BonusValue = 2 });
 
-				HeroEpicGloves.Bonus2 = 2;
-				HeroEpicGloves.Bonus2Type = (int) eProperty.Skill_Parry;
+				HeroEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Skill_Parry, BonusValue = 2 });
 
-				HeroEpicGloves.Bonus3 = 16;
-				HeroEpicGloves.Bonus3Type = (int) eStat.DEX;
+				HeroEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				HeroEpicGloves.Bonus4 = 18;
-				HeroEpicGloves.Bonus4Type = (int) eStat.QUI;
+				HeroEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.QUI, BonusValue = 18 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -628,14 +593,11 @@ namespace DOL.GS.Quests.Hibernia
 				HeroEpicVest.Condition = 50000;
 				HeroEpicVest.Durability = 50000;
 
-				HeroEpicVest.Bonus1 = 15;
-				HeroEpicVest.Bonus1Type = (int) eStat.STR;
+				HeroEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 15 });
 
-				HeroEpicVest.Bonus2 = 16;
-				HeroEpicVest.Bonus2Type = (int) eStat.CON;
+				HeroEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 16 });
 
-				HeroEpicVest.Bonus3 = 15;
-				HeroEpicVest.Bonus3Type = (int) eStat.DEX;
+				HeroEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -668,17 +630,13 @@ namespace DOL.GS.Quests.Hibernia
 				HeroEpicLegs.Condition = 50000;
 				HeroEpicLegs.Durability = 50000;
 
-				HeroEpicLegs.Bonus1 = 10;
-				HeroEpicLegs.Bonus1Type = (int) eStat.STR;
+				HeroEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 10 });
 
-				HeroEpicLegs.Bonus2 = 21;
-				HeroEpicLegs.Bonus2Type = (int) eStat.CON;
+				HeroEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 21 });
 
-				HeroEpicLegs.Bonus3 = 10;
-				HeroEpicLegs.Bonus3Type = (int) eResist.Thrust;
+				HeroEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 10 });
 
-				HeroEpicLegs.Bonus4 = 10;
-				HeroEpicLegs.Bonus4Type = (int) eResist.Heat;
+				HeroEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -711,17 +669,13 @@ namespace DOL.GS.Quests.Hibernia
 				HeroEpicArms.Condition = 50000;
 				HeroEpicArms.Durability = 50000;
 
-				HeroEpicArms.Bonus1 = 24;
-				HeroEpicArms.Bonus1Type = (int) eStat.STR;
+				HeroEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 24 });
 
-				HeroEpicArms.Bonus2 = 10;
-				HeroEpicArms.Bonus2Type = (int) eStat.DEX;
+				HeroEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				HeroEpicArms.Bonus3 = 8;
-				HeroEpicArms.Bonus3Type = (int) eResist.Cold;
+				HeroEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Cold, BonusValue = 8 });
 
-				HeroEpicArms.Bonus4 = 8;
-				HeroEpicArms.Bonus4Type = (int) eResist.Spirit;
+				HeroEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Spirit, BonusValue = 8 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -753,17 +707,13 @@ namespace DOL.GS.Quests.Hibernia
 				WardenEpicBoots.Condition = 50000;
 				WardenEpicBoots.Durability = 50000;
 
-				WardenEpicBoots.Bonus1 = 15;
-				WardenEpicBoots.Bonus1Type = (int) eStat.DEX;
+				WardenEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				WardenEpicBoots.Bonus2 = 16;
-				WardenEpicBoots.Bonus2Type = (int) eStat.QUI;
+				WardenEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 16 });
 
-				WardenEpicBoots.Bonus3 = 10;
-				WardenEpicBoots.Bonus3Type = (int) eResist.Crush;
+				WardenEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 10 });
 
-				WardenEpicBoots.Bonus4 = 10;
-				WardenEpicBoots.Bonus4Type = (int) eResist.Matter;
+				WardenEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Matter, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -797,17 +747,13 @@ namespace DOL.GS.Quests.Hibernia
 				WardenEpicHelm.Condition = 50000;
 				WardenEpicHelm.Durability = 50000;
 
-				WardenEpicHelm.Bonus1 = 15;
-				WardenEpicHelm.Bonus1Type = (int) eStat.EMP;
+				WardenEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.EMP, BonusValue = 15 });
 
-				WardenEpicHelm.Bonus2 = 2;
-				WardenEpicHelm.Bonus2Type = (int) eProperty.PowerRegenerationRate;
+				WardenEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 2 });
 
-				WardenEpicHelm.Bonus3 = 30;
-				WardenEpicHelm.Bonus3Type = (int) eProperty.MaxHealth;
+				WardenEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
-				WardenEpicHelm.Bonus4 = 4;
-				WardenEpicHelm.Bonus4Type = (int) eProperty.Skill_Regrowth;
+				WardenEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_Regrowth, BonusValue = 4 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -841,17 +787,13 @@ namespace DOL.GS.Quests.Hibernia
 				WardenEpicGloves.Condition = 50000;
 				WardenEpicGloves.Durability = 50000;
 
-				WardenEpicGloves.Bonus1 = 4;
-				WardenEpicGloves.Bonus1Type = (int) eProperty.Skill_Nurture;
+				WardenEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Nurture, BonusValue = 4 });
 
-				WardenEpicGloves.Bonus2 = 12;
-				WardenEpicGloves.Bonus2Type = (int) eResist.Slash;
+				WardenEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Slash, BonusValue = 12 });
 
-				WardenEpicGloves.Bonus3 = 4;
-				WardenEpicGloves.Bonus3Type = (int) eProperty.PowerRegenerationRate;
+				WardenEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 4 });
 
-				WardenEpicGloves.Bonus4 = 33;
-				WardenEpicGloves.Bonus4Type = (int) eProperty.MaxHealth;
+				WardenEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 
 
 				if (SAVE_INTO_DATABASE)
@@ -885,17 +827,13 @@ namespace DOL.GS.Quests.Hibernia
 				WardenEpicVest.Condition = 50000;
 				WardenEpicVest.Durability = 50000;
 
-				WardenEpicVest.Bonus1 = 9;
-				WardenEpicVest.Bonus1Type = (int) eStat.STR;
+				WardenEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 9 });
 
-				WardenEpicVest.Bonus2 = 9;
-				WardenEpicVest.Bonus2Type = (int) eStat.DEX;
+				WardenEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 9 });
 
-				WardenEpicVest.Bonus3 = 9;
-				WardenEpicVest.Bonus3Type = (int) eStat.EMP;
+				WardenEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.EMP, BonusValue = 9 });
 
-				WardenEpicVest.Bonus2 = 39;
-				WardenEpicVest.Bonus2Type = (int) eProperty.MaxHealth;
+				WardenEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.MaxHealth, BonusValue = 39 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -928,17 +866,13 @@ namespace DOL.GS.Quests.Hibernia
 				WardenEpicLegs.Condition = 50000;
 				WardenEpicLegs.Durability = 50000;
 
-				WardenEpicLegs.Bonus1 = 10;
-				WardenEpicLegs.Bonus1Type = (int) eStat.STR;
+				WardenEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 10 });
 
-				WardenEpicLegs.Bonus2 = 10;
-				WardenEpicLegs.Bonus2Type = (int) eStat.CON;
+				WardenEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 10 });
 
-				WardenEpicLegs.Bonus3 = 10;
-				WardenEpicLegs.Bonus3Type = (int) eStat.DEX;
+				WardenEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				WardenEpicLegs.Bonus4 = 30;
-				WardenEpicLegs.Bonus4Type = (int) eProperty.MaxHealth;
+				WardenEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -971,17 +905,13 @@ namespace DOL.GS.Quests.Hibernia
 				WardenEpicArms.Condition = 50000;
 				WardenEpicArms.Durability = 50000;
 
-				WardenEpicArms.Bonus1 = 12;
-				WardenEpicArms.Bonus1Type = (int) eStat.STR;
+				WardenEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 12 });
 
-				WardenEpicArms.Bonus2 = 8;
-				WardenEpicArms.Bonus2Type = (int) eResist.Matter;
+				WardenEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Matter, BonusValue = 8 });
 
-				WardenEpicArms.Bonus3 = 8;
-				WardenEpicArms.Bonus3Type = (int) eResist.Spirit;
+				WardenEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Spirit, BonusValue = 8 });
 
-				WardenEpicArms.Bonus4 = 45;
-				WardenEpicArms.Bonus4Type = (int) eProperty.MaxHealth;
+				WardenEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 45 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1013,17 +943,13 @@ namespace DOL.GS.Quests.Hibernia
 				EldritchEpicBoots.Condition = 50000;
 				EldritchEpicBoots.Durability = 50000;
 
-				EldritchEpicBoots.Bonus1 = 9;
-				EldritchEpicBoots.Bonus1Type = (int) eStat.CON;
+				EldritchEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 9 });
 
-				EldritchEpicBoots.Bonus2 = 9;
-				EldritchEpicBoots.Bonus2Type = (int) eStat.DEX;
+				EldritchEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 9 });
 
-				EldritchEpicBoots.Bonus3 = 6;
-				EldritchEpicBoots.Bonus3Type = (int) eProperty.PowerRegenerationRate;
+				EldritchEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 6 });
 
-				EldritchEpicBoots.Bonus4 = 21;
-				EldritchEpicBoots.Bonus4Type = (int) eProperty.MaxHealth;
+				EldritchEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 21 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1057,17 +983,13 @@ namespace DOL.GS.Quests.Hibernia
 				EldritchEpicHelm.Condition = 50000;
 				EldritchEpicHelm.Durability = 50000;
 
-				EldritchEpicHelm.Bonus1 = 10;
-				EldritchEpicHelm.Bonus1Type = (int) eResist.Heat;
+				EldritchEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eResist.Heat, BonusValue = 10 });
 
-				EldritchEpicHelm.Bonus2 = 10;
-				EldritchEpicHelm.Bonus2Type = (int) eResist.Spirit;
+				EldritchEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Spirit, BonusValue = 10 });
 
-				EldritchEpicHelm.Bonus3 = 4;
-				EldritchEpicHelm.Bonus3Type = (int) eProperty.Focus_Void;
+				EldritchEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.Focus_Void, BonusValue = 4 });
 
-				EldritchEpicHelm.Bonus4 = 19;
-				EldritchEpicHelm.Bonus4Type = (int) eStat.INT;
+				EldritchEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.INT, BonusValue = 19 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1101,17 +1023,13 @@ namespace DOL.GS.Quests.Hibernia
 				EldritchEpicGloves.Condition = 50000;
 				EldritchEpicGloves.Durability = 50000;
 
-				EldritchEpicGloves.Bonus1 = 4;
-				EldritchEpicGloves.Bonus1Type = (int) eProperty.Focus_Light;
+				EldritchEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Light, BonusValue = 4 });
 
-				EldritchEpicGloves.Bonus2 = 9;
-				EldritchEpicGloves.Bonus2Type = (int) eStat.DEX;
+				EldritchEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 9 });
 
-				EldritchEpicGloves.Bonus3 = 4;
-				EldritchEpicGloves.Bonus3Type = (int) eProperty.PowerRegenerationRate;
+				EldritchEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.PowerRegenerationRate, BonusValue = 4 });
 
-				EldritchEpicGloves.Bonus4 = 24;
-				EldritchEpicGloves.Bonus4Type = (int) eProperty.MaxHealth;
+				EldritchEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 24 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1144,14 +1062,11 @@ namespace DOL.GS.Quests.Hibernia
 				EldritchEpicVest.Condition = 50000;
 				EldritchEpicVest.Durability = 50000;
 
-				EldritchEpicVest.Bonus1 = 15;
-				EldritchEpicVest.Bonus1Type = (int) eStat.DEX;
+				EldritchEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				EldritchEpicVest.Bonus2 = 15;
-				EldritchEpicVest.Bonus2Type = (int) eStat.INT;
+				EldritchEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.INT, BonusValue = 15 });
 
-				EldritchEpicVest.Bonus3 = 33;
-				EldritchEpicVest.Bonus3 = (int) eProperty.MaxHealth;
+				EldritchEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1184,17 +1099,13 @@ namespace DOL.GS.Quests.Hibernia
 				EldritchEpicLegs.Condition = 50000;
 				EldritchEpicLegs.Durability = 50000;
 
-				EldritchEpicLegs.Bonus1 = 10;
-				EldritchEpicLegs.Bonus1Type = (int) eResist.Cold;
+				EldritchEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eResist.Cold, BonusValue = 10 });
 
-				EldritchEpicLegs.Bonus2 = 10;
-				EldritchEpicLegs.Bonus2Type = (int) eResist.Body;
+				EldritchEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eResist.Body, BonusValue = 10 });
 
-				EldritchEpicLegs.Bonus3 = 15;
-				EldritchEpicLegs.Bonus3Type = (int) eStat.DEX;
+				EldritchEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				EldritchEpicLegs.Bonus4 = 16;
-				EldritchEpicLegs.Bonus4Type = (int) eStat.CON;
+				EldritchEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.CON, BonusValue = 16 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1227,17 +1138,13 @@ namespace DOL.GS.Quests.Hibernia
 				EldritchEpicArms.Condition = 50000;
 				EldritchEpicArms.Durability = 50000;
 
-				EldritchEpicArms.Bonus1 = 4;
-				EldritchEpicArms.Bonus1Type = (int) eProperty.Focus_Mana;
+				EldritchEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Focus_Mana, BonusValue = 4 });
 
-				EldritchEpicArms.Bonus2 = 10;
-				EldritchEpicArms.Bonus2Type = (int) eStat.DEX;
+				EldritchEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				EldritchEpicArms.Bonus3 = 10;
-				EldritchEpicArms.Bonus3Type = (int) eStat.INT;
+				EldritchEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.INT, BonusValue = 10 });
 
-				EldritchEpicArms.Bonus4 = 27;
-				EldritchEpicArms.Bonus4Type = (int) eProperty.MaxHealth;
+				EldritchEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.MaxHealth, BonusValue = 27 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1483,7 +1390,7 @@ namespace DOL.GS.Quests.Hibernia
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
             {
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Ainrebh.Name && gArgs.Item.KeyName == GreenMaw_key.KeyName)
+				if (gArgs.Target.Name == Ainrebh.Name && gArgs.Item.ItemTemplate.KeyName == GreenMaw_key.KeyName)
 				{
 					Ainrebh.SayTo(player, "You have earned this Epic Armour!");
 					FinishQuest();

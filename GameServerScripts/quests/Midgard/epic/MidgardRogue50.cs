@@ -35,6 +35,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Reflection;
 using Atlas.DataLayer.Models;
 using DOL.Events;
@@ -87,7 +88,7 @@ namespace DOL.GS.Quests.Midgard
 		{
 		}
 
-		public Rogue_50(GamePlayer questingPlayer, DBQuest dbQuest) : base(questingPlayer, dbQuest)
+		public Rogue_50(GamePlayer questingPlayer, Quest dbQuest) : base(questingPlayer, dbQuest)
 		{
 		}
 
@@ -287,14 +288,11 @@ namespace DOL.GS.Quests.Midgard
 				HunterEpicBoots.Condition = 50000;
 				HunterEpicBoots.Durability = 50000;
 
-				HunterEpicBoots.Bonus1 = 19;
-				HunterEpicBoots.Bonus1Type = (int) eStat.CON;
+				HunterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 19 });
 
-				HunterEpicBoots.Bonus2 = 19;
-				HunterEpicBoots.Bonus2Type = (int) eStat.DEX;
+				HunterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 19 });
 
-				HunterEpicBoots.Bonus3 = 10;
-				HunterEpicBoots.Bonus3Type = (int) eResist.Thrust;
+				HunterEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Thrust, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -328,17 +326,13 @@ namespace DOL.GS.Quests.Midgard
 				HunterEpicHelm.Condition = 50000;
 				HunterEpicHelm.Durability = 50000;
 
-				HunterEpicHelm.Bonus1 = 3;
-				HunterEpicHelm.Bonus1Type = (int) eProperty.Skill_Spear;
+				HunterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Spear, BonusValue = 3 });
 
-				HunterEpicHelm.Bonus2 = 3;
-				HunterEpicHelm.Bonus2Type = (int) eProperty.Skill_Stealth;
+				HunterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eProperty.Skill_Stealth, BonusValue = 3 });
 
-				HunterEpicHelm.Bonus3 = 3;
-				HunterEpicHelm.Bonus3Type = (int) eProperty.Skill_Composite;
+				HunterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.Skill_Composite, BonusValue = 3 });
 
-				HunterEpicHelm.Bonus4 = 19;
-				HunterEpicHelm.Bonus4Type = (int) eStat.DEX;
+				HunterEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.DEX, BonusValue = 19 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -372,14 +366,11 @@ namespace DOL.GS.Quests.Midgard
 				HunterEpicGloves.Condition = 50000;
 				HunterEpicGloves.Durability = 50000;
 
-				HunterEpicGloves.Bonus1 = 5;
-				HunterEpicGloves.Bonus1Type = (int) eProperty.Skill_Composite;
+				HunterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Composite, BonusValue = 5 });
 
-				HunterEpicGloves.Bonus2 = 15;
-				HunterEpicGloves.Bonus2Type = (int) eStat.QUI;
+				HunterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 15 });
 
-				HunterEpicGloves.Bonus3 = 33;
-				HunterEpicGloves.Bonus3Type = (int) eProperty.MaxHealth;
+				HunterEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -412,17 +403,13 @@ namespace DOL.GS.Quests.Midgard
 				HunterEpicVest.Condition = 50000;
 				HunterEpicVest.Durability = 50000;
 
-				HunterEpicVest.Bonus1 = 13;
-				HunterEpicVest.Bonus1Type = (int) eStat.STR;
+				HunterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 13 });
 
-				HunterEpicVest.Bonus2 = 15;
-				HunterEpicVest.Bonus2Type = (int) eStat.CON;
+				HunterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				HunterEpicVest.Bonus3 = 13;
-				HunterEpicVest.Bonus3Type = (int) eStat.DEX;
+				HunterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				HunterEpicVest.Bonus4 = 6;
-				HunterEpicVest.Bonus4Type = (int) eResist.Cold;
+				HunterEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Cold, BonusValue = 6 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -455,17 +442,13 @@ namespace DOL.GS.Quests.Midgard
 				HunterEpicLegs.Condition = 50000;
 				HunterEpicLegs.Durability = 50000;
 
-				HunterEpicLegs.Bonus1 = 15;
-				HunterEpicLegs.Bonus1Type = (int) eStat.CON;
+				HunterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				HunterEpicLegs.Bonus2 = 15;
-				HunterEpicLegs.Bonus2Type = (int) eStat.DEX;
+				HunterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 15 });
 
-				HunterEpicLegs.Bonus3 = 7;
-				HunterEpicLegs.Bonus3Type = (int) eStat.QUI;
+				HunterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.QUI, BonusValue = 7 });
 
-				HunterEpicLegs.Bonus4 = 12;
-				HunterEpicLegs.Bonus4Type = (int) eResist.Matter;
+				HunterEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Matter, BonusValue = 12 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -498,17 +481,13 @@ namespace DOL.GS.Quests.Midgard
 				HunterEpicArms.Condition = 50000;
 				HunterEpicArms.Durability = 50000;
 
-				HunterEpicArms.Bonus1 = 15;
-				HunterEpicArms.Bonus1Type = (int) eStat.STR;
+				HunterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 15 });
 
-				HunterEpicArms.Bonus2 = 15;
-				HunterEpicArms.Bonus2Type = (int) eStat.QUI;
+				HunterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 15 });
 
-				HunterEpicArms.Bonus3 = 10;
-				HunterEpicArms.Bonus3Type = (int) eResist.Crush;
+				HunterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 10 });
 
-				HunterEpicArms.Bonus4 = 10;
-				HunterEpicArms.Bonus4Type = (int) eResist.Slash;
+				HunterEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Slash, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -541,17 +520,13 @@ namespace DOL.GS.Quests.Midgard
 				ShadowbladeEpicBoots.Condition = 50000;
 				ShadowbladeEpicBoots.Durability = 50000;
 
-				ShadowbladeEpicBoots.Bonus1 = 5;
-				ShadowbladeEpicBoots.Bonus1Type = (int) eProperty.Skill_Stealth;
+				ShadowbladeEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Stealth, BonusValue = 5 });
 
-				ShadowbladeEpicBoots.Bonus2 = 13;
-				ShadowbladeEpicBoots.Bonus2Type = (int) eStat.DEX;
+				ShadowbladeEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				ShadowbladeEpicBoots.Bonus3 = 13;
-				ShadowbladeEpicBoots.Bonus3Type = (int) eStat.QUI;
+				ShadowbladeEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.QUI, BonusValue = 13 });
 
-				ShadowbladeEpicBoots.Bonus4 = 6;
-				ShadowbladeEpicBoots.Bonus4Type = (int) eResist.Heat;
+				ShadowbladeEpicBoots.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 6 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -584,17 +559,13 @@ namespace DOL.GS.Quests.Midgard
 				ShadowbladeEpicHelm.Condition = 50000;
 				ShadowbladeEpicHelm.Durability = 50000;
 
-				ShadowbladeEpicHelm.Bonus1 = 10;
-				ShadowbladeEpicHelm.Bonus1Type = (int) eStat.STR;
+				ShadowbladeEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 10 });
 
-				ShadowbladeEpicHelm.Bonus2 = 12;
-				ShadowbladeEpicHelm.Bonus2Type = (int) eStat.CON;
+				ShadowbladeEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 12 });
 
-				ShadowbladeEpicHelm.Bonus3 = 10;
-				ShadowbladeEpicHelm.Bonus3Type = (int) eStat.DEX;
+				ShadowbladeEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.DEX, BonusValue = 10 });
 
-				ShadowbladeEpicHelm.Bonus4 = 10;
-				ShadowbladeEpicHelm.Bonus4Type = (int) eStat.QUI;
+				ShadowbladeEpicHelm.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eStat.QUI, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -627,17 +598,13 @@ namespace DOL.GS.Quests.Midgard
 				ShadowbladeEpicGloves.Condition = 50000;
 				ShadowbladeEpicGloves.Durability = 50000;
 
-				ShadowbladeEpicGloves.Bonus1 = 2;
-				ShadowbladeEpicGloves.Bonus1Type = (int) eProperty.Skill_Critical_Strike;
+				ShadowbladeEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eProperty.Skill_Critical_Strike, BonusValue = 2 });
 
-				ShadowbladeEpicGloves.Bonus2 = 12;
-				ShadowbladeEpicGloves.Bonus2Type = (int) eStat.QUI;
+				ShadowbladeEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.QUI, BonusValue = 12 });
 
-				ShadowbladeEpicGloves.Bonus3 = 33;
-				ShadowbladeEpicGloves.Bonus3Type = (int) eProperty.MaxHealth;
+				ShadowbladeEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 33 });
 
-				ShadowbladeEpicGloves.Bonus4 = 4;
-				ShadowbladeEpicGloves.Bonus4Type = (int) eProperty.Skill_Envenom;
+				ShadowbladeEpicGloves.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eProperty.Skill_Envenom, BonusValue = 4 });
 
 
 				if (SAVE_INTO_DATABASE)
@@ -671,17 +638,13 @@ namespace DOL.GS.Quests.Midgard
 				ShadowbladeEpicVest.Condition = 50000;
 				ShadowbladeEpicVest.Durability = 50000;
 
-				ShadowbladeEpicVest.Bonus1 = 13;
-				ShadowbladeEpicVest.Bonus1Type = (int) eStat.STR;
+				ShadowbladeEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 13 });
 
-				ShadowbladeEpicVest.Bonus2 = 13;
-				ShadowbladeEpicVest.Bonus2Type = (int) eStat.DEX;
+				ShadowbladeEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 13 });
 
-				ShadowbladeEpicVest.Bonus3 = 30;
-				ShadowbladeEpicVest.Bonus3Type = (int) eProperty.MaxHealth;
+				ShadowbladeEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eProperty.MaxHealth, BonusValue = 30 });
 
-				ShadowbladeEpicVest.Bonus4 = 6;
-				ShadowbladeEpicVest.Bonus4Type = (int) eResist.Heat;
+				ShadowbladeEpicVest.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Heat, BonusValue = 6 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -714,17 +677,13 @@ namespace DOL.GS.Quests.Midgard
 				ShadowbladeEpicLegs.Condition = 50000;
 				ShadowbladeEpicLegs.Durability = 50000;
 
-				ShadowbladeEpicLegs.Bonus1 = 12;
-				ShadowbladeEpicLegs.Bonus1Type = (int) eStat.STR;
+				ShadowbladeEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.STR, BonusValue = 12 });
 
-				ShadowbladeEpicLegs.Bonus2 = 15;
-				ShadowbladeEpicLegs.Bonus2Type = (int) eStat.CON;
+				ShadowbladeEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				ShadowbladeEpicLegs.Bonus3 = 12;
-				ShadowbladeEpicLegs.Bonus3Type = (int) eStat.QUI;
+				ShadowbladeEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eStat.QUI, BonusValue = 12 });
 
-				ShadowbladeEpicLegs.Bonus4 = 10;
-				ShadowbladeEpicLegs.Bonus4Type = (int) eResist.Slash;
+				ShadowbladeEpicLegs.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Slash, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -757,17 +716,13 @@ namespace DOL.GS.Quests.Midgard
 				ShadowbladeEpicArms.Condition = 50000;
 				ShadowbladeEpicArms.Durability = 50000;
 
-				ShadowbladeEpicArms.Bonus1 = 15;
-				ShadowbladeEpicArms.Bonus1Type = (int) eStat.CON;
+				ShadowbladeEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 1, BonusType = (int)eStat.CON, BonusValue = 15 });
 
-				ShadowbladeEpicArms.Bonus2 = 16;
-				ShadowbladeEpicArms.Bonus2Type = (int) eStat.DEX;
+				ShadowbladeEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 2, BonusType = (int)eStat.DEX, BonusValue = 16 });
 
-				ShadowbladeEpicArms.Bonus3 = 10;
-				ShadowbladeEpicArms.Bonus3Type = (int) eResist.Crush;
+				ShadowbladeEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 3, BonusType = (int)eResist.Crush, BonusValue = 10 });
 
-				ShadowbladeEpicArms.Bonus4 = 10;
-				ShadowbladeEpicArms.Bonus4Type = (int) eResist.Thrust;
+				ShadowbladeEpicArms.Bonuses.Add(new ItemBonus() { BonusOrder = 4, BonusType = (int)eResist.Thrust, BonusValue = 10 });
 
 				if (SAVE_INTO_DATABASE)
 				{
@@ -1019,7 +974,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Masrim.Name && gArgs.Item.KeyName == oona_head.KeyName)
+				if (gArgs.Target.Name == Masrim.Name && gArgs.Item.ItemTemplate.KeyName == oona_head.KeyName)
 				{
 					RemoveItem(Masrim, player, oona_head);
 					Masrim.SayTo(player, "Take this sealed pouch to Morlin Caan in Jordheim for your reward!");
@@ -1032,7 +987,7 @@ namespace DOL.GS.Quests.Midgard
 			if (Step == 3 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == MorlinCaan.Name && gArgs.Item.KeyName == sealed_pouch.KeyName)
+				if (gArgs.Target.Name == MorlinCaan.Name && gArgs.Item.ItemTemplate.KeyName == sealed_pouch.KeyName)
 				{
 					MorlinCaan.SayTo(player, "You have earned this Epic Armour!");
 					FinishQuest();
