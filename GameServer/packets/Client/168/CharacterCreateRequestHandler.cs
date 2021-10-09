@@ -402,6 +402,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			//add starter equipment
 			var starterEquipment = GameServer.Database.StarterEquipments
 													  .Include(x => x.ItemTemplate)
+													  .ThenInclude(x => x.Bonuses)
 													  .ToList()
 													  .Where(x => x.ClassIDs.Split(';').Any(x => x == ch.Class.ToString()));
 
@@ -1096,6 +1097,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			//add starter equipment
 			var starterEquipment = GameServer.Database.StarterEquipments
 													  .Include(x => x.ItemTemplate)
+													  .ThenInclude(x => x.Bonuses)
 													  .ToList()
 													  .Where(x => x.ClassIDs.Split(';').Any(x => x == ch.Class.ToString()));
 

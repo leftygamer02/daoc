@@ -71,6 +71,7 @@ namespace DOL.GS
 					// removed by another player with the appropriate house permission.  - Tolakram
 					var items = GameServer.Database.InventoryItems
 													.Include(x => x.ItemTemplate)
+													.ThenInclude(x => x.Bonuses)
 													.Where(x => x.CharacterID == inventoryID &&
 														  (x.SlotPosition <= (int)eInventorySlot.LastVault || (x.SlotPosition >= 500 && x.SlotPosition < 600)));
 					foreach (InventoryItem item in items)

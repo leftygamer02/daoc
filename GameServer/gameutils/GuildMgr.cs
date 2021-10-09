@@ -224,6 +224,7 @@ namespace DOL.GS
 				GameServer.Instance.SaveDataObject(rank);
 				guild.Ranks[i] = rank;
 			}
+			GameServer.Database.SaveChanges();
 		}
 
 		public static void RepairRanks(Guild guild)
@@ -436,7 +437,7 @@ namespace DOL.GS
 			m_lastID = 0;
 
 			//load guilds
-			var guildObjs = GameServer.Database.Guilds.Include(x => x.Characters).ToList();
+			var guildObjs = GameServer.Database.Guilds.Include(x => x.GuildRanks).ToList();
 			foreach(var obj in guildObjs)
 			{
 				var myguild = new Guild(obj);

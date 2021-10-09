@@ -158,7 +158,7 @@ namespace DOL.GS
 				HybridDictionary itemsInPage = new HybridDictionary(MAX_ITEM_IN_TRADEWINDOWS);
 				if (!String.IsNullOrEmpty(ItemsListName))
 				{
-					var itemList = GameServer.Database.MerchantItems.Include(x => x.ItemTemplate).Where(x => x.ItemListName == m_itemsListName && x.PageNumber == page).ToList();
+					var itemList = GameServer.Database.MerchantItems.Include(x => x.ItemTemplate).ThenInclude(x => x.Bonuses).Where(x => x.ItemListName == m_itemsListName && x.PageNumber == page).ToList();
 					foreach (MerchantItem merchantitem in itemList)
 					{
 						ItemTemplate item = merchantitem.ItemTemplate;
@@ -223,6 +223,7 @@ namespace DOL.GS
 				{
 					var itemToFind = GameServer.Database.MerchantItems
 											.Include(x => x.ItemTemplate)
+											.ThenInclude(x => x.Bonuses)
 											.FirstOrDefault(x => x.ItemListName == m_itemsListName && 
 																 x.PageNumber == page && 
 																 x.SlotPosition == (int)slot);
@@ -254,6 +255,7 @@ namespace DOL.GS
 				{
 					var itemList = GameServer.Database.MerchantItems
 											.Include(x => x.ItemTemplate)
+											.ThenInclude(x => x.Bonuses)
 											.Where(x => x.ItemListName == m_itemsListName);
 					foreach (MerchantItem merchantitem in itemList)
 					{

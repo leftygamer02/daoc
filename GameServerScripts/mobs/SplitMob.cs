@@ -91,7 +91,7 @@ namespace DOL.GS.Scripts
 			mob.Size = this.Size;
 			mob.NPCTemplate = this.NPCTemplate;
 			mob.Inventory = this.Inventory;
-			mob.EquipmentTemplateID = this.EquipmentTemplateID;
+			mob.EquipmentTemplateName = this.EquipmentTemplateName;
 			if (mob.Inventory != null)
 				mob.SwitchWeapon(this.ActiveWeaponSlot);
 

@@ -20,6 +20,7 @@
 using System;
 using DOL.AI.Brain;
 using Atlas.DataLayer.Models;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -54,9 +55,7 @@ namespace DOL.GS
                 if (player == null)
                 {
                     return loot;
-                }
-
-                ItemTemplate token_many = new ItemTemplate(m_token_many);
+                }                
 
                 int killedcon = (int)player.GetConLevel(mob) + 3;
 

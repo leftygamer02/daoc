@@ -968,6 +968,7 @@ namespace DOL.GS
 		public bool AddToDatabase()
 		{
 			var result = GameServer.Instance.SaveDataObject(this.m_DBguild);
+			GameServer.Database.SaveChanges();
 			return result.Id > 0;
 		}
 		/// <summary>

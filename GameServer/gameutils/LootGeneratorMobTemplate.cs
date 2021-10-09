@@ -74,7 +74,7 @@ namespace DOL.GS
 					try
 					{
 						// TemplateName (typically the mob name), ItemTemplateID, Chance
-						m_lootTables = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).ToList();
+						m_lootTables = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).ThenInclude(x => x.Bonuses).ToList();
 					}
 					catch (Exception e)
 					{
@@ -116,7 +116,7 @@ namespace DOL.GS
 				}
 			}
 
-			lootTable = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).FirstOrDefault(x => x.Id == lootTableId);
+			lootTable = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).ThenInclude(x => x.Bonuses).FirstOrDefault(x => x.Id == lootTableId);
 
 			if (lootTable != null)
 			{

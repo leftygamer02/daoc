@@ -96,10 +96,9 @@ namespace DOL.GS.Commands
                 for (int b = 0; b < 6; b++)
                 {
                     x = 0;
-                   // temp = GameServer.Database.SelectObjects<ItemTemplate>("Object_Type = " + ot[a] + " AND Item_Type = " + slots[b]);
-                   temp = GameServer.Database.SelectObjects<ItemTemplate>("`Object_Type` = @Object AND `Item_Type` = @Item", new [] { new QueryParameter("@Object", ot[a]), new QueryParameter("@Item", slots[b]) });
+                    temp = GameServer.Database.ItemTemplates.Where(x => x.ObjectType == ot[a] && x.ItemType == slots[b]).ToList();
                   	armor[a][b] = new ushort[temp.Count];
-                    foreach (DataObject item in temp)
+                    foreach (var item in temp)
                     {
                         armor[a][b][x++] = (ushort)(item as ItemTemplate).Model;
                     }
@@ -107,9 +106,9 @@ namespace DOL.GS.Commands
             }
 
             x = 0;
-            temp = GameServer.Database.SelectObjects<ItemTemplate>("Item_Type = @Item", new QueryParameter("@Item", slots[6]));
+            temp = GameServer.Database.ItemTemplates.Where(x => x.ItemType == slots[6]).ToList();
             cloak = new ushort[temp.Count];
-            foreach (DataObject item in temp)
+            foreach (var item in temp)
             {
                 cloak[x++] = (ushort)(item as ItemTemplate).Model;
             }
@@ -117,9 +116,9 @@ namespace DOL.GS.Commands
             for (int a = 0; a < 11; a++)
             {
                 x = 0;
-                temp = GameServer.Database.SelectObjects<ItemTemplate>( "Item_Type = @Item", new QueryParameter("@Item", slots[a]));
+                temp = GameServer.Database.ItemTemplates.Where(x => x.ItemType == slots[a]).ToList();
                 equip[a] = new ushort[temp.Count];
-                foreach (DataObject item in temp)
+                foreach (var item in temp)
                 {
                     equip[a][x++] = (ushort)(item as ItemTemplate).Model;
                 }
@@ -624,12 +623,12 @@ namespace DOL.GS.Commands
                 Clear(npc);
                 template = new GameNpcInventoryTemplate();
 
-                ItemTemplate tgeneric0 = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate> (ClasseEpic + "EpicHelm");
-                ItemTemplate tgeneric1 = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate> (ClasseEpic + "EpicGloves");
-                ItemTemplate tgeneric2 = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate> (ClasseEpic + "EpicArms");
-                ItemTemplate tgeneric3 = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate> (ClasseEpic + "EpicVest");
-                ItemTemplate tgeneric4 = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate> (ClasseEpic + "EpicLegs");
-                ItemTemplate tgeneric5 = (ItemTemplate)GameServer.Database.FindObjectByKey<ItemTemplate> (ClasseEpic + "EpicBoots");
+                ItemTemplate tgeneric0 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ClasseEpic + "EpicHelm");
+                ItemTemplate tgeneric1 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ClasseEpic + "EpicGloves");
+                ItemTemplate tgeneric2 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ClasseEpic + "EpicArms");
+                ItemTemplate tgeneric3 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ClasseEpic + "EpicVest");
+                ItemTemplate tgeneric4 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ClasseEpic + "EpicLegs");
+                ItemTemplate tgeneric5 = GameServer.Database.ItemTemplates.FirstOrDefault(x => x.KeyName == ClasseEpic + "EpicBoots");
 
                 if (args.Length > 3)
                 {
@@ -680,7 +679,7 @@ namespace DOL.GS.Commands
         private void Clear(GameNPC target)
         {
             target.Inventory = null;
-            target.EquipmentTemplateID = null;
+            target.EquipmentTemplateName = null;
         }
 
         private void Save(GameNPC target)
@@ -690,7 +689,7 @@ namespace DOL.GS.Commands
             {
                 tn = Guid.NewGuid().ToString();
             } while (!target.Inventory.SaveIntoDatabase(tn));
-            target.EquipmentTemplateID = tn;
+            target.EquipmentTemplateName = tn;
             target.SaveIntoDatabase();
         }
         
@@ -701,7 +700,7 @@ namespace DOL.GS.Commands
             {
                 tn = saveName;
             } while (!target.Inventory.SaveIntoDatabase(tn));
-            target.EquipmentTemplateID = tn;
+            target.EquipmentTemplateName = tn;
             target.SaveIntoDatabase();
             client.Player.Out.SendMessage("Equipment template saved as: " +saveName, DOL.GS.PacketHandler.eChatType.CT_System, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
         }

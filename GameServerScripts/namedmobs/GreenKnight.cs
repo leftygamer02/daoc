@@ -6,7 +6,6 @@
  */
 using System;
 using Atlas.DataLayer.Models;
-using DOL.Database.Attributes;
 using DOL.GS;
 using DOL.GS.Effects;
 using DOL.GS.Spells;
@@ -34,7 +33,7 @@ namespace DOL.GS.Scripts
 			this.Model = 380;
 			this.Size = 120;
 			this.Level = 60;
-			this.EquipmentTemplateID = "Green";
+			this.EquipmentTemplateName = "Green";
 			this.Realm = eRealm.Albion;
 			base.AddToWorld();
 			return true;

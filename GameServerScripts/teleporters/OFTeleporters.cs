@@ -86,14 +86,14 @@ namespace DOL.GS.Scripts
             set { m_ofAssistants = value; }
         }
 
-        private DBSpell m_buffSpell;
+        private Atlas.DataLayer.Models.Spell m_buffSpell;
         private Spell m_portSpell;
 
         public Spell PortSpell
         {
             get
             {
-                m_buffSpell = new DBSpell();
+                m_buffSpell = new Atlas.DataLayer.Models.Spell();
                 m_buffSpell.ClientEffect = 4468;
                 m_buffSpell.CastTime = 5;
                 m_buffSpell.Icon = 4468;
@@ -135,7 +135,7 @@ namespace DOL.GS.Scripts
                         {
                             if (necklace != null)
                             {
-                                switch (necklace.KeyName)
+                                switch (necklace.ItemTemplate.KeyName)
                                 {
                                     case OdinID: PortLocation = new GameLocation("Odin Alb", 100, 596364, 631509, 5971); break;
                                     case EmainID: PortLocation = new GameLocation("Emain Alb", 200, 475835, 343661, 4080); break;
@@ -150,7 +150,7 @@ namespace DOL.GS.Scripts
                         {
                             if (necklace != null)
                             {
-                                switch (necklace.KeyName)
+                                switch (necklace.ItemTemplate.KeyName)
                                 {
                                     case HadrianID: PortLocation = new GameLocation("Hadrian Mid", 1, 655200, 293217, 4879); break;
                                     case EmainID: PortLocation = new GameLocation("Emain Mid", 200, 474107, 295199, 3871); break;
@@ -168,7 +168,7 @@ namespace DOL.GS.Scripts
                         {
                             if (necklace != null)
                             {
-                                switch (necklace.KeyName)
+                                switch (necklace.ItemTemplate.KeyName)
                                 {
                                     case OdinID: PortLocation = new GameLocation("Odin Hib", 100, 596055, 581400, 6031); break;
                                     case HadrianID: PortLocation = new GameLocation("Hadrian Hib", 1, 605743, 293676, 4839); break;

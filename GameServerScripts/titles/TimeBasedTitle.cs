@@ -40,6 +40,6 @@ namespace GameServerScripts.Titles
 	{
 		public override DOLEvent Event { get { return GamePlayerEvent.GameEntered; }}
 		protected override Tuple<string, string> DescriptionValue { get { return new Tuple<string, string>("Titles.Time.Account.ElderTitle", "Titles.Time.Account.ElderTitle"); }}
-		protected override Func<DOL.GS.GamePlayer, bool> SuitableMethod { get { return player => DateTime.Now.Subtract(player.Client.Account.CreationDate).TotalDays >= 365; }} // a year
+		protected override Func<DOL.GS.GamePlayer, bool> SuitableMethod { get { return player => DateTime.Now.Subtract(player.Client.Account.CreateDate.Value).TotalDays >= 365; }} // a year
 	}
 }

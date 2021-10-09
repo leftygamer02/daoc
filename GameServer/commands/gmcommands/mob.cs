@@ -2076,7 +2076,7 @@ namespace DOL.GS.Commands
 					return;
 				}
 
-				var otd = GameServer.Database.LootOtds.Include(x => x.ItemTemplate).FirstOrDefault(x => x.MobName == mobName && x.ItemTemplateID == itemTemplateID);
+				var otd = GameServer.Database.LootOtds.Include(x => x.ItemTemplate).ThenInclude(x => x.Bonuses).FirstOrDefault(x => x.MobName == mobName && x.ItemTemplateID == itemTemplateID);
 
 				if (otd != null)
 				{
@@ -2187,10 +2187,10 @@ namespace DOL.GS.Commands
 				var dbNpc = GameServer.Database.NpcTemplates.Find(mob.NPCTemplate.TemplateId);
 
 				if (dbNpc != null)
-					lootTables = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).Where(x => x.Id == dbNpc.LootTableID).ToList();
+					lootTables = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).ThenInclude(x => x.ItemBonus).Where(x => x.Id == dbNpc.LootTableID).ToList();
 			}
 			if (lootTables == null || !lootTables.Any()) 
-				lootTables = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).Where(x => x.Name == mob.Name).ToList();
+				lootTables = GameServer.Database.LootTables.Include(x => x.Items).ThenInclude(x => x.ItemTemplate).ThenInclude(x => x.ItemBonus).Where(x => x.Name == mob.Name).ToList();
 
 			foreach (var table in lootTables)
 			{
@@ -2207,7 +2207,7 @@ namespace DOL.GS.Commands
 			}
 			if (!didDefault)
 			{
-				var items = GameServer.Database.LootTableItems.Include(x => x.ItemTemplate).Where(x => x.LootTable.Name == mobName).ToList();
+				var items = GameServer.Database.LootTableItems.Include(x => x.ItemTemplate).ThenInclude(x => x.Bonuses).Where(x => x.LootTable.Name == mobName).ToList();
 				if (items.Count > 0)
 					text.Add("+ Default: ");
 				text.AddRange(

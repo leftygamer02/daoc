@@ -47,7 +47,7 @@ namespace DOL.GS.GameEvents
 				targetPoint.TargetY = loc.YPos;
 				targetPoint.TargetZ = loc.ZPos;
 				targetPoint.TargetHeading = (ushort)loc.Heading;
-				targetPoint.TargetRegionID = loc.Region;
+				targetPoint.TargetRegionID = loc.RegionID;
 				return true;
 			}
 

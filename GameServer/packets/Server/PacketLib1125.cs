@@ -130,6 +130,7 @@ namespace DOL.GS.PacketHandler
 					{
 						var allItems = GameServer.Database.InventoryItems
 														  .Include(x => x.ItemTemplate)
+														  .ThenInclude(x => x.Bonuses)
 														  .Where(x => x.Character.AccountID == m_gameClient.Account.Id &&
 																					 x.SlotPosition >= (int)eInventorySlot.MinEquipable &&
 																					 x.SlotPosition <= (int)eInventorySlot.MaxEquipable);

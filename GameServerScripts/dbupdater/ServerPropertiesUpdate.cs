@@ -19,6 +19,7 @@
 
 using Atlas.DataLayer.Models;
 using log4net;
+using System.Linq;
 
 namespace DOL.GS.DatabaseUpdate
 {
@@ -46,7 +47,7 @@ namespace DOL.GS.DatabaseUpdate
         {
             log.Info("Updating the ServerProperty table...");
 
-            var properties = GameServer.Database.SelectAllObjects<ServerProperty>();
+            var properties = GameServer.Database.ServerProperties.ToList();
 
             bool aclkFound = false;
             bool unlsFound = false;

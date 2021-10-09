@@ -1359,7 +1359,8 @@ namespace DOL.GS
                 if (weapon != null)
                 {
                     weaponTypeToUse = new InventoryItem();
-                    weaponTypeToUse.ItemTemplate.ObjectType = weapon.ItemTemplate.ObjectType;
+                    weaponTypeToUse.ItemTemplate = weapon.ItemTemplate;
+                    //weaponTypeToUse.ItemTemplate.ObjectType = weapon.ItemTemplate.ObjectType;
                     weaponTypeToUse.SlotPosition = weapon.SlotPosition;
 
                     if ((owner is GamePlayer) && owner.Realm == eRealm.Albion

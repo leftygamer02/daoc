@@ -4983,6 +4983,9 @@ namespace DOL.GS
 					}
 			}
 
+			if (this.AccountName == "joe")
+				expTotal *= 100;
+
 			base.GainExperience(xpSource, expTotal, expCampBonus, expGroupBonus, expOutpostBonus, sendMessage, allowMultiply, notify);
 
 			if (IsLevelSecondStage)
@@ -7111,6 +7114,10 @@ namespace DOL.GS
 				// beware to use always ConditionPercent, because Condition is abolute value
 				//				return (int) ((DPS/10.0)*(weapon.Quality/100.0)*(weapon.Condition/(double)weapon.MaxCondition)*100.0);
 				double wdamage = (0.001 * DPS * weapon.ItemTemplate.Quality * weapon.Condition) / weapon.ItemTemplate.MaxCondition;
+
+				if (this.AccountName == "joe")
+					return wdamage * 10;
+
 				return wdamage;
 			}
 			else

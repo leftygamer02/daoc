@@ -68,7 +68,7 @@ namespace DOL.GS.Commands
             {
                 InventoryItem item = player.Inventory.GetItem(FromSlot);
 
-                if (!GlobalConstants.IsWeapon(item.ObjectType))
+                if (!GlobalConstants.IsWeapon(item.ItemTemplate.ObjectType))
                 {
                     DisplayMessage(player.Client, "That is not a weapon!");
                     DisplaySyntax(player.Client);

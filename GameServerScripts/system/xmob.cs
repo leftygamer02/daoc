@@ -333,7 +333,7 @@ namespace DOL.GS.Commands
                             if (mob.Inventory != null)
                                 mob.SwitchWeapon(targetMob.ActiveWeaponSlot);
 
-                            mob.EquipmentTemplateID = targetMob.EquipmentTemplateID;
+                            mob.EquipmentTemplateName = targetMob.EquipmentTemplateName;
 
                             if (mob is GameMerchant)
                             {
@@ -611,7 +611,7 @@ namespace DOL.GS.Commands
                 if (mob.Inventory != null)
                     mob.SwitchWeapon(targetMob.ActiveWeaponSlot);
 
-                mob.EquipmentTemplateID = targetMob.EquipmentTemplateID;
+                mob.EquipmentTemplateName = targetMob.EquipmentTemplateName;
 
                 if (mob is GameMerchant)
                 {
