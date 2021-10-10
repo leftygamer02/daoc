@@ -342,7 +342,7 @@ namespace DOL.GS
 			/// </summary>
 			public virtual long CurrentTime
 			{
-				get { return m_time; }
+				get { return GameLoop.GameLoopTime; }
 				set { m_time = value; }
 			}
 

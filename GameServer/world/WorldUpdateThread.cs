@@ -64,7 +64,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Minimum Player Position Update Loop Refresh Rate. (ms)
 		/// </summary>
-		private static readonly uint MIN_PLAYER_UPDATE_RATE = 1000;
+		private static readonly uint MIN_PLAYER_UPDATE_RATE = 200;
 
 		/// <summary>
 		/// Get the Player World Update Refresh Rate.
@@ -117,7 +117,7 @@ namespace DOL.GS
 		/// <param name="player">The player needing update</param>
 		private static void UpdatePlayerWorld(GamePlayer player)
 		{
-			UpdatePlayerWorld(player, GameTimer.GetTickCount());
+			UpdatePlayerWorld(player, GameLoop.GameLoopTime);
 		}
 
 		/// <summary>
@@ -159,7 +159,7 @@ namespace DOL.GS
 				foreach (var objEntry in player.Client.GameObjectUpdateArray)
 				{
 					var objKey = objEntry.Key;
-					GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
+					GameObject obj = WorldMgr.GetRegion(objKey.Item1)?.GetObject(objKey.Item2);
 					// We have a Player in cache that is not in vincinity
 					// For updating "out of view" we allow a halved refresh time. 
 					if (obj is GamePlayer && !players.Contains((GamePlayer)obj) && (nowTicks - objEntry.Value) >= GetPlayertoPlayerUpdateInterval)
@@ -229,7 +229,7 @@ namespace DOL.GS
 				foreach (var objEntry in player.Client.GameObjectUpdateArray)
 				{
 					var objKey = objEntry.Key;
-					GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
+					GameObject obj = WorldMgr.GetRegion(objKey.Item1)?.GetObject(objKey.Item2);
 
 					// Brain is updating to its master, no need to handle it.
 					if (obj is GameNPC && ((GameNPC)obj).Brain is IControlledBrain && ((IControlledBrain)((GameNPC)obj).Brain).GetPlayerOwner() == player)
@@ -486,7 +486,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		private static bool PlayerNeedUpdate(long lastUpdate)
 		{
-			return (GameTimer.GetTickCount() - lastUpdate) >= GetPlayerWorldUpdateInterval;
+			return (GameLoop.GameLoopTime - lastUpdate) >= GetPlayerWorldUpdateInterval;
 		}
 
 		private static bool StartPlayerUpdateTask(GameClient client, IDictionary<GameClient, Tuple<long, Task, Region>> clientsUpdateTasks, long begin)
@@ -517,10 +517,10 @@ namespace DOL.GS
 					// Check for how long
 					if ((begin - lastUpdate) > GetPlayerWorldUpdateInterval)
 					{
-						if (log.IsWarnEnabled && (GameTimer.GetTickCount() - player.TempProperties.getProperty<long>("LAST_WORLD_UPDATE_THREAD_WARNING", 0) >= 1000))
+						if (log.IsWarnEnabled && (GameLoop.GameLoopTime - player.TempProperties.getProperty<long>("LAST_WORLD_UPDATE_THREAD_WARNING", 0) >= 1000))
 						{
 							log.WarnFormat("Player Update Task ({0}) Taking more than world update refresh rate : {1} ms (real {2} ms) - Task Status : {3}!", player.Name, GetPlayerWorldUpdateInterval, begin - lastUpdate, taskEntry.Status);
-							player.TempProperties.setProperty("LAST_WORLD_UPDATE_THREAD_WARNING", GameTimer.GetTickCount());
+							player.TempProperties.setProperty("LAST_WORLD_UPDATE_THREAD_WARNING", GameLoop.GameLoopTime);
 						}
 					}
 					// Don't init this client.
@@ -574,6 +574,11 @@ namespace DOL.GS
 			return true;
 		}
 
+		public static void OnTick()
+        {
+			WorldUpdateThreadStart();
+		}
+
 		/// <summary>
 		/// This thread updates the NPCs and objects around the player at very short
 		/// intervalls! But since the update is very quick the thread will
@@ -596,7 +601,7 @@ namespace DOL.GS
 				try
 				{
 					// Start Time of the loop
-					long begin = GameTimer.GetTickCount();
+					long begin = GameLoop.GameLoopTime;
 
 					// Get All Clients
 					var clients = WorldMgr.GetAllClients();
@@ -649,7 +654,7 @@ namespace DOL.GS
 						StartPlayerUpdateTask(client, clientsUpdateTasks, begin);
 					}
 
-					long took = GameTimer.GetTickCount() - begin;
+					long took = GameLoop.GameLoopTime - begin;
 
 					if (took >= 500)
 					{
@@ -658,7 +663,7 @@ namespace DOL.GS
 					}
 
 					// relaunch update thread every 100 ms to check if any player need updates.
-					Thread.Sleep((int)Math.Max(1, 100 - took));
+					//Thread.Sleep((int)Math.Max(1, 100 - took));
 				}
 				catch (ThreadInterruptedException)
 				{
