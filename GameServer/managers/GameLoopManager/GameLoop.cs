@@ -38,6 +38,7 @@ namespace DOL.GS
             CastingService.Tick(GameLoopTime);
             EffectService.Tick(GameLoopTime);
             EffectListService.Tick(GameLoopTime);
+            PlayerDeathService.Tick(GameLoopTime);
 
             //Always tick last!
             ECS.Debug.Diagnostics.Tick();

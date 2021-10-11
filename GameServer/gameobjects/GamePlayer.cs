@@ -1334,6 +1334,21 @@ namespace DOL.GS
 		/// </summary>
 		protected RegionTimer m_releaseTimer;
 
+		public void StartReleaseTimer()
+		{
+			m_automaticRelease = m_releaseType == eReleaseType.Duel;
+			m_releasePhase = 0;
+			m_deathTick = Environment.TickCount; // we use realtime, because timer window is realtime
+
+			Out.SendTimerWindow(LanguageMgr.GetTranslation(Client.Account.Language, "System.ReleaseTimer"), (m_automaticRelease ? RELEASE_MINIMUM_WAIT : RELEASE_TIME));
+			m_releaseTimer = new RegionTimer(this);
+			m_releaseTimer.Callback = new RegionTimerCallback(ReleaseTimerCallback);
+			m_releaseTimer.Start(1000);
+
+			Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.ReleaseToReturn"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+
+		}
+
 		/// <summary>
 		/// Stops release timer and closes timer window
 		/// </summary>
@@ -1346,6 +1361,15 @@ namespace DOL.GS
 				m_releaseTimer = null;
 			}
 		}
+
+		public void StopQuitTimer()
+        {
+			if(m_quitTimer != null)
+            {
+				m_quitTimer.Stop();
+				m_quitTimer = null;
+            }
+        }
 
 		/// <summary>
 		/// minimum time to wait before release is possible in seconds
@@ -7729,6 +7753,8 @@ namespace DOL.GS
 			// then buffs drop messages
 			base.Die(killer);
 
+			PlayerDeathService.RegisterDeath(this, killer);
+			/*
 			lock (m_LockObject)
 			{
 				if (m_releaseTimer != null)
@@ -7833,7 +7859,7 @@ namespace DOL.GS
                     }
 				}
 				GameEventMgr.AddHandler(this, GamePlayerEvent.Revive, new DOLEventHandler(OnRevive));
-			}
+			}*/
 
 			if (this.ControlledBrain != null)
 				CommandNpcRelease();
@@ -7859,6 +7885,115 @@ namespace DOL.GS
 			effectListComponent.CancelAll();
 
 			IsSwimming = false;
+		}
+
+		public void ServiceDie(GamePlayer p, GameObject killer)
+        {
+			{
+				if (m_releaseTimer != null)
+				{
+					m_releaseTimer.Stop();
+					m_releaseTimer = null;
+				}
+
+				if (m_quitTimer != null)
+				{
+					m_quitTimer.Stop();
+					m_quitTimer = null;
+				}
+				m_automaticRelease = m_releaseType == eReleaseType.Duel;
+				m_releasePhase = 0;
+				m_deathTick = Environment.TickCount; // we use realtime, because timer window is realtime
+
+				Out.SendTimerWindow(LanguageMgr.GetTranslation(Client.Account.Language, "System.ReleaseTimer"), (m_automaticRelease ? RELEASE_MINIMUM_WAIT : RELEASE_TIME));
+				m_releaseTimer = new RegionTimer(this);
+				m_releaseTimer.Callback = new RegionTimerCallback(ReleaseTimerCallback);
+				m_releaseTimer.Start(1000);
+
+				Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.ReleaseToReturn"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+
+				// clear target object so no more actions can used on this target, spells, styles, attacks...
+				TargetObject = null;
+
+				foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+				{
+					if (player == null) continue;
+					player.Out.SendPlayerDied(this, killer);
+				}
+
+				// first penalty is 5% of expforlevel, second penalty comes from release
+				int xpLossPercent;
+				if (Level < 40)
+				{
+					xpLossPercent = MaxLevel - Level;
+				}
+				else
+				{
+					xpLossPercent = MaxLevel - 40;
+				}
+
+				bool realmDeath = killer != null && killer.Realm != eRealm.None;
+				if (realmDeath) //Live PvP servers have 3 con loss on pvp death, can be turned off in server properties -Unty
+				{
+					int conpenalty = 0;
+					switch (GameServer.Instance.Configuration.ServerType)
+					{
+						case eGameServerType.GST_Normal:
+							Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.DeadRVR"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+							xpLossPercent = 0;
+							m_deathtype = eDeathType.RvR;
+							break;
+
+						case eGameServerType.GST_PvP:
+							Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.DeadRVR"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+							xpLossPercent = 0;
+							m_deathtype = eDeathType.PvP;
+							if (ServerProperties.Properties.PVP_DEATH_CON_LOSS)
+							{
+								conpenalty = 3;
+								TempProperties.setProperty(DEATH_CONSTITUTION_LOSS_PROPERTY, conpenalty);
+							}
+							break;
+					}
+
+				}
+				else
+				{
+					if (Level >= ServerProperties.Properties.PVE_EXP_LOSS_LEVEL)
+					{
+						Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.LoseExperience"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+						// if this is the first death in level, you lose only half the penalty
+						switch (DeathCount)
+						{
+							case 0:
+								Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.DeathN1"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+								xpLossPercent /= 3;
+								break;
+							case 1:
+								Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.DeathN2"), eChatType.CT_YouDied, eChatLoc.CL_SystemWindow);
+								xpLossPercent = xpLossPercent * 2 / 3;
+								break;
+						}
+
+						DeathCount++;
+						m_deathtype = eDeathType.PvE;
+						long xpLoss = (ExperienceForNextLevel - ExperienceForCurrentLevel) * xpLossPercent / 1000;
+						GainExperience(eXPSource.Other, -xpLoss, 0, 0, 0, false, true);
+						TempProperties.setProperty(DEATH_EXP_LOSS_PROPERTY, xpLoss);
+					}
+
+					if (Level >= ServerProperties.Properties.PVE_CON_LOSS_LEVEL)
+					{
+						int conLoss = DeathCount;
+						if (conLoss > 3)
+							conLoss = 3;
+						else if (conLoss < 1)
+							conLoss = 1;
+						TempProperties.setProperty(DEATH_CONSTITUTION_LOSS_PROPERTY, conLoss);
+					}
+				}
+				GameEventMgr.AddHandler(this, GamePlayerEvent.Revive, new DOLEventHandler(OnRevive));
+			}
 		}
 
 		public override void EnemyKilled(GameLiving enemy)
@@ -16058,6 +16193,8 @@ namespace DOL.GS
 			
 			return Math.Round(parryChance*10000)/100;
 		}
+
+        
 		#endregion
 
 		#region Bodyguard
