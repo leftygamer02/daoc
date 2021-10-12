@@ -1,6 +1,5 @@
 using System;
 using DOL.GS;
-using DOL.Database;
 using DOL.GS.PacketHandler;
 using System.Net;
 using System.Collections;

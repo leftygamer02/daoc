@@ -5,7 +5,7 @@ Aros the Spiritmaster.
 using System;
 using System.Collections.Generic;
 using System.Text;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 using DOL.GS;
 using System.Reflection;
@@ -64,7 +64,7 @@ namespace DOL.GS.Scripts
 			{
 				if (m_Debuff == null)
 				{
-					DBSpell spell = new DBSpell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 0;
 					spell.Uninterruptible = true;
@@ -78,7 +78,7 @@ namespace DOL.GS.Scripts
 					spell.Duration = 45;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Spirit;
-					spell.SpellID = 4575;
+					spell.Id = 4575;
 					spell.Target = "Enemy";
 					spell.MoveCast = true;
 					spell.Type = eSpellType.SpiritResistDebuff.ToString();
@@ -104,7 +104,7 @@ namespace DOL.GS.Scripts
 			{
 				if (m_Summon == null)
 				{
-					DBSpell spell = new DBSpell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 2;
 					spell.Uninterruptible = true;
@@ -137,7 +137,7 @@ namespace DOL.GS.Scripts
 			{
 				if (m_BombSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 4;
 					spell.ClientEffect = 2797;
@@ -145,7 +145,7 @@ namespace DOL.GS.Scripts
 					spell.Name = "Soul Annihilation";
 					spell.Range = 1000;
 					spell.Radius = 750;
-					spell.SpellID = 2797;
+					spell.Id = 2797;
 					spell.Target = "Enemy";
 					spell.Type = "DirectDamage";
 					spell.Uninterruptible = true;
@@ -171,7 +171,7 @@ namespace DOL.GS.Scripts
 			{
 				if (m_BigBombSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 10;
 					spell.ClientEffect = 2797;
@@ -179,7 +179,7 @@ namespace DOL.GS.Scripts
 					spell.Name = "Soul Annihilation";
 					spell.Range = 1000;
 					spell.Radius = 1500;
-					spell.SpellID = 2797;
+					spell.Id = 2797;
 					spell.Target = "Enemy";
 					spell.Type = "DirectDamage";
 					spell.Uninterruptible = true;

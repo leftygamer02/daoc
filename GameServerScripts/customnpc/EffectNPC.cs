@@ -14,10 +14,9 @@ using System;
 using DOL;
 using DOL.GS;
 using DOL.Events;
-using DOL.Database;
 using System.Collections;
 using DOL.GS.PacketHandler;
-using DOL.Database.UniqueID;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS
 {
@@ -98,7 +97,7 @@ namespace DOL.GS
                 #region effects
                 
                 case "effect":
-                    switch (item.Object_Type)
+                    switch (item.ItemTemplate.ObjectType)
                     {
                         case (int)eObjectType.TwoHandedWeapon: case (int)eObjectType.LargeWeapons:
                             SendReply(player,
@@ -959,14 +958,14 @@ namespace DOL.GS
             player.TempProperties.removeProperty(EFFECTNPC_ITEM_WEAK);
 
             if (item == null || item.SlotPosition == (int)eInventorySlot.Ground
-                || item.OwnerID == null || item.OwnerID != player.InternalID)
+                || item.CharacterID == null || item.CharacterID != player.InternalID)
             {
                 player.Out.SendMessage("Invalid item.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                 return;
             }
 
-            if (item.Object_Type == 41 || item.Object_Type == 43 || item.Object_Type == 44 ||
-               item.Object_Type == 46)
+            if (item.ItemTemplate.ObjectType == 41 || item.ItemTemplate.ObjectType == 43 || item.ItemTemplate.ObjectType == 44 ||
+               item.ItemTemplate.ObjectType == 46)
             {
                 SendReply(player, "You can't dye that.");
             }
@@ -981,21 +980,21 @@ namespace DOL.GS
             castplayer.Enqueue(player);
 
             player.Inventory.RemoveItem(item);
-            ItemUnique unique = new ItemUnique(item.Template);
+            ItemUnique unique = new ItemUnique(item.ItemTemplate);
             unique.Color = color;
-            unique.ObjectId = "Unique" + System.Guid.NewGuid().ToString();
-            unique.Id_nb = "Unique" + System.Guid.NewGuid().ToString();
-            if (GameServer.Database.ExecuteNonQuery("SELECT ItemUnique_ID FROM itemunique WHERE ItemUnique_ID = 'unique.ObjectId'"))
-            {
-                unique.ObjectId = "Unique" + System.Guid.NewGuid().ToString();
-            }
-            if (GameServer.Database.ExecuteNonQuery("SELECT Id_nb FROM itemunique WHERE Id_nb = 'unique.Id_nb'"))
-            {
-                unique.Id_nb = IDGenerator.GenerateID();
-            }
-            GameServer.Database.AddObject(unique);
+            unique.KeyName = "Unique" + System.Guid.NewGuid().ToString();
+            //if (GameServer.Database.ExecuteNonQuery("SELECT ItemUnique_ID FROM itemunique WHERE ItemUnique_ID = 'unique.ObjectId'"))
+            //{
+            //    unique.ObjectId = "Unique" + System.Guid.NewGuid().ToString();
+            //}
+            //if (GameServer.Database.ExecuteNonQuery("SELECT Id_nb FROM itemunique WHERE Id_nb = 'unique.Id_nb'"))
+            //{
+            //    unique.Id_nb = IDGenerator.GenerateID();
+            //}
 
-            InventoryItem newInventoryItem = GameInventoryItem.Create<ItemUnique>(unique);
+            GameServer.Instance.SaveDataObject(unique);
+
+            InventoryItem newInventoryItem = GameInventoryItem.Create(unique);
             player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, newInventoryItem);
             player.Out.SendInventoryItemsUpdate(new InventoryItem[] { newInventoryItem });
             player.RealmPoints -= price;
@@ -1024,14 +1023,14 @@ namespace DOL.GS
             if (item == null)
                 return;
 
-            if (item.Object_Type < 1 || item.Object_Type > 26)
+            if (item.ItemTemplate.ObjectType < 1 || item.ItemTemplate.ObjectType > 26)
             {
                 SendReply(player, "I cannot work on anything else than weapons.");
                 return;
             }
 
             if (item == null || item.SlotPosition == (int)eInventorySlot.Ground
-                || item.OwnerID == null || item.OwnerID != player.InternalID)
+                || item.CharacterID == null || item.CharacterID != player.InternalID)
             {
                 player.Out.SendMessage("Invalid item.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                 return;
@@ -1048,21 +1047,21 @@ namespace DOL.GS
             
 
             player.Inventory.RemoveItem(item);
-            ItemUnique unique = new ItemUnique(item.Template);
+            ItemUnique unique = new ItemUnique(item.ItemTemplate);
             unique.Effect = effect;
-            unique.Id_nb = IDGenerator.GenerateID();
-            unique.ObjectId = "Unique" + System.Guid.NewGuid().ToString();
-            if (GameServer.Database.ExecuteNonQuery("SELECT ItemUnique_ID FROM itemunique WHERE ItemUnique_ID = 'unique.ObjectId'"))
-            {
-                unique.ObjectId = "Unique" + System.Guid.NewGuid().ToString();
-            }
-            if (GameServer.Database.ExecuteNonQuery("SELECT Id_nb FROM itemunique WHERE Id_nb = 'unique.Id_nb'"))
-            {
-                unique.Id_nb = IDGenerator.GenerateID();
-            }
-            GameServer.Database.AddObject(unique);
+            
+            unique.KeyName = "Unique" + System.Guid.NewGuid().ToString();
+            //if (GameServer.Database.ExecuteNonQuery("SELECT ItemUnique_ID FROM itemunique WHERE ItemUnique_ID = 'unique.ObjectId'"))
+            //{
+            //    unique.ObjectId = "Unique" + System.Guid.NewGuid().ToString();
+            //}
+            //if (GameServer.Database.ExecuteNonQuery("SELECT Id_nb FROM itemunique WHERE Id_nb = 'unique.Id_nb'"))
+            //{
+            //    unique.Id_nb = IDGenerator.GenerateID();
+            //}
+            GameServer.Instance.SaveDataObject(unique);
 
-            InventoryItem newInventoryItem = GameInventoryItem.Create<ItemUnique>(unique);
+            InventoryItem newInventoryItem = GameInventoryItem.Create(unique);
             player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, newInventoryItem);
             player.Out.SendInventoryItemsUpdate(new InventoryItem[] { newInventoryItem });
             player.RealmPoints -= price;

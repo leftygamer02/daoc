@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using DOL.GS.PacketHandler;
-using DOL.Database;
 using System.Collections.Generic;
+using Atlas.DataLayer.Models;
+using System.Linq;
+
 namespace DOL.GS.Scripts
 {
     public class Herald : GameNPC
@@ -28,12 +30,17 @@ namespace DOL.GS.Scripts
             
             TurnTo(player, 500);
 
-            DOLCharacters[] chars = (DOLCharacters[])GameServer.Database.SelectObjects<DOLCharacters>("RealmPoints > 0 AND RealmPoints < 70000000 ORDER BY RealmPoints DESC LIMIT 25");
+            var chars = GameServer.Database.Characters
+                                           .Where(x => x.RealmPoints > 0 && x.RealmPoints < 70000000)
+                                           .OrderByDescending(x => x.RealmPoints)
+                                           .Take(25)
+                                           .ToList();
+
             List<string> list = new List<string>();
             
             list.Add("Top 25 Highest Realm Points:\n\n");
             int count = 1;
-            foreach (DOLCharacters chr in chars)
+            foreach (var chr in chars)
             {
                 var realm = "";
                 

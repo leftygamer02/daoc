@@ -26,7 +26,7 @@ using log4net;
 
 using DOL.Events;
 using DOL.GS.ServerProperties;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.GameEvents
 {
@@ -75,11 +75,11 @@ namespace DOL.GS.GameEvents
 			m_cachedClassEquipment.Clear();
 			
 			// Init Startup Collection.
-			foreach (var equipclass in GameServer.Database.SelectAllObjects<StarterEquipment>())
+			foreach (var equipclass in GameServer.Database.StarterEquipments.ToList())
 			{
-				if (equipclass.Template != null)
+				if (equipclass.ItemTemplate != null)
 				{
-					foreach(var classID in Util.SplitCSV(equipclass.Class, true))
+					foreach(var classID in Util.SplitCSV(equipclass.ClassIDs, true))
 					{
 						int cId;
 						if (int.TryParse(classID, out cId))
@@ -90,13 +90,13 @@ namespace DOL.GS.GameEvents
 								if (!m_cachedClassEquipment.ContainsKey(gameClass))
 									m_cachedClassEquipment.Add(gameClass, new List<ItemTemplate>());
 								
-								m_cachedClassEquipment[gameClass].Add(equipclass.Template);
+								m_cachedClassEquipment[gameClass].Add(equipclass.ItemTemplate);
 							}
 							catch (Exception e)
 							{
 								if (log.IsWarnEnabled)
 									log.WarnFormat("Could not Add Starter Equipement for Record - ID: {0}, ClassID(s): {1}, Itemtemplate: {2}, while parsing {3}\n{4}",
-									               equipclass.StarterEquipmentID, equipclass.Class, equipclass.TemplateID, classID, e);
+									               equipclass.Id, equipclass.ClassIDs, equipclass.ItemTemplateID, classID, e);
 							}
 						}
 					}
@@ -104,7 +104,7 @@ namespace DOL.GS.GameEvents
 				else
 				{
 					if (log.IsWarnEnabled)
-						log.WarnFormat("Cannot Find Item Template for Record - ID: {0}, ClassID(s): {1}, Itemtemplate: {2}", equipclass.StarterEquipmentID, equipclass.Class, equipclass.TemplateID);
+						log.WarnFormat("Cannot Find Item Template for Record - ID: {0}, ClassID(s): {1}, Itemtemplate: {2}", equipclass.Id, equipclass.ClassIDs, equipclass.ItemTemplateID);
 				}
 			}
 		}
@@ -138,7 +138,7 @@ namespace DOL.GS.GameEvents
 			if (chArgs == null)
 				return;
 			
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 			
 			try
 			{
@@ -147,24 +147,24 @@ namespace DOL.GS.GameEvents
 				if (m_cachedClassEquipment.ContainsKey((eCharacterClass)ch.Class))
 				{
 					// sort for filling righ hand first...
-					foreach (var item in m_cachedClassEquipment.Where(k => k.Key == 0 || k.Key == (eCharacterClass)ch.Class).SelectMany(kv => kv.Value).OrderBy(it => it.Item_Type))
+					foreach (var item in m_cachedClassEquipment.Where(k => k.Key == 0 || k.Key == (eCharacterClass)ch.Class).SelectMany(kv => kv.Value).OrderBy(it => it.ItemType))
 					{
 						// create Inventory item and set to owner.
 						InventoryItem inventoryItem = GameInventoryItem.Create(item);
-						inventoryItem.OwnerID = ch.ObjectId;
-						inventoryItem.Realm = ch.Realm;
+						inventoryItem.CharacterID = ch.Id;
+						inventoryItem.ItemTemplate.Realm = ch.Realm;
 						
 						bool itemChoosen = false;
 		
 						// if equipable item, find equippable slot
 						foreach (eInventorySlot currentSlot in GameLivingInventory.EQUIP_SLOTS)
 						{
-							if ((eInventorySlot)inventoryItem.Item_Type == currentSlot)
+							if ((eInventorySlot)inventoryItem.ItemTemplate.ItemType == currentSlot)
 							{
 								eInventorySlot chosenSlot;
 		
 								// try to set Left Hand in Right Hand slot if not already used.
-								if (currentSlot == eInventorySlot.LeftHandWeapon && (eObjectType)inventoryItem.Object_Type != eObjectType.Shield && !usedSlots.ContainsKey(eInventorySlot.RightHandWeapon))
+								if (currentSlot == eInventorySlot.LeftHandWeapon && (eObjectType)inventoryItem.ItemTemplate.ObjectType != eObjectType.Shield && !usedSlots.ContainsKey(eInventorySlot.RightHandWeapon))
 								{
 									chosenSlot = eInventorySlot.RightHandWeapon;
 								}
@@ -177,7 +177,7 @@ namespace DOL.GS.GameEvents
 								if (usedSlots.ContainsKey(chosenSlot))
 								{
 									if (log.IsWarnEnabled)
-										log.WarnFormat("Cannot add Starter Equipment item {0} to class {1} an item is already assigned to this slot! (Added to Backpack...)", item.Id_nb, ch.Class);
+										log.WarnFormat("Cannot add Starter Equipment item {0} to class {1} an item is already assigned to this slot! (Added to Backpack...)", item.KeyName, ch.Class);
 									break;
 								}
 		
@@ -200,7 +200,7 @@ namespace DOL.GS.GameEvents
 									
 									// Save char to DB if Active Slot changed...
 									if (ch.ActiveWeaponSlot != 0)
-										GameServer.Database.SaveObject(ch);
+										GameServer.Instance.SaveDataObject(ch);
 								}
 								
 								itemChoosen = true;
@@ -222,7 +222,7 @@ namespace DOL.GS.GameEvents
 							}
 						}
 						
-						GameServer.Database.AddObject(inventoryItem);
+						GameServer.Instance.SaveDataObject(inventoryItem);
 					}
 				}
 				

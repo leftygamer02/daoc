@@ -1004,15 +1004,25 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			ch.CreationModel = pdata.CreationModel;
 			ch.CurrentModel = ch.CreationModel;
-			
-			if (pdata.Realm == (int)eRealm.Hibernia)
+
+			var startupLocs = GameServer.Database.StartupLocations.Where(x => x.ClassID == ch.Class || x.RaceID == ch.Race).ToList();
+
+			var startupLoc = startupLocs.ElementAt(Util.Random(startupLocs.Count - 1));
+
+			if (startupLoc != null)
             {
-				ch.RegionID = 201;
-				ch.Xpos = 31200;
-				ch.Ypos = 33400;
-				ch.Zpos = 8000;
+				ch.RegionID = startupLoc.RegionID;
+				ch.Xpos = startupLoc.XPos;
+				ch.Ypos = startupLoc.YPos;
+				ch.Zpos = startupLoc.ZPos;
+
+
+				ch.BindRegionID = startupLoc.RegionID;
+				ch.BindXpos = startupLoc.XPos;
+				ch.BindYpos = startupLoc.YPos;
+				ch.BindZpos = startupLoc.ZPos;
+				ch.BindHeading = startupLoc.Heading;
 			}
-			
 
 			ch.Strength = pdata.Strength;
 			ch.Dexterity = pdata.Dexterity;

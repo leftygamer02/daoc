@@ -1603,7 +1603,7 @@ namespace DOL.GS
 
 			obj.ModifyDate = DateTime.Now;
 
-			if (obj is Account || obj is Character || obj is InventoryItem)
+			if (obj is Account || obj is Character || obj is InventoryItem || obj is CharacterCustomParam)
             {
 				db.SaveChanges();
 			}		

@@ -6,7 +6,7 @@
 using System;
 using System.Reflection;
 using log4net;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.Events;
 
 
@@ -73,7 +73,7 @@ namespace DOL.GS.GameEvents
 			if (EventLvCap == 0)
 				return;
 
-			DOLCharacters ch = chArgs.Character;
+			var ch = chArgs.Character;
 
 			if (ServerProperties.Properties.EVENT_THIDRANKI)
 			{
@@ -84,13 +84,13 @@ namespace DOL.GS.GameEvents
 						ch.Ypos = 39528;
 						ch.Zpos = 4677;
 						ch.Direction = 36;
-						ch.Region = 330;
+						ch.RegionID = 330;
 						break;
 					case 2:
 						ch.Xpos = 52160;
 						ch.Ypos = 39862;
 						ch.Zpos = 5472; 
-						ch.Region = 334;
+						ch.RegionID = 334;
 						ch.Direction = 46;
 						break;
 					case 3:
@@ -98,7 +98,7 @@ namespace DOL.GS.GameEvents
 						ch.Ypos = 40401;
 						ch.Zpos = 4672;
 						ch.Direction = 441;
-						ch.Region = 335;
+						ch.RegionID = 335;
 						break;
 				}
 				
@@ -140,9 +140,9 @@ namespace DOL.GS.GameEvents
 		/// Binds character to current location
 		/// </summary>
 		/// <param name="ch"></param>
-		public static void BindCharacter(DOLCharacters ch)
+		public static void BindCharacter(Character ch)
 		{
-			ch.BindRegion = ch.Region;
+			ch.BindRegionID = ch.RegionID;
 			ch.BindHeading = ch.Direction;
 			ch.BindXpos = ch.Xpos;
 			ch.BindYpos = ch.Ypos;

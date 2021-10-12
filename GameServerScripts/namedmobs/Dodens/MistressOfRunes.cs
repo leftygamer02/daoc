@@ -5,13 +5,12 @@ Mistress of Runes.
 using System;
 using System.Collections.Generic;
 using System.Text;
-using DOL.Database;
 using DOL.Events;
 using DOL.GS;
 using System.Reflection;
 using System.Collections;
 using DOL.AI.Brain;
-
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Scripts
 {
@@ -70,7 +69,7 @@ namespace DOL.GS.Scripts
 			{
 				if (m_AoESpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 4;
 					spell.ClientEffect = 2958;
@@ -79,7 +78,7 @@ namespace DOL.GS.Scripts
 					spell.Name = "Odin's Hatred";
 					spell.Range = 1000;
 					spell.Radius = 450;
-					spell.SpellID = 2958;
+					spell.Id = 2958;
 					//spell.Duration = SpearRecastInterval;
 					spell.Target = "Enemy";
 					spell.Type = eSpellType.DirectDamage.ToString();
@@ -106,7 +105,7 @@ namespace DOL.GS.Scripts
 			{
 				if (m_NearsightSpell == null)
 				{
-					DBSpell spell = new DBSpell();
+					var spell = new Atlas.DataLayer.Models.Spell();
 					spell.AllowAdd = false;
 					spell.CastTime = 2;
 					spell.Uninterruptible = true;
@@ -121,7 +120,7 @@ namespace DOL.GS.Scripts
 					spell.Duration = 90 * MistressDifficulty / 100;
 					spell.Damage = 0;
 					spell.DamageType = (int)eDamageType.Energy;
-					spell.SpellID = 2735;
+					spell.Id = 2735;
 					spell.Target = "Enemy";
 					spell.Type = eSpellType.Nearsight.ToString();
 					spell.Message1 = "You are blinded!";

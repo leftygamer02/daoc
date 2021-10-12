@@ -24,6 +24,7 @@ using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOLGameServerConsole;
 using log4net;
+using System.Text;
 
 namespace DOL.DOLServer.Actions
 {
@@ -87,6 +88,8 @@ namespace DOL.DOLServer.Actions
 				configFile = new FileInfo(currentAssembly.DirectoryName + Path.DirectorySeparatorChar + "config" + Path.DirectorySeparatorChar + "serverconfig.xml");
 			}
 			if (parameters.ContainsKey("-crashonfail")) crashOnFail = true;
+
+			System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
 			var config = new GameServerConfiguration();
 			if (configFile.Exists)

@@ -545,8 +545,8 @@ namespace DOL.GS
 		/// </summary>
 		public int BindRegion
 		{
-			get { return DBCharacter != null ? DBCharacter.BindRegion : 0; }
-			set { if (DBCharacter != null) DBCharacter.BindRegion = value; }
+			get { return DBCharacter != null ? DBCharacter.BindRegionID : 0; }
+			set { if (DBCharacter != null) DBCharacter.BindRegionID = value; }
 		}
 
 		/// <summary>
@@ -12545,7 +12545,7 @@ namespace DOL.GS
 				m_y = DBCharacter.BindYpos;
 				m_z = DBCharacter.BindZpos;
 				m_Heading = (ushort)DBCharacter.BindHeading;
-				CurrentRegionID = (ushort)DBCharacter.BindRegion;
+				CurrentRegionID = (ushort)DBCharacter.BindRegionID;
 			}
 
 			for (int i = 0; i < m_lastUniqueLocations.Length; i++)

@@ -3,12 +3,11 @@
  */
 using DOL.AI;
 using DOL.AI.Brain;
-using DOL.Database;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using System;
 using System.Reflection;
-
+using Atlas.DataLayer.Models;
 
 namespace DOL.GS.Scripts
 {

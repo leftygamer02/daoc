@@ -1,7 +1,7 @@
 ﻿//edited by loki for current SVN 2018
 
 
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using DOL.GS.PacketHandler;
 using System;
 using System.Collections.Generic;
@@ -101,7 +101,7 @@ namespace DOL.GS {
                 #region helms
                 case "dragonsworn helm":
                     price = dragon;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 3864;
@@ -195,7 +195,7 @@ namespace DOL.GS {
                     break;
                 case "oceanus helm":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -276,7 +276,7 @@ namespace DOL.GS {
                     break;
                 case "stygia helm":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -357,7 +357,7 @@ namespace DOL.GS {
                     break;
                 case "volcanus helm":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -438,7 +438,7 @@ namespace DOL.GS {
                     break;
                 case "aerus helm":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -587,7 +587,7 @@ namespace DOL.GS {
                 #region torsos
                 case "dragonsworn breastplate":
                     price = dragon;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 3783;
@@ -696,7 +696,7 @@ namespace DOL.GS {
                     break;
                 case "oceanus breastplate":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -777,7 +777,7 @@ namespace DOL.GS {
                     break;
                 case "stygia breastplate":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -858,7 +858,7 @@ namespace DOL.GS {
                     break;
                 case "volcanus breastplate":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -939,7 +939,7 @@ namespace DOL.GS {
                     break;
                 case "aerus breastplate":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             switch (source.Realm)
@@ -1159,7 +1159,7 @@ namespace DOL.GS {
                     break;
                 case "oceanus sleeves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 1625;
@@ -1187,7 +1187,7 @@ namespace DOL.GS {
                     break;
                 case "stygia sleeves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2152;
@@ -1215,7 +1215,7 @@ namespace DOL.GS {
                     break;
                 case "volcanus sleeves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2161;
@@ -1243,7 +1243,7 @@ namespace DOL.GS {
                     break;
                 case "aerus sleeves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2237;
@@ -1282,7 +1282,7 @@ namespace DOL.GS {
                     break;
                 case "oceanus pants":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 1631;
@@ -1310,7 +1310,7 @@ namespace DOL.GS {
                     break;
                 case "stygia pants":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2158;
@@ -1338,7 +1338,7 @@ namespace DOL.GS {
                     break;
                 case "volcanus pants":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2167;
@@ -1366,7 +1366,7 @@ namespace DOL.GS {
                     break;
                 case "aerus pants":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2243;
@@ -1405,7 +1405,7 @@ namespace DOL.GS {
                     break;
                 case "oceanus boots":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 1629;
@@ -1433,7 +1433,7 @@ namespace DOL.GS {
                     break;
                 case "stygia boots":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2157;
@@ -1461,7 +1461,7 @@ namespace DOL.GS {
                     break;
                 case "volcanus boots":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2166;
@@ -1489,7 +1489,7 @@ namespace DOL.GS {
                     break;
                 case "aerus boots":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2242;
@@ -1528,7 +1528,7 @@ namespace DOL.GS {
                     break;
                 case "oceanus gloves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 1620;
@@ -1556,7 +1556,7 @@ namespace DOL.GS {
                     break;
                 case "stygia gloves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2248;
@@ -1584,7 +1584,7 @@ namespace DOL.GS {
                     break;
                 case "volcanus gloves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2249;
@@ -1612,7 +1612,7 @@ namespace DOL.GS {
                     break;
                 case "aerus gloves":
                     price = toageneric;
-                    switch ((eObjectType)item.Object_Type)
+                    switch ((eObjectType)item.ItemTemplate.ObjectType)
                     {
                         case eObjectType.Cloth:
                             modelIDToAssign = 2250;
@@ -1866,7 +1866,7 @@ namespace DOL.GS {
 
                 case "scorched fist":
                     price = toageneric;
-                    switch ((eDamageType)item.Type_Damage)
+                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                     {
                         case eDamageType.Slash:
                             modelIDToAssign = 3726;
@@ -1882,7 +1882,7 @@ namespace DOL.GS {
 
                 case "dragonsworn fist":
                     price = dragon;
-                    switch ((eDamageType)item.Type_Damage)
+                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                     {
                         case eDamageType.Slash:
                             modelIDToAssign = 3843;
@@ -1904,7 +1904,7 @@ namespace DOL.GS {
 
                 case "scorched whip":
                     price = toageneric;
-                    switch ((eDamageType)item.Type_Damage)
+                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                     {
                         case eDamageType.Slash:
                             modelIDToAssign = 3697;
@@ -1920,7 +1920,7 @@ namespace DOL.GS {
 
                 case "dragonsworn whip":
                     price = dragon;
-                    switch ((eDamageType)item.Type_Damage)
+                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                     {
                         case eDamageType.Slash:
                             modelIDToAssign = 3814;
@@ -2088,7 +2088,7 @@ namespace DOL.GS {
                 //polearms
                 case "dragonsworn pole":
                     price = dragon;
-                    switch ((eDamageType)item.Type_Damage)
+                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                     {
                         case eDamageType.Slash:
                             modelIDToAssign = 3832;
@@ -2107,7 +2107,7 @@ namespace DOL.GS {
                     break;
                 case "scorched pole":
                     price = toageneric;
-                    switch ((eDamageType)item.Type_Damage)
+                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                     {
                         case eDamageType.Slash:
                             modelIDToAssign = 3715;
@@ -2135,7 +2135,7 @@ namespace DOL.GS {
                     {
                         //alb
                         case eCharacterClass.Armsman:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3296;
@@ -2158,7 +2158,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3272;
                             break;
                         case eCharacterClass.Infiltrator:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3270;
@@ -2169,7 +2169,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Mercenary:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3285;
@@ -2183,7 +2183,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Minstrel:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3277;
@@ -2197,7 +2197,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3268;
                             break;
                         case eCharacterClass.Paladin:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3305;
@@ -2211,13 +2211,13 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Reaver:
-                            if ((eObjectType)item.Object_Type == eObjectType.Flexible)
+                            if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Flexible)
                             {
                                 modelIDToAssign = 3292;
                             }
                             else
                             {
-                                switch ((eDamageType)item.Type_Damage)
+                                switch ((eDamageType)item.ItemTemplate.TypeDamage)
                                 {
                                     case eDamageType.Thrust:
                                         modelIDToAssign = 3291;
@@ -2232,7 +2232,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Scout:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3274;
@@ -2254,7 +2254,7 @@ namespace DOL.GS {
 
                         //mid
                         case eCharacterClass.Berserker:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3323;
@@ -2277,10 +2277,10 @@ namespace DOL.GS {
                             modelIDToAssign = 3335;
                             break;
                         case eCharacterClass.Hunter:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Spear:
-                                    if ((eDamageType)item.Type_Damage == eDamageType.Thrust)
+                                    if ((eDamageType)item.ItemTemplate.TypeDamage == eDamageType.Thrust)
                                     {
                                         modelIDToAssign = 3319;
                                     }
@@ -2298,7 +2298,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3309;
                             break;
                         case eCharacterClass.Savage:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3329;
@@ -2315,7 +2315,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Shadowblade:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Axe:
                                     modelIDToAssign = 3315;
@@ -2329,7 +2329,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3337;
                             break;
                         case eCharacterClass.Skald:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3341;
@@ -2346,7 +2346,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3310;
                             break;
                         case eCharacterClass.Thane:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3347;
@@ -2360,7 +2360,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Warrior:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3353;
@@ -2379,7 +2379,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3229;
                             break;
                         case eCharacterClass.Bard:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3235;
@@ -2390,7 +2390,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Blademaster:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3244;
@@ -2404,7 +2404,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Champion:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3251;
@@ -2418,7 +2418,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Druid:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3247;
@@ -2435,7 +2435,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3227;
                             break;
                         case eCharacterClass.Hero:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3256;
@@ -2452,7 +2452,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3228;
                             break;
                         case eCharacterClass.Nightshade:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3233;
@@ -2463,7 +2463,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Ranger:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3242;
@@ -2477,7 +2477,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3231;
                             break;
                         case eCharacterClass.Warden:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3249;
@@ -2496,9 +2496,9 @@ namespace DOL.GS {
                     {
                         //alb
                         case eCharacterClass.Armsman:
-                            if ((eObjectType)item.Object_Type == eObjectType.PolearmWeapon)
+                            if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.PolearmWeapon)
                             {
-                                switch ((eDamageType)item.Type_Damage)
+                                switch ((eDamageType)item.ItemTemplate.TypeDamage)
                                 {
                                     case eDamageType.Thrust:
                                         modelIDToAssign = 3297;
@@ -2513,7 +2513,7 @@ namespace DOL.GS {
                             }
                             else
                             {
-                                switch ((eDamageType)item.Type_Damage)
+                                switch ((eDamageType)item.ItemTemplate.TypeDamage)
                                 {
                                     case eDamageType.Thrust:
                                         modelIDToAssign = 3301;
@@ -2540,7 +2540,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3268;
                             break;
                         case eCharacterClass.Paladin:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Thrust:
                                     modelIDToAssign = 3307;
@@ -2565,7 +2565,7 @@ namespace DOL.GS {
 
                         //mid
                         case eCharacterClass.Berserker:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3324;
@@ -2585,10 +2585,10 @@ namespace DOL.GS {
                             modelIDToAssign = 3335;
                             break;
                         case eCharacterClass.Hunter:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Spear:
-                                    if ((eDamageType)item.Type_Damage == eDamageType.Thrust)
+                                    if ((eDamageType)item.ItemTemplate.TypeDamage == eDamageType.Thrust)
                                     {
                                         modelIDToAssign = 3319;
                                     }
@@ -2606,7 +2606,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3309;
                             break;
                         case eCharacterClass.Savage:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3330;
@@ -2620,7 +2620,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Shadowblade:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Axe:
                                     modelIDToAssign = 3316;
@@ -2634,7 +2634,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3338;
                             break;
                         case eCharacterClass.Skald:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3342;
@@ -2651,7 +2651,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3310;
                             break;
                         case eCharacterClass.Thane:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3348;
@@ -2665,7 +2665,7 @@ namespace DOL.GS {
                             }
                             break;
                         case eCharacterClass.Warrior:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Hammer:
                                     modelIDToAssign = 3354;
@@ -2684,7 +2684,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3229;
                             break;
                         case eCharacterClass.Champion:
-                            switch ((eDamageType)item.Type_Damage)
+                            switch ((eDamageType)item.ItemTemplate.TypeDamage)
                             {
                                 case eDamageType.Slash:
                                     modelIDToAssign = 3254;
@@ -2704,7 +2704,7 @@ namespace DOL.GS {
                             modelIDToAssign = 3227;
                             break;
                         case eCharacterClass.Hero:
-                            switch ((eObjectType)item.Object_Type)
+                            switch ((eObjectType)item.ItemTemplate.ObjectType)
                             {
                                 case eObjectType.Blades:
                                     modelIDToAssign = 3259;
@@ -2720,7 +2720,7 @@ namespace DOL.GS {
                                     break;
                                 case eObjectType.LargeWeapons:
                                     //yay weird daoc weapon structure
-                                    switch ((eDamageType)item.Type_Damage)
+                                    switch ((eDamageType)item.ItemTemplate.TypeDamage)
                                     {
                                         case eDamageType.Slash:
                                             modelIDToAssign = 3259;
@@ -2764,15 +2764,15 @@ namespace DOL.GS {
                 case "oceanus shield":
                     {
                         price = toageneric;
-                        if (item.Type_Damage == 1)//small shield
+                        if (item.ItemTemplate.TypeDamage == 1)//small shield
                         {
                             modelIDToAssign = 2192;
                         }
-                        else if (item.Type_Damage == 2)
+                        else if (item.ItemTemplate.TypeDamage == 2)
                         {
                             modelIDToAssign = 2193;
                         }
-                        else if (item.Type_Damage == 3)
+                        else if (item.ItemTemplate.TypeDamage == 3)
                         {
                             modelIDToAssign = 2194;
                         }
@@ -2781,15 +2781,15 @@ namespace DOL.GS {
                 case "aerus shield":
                     {
                         price = toageneric;
-                        if (item.Type_Damage == 1)//small shield
+                        if (item.ItemTemplate.TypeDamage == 1)//small shield
                         {
                             modelIDToAssign = 2210;
                         }
-                        else if (item.Type_Damage == 2)
+                        else if (item.ItemTemplate.TypeDamage == 2)
                         {
                             modelIDToAssign = 2211;
                         }
-                        else if (item.Type_Damage == 3)
+                        else if (item.ItemTemplate.TypeDamage == 3)
                         {
                             modelIDToAssign = 2212;
                         }
@@ -2798,15 +2798,15 @@ namespace DOL.GS {
                 case "magma shield":
                     {
                         price = toageneric;
-                        if (item.Type_Damage == 1)//small shield
+                        if (item.ItemTemplate.TypeDamage == 1)//small shield
                         {
                             modelIDToAssign = 2218;
                         }
-                        else if (item.Type_Damage == 2)
+                        else if (item.ItemTemplate.TypeDamage == 2)
                         {
                             modelIDToAssign = 2219;
                         }
-                        else if (item.Type_Damage == 3)
+                        else if (item.ItemTemplate.TypeDamage == 3)
                         {
                             modelIDToAssign = 2220;
                         }
@@ -2918,7 +2918,7 @@ namespace DOL.GS {
                 return false;
             }
 
-            switch (item.Item_Type)
+            switch (item.ItemTemplate.ItemType)
             {
                 case Slot.HELM:
                     SendReply(t, "A fine piece of headwear. \n" +
@@ -3052,7 +3052,7 @@ namespace DOL.GS {
                 case Slot.RIGHTHAND:
                     SendReply(t, "Ah, I know a highly lethal weapon when I see it. \n" +
                         "I can apply the following skins: \n\n");
-                    if ((eObjectType)item.Object_Type == eObjectType.HandToHand)
+                    if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.HandToHand)
                     {
                         SendReply(t,
                                     "[Snakecharmer's Fist](" + artifact + " RPs)\n" +
@@ -3060,7 +3060,7 @@ namespace DOL.GS {
                                     "[Dragonsworn Fist](" + dragon + " RPs)\n" +
                                     "");
                     }
-                    if ((eObjectType)item.Object_Type == eObjectType.Flexible)
+                    if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Flexible)
                     {
                         SendReply(t,
                                     "[Snakecharmer's Whip](" + artifact + " RPs)\n" +
@@ -3070,7 +3070,7 @@ namespace DOL.GS {
                     }
                     else
                     {
-                        switch ((eDamageType)item.Type_Damage)
+                        switch ((eDamageType)item.ItemTemplate.TypeDamage)
                         {
                             case eDamageType.Thrust:
                                 SendReply(t,
@@ -3112,7 +3112,7 @@ namespace DOL.GS {
 
 
                 case Slot.LEFTHAND:
-                    if ((eObjectType)item.Object_Type == eObjectType.Shield)
+                    if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Shield)
                     {
                         SendReply(t, "A sturdy barricade to ward the blows of your enemies. \n" +
                         "I can apply the following skins: \n\n" +
@@ -3135,7 +3135,7 @@ namespace DOL.GS {
                 case Slot.TWOHAND:
                     SendReply(t, "Ah, I know a highly lethal weapon when I see it. \n" +
                         "I can apply the following skins: \n\n");
-                    if ((eObjectType)item.Object_Type == eObjectType.Staff)
+                    if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Staff)
                     {
                         SendReply(t,
                                     "[Dragonsworn Staff](" + dragon + " RPs)\n" +
@@ -3145,7 +3145,7 @@ namespace DOL.GS {
                                     "[Scorched Staff](" + toageneric + " RPs)\n" +
                                     "");
                     }
-                    else if ((eObjectType)item.Object_Type == eObjectType.Scythe)
+                    else if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Scythe)
                     {
                         SendReply(t,
                                     "[Dragonsworn Scythe](" + dragon + " RPs)\n" +
@@ -3155,7 +3155,7 @@ namespace DOL.GS {
                                     "[Scorched Scythe](" + toageneric + " RPs)\n" +
                                     "");
                     }
-                    else if ((eObjectType)item.Object_Type == eObjectType.PolearmWeapon)
+                    else if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.PolearmWeapon)
                     {
                         SendReply(t,
                                     "[Dragonsworn Pole](" + dragon + " RPs)\n" +
@@ -3164,7 +3164,7 @@ namespace DOL.GS {
                                     "[Scorched Pole](" + toageneric + " RPs)\n" +
                                     "");
                     }
-                    else if ((eObjectType)item.Object_Type == eObjectType.Spear || (eObjectType)item.Object_Type == eObjectType.CelticSpear)
+                    else if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Spear || (eObjectType)item.ItemTemplate.ObjectType == eObjectType.CelticSpear)
                     {
                         SendReply(t,
                                     "[Golden Spear 2h](" + artifact + " RPs)\n" +
@@ -3175,7 +3175,7 @@ namespace DOL.GS {
                     }
                     else
                     {
-                        switch ((eDamageType)item.Type_Damage)
+                        switch ((eDamageType)item.ItemTemplate.TypeDamage)
                         {
                             case eDamageType.Thrust:
                                 SendReply(t,
@@ -3214,7 +3214,7 @@ namespace DOL.GS {
                     break;
 
                 case Slot.RANGED:
-                    if ((eObjectType)item.Object_Type == eObjectType.Instrument)
+                    if ((eObjectType)item.ItemTemplate.ObjectType == eObjectType.Instrument)
                     {
                         SendReply(t, "This looks like it plays beautiful music. \n" +
                         "I can apply the following skins: \n\n" +
@@ -3314,13 +3314,13 @@ namespace DOL.GS {
             InventoryItem item = player.TempProperties.getProperty<InventoryItem>(TempProperty);
             player.TempProperties.removeProperty(TempProperty);
 
-            if (item == null || item.OwnerID != player.InternalID || item.OwnerID == null)
+            if (item == null || item.CharacterID != player.InternalID || item.CharacterID == null)
                 return;
 
             player.Inventory.RemoveItem(item);
-            ItemUnique unique = new ItemUnique(item.Template);
+            ItemUnique unique = new ItemUnique(item.ItemTemplate);
             unique.Model = number;
-            GameServer.Database.AddObject(unique);
+            GameServer.Instance.SaveDataObject(unique);
             InventoryItem newInventoryItem = GameInventoryItem.Create(unique as ItemTemplate);
             player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, newInventoryItem);
             player.Out.SendInventoryItemsUpdate(new InventoryItem[] { newInventoryItem });

@@ -116,8 +116,8 @@ LEFT JOIN atlas.specialization sp ON sp.KeyName = sl.Spec;
 /* copy spell line spells */
 INSERT INTO newatlas.spelllinespells (SpellLineID, SpellID, LEVEL, CreateDate, ModifyDate)
 SELECT sl.Id, ls.SpellID, LEVEL, NOW(),NOW() FROM atlas.linexspell ls
-INNER JOIN newatlas.spelllines sl ON sl.KeyName = ls.LineName;
-
+INNER JOIN newatlas.spelllines sl ON sl.KeyName = ls.LineName
+WHERE ls.SpellID IN (SELECT Id FROM newatlas.spells);
 
 /* Copy Teleports */
 INSERT INTO newatlas.Teleports (`Type`, TeleportID, Realm, RegionID, X,Y,Z, Heading, CreateDate, ModifyDate)

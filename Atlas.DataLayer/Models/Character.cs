@@ -62,7 +62,7 @@ namespace Atlas.DataLayer.Models
         public int BindXpos { get; set; }
         public int BindYpos { get; set; }
         public int BindZpos { get; set; }
-        public int BindRegion { get; set; }
+        public int BindRegionID { get; set; }
         public int BindHeading { get; set; }
         public int BindHouseXpos { get; set; }
         public int BindHouseYpos { get; set; }

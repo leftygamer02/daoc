@@ -75,7 +75,7 @@ namespace DOL.GS
                 //effect.Cancel(false);
                 EffectService.RequestCancelEffect(effect);
                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Healer.Interact.Text1",
-                    GetName(0, false, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
             }
             ECSGameEffect rvrEffect = EffectListService.GetEffectOnTarget(player, eEffect.RvrResurrectionIllness);
             if (rvrEffect != null)

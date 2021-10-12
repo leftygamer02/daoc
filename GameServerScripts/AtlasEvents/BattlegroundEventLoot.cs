@@ -4,9 +4,10 @@ using DOL.Events;
 using DOL.GS.PacketHandler;
 using log4net;
 using System.Reflection;
-using DOL.Database;
+using Atlas.DataLayer.Models;
 using log4net.Core;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DOL.GS.Scripts
 {
@@ -66,7 +67,7 @@ namespace DOL.GS.Scripts
 			if (str.Equals("full suit"))
 			{
 				const string customKey = "free_event_armor";
-				var hasFreeArmor = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player.ObjectId).And(DB.Column("KeyName").IsEqualTo(customKey)));
+				var hasFreeArmor = GameServer.Database.CharacterCustomParams.FirstOrDefault(x => x.CharacterID == player.ObjectId && x.KeyName == customKey);
 
 				if (hasFreeArmor != null)
 				{
@@ -82,29 +83,31 @@ namespace DOL.GS.Scripts
 					bodySlots.Add(eInventorySlot.LegsArmor);
 					bodySlots.Add(eInventorySlot.TorsoArmor);
 
-					foreach (eInventorySlot islot in bodySlots) {
-						GeneratedUniqueItem item = null;
-						item = new GeneratedUniqueItem(realm, charclass, (byte)(player.Level), armorType, islot);
-						item.AllowAdd = true;
-						item.Color = (int)color;
-						item.IsTradable = false;
-						item.Price = 1;
-						GameServer.Database.AddObject(item);
-						InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(item);
-						player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
-						//player.Out.SendMessage("Generated: " + item.Name, eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					}
+				foreach (eInventorySlot islot in bodySlots) 
+				{
+					GeneratedUniqueItem item = null;
+					item = new GeneratedUniqueItem(realm, charclass, (byte)(player.Level), armorType, islot);
+					item.AllowAdd = true;
+					item.Color = (int)color;
+					item.IsTradable = false;
+					item.Price = 1;
+
+					GameServer.Instance.SaveDataObject(item as ItemUnique);
+					InventoryItem invitem = GameInventoryItem.Create(item);
+					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
+					//player.Out.SendMessage("Generated: " + item.Name, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				}
 					
-					DOLCharactersXCustomParam charFreeEventEquip = new DOLCharactersXCustomParam();
-					charFreeEventEquip.DOLCharactersObjectId = player.ObjectId;
-					charFreeEventEquip.KeyName = customKey;
-					charFreeEventEquip.Value = "1";
-					GameServer.Database.AddObject(charFreeEventEquip);
+				var charFreeEventEquip = new CharacterCustomParam();
+				charFreeEventEquip.CharacterID = player.ObjectId;
+				charFreeEventEquip.KeyName = customKey;
+				charFreeEventEquip.Value = "1";
+				GameServer.Instance.SaveDataObject(charFreeEventEquip);
 			} 
 			else if (str.Equals("weapons")) {
 				
 				const string customKey = "free_event_weapons";
-				var hasFreeWeapons = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player.ObjectId).And(DB.Column("KeyName").IsEqualTo(customKey)));
+				var hasFreeWeapons = GameServer.Database.CharacterCustomParams.FirstOrDefault(x => x.CharacterID == player.ObjectId && x.KeyName == customKey);
 
 				if (hasFreeWeapons != null)
 				{
@@ -114,11 +117,11 @@ namespace DOL.GS.Scripts
 				
 				GenerateWeaponsForClass(charclass, player);
 				
-				DOLCharactersXCustomParam charFreeEventEquip = new DOLCharactersXCustomParam();
-				charFreeEventEquip.DOLCharactersObjectId = player.ObjectId;
+				var charFreeEventEquip = new CharacterCustomParam();
+				charFreeEventEquip.CharacterID = player.ObjectId;
 				charFreeEventEquip.KeyName = customKey;
 				charFreeEventEquip.Value = "1";
-				GameServer.Database.AddObject(charFreeEventEquip);
+				GameServer.Instance.SaveDataObject(charFreeEventEquip);
 			}
 			
 			//GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot);
@@ -176,8 +179,8 @@ namespace DOL.GS.Scripts
 				item.Color = (int)color;
 				item.IsTradable = false;
 				item.Price = 1;
-				GameServer.Database.AddObject(item);
-				InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(item);
+				GameServer.Instance.SaveDataObject(item as ItemUnique);
+				InventoryItem invitem = GameInventoryItem.Create(item);
 				player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
 			}
 			else if(type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon || type == eObjectType.Flexible || type == eObjectType.LargeWeapons)
@@ -196,7 +199,7 @@ namespace DOL.GS.Scripts
 					dmgTypeItem.Color = (int)color;
 					dmgTypeItem.IsTradable = false;
 					dmgTypeItem.Price = 1;
-					GameServer.Database.AddObject(dmgTypeItem);
+					GameServer.Instance.SaveDataObject(dmgTypeItem as ItemUnique);
 					InventoryItem tempItem = GameInventoryItem.Create<ItemUnique>(dmgTypeItem);
 					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, tempItem);
 				}	
@@ -208,7 +211,7 @@ namespace DOL.GS.Scripts
 				item.Color = (int)color;
 				item.IsTradable = false;
 				item.Price = 1;
-				GameServer.Database.AddObject(item);
+				GameServer.Instance.SaveDataObject(item as ItemUnique);
 				InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(item);
 				player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
 			}	
