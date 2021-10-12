@@ -79,6 +79,7 @@ namespace DOL.GS.Commands
 	     "'/mob speed <speed>' set the mob's max speed.",
 	     "'/mob level <level>' set the mob's level.",
 	     "'/mob levela <level>' set the mob's level and auto adjust stats.",
+	     "'/mob autostats' auto adjust the mobs stats according to level.",
 	     "'/mob brain <ClassName>' set the mob's brain.",
 	     "'/mob respawn <duration>' set the mob's respawn time (in ms).",
 	     "'/mob questinfo' show mob's quest info.",
@@ -124,7 +125,8 @@ namespace DOL.GS.Commands
 	     "'/mob trigger <type> <chance> <emote> <text>' adds a trigger to targeted mob class.  Use '/mob trigger help' for more info.",
 	     "'/mob trigger info' Give trigger informations.",
 	     "'/mob trigger remove <id>' Remove a trigger.",
-	     "'/mob ownerid <id>' Sets and saves the OwnerID for this mob."
+	     "'/mob ownerid <id>' Sets and saves the OwnerID for this mob.",
+		 "'/mob scaling [number] Sets the NPCs ScalingFactor to the number."
 	    )]
 	public class MobCommandHandler : AbstractCommandHandler, ICommandHandler
 	{
@@ -219,6 +221,7 @@ namespace DOL.GS.Commands
 						case "speed": speed(client, targetMob, args); break;
 						case "level": level(client, targetMob, args); break;
 						case "levela": levela(client, targetMob, args); break;
+						case "autostats": autostats(client, targetMob); break;
 						case "brain": brain(client, targetMob, args); break;
 						case "respawn": respawn(client, targetMob, args); break;
 						case "questinfo": questinfo(client, targetMob, args); break;
@@ -259,6 +262,7 @@ namespace DOL.GS.Commands
 						case "reload": reload(client, targetMob, args); break;
 						case "findname": findname(client, args); break;
 						case "trigger": trigger(client, targetMob, args); break;
+						case "scaling": scaling(client, targetMob, args); break;
 					default:
 						DisplaySyntax(client);
 						return;
@@ -271,8 +275,22 @@ namespace DOL.GS.Commands
 			}
 		}
 
+        private void scaling(GameClient client, GameNPC targetMob, string[] args) {
+			
+			short scaleFactor;
 
-		private void create(GameClient client, string[] args)
+			try {
+				scaleFactor = Convert.ToInt16(args[2]);
+				targetMob.ScalingFactor = scaleFactor;
+				client.Out.SendMessage("Mob Scaling changed to: " + targetMob.ScalingFactor, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			}
+			catch (Exception) {
+				DisplaySyntax(client, args[1]);
+			}
+			
+		}
+
+        private void create(GameClient client, string[] args)
 		{
 			string theType = "DOL.GS.GameNPC";
 			byte realm = 0;
@@ -1504,13 +1522,29 @@ namespace DOL.GS.Commands
 			try
 			{
 				level = Convert.ToByte(args[2]);
-				targetMob.Level = level; // Also calls AutoSetStats()
+				targetMob.Level = level;
+				targetMob.AutoSetStats();
 				targetMob.SaveIntoDatabase();
 				client.Out.SendMessage("Mob level changed to: " + targetMob.Level + " and stats adjusted", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			}
 			catch (Exception)
 			{
 				DisplaySyntax(client, args[1]);
+			}
+		}
+		
+		private void autostats(GameClient client, GameNPC targetMob)
+		{
+
+			try
+			{
+				targetMob.AutoSetStats();
+				targetMob.SaveIntoDatabase();
+				client.Out.SendMessage("Mob stats adjusted to level " + targetMob.Level, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			}
+			catch (Exception)
+			{
+				DisplaySyntax(client);
 			}
 		}
 
@@ -3083,11 +3117,11 @@ namespace DOL.GS.Commands
 			}
 
 			text.Add("InCombat: " + targetMob.InCombat);
-			text.Add("AttackState: " + targetMob.AttackState);
+			text.Add("AttackState: " + targetMob.attackComponent.AttackState);
 			text.Add("LastCombatPVE: " + targetMob.LastAttackedByEnemyTickPvE);
 			text.Add("LastCombatPVP: " + targetMob.LastAttackedByEnemyTickPvP);
 
-			if (targetMob.InCombat || targetMob.AttackState)
+			if (targetMob.InCombat || targetMob.attackComponent.AttackState)
 			{
 				text.Add("RegionTick: " + targetMob.CurrentRegion.Time);
 			}

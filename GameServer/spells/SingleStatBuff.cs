@@ -77,7 +77,7 @@ namespace DOL.GS.Spells
             {
                 effectiveness = 1.0;
             }
-
+            target.StartHealthRegeneration();
             base.ApplyEffectOnTarget(target, effectiveness);
         }
 

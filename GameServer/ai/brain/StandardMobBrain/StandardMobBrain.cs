@@ -29,6 +29,7 @@ using DOL.GS.SkillHandler;
 using DOL.GS.Keeps;
 using DOL.Language;
 using log4net;
+using System.Text;
 
 namespace DOL.AI.Brain
 {
@@ -301,7 +302,7 @@ namespace DOL.AI.Brain
         public virtual bool HasPatrolPath()
         {
             if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.IsMoving
-                && !Body.AttackState && !Body.InCombat && !Body.IsMovingOnPath
+                && !Body.attackComponent.AttackState && !Body.InCombat && !Body.IsMovingOnPath
                 && Body.Path != null && !String.IsNullOrEmpty(Body.Path.PathName) && Body.Path.PathName != "NULL")
             {
                 return true;
@@ -313,7 +314,7 @@ namespace DOL.AI.Brain
         /// </summary>
         public virtual void CheckNPCAggro()
         {
-            if (Body.AttackState)
+            if (Body.attackComponent.AttackState)
                 return;
 
             foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange, Body.CurrentRegion.IsDungeon ? false : true))
@@ -342,7 +343,7 @@ namespace DOL.AI.Brain
         public virtual void CheckPlayerAggro()
         {
             //Check if we are already attacking, return if yes
-            if (Body.AttackState)
+            if (Body.attackComponent.AttackState)
                 return;
 
             if (!CheckForProximityAggro)
@@ -357,6 +358,11 @@ namespace DOL.AI.Brain
 
                 if (player.EffectList.GetOfType<NecromancerShadeEffect>() != null)
                     continue;
+
+                if (Body.CurrentZone.IsDungeon && player != null)
+                {
+                    player.Out.SendCheckLOS(Body, player, new CheckLOSResponse(CheckAggroLOS));
+                }
 
                 int aggrolevel = 0;
 
@@ -379,6 +385,7 @@ namespace DOL.AI.Brain
 
                 if (CalculateAggroLevelToTarget(player) > 0)
                 {
+                    if (Body.CurrentZone.IsDungeon && !AggroLOS) return;
                     AddToAggroList(player, player.EffectiveLevel << 1, true);
                 }
             }
@@ -389,7 +396,7 @@ namespace DOL.AI.Brain
         /// 10 seconds for 0 aggro mobs
         /// </summary>
         public override int ThinkInterval {
-            get { return Math.Max(1500, 10000 - AggroLevel * 100); }
+            get { return Math.Max(1500, 5000 - AggroLevel * 100); }
         }
 
         /// <summary>
@@ -493,7 +500,7 @@ namespace DOL.AI.Brain
             get { return m_AggroLOS; }
             set { m_AggroLOS = value; }
         }
-        private void CheckAggroLOS(GamePlayer player, ushort response, ushort targetOID)
+        protected void CheckAggroLOS(GamePlayer player, ushort response, ushort targetOID)
         {
             if ((response & 0x100) == 0x100)
                 AggroLOS = true;
@@ -641,6 +648,16 @@ namespace DOL.AI.Brain
             }
         }
 
+        public void PrintAggroTable()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (GameLiving gl in m_aggroTable.Keys)
+            {
+                sb.AppendLine("Living: " + gl.Name + ", aggro: " + m_aggroTable[gl].ToString());
+            }
+            Console.WriteLine(sb.ToString());
+        }
+
         /// <summary>
         /// Get current amount of aggro on aggrotable
         /// </summary>
@@ -704,6 +721,11 @@ namespace DOL.AI.Brain
             if (!IsActive)
                 return;
 
+            if (ECS.Debug.Diagnostics.AggroDebugEnabled)
+            {
+                PrintAggroTable();
+            }
+
             Body.TargetObject = CalculateNextAttackTarget();
 
             if (Body.TargetObject != null)
@@ -730,7 +752,7 @@ namespace DOL.AI.Brain
                 while (aggros.MoveNext())
                 {
                     GameLiving living = aggros.Current.Key;
-                    
+
                     // check to make sure this target is still valid
                     if (living.IsAlive == false ||
                         living.ObjectState != GameObject.eObjectState.Active ||
@@ -870,12 +892,14 @@ namespace DOL.AI.Brain
                     OnAttackedByEnemy(eArgs.AttackData);
                     return;
                 }
+                /*
                 else if (e == GameLivingEvent.Dying)
                 {
                     // clean aggro table
                     ClearAggroList();
                     return;
                 }
+                */
                 else if (e == GameNPCEvent.FollowLostTarget) // this means we lost the target
                 {
                     FollowLostTargetEventArgs eArgs = args as FollowLostTargetEventArgs;
@@ -925,7 +949,8 @@ namespace DOL.AI.Brain
                     }
 
                     Body.attackComponent.Attackers.Remove(eArgs.Target);
-                    AttackMostWanted();
+                    Body.TargetObject = null;
+                    //AttackMostWanted();
                 }
                 return;
             }
@@ -939,7 +964,7 @@ namespace DOL.AI.Brain
         protected virtual void OnFollowLostTarget(GameObject target)
         {
             AttackMostWanted();
-            if (!Body.AttackState)
+            if (!Body.attackComponent.AttackState)
                 Body.WalkToSpawn();
         }
 
@@ -949,26 +974,32 @@ namespace DOL.AI.Brain
         /// <param name="ad"></param>
         protected virtual void OnAttackedByEnemy(AttackData ad)
         {
-            if (FSM.GetCurrentState() == FSM.GetState(eFSMStateType.PASSIVE)){ return; }
+            if (FSM.GetCurrentState() == FSM.GetState(eFSMStateType.PASSIVE)) { return; }
 
-            if (!Body.AttackState
+            if (Body.castingComponent.IsCasting)
+            {
+                Body.StopCurrentSpellcast();
+            }
+
+            if (!Body.attackComponent.AttackState
                 && Body.IsAlive
                 && Body.ObjectState == GameObject.eObjectState.Active)
             {
                 if (ad.AttackResult == eAttackResult.Missed)
                 {
                     AddToAggroList(ad.Attacker, 1);
-                } else
+                }
+                else
                 {
-                    AddToAggroList(ad.Attacker, 100);
+                    AddToAggroList(ad.Attacker, ad.Damage + ad.CriticalDamage);
                 }
 
-                if(FSM.GetCurrentState() != FSM.GetState(eFSMStateType.AGGRO))
+                if (FSM.GetCurrentState() != FSM.GetState(eFSMStateType.AGGRO))
                 {
                     FSM.SetCurrentState(eFSMStateType.AGGRO);
                     FSM.Think();
                 }
-                
+
                 //Body.StartAttack(ad.Attacker);
             }
         }
@@ -1323,7 +1354,7 @@ namespace DOL.AI.Brain
                     {
                         // Buff self, if not in melee, but not each and every mob
                         // at the same time, because it looks silly.
-                        if (!LivingHasEffect(Body, spell) && !Body.AttackState && Util.Chance(40) && spell.Target.ToLower() != "pet")
+                        if (!LivingHasEffect(Body, spell) && !Body.attackComponent.AttackState && Util.Chance(40) && spell.Target.ToLower() != "pet")
                         {
                             Body.TargetObject = Body;
                             break;

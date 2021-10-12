@@ -829,7 +829,7 @@ namespace DOL.AI.Brain
 			if (Body.TargetObject is GameNPC)
 				Body.TargetObject = null;
 
-			if (Body.AttackState)
+			if (Body.attackComponent.AttackState)
 				return;
 
 			IList enemies = new ArrayList();
@@ -888,7 +888,7 @@ public class MLBrain : GuardBrain
 	public override void CheckNPCAggro()
 	{
 		//Check if we are already attacking, return if yes
-		if (Body.AttackState)
+		if (Body.attackComponent.AttackState)
 			return;
 
 		foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange))

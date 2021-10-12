@@ -56,10 +56,11 @@ namespace DOL.GS.PropertyCalc
 					&& necro.GetAbility<RealmAbilities.MasteryOfPain>() is RealmAbilities.MasteryOfPain raMoP)
 					chance += raMoP.Amount;
 			}
-			else if (living is GamePet pet)
+			// Summoned or Charmed pet.
+			else if (living is GameNPC npc)
 			{
-				if (pet.Brain is IControlledBrain petBrain && petBrain.GetPlayerOwner() is GamePlayer player
-					&& player.GetAbility<RealmAbilities.WildMinionAbility>() is RealmAbilities.WildMinionAbility raWM)
+				if (npc.Brain is IControlledBrain petBrain && petBrain.GetPlayerOwner() is GamePlayer player
+					&& player.GetAbility<RealmAbilities.AtlasOF_WildMinionAbility>() is RealmAbilities.AtlasOF_WildMinionAbility raWM)
 					chance += raWM.Amount;
 			}
 			else // not a pet

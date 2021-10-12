@@ -37,9 +37,10 @@ namespace DOL.GS.RealmAbilities
 		}
 	}
 
-	public class ReflexAttackAbility : L3RAPropertyEnhancer
+	public class XReflexAttackAbility : L3RAPropertyEnhancer
 	{
-		public ReflexAttackAbility(Atlas.DataLayer.Models.Ability dba, int level)
+
+		public XReflexAttackAbility(Atlas.DataLayer.Models.Ability dba, int level)
 			: base(dba, level, eProperty.Undefined)
 		{
 		}

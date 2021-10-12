@@ -124,9 +124,9 @@ namespace DOL.GS.Spells
 			MasteryofConcentrationEffect moc = Caster.EffectList.GetOfType<MasteryofConcentrationEffect>();
 			if (moc != null)
 			{
-				MasteryofConcentrationAbility ra = Caster.GetAbility<MasteryofConcentrationAbility>();
+				AtlasOF_MasteryofConcentration ra = Caster.GetAbility<AtlasOF_MasteryofConcentration>();
 				if (ra != null)
-					mocFactor = System.Math.Round((double)ra.GetAmountForLevel(ra.Level) * 25 / 100, 2);
+					mocFactor = System.Math.Round((double)ra.GetAmountForLevel(ra.Level) / 100, 2);
 				duration = (double)Math.Round(duration * mocFactor);
 			}
 
@@ -249,11 +249,15 @@ namespace DOL.GS.Spells
             {
                 if (target != null && (!target.IsAlive))
                 {
-                    GameSpellEffect effect = SpellHandler.FindEffectOnTarget(target, this);
+					//GameSpellEffect effect = SpellHandler.FindEffectOnTarget(target, this);
+					ECSGameEffect effect = EffectListService.GetEffectOnTarget(target, eEffect.Mez);
+
                     if (effect != null)
                     {
-                        effect.Cancel(false);//call OnEffectExpires
-                        CancelPulsingSpell(Caster, this.Spell.SpellType);
+						//effect.Cancel(false);//call OnEffectExpires
+						//CancelPulsingSpell(Caster, this.Spell.SpellType);
+						EffectService.RequestCancelEffect(effect);
+						EffectService.RequestCancelConcEffect(EffectListService.GetEffectOnTarget(effect.SpellHandler.Caster, eEffect.Pulse));
                         MessageToCaster("You stop playing your song.", eChatType.CT_Spell);
                     }
                     return;
@@ -269,36 +273,45 @@ namespace DOL.GS.Spells
                     return;
             }
 
-            GameSpellEffect mezz = SpellHandler.FindEffectOnTarget(target, "Mesmerize");
+			//GameSpellEffect mezz = SpellHandler.FindEffectOnTarget(target, "Mesmerize");
+			ECSGameEffect mezz = EffectListService.GetEffectOnTarget(target, eEffect.Mez);
+
             if (mezz != null)
             {
                 MessageToCaster("Your target is already mezzed!!!", eChatType.CT_SpellResisted);
                 return;
             }
 
-            lock (target.EffectList)
+			//lock (target.EffectList)
+			//{
+			//    foreach (IGameEffect effect in target.EffectList)
+			//    {
+			//        if (effect is GameSpellEffect)
+			//        {
+			//            GameSpellEffect gsp = (GameSpellEffect)effect;
+			//            if (gsp is GameSpellAndImmunityEffect)
+			//            {
+			//                GameSpellAndImmunityEffect immunity = (GameSpellAndImmunityEffect)gsp;
+			//                if (immunity.ImmunityState
+			//                    && target == immunity.Owner)
+			//                {
+			//                    MessageToCaster(immunity.Owner.GetName(0, true) + " can't have that effect again yet!!!", eChatType.CT_SpellPulse);
+			//                    return;
+			//                }
+			//            }
+			//        }
+			//    }
+			//}
+
+			ECSImmunityEffect immunity = EffectListService.GetEffectOnTarget(target, eEffect.MezImmunity) as ECSImmunityEffect;
+			if (immunity != null)
             {
-                foreach (IGameEffect effect in target.EffectList)
-                {
-                    if (effect is GameSpellEffect)
-                    {
-                        GameSpellEffect gsp = (GameSpellEffect)effect;
-                        if (gsp is GameSpellAndImmunityEffect)
-                        {
-                            GameSpellAndImmunityEffect immunity = (GameSpellAndImmunityEffect)gsp;
-                            if (immunity.ImmunityState
-                                && target == immunity.Owner)
-                            {
-                                MessageToCaster(immunity.Owner.GetName(0, true) + " can't have that effect again yet!!!", eChatType.CT_SpellPulse);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-// END
+				MessageToCaster(immunity.Owner.GetName(0, true) + " can't have that effect again yet!!!", eChatType.CT_SpellPulse);
+				return;
+			}
+
 			SendEffectAnimation(target, 0, false, 0);
-			MessageToCaster(target.GetName(0, true) + " resists the effect!", eChatType.CT_SpellResisted);
+			MessageToCaster(target.GetName(0, true) + " resists the effect!" + " (" + CalculateSpellResistChance(target).ToString("0.0") + "%)", eChatType.CT_SpellResisted);
 			target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
 		}
 
@@ -332,12 +345,16 @@ namespace DOL.GS.Spells
 
                 if (target != null && (!target.IsAlive)) 
                 {
-                    GameSpellEffect effect = SpellHandler.FindEffectOnTarget(target, this);
-                    if (effect != null)
-                    {
-                        effect.Cancel(false);//call OnEffectExpires
-                        CancelPulsingSpell(Caster, this.Spell.SpellType);
-                        MessageToCaster("You stop playing your song.", eChatType.CT_Spell);
+					//GameSpellEffect effect = SpellHandler.FindEffectOnTarget(target, this);
+					ECSGameEffect effect = EffectListService.GetEffectOnTarget(target, eEffect.Mez);
+
+					if (effect != null)
+					{
+						//effect.Cancel(false);//call OnEffectExpires
+						//CancelPulsingSpell(Caster, this.Spell.SpellType);
+						EffectService.RequestCancelEffect(effect);
+						EffectService.RequestCancelConcEffect(EffectListService.GetEffectOnTarget(effect.SpellHandler.Caster, eEffect.Pulse));
+						MessageToCaster("You stop playing your song.", eChatType.CT_Spell);
                     }
                     return;
                 }
@@ -525,7 +542,7 @@ namespace DOL.GS.Spells
 
 		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
-			if (target.effectListComponent.Effects.ContainsKey(eEffect.StunImmunity))//target.HasAbility(Abilities.StunImmunity))
+			if (target.effectListComponent.Effects.ContainsKey(eEffect.StunImmunity) || (EffectListService.GetEffectOnTarget(target, eEffect.Stun) != null && !(Caster is GamePet)))//target.HasAbility(Abilities.StunImmunity))
 			{
 				MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
 				base.OnSpellResisted(target);

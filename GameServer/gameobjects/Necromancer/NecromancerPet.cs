@@ -393,12 +393,11 @@ namespace DOL.GS
 				ad != null && ad.Attacker != null && ChanceSpellInterrupt(ad.Attacker))
 			{
 				if (Brain is NecromancerPetBrain necroBrain)
-				{
-					StopCurrentSpellcast();
+				{					
                     if (Brain.Body.IsCasting)
 					    necroBrain.MessageToOwner("Your pet was attacked by " + ad.Attacker.Name + " and their spell was interrupted!", eChatType.CT_SpellResisted);
-
-					if(necroBrain.SpellsQueued)
+					StopCurrentSpellcast();
+					if (necroBrain.SpellsQueued)
 						necroBrain.ClearSpellQueue();
 				}
 			}
@@ -414,13 +413,11 @@ namespace DOL.GS
 		{
 			if (!effectListComponent.Effects.ContainsKey(eEffect.FacilitatePainworking)/*HasEffect(typeof(FacilitatePainworkingEffect))*/)
 			{
-				StopCurrentSpellcast();
-
 				if (Brain is NecromancerPetBrain necroBrain)
 				{
                     if (Brain.Body.IsCasting)
 					    necroBrain.MessageToOwner("Your pet attacked and interrupted their spell!", eChatType.CT_SpellResisted);
-
+					StopCurrentSpellcast();
 					if (necroBrain.SpellsQueued)
 						necroBrain.ClearSpellQueue();
 				}
@@ -464,27 +461,28 @@ namespace DOL.GS
 				return false;
 			}
 
-			ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(this, spell, line);
-			if (spellhandler != null)
+			bool cast = castingComponent.StartCastSpell(spell, line);
+			//ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(this, spell, line);
+			if (castingComponent.spellHandler != null)
 			{
-				int power = spellhandler.PowerCost(Owner);
+				int power = castingComponent.spellHandler.PowerCost(Owner);
 
 				if (Owner.Mana < power)
 				{
 					Notify(GameLivingEvent.CastFailed, this, new CastFailedEventArgs(null, CastFailedEventArgs.Reasons.NotEnoughPower));
 					return false;
 				}
-
-				m_runningSpellHandler = spellhandler;
-				spellhandler.CastingCompleteEvent += new CastingCompleteCallback(OnAfterSpellCastSequence);
-				return spellhandler.CastSpell();
 			}
-			else
-			{
-				if (log.IsWarnEnabled)
-					log.Warn(Name + " wants to cast but spell " + spell.Name + " not implemented yet");
-				return false;
-			}
+            	m_runningSpellHandler = castingComponent.spellHandler;
+            	castingComponent.spellHandler.CastingCompleteEvent += new CastingCompleteCallback(OnAfterSpellCastSequence);
+            //	return spellhandler.CastSpell();
+            //}
+            //else
+            //{
+            //	if (log.IsWarnEnabled)
+            //		log.Warn(Name + " wants to cast but spell " + spell.Name + " not implemented yet");
+            return cast;
+			//}
 		}
 
 		public override void OnAfterSpellCastSequence(ISpellHandler handler)
@@ -529,7 +527,7 @@ namespace DOL.GS
 		/// </summary>
 		private void Empower()
 		{
-			if (AttackState) return;
+			if (attackComponent.AttackState) return;
 
 			SpellLine buffLine = SkillBase.GetSpellLine(PetInstaSpellLine);
 			if (buffLine == null)
@@ -611,6 +609,12 @@ namespace DOL.GS
 			return WhisperReceive(source, str);
 		}
 
+		public override bool Interact(GamePlayer player)
+		{
+			return WhisperReceive(player, "arawn");
+		}
+
+
 		/// <summary>
 		/// Actions to be taken when the pet receives a whisper.
 		/// </summary>
@@ -642,7 +646,7 @@ namespace DOL.GS
 								      + empower);
 								return true;
 							case "abomination":
-								SayTo(owner, "As one of the chosen warriors of Arawn, I have a mighty arsenal of [weapons] at your disposal. If you wish it, I am able to [taunt] your enemies so that they will focus on me instead of you. "
+								SayTo(owner, "As one of the chosen warriors of Arawn, I have a mighty arsenal of weapons at your disposal. If you wish it, I am able to [taunt] your enemies so that they will focus on me instead of you. "
 								      + empower);
 								return true;
 							default:
@@ -681,6 +685,7 @@ namespace DOL.GS
 				case "taunt":
 					ToggleTauntMode();
 					return true;
+					/*
 				case "weapons":
 					{
 						if (Name != "abomination")
@@ -705,6 +710,7 @@ namespace DOL.GS
 							SayTo(owner, eChatLoc.CL_SystemWindow, "As you command.");
 						return true;
 					}
+					*/
 					default: return false;
 			}
 		}

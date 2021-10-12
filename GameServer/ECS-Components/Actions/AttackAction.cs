@@ -158,7 +158,7 @@ namespace DOL.GS
                         {
                             
                             ((GameLiving)attackTarget).effectListComponent.Effects.TryGetValue(eEffect.Bladeturn, out var bladeturns);
-                            ECSGameEffect bladeturn = bladeturns.FirstOrDefault();
+                            ECSGameEffect bladeturn = bladeturns?.FirstOrDefault();
                             //GameSpellEffect bladeturn = null;
                             //lock (((GameLiving)attackTarget).EffectList)
                             //{
@@ -281,7 +281,7 @@ namespace DOL.GS
                 //new WeaponOnTargetAction(owner, attackTarget, attackWeapon, leftWeapon, effectiveness, interruptDuration, combatStyle).Start(ticksToTarget);  // really start the attack
                 //if (GameServer.ServerRules.IsAllowedToAttack(owner, attackTarget as GameLiving, false))
 
-                owner.attackComponent.weaponAction = new WeaponAction(owner, attackTarget, attackWeapon, leftWeapon, effectiveness, interruptDuration, combatStyle, ticksToTarget);
+                owner.attackComponent.weaponAction = new WeaponAction(owner, attackTarget, attackWeapon, leftWeapon, effectiveness, interruptDuration, combatStyle);
                 //Are we inactive?
                 if (owner.ObjectState != eObjectState.Active)
                 {

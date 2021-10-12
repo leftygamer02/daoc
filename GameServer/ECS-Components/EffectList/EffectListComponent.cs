@@ -28,11 +28,17 @@ namespace DOL.GS
             {
                 try
                 {
+                    // dead owners don't get effects
+                    if (!Owner.IsAlive || Owner.ObjectState != GameObject.eObjectState.Active)
+                        return false;
+
                     if (Effects.TryGetValue(effect.EffectType, out List<ECSGameEffect> existingEffects))
                     {
                         // Effects contains this effect already so refresh it
                         if (existingEffects.Where(e => e.SpellHandler.Spell.ID == effect.SpellHandler.Spell.ID).FirstOrDefault() != null)
                         {
+                            if (effect.IsConcentrationEffect() && !effect.RenewEffect) 
+                                return false;
                             for (int i = 0; i < existingEffects.Count; i++)
                             {
                                 if (existingEffects[i].SpellHandler.Spell.IsPulsing && effect.SpellHandler.Caster.LastPulseCast == effect.SpellHandler.Spell
@@ -47,13 +53,25 @@ namespace DOL.GS
                                     if (effect.SpellHandler.Spell.IsPulsing)
                                         effect.RenewEffect = true;
 
+                                    effect.PreviousPosition = GetAllEffects().IndexOf(existingEffects[i]);
                                     Effects[effect.EffectType][i] = effect;
                                     return true;
                                 }
                             }
                         }
-                        else
+                        else if (effect.EffectType == eEffect.SavageBuff)
                         {
+                            // Player doesn't have this buff yet
+                            if (existingEffects.Where(e => e.SpellHandler.Spell.SpellType == effect.SpellHandler.Spell.SpellType).Count() == 0)
+                            {
+                                Effects[effect.EffectType].Add(effect);
+                                EffectIdToEffect.TryAdd(effect.Icon, effect);
+                                return true;
+                            }
+                            return false;
+                        }
+                        else
+                        {                           
                             bool addEffect = false;
                             // Check to see if we can add new Effect
                             for (int i = 0; i < existingEffects.Count; i++)
@@ -64,7 +82,10 @@ namespace DOL.GS
                                     if (effect.SpellHandler.Spell.Value > existingEffects[i].SpellHandler.Spell.Value ||
                                         effect.SpellHandler.Spell.Damage > existingEffects[i].SpellHandler.Spell.Damage)
                                     {
-                                        if (existingEffects[i].SpellHandler.Spell.IsConcentration || existingEffects[i].SpellHandler.Spell.IsPulsing)
+                                        //if (existingEffects[i].SpellHandler.Spell.IsConcentration || existingEffects[i].SpellHandler.Spell.IsPulsing ||
+                                        //    effect.SpellHandler.Spell.IsConcentration || effect.SpellHandler.Spell.IsPulsing || effect.EffectType == eEffect.DamageAdd
+                                        //    || effect.SpellHandler.AllowCoexisting)
+                                        if (effect.SpellHandler.Spell.IsHelpful && effect.SpellHandler.Caster != existingEffects[i].SpellHandler.Caster)
                                             EffectService.RequestDisableEffect(existingEffects[i], true);
                                         else
                                             EffectService.RequestCancelEffect(existingEffects[i]);
@@ -87,8 +108,8 @@ namespace DOL.GS
                                 {
                                     addEffect = true;
                                 }
-                                else if (effect.EffectType == eEffect.DamageAdd)
-                                    addEffect = true;
+                                //else if (effect.EffectType == eEffect.DamageAdd)
+                                //    addEffect = true;
                             }
                             if (addEffect)
                             {
@@ -96,7 +117,7 @@ namespace DOL.GS
                                 return true;
                             }
                         }
-                        Console.WriteLine("Effect List contains type: " + effect.EffectType.ToString() + " (" + effect.Owner.Name + ")");
+                        //Console.WriteLine("Effect List contains type: " + effect.EffectType.ToString() + " (" + effect.Owner.Name + ")");
                         return false;
                     }
                     else if (Effects.ContainsKey(effect.EffectType))
@@ -114,12 +135,12 @@ namespace DOL.GS
                             EntityManager.AddComponent(typeof(EffectListComponent), Owner);
                         }
                     }
-                    
+
                     return true;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error adding an Effect {e}");
+                    //Console.WriteLine($"Error adding an Effect {e}");
                     return false;
                 }
                 
@@ -158,7 +179,7 @@ namespace DOL.GS
                 {
                     if (!Effects.ContainsKey(effect.EffectType))
                     {
-                        Console.WriteLine("Effect List does not contain type: " + effect.EffectType.ToString());
+                        //Console.WriteLine("Effect List does not contain type: " + effect.EffectType.ToString());
                         return false;
                     }
                     else
@@ -170,8 +191,8 @@ namespace DOL.GS
 
                             if (Effects[effect.EffectType].Count > 0)
                             {
-                                if (Effects[effect.EffectType].FirstOrDefault().IsDisabled)
-                                    EffectService.RequestDisableEffect(Effects[effect.EffectType].FirstOrDefault(), false);
+                                if (Effects[effect.EffectType].OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault().IsDisabled)
+                                    EffectService.RequestDisableEffect(Effects[effect.EffectType].OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault(), false);
                                 //foreach (var eff in Effects[effect.EffectType])
                                 //EffectService.RequestDisableEffect()
                             }
@@ -191,7 +212,7 @@ namespace DOL.GS
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error removing an Effect from EffectList {e}");
+                    //Console.WriteLine($"Error removing an Effect from EffectList {e}");
                     return false;
                 }
 
@@ -213,12 +234,25 @@ namespace DOL.GS
                     }
                 } catch (Exception e)
                 {
-                    Console.WriteLine($"Error attempting to check effect type");
+                    //Console.WriteLine($"Error attempting to check effect type");
                     return false;
                 }
             }
         }
 
+        public void CancelAll()
+        {
+            lock (_effectsLock)
+            {
+                foreach (var key in Effects)
+                {
+                    foreach (var effect in key.Value)
+                    {
+                        EffectService.RequestCancelEffect(effect);
+                    }
+                }
+            }
+        }
 
     }
 }

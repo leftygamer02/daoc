@@ -5,6 +5,7 @@ using DOL.GS;
 using DOL.GS.Keeps;
 using DOL.GS.Movement;
 using System.Threading.Tasks;
+using DOL.GS.PacketHandler;
 
 namespace DOL.AI.Brain
 {
@@ -39,14 +40,26 @@ namespace DOL.AI.Brain
 		{
 			get
 			{
-				return 1500;
+				return 500;
 			}
 		}
 
-		/// <summary>
-		/// Actions to be taken on each Think pulse
-		/// </summary>
-		public override void Think()
+        public override void AttackMostWanted()
+        {
+			if(Body.TargetObject != null && Body.TargetObject is GamePlayer pl)
+            {
+				pl.Out.SendCheckLOS(Body, pl, new CheckLOSResponse(CheckAggroLOS));
+
+                if (!AggroLOS) { return; }
+			}
+
+			base.AttackMostWanted();
+        }
+
+        /// <summary>
+        /// Actions to be taken on each Think pulse
+        /// </summary>
+        public override void Think()
 		{
 			if (guard == null)
 				guard = Body as GameKeepGuard;
@@ -57,10 +70,15 @@ namespace DOL.AI.Brain
 				return;
 			}
 
+			if(Body.TargetObject != null && (Body.TargetObject is GamePlayer pl))
+            {
+				pl.Out.SendCheckLOS(Body, pl, new CheckLOSResponse(CheckAggroLOS));
+			}
+
 			if ((guard is GuardArcher || guard is GuardStaticArcher || guard is GuardLord))
 			{
-				// Drop aggro and disengage if the target is out of range.
-				if (Body.IsAttacking && Body.TargetObject is GameLiving living && Body.IsWithinRadius(Body.TargetObject, AggroRange, false) == false)
+				// Drop aggro and disengage if the target is out of range or out of LoS.
+				if (Body.IsAttacking && Body.TargetObject is GameLiving living && (Body.IsWithinRadius(Body.TargetObject, AggroRange, false) == false)) //|| !AggroLOS))
 				{
 					FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 					//Body.StopAttack();
@@ -69,14 +87,14 @@ namespace DOL.AI.Brain
 					
 				}
 
-				if (guard.AttackState && guard.CanUseRanged)
+				if (guard.attackComponent.AttackState && guard.CanUseRanged)
 				{
 					guard.SwitchToRanged(guard.TargetObject);
 				}
 			}
 
 			//if we are not doing an action, let us see if we should move somewhere
-			if (guard.CurrentSpellHandler == null && !guard.IsMoving && !guard.AttackState && !guard.InCombat)
+			if (guard.CurrentSpellHandler == null && !guard.IsMoving && !guard.attackComponent.AttackState && !guard.InCombat)
 			{
 				// Tolakram - always clear the aggro list so if this is done by mistake the list will correctly re-fill on next think
 				ClearAggroList();
@@ -102,7 +120,7 @@ namespace DOL.AI.Brain
 			}
 
 			// We want guards to check aggro even when they are returning home, which StandardMobBrain does not, so add checks here
-			if (guard.CurrentSpellHandler == null && !guard.AttackState && !guard.InCombat)
+			if (guard.CurrentSpellHandler == null && !guard.attackComponent.AttackState && !guard.InCombat)
 			{
 				CheckPlayerAggro();
 				CheckNPCAggro();
@@ -123,7 +141,7 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public override void CheckPlayerAggro()
 		{
-			if (Body.AttackState || Body.CurrentSpellHandler != null)
+			if (Body.attackComponent.AttackState || Body.CurrentSpellHandler != null)
 			{
 				return;
 			}
@@ -133,7 +151,8 @@ namespace DOL.AI.Brain
                 if (player == null) continue;
                 if (GameServer.ServerRules.IsAllowedToAttack(Body, player, true))
 				{
-                    if ( !Body.IsWithinRadius( player, AggroRange ) )
+					player.Out.SendCheckLOS(Body, player, new CheckLOSResponse(CheckAggroLOS));
+					if ( !Body.IsWithinRadius( player, AggroRange ) )
                         continue;
                     if ((Body as GameKeepGuard).Component != null && !GameServer.KeepManager.IsEnemy(Body as GameKeepGuard, player, true))
 						continue;
@@ -146,8 +165,11 @@ namespace DOL.AI.Brain
 					{
 						Body.Say("Want to attack player " + player.Name);
 					}
-
-					AddToAggroList(player, player.EffectiveLevel << 1);
+                    if (AggroLOS)
+                    {
+						AddToAggroList(player, player.EffectiveLevel << 1);
+					}
+					
 					return;
 				}
 			}
@@ -158,7 +180,7 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public override void CheckNPCAggro()
 		{
-			if (Body.AttackState || Body.CurrentSpellHandler != null)
+			if (Body.attackComponent.AttackState || Body.CurrentSpellHandler != null)
 				return;
 
 			foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange))
@@ -205,9 +227,10 @@ namespace DOL.AI.Brain
 			return 0;
 		}
 		
+		/*
 		public override bool AggroLOS
 		{
 			get { return true; }
-		}
+		}*/
 	}
 }

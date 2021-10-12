@@ -129,10 +129,10 @@ namespace DOL.GS.Quests.Albion
 				Ferowl.CurrentRegionID = 1;
 				Ferowl.Size = 51;
 				Ferowl.Level = 40;
-				Ferowl.X = 559690;
-				Ferowl.Y = 510258;
-				Ferowl.Z = 2720;
-				Ferowl.Heading = 703;
+				Ferowl.X = 559461;
+				Ferowl.Y = 510653;
+				Ferowl.Z = 2712;
+				Ferowl.Heading = 3607;
 				Ferowl.AddToWorld();
 
 				if (SAVE_INTO_DATABASE)

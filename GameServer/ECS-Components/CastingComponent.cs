@@ -6,6 +6,7 @@ using DOL.GS.Spells;
 using DOL.GS.Styles;
 using DOL.Language;
 using System;
+using System.Linq;
 
 namespace DOL.GS
 {
@@ -41,29 +42,50 @@ namespace DOL.GS
         }
         
         
-        public void StartCastSpell(Spell spell, SpellLine line)
+        public bool StartCastSpell(Spell spell, SpellLine line, ISpellCastingAbilityHandler spellCastingAbilityHandler = null)
         {
+            if (!EntityManager.GetLivingByComponent(typeof(CastingComponent)).Contains(owner))
+                EntityManager.AddComponent(typeof(CastingComponent), owner);
             //Check for Conditions to Cast
             if (owner is GamePlayer p)
             {
                 if (!CanCastSpell(p))
                 {
-                    return; 
+                    return false; 
                 }
             }
 
-            if(spellHandler != null)
+            ISpellHandler m_newSpellHandler = ScriptMgr.CreateSpellHandler(owner, spell, line);
+
+            // Abilities that cast spells (i.e. Realm Abilities such as Volcanic Pillar) need to set this so the associated ability gets disabled if the cast is successful.
+            m_newSpellHandler.Ability = spellCastingAbilityHandler;
+
+            if (spellHandler != null)
             {
-                if(owner is GamePlayer pl)
+                if (m_newSpellHandler.Spell.IsInstantCast)
                 {
-                    pl.Out.SendMessage("You begin casting this spell as a follow-up!", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+                    queuedSpellHandler = spellHandler;
+                    spellHandler = m_newSpellHandler;
                 }
-                
-                queuedSpellHandler = ScriptMgr.CreateSpellHandler(owner, spell, line);
+                else 
+                {
+                    if (owner is GamePlayer pl)
+                    {
+                        if (pl.SpellQueue)
+                        {
+                            pl.Out.SendMessage("You are already casting a spell! You prepare this spell as a follow up!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+                            queuedSpellHandler = m_newSpellHandler;
+                        } 
+                        else
+                        {
+                            pl.Out.SendMessage("You are already casting a spell!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+                        }
+                    } 
+                }
             }
             else
             {
-                spellHandler = ScriptMgr.CreateSpellHandler(owner, spell, line);
+                spellHandler = m_newSpellHandler;
 
                 //Special CastSpell rules
                 if (spellHandler is SummonNecromancerPet necroPetHandler)
@@ -83,11 +105,20 @@ namespace DOL.GS
             }
 
             // Cancel MoveSpeedBuff=========================May not be the best place for this========================================
+            AttackData ad = new AttackData();
+            ad.Attacker = owner;
+            ad.Target = owner;
+            ad.AttackType = AttackData.eAttackType.Spell;
+            ad.AttackResult = eAttackResult.HitUnstyled;
+            ad.IsSpellResisted = false;
+            ad.Damage = 0;
             owner.OnAttack();
+            return true;
         }
 
-        private bool CanCastSpell(GamePlayer p)
+        private bool CanCastSpell(GameLiving living)
         {
+            var p = living as GamePlayer;
             /*
             if (spellHandler != null)
             {
@@ -95,30 +126,32 @@ namespace DOL.GS
                 return false;
             }*/
 
-            if (p.IsCrafting)
+            if (p != null && p.IsCrafting)
             {
                 p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.InterruptedCrafting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 p.CraftTimer = null;
                 p.Out.SendCloseTimerWindow();
             }
-            
-            if (p.IsStunned)
-            {
-                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.CastSpell.CantCastStunned"), eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                return false;
-            }
-            if (p.IsMezzed)
-            {
-                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.CastSpell.CantCastMezzed"), eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                return false;
-            }
 
-            if (p.IsSilenced)
+            if (living != null)
             {
-                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.CastSpell.CantCastFumblingWords"), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
-                return false;
+                if (living.IsStunned)
+                {
+                    p?.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.CastSpell.CantCastStunned"), eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+                    return false;
+                }
+                if (living.IsMezzed)
+                {
+                    p?.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.CastSpell.CantCastMezzed"), eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+                    return false;
+                }
+
+                if (living.IsSilenced)
+                {
+                    p?.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.CastSpell.CantCastFumblingWords"), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+                    return false;
+                }
             }
-            
             return true;
         }
 

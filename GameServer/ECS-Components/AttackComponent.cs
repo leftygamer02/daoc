@@ -85,18 +85,17 @@ namespace DOL.GS
 
         public void Tick(long time)
         {
+            if (attackAction != null)
+            {
+                attackAction.Tick(time);
+            }
             if (weaponAction != null)
             {
                 if (weaponAction.AttackFinished)
                     weaponAction = null;
-                else
-                    weaponAction.Tick(time);
             }
-            if (attackAction != null)
-            {               
-                attackAction.Tick(time);
-            }
-            else
+            
+            if (weaponAction is null && attackAction is null)
             {
                 if (EntityManager.GetLivingByComponent(typeof(AttackComponent)).ToArray().Contains(owner))
                     EntityManager.RemoveComponent(typeof(AttackComponent), owner);
@@ -208,7 +207,27 @@ namespace DOL.GS
                 // base 10% chance of critical for all with melee weapons
                 return 10;
             }
-            else return 0;
+
+            /// [Atlas - Takii] Wild Minion Implementation. We don't want any non-pet NPCs to crit.
+            /// We cannot reliably check melee vs ranged here since archer pets don't necessarily have a proper weapon with the correct slot type assigned.
+            /// Since Wild Minion is the only way for pets to crit and we (currently) want it to affect melee/ranged/spells, we can just rely on the Melee crit chance even for archery attacks
+            /// and as a result we don't actually need to detect melee vs ranged to end up with the correct behavior since all attack types will have the same % chance to crit in the end.
+            if (owner is GameNPC NPC)
+            {
+                // Player-Summoned pet
+                if (NPC is GamePet summonedPet && summonedPet.Owner is GamePlayer)
+                {
+                    return NPC.GetModified(eProperty.CriticalMeleeHitChance);
+                }
+
+                // Charmed Pet
+                if (NPC.Brain is IControlledBrain charmedPetBrain && charmedPetBrain.GetPlayerOwner() != null)
+                {
+                    return NPC.GetModified(eProperty.CriticalMeleeHitChance);
+                }
+            }
+
+            return 0;
         }
 
         /// <summary>
@@ -240,7 +259,10 @@ namespace DOL.GS
                         return (eDamageType)weapon.ItemTemplate.TypeDamage;
                 }
             }
-            else return eDamageType.Natural;
+            else if (owner is GameNPC)
+            {
+                return (owner as GameNPC).MeleeDamageType;
+            } else return eDamageType.Natural;
         }
 
         /// <summary>
@@ -783,8 +805,9 @@ namespace DOL.GS
             if (speed > 0)
             {
                 //m_attackAction = CreateAttackAction();
-                attackAction = new AttackAction(owner);
-
+                //attackAction = new AttackAction(owner);
+                attackAction = owner.CreateAttackAction();
+               
                 if (owner.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
                 {
                     // only start another attack action if we aren't already aiming to shoot
@@ -805,8 +828,8 @@ namespace DOL.GS
                 {
                     //if (m_attackAction.TimeUntilElapsed < 500)
                     //	m_attackAction.Start(500);
-                    if (attackAction.TimeUntilStart < 500)
-                        attackAction.StartTime = 500;
+                    if (attackAction.TimeUntilStart < 100)
+                        attackAction.StartTime = 100;
                 }
             }
         }
@@ -1028,7 +1051,7 @@ namespace DOL.GS
                     p.CraftTimer = null;
                     p.Out.SendCloseTimerWindow();
                 }
-                
+
                 AttackData ad = LivingMakeAttack(target, weapon, style, effectiveness * p.Effectiveness * (1 + p.CharacterClass.WeaponSkillBase / 20.0 / 100.0), interruptDuration, dualWield);
 
                 //Clear the styles for the next round!
@@ -1142,7 +1165,7 @@ namespace DOL.GS
                                     listAvailableTargets.Remove(target);
                                     numTargetsCanHit = (byte)Math.Min(numTargetsCanHit, listAvailableTargets.Count);
 
-                                    if (listAvailableTargets.Count > 1)
+                                    if (listAvailableTargets.Count > 0)
                                     {
                                         while (extraTargets.Count < numTargetsCanHit)
                                         {
@@ -1158,7 +1181,7 @@ namespace DOL.GS
                                             }
                                             //new WeaponOnTargetAction(this, obj as GameObject, attackWeapon, leftWeapon, effectiveness, AttackSpeed(attackWeapon), null).Start(1);  // really start the attack
                                             //if (GameServer.ServerRules.IsAllowedToAttack(this, target as GameLiving, false))
-                                            weaponAction = new WeaponAction(p, obj as GameObject, attackWeapon, leftWeapon, effectiveness, AttackSpeed(attackWeapon), null, 1000);
+                                            weaponAction = new WeaponAction(p, obj as GameObject, attackWeapon, leftWeapon, effectiveness, AttackSpeed(attackWeapon), null);
                                         }
                                     }
                                 }
@@ -1205,8 +1228,10 @@ namespace DOL.GS
                 return (owner as NecromancerPet).MakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield, false);
             }
             else
+            {
+                effectiveness = 1;
                 return LivingMakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield);
-            
+            }
         }
 
         /// <summary>
@@ -1527,13 +1552,13 @@ namespace DOL.GS
                             // blocked for another player
                             if (ad.Target is GamePlayer)
                             {
-                                ((GamePlayer)ad.Target).Out.SendMessage(string.Format(LanguageMgr.GetTranslation(((GamePlayer)ad.Target).Client.Account.Language, "GameLiving.AttackData.YouBlock"), ad.Attacker.GetName(0, false), target.GetName(0, false)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+                                ((GamePlayer)ad.Target).Out.SendMessage(string.Format(LanguageMgr.GetTranslation(((GamePlayer)ad.Target).Client.Account.Language, "GameLiving.AttackData.YouBlock") + " (" + /*(ad.Target as GamePlayer).GetBlockChance()*/ad.BlockChance.ToString("0.0") + "%)", ad.Attacker.GetName(0, false), target.GetName(0, false)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                                 ((GamePlayer)ad.Target).Stealth(false);
                             }
                         }
                         else if (ad.Target is GamePlayer)
                         {
-                            ((GamePlayer)ad.Target).Out.SendMessage(string.Format(LanguageMgr.GetTranslation(((GamePlayer)ad.Target).Client.Account.Language, "GameLiving.AttackData.AttacksYou"), ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+                            ((GamePlayer)ad.Target).Out.SendMessage(string.Format(LanguageMgr.GetTranslation(((GamePlayer)ad.Target).Client.Account.Language, "GameLiving.AttackData.AttacksYou") + " (" + /*(ad.Target as GamePlayer).GetBlockChance()*/ad.BlockChance.ToString("0.0") + "%)", ad.Attacker.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
                         }
                         break;
                     }
@@ -1572,6 +1597,10 @@ namespace DOL.GS
                 default: broadcast = false; break;
             }
             SendAttackingCombatMessages(ad);
+            /*if(owner is GamePlayer && target != null)
+            {
+                (owner as GamePlayer).Out.SendObjectUpdate(target);
+            }*/
             #region Prevent Flight
             if (ad.Attacker is GamePlayer)
             {
@@ -1700,8 +1729,15 @@ namespace DOL.GS
                 Message.SystemToArea(ad.Attacker, message, eChatType.CT_OthersCombat, (GameObject[])excludes.ToArray(typeof(GameObject)));
             }
 
+            // Interrupt the target of the attack
             ad.Target.StartInterruptTimer(ad, interruptDuration);
+
+            // If we're attacking via melee, start an interrupt timer on ourselves so we cannot swing + immediately cast.
+            if (ad.AttackType != AttackData.eAttackType.Spell && ad.AttackType != AttackData.eAttackType.Ranged)
+                ad.Attacker.StartInterruptTimer(ad, interruptDuration);
+
             owner.OnAttack(ad);
+
             //Return the result
             return ad;
         }
@@ -1896,6 +1932,7 @@ namespace DOL.GS
             if (!defenseDisabled)
             {
                 double evadeChance = owner.TryEvade(ad, lastAD, attackerConLevel, attackerCount);
+                ad.EvadeChance = evadeChance;
 
                 if (Util.ChanceDouble(evadeChance))
                     return eAttackResult.Evaded;
@@ -1903,12 +1940,14 @@ namespace DOL.GS
                 if (ad.IsMeleeAttack)
                 {
                     double parryChance = owner.TryParry(ad, lastAD, attackerConLevel, attackerCount);
+                    ad.ParryChance = parryChance;
 
                     if (Util.ChanceDouble(parryChance))
                         return eAttackResult.Parried;
                 }
 
                 double blockChance = owner.TryBlock(ad, lastAD, attackerConLevel, attackerCount, engage);
+                ad.BlockChance = blockChance;
 
                 if (Util.ChanceDouble(blockChance))
                 {
@@ -2125,7 +2164,7 @@ namespace DOL.GS
             {
                 missrate >>= 1; //halved
             }
-
+            ad.MissRate = missrate;
             if (Util.Chance(missrate))
             {
                 return eAttackResult.Missed;
@@ -2327,7 +2366,7 @@ namespace DOL.GS
                             ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.NoTarget: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.NeedTarget"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.NoValidTarget: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.CantBeAttacked"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                        case eAttackResult.Missed: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Miss"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        case eAttackResult.Missed: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Miss") + " (" + ad.MissRate + "%)", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.Fumbled: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Fumble"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.HitStyle:
                         case eAttackResult.HitUnstyled:
@@ -2369,7 +2408,7 @@ namespace DOL.GS
                             // critical hit
                             if (ad.CriticalDamage > 0)
                                 p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Critical",
-                                    ad.Target.GetName(0, false), ad.CriticalDamage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                                    ad.Target.GetName(0, false), ad.CriticalDamage) + " (" + AttackCriticalChance(ad.Weapon) + "%)", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                             break;
                     }
                 }
@@ -2385,7 +2424,7 @@ namespace DOL.GS
                         case eAttackResult.Evaded: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Evaded", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.NoTarget: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.NeedTarget"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.NoValidTarget: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.CantBeAttacked"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                        case eAttackResult.Missed: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Miss"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+                        case eAttackResult.Missed: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Miss") + " (" + ad.MissRate + "%)", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.Fumbled: p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Fumble"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
                         case eAttackResult.HitStyle:
                         case eAttackResult.HitUnstyled:
@@ -2425,7 +2464,7 @@ namespace DOL.GS
 
                             // critical hit
                             if (ad.CriticalDamage > 0)
-                                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Critical", ad.Target.GetName(0, false), ad.CriticalDamage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Critical", ad.Target.GetName(0, false), ad.CriticalDamage) + " (" + AttackCriticalChance(ad.Weapon) + "%)", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                             break;
                     }
 

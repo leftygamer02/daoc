@@ -1356,14 +1356,13 @@ namespace DOL.GS.ServerRules
 					}
 					totalDamage += (float)de.Value;
 				}
-
+				
 				if (dealNoXP || (killedLiving.ExperienceValue == 0 && killedLiving.RealmPointsValue == 0 && killedLiving.BountyPointsValue == 0))
 				{
 					return;
 				}
-
-
-				long ExpValue = killedLiving.ExperienceValue;
+				
+				long ExpValue = killedLiving.ExperienceValue; 
 				int RPValue = killedLiving.RealmPointsValue;
 				int BPValue = killedLiving.BountyPointsValue;
 
@@ -1520,8 +1519,7 @@ namespace DOL.GS.ServerRules
 					}
 					return;
 				}
-
-
+				
 				long playerExpValue = killedPlayer.ExperienceValue;
 				playerExpValue = (long)(playerExpValue * ServerProperties.Properties.XP_RATE);
 				int playerRPValue = killedPlayer.RealmPointsValue;
@@ -1606,6 +1604,8 @@ namespace DOL.GS.ServerRules
 							}
 
 							living.GainRealmPoints(realmPoints);
+							if (ServerProperties.Properties.EVENT_THIDRANKI && killerPlayer.ReceiveROG)
+								AtlasROGManager.GenerateROG(living, true);
 						}
 					}
 
@@ -1676,7 +1676,7 @@ namespace DOL.GS.ServerRules
 							money += 20 * money / 100;
 						}
 						//long money = (long)(Money.GetMoney(0, 0, 17, 85, 0) * damagePercent * killedPlayer.Level / 50);
-						player.AddMoney(money, "You recieve {0}");
+						player.AddMoney(money, "You receive {0}");
 						InventoryLogging.LogInventoryAction(killer, player, eInventoryActionType.Other, money);
 					}
 
@@ -2026,7 +2026,11 @@ namespace DOL.GS.ServerRules
 		{
 			int value = 0;
 
-			if (keep is GameKeep)
+			if (Properties.EVENT_THIDRANKI)
+			{
+				value = 125;
+			}
+			else if (keep is GameKeep)
 			{
 				value = Math.Max(50, ServerProperties.Properties.KEEP_RP_BASE + ((keep.BaseLevel - 50) * ServerProperties.Properties.KEEP_RP_MULTIPLIER));
 			}

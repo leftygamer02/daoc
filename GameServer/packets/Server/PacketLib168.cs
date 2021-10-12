@@ -807,7 +807,7 @@ namespace DOL.GS.PacketHandler
 				}
 
 				GameObject target = npc.TargetObject;
-				if (npc.AttackState && target != null && target.ObjectState == GameObject.eObjectState.Active && !npc.IsTurningDisabled)
+				if (npc.attackComponent.AttackState && target != null && target.ObjectState == GameObject.eObjectState.Active && !npc.IsTurningDisabled)
 					targetOID = (ushort) target.ObjectID;
 			}
 
@@ -1257,7 +1257,7 @@ namespace DOL.GS.PacketHandler
 		public virtual void SendSpellEffectAnimation(GameObject spellCaster, GameObject spellTarget, ushort spellid,
 		                                             ushort boltTime, bool noSound, byte success)
 		{
-			Console.WriteLine($"Spell Effect sent at {GameLoop.GameLoopTime}");
+			//Console.WriteLine($"Spell Effect sent at {GameLoop.GameLoopTime}");
 			using (var pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.SpellEffectAnimation)))
 			{
 				pak.WriteShort((ushort) spellCaster.ObjectID);
@@ -2124,7 +2124,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte(flagcontent);
 
 				// Write health + Attack
-				byte healthcontent = (byte)(player.HealthPercent + (player.AttackState ? 0x80 : 0));
+				byte healthcontent = (byte)(player.HealthPercent + (player.attackComponent.AttackState ? 0x80 : 0));
 			
 				pak.WriteByte(healthcontent);
 

@@ -414,11 +414,47 @@ namespace DOL.GS.Styles
 
 					if (staticGrowth)
 					{
-						if (living.attackComponent.AttackWeapon.ItemTemplate.ItemType == Slot.TWOHAND)
+						//if (living.attackComponent.AttackWeapon.Item_Type == Slot.TWOHAND)
+						//{
+						//	styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.attackComponent.AttackWeapon) * Math.Max(0,living.attackComponent.AttackWeapon.SPD_ABS - 21) * 10 / 66d;
+						//}
+						//attackData.StyleDamage = (int)(absorbRatio * styleGrowth * ServerProperties.Properties.CS_OPENING_EFFECTIVENESS);
+
+						var spec = living.GetModifiedSpecLevel(attackData.Style.Spec);
+						var damageCap = living.attackComponent.UnstyledDamageCap(attackData.Weapon);
+
+						// CS style check
+						switch (attackData.Style.ID)
 						{
-							styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.attackComponent.AttackWeapon) * Math.Max(0,living.attackComponent.AttackWeapon.ItemTemplate.SPD_ABS - 21) * 10 / 66d;
+							case 335: //Backstab I 
+								{
+									//Backstab I Cap = ~5 + Critical Strike Spec *14 / 3 + Nonstyle Cap
+									attackData.StyleDamage = (int)((Math.Min(5, spec / 10) + spec * 14 / 3) * absorbRatio);
+									attackData.Modifier -= (int)((Math.Min(5, spec / 10) + spec * 14 / 3) - attackData.StyleDamage);
+								}
+								break;
+							case 339: //Backstab II
+								{
+									//Backstab II Cap = 45 + Critical Strike Spec *6 + Nonstyle Cap
+									attackData.StyleDamage = (int)((Math.Min(45, spec) + spec * 6) * absorbRatio);
+									attackData.Modifier -= (int)((Math.Min(45, spec) + spec * 9) - attackData.StyleDamage);
+								}
+								break;
+							case 343: //Perforate Artery
+								if (living.attackComponent.AttackWeapon.ItemTemplate.ItemType == Slot.TWOHAND)
+								{
+									//Perforate Artery 2h Cap = 75 + Critical Strike Spec * 12 + Nonstyle Cap
+									attackData.StyleDamage = (int)((Math.Min(75, spec * 1.5) + spec * 12) * absorbRatio);
+									attackData.Modifier -= (int)((Math.Min(75, spec * 1.5) + spec * 12) - attackData.StyleDamage);
+								}
+								else
+								{
+									//Perforate Artery Cap = 75 + Critical Strike Spec *9 + Nonstyle Cap
+									attackData.StyleDamage = (int)((Math.Min(75, spec * 1.5) + spec * 9) * absorbRatio);
+									attackData.Modifier -= (int)((Math.Min(75, spec * 1.5) + spec * 9) - attackData.StyleDamage);
+								}
+								break;
 						}
-						attackData.StyleDamage = (int)(absorbRatio * styleGrowth * ServerProperties.Properties.CS_OPENING_EFFECTIVENESS);
 					}
 					else
 						attackData.StyleDamage = (int)(absorbRatio * styleGrowth * effectiveWeaponSpeed);
@@ -624,7 +660,7 @@ namespace DOL.GS.Styles
 		protected static ISpellHandler CreateMagicEffect(GameLiving caster, GameLiving target, int spellID)
 		{
 			SpellLine styleLine = SkillBase.GetSpellLine(GlobalSpellsLines.Combat_Styles_Effect);
-			if (styleLine == null) return null;
+			if (styleLine == null || target == null) return null;
 
 			List<Spell> spells = SkillBase.GetSpellList(styleLine.KeyName);
 
@@ -646,10 +682,11 @@ namespace DOL.GS.Styles
 			if (spellHandler == null && styleSpell != null && caster is GamePlayer)
 			{
 				((GamePlayer)caster).Out.SendMessage(styleSpell.Name + " not implemented yet (" + styleSpell.SpellType + ")", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return null;
 			}
 
 			// No negative effects can be applied on a keep door or via attacking a keep door
-			if ((target is GameKeepComponent || target is GameKeepDoor) && spellHandler.HasPositiveEffect == false)
+			if ((target is GameKeepComponent || target is GameKeepDoor) && spellHandler?.HasPositiveEffect == false)
 			{
 				return null;
 			}

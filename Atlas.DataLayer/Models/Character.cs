@@ -91,7 +91,8 @@ namespace Atlas.DataLayer.Models
         public int GuildRank { get; set; }
         public long PlayedTime { get; set; }
         public long DeathTime { get; set; }
-        
+        public bool ReceiveROG { get; set; }
+
         public int RespecAmountAllSkill { get; set; }
         public int RespecAmountSingleSkill { get; set; }
         public int RespecAmountRealmSkill { get; set; }

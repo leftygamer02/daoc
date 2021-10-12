@@ -184,8 +184,15 @@ namespace DOL.GS
         Phaseshift = 177,
         Grapple = 178,
         BrittleGuard = 179,
-        StyleRange = 180
+        StyleRange = 180,
+        MultiTarget = 181,
+        PiercingMagic = 182,
+        PveResurrectionIllness = 183,
+        RvrResurrectionIllness = 184,
+        UnbreakableSpeedDecrease = 185,
+        WeaponSkillConstitutionDebuff = 186,
 
+        Null = 200
 
 
 

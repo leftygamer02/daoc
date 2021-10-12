@@ -51,6 +51,7 @@ public class StandardMobState_IDLE : StandardMobState
         {
             Console.WriteLine($"{_brain.Body} is entering IDLE");
         }
+        _brain.CheckForProximityAggro = true;
         base.Enter();
     }
 
@@ -115,7 +116,7 @@ public class StandardMobState_WAKING_UP : StandardMobState
         //Console.WriteLine($"{_brain.Body} is WAKING_UP");
         //if allowed to roam,
         //set state == ROAMING
-        if (!_brain.Body.AttackState && _brain.CanRandomWalk)
+        if (!_brain.Body.attackComponent.AttackState && _brain.CanRandomWalk)
         {
             _brain.FSM.SetCurrentState(eFSMStateType.ROAMING);
             return;
@@ -168,14 +169,14 @@ public class StandardMobState_AGGRO : StandardMobState
             Console.WriteLine($"{_brain.Body} is entering AGGRO");
         }
         _brain.CheckForProximityAggro = true;
-        _brain.AttackMostWanted();
+        //_brain.AttackMostWanted();
 
         base.Enter();
     }
 
     public override void Exit()
     {
-        if (_brain.Body.AttackState)
+        if (_brain.Body.attackComponent.AttackState)
             _brain.Body.StopAttack();
 
         _brain.Body.TargetObject = null;
@@ -185,14 +186,8 @@ public class StandardMobState_AGGRO : StandardMobState
 
     public override void Think()
     {
-
-        if (_brain.Body.TargetObject == null)
-        {
-            _brain.AttackMostWanted();
-        }
-
         // check for returning to home if to far away
-        if (_brain.IsBeyondTetherRange() && !_brain.Body.IsAttacking)
+        if (_brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(6000))
         {
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
@@ -204,6 +199,8 @@ public class StandardMobState_AGGRO : StandardMobState
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
         }
+
+        _brain.AttackMostWanted();
 
         base.Think();
     }
@@ -297,8 +294,6 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
     {
         _brain.CheckForProximityAggro = true;
 
-        //_brain.Body.ResetHeading();
-
         base.Exit();
     }
 
@@ -307,13 +302,7 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
         if (_brain.Body.IsNearSpawn())
         {
             _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
-            return;
-        }
-
-        if (_brain.HasAggressionTable())
-        {
-            _brain.Body.CancelWalkToSpawn();
-            _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
+            _brain.Body.ResetHeading();
             return;
         }
 

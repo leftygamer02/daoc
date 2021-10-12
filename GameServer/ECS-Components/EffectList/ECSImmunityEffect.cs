@@ -28,10 +28,14 @@ namespace DOL.GS
             {
                 case (byte)eSpellType.Mesmerize:
                     return eEffect.MezImmunity;
+                case (byte)eSpellType.StyleStun:
                 case (byte)eSpellType.Stun:
                     return eEffect.StunImmunity;
                 case (byte)eSpellType.SpeedDecrease:
+                case (byte)eSpellType.DamageSpeedDecrease:
                     return eEffect.SnareImmunity;
+                case (byte)eSpellType.Nearsight:
+                    return eEffect.NearsightImmunity;
                 default:
                     return eEffect.Unknown;
             }

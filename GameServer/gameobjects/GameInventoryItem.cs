@@ -28,238 +28,240 @@ using DOL.GS.Spells;
 
 using log4net;
 
-namespace DOL.GS
-{
-	/// <summary>
-	/// This class represents an inventory item
-	/// </summary>
-	public class GameInventoryItem : InventoryItem, IGameInventoryItem
-	{
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+namespace DOL.GS {
+    /// <summary>
+    /// This class represents an inventory item
+    /// </summary>
+    public class GameInventoryItem : InventoryItem, IGameInventoryItem, ITranslatableObject {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		protected GamePlayer m_owner = null;
+        protected GamePlayer m_owner = null;
 
-		public GameInventoryItem()
-			: base()
-		{
-		}
+        public GameInventoryItem()
+            : base()
+        {
+        }
 
-		public GameInventoryItem(ItemTemplate template)
-			: base(template)
-		{
-		}
+        public GameInventoryItem(ItemTemplate template)
+            : base(template)
+        {
+        }
 
-		public GameInventoryItem(ItemUnique template)
-			: base(template)
-		{
-		}
+        public GameInventoryItem(ItemUnique template)
+            : base(template)
+        {
+        }
 
-		public GameInventoryItem(InventoryItem item)
-			: base(item)
-		{
-			CharacterID = item.CharacterID;
-			this.Id = item.Id;
-		}
+        public GameInventoryItem(InventoryItem item)
+            : base(item)
+        {
+            CharacterID = item.CharacterID;
+            this.Id = item.Id;
+        }
+
+        public virtual LanguageDataObject.eTranslationIdentifier TranslationIdentifier
+        {
+            get { return LanguageDataObject.eTranslationIdentifier.eItem; }
+        }
 
         /// <summary>
         /// Holds the translation id.
         /// </summary>
         protected string m_translationId = "";
 
-		/// <summary>
-		/// Gets or sets the translation id.
-		/// </summary>
-		public string TranslationId
-		{
-			get { return m_translationId; }
-			set { m_translationId = (value == null ? "" : value); }
-		}
+        /// <summary>
+        /// Gets or sets the translation id.
+        /// </summary>
+        public string TranslationId
+        {
+            get { return m_translationId; }
+            set { m_translationId = (value == null ? "" : value); }
+        }
 
-		/// <summary>
-		/// Is this a valid item for this player?
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public virtual bool CheckValid(GamePlayer player)
-		{
-			m_owner = player;
-			return true;
-		}
+        /// <summary>
+        /// Is this a valid item for this player?
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public virtual bool CheckValid(GamePlayer player)
+        {
+            m_owner = player;
+            return true;
+        }
 
-		/// <summary>
-		/// Can this item be saved or loaded from the database?
-		/// </summary>
-		public virtual bool CanPersist
-		{
-			get 
-			{
-				if (ItemTemplate == null || ItemTemplate.KeyName == InventoryItem.BLANK_ITEM)
-					return false;
+        /// <summary>
+        /// Can this item be saved or loaded from the database?
+        /// </summary>
+        public virtual bool CanPersist
+        {
+            get {
+                if (ItemTemplate == null || ItemTemplate.KeyName == InventoryItem.BLANK_ITEM)
+                    return false;
 
-				return true;
-			}
-		}
+                return true;
+            }
+        }
 
-		/// <summary>
-		/// Can player equip this item?
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public virtual bool CanEquip(GamePlayer player)
-		{
-			return GameServer.ServerRules.CheckAbilityToUseItem(player, ItemTemplate);
-		}
+        /// <summary>
+        /// Can player equip this item?
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public virtual bool CanEquip(GamePlayer player)
+        {
+            return GameServer.ServerRules.CheckAbilityToUseItem(player, ItemTemplate);
+        }
 
-		#region Create From Object Source
-		
-		/// <summary>
-		/// This is used to create a PlayerInventoryItem
-		/// ClassType will be checked and the approrpiate GameInventoryItem created
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		[Obsolete("Use Create() instead")]
-		public static GameInventoryItem Create<T>(ItemTemplate item)
-		{
-			return Create(item);
-		}
-		
-		/// <summary>
-		/// This is used to create a PlayerInventoryItem
-		/// template.ClassType will be checked and the approrpiate GameInventoryItem created
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		[Obsolete("Use Create() instead")]
-		public static GameInventoryItem Create<T>(InventoryItem item)
-		{
-			return Create(item);
-		}
-		
-		/// <summary>
-		/// This is used to create a PlayerInventoryItem
-		/// ClassType will be checked and the approrpiate GameInventoryItem created
-		/// </summary>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		public static GameInventoryItem Create(ItemTemplate item)
-		{
-			string classType = item.ClassType;
-			var itemUnique = item as ItemUnique;
-			
-			if (!string.IsNullOrEmpty(classType))
-			{
-				GameInventoryItem gameItem;
-				if (itemUnique != null)
-					gameItem = ScriptMgr.CreateObjectFromClassType<GameInventoryItem, ItemUnique>(classType, itemUnique);
-				else
-					gameItem = ScriptMgr.CreateObjectFromClassType<GameInventoryItem, ItemTemplate>(classType, item);
-				
-				if (gameItem != null)
-					return gameItem;
-				
-				if (log.IsWarnEnabled)
-					log.WarnFormat("Failed to construct game inventory item of ClassType {0}!", classType);
-			}
-			
-			if (itemUnique != null)
-				return new GameInventoryItem(itemUnique);
-				
-			return new GameInventoryItem(item);
-		}
+        #region Create From Object Source
 
-		/// <summary>
-		/// This is used to create a PlayerInventoryItem
-		/// template.ClassType will be checked and the approrpiate GameInventoryItem created
-		/// </summary>
-		/// <param name="item"></param>
-		/// <returns></returns>
-		public static GameInventoryItem Create(InventoryItem item)
-		{
-			string classType = item.ItemTemplate.ClassType;
-			
-			if (!string.IsNullOrEmpty(classType))
-			{
-				GameInventoryItem gameItem = ScriptMgr.CreateObjectFromClassType<GameInventoryItem, InventoryItem>(classType, item);
-				
-				if (gameItem != null)
-					return gameItem;
-				
-				if (log.IsWarnEnabled)
-					log.WarnFormat("Failed to construct game inventory item of ClassType {0}!", classType);
-			}
-			
-			return new GameInventoryItem(item);
-		}
+        /// <summary>
+        /// This is used to create a PlayerInventoryItem
+        /// ClassType will be checked and the approrpiate GameInventoryItem created
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        [Obsolete("Use Create() instead")]
+        public static GameInventoryItem Create<T>(ItemTemplate item)
+        {
+            return Create(item);
+        }
 
-		#endregion
+        /// <summary>
+        /// This is used to create a PlayerInventoryItem
+        /// template.ClassType will be checked and the approrpiate GameInventoryItem created
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        [Obsolete("Use Create() instead")]
+        public static GameInventoryItem Create<T>(InventoryItem item)
+        {
+            return Create(item);
+        }
 
-		/// <summary>
-		/// Player receives this item (added to players inventory)
-		/// </summary>
-		/// <param name="player"></param>
-		public virtual void OnReceive(GamePlayer player)
-		{
-			m_owner = player;
-		}
+        /// <summary>
+        /// This is used to create a PlayerInventoryItem
+        /// ClassType will be checked and the approrpiate GameInventoryItem created
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static GameInventoryItem Create(ItemTemplate item)
+        {
+            string classType = item.ClassType;
+            var itemUnique = item as ItemUnique;
 
-		/// <summary>
-		/// Player loses this item (removed from inventory)
-		/// </summary>
-		/// <param name="player"></param>
-		public virtual void OnLose(GamePlayer player)
-		{
-			m_owner = null;
-		}
+            if (!string.IsNullOrEmpty(classType))
+            {
+                GameInventoryItem gameItem;
+                if (itemUnique != null)
+                    gameItem = ScriptMgr.CreateObjectFromClassType<GameInventoryItem, ItemUnique>(classType, itemUnique);
+                else
+                    gameItem = ScriptMgr.CreateObjectFromClassType<GameInventoryItem, ItemTemplate>(classType, item);
 
-		/// <summary>
-		/// Drop this item on the ground
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public virtual WorldInventoryItem Drop(GamePlayer player)
-		{
-			WorldInventoryItem worldItem = new WorldInventoryItem(this);
+                if (gameItem != null)
+                    return gameItem;
 
-			Point2D itemloc = player.GetPointFromHeading(player.Heading, 30);
-			worldItem.X = itemloc.X;
-			worldItem.Y = itemloc.Y;
-			worldItem.Z = player.Z;
-			worldItem.Heading = player.Heading;
-			worldItem.CurrentRegionID = player.CurrentRegionID;
+                if (log.IsWarnEnabled)
+                    log.WarnFormat("Failed to construct game inventory item of ClassType {0}!", classType);
+            }
 
-			worldItem.AddOwner(player);
-			worldItem.AddToWorld();
+            if (itemUnique != null)
+                return new GameInventoryItem(itemUnique);
 
-			return worldItem;
-		}
+            return new GameInventoryItem(item);
+        }
 
-		/// <summary>
-		/// This object is being removed from the world
-		/// </summary>
-		public virtual void OnRemoveFromWorld()
-		{
-		}
+        /// <summary>
+        /// This is used to create a PlayerInventoryItem
+        /// template.ClassType will be checked and the approrpiate GameInventoryItem created
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public static GameInventoryItem Create(InventoryItem item)
+        {
+            string classType = item.ItemTemplate.ClassType;
 
-		/// <summary>
-		/// Player equips this item
-		/// </summary>
-		/// <param name="player"></param>
-		public virtual void OnEquipped(GamePlayer player)
-		{
-			CheckValid(player);
-		}
+            if (!string.IsNullOrEmpty(classType))
+            {
+                GameInventoryItem gameItem = ScriptMgr.CreateObjectFromClassType<GameInventoryItem, InventoryItem>(classType, item);
 
-		/// <summary>
-		/// Player unequips this item
-		/// </summary>
-		/// <param name="player"></param>
-		public virtual void OnUnEquipped(GamePlayer player)
-		{
-			CheckValid(player);
-		}
+                if (gameItem != null)
+                    return gameItem;
+
+                if (log.IsWarnEnabled)
+                    log.WarnFormat("Failed to construct game inventory item of ClassType {0}!", classType);
+            }
+
+            return new GameInventoryItem(item);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Player receives this item (added to players inventory)
+        /// </summary>
+        /// <param name="player"></param>
+        public virtual void OnReceive(GamePlayer player)
+        {
+            m_owner = player;
+        }
+
+        /// <summary>
+        /// Player loses this item (removed from inventory)
+        /// </summary>
+        /// <param name="player"></param>
+        public virtual void OnLose(GamePlayer player)
+        {
+            m_owner = null;
+        }
+
+        /// <summary>
+        /// Drop this item on the ground
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns></returns>
+        public virtual WorldInventoryItem Drop(GamePlayer player)
+        {
+            WorldInventoryItem worldItem = new WorldInventoryItem(this);
+
+            Point2D itemloc = player.GetPointFromHeading(player.Heading, 30);
+            worldItem.X = itemloc.X;
+            worldItem.Y = itemloc.Y;
+            worldItem.Z = player.Z;
+            worldItem.Heading = player.Heading;
+            worldItem.CurrentRegionID = player.CurrentRegionID;
+
+            worldItem.AddOwner(player);
+            worldItem.AddToWorld();
+
+            return worldItem;
+        }
+
+        /// <summary>
+        /// This object is being removed from the world
+        /// </summary>
+        public virtual void OnRemoveFromWorld()
+        {
+        }
+
+        /// <summary>
+        /// Player equips this item
+        /// </summary>
+        /// <param name="player"></param>
+        public virtual void OnEquipped(GamePlayer player)
+        {
+            CheckValid(player);
+        }
+
+        /// <summary>
+        /// Player unequips this item
+        /// </summary>
+        /// <param name="player"></param>
+        public virtual void OnUnEquipped(GamePlayer player)
+        {
+            CheckValid(player);
+        }
 
         /// <summary>
 		/// This inventory is used for a spell cast (staves lose condition when spells are cast)
@@ -271,161 +273,161 @@ namespace DOL.GS
             OnStrikeTarget(owner, target);
         }
 
-		/// <summary>
-		/// This inventory strikes an enemy
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="target"></param>
-		public virtual void OnStrikeTarget(GameLiving owner, GameObject target)
-		{
-			if (owner is GamePlayer)
-			{
-				GamePlayer player = owner as GamePlayer;
+        /// <summary>
+        /// This inventory strikes an enemy
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="target"></param>
+        public virtual void OnStrikeTarget(GameLiving owner, GameObject target)
+        {
+            if (owner is GamePlayer)
+            {
+                GamePlayer player = owner as GamePlayer;
 
-				if (ConditionPercent > 70 && Util.Chance(ServerProperties.Properties.ITEM_CONDITION_LOSS_CHANCE))
-				{
-					int oldPercent = ConditionPercent;
-					double con = GamePlayer.GetConLevel(player.Level, this.ItemTemplate.Level);
-					if (con < -3.0)
-						con = -3.0;
-					int sub = (int)(con + 4);
-					if (oldPercent < 91)
-					{
-						sub *= 2;
-					}
+                if (ConditionPercent > 70 && Util.Chance(ServerProperties.Properties.ITEM_CONDITION_LOSS_CHANCE))
+                {
+                    int oldPercent = ConditionPercent;
+                    double con = GamePlayer.GetConLevel(player.Level, ItemTemplate.Level);
+                    if (con < -3.0)
+                        con = -3.0;
+                    int sub = (int)(con + 4);
+                    if (oldPercent < 91)
+                    {
+                        sub *= 2;
+                    }
 
-					// Subtract condition
-					Condition -= sub;
-					if (Condition < 0)
-						Condition = 0;
+                    // Subtract condition
+                    Condition -= sub;
+                    if (Condition < 0)
+                        Condition = 0;
 
-					if (ConditionPercent != oldPercent)
-					{
-						if (ConditionPercent == 90)
-							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.CouldRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						else if (ConditionPercent == 80)
-							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						else if (ConditionPercent == 70)
-							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepairDire", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    if (ConditionPercent != oldPercent)
+                    {
+                        if (ConditionPercent == 90)
+                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.CouldRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        else if (ConditionPercent == 80)
+                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        else if (ConditionPercent == 70)
+                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepairDire", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-						player.Out.SendUpdateWeaponAndArmorStats();
-						player.Out.SendInventorySlotsUpdate(new int[] { SlotPosition });
-					}
-				}
-			}
-		}
+                        player.Out.SendUpdateWeaponAndArmorStats();
+                        player.Out.SendInventorySlotsUpdate(new int[] { SlotPosition });
+                    }
+                }
+            }
+        }
 
-		/// <summary>
-		/// This inventory is struck by an enemy
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="enemy"></param>
-		public virtual void OnStruckByEnemy(GameLiving owner, GameLiving enemy)
-		{
-			if (owner is GamePlayer)
-			{
-				GamePlayer player = owner as GamePlayer;
+        /// <summary>
+        /// This inventory is struck by an enemy
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="enemy"></param>
+        public virtual void OnStruckByEnemy(GameLiving owner, GameLiving enemy)
+        {
+            if (owner is GamePlayer)
+            {
+                GamePlayer player = owner as GamePlayer;
 
-				if (ConditionPercent > 70 && Util.Chance(ServerProperties.Properties.ITEM_CONDITION_LOSS_CHANCE))
-				{
-					int oldPercent = ConditionPercent;
-					double con = GamePlayer.GetConLevel(player.Level, ItemTemplate.Level);
-					if (con < -3.0)
-						con = -3.0;
-					int sub = (int)(con + 4);
-					if (oldPercent < 91)
-					{
-						sub *= 2;
-					}
+                if (ConditionPercent > 70 && Util.Chance(ServerProperties.Properties.ITEM_CONDITION_LOSS_CHANCE))
+                {
+                    int oldPercent = ConditionPercent;
+                    double con = GamePlayer.GetConLevel(player.Level, ItemTemplate.Level);
+                    if (con < -3.0)
+                        con = -3.0;
+                    int sub = (int)(con + 4);
+                    if (oldPercent < 91)
+                    {
+                        sub *= 2;
+                    }
 
-					// Subtract condition
-					Condition -= sub;
-					if (Condition < 0)
-						Condition = 0;
+                    // Subtract condition
+                    Condition -= sub;
+                    if (Condition < 0)
+                        Condition = 0;
 
-					if (ConditionPercent != oldPercent)
-					{
-						if (ConditionPercent == 90)
-							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.CouldRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						else if (ConditionPercent == 80)
-							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						else if (ConditionPercent == 70)
-							player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepairDire", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    if (ConditionPercent != oldPercent)
+                    {
+                        if (ConditionPercent == 90)
+                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.CouldRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        else if (ConditionPercent == 80)
+                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepair", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        else if (ConditionPercent == 70)
+                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedRepairDire", Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-						player.Out.SendUpdateWeaponAndArmorStats();
-						player.Out.SendInventorySlotsUpdate(new int[] { SlotPosition });
-					}
-				}
-			}
-		}
+                        player.Out.SendUpdateWeaponAndArmorStats();
+                        player.Out.SendInventorySlotsUpdate(new int[] { SlotPosition });
+                    }
+                }
+            }
+        }
 
-		/// <summary>
-		/// Try and use this item
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns>true if item use is handled here</returns>
-		public virtual bool Use(GamePlayer player)
-		{
-			return false;
-		}
+        /// <summary>
+        /// Try and use this item
+        /// </summary>
+        /// <param name="player"></param>
+        /// <returns>true if item use is handled here</returns>
+        public virtual bool Use(GamePlayer player)
+        {
+            return false;
+        }
 
 
-		/// <summary>
-		/// Combine this item with the target item
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="targetItem"></param>
-		/// <returns>true if combine is handled here</returns>
-		public virtual bool Combine(GamePlayer player, InventoryItem targetItem)
-		{
-			return false;
-		}
+        /// <summary>
+        /// Combine this item with the target item
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="targetItem"></param>
+        /// <returns>true if combine is handled here</returns>
+        public virtual bool Combine(GamePlayer player, InventoryItem targetItem)
+        {
+            return false;
+        }
 
-		/// <summary>
-		/// Delve this item
-		/// </summary>
-		/// <param name="delve"></param>
-		/// <param name="player"></param>
-		public virtual void Delve(List<String> delve, GamePlayer player)
-		{
-			if (player == null)
-				return;
+        /// <summary>
+        /// Delve this item
+        /// </summary>
+        /// <param name="delve"></param>
+        /// <param name="player"></param>
+        public virtual void Delve(List<String> delve, GamePlayer player)
+        {
+            if (player == null)
+                return;
 
-			//**********************************
-			//show crafter name
-			//**********************************
-			if (IsCrafted)
-			{
-				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.CrafterName", Creator));
-				delve.Add(" ");
-			}
-			else if (ItemTemplate.Description != null && ItemTemplate.Description != "")
-			{
-				delve.Add(ItemTemplate.Description);
-				delve.Add(" ");
-			}
+            //**********************************
+            //show crafter name
+            //**********************************
+            if (IsCrafted)
+            {
+                delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.CrafterName", Creator));
+                delve.Add(" ");
+            }
+            else if (ItemTemplate.Description != null && ItemTemplate.Description != "")
+            {
+                delve.Add(ItemTemplate.Description);
+                delve.Add(" ");
+            }
 
-			if ((ItemTemplate.ObjectType >= (int)eObjectType.GenericWeapon) && (ItemTemplate.ObjectType <= (int)eObjectType._LastWeapon) ||
-				ItemTemplate.ObjectType == (int)eObjectType.Instrument)
-			{
-				WriteUsableClasses(delve, player.Client);
-				WriteMagicalBonuses(delve, player.Client, false);
-				DelveWeaponStats(delve, player);
-			}
+            if ((ItemTemplate.ObjectType >= (int)eObjectType.GenericWeapon) && (ItemTemplate.ObjectType <= (int)eObjectType._LastWeapon) ||
+                ItemTemplate.ObjectType == (int)eObjectType.Instrument)
+            {
+                WriteUsableClasses(delve, player.Client);
+                WriteMagicalBonuses(delve, player.Client, false);
+                DelveWeaponStats(delve, player);
+            }
 
-			if (ItemTemplate.ObjectType >= (int)eObjectType.Cloth && ItemTemplate.ObjectType <= (int)eObjectType.Scale)
-			{
-				WriteUsableClasses(delve, player.Client);
-				WriteMagicalBonuses(delve, player.Client, false);
-				DelveArmorStats(delve, player);
-			}
+            if (ItemTemplate.ObjectType >= (int)eObjectType.Cloth && ItemTemplate.ObjectType <= (int)eObjectType.Scale)
+            {
+                WriteUsableClasses(delve, player.Client);
+                WriteMagicalBonuses(delve, player.Client, false);
+                DelveArmorStats(delve, player);
+            }
 
-			if (ItemTemplate.ObjectType == (int)eObjectType.Shield)
-			{
-				WriteUsableClasses(delve, player.Client);
-				WriteMagicalBonuses(delve, player.Client, false);
-				DelveShieldStats(delve, player.Client);
-			}
+            if (ItemTemplate.ObjectType == (int)eObjectType.Shield)
+            {
+                WriteUsableClasses(delve, player.Client);
+                WriteMagicalBonuses(delve, player.Client, false);
+                DelveShieldStats(delve, player.Client);
+            }
 
             if (ItemTemplate.ObjectType == (int)eObjectType.Magical || ItemTemplate.ObjectType == (int)eObjectType.AlchemyTincture || ItemTemplate.ObjectType == (int)eObjectType.SpellcraftGem)
             {
@@ -455,31 +457,32 @@ namespace DOL.GS
 				if (minutes == 0)
 				{
                     delve.Add(String.Format("Can use item every: {0} sec", seconds));
-				}
-				else
-				{
+                }
+                else
+                {
                     delve.Add(String.Format("Can use item every: {0}:{1:00} min", minutes, seconds));
-				}
+                }
 
-				// delve.Add(String.Format("Can use item every: {0:00}:{1:00}", minutes, seconds));
+                // delve.Add(String.Format("Can use item every: {0:00}:{1:00}", minutes, seconds));
 
-				int cooldown = CanUseAgainIn;
+                int cooldown = CanUseAgainIn;
 
-				if (cooldown > 0)
-				{
-					minutes = cooldown / 60;
-					seconds = cooldown % 60;
+                if (cooldown > 0)
+                {
+                    minutes = cooldown / 60;
+                    seconds = cooldown % 60;
 
-					if (minutes == 0)
-					{
+                    if (minutes == 0)
+                    {
                         delve.Add(String.Format("Can use again in: {0} sec", seconds));
-					}
-					else
-					{
+                    }
+                    else
+                    {
                         delve.Add(String.Format("Can use again in: {0}:{1:00} min", minutes, seconds));
-					}
-				}
-			}
+                    }
+                }
+            }
+
 
 			if (!ItemTemplate.IsDropable || !ItemTemplate.IsPickable || ItemTemplate.IsIndestructible)
 				delve.Add(" ");
@@ -499,12 +502,12 @@ namespace DOL.GS
 				delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.HandlePacket.BonusLevel", ItemTemplate.BonusLevel));
 			}
 
-			//Add admin info
-			if (player.Client.Account.PrivLevel > 1)
-			{
+            //Add admin info
+            if (player.Client.Account.PrivLevel > 1)
+            {
                 WriteTechnicalInfo(delve, player.Client);
-			}
-		}
+            }
+        }
 
 		protected virtual void WriteUsableClasses(IList<string> output, GameClient client)
 		{
@@ -532,14 +535,15 @@ namespace DOL.GS
 		{
 			int oldCount = output.Count;
 
+
 			foreach (var bonus in ItemTemplate.Bonuses.OrderBy(x => x.BonusOrder))
 			{
 				WriteBonusLine(output, client, bonus.BonusType, bonus.BonusValue);
 			}
 
-			if (output.Count > oldCount)
-			{
-				output.Add(" ");
+            if (output.Count > oldCount)
+            {
+                output.Add(" ");
                 output.Insert(oldCount, LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MagicBonus"));
 				output.Insert(oldCount, " ");
 			}
@@ -649,9 +653,10 @@ namespace DOL.GS
 								if (spl.ID == itemSpell.SpellID)
 								{
 									output.Add(" ");
+
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.LevelRequired"));
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Level", spl.Level));
-									output.Add(" ");
+                                    output.Add(" ");
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.ChargedMagic"));
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.Charges", itemSpell.Charges));
                                     output.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteMagicalBonuses.MaxCharges", itemSpell.MaxCharges));
@@ -724,45 +729,99 @@ namespace DOL.GS
 						}
 					}
 				}
-				#endregion
-			}
+                #endregion
+
+                output.Add("Total utility: " + String.Format("{0:0.00}", GetTotalUtility()));
+                output.Add(" ");
+            }
 		}
 
+        private double GetTotalUtility()
+        {
+            double totalUti = 0;
 
+            //based off of eProperty
+            //1-8 == stats = *.6667
+            //9 == power cap = *2
+            //10 == maxHP =  *.25
+            //11-19 == resists = *2
+            //20-115 == skill = *5
+            //163 == all magic = *10
+            //164 == all melee = *10
+            //167 == all dual weild = *10
+            //168 == all archery = *10
+
+
+            foreach (var bonus in Bonuses.OrderBy(x => x.BonusOrder))
+            {
+                if (bonus.BonusType == 0 || bonus.BonusValue == 0)
+                    continue;
+
+                if (bonus.BonusType < 9)
+                {
+                    totalUti += bonus.BonusValue * .6667;
+                }
+                else if (bonus.BonusType == 9)
+                {
+                    totalUti += bonus.BonusValue * 2;
+                }
+                else if (bonus.BonusType == 10)
+                {
+                    totalUti += bonus.BonusValue * .25;
+                }
+                else if (bonus.BonusType < 20)
+                {
+                    totalUti += bonus.BonusValue * 2;
+                }
+                else if (bonus.BonusType < 115)
+                {
+                    totalUti += bonus.BonusValue * 5;
+                }
+                else if (bonus.BonusType == 163
+                  || bonus.BonusType == 164
+                  || bonus.BonusType == 167
+                  || bonus.BonusType == 168)
+                {
+                    totalUti += bonus.BonusValue * 10;
+                }
+            }
+
+            return totalUti;
+        }
         protected virtual void WriteBonusLine(IList<string> list, GameClient client, int bonusCat, int bonusValue)
-		{
-			if (bonusCat != 0 && bonusValue != 0 && !SkillBase.CheckPropertyType((eProperty)bonusCat, ePropertyType.Focus))
-			{
-				if (IsPvEBonus((eProperty)bonusCat))
-				{
-					// Evade: {0}% (PvE Only)
-					list.Add(string.Format(SkillBase.GetPropertyName((eProperty)bonusCat), bonusValue));
-				}
-				else
-				{
-					//- Axe: 5 pts
-					//- Strength: 15 pts
-					//- Constitution: 15 pts
-					//- Hits: 40 pts
-					//- Fatigue: 8 pts
-					//- Heat: 7%
-					//Bonus to casting speed: 2%
-					//Bonus to armor factor (AF): 18
-					//Power: 6 % of power pool.
-					list.Add(string.Format(
-						"- {0}: {1}{2}",
-						SkillBase.GetPropertyName((eProperty)bonusCat),
-						bonusValue.ToString("+0 ;-0 ;0 "), //Eden
-						((bonusCat == (int)eProperty.PowerPool)
-						 || (bonusCat >= (int)eProperty.Resist_First && bonusCat <= (int)eProperty.Resist_Last)
-						 || (bonusCat >= (int)eProperty.ResCapBonus_First && bonusCat <= (int)eProperty.ResCapBonus_Last)
-						 || bonusCat == (int)eProperty.Conversion
-						 || bonusCat == (int)eProperty.ExtraHP
-						 || bonusCat == (int)eProperty.RealmPoints
-						 || bonusCat == (int)eProperty.StyleAbsorb
-						 || bonusCat == (int)eProperty.ArcaneSyphon
-						 || bonusCat == (int)eProperty.BountyPoints
-						 || bonusCat == (int)eProperty.XpPoints)
+        {
+            if (bonusCat != 0 && bonusValue != 0 && !SkillBase.CheckPropertyType((eProperty)bonusCat, ePropertyType.Focus))
+            {
+                if (IsPvEBonus((eProperty)bonusCat))
+                {
+                    // Evade: {0}% (PvE Only)
+                    list.Add(string.Format(SkillBase.GetPropertyName((eProperty)bonusCat), bonusValue));
+                }
+                else
+                {
+                    //- Axe: 5 pts
+                    //- Strength: 15 pts
+                    //- Constitution: 15 pts
+                    //- Hits: 40 pts
+                    //- Fatigue: 8 pts
+                    //- Heat: 7%
+                    //Bonus to casting speed: 2%
+                    //Bonus to armor factor (AF): 18
+                    //Power: 6 % of power pool.
+                    list.Add(string.Format(
+                        "- {0}: {1}{2}",
+                        SkillBase.GetPropertyName((eProperty)bonusCat),
+                        bonusValue.ToString("+0 ;-0 ;0 "), //Eden
+                        ((bonusCat == (int)eProperty.PowerPool)
+                         || (bonusCat >= (int)eProperty.Resist_First && bonusCat <= (int)eProperty.Resist_Last)
+                         || (bonusCat >= (int)eProperty.ResCapBonus_First && bonusCat <= (int)eProperty.ResCapBonus_Last)
+                         || bonusCat == (int)eProperty.Conversion
+                         || bonusCat == (int)eProperty.ExtraHP
+                         || bonusCat == (int)eProperty.RealmPoints
+                         || bonusCat == (int)eProperty.StyleAbsorb
+                         || bonusCat == (int)eProperty.ArcaneSyphon
+                         || bonusCat == (int)eProperty.BountyPoints
+                         || bonusCat == (int)eProperty.XpPoints)
                         ? ((bonusCat == (int)eProperty.PowerPool) ? LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteBonusLine.PowerPool") : "%")
                         : LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WriteBonusLine.Points")
 					));
@@ -873,9 +932,9 @@ namespace DOL.GS
 								if (minutes == 0)
 								{
                                     list.Add(String.Format("Can use item every: {0} sec", seconds));
-								}
-								else
-								{
+                                }
+                                else
+                                {
                                     list.Add(String.Format("Can use item every: {0}:{1:00} min", minutes, seconds));
 								}
 							}

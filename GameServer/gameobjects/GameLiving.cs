@@ -1129,7 +1129,7 @@ namespace DOL.GS
 				if (LastCombatTickPvP == 0)
 					return false;
 
-				return LastCombatTickPvP + 10000 >= region.Time;
+				return LastCombatTickPvP + 10000 >= GameLoop.GameLoopTime;
 			}
 		}
 
@@ -1145,7 +1145,7 @@ namespace DOL.GS
 			if (LastCombatTickPvP == 0)
 				return false;
 
-			return LastCombatTickPvP + milliseconds >= region.Time;
+			return LastCombatTickPvP + milliseconds >= GameLoop.GameLoopTime;
 		}
 
 		/// <summary>
@@ -1165,7 +1165,7 @@ namespace DOL.GS
 				//if (LastCombatTickPvE + 10000 - region.Time > 0 && this is GameNPC && (this as GameNPC).Brain is IControlledBrain)
 				//	log.Debug(Name + " in combat " + (LastCombatTickPvE + 10000 - region.Time));
 
-				return LastCombatTickPvE + 10000 >= region.Time;
+				return LastCombatTickPvE + 10000 >= GameLoop.GameLoopTime;
 			}
 		}
 
@@ -1184,7 +1184,7 @@ namespace DOL.GS
 			//if (LastCombatTickPvE + 10000 - region.Time > 0 && this is GameNPC && (this as GameNPC).Brain is IControlledBrain)
 			//	log.Debug(Name + " in combat " + (LastCombatTickPvE + 10000 - region.Time));
 
-			return LastCombatTickPvE + milliseconds >= region.Time;
+			return LastCombatTickPvE + milliseconds >= GameLoop.GameLoopTime;
 		}
 
 		/// <summary>
@@ -2178,7 +2178,7 @@ namespace DOL.GS
 		/// Creates an attack action for this living
 		/// </summary>
 		/// <returns></returns>
-		protected virtual AttackAction CreateAttackAction()
+		public virtual AttackAction CreateAttackAction()
 		{
 			//return m_attackAction ?? new AttackAction(this);
             return attackComponent.attackAction ?? new AttackAction(this);
@@ -3680,9 +3680,10 @@ namespace DOL.GS
 			double evadeChance = 0;
 			GamePlayer player = this as GamePlayer;
 
-			GameSpellEffect evadeBuff = SpellHandler.FindEffectOnTarget( this, "EvadeBuff");
-			if( evadeBuff == null )
-				evadeBuff = SpellHandler.FindEffectOnTarget( this, "SavageEvadeBuff" );
+			//GameSpellEffect evadeBuff = SpellHandler.FindEffectOnTarget( this, "EvadeBuff");
+			ECSGameEffect evadeBuff = EffectListService.GetEffectOnTarget(this, eEffect.SavageBuff, eSpellType.SavageEvadeBuff);
+			//if ( evadeBuff == null )
+			//	evadeBuff = SpellHandler.FindEffectOnTarget( this, "SavageEvadeBuff" );
 
 			if( player != null )
 			{
@@ -3725,7 +3726,7 @@ namespace DOL.GS
 			}
 			if (ad.AttackType == AttackData.eAttackType.MeleeDualWield)
 			{
-				evadeChance = Math.Max(evadeChance - 0.25, 0);
+				evadeChance = Math.Max(evadeChance * 0.5, 0);
 			}
 			//Excalibur : infi RR5
 			GamePlayer p = ad.Attacker as GamePlayer;
@@ -3767,9 +3768,10 @@ namespace DOL.GS
 				GamePlayer player = this as GamePlayer;
 				BladeBarrierEffect BladeBarrier = null;
 
-				GameSpellEffect parryBuff = SpellHandler.FindEffectOnTarget( this, "ParryBuff");
-				if( parryBuff == null )
-					parryBuff = SpellHandler.FindEffectOnTarget( this, "SavageParryBuff");
+				//GameSpellEffect parryBuff = SpellHandler.FindEffectOnTarget( this, "ParryBuff");
+				ECSGameEffect parryBuff = EffectListService.GetEffectOnTarget(this, eEffect.SavageBuff, eSpellType.SavageParryBuff);
+				//if ( parryBuff == null )
+				//	parryBuff = SpellHandler.FindEffectOnTarget( this, "SavageParryBuff");
 
 				if( player != null )
 				{
@@ -3810,6 +3812,12 @@ namespace DOL.GS
 						parryChance = 0.995;
 				}
 			}
+
+			if (ad.AttackType == AttackData.eAttackType.MeleeTwoHand)
+			{
+				parryChance = Math.Max(parryChance * 0.5, 0);
+			}
+
 			//Excalibur : infi RR5
 			GamePlayer p = ad.Attacker as GamePlayer;
 			if (p != null)
@@ -3918,7 +3926,7 @@ namespace DOL.GS
 			}
 			if (ad.AttackType == AttackData.eAttackType.MeleeDualWield)
 			{
-				blockChance = Math.Max(blockChance - 0.25, 0);
+				blockChance = Math.Max(blockChance * 0.5, 0);
 			}
 			//Excalibur : infi RR5
 			GamePlayer p = ad.Attacker as GamePlayer;
@@ -4070,8 +4078,7 @@ namespace DOL.GS
         public void OnAttack(AttackData ad = null)
         {
             if (effectListComponent is null)
-                return;
-
+                return;            
             
             // Cancel MoveSpeedBuff
             if (effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff) && ad != null)
@@ -4079,6 +4086,13 @@ namespace DOL.GS
                 var effect = effectListComponent.Effects[eEffect.MovementSpeedBuff].Where(e => e.IsDisabled == false).FirstOrDefault();
                 EffectService.RequestCancelEffect(effect);
             }
+
+			if (this is GamePet pet)
+			{
+				var ownerEffect = EffectListService.GetEffectOnTarget(pet.Owner, eEffect.MovementSpeedBuff);
+				if (ownerEffect != null)
+					EffectService.RequestCancelEffect(ownerEffect);
+			}
 
             if (effectListComponent.Effects.ContainsKey(eEffect.Mez) && ad != null)
             {
@@ -4124,9 +4138,9 @@ namespace DOL.GS
                 }
             }
             if (effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedDebuff) &&
-                effectListComponent.Effects[eEffect.MovementSpeedDebuff].FirstOrDefault().SpellHandler.Spell.SpellType == (byte)eSpellType.SpeedDecrease)
+                effectListComponent.Effects[eEffect.MovementSpeedDebuff].FirstOrDefault().SpellHandler.Spell.SpellType != (byte)eSpellType.StyleSpeedDecrease)
             {
-                switch (ad.AttackResult)
+                switch (ad?.AttackResult)
                 {
                     case eAttackResult.HitStyle:
                     case eAttackResult.HitUnstyled:
@@ -4222,18 +4236,7 @@ namespace DOL.GS
 		{
 			if (ad.IsHit && ad.CausesCombat)
 			{
-				Notify(GameLivingEvent.AttackedByEnemy, this, new AttackedByEnemyEventArgs(ad));
-
-                // Handle DamageShield damage
-                if (effectListComponent.Effects.TryGetValue(eEffect.FocusShield, out List<ECSGameEffect> dSEffects))
-                {
-					for (int i = 0; i < dSEffects.Count; i++)
-					{
-						var dSEffect = dSEffects[i];
-
-						((DamageShieldSpellHandler)dSEffect.SpellHandler).EventHandler(null, this, new AttackedByEnemyEventArgs(ad));
-					}
-                }
+				//Notify(GameLivingEvent.AttackedByEnemy, this, new AttackedByEnemyEventArgs(ad));               
 
                 OnAttack(ad);
 
@@ -4244,15 +4247,32 @@ namespace DOL.GS
 
 				if (ad.Attacker.Realm == 0 || this.Realm == 0)
 				{
-					LastAttackedByEnemyTickPvE = CurrentRegion.Time;
-					ad.Attacker.LastAttackTickPvE = CurrentRegion.Time;
+					LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+					ad.Attacker.LastAttackTickPvE = GameLoop.GameLoopTime;
 				}
 				else
 				{
-					LastAttackedByEnemyTickPvP = CurrentRegion.Time;
-					ad.Attacker.LastAttackTickPvP = CurrentRegion.Time;
+					LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+					ad.Attacker.LastAttackTickPvP = GameLoop.GameLoopTime;
 				}
 
+			}
+		}
+
+		public void HandleDamageShields(AttackData ad)
+        {
+			// Handle DamageShield damage
+			if (effectListComponent.Effects.TryGetValue(eEffect.FocusShield, out List<ECSGameEffect> dSEffects))
+			{
+				for (int i = 0; i < dSEffects.Count; i++)
+				{
+					if (dSEffects[i].IsBuffActive)
+					{
+						var dSEffect = dSEffects[i];
+
+						((DamageShieldSpellHandler)dSEffect.SpellHandler).EventHandler(null, this, new AttackedByEnemyEventArgs(ad));
+					}
+				}
 			}
 		}
 
@@ -4571,6 +4591,7 @@ namespace DOL.GS
 
 			// cancel all left effects
 			EffectList.CancelAll();
+			effectListComponent.CancelAll();
 
 			// Stop the regeneration timers
 			StopHealthRegeneration();
@@ -5189,7 +5210,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The default frequency of regenerating health in milliseconds
 		/// </summary>
-		protected const ushort m_healthRegenerationPeriod = 3000;
+		protected const ushort m_healthRegenerationPeriod = 6000;
 
 		/// <summary>
 		/// Interval for health regeneration tics
@@ -5202,7 +5223,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The default frequency of regenerating power in milliseconds
 		/// </summary>
-		protected const ushort m_powerRegenerationPeriod = 3000;
+		protected const ushort m_powerRegenerationPeriod = 6000;
 
 		/// <summary>
 		/// Interval for power regeneration tics
@@ -5215,7 +5236,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The default frequency of regenerating endurance in milliseconds
 		/// </summary>
-		protected const ushort m_enduranceRegenerationPeriod = 1000;
+		protected const ushort m_enduranceRegenerationPeriod = 2000;
 
 		/// <summary>
 		/// Interval for endurance regeneration tics
@@ -5257,6 +5278,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual void StartPowerRegeneration()
 		{
+			
 			if (ObjectState != eObjectState.Active)
 				return;
 			lock (m_regenTimerLock)
@@ -5403,12 +5425,16 @@ namespace DOL.GS
 		/// <param name="selfRegenerationTimer">timer calling this function</param>
 		protected virtual int PowerRegenerationTimerCallback(RegionTimer selfRegenerationTimer)
 		{
+			
 			if (this is GamePlayer &&
 			    (((GamePlayer)this).CharacterClass.ID == (int)eCharacterClass.Vampiir ||
 			     (((GamePlayer)this).CharacterClass.ID > 59 && ((GamePlayer)this).CharacterClass.ID < 63))) // Maulers
 			{
 				double MinMana = MaxMana * 0.15;
 				double OnePercMana = Math.Ceiling(MaxMana * 0.01);
+				log.WarnFormat("current MaxMana is {0} and OnePercMana is {1}", MaxMana, OnePercMana);
+
+				
 
 				if (!InCombat)
 				{
@@ -5443,8 +5469,26 @@ namespace DOL.GS
 			//If we were hit before we regenerated, we regenerate slower the next time
 			if (InCombat)
 			{
-				return (int)(PowerRegenerationPeriod * 3.4);
+				return (int)(PowerRegenerationPeriod * 2);//3.4);
 			}
+
+			if (IsSitting)
+            {
+				return (int)(PowerRegenerationPeriod / 2);
+            }
+			
+			#region Calculation : AtlasOF_Serenity
+			// --- [START] --- AtlasOF_Serenity -----------------------------------------------------------
+			AtlasOF_SerenityAbility raSerenity = GetAbility<AtlasOF_SerenityAbility>();
+			if (raSerenity != null)
+			{
+				if (raSerenity.Level > 0)
+				{
+					return PowerRegenerationPeriod - (raSerenity.GetAmountForLevel(raSerenity.Level));
+				}
+			}
+			// --- [START] --- AtlasOF_Serenity -----------------------------------------------------------
+			#endregion
 
 			//regen at standard rate
 			return PowerRegenerationPeriod;
@@ -5656,18 +5700,18 @@ namespace DOL.GS
 		/// <summary>
 		/// Cancels all concentration effects by this living and on this living
 		/// </summary>
-		public void CancelAllConcentrationEffects()
+		public void CancelAllConcentrationEffects(bool updateplayer = true)
 		{
-			CancelAllConcentrationEffects(false);
+			CancelAllConcentrationEffects(false, updateplayer);
 		}
 
 		/// <summary>
 		/// Cancels all concentration effects by this living and on this living
 		/// </summary>
-		public void CancelAllConcentrationEffects(bool leaveSelf)
+		public void CancelAllConcentrationEffects(bool leaveSelf, bool updateplayer)
 		{
 			// cancel conc spells
-			ConcentrationEffects.CancelAll(leaveSelf);
+			ConcentrationEffects.CancelAll(leaveSelf, updateplayer);
 
 			//cancel all active conc spell effects from other casters
 			if (effectListComponent != null)
@@ -6577,7 +6621,7 @@ namespace DOL.GS
 				if (m_disabledSkills.ContainsKey(key))
 				{
 					long timeout = m_disabledSkills[key].Key;
-					long left = timeout - CurrentRegion.Time;
+					long left = timeout - GameLoop.GameLoopTime;
 					if (left <= 0)
 					{
 						left = 0;
@@ -6618,7 +6662,7 @@ namespace DOL.GS
 				KeyValuePair<int, Type> key = new KeyValuePair<int, Type>(skill.ID, skill.GetType());
 				if (duration > 0)
 				{
-					m_disabledSkills[key] = new KeyValuePair<long, Skill>(CurrentRegion.Time + duration, skill);
+					m_disabledSkills[key] = new KeyValuePair<long, Skill>(GameLoop.GameLoopTime + duration, skill);
 				}
 				else
 				{
@@ -6644,7 +6688,7 @@ namespace DOL.GS
 					KeyValuePair<int, Type> key = new KeyValuePair<int, Type>(skill.ID, skill.GetType());
 					if (duration > 0)
 					{
-						m_disabledSkills[key] = new KeyValuePair<long, Skill>(CurrentRegion.Time + duration, skill);
+						m_disabledSkills[key] = new KeyValuePair<long, Skill>(GameLoop.GameLoopTime + duration, skill);
 					}
 					else
 					{
@@ -6852,29 +6896,33 @@ namespace DOL.GS
 				return false;
 			}
 
+			/*
 			if ((m_runningSpellHandler != null && spell.CastTime > 0))
 			{
 				Notify(GameLivingEvent.CastFailed, this, new CastFailedEventArgs(null, CastFailedEventArgs.Reasons.AlreadyCasting));
 				return false;
-			}
+			}*/
 
-			ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(this, spell, line);
-			if (spellhandler != null)
-			{
-				if (spell.CastTime > 0)
-				{
-					m_runningSpellHandler = spellhandler;
-					spellhandler.CastingCompleteEvent += new CastingCompleteCallback(OnAfterSpellCastSequence);
-				}
-				return spellhandler.CastSpell();
-			}
-			else
-			{
-				if (log.IsWarnEnabled)
-					log.Warn(Name + " wants to cast but spell " + spell.Name + " not implemented yet");
-			}
+			//ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(this, spell, line);
+			bool cast = castingComponent.StartCastSpell(spell, line);
+			
+			//if (spellhandler != null)
+			//{
+			//	if (spell.CastTime > 0)
+			//	{
+			//		m_runningSpellHandler = spellhandler;
+			//		spellhandler.CastingCompleteEvent += new CastingCompleteCallback(OnAfterSpellCastSequence);
+			//	}
+			//	return spellhandler.CastSpell();
+			//}
+			//else
+			//{
+			//	if (log.IsWarnEnabled)
+			//		log.Warn(Name + " wants to cast but spell " + spell.Name + " not implemented yet");
+			//}
 
-			return false;
+			//return false;
+			return cast;
 		}
 
 		public virtual bool CastSpell(ISpellCastingAbilityHandler ab)

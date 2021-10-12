@@ -259,6 +259,7 @@ namespace DOL.GS
 				var npc = dbMob;
 
 				if (npc == null && InternalID > 0)
+
 					// This should only happen when a GM command changes level on a mob with no npcTemplate,
 					npc = GameServer.Database.NpcTemplates.Find(InternalID);
 
@@ -287,50 +288,40 @@ namespace DOL.GS
 					Charisma = 0;
 				}
 			}
-
-			if (Strength < 1)
-			{
-				Strength = (Properties.MOB_AUTOSET_STR_BASE > 0) ? Properties.MOB_AUTOSET_STR_BASE : (short)1;
-				if (Level > 1)
-					Strength += (byte)(10.0 * (Level - 1) * Properties.MOB_AUTOSET_STR_MULTIPLIER);
-			}
-
-			if (Constitution < 1)
-			{
-				Constitution = (Properties.MOB_AUTOSET_CON_BASE > 0) ? Properties.MOB_AUTOSET_CON_BASE : (short)1;
-				if (Level > 1)
-					Constitution += (byte)((Level - 1) * Properties.MOB_AUTOSET_CON_MULTIPLIER);
-			}
-
-			if (Quickness < 1)
-			{
-				Quickness = (Properties.MOB_AUTOSET_QUI_BASE > 0) ? Properties.MOB_AUTOSET_QUI_BASE : (short)1;
-				if (Level > 1)
-					Quickness += (byte)((Level - 1) * Properties.MOB_AUTOSET_QUI_MULTIPLIER);
-			}
-
-			if (Dexterity < 1)
-			{
-				Dexterity = (Properties.MOB_AUTOSET_DEX_BASE > 0) ? Properties.MOB_AUTOSET_DEX_BASE : (short)1;
-				if (Level > 1)
-					Dexterity += (byte)((Level - 1) * Properties.MOB_AUTOSET_DEX_MULTIPLIER);
-			}
-
-			if (Intelligence < 1)
-			{
-				Intelligence = (Properties.MOB_AUTOSET_INT_BASE > 0) ? Properties.MOB_AUTOSET_INT_BASE : (short)1;
-				if (Level > 1)
-					Intelligence += (byte)((Level - 1) * Properties.MOB_AUTOSET_INT_MULTIPLIER);
-			}
-
-			if (Empathy < 1)
-				Empathy = (short)(29 + Level);
-
-			if (Piety < 1)
-				Piety = (short)(29 + Level);
-
-			if (Charisma < 1)
-				Charisma = (short)(29 + Level);
+			
+			// STR
+			Strength = (Properties.MOB_AUTOSET_STR_BASE > 0) ? Properties.MOB_AUTOSET_STR_BASE : (short) 1;
+			if (Level > 1)
+				Strength += (byte)((Level - 1) * Properties.MOB_AUTOSET_STR_MULTIPLIER);
+			
+			// CON
+			Constitution = (Properties.MOB_AUTOSET_CON_BASE > 0) ? Properties.MOB_AUTOSET_CON_BASE : (short) 1;
+			if (Level > 1)
+				Constitution += (byte)((Level - 1) * Properties.MOB_AUTOSET_CON_MULTIPLIER);
+			
+			// QUI
+			Quickness = (Properties.MOB_AUTOSET_QUI_BASE > 0) ? Properties.MOB_AUTOSET_QUI_BASE : (short) 1;
+			if (Level > 1)
+				Quickness += (byte)((Level - 1) * Properties.MOB_AUTOSET_QUI_MULTIPLIER);
+			
+			// DEX
+			Dexterity = (Properties.MOB_AUTOSET_DEX_BASE > 0) ? Properties.MOB_AUTOSET_DEX_BASE : (short) 1;
+			if (Level > 1)
+				Dexterity += (byte)((Level - 1) * Properties.MOB_AUTOSET_DEX_MULTIPLIER);
+			
+			// INT
+			Intelligence = (Properties.MOB_AUTOSET_INT_BASE > 0) ? Properties.MOB_AUTOSET_INT_BASE : (short) 1;
+			if (Level > 1)
+				Intelligence += (byte)((Level - 1) * Properties.MOB_AUTOSET_INT_MULTIPLIER);
+			
+			// EMP
+			Empathy = (short)(29 + Level);
+			
+			// PIE
+			Piety = (short)(29 + Level);
+			
+			// CHA
+			Charisma = (short)(29 + Level);
 		}
 
 		/// <summary>
@@ -1117,6 +1108,20 @@ namespace DOL.GS
 			}
 		}
 
+		private GameObject m_cachedTarget;
+
+		public GameObject CachedTarget
+        {
+			get {  return m_cachedTarget; }
+			set {  m_cachedTarget = value; }
+        }
+
+		public void ResetHeading()
+		{
+			TurnTo(SpawnHeading);
+			IsReturningToSpawnPoint = false;
+		}
+
 		/// <summary>
 		/// Updates the tick speed for this living.
 		/// </summary>
@@ -1756,7 +1761,18 @@ namespace DOL.GS
 			newX = (int)(followTarget.X - diffx);
 			newY = (int)(followTarget.Y - diffy);
 			newZ = (int)(followTarget.Z - diffz);
-			WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+			
+			if (Brain is ControlledNpcBrain)
+			{
+				if (InCombat || Brain is BomberBrain || TargetObject != null)
+					WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+				else if (!IsWithinRadius(new Point2D(newX, newY), MaxSpeed))// MaxSpeed < GetDistance(new Point2D(newX, newY)))
+					WalkTo(newX, newY, (ushort)newZ, MaxSpeed);//(short)Math.Min(MaxSpeed, followLiving.CurrentSpeed + 50));
+				else
+					WalkTo(newX, newY, (ushort)newZ, (short)GetDistance(new Point2D(newX, newY)));
+			}
+			else
+				WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
 			return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
 		}
 
@@ -2484,6 +2500,22 @@ namespace DOL.GS
 					this.Inventory = new GameNPCInventory(equip);
 					if (this.Inventory.GetItem(eInventorySlot.DistanceWeapon) != null)
 						this.SwitchWeapon(eActiveWeaponSlot.Distance);
+					else
+                    {
+						InventoryItem twohand = Inventory.GetItem(eInventorySlot.TwoHandWeapon);
+						InventoryItem onehand = Inventory.GetItem(eInventorySlot.RightHandWeapon);
+
+						if (twohand != null && onehand != null)
+							//Let's add some random chance
+							SwitchWeapon(Util.Chance(50) ? eActiveWeaponSlot.TwoHanded : eActiveWeaponSlot.Standard);
+						else if (twohand != null)
+							//Hmm our right hand weapon may have been null
+							SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+						else if (onehand != null)
+							//Hmm twohand was null lets default down here
+							SwitchWeapon(eActiveWeaponSlot.Standard);
+
+					}
 				}
 
 				if (template.VisibleActiveWeaponSlot > 0)
@@ -3359,13 +3391,21 @@ namespace DOL.GS
 		/// <returns>True if brain was found</returns>
 		public virtual bool RemoveBrain(ABrain removeBrain)
 		{
-			if (removeBrain == null) return false;
+			if (removeBrain == null)
+			{
+				//Console.WriteLine("removeBrain is null!");
+				return false;
+			}
 
 			lock (BrainSync)
 			{
 				ArrayList brains = new ArrayList(m_brains);
 				int index = brains.IndexOf(removeBrain);
-				if (index < 0) return false;
+				if (index < 0)
+				{
+					//Console.WriteLine("Brain index < 0");
+					return false;
+				}
 				bool active = brains[index] == Brain;
 				if (active)
 					removeBrain.Stop();
@@ -3941,6 +3981,28 @@ namespace DOL.GS
 
 		//}
 
+		private int scalingFactor = 19;
+		
+		public override double GetWeaponSkill(InventoryItem weapon)
+		{
+			/*
+			 * https://camelotherald.fandom.com/wiki/Weapon_Skill
+			[[[[LEVEL *DAMAGE_TABLE * (200 + BONUS * ITEM_BONUS) / 500]
+			*(100 + STAT) / 100]
+			*(100 + SPEC) / 100]
+			*(100 + WEAPONSKILL_BONUS) / 100]
+			*/
+			int weaponskill = 0;
+
+			weaponskill = (Level + 1) 
+				* ScalingFactor //scaling factor. Higher = more difficult
+				* (200 + GetModified(eProperty.MeleeDamage)) / 500 //melee damage buffs
+				* ((100 + Strength) / 100) //NPCs only use STR to calculate, can skip str or str/dex check
+				* ((100 + GetModified(eProperty.WeaponSkill)) / 100); //weaponskill buffs
+
+			return weaponskill;
+        }
+		
 
 		public override void RangedAttackFinished()
 		{
@@ -5318,11 +5380,18 @@ namespace DOL.GS
 				}
 			}
 
+			
+
 			if (m_runningSpellHandler != null)
 			{
 				//prevent from relaunch
 				base.OnAfterSpellCastSequence(handler);
 			}
+
+			if(TargetObject == null)
+            {
+				TargetObject = CachedTarget;
+            }
 
 			// Notify Brain of Cast Finishing.
 			if (Brain != null)
@@ -5400,14 +5469,15 @@ namespace DOL.GS
 		/// <param name="spell"></param>
 		/// <param name="line"></param>
 		/// <param name="checkLOS"></param>
-		public virtual void CastSpell(Spell spell, SpellLine line, bool checkLOS)
+		public virtual bool CastSpell(Spell spell, SpellLine line, bool checkLOS)
 		{
+			bool cast = false;
 			if (IsIncapacitated)
-				return;
+				return false;
 
 			if (checkLOS)
 			{
-				CastSpell(spell, line);
+				cast = CastSpell(spell, line);
 			}
 			else
 			{
@@ -5424,8 +5494,10 @@ namespace DOL.GS
 					spellToCast = spell;
 				}
 
-				base.CastSpell(spellToCast, line);
+				cast = base.CastSpell(spellToCast, line);
 			}
+
+			return cast;
 		}
 
 		/// <summary>
@@ -5439,7 +5511,7 @@ namespace DOL.GS
 			if (IsIncapacitated)
 				return false;
 
-			if ( (m_runningSpellHandler != null && !spell.IsInstantCast) || TempProperties.getProperty<Spell>(LOSCURRENTSPELL, null) != null)
+			if (TempProperties.getProperty<Spell>(LOSCURRENTSPELL, null) != null)
 				return false;
 
 			bool casted = false;
@@ -5558,14 +5630,6 @@ namespace DOL.GS
 			if (brain != null)
 				brain.Notify(e, sender, args);
 
-			if (e == GameNPCEvent.ArriveAtTarget)
-			{
-				if (IsReturningToSpawnPoint)
-				{
-					TurnTo(SpawnHeading);
-					IsReturningToSpawnPoint = false;
-				}
-			}
 		}
 
 		/// <summary>
@@ -5947,5 +6011,7 @@ namespace DOL.GS
 				m_campBonus = value;
 			}
 		}
-	}
+
+        public int ScalingFactor { get => scalingFactor; set => scalingFactor = value; }
+    }
 }

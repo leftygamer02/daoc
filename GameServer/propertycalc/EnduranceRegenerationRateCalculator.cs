@@ -46,11 +46,11 @@ namespace DOL.GS.PropertyCalc
 			if (debuff < 0)
 				debuff = -debuff;
 
-			// buffs allow to regenerate endurance even in combat and while moving
-			double regen =
+			// buffs allow to regenerate endurance even in combat and while moving			
+			double regenBuff =
 				 living.BaseBuffBonusCategory[(int)property]
 				+living.ItemBonus[(int)property];
-
+			double regen = regenBuff;
 			if (regen == 0 && living is GamePlayer) //&& ((GamePlayer)living).HasAbility(Abilities.Tireless))
 				regen++;
 
@@ -75,7 +75,9 @@ namespace DOL.GS.PropertyCalc
 				regen -= 3;
 				if (regen <= 0)
 					regen = 0.1;
-            }
+				if (regenBuff > 0)
+					regen = regenBuff;
+			}
 				
 
 			regen -= debuff;
@@ -91,7 +93,6 @@ namespace DOL.GS.PropertyCalc
 			{
 				regen += 1;	// compensate int rounding error
 			}
-
 			return (int)regen;
 		}
 	}

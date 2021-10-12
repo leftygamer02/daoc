@@ -28,20 +28,24 @@ namespace DOL.GS.Commands
 	{
 		public void OnCommand(GameClient client, string[] args)
 		{
-			if (client.Player.CurrentRegion.IsRvR && !client.Player.CurrentRegion.IsDungeon)
+			if (client.Player.CurrentRegion.IsRvR && !client.Player.CurrentRegion.IsDungeon || ServerProperties.Properties.EVENT_THIDRANKI)
 			{
 				client.Player.Release(eReleaseType.RvR, false);
 				return;
 			}
 
             if (args.Length > 1 && args[1].ToLower() == "city")
-			{
-					client.Player.Release(eReleaseType.City, false);
+            {
+	            if (ServerProperties.Properties.EVENT_THIDRANKI)
+		            return;
+				client.Player.Release(eReleaseType.City, false);
 					return;
 			}
 
             if (args.Length > 1 && args[1].ToLower() == "house")
             {
+	            if (ServerProperties.Properties.EVENT_THIDRANKI)
+		            return;
                 client.Player.Release(eReleaseType.House, false);
                 return;
             }

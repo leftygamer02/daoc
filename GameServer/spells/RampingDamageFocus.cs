@@ -68,7 +68,7 @@ namespace DOL.GS.Spells
 
 				if (Caster.EffectList.GetOfType<MasteryofConcentrationEffect>() != null)
 				{
-					MasteryofConcentrationAbility ra = Caster.GetAbility<MasteryofConcentrationAbility>();
+					AtlasOF_MasteryofConcentration ra = Caster.GetAbility<AtlasOF_MasteryofConcentration>();
 					if (ra != null && ra.Level > 0)
 					{
 						effectiveness *= System.Math.Round((double)ra.GetAmountForLevel(ra.Level) / 100, 2);
@@ -201,8 +201,8 @@ namespace DOL.GS.Spells
 
 			AttackData ad = CalculateDamageToTarget(target, effectiveness);
 			ad.Damage += (int)(ad.Damage * damageIncreaseInPercent);
-			DamageTarget(ad, true);
 			SendDamageMessages(ad);
+			DamageTarget(ad, true);			
 			target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
 		}
 

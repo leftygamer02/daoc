@@ -187,7 +187,7 @@ namespace DOL.AI.Brain
 					Body.StopFollowing();
 				Body.TurnTo(Body.TargetObject);
 				Body.CastSpell(spell, m_mobSpellLine);
-				Body.TargetObject = lastTarget;
+				//Body.TargetObject = lastTarget;
 				return true;
 			}
 			Body.TargetObject = lastTarget;
@@ -238,7 +238,7 @@ namespace DOL.AI.Brain
 		/// <param name="e"></param>
 		/// <param name="sender"></param>
 		/// <param name="arguments"></param>
-		protected override void OnOwnerAttacked(DOLEvent e, object sender, EventArgs arguments) { }
+		public override void OnOwnerAttacked(AttackData ad) { }
 
 		#endregion
 	}

@@ -168,7 +168,7 @@ namespace DOL.GS.Spells
             }
             if (ad.CriticalDamage > 0)
                 MessageToCaster(String.Format(LanguageMgr.GetTranslation(PlayerReceivingMessages.Client, "DoTSpellHandler.SendDamageMessages.YourCriticallyHits",
-                    Spell.Name, ad.Target.GetName(0, false), ad.CriticalDamage)), eChatType.CT_YouHit);
+                    Spell.Name, ad.Target.GetName(0, false), ad.CriticalDamage)) + " (" + (ad.Attacker.SpellCriticalChance - 10) + "%)", eChatType.CT_YouHit);
 
                 //			if (ad.Damage > 0)
                 //			{
@@ -245,6 +245,20 @@ namespace DOL.GS.Spells
 			// no interrupts on DoT direct effect
 			// calc damage
 			AttackData ad = CalculateDamageToTarget(target, effectiveness);
+			ad.CausesCombat = true;
+			SendDamageMessages(ad);
+			DamageTarget(ad, false);
+		}
+
+		public void OnDirectEffect(GameLiving target, double effectiveness, bool causesCombat)
+		{
+			if (target == null) return;
+			if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
+
+			// no interrupts on DoT direct effect
+			// calc damage
+			AttackData ad = CalculateDamageToTarget(target, effectiveness);
+			ad.CausesCombat = causesCombat;
 			SendDamageMessages(ad);
 			DamageTarget(ad, false);
 		}

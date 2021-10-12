@@ -35,10 +35,16 @@ namespace DOL.GS
 			SetOwnBrain(new BlankBrain());
 		}
 
-		/// <summary>
-		/// Training Dummies never loose health
-		/// </summary>
-		public override int Health
+		
+        public override void StartAttack(GameObject target)
+        {
+            
+        }
+
+        /// <summary>
+        /// Training Dummies never loose health
+        /// </summary>
+        public override int Health
 		{
 			get{ return base.MaxHealth;}
 			set {}
@@ -62,13 +68,13 @@ namespace DOL.GS
 			{
 				if (ad.Attacker.Realm == 0 || this.Realm == 0)
 				{
-					LastAttackedByEnemyTickPvE = CurrentRegion.Time;
-					ad.Attacker.LastAttackTickPvE = CurrentRegion.Time;
+					LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+					ad.Attacker.LastAttackTickPvE = GameLoop.GameLoopTime;
 				}
 				else
 				{
-					LastAttackedByEnemyTickPvP = CurrentRegion.Time;
-					ad.Attacker.LastAttackTickPvP = CurrentRegion.Time;
+					LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+					ad.Attacker.LastAttackTickPvP = GameLoop.GameLoopTime;
 				}
 			}
 		}

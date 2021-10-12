@@ -180,7 +180,14 @@ namespace DOL.GS.Commands
 					info.Add(" + Damage type: " + target.MeleeDamageType);
 					if (target.LeftHandSwingChance > 0)
 						info.Add(" + Left Swing %: " + target.LeftHandSwingChance);
-						
+					if(target.ScalingFactor > 0)
+						info.Add(" + DamageTableScalingFactor: " + target.ScalingFactor);
+					if(target.GetModified(eProperty.MeleeDamage) > 0) 
+						info.Add(" + MeleeDamage bonus %: " + target.GetModified(eProperty.MeleeDamage));
+					if (target.GetWeaponSkill(new InventoryItem()) > 0)
+						info.Add(" + Calculated Weaponskill: " + target.GetWeaponSkill(new InventoryItem()));
+
+
 					if (target.Abilities != null && target.Abilities.Count > 0)
 						info.Add(" + Abilities: " + target.Abilities.Count);
 						
@@ -249,12 +256,12 @@ namespace DOL.GS.Commands
 					}
 
 					info.Add("InCombat: " + target.InCombat);
-					info.Add("AttackState: " + target.AttackState);
+					info.Add("AttackState: " + target.attackComponent.AttackState);
 					info.Add("LastCombatPVE: " + target.LastAttackedByEnemyTickPvE);
 					info.Add("LastCombatPVP: " + target.LastAttackedByEnemyTickPvP);
 
-					if (target.InCombat || target.AttackState)
-						info.Add("RegionTick: " + target.CurrentRegion.Time);
+					if (target.InCombat || target.attackComponent.AttackState)
+						info.Add("RegionTick: " + GameLoop.GameLoopTime);
 
 					info.Add("");
 

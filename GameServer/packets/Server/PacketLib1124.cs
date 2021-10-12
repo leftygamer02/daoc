@@ -2274,7 +2274,7 @@ namespace DOL.GS.PacketHandler
 				}
 
 				GameObject target = npc.TargetObject;
-				if (npc.AttackState && target != null && target.ObjectState == GameObject.eObjectState.Active && !npc.IsTurningDisabled)
+				if (npc.attackComponent.AttackState && target != null && target.ObjectState == GameObject.eObjectState.Active && !npc.IsTurningDisabled)
 					targetOID = (ushort)target.ObjectID;
 			}
 
@@ -3406,7 +3406,7 @@ namespace DOL.GS.PacketHandler
 
 		public virtual void SendSpellEffectAnimation(GameObject spellCaster, GameObject spellTarget, ushort spellid, ushort boltTime, bool noSound, byte success)
 		{
-			Console.WriteLine($"Spell Effect sent at {GameLoop.GameLoopTime}");
+			//Console.WriteLine($"Spell Effect sent at {GameLoop.GameLoopTime}");
 			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.SpellEffectAnimation)))
 			{
 				pak.WriteShort((ushort)spellCaster.ObjectID);
@@ -3788,7 +3788,7 @@ namespace DOL.GS.PacketHandler
 						pak.WriteByte((byte)ra.CostForUpgrade(i));
 
 					if (ra.CheckRequirement(m_gameClient.Player))
-						pak.WritePascalString(ra.KeyName);
+						pak.WritePascalString(ra.Name);
 					else
 						pak.WritePascalString(string.Format("[{0}]", ra.Name));
 				}
@@ -3844,7 +3844,18 @@ namespace DOL.GS.PacketHandler
 					}
 
 					if (m_gameClient.CanSendTooltip(24, spell.InternalID))
+					{
 						SendDelveInfo(DetailDisplayHandler.DelveSpell(m_gameClient, spell));
+						if (spell.HasSubSpell)
+						{
+							if (m_gameClient.CanSendTooltip(24, SkillBase.GetSpellByID(spell.SubSpellID).InternalID))
+								SendDelveInfo(DetailDisplayHandler.DelveSpell(m_gameClient, SkillBase.GetSpellByID(spell.SubSpellID)));
+
+						}
+						if (spell.SpellType == (byte)eSpellType.DefensiveProc || spell.SpellType == (byte)eSpellType.OffensiveProc)
+							SendDelveInfo(DetailDisplayHandler.DelveSpell(m_gameClient, SkillBase.GetSpellByID((int)spell.Value)));
+						
+					}
 				}
 			}
 		}
@@ -5986,19 +5997,21 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte(0x00); //unk
 
 				// weapondamage
-				var wd = (int)(m_gameClient.Player.WeaponDamage(m_gameClient.Player.AttackWeapon) * 100.0);
+				var wd = (int)(m_gameClient.Player?.WeaponDamage(m_gameClient.Player?.AttackWeapon) * 100.0);
 				pak.WriteByte((byte)(wd / 100));
 				pak.WritePascalString(" ");
 				pak.WriteByte((byte)(wd % 100));
 				pak.WritePascalString(" ");
 				// weaponskill
-				int ws = m_gameClient.Player.DisplayedWeaponSkill;
+				int? ws = m_gameClient.Player?.DisplayedWeaponSkill;
+				if (ws is null) ws = 0;
 				pak.WriteByte((byte)(ws >> 8));
 				pak.WritePascalString(" ");
 				pak.WriteByte((byte)(ws & 0xff));
 				pak.WritePascalString(" ");
 				// overall EAF
-				int eaf = m_gameClient.Player.EffectiveOverallAF;
+				int? eaf = m_gameClient.Player?.EffectiveOverallAF;
+				if (eaf is null) eaf = 0;
 				pak.WriteByte((byte)(eaf >> 8));
 				pak.WritePascalString(" ");
 				pak.WriteByte((byte)(eaf & 0xff));

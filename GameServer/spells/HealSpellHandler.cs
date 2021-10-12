@@ -33,12 +33,17 @@ namespace DOL.GS.Spells
     {
         // constructor
         public HealSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         /// <summary>
         /// Execute heal spell
         /// </summary>
         /// <param name="target"></param>
         public override bool StartSpell(GameLiving target)
         {
+            if (target is null && Spell.Target.ToLower() == "pet")
+                target = Caster;
             var targets = SelectTargets(target);
             if (targets.Count <= 0) return false;
 
@@ -148,7 +153,7 @@ namespace DOL.GS.Spells
             if (moc != null)
             {
                 GamePlayer playerCaster = Caster as GamePlayer;
-                MasteryofConcentrationAbility ra = playerCaster.GetAbility<MasteryofConcentrationAbility>();
+                AtlasOF_MasteryofConcentration ra = playerCaster.GetAbility<AtlasOF_MasteryofConcentration>();
                 if (ra != null)
                 	mocFactor = (double)ra.GetAmountForLevel(ra.Level) / 100.0;
                 amount = amount * mocFactor;
@@ -171,6 +176,7 @@ namespace DOL.GS.Spells
                 double minValue = amount / 10;
                 double maxValue = amount / 2 + 1;
                 criticalvalue = Util.RandomDouble() * (maxValue - minValue) + minValue;
+                criticalvalue = Math.Round(criticalvalue, MidpointRounding.ToEven); /// [Atlas - Takii] Round crit value for simplicity and to remove decimals from combat log.
             }
 
             amount += criticalvalue;
@@ -202,6 +208,25 @@ namespace DOL.GS.Spells
             }
 
             amount = Math.Round(amount);
+
+            #region change target to Necromancer Pet, if Necromancer was targeted for heal
+            // check if its a necro in shade mode
+            if (target.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+            {
+                if (target.ControlledBrain != null)
+                {
+                    if (target.ControlledBrain.Body != null)
+                    {
+                        if (target.ControlledBrain.Body is NecromancerPet)
+                        {
+                            //log.Info("Changing target to Necromancer PET");
+                            target = target.ControlledBrain.Body as NecromancerPet;
+                        }
+                    }
+                }
+            }
+            #endregion
+
             int heal = target.ChangeHealth(Caster, eHealthChangeType.Spell, (int)amount);
 
             #region PVP DAMAGE
@@ -259,7 +284,7 @@ namespace DOL.GS.Spells
                             }
 
                             player.GainRealmPoints(Bonus_RP_Soin, false);
-                            player.Out.SendMessage("Vous gagnez " + Bonus_RP_Soin.ToString() + " points de royaume pour avoir soigné un membre de votre royaume.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                            player.Out.SendMessage("You gain " + Bonus_RP_Soin.ToString() + " realmpoints for healing a member of your Realm", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                         }
                     }
                 }
@@ -307,7 +332,7 @@ namespace DOL.GS.Spells
                     MessageToCaster(target.GetName(0, true) + " is fully healed.", eChatType.CT_Spell);
                 }
                 if (heal > 0 && criticalvalue > 0)
-                    MessageToCaster("Your heal criticals for an extra " + criticalvalue + " amount of hit points!", eChatType.CT_Spell);
+                    MessageToCaster("Your heal criticals for an extra " + criticalvalue + " hit points!", eChatType.CT_Spell);
             }
 
             return true;

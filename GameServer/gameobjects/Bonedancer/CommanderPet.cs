@@ -470,6 +470,11 @@ namespace DOL.GS
 			return base.WhisperReceive(source, str);
 		}
 
+		public override bool Interact(GamePlayer player)
+        {
+			return WhisperReceive(player, "commander");
+        }
+
 		#region Inventory
 		public enum eWeaponType
 		{
