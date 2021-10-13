@@ -2075,16 +2075,16 @@ namespace DOL.GS
 			m_packageID = dbNpc.PackageID;
 
 			var models = Util.SplitCSV(NPCTemplate.Model, true)
-									.Where(x => Int16.TryParse(x, out short i) == true && i > 0)
-									.Select(x => Int16.Parse(x))
+									.Where(x => ushort.TryParse(x, out ushort i) == true && i > 0)
+									.Select(x => ushort.Parse(x))
 									.ToList();
 			try
 			{
-				Model = (ushort)models[Util.Random(models.Count - 1)];
+				Model = models[Util.Random(models.Count - 1)];
 			}
-			catch
+			catch (Exception ex)
             {
-				log.ErrorFormat("GameNPC error in LoadFromDatabase: invalid model number '{0}' for NPC {1} ({2})", NPCTemplate.Model, dbNpc.Name, dbNpc.Id);
+				log.ErrorFormat("GameNPC error in LoadFromDatabase: invalid model number '{0}' for NPC {1} ({2}) [{3}]", NPCTemplate.Model, dbNpc.Name, dbNpc.Id, ex.Message);
 			}
 			
 

@@ -202,7 +202,7 @@ namespace DOL.GS.GameEvents
 		/// <param name="ch"></param>
 		public static void BindCharacter(Character ch)
 		{
-			ch.BindRegion = ch.RegionID;
+			ch.BindRegionID = ch.RegionID;
 			ch.BindHeading = ch.Direction;
 			ch.BindXpos = ch.Xpos;
 			ch.BindYpos = ch.Ypos;

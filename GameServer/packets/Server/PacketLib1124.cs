@@ -2074,10 +2074,6 @@ namespace DOL.GS.PacketHandler
 
 				pak.WriteByte(0x00);
 
-				if (npc.Name == "Meara")
-                {
-					log.Info($"Send NPC Create packate: {pak.ToHumanReadable()}");
-                }
 				SendTCP(pak);
 			}
 			/* removed, hack fix for client spamming requests for npcupdates/ creates

@@ -152,7 +152,7 @@ namespace DOL.GS.GameEvents
 						// create Inventory item and set to owner.
 						InventoryItem inventoryItem = GameInventoryItem.Create(item);
 						inventoryItem.CharacterID = ch.Id;
-						inventoryItem.ItemTemplate.Realm = ch.Realm;
+						//inventoryItem.ItemTemplate.Realm = ch.Realm;
 						
 						bool itemChoosen = false;
 		

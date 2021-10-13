@@ -1590,6 +1590,9 @@ namespace DOL.GS
 			if (db == null || db.IsDisposed)
 				return obj;
 
+
+			log.Info($"Saving object of type {typeof(T).Name} with id {obj.Id}");
+
 			if (!db.ChangeTracker.Entries<T>().Any(x => x.Entity.Id == obj.Id))
             {
 				db.Set<T>().Update(obj);
@@ -1615,14 +1618,21 @@ namespace DOL.GS
 		{
             try
             {
-				var db = m_database;
+				var db = GameServer.Database;
+
+				if (db == null || db.IsDisposed)
+					return false;
 
 				var entity = db.Set<T>().Find(obj.Id);
 
 				if (entity != null)
 				{
 					db.Set<T>().Remove(entity);
-					//db.SaveChanges();
+
+					if (obj is Account || obj is Character || obj is InventoryItem || obj is CharacterCustomParam)
+					{
+						db.SaveChanges();
+					}
 				}
 
 				return true;
@@ -1636,7 +1646,12 @@ namespace DOL.GS
 
 		public void DeleteDataObjects<T>(IEnumerable<T> objs) where T : class, IDataObject
 		{
-			var db = m_database;
+			var db = GameServer.Database;
+
+			if (db == null || db.IsDisposed)
+				return;
+
+			
 			foreach (var obj in objs)
 			{
 				var entity = db.Set<T>().Find(obj.Id);
@@ -1646,6 +1661,11 @@ namespace DOL.GS
 					db.Set<T>().Remove(entity);
 					//db.SaveChanges();
 				}
+			}
+
+			if (typeof(T) == typeof(Account) || typeof(T) == typeof(Character) || typeof(T) == typeof(InventoryItem) || typeof(T) == typeof(CharacterCustomParam))
+			{
+				db.SaveChanges();
 			}
 		}
 

@@ -46,6 +46,10 @@
   <ItemGroup>
     <Compile Remove="ai\brain\StandardMobBrain.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="GameServer-2021-10-08.log" />
+    <None Remove="GameServer.log" />
+  </ItemGroup>
   <Target Name="CopyFiles" AfterTargets="AfterBuild">
     <Copy SourceFiles="@(TranslationFiles)" DestinationFiles="@(TranslationFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\languages\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>

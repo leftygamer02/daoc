@@ -645,9 +645,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 						string deletedChar = character.Name;
 
 						GameServer.Instance.DeleteDataObject(character);
-						client.Account.Characters = null;
-						client.Player = null;
-						client.Account = GameServer.Database.Accounts.Find(client.Account.Id);
+						//client.Account.Characters = null;
+						//client.Player = null;
+						//client.Account = GameServer.Database.Accounts.Include(x => x.Characters).FirstOrDefault(x => x.Id == client.Account.Id);
 
 						if (client.Account.Characters == null || client.Account.Characters.Count == 0)
 						{

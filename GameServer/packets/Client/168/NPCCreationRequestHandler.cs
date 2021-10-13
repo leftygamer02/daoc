@@ -45,8 +45,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			GameNPC npc = region.GetObject(id) as GameNPC;
 			if (npc == null || !client.Player.IsWithinRadius(npc, WorldMgr.OBJ_UPDATE_DISTANCE))
-			{
-				log.Info($"Handling NPC request: Npc Id - {id} - NOT FOUND! Sending ObjectDelete");
+			{				
 				client.Out.SendObjectDelete(id);
 				return;
 			}
