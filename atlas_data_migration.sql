@@ -341,11 +341,11 @@ INSERT INTO newatlas.npcequipments (Slot, Model, Color, Effect, Extension, Emble
 SELECT Slot,Model,Color,Effect,Extension, Emblem,TemplateID,NOW(),NOW() FROM atlas.npcequipment;
 
 /* Create temporary fields and indexed */
-ALTER TABLE newatlas.npctemplates ADD COLUMN OldId TEXT NULL;
-ALTER TABLE newatlas.npctemplates ADD COLUMN OldMobId TEXT NULL;
+ALTER TABLE newatlas.npctemplates ADD COLUMN OldId TEXT(255) NULL;
+ALTER TABLE newatlas.npctemplates ADD COLUMN OldMobId TEXT(255) NULL;
 ALTER TABLE newatlas.npctemplates ADD INDEX `OldMobId` (`OldMobId`);
 ALTER TABLE newatlas.npctemplates ADD INDEX `OldId` (`OldId`);
-ALTER TABLE newatlas.spawngroups ADD COLUMN OldMobId TEXT NULL;
+ALTER TABLE newatlas.spawngroups ADD COLUMN OldMobId TEXT(255) NULL;
 ALTER TABLE newatlas.spawngroups ADD INDEX `OldMobId` (`OldMobId`);
 
 /* link mobs to npc templates in old atlas db */
