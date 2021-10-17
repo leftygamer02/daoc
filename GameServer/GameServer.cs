@@ -1480,6 +1480,24 @@ namespace DOL.GS
 
 					//FactionMgr.SaveAllAggroToFaction();
 					saveCount = WorldMgr.GetAllPlayingClientsCount();
+
+					foreach (var change in m_database.ChangeTracker.Entries().Where(x=>x.State != Microsoft.EntityFrameworkCore.EntityState.Unchanged))
+                    {
+						var obj = change.Entity as IDataObject;
+
+						log.Info($"Saving tracked change on item of type {obj.GetType().Name} with Id {obj.Id} ({change.ToString()})");
+
+						foreach (var prop in change.Properties.Where(x => x.IsModified))
+                        {
+							log.Info($"----Saving value {prop.CurrentValue} to property {prop.Metadata.Name}");
+						}
+
+						foreach (var col in change.Collections.Where(x => x.IsModified))
+                        {
+							log.Info($"----Saving value {col.CurrentValue} to property {col.Metadata.Name}");
+						}
+                    }
+
 					m_database.SaveChanges();
 
 					
@@ -1608,6 +1626,23 @@ namespace DOL.GS
 
 			if (obj is Account || obj is Character || obj is InventoryItem || obj is CharacterCustomParam)
             {
+				foreach (var change in m_database.ChangeTracker.Entries().Where(x => x.State != Microsoft.EntityFrameworkCore.EntityState.Unchanged))
+				{
+					var chg = change.Entity as IDataObject;
+
+					log.Info($"Saving tracked change on item of type {chg.GetType().Name} with Id {chg.Id} ({change.ToString()})");
+
+					foreach (var prop in change.Properties.Where(x => x.IsModified))
+					{
+						log.Info($"----Saving value {prop.CurrentValue} to property {prop.Metadata.Name}");
+					}
+
+					foreach (var col in change.Collections.Where(x => x.IsModified))
+					{
+						log.Info($"----Saving value {col.CurrentValue} to property {col.Metadata.Name}");
+					}
+				}
+
 				db.SaveChanges();
 			}		
 

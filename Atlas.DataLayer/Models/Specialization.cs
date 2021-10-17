@@ -14,10 +14,10 @@ namespace Atlas.DataLayer.Models
         public string Description { get; set; }
         public string Implementation { get; set; }
 
-        public ICollection<SpellLine> SpellLines { get; set; }
-        public ICollection<SpecializationAbility> Abilities { get; set; }
-        public ICollection<Style> Styles { get; set; }
-        public ICollection<Character> Characters { get; set; }
+        public virtual ICollection<SpellLine> SpellLines { get; set; }
+        public virtual ICollection<SpecializationAbility> Abilities { get; set; }
+        public virtual ICollection<Style> Styles { get; set; }
+        public virtual ICollection<Character> Characters { get; set; }
 
         public Specialization()
         {

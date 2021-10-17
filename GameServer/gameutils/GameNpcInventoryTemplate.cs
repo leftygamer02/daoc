@@ -261,7 +261,7 @@ namespace DOL.GS
 
 					InventoryItem item = new GameInventoryItem();
 					item.ItemTemplate = new ItemTemplate();
-					item.ItemTemplate.Id = oldItem.ItemTemplate.Id;
+					item.ItemTemplateID = oldItem.ItemTemplateID;
 					item.ItemTemplate.Model = oldItem.ItemTemplate.Model;
 					item.Color = oldItem.Color;
 					item.ItemTemplate.Effect = oldItem.ItemTemplate.Effect;

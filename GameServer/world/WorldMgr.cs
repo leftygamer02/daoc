@@ -348,12 +348,21 @@ namespace DOL.GS
 			{
 				foreach (string loadRegion in Util.SplitCSV(ServerProperties.Properties.DEBUG_LOAD_REGIONS, true))
 				{
-					mobList.AddRange(GameServer.Database.SpawnPoints.Where(x => x.RegionID.ToString() == loadRegion));
+					mobList.AddRange(GameServer.Database.SpawnPoints
+														.Include(x => x.SpawnGroup)
+														.ThenInclude(x => x.NpcSpawnGroups)
+														.ThenInclude(x => x.NpcTemplate)
+														.AsNoTracking()
+														.Where(x => x.RegionID.ToString() == loadRegion));
 				}
 			}
 			else
 			{
-				mobList.AddRange(GameServer.Database.SpawnPoints);
+				mobList.AddRange(GameServer.Database.SpawnPoints
+													.Include(x => x.SpawnGroup)
+													.ThenInclude(x => x.NpcSpawnGroups)
+													.ThenInclude(x => x.NpcTemplate)
+													.AsNoTracking());
 			}
 
 			var mobsByRegionId = new Dictionary<int, List<SpawnPoint>>(512);
@@ -378,7 +387,8 @@ namespace DOL.GS
 												.ThenInclude(x => x.NpcSpawnGroups)
 												.ThenInclude(x => x.NpcTemplate)
 												.Include(x => x.SpawnGroups)
-												.ThenInclude(x => x.SpawnPoints).ToList())
+												.ThenInclude(x => x.SpawnPoints)
+												.AsNoTracking().ToList())
 			{
 				var data = new RegionData();
 
@@ -545,7 +555,7 @@ namespace DOL.GS
 					if (m_regions.TryGetValue(region.Id, out Region reg))
                     {
 						reg.LoadFromDatabase(region.Mobs, ref mobs, ref merchants, ref items, ref bindpoints);
-                    }
+					}
                 }
 
 

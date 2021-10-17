@@ -3877,6 +3877,8 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte(Icons); // unknown
 				pak.WriteByte(0); // unknown
 
+				log.Info($"First set -- {pak.ToHumanReadable()}");
+
 				foreach (ECSGameEffect effect in m_gameClient.Player.effectListComponent.GetAllEffects()/*Effects.Values*/.Where(e => e.EffectType != eEffect.Pulse))
 				{
 					if (effect.Icon != 0)
@@ -3937,7 +3939,9 @@ namespace DOL.GS.PacketHandler
 					}
 				}
 
-                foreach (IGameEffect effect in m_gameClient.Player.EffectList)
+				log.Info($"Second set -- {pak.ToHumanReadable()}");
+
+				foreach (IGameEffect effect in m_gameClient.Player.EffectList)
                 {
                     if (effect.Icon != 0)
                     {
@@ -3957,7 +3961,9 @@ namespace DOL.GS.PacketHandler
                         pak.WriteByte((byte)(fxcount - 1)); // icon index
                         pak.WriteByte((effect is GameSpellEffect || effect.Icon > 5000) ? (byte)(fxcount - 1) : (byte)0xff);
 
-                        byte ImmunByte = 0;
+						log.Info($"2.{entriesCount}.1 -- {pak.ToHumanReadable()}");
+
+						byte ImmunByte = 0;
                         var gsp = effect as GameSpellEffect;
                         if (gsp != null && gsp.IsDisabled)
                             ImmunByte = 1;
@@ -3972,7 +3978,9 @@ namespace DOL.GS.PacketHandler
                         else
                             pak.WriteShort(0);//don't override existing tooltip ids
 
-                        byte flagNegativeEffect = 0;
+						log.Info($"2.{entriesCount}.2 -- {pak.ToHumanReadable()}");
+
+						byte flagNegativeEffect = 0;
                         if (effect is StaticEffect)
                         {
                             if (((StaticEffect)effect).HasNegativeEffect)
@@ -3990,11 +3998,15 @@ namespace DOL.GS.PacketHandler
                         pak.WriteByte(flagNegativeEffect);
 
                         pak.WritePascalString(effect.Name);
-                        entriesCount++;
-                    }
+						log.Info($"2.{entriesCount}.3 -- {pak.ToHumanReadable()}");
+						entriesCount++;
+						
+					}
                 }
 
-                int oldCount = lastUpdateEffectsCount;
+				log.Info($"Third set -- {pak.ToHumanReadable()}");
+
+				int oldCount = lastUpdateEffectsCount;
 				lastUpdateEffectsCount = fxcount;
 
 				while (oldCount > fxcount)
@@ -4018,6 +4030,9 @@ namespace DOL.GS.PacketHandler
 				pak.Position = initPos;
 				pak.WriteByte((byte)entriesCount);
 				pak.Seek(0, SeekOrigin.End);
+
+
+				log.Info($"Final packet -- {pak.ToHumanReadable()}");
 
 				SendTCP(pak);
 			}

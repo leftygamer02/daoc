@@ -605,7 +605,7 @@ namespace DOL.GS
 		/// </summary>
 		public string AccountName
 		{
-			get { return DBCharacter != null ? DBCharacter.Account.Name : string.Empty; }
+			get { return DBCharacter?.Account != null ? DBCharacter.Account.Name : string.Empty; }
 		}
 
 		/// <summary>
@@ -3752,6 +3752,7 @@ namespace DOL.GS
 			if (line == null)
 				return;
 
+			log.Info($"Adding spell line {line.KeyName}");
 			SpellLine oldline = GetSpellLine(line.KeyName);
 			if (oldline == null)
 			{
@@ -12288,99 +12289,105 @@ namespace DOL.GS
 			// first load spec's career
 			LoadClassSpecializations(false);
 
-			//Load Remaining spec and levels from Database (custom spec can still be added here...)
-			foreach (var spec in character.Specs)
-			{
-				var tempSpec = SkillBase.GetSpecialization(spec.SpecLine, false);
+			////Load Remaining spec and levels from Database (custom spec can still be added here...)
+			//foreach (var spec in character.Specs)
+			//{
+			//	var tempSpec = SkillBase.GetSpecialization(spec.SpecLine, false);
 
-				if (tempSpec != null)
-				{
-					if (tempSpec.AllowSave)
-					{
-						if (HasSpecialization(tempSpec.KeyName))
-						{
-							GetSpecializationByName(tempSpec.KeyName).Level = spec.SpecLevel;
-						}
-						else
-						{
-							tempSpec.Level = spec.SpecLevel;
-							AddSpecialization(tempSpec, false);
-						}
-					}
-				}
-				else if (log.IsErrorEnabled)
-				{
-					log.ErrorFormat("{0}: can't find spec '{1}'", Name, spec.SpecLine);
-				}
-			}
-
-			//foreach (var ab in m_specialization.Values.SelectMany(s => s.GetAbilitiesForLiving(this)))
-   //         {
-			//	// this is for display order only
-			//	m_usableSkills.Add(new Tuple<Skill, Skill>(ab, ab));
+			//	if (tempSpec != null)
+			//	{
+			//		if (tempSpec.AllowSave)
+			//		{
+			//			if (HasSpecialization(tempSpec.KeyName))
+			//			{
+			//				GetSpecializationByName(tempSpec.KeyName).Level = spec.SpecLevel;
+			//			}
+			//			else
+			//			{
+			//				tempSpec.Level = spec.SpecLevel;
+			//				AddSpecialization(tempSpec, false);
+			//			}
+			//		}
+			//	}
+			//	else if (log.IsErrorEnabled)
+			//	{
+			//		log.ErrorFormat("{0}: can't find spec '{1}'", Name, spec.SpecLine);
+			//	}
 			//}
 
-			// Add Serialized Abilities to keep Database Order
-			// Custom Ability will be disabled as soon as they are not in any specs...
-			foreach (var dbAbility in character.Abilities.Where(x => !x.IsRealmAbility))
-			{
-				var ability = SkillBase.GetAbility(dbAbility.Ability.KeyName, dbAbility.Level);
-				if (ability != null)
-				{
-					// this is for display order only
-					m_usableSkills.Add(new Tuple<Skill, Skill>(ability, ability));
-				}
-			}
+   //         foreach (var ab in m_specialization.Values.SelectMany(s => s.GetAbilitiesForLiving(this)))
+   //         {
+   //             // this is for display order only
+   //             m_usableSkills.Add(new Tuple<Skill, Skill>(ab, ab));
+   //         }
 
-			// Retrieve Realm Abilities From Database to be handled by Career Spec
-			foreach (var dbAbility in character.Abilities.Where(x => x.IsRealmAbility))
-			{
-				Ability ability = SkillBase.GetAbility(dbAbility.Ability.KeyName, dbAbility.Level);
-				if (ability != null && ability is RealmAbility)
-				{
-					// this enable realm abilities for Career Computing.
-					m_realmAbilities.Add((RealmAbility)ability);
-				}
-			}
+   //         // Add Serialized Abilities to keep Database Order
+   //         // Custom Ability will be disabled as soon as they are not in any specs...
+   //         foreach (var dbAbility in character.Abilities.Where(x => !x.IsRealmAbility))
+			//{
+			//	if (dbAbility.Ability == null)
+			//		continue;
+			//	var ability = SkillBase.GetAbility(dbAbility.Ability.KeyName, dbAbility.Level);
+			//	if (ability != null)
+			//	{
+			//		// this is for display order only
+			//		m_usableSkills.Add(new Tuple<Skill, Skill>(ability, ability));
+			//	}
+			//}
 
-			// Load dependent skills
-			RefreshSpecDependantSkills(false);
+			//// Retrieve Realm Abilities From Database to be handled by Career Spec
+			//foreach (var dbAbility in character.Abilities.Where(x => x.IsRealmAbility))
+			//{
+			//	if (dbAbility.Ability == null)
+			//		continue;
+			//	Ability ability = SkillBase.GetAbility(dbAbility.Ability.KeyName, dbAbility.Level);
+			//	if (ability != null && ability is RealmAbility)
+			//	{
+			//		// this enable realm abilities for Career Computing.
+			//		m_realmAbilities.Add((RealmAbility)ability);
+			//	}
+			//}
+
+			//// Load dependent skills
+			//RefreshSpecDependantSkills(false);
 
 			#endregion
 
 			#region disable ability
-			//Since we added all the abilities that this character has, let's now disable the disabled ones!
-			foreach (var dbAbility in character.Abilities.Where(x => x.IsDisabled))
-			{
-				if (HasAbility(dbAbility.Ability.KeyName))
-				{
-					DisableSkill(GetAbility(dbAbility.Ability.KeyName), (int)dbAbility.ReuseTime);
-				}
-				else if (log.IsErrorEnabled)
-				{
-					log.ErrorFormat("{0}: error in loading disabled abilities => '{1}'", Name, dbAbility.Ability.KeyName);
-				}
-			}
+			////Since we added all the abilities that this character has, let's now disable the disabled ones!
+			//foreach (var dbAbility in character.Abilities.Where(x => x.IsDisabled))
+			//{
+			//	if (dbAbility.Ability == null)
+			//		continue;
+			//	if (HasAbility(dbAbility.Ability.KeyName))
+			//	{
+			//		DisableSkill(GetAbility(dbAbility.Ability.KeyName), (int)dbAbility.ReuseTime);
+			//	}
+			//	else if (log.IsErrorEnabled)
+			//	{
+			//		log.ErrorFormat("{0}: error in loading disabled abilities => '{1}'", Name, dbAbility.Ability.KeyName);
+			//	}
+			//}
 
 			#endregion
 
-			//Load the disabled spells
-			foreach (var dbSpell in character.DisabledSpells)
-			{
-				Spell sp = SkillBase.GetSpellByID(dbSpell.SpellID);
-				// disable
-				if (sp != null)
-				{
-					DisableSkill(sp, (int)dbSpell.ReuseTime);
-				}
-				else if (log.IsErrorEnabled)
-				{
-					log.ErrorFormat("{0}: error in loading disabled spells => '{1}'", Name, dbSpell.SpellID);
-				}
-			}
+			////Load the disabled spells
+			//foreach (var dbSpell in character.DisabledSpells)
+			//{
+			//	Spell sp = SkillBase.GetSpellByID(dbSpell.SpellID);
+			//	// disable
+			//	if (sp != null)
+			//	{
+			//		DisableSkill(sp, (int)dbSpell.ReuseTime);
+			//	}
+			//	else if (log.IsErrorEnabled)
+			//	{
+			//		log.ErrorFormat("{0}: error in loading disabled spells => '{1}'", Name, dbSpell.SpellID);
+			//	}
+			//}
 
-			CharacterClass.OnLevelUp(this, Level); // load all skills from DB first to keep the order
-			CharacterClass.OnRealmLevelUp(this);
+			//CharacterClass.OnLevelUp(this, Level); // load all skills from DB first to keep the order
+			//CharacterClass.OnRealmLevelUp(this);
 		}
 
 		/// <summary>
@@ -12394,6 +12401,7 @@ namespace DOL.GS
 			// Remove All Trainable Specialization or "Career Spec" that aren't managed by This Data Career anymore
 			var speclist = GetSpecList();
 			var careerslist = careers.Keys.Select(k => k.KeyName.ToLower());
+			log.Info("Loading Careers: " + String.Join(", ", careerslist));
 			foreach (var spec in speclist.Where(sp => sp.Trainable || !sp.AllowSave))
 			{
 				if (!careerslist.Contains(spec.KeyName.ToLower()))
@@ -12402,40 +12410,43 @@ namespace DOL.GS
 						
 			// sort ML Spec depending on ML Line
 			byte mlindex = 0;
-			foreach (KeyValuePair<Specialization, int> constraint in careers)
-			{
-				if (constraint.Key is IMasterLevelsSpecialization)
-				{
-					if (mlindex != MLLine)
-					{
-						if (HasSpecialization(constraint.Key.KeyName))
-							RemoveSpecialization(constraint.Key.KeyName);
-						
-						mlindex++;
-						continue;
-					}
-					
-					mlindex++;
-					
-					if (!MLGranted || MLLevel < 1)
-					{
-						continue;
-					}
-				}
-				
-				// load if the spec doesn't exists
-				if (Level >= constraint.Value)
-				{
+            foreach (KeyValuePair<Specialization, int> constraint in careers)
+            {
+                if (constraint.Key is IMasterLevelsSpecialization)
+                {
+                    if (mlindex != MLLine)
+                    {
+                        if (HasSpecialization(constraint.Key.KeyName))
+                            RemoveSpecialization(constraint.Key.KeyName);
+
+                        mlindex++;
+                        continue;
+                    }
+
+                    mlindex++;
+
+                    if (!MLGranted || MLLevel < 1)
+                    {
+                        continue;
+                    }
+                }
+
+                
+                // load if the spec doesn't exists
+                if (Level >= constraint.Value)
+                {
+					log.Info($"Adding specialization {constraint.Key.KeyName}");
 					if (!HasSpecialization(constraint.Key.KeyName))
-						AddSpecialization(constraint.Key, sendMessages);
-				}
-				else
-				{
+                        AddSpecialization(constraint.Key, sendMessages);
+                }
+                else
+                {
+					log.Info($"Removing specialization {constraint.Key.KeyName}");
 					if (HasSpecialization(constraint.Key.KeyName))
-						RemoveSpecialization(constraint.Key.KeyName);
-				}
-			}
-		}
+                        RemoveSpecialization(constraint.Key.KeyName);
+                }
+            }
+        }
 
 		/// <summary>
 		/// Verify this player has the correct number of spec points for the players level

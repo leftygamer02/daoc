@@ -676,8 +676,6 @@ namespace DOL.GS
 				tmp = new Atlas.DataLayer.Models.NpcTemplate();
 			}
 
-
-			tmp.Id = TemplateId;
 			tmp.AggroLevel = AggroLevel;
 			tmp.AggroRange = AggroRange;
 			tmp.BlockChance = BlockChance;
