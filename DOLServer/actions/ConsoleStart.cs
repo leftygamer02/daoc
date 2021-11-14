@@ -74,6 +74,9 @@ namespace DOL.DOLServer.Actions
 		public void OnAction(Hashtable parameters)
 		{
 			Console.WriteLine("Starting GameServer ... please wait a moment!");
+
+			System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
 			FileInfo configFile;
 			FileInfo currentAssembly = null;
 			if (parameters["-config"] != null)

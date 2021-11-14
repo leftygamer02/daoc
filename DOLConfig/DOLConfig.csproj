@@ -40,6 +40,7 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="MySql.Data" Version="8.0.25" />
+        <PackageReference Include="Npgsql" Version="5.0.10" />
         <PackageReference Include="System.Data.SQLite.Core" Version="1.0.114.2" />
         <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase" />
         <ProjectReference Include="..\GameServer\GameServer.csproj" Name="GameServer" />
@@ -59,9 +60,7 @@
         </None>
     </ItemGroup>
     <Target Name="CopyFiles" AfterTargets="AfterBuild">
-        <Copy
-          SourceFiles="@(XmlFiles)"
-          DestinationFiles="@(XmlFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\lib\config\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(XmlFiles)" DestinationFiles="@(XmlFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\lib\config\%(RecursiveDir)%(Filename)%(Extension)')" />
     </Target>
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

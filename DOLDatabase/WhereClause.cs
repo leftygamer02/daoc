@@ -236,9 +236,17 @@ namespace DOL.Database
         public override int GetHashCode() => base.GetHashCode();
     }
 
-    public class DB
+    public static class DB
     {
-        public static DBColumn Column(string columnName) => new DBColumn(columnName);
+        public static string FieldQualifier { get; set; } = "";
+        public static DBColumn Column(string columnName)
+        {
+            if (!String.IsNullOrEmpty(FieldQualifier) && !columnName.StartsWith(FieldQualifier))
+                columnName = $"{FieldQualifier}{columnName}{FieldQualifier}";
+
+            return new DBColumn(columnName);
+        }
+        
     }
 
     public class DBColumn

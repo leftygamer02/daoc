@@ -575,8 +575,10 @@ namespace DOL.Database.Handlers
 		/// The connection type to DB (xml, mysql,...)
 		/// </summary>
 		public override ConnectionType ConnectionType { get { return ConnectionType.DATABASE_SQLITE; } }
+
+		public override string FieldQualifier => "`";
 		#endregion
-		
+
 		#region SQLObject Implementation
 		/// <summary>
 		/// Implementation of Scalar Query with Parameters for Prepared Query
@@ -705,7 +707,7 @@ namespace DOL.Database.Handlers
 				dbParam.Value = Convert.ToUInt16(queryParameter.Value);
 			else if (queryParameter.Value is uint)
 				dbParam.Value = Convert.ToInt64(queryParameter.Value);
-			else if (dbParam.Value is ulong)
+			else if (queryParameter.Value is ulong)
 				dbParam.Value = unchecked((long)Convert.ToUInt64(queryParameter.Value));
 			else
 				dbParam.Value = queryParameter.Value;

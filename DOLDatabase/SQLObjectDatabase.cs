@@ -55,8 +55,8 @@ namespace DOL.Database
 		{
 			var tableName = AttributesUtils.GetTableOrViewName(dataObjectType);
 			var isView = AttributesUtils.GetViewName(dataObjectType) != null;
-			var viewAs = AttributesUtils.GetViewAs(dataObjectType);
-			
+			var viewAs = AttributesUtils.GetViewAs(dataObjectType);			
+
 			DataTableHandler existingHandler;
 			if (TableDatasets.TryGetValue(tableName, out existingHandler))
 			{
@@ -74,8 +74,8 @@ namespace DOL.Database
 				{
 					if (!string.IsNullOrEmpty(viewAs))
 					{
-						ExecuteNonQueryImpl(string.Format("DROP VIEW IF EXISTS `{0}`", tableName));
-						ExecuteNonQueryImpl(string.Format("CREATE VIEW `{0}` AS {1}", tableName, string.Format(viewAs, string.Format("`{0}`", AttributesUtils.GetTableName(dataObjectType)))));
+						ExecuteNonQueryImpl($"DROP VIEW IF EXISTS {FieldQualifier}{tableName}{FieldQualifier}");
+						ExecuteNonQueryImpl($"CREATE VIEW {FieldQualifier}{tableName}{FieldQualifier} AS {string.Format(viewAs, $"{FieldQualifier}{AttributesUtils.GetTableName(dataObjectType)}{FieldQualifier}")}");
 					}
 				}
 				else
@@ -139,12 +139,13 @@ namespace DOL.Database
 				
 				// Columns
 				var columns = tableHandler.FieldElementBindings.Where(bind => bind.PrimaryKey == null || !bind.PrimaryKey.AutoIncrement)
-					.Select(bind => new { Binding = bind, ColumnName = string.Format("`{0}`", bind.ColumnName), ParamName = string.Format("@{0}", bind.ColumnName) }).ToArray();
-				
+					.Select(bind => new { Binding = bind, ColumnName = string.Format("{1}{0}{1}", bind.ColumnName,FieldQualifier), ParamName = string.Format("@{0}", bind.ColumnName) }).ToArray();
+
 				// Prepare SQL Query
-				var command = string.Format("INSERT INTO `{0}` ({1}) VALUES({2})", tableHandler.TableName,
+				var command = string.Format("INSERT INTO {3}{0}{3} ({1}) VALUES({2})", tableHandler.TableName,
 				                            string.Join(", ", columns.Select(col => col.ColumnName)),
-				                            string.Join(", ", columns.Select(col => col.ParamName)));
+				                            string.Join(", ", columns.Select(col => col.ParamName)),
+											FieldQualifier);
 				
 				var objs = dataObjects.ToArray();
 				
@@ -233,17 +234,18 @@ namespace DOL.Database
 			{
 				// Columns Filtering out ReadOnly
 				var columns = tableHandler.FieldElementBindings.Where(bind => bind.PrimaryKey == null && bind.ReadOnly == null)
-					.Select(bind => new { Binding = bind, ColumnName = string.Format("`{0}`", bind.ColumnName), ParamName = string.Format("@{0}", bind.ColumnName) }).ToArray();
+					.Select(bind => new { Binding = bind, ColumnName = string.Format("{1}{0}{1}", bind.ColumnName, FieldQualifier), ParamName = string.Format("@{0}", bind.ColumnName) }).ToArray();
 				// Primary Key
 				var primary = tableHandler.FieldElementBindings.Where(bind => bind.PrimaryKey != null)
-					.Select(bind => new { Binding = bind, ColumnName = string.Format("`{0}`", bind.ColumnName), ParamName = string.Format("@{0}", bind.ColumnName) }).ToArray();
+					.Select(bind => new { Binding = bind, ColumnName = string.Format("{1}{0}{1}", bind.ColumnName, FieldQualifier), ParamName = string.Format("@{0}", bind.ColumnName) }).ToArray();
 				
 				if (!primary.Any())
 					throw new DatabaseException(string.Format("Table {0} has no primary key for saving...", tableHandler.TableName));
 				
-				var command = string.Format("UPDATE `{0}` SET {1} WHERE {2}", tableHandler.TableName,
+				var command = string.Format("UPDATE {3}{0}{3} SET {1} WHERE {2}", tableHandler.TableName,
 				                            string.Join(", ", columns.Select(col => string.Format("{0} = {1}", col.ColumnName, col.ParamName))),
-				                            string.Join(" AND ", primary.Select(col => string.Format("{0} = {1}", col.ColumnName, col.ParamName))));
+				                            string.Join(" AND ", primary.Select(col => string.Format("{0} = {1}", col.ColumnName, col.ParamName))),
+											FieldQualifier);
 				
 				var objs = dataObjects.ToArray();
 				var parameters = objs.Select(obj => columns.Concat(primary).Select(col => new QueryParameter(col.ParamName, col.Binding.GetValue(obj), col.Binding.ValueType)));
@@ -301,8 +303,9 @@ namespace DOL.Database
 				if (!primary.Any())
 					throw new DatabaseException(string.Format("Table {0} has no primary key for deletion...", tableHandler.TableName));
 				
-				var command = string.Format("DELETE FROM `{0}` WHERE {1}", tableHandler.TableName,
-	                        string.Join(" AND ", primary.Select(col => string.Format("`{0}` = @{0}", col.ColumnName))));
+				var command = string.Format("DELETE FROM {2}{0}{2} WHERE {1}", tableHandler.TableName,
+	                        string.Join(" AND ", primary.Select(col => string.Format("{1}{0}{1} = @{0}", col.ColumnName,FieldQualifier))),
+							FieldQualifier);
 				
 				var objs = dataObjects.ToArray();
 				var parameters = objs.Select(obj => primary.Select(pk => new QueryParameter(string.Format("@{0}", pk.ColumnName), pk.GetValue(obj), pk.ValueType)));
@@ -347,7 +350,7 @@ namespace DOL.Database
 		{
 			// Primary Key
 			var primary = tableHandler.FieldElementBindings.Where(bind => bind.PrimaryKey != null)
-				.Select(bind => new { ColumnName = string.Format("`{0}`", bind.ColumnName), ParamName = string.Format("@{0}", bind.ColumnName), ParamType = bind.ValueType }).ToArray();
+				.Select(bind => new { ColumnName = string.Format("{1}{0}{1}", bind.ColumnName, FieldQualifier), ParamName = string.Format("@{0}", bind.ColumnName), ParamType = bind.ValueType }).ToArray();
 			
 			if (!primary.Any())
 				throw new DatabaseException(string.Format("Table {0} has no primary key for finding by key...", tableHandler.TableName));
@@ -358,7 +361,15 @@ namespace DOL.Database
 				var whereClause = WhereClause.Empty;
 				foreach (var column in primary)
 				{
-					whereClause = whereClause.And(DB.Column(column.ColumnName).IsEqualTo(key));
+					if (column.ParamType == typeof(System.String))
+                    {
+						whereClause = whereClause.And(DB.Column(column.ColumnName).IsEqualTo(key.ToString()));
+					}
+                    else
+                    {
+						whereClause = whereClause.And(DB.Column(column.ColumnName).IsEqualTo(key));
+					}
+					
 				}
 				whereClauses.Add(whereClause);
 			}
@@ -383,9 +394,9 @@ namespace DOL.Database
 			
 			string command = null;
 			if (string.IsNullOrEmpty(whereExpression))
-				command = string.Format("SELECT COUNT(*) FROM `{0}`", tableName);
+				command = string.Format("SELECT COUNT(*) FROM {1}{0}{1}", tableName, FieldQualifier);
 			else
-				command = string.Format("SELECT COUNT(*) FROM `{0}` WHERE {1}", tableName, whereExpression);
+				command = string.Format("SELECT COUNT(*) FROM {2}{0}{2} WHERE {1}", tableName, whereExpression, FieldQualifier);
 			
 			var count = ExecuteScalarImpl(command);
 			
@@ -406,14 +417,15 @@ namespace DOL.Database
 			
 			string command = null;
 			if (!string.IsNullOrEmpty(whereExpression))
-				command = string.Format("SELECT {0} FROM `{1}` WHERE {2}",
-				                        string.Join(", ", columns.Select(col => string.Format("`{0}`", col.ColumnName))),
-				                        tableHandler.TableName,
-				                        whereExpression);
+				command = string.Format("SELECT {0} FROM {3}{1}{3} WHERE {2}",
+										string.Join(", ", columns.Select(col => string.Format("{1}{0}{1}", col.ColumnName, FieldQualifier))),
+										tableHandler.TableName,
+										whereExpression,
+										FieldQualifier);
 			else
-				command = string.Format("SELECT {0} FROM `{1}`",
-				                        string.Join(", ", columns.Select(col => string.Format("`{0}`", col.ColumnName))),
-				                        tableHandler.TableName);
+				command = string.Format("SELECT {0} FROM {2}{1}{2}",
+										string.Join(", ", columns.Select(col => $"{FieldQualifier}{col.ColumnName}{FieldQualifier}")),
+										tableHandler.TableName, FieldQualifier);
 			
 			var primary = columns.FirstOrDefault(col => col.PrimaryKey != null);
 			var dataObjects = new List<IList<DataObject>>();
@@ -426,9 +438,9 @@ namespace DOL.Database
 		{
 			var columns = tableHandler.FieldElementBindings.ToArray();
 
-			string selectFromExpression = string.Format("SELECT {0} FROM `{1}` ",
-										string.Join(", ", columns.Select(col => string.Format("`{0}`", col.ColumnName))),
-										tableHandler.TableName);
+			string selectFromExpression = string.Format("SELECT {0} FROM {2}{1}{2} ",
+										string.Join(", ", columns.Select(col => $"{FieldQualifier}{col.ColumnName}{FieldQualifier}")),
+										tableHandler.TableName, FieldQualifier);
 
 			var primary = columns.FirstOrDefault(col => col.PrimaryKey != null);
 			var dataObjects = new List<IList<DataObject>>();
@@ -438,7 +450,7 @@ namespace DOL.Database
 			return dataObjects.ToArray();
 		}
 
-        private void FillQueryResultList(IDataReader reader, DataTableHandler tableHandler, ElementBinding[] columns, ElementBinding primary, List<IList<DataObject>> resultList)
+        protected void FillQueryResultList(IDataReader reader, DataTableHandler tableHandler, ElementBinding[] columns, ElementBinding primary, List<IList<DataObject>> resultList)
 		{
             var list = new List<DataObject>();
 
@@ -540,6 +552,8 @@ namespace DOL.Database
 		/// The connection type to DB (xml, mysql,...)
 		/// </summary>
 		public abstract ConnectionType ConnectionType {	get; }
+
+		public abstract string FieldQualifier { get; }
 		#endregion
 
 		#region Table Implementation

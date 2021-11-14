@@ -22,6 +22,7 @@ using System.Data;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 
+using Npgsql;
 using MySql.Data.MySqlClient;
 using DOL.Database.Connection;
 using DOL.GS;
@@ -235,6 +236,17 @@ namespace DOLConfig
 					this.database_type_selectbox.SelectedItem = "SQLite";
 					this.xml_path_textbox.Text = currentConfig.DBConnectionString;
 					break;
+				case ConnectionType.DATABASE_POSTGRESQL:
+					this.database_type_selectbox.SelectedItem = "PostgreSQL";
+
+					NpgsqlConnectionStringBuilder nb = new NpgsqlConnectionStringBuilder(currentConfig.DBConnectionString);
+					this.mysql_host_textbox.Text = nb.Host;
+					this.mysql_port_textbox.Text = nb.Port.ToString();
+					this.mysql_database_name_textbox.Text = nb.Database;
+					this.mysql_username_textbox.Text = nb.Username;
+					this.mysql_password_textbox.Text = nb.Password;
+
+					break;
 				case ConnectionType.DATABASE_MYSQL:
 				default:
 					this.database_type_selectbox.SelectedItem = "MySQL";
@@ -415,6 +427,54 @@ namespace DOLConfig
 					currentConfig.DBType = ConnectionType.DATABASE_SQLITE;
 					currentConfig.DBConnectionString = xml_path_textbox.Text;
 					break;
+				case "postgresql":
+					currentConfig.DBType = ConnectionType.DATABASE_POSTGRESQL;
+
+					//postgresql connection string builder
+					var nb = new NpgsqlConnectionStringBuilder();
+
+					//Host
+					if (this.mysql_host_textbox.Text.Length == 0)
+					{
+						addWrongValueErrorHandler(this.mysql_host_textbox, "The value of \"Server Address\" in \"PostgreSQL Database settings\" is not set.");
+						return;
+					}
+					nb.Host = this.mysql_host_textbox.Text;
+
+					//Port
+					if (this.mysql_port_textbox.Text.Length == 0 || Convert.ToUInt16(this.mysql_port_textbox.Text) == 0)
+					{
+						addWrongValueErrorHandler(this.mysql_port_textbox, "The value of \"Port\" in \"PostgreSQL Database settings\" is not allowed.");
+						return;
+					}
+					nb.Port = Convert.ToUInt16(this.mysql_port_textbox.Text);
+
+					//Database Name
+					if (this.mysql_database_name_textbox.Text.Length == 0)
+					{
+						addWrongValueErrorHandler(this.mysql_database_name_textbox, "The value of \"Database Name\" in \"PostgreSQL Database settings\" is not set.");
+						return;
+					}
+					nb.Database = this.mysql_database_name_textbox.Text;
+
+					//Username
+					if (this.mysql_username_textbox.Text.Length == 0)
+					{
+						addWrongValueErrorHandler(this.mysql_username_textbox, "The value of \"Username\" in \"PostgreSQL Database settings\" is not set.");
+						return;
+					}
+					nb.Username = this.mysql_username_textbox.Text;
+
+					//Password
+					nb.Password = this.mysql_password_textbox.Text;
+										
+					//Set generated connection string
+					currentConfig.DBConnectionString = nb.ConnectionString;
+
+					//Just for fun: Test the connection
+					mysql_test_button_Click(null, null);
+
+					break;
 				case "mysql":
 					currentConfig.DBType = ConnectionType.DATABASE_MYSQL;
 
@@ -572,16 +632,36 @@ namespace DOLConfig
 		/// <param name="e"></param>
 		private void mysql_test_background_worker_DoWork(object sender, DoWorkEventArgs e)
 		{
-			
-			MySqlConnectionStringBuilder sb = new MySqlConnectionStringBuilder();
-			sb.Server = this.mysql_host_textbox.Text;
-			sb.Port = Convert.ToUInt32(this.mysql_port_textbox.Text);
-			sb.Database = this.mysql_database_name_textbox.Text;
-			sb.UserID = this.mysql_username_textbox.Text;
-			sb.Password = this.mysql_password_textbox.Text;
-			sb.ConnectionTimeout = 2;
+			IDbConnection con = null;
 
-			MySqlConnection con = new MySqlConnection(sb.ConnectionString);
+			if (currentConfig.DBType == ConnectionType.DATABASE_MYSQL)
+            {
+				var sb = new MySqlConnectionStringBuilder();
+				sb.Server = this.mysql_host_textbox.Text;
+				sb.Port = Convert.ToUInt32(this.mysql_port_textbox.Text);
+				sb.Database = this.mysql_database_name_textbox.Text;
+				sb.UserID = this.mysql_username_textbox.Text;
+				sb.Password = this.mysql_password_textbox.Text;
+				sb.ConnectionTimeout = 2;
+
+				con = new MySqlConnection(sb.ConnectionString);
+			}
+			else if (currentConfig.DBType == ConnectionType.DATABASE_POSTGRESQL)
+            {
+				var nb = new NpgsqlConnectionStringBuilder(currentConfig.DBConnectionString);
+				this.mysql_host_textbox.Text = nb.Host;
+				this.mysql_port_textbox.Text = nb.Port.ToString();
+				this.mysql_database_name_textbox.Text = nb.Database;
+				this.mysql_username_textbox.Text = nb.Username;
+				this.mysql_password_textbox.Text = nb.Password;
+
+				con = new NpgsqlConnection(nb.ConnectionString);
+			}
+            else
+            {
+				return;
+            }			
+			
 			try
 			{
 				con.Open();

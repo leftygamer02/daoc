@@ -302,7 +302,7 @@ namespace DOL.GS
 				if (m_npcEquipmentCache.ContainsKey(templateID))
 					npcEquip = m_npcEquipmentCache[templateID];
 				else
-					npcEquip = DOLDB<NPCEquipment>.SelectObjects(DB.Column("templateID").IsEqualTo(templateID));
+					npcEquip = DOLDB<NPCEquipment>.SelectObjects(DB.Column("TemplateID").IsEqualTo(templateID));
 
 				if (npcEquip == null || npcEquip.Count == 0)
 				{

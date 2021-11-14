@@ -46,6 +46,10 @@ namespace DOL.Database.Connection
 		/// <summary>
 		/// Use an OLEDB-Datasource
 		/// </summary>
-		DATABASE_OLEDB
+		DATABASE_OLEDB,
+		/// <summary>
+		/// Use PostgreSQL
+		/// </summary>
+		DATABASE_POSTGRESQL
 	}
 }

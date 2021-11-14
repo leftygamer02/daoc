@@ -465,17 +465,18 @@ namespace DOL.Database.Handlers
 		/// The connection type to DB (xml, mysql,...)
 		/// </summary>
 		public override ConnectionType ConnectionType { get { return ConnectionType.DATABASE_MYSQL; } }
-		#endregion
-		
-		#region SQLObject Implementation
-		/// <summary>
-		/// Implementation of Scalar Query with Parameters for Prepared Query
-		/// </summary>
-		/// <param name="SQLCommand">Scalar Command</param>
-		/// <param name="parameters">Collection of Parameters for Single/Multiple Read</param>
-		/// <param name="retrieveLastInsertID">Return Last Insert ID of each Command instead of Scalar</param>
-		/// <returns>Objects Returned by Scalar</returns>
-		protected override object[] ExecuteScalarImpl(string SQLCommand, IEnumerable<IEnumerable<QueryParameter>> parameters, bool retrieveLastInsertID)
+        public override string FieldQualifier => "`";
+        #endregion
+
+        #region SQLObject Implementation
+        /// <summary>
+        /// Implementation of Scalar Query with Parameters for Prepared Query
+        /// </summary>
+        /// <param name="SQLCommand">Scalar Command</param>
+        /// <param name="parameters">Collection of Parameters for Single/Multiple Read</param>
+        /// <param name="retrieveLastInsertID">Return Last Insert ID of each Command instead of Scalar</param>
+        /// <returns>Objects Returned by Scalar</returns>
+        protected override object[] ExecuteScalarImpl(string SQLCommand, IEnumerable<IEnumerable<QueryParameter>> parameters, bool retrieveLastInsertID)
 		{
 			if (log.IsDebugEnabled)
 				log.DebugFormat("ExecuteScalarImpl: {0}", SQLCommand);

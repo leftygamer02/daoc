@@ -198,6 +198,9 @@ namespace DOL.GS
 				case "mysql":
 					m_dbType = ConnectionType.DATABASE_MYSQL;
 					break;
+				case "postgresql":
+					m_dbType = ConnectionType.DATABASE_POSTGRESQL;
+					break;
 				case "sqlite":
 					m_dbType = ConnectionType.DATABASE_SQLITE;
 					break;
@@ -295,23 +298,26 @@ namespace DOL.GS
 			
 			switch (m_dbType)
 			{
-			case ConnectionType.DATABASE_XML:
-				db = "XML";
-					break;
-			case ConnectionType.DATABASE_MYSQL:
-				db = "MYSQL";
-					break;
-			case ConnectionType.DATABASE_SQLITE:
-				db = "SQLITE";
-					break;
-			case ConnectionType.DATABASE_MSSQL:
-				db = "MSSQL";
-					break;
-			case ConnectionType.DATABASE_ODBC:
-				db = "ODBC";
-					break;
-			case ConnectionType.DATABASE_OLEDB:
-				db = "OLEDB";
+				case ConnectionType.DATABASE_XML:
+					db = "XML";
+						break;
+				case ConnectionType.DATABASE_MYSQL:
+					db = "MYSQL";
+						break;
+				case ConnectionType.DATABASE_POSTGRESQL:
+					db = "POSTGRESQL";
+						break;
+				case ConnectionType.DATABASE_SQLITE:
+					db = "SQLITE";
+						break;
+				case ConnectionType.DATABASE_MSSQL:
+					db = "MSSQL";
+						break;
+				case ConnectionType.DATABASE_ODBC:
+					db = "ODBC";
+						break;
+				case ConnectionType.DATABASE_OLEDB:
+					db = "OLEDB";
 					break;
 				default:
 					m_dbType = ConnectionType.DATABASE_XML;

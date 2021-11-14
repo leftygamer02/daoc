@@ -52,7 +52,7 @@ namespace DOL.Database
 		/// <summary>
 		/// The Table Name for this Handler
 		/// </summary>
-		public string TableName { get; private set; }
+		public string TableName { get; set; }
 		/// <summary>
 		/// Element Bindings for this Handler
 		/// </summary>

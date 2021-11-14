@@ -1025,9 +1025,23 @@ namespace DOL.Database
 		public static IObjectDatabase GetObjectDatabase(ConnectionType connectionType, string connectionString)
 		{
 			if (connectionType == ConnectionType.DATABASE_MYSQL)
-				return new MySQLObjectDatabase(connectionString);
+            {
+				var db = new MySQLObjectDatabase(connectionString);
+				DB.FieldQualifier = db.FieldQualifier;
+				return db;
+			}				
 			if (connectionType == ConnectionType.DATABASE_SQLITE)
-				return new SQLiteObjectDatabase(connectionString);
+            {
+				var db = new SQLiteObjectDatabase(connectionString);
+				DB.FieldQualifier = db.FieldQualifier;
+				return db;
+			}				
+			if (connectionType == ConnectionType.DATABASE_POSTGRESQL)
+            {
+				var db =  new PostgreSQLObjectDatabase(connectionString);
+				DB.FieldQualifier = db.FieldQualifier;
+				return db;
+			}				
 
 			return null;
 		}
