@@ -5,12 +5,109 @@ using DOL.Database;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.Effects;
+using DOL.GS.GameEvents;
 using DOL.GS.PacketHandler;
+using DOL.GS.Commands;
+
+using log4net;
 
 /*
  * Utility Scrolls v2.0
  * Etaew - Dawn of Light
  */
+
+// namespace DOL.GS.GameEvents
+// {
+//     public class UtilityScrollsEvent
+//     {
+//         /// <summary>
+//         /// Defines a logger for this class.
+//         /// </summary>
+//         public static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+//
+//         
+//
+//         [ScriptLoadedEvent]
+//         public static void OnScriptLoaded(DOLEvent e, object sender, EventArgs args)
+//         {   
+//             Spell load;
+// 			load = CampfireSpell;
+//             log.Info("Systeme de Feux de camp Activé");
+//         }
+//
+// 		/////////////////////////////////////////////////////// SPELL /////////////////////////////////////////////////////////
+//         #region Spells
+//         #region Campfire
+//         protected static Spell m_CampfireSpell;
+//         public static Spell CampfireSpell
+//         {
+//             get
+//             {
+//                 if (m_CampfireSpell == null)
+//                 {
+//                     DBSpell spell = new DBSpell();
+// 					spell.AllowAdd = false;
+//                     spell.CastTime = 0;
+//                     spell.ClientEffect = 14804;
+//                     spell.Icon = 14804;
+//                     spell.Duration = 60;
+//                     spell.Description = "Invoque un Feu de camp guerisseur pendant " + spell.Duration + " secondes.";
+//                     spell.Name = "Comforting Flames";
+//                     spell.Range = 0;
+//                     spell.SpellID = 666675;
+//                     spell.Target = "Self";
+//                     spell.Type = "ComfortingFlames";
+//                     spell.Value = 0;
+//                     m_CampfireSpell = new Spell(spell, 1);
+//                     SkillBase.GetSpellList(GlobalSpellsLines.Item_Effects).Add(m_CampfireSpell);
+//                 }
+//                 return m_CampfireSpell;
+//             }
+//         }
+//         #endregion
+//         		
+//         #endregion
+//
+// 		/////////////////////////////////////////////////////// ITEMS /////////////////////////////////////////////////////////
+// 		
+//         #region Items
+//         #region Campfire
+//         protected static ItemTemplate m_tinderbox;
+//         public static ItemTemplate Tinderbox
+//         {
+//             get
+//             {
+//                 if (m_tinderbox == null)
+//                 {
+//                     m_tinderbox = new ItemTemplate();
+//                     m_tinderbox.CanDropAsLoot = false;
+//                     m_tinderbox.Charges = 1;
+//                     m_tinderbox.Id_nb = "tinderbox";
+//                     m_tinderbox.IsDropable = true;
+//                     m_tinderbox.IsPickable = true;
+//                     m_tinderbox.IsTradable = true;
+//                     m_tinderbox.Item_Type = 41;
+//                     m_tinderbox.Level = 1;
+//                     m_tinderbox.MaxCharges = 1;
+//                     m_tinderbox.MaxCount = 2;
+//                     m_tinderbox.Model = 1347;
+//                     m_tinderbox.Name = "Tinderbox";
+//                     m_tinderbox.Object_Type = (int)eObjectType.Magical;
+//                     m_tinderbox.Realm = 0;
+//                     m_tinderbox.SpellID = CampfireSpell.ID;
+//                     m_tinderbox.Quality = 99;
+//                     m_tinderbox.Price = 200000;
+//                 }
+//                 return m_tinderbox;
+//             }
+//         }
+//         #endregion
+//         		
+//         #endregion
+//     }
+// }
+
+
 
 namespace DOL.GS.Spells
 {
@@ -115,3 +212,19 @@ namespace DOL.GS.Spells
         }
     }
 }
+
+// namespace DOL.GS.Commands
+// {
+//     [CmdAttribute("&scroll", //command to handle
+//         ePrivLevel.Admin, //minimum privelege level
+//         "creates a test scroll.", //command description
+//         "/scroll")] //usage
+//     public class ScrollCommandHandler : AbstractCommandHandler, ICommandHandler
+//     {
+//         public void OnCommand(GameClient client, string[] args)
+//         {
+//             client.Player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, new InventoryItem(UtilityScrollsEvent.Tinderbox));
+//             return ;
+//         }
+//     }
+// }
