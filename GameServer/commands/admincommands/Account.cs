@@ -44,6 +44,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics.Arm;
 using System.Text.RegularExpressions;
 using DOL.Database;
 using DOL.GS.PacketHandler.Client.v168;
@@ -95,7 +96,11 @@ namespace DOL.GS.Commands
 		// Syntax: /account unban <accountName>
 		"AdminCommands.Account.Syntax.Unban",
 		// Message: "Removes an account's ban state, if one is active. This command cannot remove IP-only bans ('/ban ip')."
-		"AdminCommands.Account.Usage.Unban")]
+		"AdminCommands.Account.Usage.Unban",
+		// Syntax: /account who <accountName>
+		"AdminCommands.Account.Syntax.Who",
+		// Message: "Returns an accounts active characters"
+		"AdminCommands.Account.Usage.Who")]
 	public class AccountCommand : AbstractCommandHandler, ICommandHandler
 	{
 		public void OnCommand(GameClient client, string[] args)
@@ -634,6 +639,40 @@ namespace DOL.GS.Commands
 					return;
 				}
 				#endregion Command
+				
+				#region Who
+				// Provides information about a specified accounts active characters
+				// Syntax: /account who <accountName>
+				// Args: /account args[1] args[2]
+				// See the comments above 'using' about SendMessage translation IDs
+				case "who":
+				{
+					if (args.Length < 3)
+					{
+						// Message: "<----- '/account' Commands (plvl 3) ----->"
+						ChatUtil.SendSyntaxMessage(client, "AdminCommands.Header.Syntax.Account", null);
+						// Message: "/account who <accountName>"
+						ChatUtil.SendSyntaxMessage(client, "AdminCommands.Account.Syntax.Who", null);
+						// Message: "Returns an accounts active characters"
+						ChatUtil.SendCommMessage(client, "AdminCommands.Account.Usage.Who", null);
+						return;
+					}
+					var accountname = args[2];
+					Account paccount = GetAccount(accountname);
+					
+					if (paccount == null)
+					{
+						// Message: "No account exists with the name '{0}'. Please make sure you entered the full account name correctly."
+						ChatUtil.SendErrorMessage(client, "AdminCommands.Account.Err.AccountNotFound", accountname);
+						return;
+					}
+
+					string charname = GetCharacterName(accountname);
+					ChatUtil.SendCommMessage(client, charname, null);
+
+					return;
+				}
+				#endregion Who
             }
 		}
         
@@ -662,7 +701,15 @@ namespace DOL.GS.Commands
 				return client.Player.DBCharacter;
 			return DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(charname));
 		}
-
+/*
+		private DOLCharacters GetCharacterByAccount(string accountname)
+		{
+			GameClient client = WorldMgr.GetClientByAccountName(accountname, true);
+			if (client != null)
+				return client.Player.DBCharacter;
+			return DOLDB<DOLCharacters>.SelectObject(DB.Column("AccountName").IsEqualTo(accountname));
+		}
+*/
 		/// <summary>
 		/// Kicks an active playing account from the server and closes the client
 		/// </summary>
@@ -705,6 +752,19 @@ namespace DOL.GS.Commands
 			var ch = DOLDB<DOLCharacters>.SelectObject(DB.Column("Name").IsEqualTo(charname));
 			if (ch != null)
 				return ch.AccountName;
+			else
+				return null;
+		}
+
+		private string GetCharacterName(string accoutname)
+		{
+			GameClient client = WorldMgr.GetClientByAccountName(accoutname, true);
+			if (client != null)
+				return client.Player.Name;
+
+			var ac = DOLDB<DOLCharacters>.SelectObject(DB.Column("AccountName").IsEqualTo(accoutname));
+			if (ac != null)
+				return ac.Name;
 			else
 				return null;
 		}

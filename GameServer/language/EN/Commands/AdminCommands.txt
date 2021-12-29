@@ -35,6 +35,9 @@ AdminCommands.Account.Syntax.Status:                    /account status <account
 AdminCommands.Account.Usage.Status:					    Sets an account's status (between '0' and '255'), which is used to define custom behaviors.
 AdminCommands.Account.Syntax.Unban:                     /account unban <accountName>
 AdminCommands.Account.Usage.Unban:					    Removes an account's ban state, if one is active. This command cannot remove IP-only bans ('/ban ip'), but will remove '/ban both' and '/ban account' records.
+AdminCommands.Account.Syntax.Who:                       /account who <accountName>
+AdminCommands.Account.Usage.Who:                        Returns an accounts active characters
+AdminCommands.Account.Msg.CharNameForAcc:               {0} is associated with the account '{1}'
 AdminCommands.Account.Msg.AccNameForChar:				{0} is associated with the account '{1}'.
 AdminCommands.Account.Err.AccountBanNotFound:			The account '{0}' is not currently banned!
 AdminCommands.Account.Msg.AccountCreated:				You have successfully created the account '{0}'! Remember to write down the login credentials for future use.
