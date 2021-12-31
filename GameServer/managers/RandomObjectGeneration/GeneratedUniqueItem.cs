@@ -1266,7 +1266,7 @@ namespace DOL.GS {
                     if (property == eProperty.Skill_BeastCraft ||
                         property == eProperty.Skill_Stealth ||
                         property == eProperty.Skill_Sword ||
-                        property == eProperty.Skill_ShortBow ||
+                        property == eProperty.Skill_Composite ||
                         property == eProperty.Skill_Spear ||
                         property == eProperty.AllMeleeWeaponSkills ||
                         property == eProperty.AllSkills
