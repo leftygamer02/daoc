@@ -133,7 +133,7 @@ namespace DOL.GS
 		}
         public override void OnStopEffect()
         {
-
+			Cancel(false);
         }
 
 		public void Cancel(bool playerCancel)
