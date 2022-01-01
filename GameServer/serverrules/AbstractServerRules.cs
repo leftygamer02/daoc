@@ -30,7 +30,6 @@ using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using DOL.Language;
 using log4net;
-using static DOL.GS.GamePlayer;
 
 namespace DOL.GS.ServerRules
 {
@@ -1203,7 +1202,9 @@ namespace DOL.GS.ServerRules
 					if (player != null && player.Group != null && player.Group.MemberCount > 1)
 					{
 						int scalingFactor = (int)Math.Ceiling((decimal)player.Group.MemberCount);
-						xpReward /= scalingFactor;
+						long tmpxp = (long)(xpReward * (1 + 0.125 * GetUniqueClassCount(player.Group)));
+						xpReward = tmpxp / scalingFactor;
+						//xpReward /= scalingFactor;
 					}
 
 					// exp cap
@@ -1259,7 +1260,7 @@ namespace DOL.GS.ServerRules
 					if (xpReward > expCap)
 						xpReward = expCap;
 
-					if(player != null && player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose)
+					if(player != null && (player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose))
                     {
 						player.Out.SendMessage($"XP Award: {xpReward.ToString("N0", format)} | XP Cap: {expCap.ToString("N0", format)}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						double expPercent = ((double)(xpReward) / (double)(expCap)) * 100;
@@ -1343,7 +1344,7 @@ namespace DOL.GS.ServerRules
 					{
 						if (player != null)
 						{
-							if (player.XPLogState == GamePlayer.eXPLogState.Verbose)
+							if (player.XPLogState == eXPLogState.Verbose)
 							{
 								player.Out.SendMessage($"% of Camp remaining: {(campBonusPerc * 100 / fullCampBonus).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
@@ -1367,7 +1368,7 @@ namespace DOL.GS.ServerRules
 						if(plrGrpExp.Count > 0)
 							xpReward /= plrGrpExp.Count;
 
-						if (player != null && player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose)
+						if (player != null && (player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose))
 						{
 							double baseXP = xpReward - atlasBonus - campBonus - groupExp - outpostXP;
 							int scaleFactor = 1;
@@ -1899,7 +1900,7 @@ namespace DOL.GS.ServerRules
 
                 foreach (var player in playersToAward)
                 {
-	                if (player.Level < 35 || player.GetDistanceTo(killedPlayer) > WorldMgr.MAX_EXPFORKILL_DISTANCE) continue;
+	                if (player.Level < 35 || player.GetDistanceTo(killedPlayer) > WorldMgr.MAX_EXPFORKILL_DISTANCE || player.GetConLevel(killedPlayer) <= -3) continue;
                     AtlasROGManager.GenerateOrbs(player);
                     if (Properties.EVENT_THIDRANKI || Properties.EVENT_TUTORIAL)
                     {
