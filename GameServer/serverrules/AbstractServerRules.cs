@@ -1202,7 +1202,9 @@ namespace DOL.GS.ServerRules
 					if (player != null && player.Group != null && player.Group.MemberCount > 1)
 					{
 						int scalingFactor = (int)Math.Ceiling((decimal)player.Group.MemberCount);
-						xpReward /= scalingFactor;
+						long tmpxp = (long)(xpReward * (1 + 0.125 * GetUniqueClassCount(player.Group)));
+						xpReward = tmpxp / scalingFactor;
+						//xpReward /= scalingFactor;
 					}
 
 					// exp cap
