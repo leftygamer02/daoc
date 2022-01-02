@@ -87,7 +87,10 @@ namespace DOL.GS
         {
             if (attackAction != null)
             {
-                attackAction.Tick(time);
+                lock (this.owner)
+                {
+                    attackAction.Tick(time);
+                }                
             }
             if (weaponAction != null)
             {
