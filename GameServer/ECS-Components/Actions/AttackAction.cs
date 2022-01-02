@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static DOL.GS.GameLiving;
 using static DOL.GS.GameObject;
@@ -41,8 +42,17 @@ namespace DOL.GS
         /// </summary>
         public void Tick(long time)
         {
-
-            if (time > StartTime)
+            Console.WriteLine("----------- AttackAction Tick ----------- " + owner.Name);
+            Console.Write(" time = " + time);
+            Console.Write(" StartTime = " + StartTime);
+            Console.Write(" LastAttackTick = " + owner.LastAttackTick);
+            Console.Write(" Interval = " + Interval);
+            Console.WriteLine("owner.LastAttackTick + Interval = " + owner.LastAttackTick + Interval);
+            Console.WriteLine("owner.LastAttackTick + Interval < time is " + (owner.LastAttackTick + Interval < time));
+            //Console.WriteLine("Thread = " + Thread.CurrentThread.ManagedThreadId);
+            //Console.WriteLine("ID = " + this.GetHashCode());
+            //if (time > StartTime)
+            if(owner.LastAttackTick + Interval < time)
             {
                 //GameLiving owner = (GameLiving)m_actionSource;
 
