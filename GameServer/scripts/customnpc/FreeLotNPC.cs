@@ -217,7 +217,27 @@ namespace DOL.GS.Scripts
             Montgomery = 78, //770-779
             Radnor = 79, //780-789
             Dorset = 80, //790-798
-            
+            //BRISWORTHY
+            Nethermuir = 81, //801-810
+            Grampian = 82, //811-820
+            Forfarshire = 83, //821-830
+            Galloway = 84, //831-840
+            Lothian = 85, //841-850
+            Dumfries = 86, //851-860
+            Shetland = 87, //861-870
+            Highland = 88, //871-880
+            Stathclyde = 89, //881-890
+            Argyll = 90, //891-900
+            Tayside = 91, //901-910
+            Clackshire = 92, //911-920
+            Kincardine = 93, //921-929
+            Fife = 94, //930-939
+            Arboath = 95, //940-949
+            Orkney = 96, //950-959
+            Glasgow = 97, //960-969
+            Falkirk = 98, //970-978
+            Ayrshire = 99, //979-988
+            Aberdeen = 100, //989-998
 
             //TODO OTHERS
         }
