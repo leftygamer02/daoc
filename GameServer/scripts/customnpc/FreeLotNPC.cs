@@ -300,7 +300,27 @@ namespace DOL.GS.Scripts
             Bexley = 157, //1561-1570
             Hillington = 158, //1581-1590
             Hartple = 159, //1591-1600
-            
+            //STONELEIGH
+            Sharpsberg = 160, // 4801-4810
+            Ballenton = 161, // 4811-4820
+            Dale = 162, // 4821-4830
+            Marford_Village = 163, // 4831-4840
+            Marymount = 164, // 4841-4848
+            Dixon = 165, // 4849-4850
+            White_Oak = 166, // 4861-4870
+            Brownstone = 167, // 4871-4880
+            Finnstone = 168, // 4881-4890
+            Leonine_Village = 169, // 4891-4900
+            Breckenridge = 170, // 4901-4910
+            Sparrow_Villa = 171, // 4911-4919
+            Richenway = 172, // 4921-4930
+            Yatesford_Way = 173, // 4931-4939
+            Forden = 174, // 4941-4949
+            Brakel = 175, // 4951-4959
+            Grimmstone = 176, // 4961-4969
+            Calvert_Park = 177, // 4970-4974
+            Ridgebottom = 178, // 4975-5000
+
 
 
 
