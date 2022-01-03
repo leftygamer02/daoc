@@ -280,7 +280,28 @@ namespace DOL.GS.Scripts
             Milesfield = 138, //1370-1379
             Halton_Woods = 139, //1380-1388
             Spencersgreen = 140, //1389-1398
-            //
+            //SHERBORNE
+            Wirral = 141, //1401-1410
+            Sutton = 142, //1411-1420
+            Wandsworth = 143, //1422-1430
+            Trafford = 144, //1431-1440
+            Thurrock = 145, //1441-1450
+            Enfield = 146, //1451-1460
+            Barnsley = 147, //1461-1470
+            Ealing = 148, //1471-1480
+            Kirklees = 149, //1481-1490
+            Rotherham = 150, //1491-1500
+            Wiltshire = 151, //1501-1510 / 1531-1533
+            Gorley = 152, //1511-1520
+            Sefton = 153, //1521-1530
+            Oldham = 154, //1534-1539
+            Newham = 155, //1541-1550
+            Lambeth = 156, //1551-1560
+            Bexley = 157, //1561-1570
+            Hillington = 158, //1581-1590
+            Hartple = 159, //1591-1600
+            
+
 
 
             //TODO OTHERS
