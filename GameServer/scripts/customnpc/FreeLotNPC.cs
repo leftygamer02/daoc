@@ -175,6 +175,28 @@ namespace DOL.GS.Scripts
             Grassington = 38, //371-380
             Litton = 39, //381-390
             Clayfield = 40, //391-400
+            //DALTON
+            Helena = 41, //401-410
+            Townsend = 42, //411-420
+            Jeneva = 43, //421-429
+            Pallmyra = 44, //430-438
+            Jerrick = 45, //439-448
+            Branwyn = 46, //449-458
+            Wickam = 47, //459-468
+            Devereaux = 48, //469-478
+            Gorlash = 49, //479-488
+            Wurthen = 50, //489-498
+            Stockhart = 51, //499-508
+            Mildburgh = 52, //509-518
+            Estmund = 53, //519-528
+            Geldwine_West = 54, //529-538
+            Geldwine_East = 55, //539-548
+            Almarick = 56, //549-558
+            Norwood = 57, //559-568
+            Redmond = 58, //569-578
+            Reilly = 59, //579-588
+            Elswith = 60, //589-598
+
             //TODO OTHERS
         }
 
