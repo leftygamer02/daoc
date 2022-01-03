@@ -154,10 +154,27 @@ namespace DOL.GS.Scripts
             Kilnsey = 18, //170-179
             Arncliffe = 19, //180-189
             Gwathrop = 20, //190-199
-            Middleham = 21, //200-209
-            Semer_Water = 22, //210-219
-            Whernside = 23, //220-229
-            
+            //RILAN
+            Middleham = 21, //200-210
+            Semer_Water = 22, //211-220
+            Whernside = 23, //221-230
+            Drayworth = 24, //231-240
+            Stoneleigh = 25, //241-250
+            Eshton = 26, //251-260
+            Nappa = 27, //261-270
+            Kingsdale = 28, //271-280
+            Dibble_Bridge = 29, //281-290
+            West_Winton = 30, //291-300
+            Glenn_Abbey = 31, //301-310
+            Long_Preston = 32, //311-320
+            Skipton = 33, //321-330
+            Baugh_Fell = 34, //331-340
+            Armistead = 35, //341-350
+            Hardraw = 36, //351-360
+            Reeth = 37, //361-370
+            Grassington = 38, //371-380
+            Litton = 39, //381-390
+            Clayfield = 40, //391-400
             //TODO OTHERS
         }
 
