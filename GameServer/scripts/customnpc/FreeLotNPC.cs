@@ -238,6 +238,28 @@ namespace DOL.GS.Scripts
             Falkirk = 98, //970-978
             Ayrshire = 99, //979-988
             Aberdeen = 100, //989-998
+            //AYLESBURY
+            Chesham = 101, //1001-1010
+            Peacehaven = 102, //1011-1020
+            Mawdelsey = 103, //1021-1030
+            Andover = 104, //1031-1040
+            Cherwell = 105, //1041-1050
+            Evesham = 106, //1051-1060
+            Redesdale = 107, //1061-1070
+            Farnborough = 108, //1071-1080
+            Falstone = 109, //1081-1090
+            Lymington = 110, //1091-1100
+            Drayton = 111, //1101-1109
+            Leyland = 112, //1110-1119
+            Perthorne = 113, //1120-1129
+            Gorleston = 114, //1130-1139
+            Crowborough = 115, //1140-1149
+            Mayfield = 116, //1150-1159
+            Walsham = 117, //1160-1169
+            Tandridge = 118, //1170-1179
+            Chiltern = 119, //1180-1189
+            Amersham = 120, //1190-1199
+            
 
             //TODO OTHERS
         }
