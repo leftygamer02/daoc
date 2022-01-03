@@ -259,7 +259,29 @@ namespace DOL.GS.Scripts
             Tandridge = 118, //1170-1179
             Chiltern = 119, //1180-1189
             Amersham = 120, //1190-1199
-            
+            //CHILTERN
+            Lordling_Wood = 121, //1201-1210
+            Brun_Grange = 122, //1211-1220
+            Buckland_Woods = 123, //1221-1230
+            Hale_Wood = 124, //1231-1240
+            Oakengrovers = 125, //1241-1250
+            Coombe_Hill = 126, //1251-1260
+            Dancersend = 127, //1261-1270
+            Boswell = 128, //1271-1280
+            Boddington_Hill = 129, //1281-1290
+            Haddington_Hill = 130, //1291-1300
+            Halton_Camp = 131, //1301-1310
+            Aston_Hill = 132, //1311-1320
+            Halton = 133, //1321-1330
+            Concord = 134, //1331-1339
+            Chambers_Green = 135, //1340-1349
+            Chivery = 136, //1350-1359
+            Longcraft = 137, //1360-1369
+            Milesfield = 138, //1370-1379
+            Halton_Woods = 139, //1380-1388
+            Spencersgreen = 140, //1389-1398
+            //
+
 
             //TODO OTHERS
         }
