@@ -12,25 +12,6 @@ namespace DOL.GS.Scripts
         List<eHousingZone> midZones = new List<eHousingZone>();
         List<eHousingZone> hibZones = new List<eHousingZone>();
 
-        public FreeLotNPC():base()
-        {
-            albZones.Add(eHousingZone.Caerwent);
-            albZones.Add(eHousingZone.Rilan);
-            albZones.Add(eHousingZone.Dalton);
-            albZones.Add(eHousingZone.Old_Sarum);
-
-            midZones.Add(eHousingZone.Erikstaad);
-            midZones.Add(eHousingZone.Carlingford);
-            midZones.Add(eHousingZone.Wyndham);
-            midZones.Add(eHousingZone.Arothi);
-
-            hibZones.Add(eHousingZone.Meath);
-            hibZones.Add(eHousingZone.Torrylin);
-            hibZones.Add(eHousingZone.Kilcullen);
-            hibZones.Add(eHousingZone.Dunshire);
-
-        }
-
         public override bool Interact(GamePlayer player)
         {
             if (!base.Interact(player))
@@ -127,6 +108,40 @@ namespace DOL.GS.Scripts
             }
 
             return true;
+        }
+
+        public FreeLotNPC():base()
+        {
+            albZones.Add(eHousingZone.Caerwent);
+            albZones.Add(eHousingZone.Rilan);
+            albZones.Add(eHousingZone.Dalton);
+            albZones.Add(eHousingZone.Old_Sarum);
+            albZones.Add(eHousingZone.Brisworthy);
+            albZones.Add(eHousingZone.Aylesbury);
+            albZones.Add(eHousingZone.Chiltern);
+            albZones.Add(eHousingZone.Sherborne);
+            albZones.Add(eHousingZone.Stoneleigh);
+
+            midZones.Add(eHousingZone.Erikstaad);
+            midZones.Add(eHousingZone.Carlingford);
+            midZones.Add(eHousingZone.Wyndham);
+            midZones.Add(eHousingZone.Arothi);
+            midZones.Add(eHousingZone.Frisia);  
+            midZones.Add(eHousingZone.Kaupang);
+            midZones.Add(eHousingZone.Holmestrand);
+            midZones.Add(eHousingZone.Nittedal);
+            midZones.Add(eHousingZone.Stavgaard);
+
+            hibZones.Add(eHousingZone.Meath);
+            hibZones.Add(eHousingZone.Torrylin);
+            hibZones.Add(eHousingZone.Kilcullen);
+            hibZones.Add(eHousingZone.Dunshire);
+            hibZones.Add(eHousingZone.Searanthal);
+            hibZones.Add(eHousingZone.Aberillian);
+            hibZones.Add(eHousingZone.Tullamore);
+            hibZones.Add(eHousingZone.Moycullen);
+            hibZones.Add(eHousingZone.Broughshane);
+
         }
 
         //http://www.valmerwolf.com/mappe/mappe.htm
@@ -335,16 +350,31 @@ namespace DOL.GS.Scripts
             Rilan = 2, //201-400
             Dalton = 3, //401-600
             Old_Sarum = 4, //601-800
+            Brisworthy = 5, //801-1000
+            Aylesbury = 6, //1001-1200
+            Chiltern = 7, //1201-1400
+            Sherborne = 8, //1401-1600
+            Stoneleigh = 25, //1601-1800
             //MIDGARD
             Erikstaad = 9, //1601-1800
             Carlingford = 10, //1801-2000
             Wyndham = 11, //2001-2200
             Arothi = 12, //2201-2400
+            Frisia = 13, //2401-2600
+            Kaupang = 14, //2601-2800
+            Holmestrand = 15, //2801-3000
+            Nittedal = 16, //3001-3200
+            Stavgaard = 25, //3201-3400
             //HIBERNIA
             Meath = 17, //3201-3400
             Torrylin = 18, //3401-3600
             Kilcullen = 19, //3601-3800
-            Dunshire = 20 //3801-4000
+            Dunshire = 20, //3801-4000
+            Searanthal = 21, //4001-4200
+            Aberillian = 22, //4201-4400
+            Tullamore = 23, //4401-4600
+            Moycullen = 24, //4601-4800
+            Broughshane = 27, //4801-5000
         }
 
         public static eVillage GetHousingVillage(int lot)
