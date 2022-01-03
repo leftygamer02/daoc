@@ -196,6 +196,28 @@ namespace DOL.GS.Scripts
             Redmond = 58, //569-578
             Reilly = 59, //579-588
             Elswith = 60, //589-598
+            //OLD SARUM
+            Flint = 61, //601-610
+            Cheshire = 62, //611-620
+            Norfolk = 63, //621-630
+            Denbigh = 64, //631-640
+            Bedford = 65, //641-650
+            Kent = 66, //651-660
+            Sussex = 67, //661-670
+            Carnarvon = 68, //671-680
+            Merioneth = 69, //681-690
+            Carmarthen = 70, //691-700
+            Brecknock = 71, //701-710
+            Glamorgan = 72, //711-720
+            Pembroke = 73, //721-730
+            Anglesey = 74, //731-739
+            Worcester = 75, //740-749
+            Gloucester = 76, //750-759
+            Warwick = 77, //760-769
+            Montgomery = 78, //770-779
+            Radnor = 79, //780-789
+            Dorset = 80, //790-798
+            
 
             //TODO OTHERS
         }
