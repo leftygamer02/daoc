@@ -188,7 +188,11 @@ namespace DOL.GS
             //Notify the target of our attack (sends damage messages, should be before damage)
             // ...but certainly not if the attack never took place, like when the living
             // is out of range!
-            if (mainHandAD.Target != null && mainHandAD.AttackResult != eAttackResult.OutOfRange)
+            if (mainHandAD.Target != null && 
+                mainHandAD.AttackResult != eAttackResult.OutOfRange && 
+                mainHandAD.AttackResult != eAttackResult.TargetNotVisible &&
+                mainHandAD.AttackResult != eAttackResult.NotAllowed_ServerRules &&
+                mainHandAD.AttackResult != eAttackResult.TargetDead)
             {
                 mainHandAD.Target.attackComponent.AddAttacker(owner);
                 mainHandAD.Target.OnAttackedByEnemy(mainHandAD);
@@ -410,9 +414,10 @@ namespace DOL.GS
                 int numRegularDmgAddsApplied = 0;
                 foreach (var effect in dAEffects.Except(dmgAddsUnaffectedByStacking).OrderByDescending(e => e.SpellHandler.Spell.Damage))
                 {
+                    var effectiveness = 1 + effect.SpellHandler.Caster.GetModified(eProperty.BuffEffectiveness) * 0.01;
                     if (effect.IsBuffActive)
                     {
-                        ((DamageAddSpellHandler)effect.SpellHandler).EventHandler(null, owner, new AttackFinishedEventArgs(ad), numRegularDmgAddsApplied > 0 ? 0.5 : 1.0);
+                        ((DamageAddSpellHandler)effect.SpellHandler).EventHandler(null, owner, new AttackFinishedEventArgs(ad), numRegularDmgAddsApplied > 0 ? effectiveness * 0.5 : effectiveness);
                         numRegularDmgAddsApplied++;
                     }
                 }
@@ -439,7 +444,7 @@ namespace DOL.GS
                     GamePlayer playerAttacker = attacker as GamePlayer;
                     if (ReflexAttackAD.AttackResult == eAttackResult.HitUnstyled)
                     {
-                        playerAttacker.Out.SendMessage(target.Name + " counter-attacks you for " + ReflexAttackAD.Damage + " damage.", eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
+                        playerAttacker?.Out.SendMessage(target.Name + " counter-attacks you for " + ReflexAttackAD.Damage + " damage.", eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
                     }
                     break;
             }

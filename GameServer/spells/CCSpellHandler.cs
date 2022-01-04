@@ -263,8 +263,8 @@ namespace DOL.GS.Spells
                     {
 						//effect.Cancel(false);//call OnEffectExpires
 						//CancelPulsingSpell(Caster, this.Spell.SpellType);
-						EffectService.RequestCancelEffect(effect);
-						EffectService.RequestCancelConcEffect(EffectListService.GetPulseEffectOnTarget(effect.SpellHandler.Caster));
+						EffectService.RequestImmediateCancelEffect(effect);
+						EffectService.RequestImmediateCancelConcEffect(EffectListService.GetPulseEffectOnTarget(effect.SpellHandler.Caster));
                         MessageToCaster("You stop playing your song.", eChatType.CT_Spell);
                     }
                     return;
@@ -359,8 +359,8 @@ namespace DOL.GS.Spells
 					{
 						//effect.Cancel(false);//call OnEffectExpires
 						//CancelPulsingSpell(Caster, this.Spell.SpellType);
-						EffectService.RequestCancelEffect(effect);
-						EffectService.RequestCancelConcEffect(EffectListService.GetPulseEffectOnTarget(effect.SpellHandler.Caster));
+						EffectService.RequestImmediateCancelEffect(effect);
+						EffectService.RequestImmediateCancelConcEffect(EffectListService.GetPulseEffectOnTarget(effect.SpellHandler.Caster));
 						MessageToCaster("You stop playing your song.", eChatType.CT_Spell);
                     }
                     return;
@@ -389,6 +389,13 @@ namespace DOL.GS.Spells
 			if (FindStaticEffectOnTarget(target, typeof(MezzRootImmunityEffect)) != null)
 			{
 				MessageToCaster("Your target is immune!", eChatType.CT_System);
+				SendEffectAnimation(target, 0, false, 0);
+				target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
+				return;
+			}
+			if(target is GameNPC && target.HealthPercent < 75)
+            {
+				MessageToCaster("Your target is enraged and resists the spell!", eChatType.CT_System);
 				SendEffectAnimation(target, 0, false, 0);
 				target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
 				return;
@@ -426,7 +433,11 @@ namespace DOL.GS.Spells
 		protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
 		{
 			double duration = base.CalculateEffectDuration(target, effectiveness);
-			duration *= target.GetModified(eProperty.MesmerizeDurationReduction) * 0.01;
+			//duration *= target.GetModified(eProperty.MesmerizeDurationReduction) * 0.01;
+			NPCECSMezImmunityEffect npcImmune = (NPCECSMezImmunityEffect)EffectListService.GetEffectOnTarget(target, eEffect.NPCMezImmunity);
+			if (npcImmune != null)
+				duration *= npcImmune.CalclulateStunDuration((long)duration);
+
 			if (duration < 1)
 				duration = 1;
 			else if (duration > (Spell.Duration * 4))
@@ -561,6 +572,7 @@ namespace DOL.GS.Spells
 				base.OnSpellResisted(target);
 				return;
 			}
+
 			//Ceremonial bracer dont intercept physical stun
 			if(Spell.SpellType != (byte)eSpellType.StyleStun)
 			{
@@ -586,7 +598,9 @@ namespace DOL.GS.Spells
 		protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
 		{
 			double duration = base.CalculateEffectDuration(target, effectiveness);
-			duration *= target.GetModified(eProperty.StunDurationReduction) * 0.01;
+			NPCECSStunImmunityEffect npcImmune = (NPCECSStunImmunityEffect)EffectListService.GetEffectOnTarget(target, eEffect.NPCStunImmunity);
+			if (npcImmune != null)
+				duration *= npcImmune.CalclulateStunDuration((long)duration); //target.GetModified(eProperty.StunDurationReduction) * 0.01;
 
 			if (duration < 1)
 				duration = 1;

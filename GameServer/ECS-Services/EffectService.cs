@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DOL.AI.Brain;
 using DOL.Events;
 using DOL.GS.Effects;
@@ -16,6 +18,9 @@ namespace DOL.GS
 {
     public static class EffectService
     {
+        static int _segmentsize = 100;
+        static List<Task> _tasks = new List<Task>();
+
         private const string ServiceName = "EffectService";
 
         static EffectService()
@@ -24,36 +29,65 @@ namespace DOL.GS
             EntityManager.AddService(typeof(EffectService));
         }
 
-
         public static void Tick(long tick)
         {
             Diagnostics.StartPerfCounter(ServiceName);
 
-            foreach (var e in EntityManager.GetAllEffects())
+            ECSGameEffect[] arr = EntityManager.GetAllEffects();
+
+            lock (arr)
             {
-                if (e.CancelEffect)
+                for (int ctr = 1; ctr <= Math.Ceiling(((double)arr.Count()) / _segmentsize); ctr++)
                 {
-                    HandleCancelEffect(e);
+                    int elements = _segmentsize;
+                    int offset = (ctr - 1) * _segmentsize;
+                    int upper = offset + elements;
+                    if ((upper) > arr.Count())
+                        elements = arr.Count() - offset;
+
+                    ArraySegment<ECSGameEffect> segment = new ArraySegment<ECSGameEffect>(arr, offset, elements);
+
+                    _tasks.Add(Task.Factory.StartNew((Object obj) =>
+                    {
+                        TaskStats data = obj as TaskStats;
+                        if (data == null)
+                            return;
+
+                        data.ThreadNum = Thread.CurrentThread.ManagedThreadId;
+                        IList<ECSGameEffect> effects = (IList<ECSGameEffect>)segment;
+
+                        for (int index = 0; index < effects.Count; index++)
+                        {
+                            if (effects[index] == null)
+                                continue;
+
+                            if (effects[index].CancelEffect || effects[index].IsDisabled)
+                            {
+                                HandleCancelEffect(effects[index]);
+                            }
+                            else
+                            {
+                                HandlePropertyModification(effects[index]);
+                            }
+                        }
+                        data.ThreadNum = Thread.CurrentThread.ManagedThreadId;
+                    },
+                    new TaskStats() { Name = ctr, CreationTime = DateTime.Now.Ticks }));
                 }
-                else if (e.IsDisabled)
-                {
-                    HandleCancelEffect(e);
-                }
-                else
-                {
-                    HandlePropertyModification(e);
-                }
-                // EntityManager.RemoveEffect() is called inside the Handle functions to ensure the conditions
-                // above never result in us removing an effect from the queue without attempting to process it.
+                Task.WaitAll(_tasks.ToArray());
             }
+
+
+            _tasks.Clear();
+
 
             Diagnostics.StopPerfCounter(ServiceName);
         }
+    
 
         private static void HandlePropertyModification(ECSGameEffect e)
         {
             EntityManager.RemoveEffect(e);
-
             if (e.Owner == null)
             {
                 //Console.WriteLine($"Invalid target for Effect {e}");
@@ -70,14 +104,15 @@ namespace DOL.GS
             // Early out if we're trying to add an effect that is already present.
             else if (!effectList.AddEffect(e))
             {
-                SendSpellResistAnimation(e as ECSGameSpellEffect);
+                if (e is ECSGameSpellEffect spell && !spell.SpellHandler.Spell.IsPulsing)
+                    SendSpellResistAnimation(e as ECSGameSpellEffect);
                 return;
             }
 
             ECSGameSpellEffect spellEffect = e as ECSGameSpellEffect;
 
             // Update the Concentration List if Conc Buff/Song/Chant.
-            if (spellEffect != null && spellEffect.ShouldBeAddedToConcentrationList())
+            if (spellEffect != null && spellEffect.ShouldBeAddedToConcentrationList() && !spellEffect.RenewEffect)
             {
                 if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.ConcentrationEffects != null)
                 {
@@ -129,7 +164,15 @@ namespace DOL.GS
                     ecsList.AddRange(playerEffects.Skip(e.PreviousPosition));
                 }
                 else
-                    ecsList.Add(e);
+                {
+                    if (e is ECSGameSpellEffect spellEffect && AllStatsBarrel.BuffList.Contains(spellEffect.SpellHandler.Spell.ID))
+                    {
+                        List<ECSGameEffect> playerEffects = e.Owner.effectListComponent.GetAllEffects();
+                        ecsList.AddRange(playerEffects.Skip(playerEffects.Count - AllStatsBarrel.BuffList.Count));
+                    }
+                    else
+                        ecsList.Add(e);
+                }
 
                 player.Out.SendUpdateIcons(ecsList, ref e.Owner.effectListComponent._lastUpdateEffectsCount);
                 SendPlayerUpdates(player);
@@ -146,10 +189,8 @@ namespace DOL.GS
 
         private static void HandleCancelEffect(ECSGameEffect e)
         {
-            EntityManager.RemoveEffect(e);
-
             //Console.WriteLine($"Handling Cancel Effect {e.SpellHandler.ToString()}");
-
+            EntityManager.RemoveEffect(e);
             if (!e.Owner.effectListComponent.RemoveEffect(e))
             {
                 //Console.WriteLine("Unable to remove effect!");
@@ -192,6 +233,12 @@ namespace DOL.GS
 
             e.TryApplyImmunity();
 
+            if (!e.IsDisabled && e.Owner.effectListComponent.Effects.ContainsKey(e.EffectType))
+            {
+                if (e.Owner.effectListComponent.GetSpellEffects(e.EffectType).OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault().IsDisabled)
+                    RequestEnableEffect(e.Owner.effectListComponent.GetSpellEffects(e.EffectType).OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault());
+            }
+
             if (e.Owner is GamePlayer player)
             {
                 SendPlayerUpdates(player);
@@ -211,9 +258,54 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// Enqueues an ECSGameEffect to be canceled on the next tick.
+        /// Immediately cancels an ECSGameEffect.
         /// </summary>
         public static void RequestCancelEffect(ECSGameEffect effect, bool playerCanceled = false)
+        {
+            if (effect is null)
+                return;
+
+            if (effect is QuickCastECSGameEffect quickCast)
+            {
+                quickCast.Cancel(true);
+                return;
+            }
+
+            // Player can't remove negative effect or Effect in Immunity State
+            if (playerCanceled && ((!effect.HasPositiveEffect) || effect is ECSImmunityEffect))
+            {
+                GamePlayer player = effect.Owner as GamePlayer;
+                if (player != null)
+                    player.Out.SendMessage(LanguageMgr.GetTranslation((effect.Owner as GamePlayer).Client, "Effects.GameSpellEffect.CantRemoveEffect"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                return;
+            }
+
+            effect.CancelEffect = true;
+            effect.ExpireTick = GameLoop.GameLoopTime - 1;
+            EntityManager.AddEffect(effect);
+        }
+
+        /// <summary>
+        /// Immediately cancels an ECSGameSpellEffect (as a IConcentrationEffect).
+        /// </summary>
+        public static void RequestCancelConcEffect(IConcentrationEffect concEffect, bool playerCanceled = false)
+        {
+            ECSGameSpellEffect effect = concEffect as ECSGameSpellEffect;
+            if (effect != null)
+            {
+                if (effect.SpellHandler.Spell.IsPulsing)
+                    effect.Owner.LastPulseCast = null;
+
+                RequestCancelEffect(effect, playerCanceled);
+            }
+        }
+
+
+        /// <summary>
+        /// Immediately removes an ECSGameEffect.
+        /// </summary>
+        public static void RequestImmediateCancelEffect(ECSGameEffect effect, bool playerCanceled = false)
         {
             if (effect is null)
                 return;
@@ -231,46 +323,73 @@ namespace DOL.GS
             // playerCanceled param isn't used but it's there in case we eventually want to...
             effect.CancelEffect = true;
             effect.ExpireTick = GameLoop.GameLoopTime - 1;
-            EntityManager.AddEffect(effect);
+            HandleCancelEffect(effect);
         }
 
+
         /// <summary>
-        /// Enqueues an ECSGameEffect (as a IConcentrationEffect) to be canceled on the next tick.
+        /// Immediately removes an ECSGameEffect (as a IConcentrationEffect).
         /// </summary>
-        public static void RequestCancelConcEffect(IConcentrationEffect concEffect, bool playerCanceled = false)
+        public static void RequestImmediateCancelConcEffect(IConcentrationEffect concEffect, bool playerCanceled = false)
         {
             ECSGameSpellEffect effect = concEffect as ECSGameSpellEffect;
             if (effect != null)
             {
-                RequestCancelEffect(effect, playerCanceled);
+                RequestImmediateCancelEffect(effect, playerCanceled);
 
                 if (effect.SpellHandler.Spell.IsPulsing)
                     effect.Owner.LastPulseCast = null;
             }
         }
+
         /// <summary>
-        /// Enques an ECSGameEffect to be disabled/enabled on next tick
+        /// Immediately starts an ECSGameEffect.
+        /// </summary>
+        /// <param name="effect"></param>
+        public static void RequestStartEffect(ECSGameEffect effect)
+        {
+            HandlePropertyModification(effect);
+        }
+
+        /// <summary>
+        /// Immediately disables an ECSGameEffect.
         /// </summary>
         /// <param name="effect"></param>
         /// <param name="disable"></param>
-        public static void RequestDisableEffect(ECSGameEffect effect, bool disable)
+        public static void RequestDisableEffect(ECSGameEffect effect)
         {
-            effect.IsDisabled = disable;
-            effect.RenewEffect = !disable;
-            EntityManager.AddEffect(effect);
+            effect.IsDisabled = true;
+            effect.RenewEffect = false;
+            HandleCancelEffect(effect);
+        }
+
+        /// <summary>
+        /// Immediately enables a previously disabled ECSGameEffect.
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <param name="disable"></param>
+        public static void RequestEnableEffect(ECSGameEffect effect)
+        {
+            if (!effect.IsDisabled)
+                return;
+            
+            effect.IsDisabled = false;
+            effect.RenewEffect = true;
+            HandlePropertyModification(effect);
         }
 
         public static void SendSpellAnimation(ECSGameSpellEffect e)
         {
             if (e != null)
             {
-                if (e.SpellHandler.Spell.IsPulsing && e.Owner != e.SpellHandler.Caster && e.SpellHandler.HasPositiveEffect)
+                if (e.SpellHandler.Spell.IsPulsing && e.Owner != e.SpellHandler.Caster && e.SpellHandler.HasPositiveEffect && 
+                    e.SpellHandler.Spell.SpellType != (byte)eSpellType.DamageShield)
                     return;
 
                 //foreach (GamePlayer player in e.SpellHandler.Target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
                 foreach (GamePlayer player in e.Owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
                 {
-                    player.Out.SendSpellEffectAnimation(e.SpellHandler.Caster, e.Owner, e.SpellHandler.Spell.ClientEffect, 0, false, 1);
+                        player.Out.SendSpellEffectAnimation(e.SpellHandler.Caster, e.Owner, e.SpellHandler.Spell.ClientEffect, 0, false, 1);
                 }
             }
         }
@@ -443,6 +562,8 @@ namespace DOL.GS
                     return eEffect.ColdResistDebuff;
                 case (byte)eSpellType.MatterResistDebuff:
                     return eEffect.MatterResistDebuff;
+                case (byte)eSpellType.SlashResistDebuff:
+                    return eEffect.SlashResistDebuff;
 
                 //misc 
                 case (byte)eSpellType.SavageCombatSpeedBuff:
@@ -465,6 +586,8 @@ namespace DOL.GS
                         return eEffect.BodyResistDebuff;
                     else if (spell.DamageType == eDamageType.Cold)
                         return eEffect.ColdResistDebuff;
+                    else if (spell.DamageType == eDamageType.Heat)
+                        return eEffect.HeatResistDebuff;
                     else
                         return eEffect.Unknown;
                 case (byte)eSpellType.PiercingMagic:

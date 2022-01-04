@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 namespace DOL.GS {
     public static class AtlasROGManager {
 
+        private static ItemTemplate beadTemplate = null;
+
         public static void GenerateROG(GameLiving living)
         {
             GenerateROG(living, false);
@@ -54,6 +56,45 @@ namespace DOL.GS {
                 player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
                 player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.PickupObject.YouGet", invitem.Name), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
             }
+        }
+
+        public static void GenerateOrbs(GameLiving living)
+        {
+            if (living != null && living is GamePlayer)
+            {
+                GamePlayer player = living as GamePlayer;
+
+                ItemTemplate orbs = GameServer.Database.FindObjectByKey<ItemTemplate>("token_many");
+
+                InventoryItem item = GameInventoryItem.Create(orbs);
+
+                int maxcount = Util.Random(10, 20);
+                player.Inventory.AddTemplate(item, maxcount, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+
+                //player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
+                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.PickupObject.YouGet", item.Name), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
+            }
+        }
+
+        public static GeneratedUniqueItem GenerateMonsterLootROG(eRealm realm, eCharacterClass charClass, byte level)
+        {
+            GeneratedUniqueItem item = null;
+            item = new GeneratedUniqueItem(realm, charClass, level);
+            item.AllowAdd = true;
+            item.IsTradable = true;
+            item.CapUtility(level);
+            return item;
+            
+        }
+
+        public static ItemUnique GenerateBeadOfRegeneration()
+        {
+            if(beadTemplate == null)
+                beadTemplate = GameServer.Database.FindObjectByKey<ItemTemplate>("Bead_Of_Regeneration");
+            
+            ItemUnique item = new ItemUnique(beadTemplate);
+            
+            return item;
         }
 
     }

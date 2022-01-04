@@ -1,7 +1,9 @@
 ﻿using DOL.AI.Brain;
 using DOL.Database;
 using DOL.GS.Effects;
+using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
+using DOL.Language;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +22,9 @@ namespace DOL.GS
         private GameLiving owner;
         private int Interval;
         private long startTime;
+        private long rangeInterruptTime;
         public long StartTime { get { return startTime; } set { startTime = value + GameLoop.GameLoopTime; } }
+        public long RangeInterruptTime { get { return rangeInterruptTime; } set { rangeInterruptTime = value + GameLoop.GameLoopTime; } }
         public long TimeUntilStart { get { return StartTime - GameLoop.GameLoopTime; } }
 
         /// <summary>
@@ -113,11 +117,13 @@ namespace DOL.GS
                     {
                         case eRangedAttackType.Critical:
                             {
-                                effectiveness *= 2 - 0.3 * owner.GetConLevel(attackTarget);
-                                if (effectiveness > 2)
+                                var tmpEffectiveness = 2 - 0.3 * owner.GetConLevel(attackTarget);
+                                if (tmpEffectiveness > 2)
                                     effectiveness *= 2;
-                                else if (effectiveness < 1.1)
+                                else if (tmpEffectiveness < 1.1)
                                     effectiveness *= 1.1;
+                                else
+                                    effectiveness *= tmpEffectiveness;
                             }
                             break;
 
@@ -188,7 +194,7 @@ namespace DOL.GS
                     if (attackTarget == null || attackTarget == owner)
                     {
                         Interval = 100;
-                        return;
+                        //return;
                     }
 
                     AttackData ad = owner.TempProperties.getProperty<object>(LAST_ATTACK_DATA, null) as AttackData;
@@ -196,6 +202,7 @@ namespace DOL.GS
                     {
                         Interval = owner.attackComponent.AttackSpeed(attackWeapon);
                         ad.AttackResult = eAttackResult.Missed;
+                        StartTime = Interval;
                         return; //Don't start the attack if the last one fumbled
                     }
 
@@ -273,7 +280,7 @@ namespace DOL.GS
                     {
                         owner.TempProperties.removeProperty(LAST_ATTACK_DATA);
                         Interval = 100;
-                        return;
+                        //return;
                     }
                 }
 
@@ -356,6 +363,7 @@ namespace DOL.GS
                         if (owner.rangeAttackComponent.RangedAttackType == eRangedAttackType.RapidFire)
                         {
                             speed /= 2; // can start fire at the middle of the normal time
+                            speed = Math.Max(1500, speed);
                         }
 
                         Interval = speed;
@@ -374,6 +382,31 @@ namespace DOL.GS
                 }
                 StartTime = Interval;// owner.AttackSpeed(attackWeapon);
                 //owner.attackComponent.attackAction.CleanupAttackAction();
+            }
+
+
+            if (RangeInterruptTime > time)
+            {
+                if (owner.rangeAttackComponent?.RangedAttackState == eRangedAttackState.Aim)
+                {
+                    var p = owner as GamePlayer;
+                    if (p != null && p.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
+                    {
+                        if (p != null && p.InterruptTime > GameLoop.GameLoopTime && p.attackComponent.Attackers.Count > 0)
+                        {
+                            var attacker = p.attackComponent.Attackers.Last();
+                            string attackTypeMsg = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Type.Shot");
+                            if (p.attackComponent.AttackWeapon != null && p.attackComponent.AttackWeapon.Object_Type == (int)eObjectType.Thrown)
+                                attackTypeMsg = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Type.Throw");
+                            if (attacker is GameNPC)
+                                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Interrupted", attacker.GetName(0, true, p.Client.Account.Language, (attacker as GameNPC)), attackTypeMsg), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                            else
+                                p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Interrupted", attacker.GetName(0, true), attackTypeMsg), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                            p.attackComponent.StopAttack(true);
+                            return;
+                        }
+                    }
+                }
             }
         }
 

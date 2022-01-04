@@ -325,7 +325,7 @@ namespace DOL.AI.Brain
                     continue; // add only new NPCs
                 if (!npc.IsAlive || npc.ObjectState != GameObject.eObjectState.Active)
                     continue;
-                if (npc is GameTaxi)
+                if (npc is GameTaxi || npc is GameTrainingDummy)
                     continue; //do not attack horses
 
                 if (CalculateAggroLevelToTarget(npc) > 0)
@@ -410,7 +410,7 @@ namespace DOL.AI.Brain
         /// 10 seconds for 0 aggro mobs
         /// </summary>
         public override int ThinkInterval {
-            get { return Math.Max(1500, 5000 - AggroLevel * 100); }
+            get { return Math.Max(1500, 3000 - (AggroLevel/3) * 100); }
         }
 
         /// <summary>
@@ -551,7 +551,7 @@ namespace DOL.AI.Brain
 
             // Check LOS (walls, pits, etc...) before  attacking, player + pet
             // Be sure the aggrocheck is triggered by the brain on Think() method
-            if (DOL.GS.ServerProperties.Properties.ALWAYS_CHECK_LOS && CheckLOS)
+            if (DOL.GS.ServerProperties.Properties.ALWAYS_CHECK_LOS && CheckLOS || (Body is GameKeepGuard guard && !guard.IsPortalKeepGuard))
             {
                 GamePlayer thisLiving = null;
                 if (living is GamePlayer)
@@ -1061,14 +1061,24 @@ namespace DOL.AI.Brain
                 return;
 
             GamePlayer puller;  // player that triggered the BAF
+            GameLiving actualPuller;
 
             // Only BAF on players and pets of players
             if (attacker is GamePlayer)
+            {
                 puller = (GamePlayer)attacker;
+                actualPuller = puller;
+            }
             else if (attacker is GamePet pet && pet.Owner is GamePlayer owner)
+            {
                 puller = owner;
+                actualPuller = attacker;
+            }
             else if (attacker is BDSubPet bdSubPet && bdSubPet.Owner is GamePet bdPet && bdPet.Owner is GamePlayer bdOwner)
+            {
                 puller = bdOwner;
+                actualPuller = bdPet;
+            }
             else
                 return;
 
@@ -1171,11 +1181,11 @@ namespace DOL.AI.Brain
                         {
                             brain.CanBAF = false; // Mobs brought cannot bring friends of their own
 
-                            GamePlayer target;
+                            GameLiving target;
                             if (victims != null && victims.Count > 0)
                                 target = victims[Util.Random(0, victims.Count - 1)];
                             else
-                                target = puller;
+                                target = actualPuller;
 
                             brain.AddToAggroList(target, 1);
                             brain.AttackMostWanted();
@@ -1520,7 +1530,7 @@ namespace DOL.AI.Brain
 
             bool casted = false;
 
-            if (Body.TargetObject is GameLiving living && (spell.Duration == 0 || (!living.HasEffect(spell) || spell.SpellType == (byte)eSpellType.DirectDamageWithDebuff)))
+            if (Body.TargetObject is GameLiving living && (spell.Duration == 0 || (!LivingHasEffect(living,spell) || spell.SpellType == (byte)eSpellType.DirectDamageWithDebuff)))
             {
                 // Offensive spells require the caster to be facing the target
                 if (Body.TargetObject != Body)
@@ -1627,6 +1637,7 @@ namespace DOL.AI.Brain
 
             lock (target.effectListComponent)
             {
+                spell.IsSpec = true;
                 if (target.effectListComponent.ContainsEffectForEffectType(EffectService.GetEffectFromSpell(spell))){
                     return true;
                 }

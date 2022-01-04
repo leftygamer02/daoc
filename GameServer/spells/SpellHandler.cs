@@ -424,10 +424,7 @@ namespace DOL.GS.Spells
             int freq = Spell != null ? Spell.Frequency : 0;
             // return new GameSpellEffect(this, CalculateEffectDuration(target, effectiveness), freq, effectiveness);
 
-            ECSPulseEffect effect = new ECSPulseEffect(target, this, CalculateEffectDuration(target, effectiveness), freq, effectiveness, Spell.Icon);
-
-            //EntityManager.AddEffect(effect);
-
+            new ECSPulseEffect(target, this, CalculateEffectDuration(target, effectiveness), freq, effectiveness, Spell.Icon);
         }
 
         /// <summary>
@@ -644,7 +641,7 @@ namespace DOL.GS.Spells
 				|| Caster.effectListComponent.ContainsEffectForEffectType(eEffect.QuickCast))
 				return false;
 
-			if (IsCasting && (GameLoop.GameLoopTime < _castStartTick + _calculatedCastTime * .9 ))// Stage < 2) //only interrupt if we're under 90% of the way through the cast
+			if (IsCasting && (GameLoop.GameLoopTime < _castStartTick + _calculatedCastTime * .5 ))// Stage < 2) //only interrupt if we're under 50% of the way through the cast
 			{
 				if (Caster.ChanceSpellInterrupt(attacker))
 				{
@@ -682,6 +679,10 @@ namespace DOL.GS.Spells
 				return false;
 			}
 
+			var quickCast = EffectListService.GetAbilityEffectOnTarget(m_caster, eEffect.QuickCast);
+			if (quickCast != null)
+				quickCast.ExpireTick = GameLoop.GameLoopTime + quickCast.Duration;
+
             if (m_spell.Pulse != 0 && m_spell.Frequency > 0)
             {
                 if (Spell.IsPulsing && Caster.LastPulseCast != null && Caster.LastPulseCast.Equals(Spell))
@@ -694,7 +695,7 @@ namespace DOL.GS.Spells
 					ECSGameSpellEffect cancelEffect = Caster.effectListComponent.GetSpellEffects(eEffect.Pulse).Where(effect => effect.SpellHandler.Spell.Equals(Spell)).FirstOrDefault();
                     if (cancelEffect != null)
                     {
-						EffectService.RequestCancelConcEffect((IConcentrationEffect)cancelEffect);
+						EffectService.RequestImmediateCancelConcEffect((IConcentrationEffect)cancelEffect);
                         Caster.LastPulseCast = null;
                         //Console.WriteLine("Canceling Effect " + cancelEffect.SpellHandler.Spell.Name);
                     }
@@ -824,6 +825,10 @@ namespace DOL.GS.Spells
 					{
 						selectedTarget = Caster.ControlledBrain.Body;
 					}
+					else if (selectedTarget is TurretPet)
+                    {
+						//do nothing
+                    }
 					else
 					{
 						if (!quiet) MessageToCaster("You must cast this spell on a creature you are controlling.",
@@ -839,12 +844,12 @@ namespace DOL.GS.Spells
 					if (!quiet) MessageToCaster("Your area target is out of range.  Select a closer target.", eChatType.CT_SpellResisted);
 					return false;
 				}
-				if (!Caster.GroundTargetInView)
-				{
-					MessageToCaster("Your ground target is not in view!", eChatType.CT_SpellResisted);
-					return false;
-				}
-			}
+                //if (!Caster.GroundTargetInView)
+                //{
+                //    MessageToCaster("Your ground target is not in view!", eChatType.CT_SpellResisted);
+                //    return false;
+                //}
+            }
 			else if (targetType != "self" && targetType != "group" && targetType != "pet"
 			         && targetType != "controlled" && targetType != "cone" && m_spell.Range > 0)
 			{
@@ -1493,12 +1498,12 @@ namespace DOL.GS.Spells
 					if (!quiet) MessageToCaster("Your area target is out of range.  Select a closer target.", eChatType.CT_SpellResisted);
 					return false;
 				}
-				if (!Caster.GroundTargetInView)
-				{
-					MessageToCaster("Your ground target is not in view!", eChatType.CT_SpellResisted);
-					return false;
-				}
-			}
+                //if (!Caster.GroundTargetInView)
+                //{
+                //    MessageToCaster("Your ground target is not in view!", eChatType.CT_SpellResisted);
+                //    return false;
+                //}
+            }
 			else if (m_spell.Target.ToLower() != "self" && m_spell.Target.ToLower() != "group" && m_spell.Target.ToLower() != "cone" && m_spell.Range > 0)
 			{
 				if (m_spell.Target.ToLower() != "pet")
@@ -2004,7 +2009,7 @@ namespace DOL.GS.Spells
 						m_stage = 3;
 						m_handler.Stage = 3;
 						Interval = 100;
-
+						
 						if (m_handler.CheckEndCast(m_target))
 						{
 							m_handler.FinishSpellCast(m_target);
@@ -2177,7 +2182,7 @@ namespace DOL.GS.Spells
 
             if (Spell.IsPulsing)
             {
-				EffectService.RequestCancelConcEffect(EffectListService.GetPulseEffectOnTarget(Caster));
+				EffectService.RequestImmediateCancelConcEffect(EffectListService.GetPulseEffectOnTarget(Caster));
 
 				if (m_spell.SpellType != (byte)eSpellType.Mesmerize)
 				{
@@ -2215,6 +2220,7 @@ namespace DOL.GS.Spells
 				{
 					m_caster.TempProperties.setProperty(GamePlayer.QUICK_CAST_CHANGE_TICK, m_caster.CurrentRegion.Time);
 					((GamePlayer)m_caster).DisableSkill(SkillBase.GetAbility(Abilities.Quickcast), QuickCastAbilityHandler.DISABLE_DURATION);
+					//EffectService.RequestImmediateCancelEffect(quickcast, false);
 					quickcast.Cancel(false);
 				}
 			}
@@ -2739,7 +2745,7 @@ namespace DOL.GS.Spells
 			}
 		}
 
-		public virtual List<GameLiving> GetGroupAndPets()
+		public virtual List<GameLiving> GetGroupAndPets(Spell spell)
         {
 			List<GameLiving> livings = new List<GameLiving>();
 
@@ -2750,6 +2756,11 @@ namespace DOL.GS.Spells
 			{
 				foreach (GameLiving living in Caster.Group.GetMembersInTheGroup().ToList())
 				{
+					if (living.GetDistanceTo(Caster) > spell.Range)
+					{
+						continue;
+					}
+					
 					livings.Add(living);
 
 					if (living.ControlledBrain != null)
@@ -2761,6 +2772,11 @@ namespace DOL.GS.Spells
             {
 				foreach (GameLiving living in nPet.Owner.Group.GetMembersInTheGroup().ToList())
 				{
+					if (living.GetDistanceTo(Caster) > spell.Range)
+					{
+						continue;
+					}
+					
 					livings.Add(living);
 
 					if (living.ControlledBrain != null)
@@ -2808,7 +2824,7 @@ namespace DOL.GS.Spells
 			IList<GameLiving> targets;
 			if (Spell.Target.ToLower() == "realm" && !Spell.IsConcentration && target == Caster && !Spell.IsHealing && Spell.IsBuff && 
 				Spell.SpellType != (byte)eSpellType.Bladeturn)
-				targets = GetGroupAndPets();
+				targets = GetGroupAndPets(Spell);
 			else
 				targets = SelectTargets(m_spellTarget);
 
@@ -3058,9 +3074,10 @@ namespace DOL.GS.Spells
 			{
 				OnDirectEffect(target, effectiveness);
 			}
-
+				
 			if (!HasPositiveEffect)
 			{
+				SendEffectAnimation(target, 0, false, 1);
 				AttackData ad = new AttackData();
 				ad.Attacker = Caster;
 				ad.Target = target;
@@ -4191,6 +4208,11 @@ namespace DOL.GS.Spells
 				}
 			}
 
+			if (Caster is GameNPC)
+            {
+				hitchance = (int)(87.5 - (target.Level - Caster.Level));
+            }
+
 			return hitchance;
 		}
 
@@ -4351,7 +4373,15 @@ namespace DOL.GS.Spells
 
 			int criticalchance = (this as DoTSpellHandler) != null ? m_caster.SpellCriticalChance - 10 :(m_caster.SpellCriticalChance);
 
-			if (Util.Chance(Math.Min(50, criticalchance)) && (finalDamage >= 1))
+			int randNum = Util.CryptoNextInt(1, 100); //grab our random number
+			int critCap = Math.Min(50, criticalchance); //crit chance can be at most  50%
+
+			if (this.Caster is GamePlayer spellCaster && spellCaster.UseDetailedCombatLog)
+			{
+				spellCaster.Out.SendMessage($"spell crit chance: {critCap} random: {randNum}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+			}
+
+			if (critCap > randNum && (finalDamage >= 1))
 			{
 				int critmax = (ad.Target is GamePlayer) ? finalDamage / 2 : finalDamage;
 				cdamage = Util.Random(finalDamage / 10, critmax); //think min crit is 10% of damage
@@ -4559,7 +4589,7 @@ namespace DOL.GS.Spells
 				if (Spell.SpellType == (byte)eSpellType.Bomber || Spell.SpellType == (byte)eSpellType.SummonAnimistFnF)
 					dw.AddKeyValuePair("delve_spell", SkillBase.GetSpellByID(Spell.SubSpellID).InternalID);
 				else
-				dw.AddKeyValuePair("parm", SkillBase.GetSpellByID(Spell.SubSpellID).InternalID);
+					dw.AddKeyValuePair("parm", SkillBase.GetSpellByID(Spell.SubSpellID).InternalID);
 
 			if (!dw.Values.ContainsKey("parm") && (eSpellType)Spell.SpellType != eSpellType.MesmerizeDurationBuff)
 				dw.AddKeyValuePair("parm", "1");
@@ -4630,6 +4660,7 @@ namespace DOL.GS.Spells
 				case eSpellType.ConstitutionBuff:
 				case eSpellType.DexterityBuff:
 				case eSpellType.StrengthBuff:
+				case eSpellType.AllStatsBarrel:
 					return "stat";
 				case eSpellType.ConstitutionDebuff:
 				case eSpellType.DexterityDebuff:
@@ -4650,6 +4681,7 @@ namespace DOL.GS.Spells
 					return "dmg_shield";
 				case eSpellType.DamageSpeedDecrease:
 				case eSpellType.SpeedDecrease:
+				case eSpellType.UnbreakableSpeedDecrease:
 					return "snare";
 				case eSpellType.DefensiveProc:
 					return "def_proc";
@@ -4779,6 +4811,7 @@ namespace DOL.GS.Spells
 				case eSpellType.SpiritResistBuff:
 				case eSpellType.SpiritResistDebuff:
 				case eSpellType.StrengthBuff:
+				case eSpellType.AllStatsBarrel:
 				case eSpellType.StrengthConstitutionBuff:
 				case eSpellType.StrengthConstitutionDebuff:
 				case eSpellType.StrengthDebuff:
@@ -4798,6 +4831,7 @@ namespace DOL.GS.Spells
 				case eSpellType.DamageSpeedDecrease:
 				case eSpellType.SpeedDecrease:
 				case eSpellType.StyleSpeedDecrease:
+				case eSpellType.UnbreakableSpeedDecrease:
 					dw.AddKeyValuePair("bonus", 100 - Spell.Value);
 					break;
 				case eSpellType.DefensiveProc:
@@ -4834,6 +4868,7 @@ namespace DOL.GS.Spells
 					break;
 				case eSpellType.AcuityBuff:
 				case eSpellType.ConstitutionBuff:
+				case eSpellType.AllStatsBarrel:
 				case eSpellType.ConstitutionDebuff:
 				case eSpellType.EnduranceRegenBuff:
 					dw.AddKeyValuePair(parm, "3");
@@ -5134,6 +5169,13 @@ namespace DOL.GS.Spells
 					if (Spell.Value < 0)
 						dw.AddKeyValuePair("delve_string", $"Decreases your threat to monster targets by {-(int)Spell.Value} damage.");
 					break;
+				case eSpellType.NaturesShield:
+					dw.AddKeyValuePair("delve_string", $"Gives the user a {(int)Spell.Value}% base chance to block ranged melee attacks while this style is prepared.");
+					break;
+				case eSpellType.SlashResistDebuff:
+					dw.AddKeyValuePair("delve_string", $"Decreases target's resistance to Slash by {(int)Spell.Value}% for {(int)Spell.Duration / 1000} seconds.");
+					break;
+					
 			}
 		}
 

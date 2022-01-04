@@ -275,13 +275,16 @@ namespace DOL.AI.Brain
 				previousIsStealthed = (target as GamePlayer).IsStealthed;
 
 			if (FSM.GetState(eFSMStateType.AGGRO) != FSM.GetCurrentState()){	FSM.SetCurrentState(eFSMStateType.AGGRO);}
-            if (Body.CanCastHarmfulSpells)
-            {
-				CheckSpells(eCheckSpellType.Offensive);
-            } else
-            {
+			if (target != Body.TargetObject && Body.IsCasting)
+				Body.StopCurrentSpellcast();
+
+    //        if (Body.CanCastHarmfulSpells)
+    //        {
+				//CheckSpells(eCheckSpellType.Offensive);
+    //        } else
+    //        {
 				AttackMostWanted();
-			}
+			//}
 			
 		}
 
@@ -885,7 +888,7 @@ namespace DOL.AI.Brain
 
 		// Temporary until StandardMobBrain is updated
 		protected override bool CheckOffensiveSpells(Spell spell)
-		{
+		{		
 			if (spell == null || spell.IsHelpful || !(Body.TargetObject is GameLiving living) || !living.IsAlive)
 				return false;
 
@@ -1032,25 +1035,25 @@ namespace DOL.AI.Brain
             }
 
 			GameLiving target = CalculateNextAttackTarget();
-
+			
 			if (target != null)
 			{
 				if (!Body.IsAttacking || target != Body.TargetObject)
 				{
 					Body.TargetObject = target;
 
-					if (target is GamePlayer)
-					{
-						Body.LastAttackTickPvP = GameLoop.GameLoopTime; 
-						Owner.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
-					}
-					else
-					{
-						Body.LastAttackTickPvE = GameLoop.GameLoopTime;
-						Owner.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
-					}
+                    //if (target is GamePlayer)
+                    //{
+                    //    Body.LastAttackTickPvP = GameLoop.GameLoopTime;
+                    //    Owner.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+                    //}
+                    //else
+                    //{
+                    //    Body.LastAttackTickPvE = GameLoop.GameLoopTime;
+                    //    Owner.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+                    //}
 
-					List<GameSpellEffect> effects = new List<GameSpellEffect>();
+                    List<GameSpellEffect> effects = new List<GameSpellEffect>();
 
 					lock (Body.EffectList)
 					{

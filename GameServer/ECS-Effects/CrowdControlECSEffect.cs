@@ -14,6 +14,8 @@ namespace DOL.GS
             Owner.attackComponent.LivingStopAttack();
             Owner.StopCurrentSpellcast();
             Owner.DisableTurning(true);
+            if (Owner is GameNPC npc)
+                npc.StopMoving();
             UpdatePlayerStatus();
         }
 
@@ -30,6 +32,10 @@ namespace DOL.GS
                     aggroBrain.AddToAggroList(SpellHandler.Caster, 1);
                 npc.attackComponent.AttackState = true;
             }
+            if(SpellHandler.Caster is GamePlayer)
+                Owner.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+            else
+                Owner.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
         }
 
         protected void UpdatePlayerStatus()
@@ -58,7 +64,10 @@ namespace DOL.GS
         public StunECSGameEffect(ECSGameEffectInitParams initParams)
             : base(initParams)
         {
-            TriggersImmunity = true;
+            if (initParams.SpellHandler.Caster is GamePet)
+                TriggersImmunity = false;
+            else
+                TriggersImmunity = true;
         }
 
         public override void OnStartEffect()

@@ -22,8 +22,9 @@ namespace DOL.GS
             ExpireTick = duration + GameLoop.GameLoopTime;
             StartTick = GameLoop.GameLoopTime;
             LastTick = 0;
+            TriggersImmunity = false;
 
-            EntityManager.AddEffect(this);
+            EffectService.RequestStartEffect(this);
         }
 
         protected eEffect MapImmunityEffect()
@@ -43,6 +44,43 @@ namespace DOL.GS
                 default:
                     return eEffect.Unknown;
             }
+        }
+    }
+    public class NPCECSStunImmunityEffect : ECSGameEffect
+    {
+        private int timesStunned = 1;
+        public NPCECSStunImmunityEffect(ECSGameEffectInitParams initParams) : base()
+        {
+            Owner = initParams.Target;
+            Duration = 60000;
+            EffectType = eEffect.NPCStunImmunity;
+            EffectService.RequestStartEffect(this);
+        }
+
+        public long CalclulateStunDuration(long duration)
+        {
+            var retVal = duration / (2 * timesStunned);
+            timesStunned++;
+            return retVal;
+        }
+    }
+
+    public class NPCECSMezImmunityEffect : ECSGameEffect
+    {
+        private int timesStunned = 1;
+        public NPCECSMezImmunityEffect(ECSGameEffectInitParams initParams) : base()
+        {
+            Owner = initParams.Target;
+            Duration = 60000;
+            EffectType = eEffect.NPCMezImmunity;
+            EffectService.RequestStartEffect(this);
+        }
+
+        public long CalclulateStunDuration(long duration)
+        {
+            var retVal = duration / (2 * timesStunned);
+            timesStunned++;
+            return retVal;
         }
     }
 }

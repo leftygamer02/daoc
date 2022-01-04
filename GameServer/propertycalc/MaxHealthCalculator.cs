@@ -1,5 +1,4 @@
 using System;
-
 using DOL.GS.Keeps;
 using DOL.GS.RealmAbilities;
 
@@ -26,16 +25,16 @@ namespace DOL.GS.PropertyCalc
 				GamePlayer player = living as GamePlayer;
 				int hpBase = player.CalculateMaxHealth(player.Level, player.GetModified(eProperty.Constitution));
 				int buffBonus = living.BaseBuffBonusCategory[(int)property];
-				if (buffBonus < 0) buffBonus = (int)((1 + (buffBonus / -100.0)) * hpBase)-hpBase;
+				if (buffBonus < 0) buffBonus = (int)((1 + (buffBonus / -100.0)) * hpBase) - hpBase;
 				int itemBonus = living.ItemBonus[(int)property];
 				int cap = Math.Max(player.Level * 4, 20) + // at least 20
-						  Math.Min(living.ItemBonus[(int)eProperty.MaxHealthCapBonus], player.Level * 4);	
+						  Math.Min(living.ItemBonus[(int)eProperty.MaxHealthCapBonus], player.Level * 4);
 				itemBonus = Math.Min(itemBonus, cap);
-                if (player.HasAbility(Abilities.ScarsOfBattle) && player.Level >= 40)
-                {
-                    int levelbonus = Math.Min(player.Level - 40, 10);
-                    hpBase = (int)(hpBase * (100 + levelbonus) * 0.01);
-                }
+				if (player.HasAbility(Abilities.ScarsOfBattle) && player.Level >= 40)
+				{
+					int levelbonus = Math.Min(player.Level - 40, 10);
+					hpBase = (int)(hpBase * (100 + levelbonus) * 0.01);
+				}
 				int abilityBonus = living.AbilityBonus[(int)property];
 
 				#region Calculation : AtlasOF_Thoughness
@@ -44,18 +43,18 @@ namespace DOL.GS.PropertyCalc
 				AtlasOF_ToughnessAbility raToughness = living.GetAbility<AtlasOF_ToughnessAbility>();
 
 				if (raToughness != null)
-                {
+				{
 					if (raToughness.Level > 0)
-                    {
+					{
 						raToughnessAmount += (hpBase * raToughness.Level * 3) / 100;
 					}
-                }
-                // --- [ END ] --- AtlasOF_Thoughness ---------------------------------------------------------
-                #endregion
+				}
+				// --- [ END ] --- AtlasOF_Thoughness ---------------------------------------------------------
+				#endregion
 
-                return Math.Max(hpBase + itemBonus + buffBonus + abilityBonus + raToughnessAmount, 1); // at least 1
+				return Math.Max(hpBase + itemBonus + buffBonus + abilityBonus + raToughnessAmount, 1); // at least 1
 			}
-			else if ( living is GameKeepComponent )
+			else if (living is GameKeepComponent)
 			{
 				GameKeepComponent keepComp = living as GameKeepComponent;
 
@@ -64,7 +63,7 @@ namespace DOL.GS.PropertyCalc
 
 				return 0;
 			}
-			else if ( living is GameKeepDoor )
+			else if (living is GameKeepDoor)
 			{
 				GameKeepDoor keepdoor = living as GameKeepDoor;
 
@@ -78,29 +77,47 @@ namespace DOL.GS.PropertyCalc
 				//todo : use material too to calculate maxhealth
 			}
 			else if (living is TheurgistPet theu)
-            {
+			{
 				int hp = 1;
-				if(theu.Level < 10)
-                {
-					hp += theu.Level * 2;
-                } else
-                {
+				if (theu.Level < 10)
+				{
+					hp += theu.Constitution + theu.Level * 2;
+				} else
+				{
 					hp = theu.Constitution * theu.Level * 10 / 44;
-                }
+				}
 				return hp;
 
-            }
+			}
 			else if (living is TurretPet ani)
-            {
+			{
 				int hp = 1;
-				if (ani.Level < 2)
+				/*
+				if (ani.Level < 5)
 				{
-					hp += ani.Level * 2;
+					hp += ani.Level * 2 + 50 + ani.Constitution;
 				}
 				else
 				{
 					hp = ani.Constitution * ani.Level;
 				}
+				*/
+
+				if (living.Level < 10)
+				{
+					hp = living.Level * 20 + 20 + ani.Constitution;  // default
+				}
+				else
+				{
+					// approx to original formula, thx to mathematica :)
+					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level) + ani.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					if (living.Level < 25)
+						hp += 20;
+				}
+
+				if (ani.Brain != null && ani.Brain is DOL.AI.Brain.TurretFNFBrain)
+					hp /= 2;
+
 				return hp;
 			}
             else if (living is GamePet pet)
@@ -149,14 +166,17 @@ namespace DOL.GS.PropertyCalc
 			{
 				int hp = 0;
 
-				if (living.Level<10)
+				if (living.Level<20)
 				{
-					hp = living.Level * 20 + 20 + (living as GameNPC).Constitution /*living.BaseBuffBonusCategory[(int)property]*/;	// default
+					//14 hp per level
+					//30 base
+					//con * level HP, scaled by level
+					hp = (int)((living.Level * 14) + 30 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11*living.Level + 0.548331 * living.Level * living.Level) + (living as GameNPC).Constitution;
+					hp = (int)(50 + 11*living.Level + 0.448331 * living.Level * (living.Level)) + (living as GameNPC).Constitution;
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -166,22 +186,25 @@ namespace DOL.GS.PropertyCalc
 
 				// first adjust hitpoints based on base CON
 
-				if (basecon != ServerProperties.Properties.GAMENPC_BASE_CON)
+				if (basecon != ServerProperties.Properties.GAMENPC_BASE_CON && living.Level >= 10)
 				{
 					hp = Math.Max(1, hp + ((basecon - ServerProperties.Properties.GAMENPC_BASE_CON) * ServerProperties.Properties.GAMENPC_HP_GAIN_PER_CON));
 				}
 
 				// Now adjust for buffs
+				if (living.Level > 10)
+				{
 
-				// adjust hit points based on constitution difference from base con
-				// modified from http://www.btinternet.com/~challand/hp_calculator.htm
-				int conhp = hp + (conmod * living.Level * (living.GetModified(eProperty.Constitution) - basecon) / 250);
+					// adjust hit points based on constitution difference from base con
+					// modified from http://www.btinternet.com/~challand/hp_calculator.htm
+					int conhp = hp + (conmod * living.Level * (living.GetModified(eProperty.Constitution) - basecon) / 250);
 
-				// 50% buff / debuff cap
-				if (conhp > hp * 1.5)
-					conhp = (int)(hp * 1.5);
-				else if (conhp < hp / 2)
-					conhp = hp / 2;
+					// 50% buff / debuff cap
+					if (conhp > hp * 1.5)
+						conhp = (int)(hp * 1.5);
+					else if (conhp < hp / 2)
+						conhp = hp / 2;
+				}
 
 				return hp;
 				//return conhp;

@@ -1576,7 +1576,7 @@ namespace DOL.GS
 			BroadcastUpdate();
 		}
 
-		public const int STICKMINIMUMRANGE = 100;
+		public const int STICKMINIMUMRANGE = 75;
 		public const int STICKMAXIMUMRANGE = 5000;
 
 		/// <summary>
@@ -1710,12 +1710,16 @@ namespace DOL.GS
 						long seconds = 20 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
 						long lastattacked = LastAttackTick;
 						long lasthit = LastAttackedByEnemyTick;
-						if (GameLoop.GameLoopTime - lastattacked > seconds * 1000 && GameLoop.GameLoopTime - lasthit > seconds * 1000)
+						if ((GameLoop.GameLoopTime - lastattacked > seconds * 1000 && GameLoop.GameLoopTime - lasthit > seconds * 1000)
+							&& lasthit != 0)
 						{
 							//StopFollow();
 							Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 							//brain.ClearAggroList();
-							this.WalkToSpawn();
+							//this.WalkToSpawn();
+							LastAttackedByEnemyTickPvE = 0;
+							LastAttackedByEnemyTickPvP = 0;
+							brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 							return 0;
 						}
 					}
@@ -3963,7 +3967,7 @@ namespace DOL.GS
 
 		//}
 
-		private int scalingFactor = 19;
+		private int scalingFactor = 24;
 		
 		public override double GetWeaponSkill(InventoryItem weapon)
 		{
@@ -4043,7 +4047,7 @@ namespace DOL.GS
 
 		public void SetLastMeleeAttackTick()
 		{
-			if (TargetObject.Realm == 0 || Realm == 0)
+			if (TargetObject?.Realm == 0 || Realm == 0)
 				m_lastAttackTickPvE = m_CurrentRegion.Time;
 			else
 				m_lastAttackTickPvP = m_CurrentRegion.Time;
@@ -4596,6 +4600,7 @@ namespace DOL.GS
 			Y = m_spawnPoint.Y;
 			Z = m_spawnPoint.Z;
 			Heading = m_spawnHeading;
+			SpawnTick = GameLoop.GameLoopTime;
 			AddToWorld();
 			m_spawnPoint.X = origSpawnX;
 			m_spawnPoint.Y = origSpawnY;

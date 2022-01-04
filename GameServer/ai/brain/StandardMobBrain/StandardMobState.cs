@@ -17,6 +17,7 @@ public class StandardMobState : State
     protected StandardMobBrain _brain = null;
     protected eFSMStateType _id;
 
+
     public StandardMobState(FSM fsm, StandardMobBrain brain) : base(fsm)
     {
         _brain = brain;
@@ -187,7 +188,7 @@ public class StandardMobState_AGGRO : StandardMobState
     public override void Think()
     {
         // check for returning to home if to far away
-        if (_brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(6000))
+        if (!(_brain is KeepGuardBrain) && _brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(15000))
         {
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
@@ -208,6 +209,9 @@ public class StandardMobState_AGGRO : StandardMobState
 
 public class StandardMobState_ROAMING : StandardMobState
 {
+    private int _roamCooldown = 20 * 1000;
+    private long _lastRoamTick = 0;
+
     public StandardMobState_ROAMING(FSM fsm, StandardMobBrain brain) : base(fsm, brain)
     {
         _id = eFSMStateType.ROAMING;
@@ -244,7 +248,7 @@ public class StandardMobState_ROAMING : StandardMobState
         //if randomWalkChance,
         //find new point
         //walk to point
-        if (Util.Chance(DOL.GS.ServerProperties.Properties.GAMENPC_RANDOMWALK_CHANCE))
+        if (Util.Chance(DOL.GS.ServerProperties.Properties.GAMENPC_RANDOMWALK_CHANCE) && _lastRoamTick <= GameLoop.GameLoopTime + _roamCooldown)
         {
             IPoint3D target = _brain.CalcRandomWalkTarget();
             if (target != null)
@@ -260,6 +264,7 @@ public class StandardMobState_ROAMING : StandardMobState
 
                 _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.roaming);
             }
+            _lastRoamTick = GameLoop.GameLoopTime;
         }
 
 
@@ -304,6 +309,11 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
             _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
             _brain.Body.ResetHeading();
             return;
+        }
+        if (_brain.Body.InCombat || _brain.HasAggressionTable())
+        {
+            _brain.Body.CancelWalkToSpawn();
+            _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
         }
 
         base.Think();

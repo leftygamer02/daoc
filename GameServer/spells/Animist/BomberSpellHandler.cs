@@ -56,18 +56,24 @@ namespace DOL.GS.Spells
         {
             if (Spell.Target.ToLower() == "pet")
             {
-                target = Caster?.ControlledBrain?.Body;
-                if (target is null)
+                Spell subspell = SkillBase.GetSpellByID(m_spell.SubSpellID);
+
+                if (subspell != null && subspell.IsHealing && Caster?.TargetObject is TurretPet)
+                    target = (GameLiving)Caster.TargetObject;
+                else
+                    target = Caster?.ControlledBrain?.Body;
+
+                if (target is null || !target.IsWithinRadius(Caster, subspell.Range))
                     return;
             }
 
             base.ApplyEffectOnTarget(target, effectiveness);
-            m_pet.Level = Caster.Level; // No bomber class to override SetPetLevel() in, so set level here
+            m_pet.Level = m_pet.Owner is null ? (byte)1 : m_pet.Owner.Level; // No bomber class to override SetPetLevel() in, so set level here
             m_pet.TempProperties.setProperty(BOMBERTARGET, target);
             m_pet.Name = Spell.Name;
 			m_pet.Flags ^= GameNPC.eFlags.DONTSHOWNAME;
 			m_pet.FixedSpeed = true;
-            m_pet.MaxSpeedBase = 260;
+            m_pet.MaxSpeedBase = 285;
             m_pet.Follow(target, 5, Spell.Range * 5); // with Toa bonus, if the bomber was fired > Spell.Range base, it didnt move..
         }
 

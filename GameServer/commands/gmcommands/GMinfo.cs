@@ -332,7 +332,21 @@ namespace DOL.GS.Commands
 				if (client.Player.TargetObject is GamePlayer)
 				{
 					var target = client.Player.TargetObject as GamePlayer;
-										
+
+					info.Add("ENDURANCE INFORMANTION");
+					info.Add("EnduRegerationTimer.IsAlive: " + target.EnduRegenTimer.IsAlive);
+					info.Add("Time since last timer tick (ms): " + (GameLoop.GameLoopTime - target.LastEnduTick));
+					info.Add("Last Regen amount: " + target.Regen);
+					info.Add("Last EndChant amount (FatigueConsumption): " + target.Endchant + "%");
+					info.Add("Last Regen at change: " + target.RegenRateAtChange);
+					info.Add(" ");
+					info.Add("REGEN INFORMATION");
+					info.Add("Last EnduDebuff:" + target.EnduDebuff);
+					info.Add("Last RegenBuff: " + target.RegenBuff);
+					info.Add("Last Regen after Tireless: " + target.RegenAfterTireless);
+					info.Add("Last Non-Combat Non-SprintRegen: " + target.NonCombatNonSprintRegen);
+					info.Add("Last Combat Regen: " + target.CombatRegen);
+					info.Add(" ");
 					info.Add("PLAYER INFORMATION (Client # " + target.Client.SessionID + ")");
 					info.Add("  - Name : " + target.Name);
 					info.Add("  - Lastname : " + target.LastName);
@@ -355,6 +369,13 @@ namespace DOL.GS.Commands
 					info.Add("  - XPs : " + target.Experience);
 					info.Add("  - RPs : " + target.RealmPoints);
 					info.Add("  - BPs : " + target.BountyPoints);
+					info.Add(" ");
+					info.Add("--CUSTOM PARAMS-- ");
+					var customParams = target.Client.Account.CustomParams;
+					foreach (CustomParam param in customParams)
+					{
+						info.Add(param.KeyName + " " + param.Value);
+					}
 
 					String sCurrent = "";
 					String sTitle = "";

@@ -194,7 +194,6 @@ namespace DOL.GS
         EnduranceHeal = 187,
         PowerHeal = 188,
         FatigueConsumptionDebuff = 189,
-        ComfortingFlames = 190,
         Null = 200
 
 

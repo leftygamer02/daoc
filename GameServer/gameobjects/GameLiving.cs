@@ -3695,12 +3695,15 @@ namespace DOL.GS
 				evadeChance *= 0.001;
 				evadeChance += 0.01 * attackerConLevel; // 1% per con level distance multiplied by evade level
 
-				//if( lastAD != null && lastAD.Style != null )
-				//{
-					//evadeChance += lastAD.Style.BonusToDefense * 0.01;
-				//}
+				// Kelgor's Claw 15% evade 
+                if (lastAD != null && lastAD.Style != null && lastAD.Style.ID == 380)
+                {
+                    evadeChance += 15 * 0.01;
+                }
 
-				if( ad.AttackType == AttackData.eAttackType.Ranged )
+                evadeChance -= GetAttackerDefensePenetration(ad.Attacker, ad.Weapon) / 100; //reduce chance by attacker's defense penetration
+
+				if ( ad.AttackType == AttackData.eAttackType.Ranged )
 					evadeChance /= 5.0;
 
 				if( evadeChance < 0.01 )
@@ -3724,6 +3727,9 @@ namespace DOL.GS
 					evadeChance = Math.Max(evadeChance - OverwhelmAbility.BONUS, 0);
 				}
 			}
+
+			
+
 			return evadeChance;
 		}
 
@@ -3790,7 +3796,15 @@ namespace DOL.GS
 					parryChance *= 0.001;
 					parryChance += 0.05 * attackerConLevel;
 
-					if( parryChance < 0.01 )
+					// Tribal Wrath 25% evade 
+					if (lastAD != null && lastAD.Style != null && lastAD.Style.ID == 381)
+					{
+						parryChance += 25 * 0.01;
+					}
+
+					parryChance -= GetAttackerDefensePenetration(ad.Attacker, ad.Weapon) / 100; //reduce chance by attacker's defense penetration
+
+					if ( parryChance < 0.01 )
 						parryChance = 0.01;
 					else if( parryChance > ServerProperties.Properties.PARRY_CAP && ad.Attacker is GamePlayer && ad.Target is GamePlayer )
 						parryChance = ServerProperties.Properties.PARRY_CAP;
@@ -3882,6 +3896,7 @@ namespace DOL.GS
 					blockChance += levelMod; //up to 15% extra block chance based on shield level (hidden mythic calc?)
 				}
 					
+				blockChance -= GetAttackerDefensePenetration(ad.Attacker, ad.Weapon) / 100; //reduce chance by attacker's defense penetration
 
 				if (blockChance < 0.01)
 					blockChance = 0.01;
@@ -3935,6 +3950,25 @@ namespace DOL.GS
 				}
 			}
 			return blockChance;
+		}
+
+		public double GetAttackerDefensePenetration(GameLiving living, InventoryItem weapon)
+        {            
+			//double statBasedReduction = (living.GetWeaponStat(living.attackComponent?.AttackWeapon) - 50) / 25.0;
+			//double weaponskillBasedReduction = living.GetWeaponSkill(living.attackComponent?.AttackWeapon) / 100;
+			double skillBasedReduction = living.WeaponSpecLevel(weapon) * 0.15;
+
+			//double combinedReduction = statBasedReduction + skillBasedReduction;
+
+			if (living is GamePlayer p)
+            {
+				//p.CharacterClass.WeaponSkillBase returns unscaled damage table value
+				//divide by 200 to change to scaling factor. example: warrior's 460 WeaponSkillBase / 200 = 2.3 Damage Table
+				//divide by final 2 to use the 2.0 damage table as our anchor. classes below 2.0 damage table will have slightly reduced penetration, above 2.0 will have increased penetration
+				skillBasedReduction *= p.CharacterClass.WeaponSkillBase / 200.0 / 1.8;
+			}
+				
+			return skillBasedReduction;
 		}
 
 		/// <summary>
@@ -4084,6 +4118,9 @@ namespace DOL.GS
 			if (effectListComponent is null)
                 return;
 
+			if (this is GamePlayer player)
+				player.Stealth(false);
+
 			TryCancelMovementSpeedBuffs(true);
 
 			var oProcEffects = effectListComponent.GetSpellEffects(eEffect.OffensiveProc);
@@ -4108,7 +4145,40 @@ namespace DOL.GS
 				tw.EventHandler(ad);
             }
 
-            CancelFocusSpell();
+			if (ad.Target is GamePlayer)
+			{
+				LastAttackTickPvP = GameLoop.GameLoopTime;
+			}
+			else
+			{
+				LastAttackTickPvE = GameLoop.GameLoopTime;
+			}
+
+			if (this is GameNPC npc)
+			{
+				var brain = npc.Brain as ControlledNpcBrain;
+
+
+				GamePlayer owner = brain?.GetPlayerOwner();
+
+                if (owner != null)
+                    owner.Stealth(false);
+
+                if (ad.Target is GamePlayer)
+				{
+					LastAttackTickPvP = GameLoop.GameLoopTime;
+					if (brain != null)
+						brain.Owner.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+				}
+				else
+				{
+					LastAttackTickPvE = GameLoop.GameLoopTime;
+					if (brain != null)
+						brain.Owner.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+				}
+			}
+
+			CancelFocusSpell();
         }
 
         public void CancelFocusSpell(bool moving = false)
@@ -4117,9 +4187,9 @@ namespace DOL.GS
             if (focusEffect != null)
             {
                 ((SpellHandler)focusEffect.SpellHandler).FocusSpellAction(moving);
-                EffectService.RequestCancelEffect(focusEffect);
+                EffectService.RequestImmediateCancelEffect(focusEffect);
                 if (((SpellHandler)focusEffect.SpellHandler).GetTarget().effectListComponent.Effects.TryGetValue(focusEffect.EffectType, out var petEffect))
-                    EffectService.RequestCancelEffect(petEffect.FirstOrDefault());
+                    EffectService.RequestImmediateCancelEffect(petEffect.FirstOrDefault());
             }
         }
 		/// <summary>
@@ -4198,7 +4268,7 @@ namespace DOL.GS
 
 							if (ablativehp <= 0)
 							{
-								EffectService.RequestCancelEffect(effect);
+								EffectService.RequestImmediateCancelEffect(effect);
 							}
 							else
 							{
@@ -4290,7 +4360,7 @@ namespace DOL.GS
                 }
 				// Non-Damaging, non-resisted spells that break mez.
 				else if (ad.SpellHandler is NearsightSpellHandler || ad.SpellHandler is AmnesiaSpellHandler || ad.SpellHandler is DiseaseSpellHandler
-						 || ad.SpellHandler is SpeedDecreaseSpellHandler) 
+						 || ad.SpellHandler is SpeedDecreaseSpellHandler || ad.SpellHandler is StunSpellHandler || ad.SpellHandler is ConfusionSpellHandler) 
 				{
 					removeMez = true;
 				}
@@ -4300,21 +4370,22 @@ namespace DOL.GS
             if (removeMez && effectListComponent.Effects.ContainsKey(eEffect.Mez))
 			{
 				var effect = effectListComponent.Effects[eEffect.Mez].FirstOrDefault();
-				EffectService.RequestCancelEffect(effect);
+				EffectService.RequestImmediateCancelEffect(effect);
 			}
 
 			// Remove Snare/Root
 			if (removeSnare && effectListComponent.Effects.ContainsKey(eEffect.Snare))
 			{
 				var effect = effectListComponent.Effects[eEffect.Snare].FirstOrDefault();
-				EffectService.RequestCancelEffect(effect);
+				EffectService.RequestImmediateCancelEffect(effect);
 			}
 
             // Remove MovementSpeedDebuff
             if (removeMovementSpeedDebuff && effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedDebuff))
             {
                 var effect = effectListComponent.Effects[eEffect.MovementSpeedDebuff].FirstOrDefault();
-                EffectService.RequestCancelEffect(effect);
+				if (effect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.SpellType != (byte)eSpellType.UnbreakableSpeedDecrease)
+					EffectService.RequestImmediateCancelEffect(effect);
             }
 
             return removeMez || removeSnare || removeMovementSpeedDebuff;
@@ -4344,9 +4415,13 @@ namespace DOL.GS
 			{
 				var effects = effectListComponent.Effects[eEffect.MovementSpeedBuff];/*.Where(e => e.IsDisabled == false).FirstOrDefault();*/
 
-				foreach (var effect in effects)
+				//foreach (var effect in effects)
+				for (int i = 0; i < effects.Count; i++)
 				{
-					var spellEffect = effect as ECSGameSpellEffect;
+					if (effects[i] is null)
+						continue;
+
+					var spellEffect = effects[i] as ECSGameSpellEffect;
 					if (spellEffect != null && spellEffect.SpellHandler.Spell.Target.ToLower() == "pet")
 					{
 						effectRemoved = false;
@@ -4358,30 +4433,44 @@ namespace DOL.GS
 					}*/
 					else
 					{
-						EffectService.RequestCancelEffect(effect);
+						EffectService.RequestImmediateCancelEffect(effects[i]);
 						effectRemoved = true;
 					}
 				}
             }
 
-            if (this is GamePet pet)
+            if (this is GameNPC npc && npc.Brain is ControlledNpcBrain pBrain || this is GamePet pet)
             {
-				if (pet.Owner.effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
+				var ownerEffects = new List<ECSGameEffect>(1);
+				pBrain = (this as GameNPC).Brain as ControlledNpcBrain;
+				pet = this as GamePet;
+				if (pBrain != null)
 				{
-					var ownerEffects = pet.Owner.effectListComponent.Effects[eEffect.MovementSpeedBuff]; //EffectListService.GetEffectOnTarget(pet.Owner, eEffect.MovementSpeedBuff);
-					foreach (var ownerEffect in ownerEffects)
+					if (pBrain.Owner.effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
 					{
-						if (!isAttacker && ownerEffect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.Target.ToLower() == "self")
-						{
-							effectRemoved = false;
-						}
-						else
-						{
-							EffectService.RequestCancelEffect(ownerEffect);
-							effectRemoved = true;
-						}
+						ownerEffects = pBrain.Owner.effectListComponent.Effects[eEffect.MovementSpeedBuff];
 					}
 				}
+				else
+                {
+					if (pet.Owner.effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
+					{
+						ownerEffects = pet.Owner.effectListComponent.Effects[eEffect.MovementSpeedBuff];
+					}
+				}
+
+				for (int i = 0; i < ownerEffects.Count; i++)
+				{
+					if (!isAttacker && ownerEffects[i] is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.Target.ToLower() == "self")
+					{
+						effectRemoved = false;
+					}
+					else
+					{
+						EffectService.RequestImmediateCancelEffect(ownerEffects[i]);
+						effectRemoved = true;
+					}
+				}				
             }
 
             return effectRemoved;
@@ -4729,7 +4818,7 @@ namespace DOL.GS
 		/// <param name="expOutpostBonus">outpost bonux to display</param>
 		/// <param name="sendMessage">should exp gain message be sent</param>
 		/// <param name="allowMultiply">should the xp amount be multiplied</param>
-		public virtual void GainExperience(eXPSource xpSource, long expTotal, long expCampBonus, long expGroupBonus, long expOutpostBonus, bool sendMessage, bool allowMultiply, bool notify)
+		public virtual void GainExperience(eXPSource xpSource, long expTotal, long expCampBonus, long expGroupBonus, long expOutpostBonus, long atlasBonus, bool sendMessage, bool allowMultiply, bool notify)
 		{
 			if (expTotal > 0 && notify) Notify(GameLivingEvent.GainedExperience, this, new GainedExperienceEventArgs(expTotal, expCampBonus, expGroupBonus, expOutpostBonus, sendMessage, allowMultiply, xpSource));
 		}
@@ -4755,7 +4844,7 @@ namespace DOL.GS
 		/// <param name="exp">base amount of xp to gain</param>
 		public void GainExperience(eXPSource xpSource, long exp)
 		{
-			GainExperience(xpSource, exp, 0, 0, 0, true, false, true);
+			GainExperience(xpSource, exp, 0, 0, 0, 0, true, false, true);
 		}
 
 		/// <summary>
@@ -4765,7 +4854,7 @@ namespace DOL.GS
 		/// <param name="allowMultiply">Do we allow the xp to be multiplied</param>
 		public void GainExperience(eXPSource xpSource, long exp, bool allowMultiply)
 		{
-			GainExperience(xpSource, exp, 0, 0, 0, true, allowMultiply, true);
+			GainExperience(xpSource, exp, 0, 0, 0, 0, true, allowMultiply, true);
 		}
 
 		/// <summary>
@@ -6907,7 +6996,7 @@ namespace DOL.GS
 
 		public virtual bool IsCasting
 		{
-			get { return m_runningSpellHandler != null && m_runningSpellHandler.IsCasting; }
+			get { return castingComponent != null && castingComponent.spellHandler != null && castingComponent.spellHandler.IsCasting; }
 		}
 
 		/// <summary>

@@ -76,7 +76,8 @@ namespace DOL.GS
 			m_deathAnnounce = new String[] { "The earth lurches beneath your feet as {0} staggers and topples to the ground.",
 				"A glowing light begins to form on the mound that served as {0}'s lair." };
 
-			TetherRange = 2500;	// TODO: Can be removed once there is an NPCTemplate.
+			TetherRange = 2500; // TODO: Can be removed once there is an NPCTemplate.
+			ScalingFactor = 70;
 		}
 
 		public ushort LairRadius
@@ -107,7 +108,7 @@ namespace DOL.GS
 
 		public int AttackRange
 		{
-			get { return 400; }
+			get { return 450; }
 			set { }
 		}
 
@@ -313,7 +314,7 @@ namespace DOL.GS
 		{
 			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
 			{
-				player.Out.SendMessage(message, eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+				player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
 			}
 		}
 

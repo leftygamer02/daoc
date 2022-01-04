@@ -41,7 +41,14 @@ namespace DOL.GS.Spells
 		/// <returns>The effect duration in milliseconds</returns>
 		protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
 		{
-			return Spell.Duration;
+			NPCECSStunImmunityEffect npcImmune = (NPCECSStunImmunityEffect)EffectListService.GetEffectOnTarget(target, eEffect.NPCStunImmunity);
+			if (npcImmune != null)
+			{
+				int duration = (int)npcImmune.CalclulateStunDuration(Spell.Duration);
+				return  duration > 1 ? duration : 1;
+			}
+			else
+				return Spell.Duration;
 		}
 
 		/// <summary>

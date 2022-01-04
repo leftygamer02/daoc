@@ -31,7 +31,7 @@ namespace DOL.GS
 
                     gPlayer.StartInterruptTimer(gPlayer.SpellInterruptDuration, AttackData.eAttackType.Spell, SpellHandler.Caster);
                 }
-                EffectService.RequestCancelEffect(this);
+                EffectService.RequestImmediateCancelEffect(this);
             }
             else if (Owner is GameNPC)
             {
@@ -55,11 +55,12 @@ namespace DOL.GS
                 {
                     //it's a pet.
                     GamePlayer playerowner = (npc.Brain as IControlledBrain).GetPlayerOwner();
-                    if (playerowner != null && playerowner.CharacterClass.ID == (int)eCharacterClass.Theurgist)
+                    if (playerowner != null && (playerowner.CharacterClass.ID == (int)eCharacterClass.Theurgist || 
+                        playerowner.CharacterClass.ID == (int)eCharacterClass.Animist && npc.Brain is TurretFNFBrain))
                     {
                         //Theurgist pets die.
                         npc.Die(SpellHandler.Caster);
-                        EffectService.RequestCancelEffect(this);
+                        EffectService.RequestImmediateCancelEffect(this);
                         return;
                     }
                 }

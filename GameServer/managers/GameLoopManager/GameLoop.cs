@@ -1,3 +1,4 @@
+using DOL.GS.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -8,7 +9,8 @@ namespace DOL.GS
     {
         public static long GameLoopTime=0;
         private const string PerfCounterName = "GameLoop";
-        
+        private static Thread m_GameLoopThread;
+
         //GameLoop tick timer -> will adjust based on the performance
         private static long _tickDueTime = 50;
         private static Timer _timerRef;
@@ -21,10 +23,35 @@ namespace DOL.GS
 
         public static bool Init()
         {
-            _timerRef = new Timer(Tick,null,0,Timeout.Infinite);
+            m_GameLoopThread = new Thread(new ThreadStart(GameLoopThreadStart));
+            m_GameLoopThread.Priority = ThreadPriority.AboveNormal;
+            m_GameLoopThread.Name = "GameLoop";
+            m_GameLoopThread.IsBackground = true;
+            m_GameLoopThread.Start();
+            
             return true;
         }
 
+        public static void Exit()
+        {
+            m_GameLoopThread.Interrupt();
+            m_GameLoopThread = null;
+        }
+
+        private static void GameLoopThreadStart()
+        {
+            bool running = true;
+            _timerRef = new Timer(Tick, null, 0, Timeout.Infinite);
+
+            while (running)
+            {
+                try { }
+                catch (ThreadInterruptedException)
+                {
+                    running = false;
+                }
+            }
+        }
 
         private static void Tick(object obj)
         {
@@ -38,6 +65,11 @@ namespace DOL.GS
             CastingService.Tick(GameLoopTime);
             EffectService.Tick(GameLoopTime);
             EffectListService.Tick(GameLoopTime);
+
+            if (ZoneBonusRotator._lastPvEChangeTick == 0)
+                ZoneBonusRotator._lastPvEChangeTick = GameLoopTime;
+            if (ZoneBonusRotator._lastRvRChangeTick == 0)
+                ZoneBonusRotator._lastRvRChangeTick = GameLoopTime;
 
             //Always tick last!
             ECS.Debug.Diagnostics.Tick();
