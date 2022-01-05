@@ -352,6 +352,9 @@ namespace DOL.GS.Commands
 					info.Add("DETERMINATION INFORMATION");
 					info.Add("CC reduction: " + target.AbilityBonus[(int)eProperty.MesmerizeDurationReduction]);
 					info.Add(" ");
+					info.Add("XPBUFF INFORMATION");
+					info.Add("XP Buff bonus: " + target.ItemBonus[eProperty.XpPoints]);
+					info.Add(" ");
 					info.Add("PLAYER INFORMATION (Client # " + target.Client.SessionID + ")");
 					info.Add("  - Name : " + target.Name);
 					info.Add("  - Lastname : " + target.LastName);
