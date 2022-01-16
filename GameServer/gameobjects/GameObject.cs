@@ -32,6 +32,7 @@ using DOL.GS.PacketHandler;
 using DOL.GS.Utils;
 
 using log4net;
+using DOL.Geometry;
 
 namespace DOL.GS
 {
@@ -96,6 +97,16 @@ namespace DOL.GS
 		#endregion
 
 		#region Position
+
+		public Vector3 Position
+        {
+			get { return new Vector3(X, Y, Z); }
+			set {
+				X = (int)value.X;
+				Y = (int)value.Y;
+				Z = (int)value.Z;
+            }
+        }
 
 		/// <summary>
 		/// The Object's current Region

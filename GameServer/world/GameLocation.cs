@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+using DOL.Geometry;
 using System;
 
 namespace DOL.GS
@@ -42,6 +43,17 @@ namespace DOL.GS
 			m_regionId = regionId;
 			m_name = name;
 			m_heading = heading;
+		}
+
+		public Vector3 Position
+		{
+			get { return new Vector3(X, Y, Z); }
+			set
+			{
+				X = (int)value.X;
+				Y = (int)value.Y;
+				Z = (int)value.Z;
+			}
 		}
 
 		/// <summary>

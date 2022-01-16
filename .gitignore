@@ -39,3 +39,7 @@ mono_crash.*
 /ConnectTest - Copy.bat - Shortcut.lnk
 /Pathing/bin/Debug/net6.0
 /Pathing/obj
+/DOL.Geometry/bin/Debug/net6.0
+/DOL.Geometry/obj
+/DOL.Numbers/bin/Debug/net6.0
+/DOL.Numbers/obj

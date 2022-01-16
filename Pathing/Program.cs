@@ -12,7 +12,6 @@ namespace Pathing
             Console.WriteLine("Initializing Pathing Service...");
             pathingServiceImpl.Initialize();
             Console.WriteLine("Pathing Service Successfully Initialized...");
-
             var server = new Server
             {
                 Services = { PathingService.BindService(pathingServiceImpl) },

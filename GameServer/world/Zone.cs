@@ -124,6 +124,8 @@ namespace DOL.GS
 
 		#region variables
 
+		public bool IsPathingEnabled = true;
+
 		/// <summary>
 		/// Contains the list of objects per subzone
 		/// </summary>
