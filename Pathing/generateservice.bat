@@ -1,0 +1,2 @@
+"%HOMEPATH%\.nuget\packages\grpc.tools\2.43.0\tools\windows_x86\protoc.exe"  "--csharp_out=." "--grpc_out=." "--plugin=protoc-gen-grpc=%HOMEPATH%\.nuget\packages\grpc.tools\2.43.0\tools\windows_x86\grpc_csharp_plugin.exe" ".\service.proto" 
+pause
