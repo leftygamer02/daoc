@@ -807,6 +807,15 @@ namespace DOL.GS
 					return false;
 				}
 
+				//We don't need to put this in "InitComponent" at this point as we still want the server to work if pathing gets disabled for various reasons.
+				//Once all this is hashed out, will determine best course of action, but, this works for now
+				var result = PathingMgr.Init();
+				if(!result)
+                {
+					if (log.IsDebugEnabled)
+						log.Debug("Could not start pathing server");
+				}
+
 				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
 
 				//---------------------------------------------------------------
