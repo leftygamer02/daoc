@@ -60,22 +60,25 @@ namespace DOL.GS
         /// <returns></returns>
         public bool Init()
         {
-            try
-            {
-                var dummy = IntPtr.Zero;
-                LoadNavMesh("this file does not exists!", ref dummy, ref dummy);
-            }
-            catch (Exception e)
-            {
-                log.ErrorFormat("The current process is a {0} bit process!", (IntPtr.Size == 8 ? "64bit" : "32bit"));
-                log.ErrorFormat("PathingMgr did not find the ReUth.dll! Starting server anyway but pathing will not work! Error message: {0}", e.ToString());
-                return false;
-            }
+            //try
+            //{
+            //    var dummy = IntPtr.Zero;
+            //    LoadNavMesh("this file does not exists!", ref dummy, ref dummy);
+            //}
+            //catch (Exception e)
+            //{
+            //    log.ErrorFormat("The current process is a {0} bit process!", (IntPtr.Size == 8 ? "64bit" : "32bit"));
+            //    log.ErrorFormat("PathingMgr did not find the ReUth.dll! Starting server anyway but pathing will not work! Error message: {0}", e.ToString());
+            //    return false;
+            //}
 
             _navmeshPtrs = new Dictionary<ushort, IntPtr[]>();
             foreach (var zone in WorldMgr.Zones.Values)
             {
-                LoadNavMesh(zone);
+                if (zone.ID == 52 || zone.ID == 21)
+                {
+                    LoadNavMesh(zone);
+                }
             }
             return true;
         }

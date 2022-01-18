@@ -1346,6 +1346,7 @@ namespace DOL.GS
         /// </summary>
         protected class ArriveAtTargetAction : RegionAction
         {
+            private Action<GameNPC> _onCloseToTarget;
             /// <summary>
             /// Constructs a new ArriveAtTargetAction
             /// </summary>
@@ -1353,6 +1354,12 @@ namespace DOL.GS
             public ArriveAtTargetAction(GameNPC actionSource)
                 : base(actionSource)
             {
+            }
+
+            public ArriveAtTargetAction(GameNPC actionSource, Action<GameNPC> onCloseToTarget)
+                : base(actionSource)
+            {
+                _onCloseToTarget = onCloseToTarget;
             }
 
             /// <summary>
@@ -1366,9 +1373,15 @@ namespace DOL.GS
 
                 bool arriveAtSpawnPoint = npc.IsReturningToSpawnPoint;
 
-                npc.StopMoving();
-                npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
-
+                if(_onCloseToTarget != null)
+                {
+                    _onCloseToTarget(npc);
+                }
+                else
+                {
+                    npc.StopMoving();
+                    npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
+                }
                 if (arriveAtSpawnPoint)
                     npc.Notify(GameNPCEvent.ArriveAtSpawnPoint, npc);
             }
@@ -1414,9 +1427,10 @@ namespace DOL.GS
             MovementStartTick = Environment.TickCount;
         }
 
-        public virtual void WalkTo(Vector3 position, short speed, Action<GameNPC> closeToTargetCallback)
+        public virtual void WalkTo(Vector3 position, short speed, Action<GameNPC> closeToTargetCallback = null)
         {
-            WalkTo((int)position.X, (int)position.Y, (int)position.Z, speed);
+            WalkTo(new Point3D((int)position.X, (int)position.Y, (int)position.Z), speed, closeToTargetCallback);
+            //WalkTo((int)position.X, (int)position.Y, (int)position.Z, speed);
         }
 
         /// <summary>
@@ -1436,8 +1450,7 @@ namespace DOL.GS
         /// </summary>
         /// <param name="p"></param>
         /// <param name="speed"></param>
-        [Obsolete("Use .PathTo")]
-        public virtual void WalkTo(IPoint3D target, short speed)
+        public virtual void WalkTo(IPoint3D target, short speed, Action<GameNPC> onCloseToTarget = null)
         {
             if (IsTurningDisabled)
                 return;
@@ -1472,7 +1485,7 @@ namespace DOL.GS
             UpdateTickSpeed();
             Notify(GameNPCEvent.WalkTo, this, new WalkToEventArgs(TargetPosition, speed));
 
-            StartArriveAtTargetAction(GetTicksToArriveAt(TargetPosition, speed));
+            StartArriveAtTargetAction(GetTicksToArriveAt(TargetPosition, speed), onCloseToTarget);
             BroadcastUpdate();
         }
 
@@ -1563,12 +1576,13 @@ namespace DOL.GS
             //return false; // no path, and no fallback
 
 
+            //Might need to uncomment this out, but, I'm not sure what this is for...
             // Directly walk towards the target (or call the customly provided action)
-            if (onLastNodeReached != null)
-                onLastNodeReached(this); // custom action, e.g. used to start the follow timer
-            else
-                WalkTo(dest, (short)walkSpeed);
-            return true;
+            //if (onLastNodeReached != null)
+            //    onLastNodeReached(this); // custom action, e.g. used to start the follow timer
+            //else
+            //    WalkTo(dest, (short)walkSpeed);
+            //return true;
 
 
             // Do the actual pathing bit: Walk towards the next pathing node
@@ -1580,9 +1594,9 @@ namespace DOL.GS
         {
             PathCalculator?.Clear();
         }
-        private void StartArriveAtTargetAction(int requiredTicks)
+        private void StartArriveAtTargetAction(int requiredTicks, Action<GameNPC> onCloseToTarget = null)
         {
-            m_arriveAtTargetAction = new ArriveAtTargetAction(this);
+            m_arriveAtTargetAction = new ArriveAtTargetAction(this, onCloseToTarget);
             m_arriveAtTargetAction.Start((requiredTicks > 1) ? requiredTicks : 1);
         }
 
@@ -5747,6 +5761,11 @@ namespace DOL.GS
         public override void Notify(DOLEvent e, object sender, EventArgs args)
         {
             base.Notify(e, sender, args);
+
+            if(e == GameNPCEvent.ArriveAtTarget)
+            {
+
+            }
 
             ABrain brain = Brain;
             if (brain != null)

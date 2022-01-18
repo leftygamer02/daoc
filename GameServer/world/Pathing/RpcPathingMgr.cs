@@ -12,7 +12,7 @@ namespace DOL.GS {
 	///   Pathing
 	/// </summary>
 	public class RpcPathingMgr : IPathingMgr {
-		private const int DEADLINE_MS = 500;
+		private const int DEADLINE_MS = 5000;
 
 		private readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		private readonly bool[] NavmeshAvailable = new bool[500];

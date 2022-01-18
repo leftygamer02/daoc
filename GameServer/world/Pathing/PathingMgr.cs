@@ -35,10 +35,19 @@ namespace DOL.GS
         public static bool Init()
         {
             log.Info("Starting PathingMgr");
-            if (RpcPathingMgr.Init()) SetPathingMgr(RpcPathingMgr);
-            //else if (ShardedRpcPathingMgr.Init()) SetPathingMgr(ShardedRpcPathingMgr);
-            else if (LocalPathingMgr.Init()) SetPathingMgr(LocalPathingMgr);
-            else SetPathingMgr(NullPathingMgr);
+            //Debug with local, GRPC not being nice.
+            if (LocalPathingMgr.Init())
+            {
+                SetPathingMgr(LocalPathingMgr);
+            }
+            else
+            {
+                SetPathingMgr(NullPathingMgr);
+            }
+            //if (RpcPathingMgr.Init()) SetPathingMgr(RpcPathingMgr);
+            ////else if (ShardedRpcPathingMgr.Init()) SetPathingMgr(ShardedRpcPathingMgr);
+            //else if (LocalPathingMgr.Init()) SetPathingMgr(LocalPathingMgr);
+            //else SetPathingMgr(NullPathingMgr);
             return true;
         }
 

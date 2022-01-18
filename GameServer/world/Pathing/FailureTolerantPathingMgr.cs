@@ -34,7 +34,8 @@ namespace DOL.GS
 
         public async Task<WrappedPathingResult> GetPathStraightAsync(Zone zone, Vector3 start, Vector3 end)
         {
-            var result = (WrappedPathingResult?)await ErrorLimiter.CallAsync(() => pathingMgr.GetPathStraightAsync(zone, start, end));
+            //var result = (WrappedPathingResult?)await ErrorLimiter.CallAsync(() => pathingMgr.GetPathStraightAsync(zone, start, end));
+            var result = (WrappedPathingResult?)await pathingMgr.GetPathStraightAsync(zone, start, end);
             if (result != null)
             {
                 return result.Value;
