@@ -1461,6 +1461,11 @@ namespace DOL.GS
             if (speed <= 0)
                 return;
 
+            //if (onCloseToTarget != null)
+            //{
+            //    log.Info($"Current Target Destination: X: {target.X} Y: {target.Y}, Z: {target.Z}");
+            //}
+
             TargetPosition = target; // this also saves the current position
 
             if (IsWithinRadius(TargetPosition, CONST_WALKTOTOLERANCE))
@@ -1573,6 +1578,16 @@ namespace DOL.GS
                 didFindPath = PathCalculator.DidFindPath;
             }
 
+            if(nextNode == null)
+            {
+                WalkTo(dest, (short)walkSpeed);
+                return true;
+            }
+            else
+            {
+                WalkTo(nextNode.Value, (short)walkSpeed, closeToTargetCallback: npc => npc.PathTo(dest, speed, onLastNodeReached));
+                return true;
+            }
             //return false; // no path, and no fallback
 
 
@@ -1586,8 +1601,8 @@ namespace DOL.GS
 
 
             // Do the actual pathing bit: Walk towards the next pathing node
-            WalkTo(nextNode.Value, (short)walkSpeed, closeToTargetCallback: npc => npc.PathTo(dest, speed, onLastNodeReached));
-            return true;
+            //WalkTo(nextNode.Value, (short)walkSpeed, closeToTargetCallback: npc => npc.PathTo(dest, speed, onLastNodeReached));
+            //return true;
         }
 
         public virtual void ClearPathingCache()
