@@ -319,8 +319,9 @@ namespace DOL.AI.Brain
 			m_tempY = Body.Y;
 			m_tempZ = Body.Z;
 			WalkState = eWalkState.ComeHere;
-			Body.StopFollowing();
+			Body.StopFollowing();			
 			Body.WalkTo(Owner, Body.MaxSpeed);
+			//Body.PathTo(Owner, Body.CurrentSpeed, null);
 		}
 
 		/// <summary>
@@ -335,6 +336,7 @@ namespace DOL.AI.Brain
 			WalkState = eWalkState.GoTarget;
 			Body.StopFollowing();
 			Body.WalkTo(target, Body.MaxSpeed);
+			//Body.PathTo(Owner, Body.CurrentSpeed, null);
 		}
 
 		public virtual void SetAggressionState(eAggressionState state)

@@ -237,13 +237,14 @@ namespace DOL.GS
         DidFindPath = true; // not needed
         return new Tuple<Vector3?, NoPathReason>(null, NoPathReason.NOPROBLEM);
       }
+      await ReplotPathAsync(target);
 
       //This may cause problems... temp commented out
       //Interlocked.Increment(ref Statistics.PathToCalculateNextTargetCalls);
 
-      // Check if we can reuse our path. We assume that we ourselves never "suddenly" warp to a completely
-      // different position.
-      if (ForceReplot || !_lastTarget.IsInRange(target, MIN_TARGET_DIFF_REPLOT_DISTANCE)) {
+            // Check if we can reuse our path. We assume that we ourselves never "suddenly" warp to a completely
+            // different position.
+            if (ForceReplot || !_lastTarget.IsInRange(target, MIN_TARGET_DIFF_REPLOT_DISTANCE)) {
                 //Temp commented out
         //if (Owner.DebugMode)
         //  Owner.DebugSend("Target moved too far from original target or forced replot; replotting path");

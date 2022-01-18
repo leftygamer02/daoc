@@ -132,7 +132,7 @@ namespace Pathing
 
         public void Initialize()
         {
-            var pathingBasePath = Path.Combine(new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName, "pathing");
+            var pathingBasePath = Path.Combine(new FileInfo(Assembly.GetEntryAssembly().Location).DirectoryName, "opt\\navmeshes");
 
             for (int i = 0; i < ZoneCountMax; i++)
             {
