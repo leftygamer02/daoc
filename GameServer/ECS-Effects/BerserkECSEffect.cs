@@ -29,7 +29,10 @@ namespace DOL.GS
 
             if (OwnerPlayer != null)
             {
+                // "You go into a berserker frenzy!"
                 OwnerPlayer.Out.SendMessage(LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.BerserkEffect.GoBerserkerFrenzy"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                // "{0} goes into a berserker frenzy!"
+                Message.SystemToArea(Owner, LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.BerserkEffect.AreaBerserkerFrenzy",Owner.GetName(0, true)), eChatType.CT_System, Owner);
                 OwnerPlayer.Emote(eEmote.MidgardFrenzy);
                 //TODO differentiate model between Dwarves and other races
                 if (OwnerPlayer.Race == (int)eRace.Dwarf)
@@ -42,13 +45,19 @@ namespace DOL.GS
                 }
             }
         }
+        
         public override void OnStopEffect()
         {
             Owner.Model = m_startModel;
 
             // there is no animation on end of the effect
             if (OwnerPlayer != null)
+            {
+                // "Your berserker frenzy ends."
                 OwnerPlayer.Out.SendMessage(LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.BerserkEffect.BerserkerFrenzyEnds"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                // "{0}'s berserker frenzy ends."
+                Message.SystemToArea(Owner, LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.BerserkEffect.AreaFrenzyEnds", Owner.GetName(0, true)), eChatType.CT_System, Owner);
+            }
         }
     }
 }

@@ -83,7 +83,7 @@ namespace DOL.GS.Spells
 		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
 		{
 			GameEventMgr.RemoveHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
-			return base.OnEffectExpires(effect, noMessages);
+			return base.OnEffectExpires(effect, false);
 		}
 
 		/// <summary>

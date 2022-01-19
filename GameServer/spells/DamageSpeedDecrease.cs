@@ -45,6 +45,7 @@ namespace DOL.GS.Spells
 			if ((target is Keeps.GameKeepDoor) == false && (target is Keeps.GameKeepComponent == false))
 			{
 				base.ApplyEffectOnTarget(target, effectiveness);
+				OnSpellStartsMsg(target, true, true, true);
 			}
 		}
 
@@ -88,6 +89,8 @@ namespace DOL.GS.Spells
 
 			if(heal > 0) 
 			{
+				// "Your life energy is stolen!"
+				OnSpellStartsMsg(ad.Target, true, false, false);
 				MessageToCaster("You steal " + heal + " hit point" + (heal==1?".":"s."), eChatType.CT_Spell);
 			}
 			else 
@@ -100,12 +103,16 @@ namespace DOL.GS.Spells
 		/// When an applied effect expires.
 		/// Duration spells only.
 		/// </summary>
-		/// <param name="effect">The expired effect</param>
+		/// <param name="target">The target affected by the spell effect.</param>
+		/// <param name="effect">The expired spell effect</param>
 		/// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
 		/// <returns>immunity duration in milliseconds</returns>
-		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+		public int OnEffectExpires(GameLiving target, GameSpellEffect effect, bool noMessages)
 		{
+			AttackData ad = CalculateDamageToTarget(target);
+			
 			base.OnEffectExpires(effect, noMessages);
+			OnSpellExpiresMsg(ad.Target, true, true, true);
 			return 0;
 		}
 

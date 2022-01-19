@@ -59,7 +59,11 @@ namespace DOL.GS
                         ApplyBonus(Owner, eBuffBonusCategory.BaseBuff, prop, SpellHandler.Spell.Value, Effectiveness, false);
                 }
             }
-            
+
+            // "You feel more dexterous!"
+            // "{0} looks more agile!"
+            OnEffectStartsMsg(Owner, true, false, true);
+
             //IsBuffActive = true;
         }
 
@@ -108,6 +112,10 @@ namespace DOL.GS
 
                 }
             }
+
+            // "Your agility returns to normal."
+            // "{0} loses their graceful edge.""
+            OnEffectExpiresMsg(Owner, true, false, true);
 
             IsBuffActive = false;
         }

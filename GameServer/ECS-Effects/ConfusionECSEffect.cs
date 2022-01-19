@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace DOL.GS
 {
+    [SpellHandlerAttribute("Confusion")]
     public class ConfusionECSGameEffect : ECSGameSpellEffect
     {
         public ConfusionECSGameEffect(ECSGameEffectInitParams initParams)
@@ -30,6 +31,14 @@ namespace DOL.GS
                     GamePlayer gPlayer = Owner as GamePlayer;
 
                     gPlayer.StartInterruptTimer(gPlayer.SpellInterruptDuration, AttackData.eAttackType.Spell, SpellHandler.Caster);
+                    
+                    // "You can't focus your knight viking badger helmet... meow!"
+                    // "{0} is confused!"
+                    OnEffectStartsMsg(Owner, true, false, true);
+                    //(SpellHandler as ConfusionSpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
+                    //(SpellHandler as ConfusionSpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+                    // "{0} is confused!"
+                    //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell, Owner, SpellHandler.Caster);
                 }
                 EffectService.RequestImmediateCancelEffect(this);
             }
@@ -47,6 +56,12 @@ namespace DOL.GS
                 GameNPC npc = Owner as GameNPC;
 
                 npc.IsConfused = true;
+                
+                // "{0} is confused!"
+                OnEffectStartsMsg(Owner, true, false, true);
+                //(SpellHandler as ConfusionSpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+                // "{0} is confused!"
+                //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell, Owner, SpellHandler.Caster);
 
                 //if (log.IsDebugEnabled)
                 //    log.Debug("CONFUSION: " + npc.Name + " was confused(true," + doAttackFriend.ToString() + ")");

@@ -45,9 +45,10 @@ namespace DOL.GS
                 if (gPlayer.ControlledBrain != (SpellHandler as CharmSpellHandler).m_controlledBrain)
                 {
 
-                    // sorc: "The slough serpent is enthralled!" ct_spell
-                    Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message1, npc.GetName(0, false)), eChatType.CT_Spell);
-                    (SpellHandler as CharmSpellHandler).MessageToCaster(npc.GetName(0, true) + " is now under your control.", eChatType.CT_Spell);
+                    // "{0} is now under your control."
+                    OnEffectStartsMsg(Owner, false, true, false);
+                    //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message1, npc.GetName(0, false)), eChatType.CT_Spell);
+                    //(SpellHandler as CharmSpellHandler).MessageToCaster(npc.GetName(0, true) + " is now under your control.", eChatType.CT_Spell);
 
                     gPlayer.SetControlledBrain((SpellHandler as CharmSpellHandler).m_controlledBrain);
 
@@ -75,7 +76,8 @@ namespace DOL.GS
                 ControlledNpcBrain oldBrain = (ControlledNpcBrain)gPlayer.ControlledBrain;
                 gPlayer.SetControlledBrain(null);
 
-                (SpellHandler as CharmSpellHandler).MessageToCaster("You lose control of " + npc.GetName(0, false) + "!", eChatType.CT_SpellExpires);
+                OnEffectExpiresMsg(npc, false, true, false);
+                //(SpellHandler as CharmSpellHandler).MessageToCaster("You lose control of " + npc.GetName(0, false) + "!", eChatType.CT_SpellExpires);
 
                 lock (npc.BrainSync)
                 {

@@ -48,11 +48,29 @@ namespace DOL.GS
             }
         }
 
-        protected void SendMessages()
+        protected void SendStartMessages()
         {
-            ((SpellHandler)SpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
-            ((SpellHandler)SpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
-            Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell, Owner, SpellHandler.Caster);
+            // "You are entranced!"
+            // "You are mesmerized!"
+            //OnEffectStartsMsg(Owner, true, true, true);
+            //((SpellHandler)SpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
+            // "{0} is entranced!"
+            // "{0} is mesmerized!"
+            //((SpellHandler)SpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+            // "{0} is entranced!"
+            // "{0} is mesmerized!"
+            //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell, Owner, SpellHandler.Caster);
+        }
+        
+        protected void SendStopMessages()
+        {
+            // "You are no longer entranced."
+            // "You recover from the mesmerize."
+            //OnEffectExpiresMsg(Owner, true, true, true);
+            //((SpellHandler)SpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message3, eChatType.CT_SpellExpires);
+            // "{0} is no longer entranced."
+            // "{0} recovers from the mesmerize."
+            //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_SpellExpires, Owner);
         }
     }
 
@@ -75,7 +93,9 @@ namespace DOL.GS
             Owner.IsStunned = true;
             OnHardCCStart();
             UpdatePlayerStatus();
-            SendMessages();
+            // "You are stunned!"
+            // "{0} is stunned!"
+            OnEffectStartsMsg(Owner, true, true, true);
         }
 
         public override void OnStopEffect()
@@ -83,6 +103,9 @@ namespace DOL.GS
             Owner.IsStunned = false;
             OnHardCCStop();
             UpdatePlayerStatus();
+            // "You recover from the stun.."
+            // "{0} recovers from the stun."
+            OnEffectExpiresMsg(Owner, true, false, true);
         }
     }
 
@@ -102,7 +125,9 @@ namespace DOL.GS
             Owner.IsMezzed = true;
             OnHardCCStart();
             UpdatePlayerStatus();
-            SendMessages();
+            // "You are entranced!"
+            // "You are mesmerized!"
+            OnEffectStartsMsg(Owner, true, true, true);
         }
 
         public override void OnStopEffect()
@@ -110,6 +135,9 @@ namespace DOL.GS
             Owner.IsMezzed = false;
             OnHardCCStop();
             UpdatePlayerStatus();
+            // "You are no longer entranced."
+            // "You recover from the mesmerize."
+            OnEffectExpiresMsg(Owner, true, false, true);
         }
     }
 }

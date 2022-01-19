@@ -8,9 +8,11 @@ Effects.Necro.TauntEffect.SeemsChange:			{0} seems to change in demeanor, appear
 Effects.Necro.TauntEffect.SeemsLessAgg:			{0} seems to be less aggressive than before.
 
 Effects.BerserkEffect.GoBerserkerFrenzy:		You go into a berserker frenzy!
+Effects.BerserkEffect.AreaBerserkerFrenzy:      {0} goes into a berserker frenzy!
 Effects.BerserkEffect.BerserkerFrenzyEnds:		Your berserker frenzy ends.
+Effects.BerserkEffect.AreaFrenzyEnds:           {0}'s berserker frenzy ends.
 Effects.BerserkEffect.Name:						Berserk
-Effects.BerserkEffect.InfoEffect:				This ability transforms the player into a Vendo beast and makes each hit that lands a critical hit, at the expense of any defensive abilities. It can be used one every seven minutes.
+Effects.BerserkEffect.InfoEffect:				This ability transforms the player into a Vendo beast and makes each hit that lands a critical hit, at the expense of any defensive abilities. It can be used once every seven minutes.
 
 Effects.BodyguardEffect.NowBGXButSC:			You are now Bodyguarding {0}, but you must stand closer.
 Effects.BodyguardEffect.XNowBGYouButSC:			{0} is now Bodyguarding you, but you must stand closer.

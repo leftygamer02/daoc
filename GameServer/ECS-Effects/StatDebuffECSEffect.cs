@@ -6,6 +6,7 @@ using DOL.AI.Brain;
 using DOL.GS.PropertyCalc;
 using System.Collections.Generic;
 using DOL.GS.API;
+using DOL.Language;
 
 namespace DOL.GS
 {
@@ -79,6 +80,14 @@ namespace DOL.GS
                     }
                 }
             }
+            
+            // "Your agility is suppressed!"
+            // "{0} seems uncoordinated!"
+            OnEffectStartsMsg(Owner, true, true, true);
+            //(SpellHandler as SpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
+            //SpellHandler.Caster.MessageToSelf(LanguageMgr.GetTranslation((SpellHandler.Caster as GamePlayer).Client, "Amnesia.MessageToArea", Owner.GetName(0, true)), eChatType.CT_Spell);
+            // "{0} seems uncoordinated!"
+            //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell, Owner);
 
             //IsBuffActive = true;
         }
@@ -127,6 +136,12 @@ namespace DOL.GS
             {
                 Owner.StartHealthRegeneration();
             }
+            
+            // "Your coordination returns."
+            // "{0}'s coordination returns."
+            OnEffectExpiresMsg(Owner, true, false, true);
+            //(SpellHandler as SpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message3, eChatType.CT_SpellExpires);
+            //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_SpellExpires, Owner);
 
             IsBuffActive = false;
         }

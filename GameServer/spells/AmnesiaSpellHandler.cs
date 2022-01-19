@@ -71,9 +71,17 @@ namespace DOL.GS.Spells
 			target.rangeAttackComponent.RangeAttackTarget = null;
 			if(target is GamePlayer)
 				target.TargetObject = null;
-
-            if (target is GamePlayer)
-                MessageToLiving(target, LanguageMgr.GetTranslation((target as GamePlayer).Client, "Amnesia.MessageToTarget"), eChatType.CT_Spell);
+			
+            //MessageToLiving(target, LanguageMgr.GetTranslation((target as GamePlayer).Client, "Amnesia.MessageToTarget", null), eChatType.CT_Spell);
+            //MessageToCaster(LanguageMgr.GetTranslation((m_caster as GamePlayer).Client, "Amnesia.MessageToArea", target.GetName(0, true)), eChatType.CT_Spell);
+            //Message.SystemToArea(target, LanguageMgr.GetTranslation("Amnesia.MessageToArea", target.Name), eChatType.CT_Spell, target, m_caster);
+            
+            // "Your mind goes blank and you forget what you were doing!"
+            // "{0} forgets what they were doing!"
+            OnSpellStartsMsg(target, true, true, true);
+            //MessageToCaster(Util.MakeSentence(Spell.Message2, target.GetName(0, true)), eChatType.CT_Spell);
+            // "{0} forgets what they were doing!"
+            //Message.SystemToArea(target, Util.MakeSentence(Spell.Message2, target.GetName(0, true)), eChatType.CT_Spell, target);
 
             /*
             GameSpellEffect effect;

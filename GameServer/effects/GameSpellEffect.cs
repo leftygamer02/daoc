@@ -68,7 +68,7 @@ namespace DOL.GS.Effects
 		/// </summary>
 		protected GameLiving m_owner;
 		/// <summary>
-		/// The living to that this effect is applied to
+		/// The living entity (player, NPC, mob) that this effect is applied to
 		/// </summary>
 		public GameLiving Owner
 		{

@@ -23,6 +23,7 @@ using DOL.GS.Effects;
 using DOL.GS.PropertyCalc;
 using System.Reflection;
 using DOL.GS.PacketHandler;
+using DOL.GS.Spells;
 
 namespace DOL.GS.Spells
 {
@@ -138,9 +139,10 @@ namespace DOL.GS.Spells
 				lock (m_concEffects) {
 					EnableEffect(effect); // restore disabled effect before it is completely canceled
 					m_concEffects.Remove(effect);
+					OnSpellExpiresMsg(effect.Owner, true, true, true);
 				}
 			}
-			return base.OnEffectExpires(effect, noMessages);
+			return base.OnEffectExpires(effect, true);
 		}
 
 		/// <summary>

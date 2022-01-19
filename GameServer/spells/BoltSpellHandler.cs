@@ -320,12 +320,16 @@ namespace DOL.GS.Spells
 				caster.OnAttackEnemy(ad);
 				if (ad.Damage > 0)
 				{
+					m_handler.OnSpellStartsMsg(ad.Target, true, true, true);
 					m_handler.SendDamageMessages(ad);
 				}
+
 				m_handler.DamageTarget(ad, false, (blocked ? 0x02 : 0x14));
 
                 target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, caster);
 			}
+
+			public BoltSpellHandler SpellHandler { get; }
 		}
     }
 }

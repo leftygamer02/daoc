@@ -1,6 +1,6 @@
-﻿Skill.Ability.CannotUseDead:	You cannot use this while Dead!
-Skill.Ability.CannotUseMezzed:	You cannot use this while Mezzed!
-Skill.Ability.CannotUseStunned:	You cannot use this while Stunned!
+﻿Skill.Ability.CannotUseDead:	You cannot use this while dead!
+Skill.Ability.CannotUseMezzed:	You cannot use this while mesmerized!
+Skill.Ability.CannotUseStunned:	You cannot use this while stunned!
 Skill.Ability.CannotUseStanding:	You must be standing to use this ability!
 Skill.Ability.CannotUseSnared:	You may not use this ability while snared!
 Skill.Ability.CannotUseNoTarget:	You need a target to use this ability!
@@ -36,8 +36,10 @@ Skill.Ability.CannotUse.CriticalShot.MustBeStanding:	You must be standing to att
 Skill.Ability.CriticalShot.SwitchToRegular:	You switch to a regular shot!
 Skill.Ability.CriticalShot.AlreadyFiring:	You are already firing this weapon!
 
-Skill.Ability.DirtyTricks.EffectCancel:	Your attacks return to normal.
-Skill.Ability.DirtyTricks.EffectStart:	You get dirt thrown in your face!
+Skill.Ability.DirtyTricks.EffectCancel:	        You can see clearly again.
+Skill.Ability.DirtyTricks.AreaEffectCancel:     {0} can see clearly again.
+Skill.Ability.DirtyTricks.EffectStart:	        {0} flings a cloud of dirt in your eyes!
+Skill.Ability.DirtyTricks.AreaEffectStart:      {0} flings dirt in {1}'s eyes!
 Skill.Ability.DirtyTricks.Name:	Dirty Tricks
 Skill.Ability.DirtyTricks.Description:	The player will toss dirt into the face of the enemy and causes his fumble rate to increase temporarily.
 Skill.Ability.DirtyTricks.DelveString:	Causes target's fumble rate to increase.

@@ -22,12 +22,24 @@ namespace DOL.GS
             // attack ignores DoT damage, since only the first tick of a DoT should remove stealth.            
             if (OwnerPlayer != null)
                 OwnerPlayer.Stealth(false);
+            
+            // "Searing pain fills your mind!"
+            // "{0} is wracked with pain!"
+            OnEffectStartsMsg(Owner, true, false, true);
+            //(SpellHandler as DoTSpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
+            //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell, Owner);
         }
 
         public override void OnStopEffect()
         {
             if (EffectType == eEffect.Bleed && !Owner.effectListComponent.ContainsEffectForEffectType(eEffect.Bleed))
                 Owner.TempProperties.removeProperty(StyleBleeding.BLEED_VALUE_PROPERTY);
+            
+            // "Your mental agony fades."
+            // "{0}'s mental agony fades."
+            OnEffectExpiresMsg(Owner, true, false, true);
+            //(SpellHandler as DoTSpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message3, eChatType.CT_SpellExpires);
+            //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_SpellExpires, Owner);
         }
 
         public override void OnEffectPulse()
@@ -43,10 +55,13 @@ namespace DOL.GS
                 {
                     if (OwnerPlayer != null)
                     {
-                        // An acidic cloud surrounds you!
-                        handler.MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
-                        // {0} is surrounded by an acidic cloud!
-                        Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, false)), eChatType.CT_YouHit, Owner);
+                        // "Searing pain fills your mind!"
+                        // "{0} is wracked with pain!"
+                        OnEffectStartsMsg(Owner, true, false, true);
+                        // Searing pain fills your mind!
+                        //handler.MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
+                        // {0} is wracked with pain!
+                        //Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, false)), eChatType.CT_YouHit, Owner);
                     }
                     handler.OnDirectEffect(Owner, Effectiveness, true);
                 }

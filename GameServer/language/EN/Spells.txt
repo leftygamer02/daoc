@@ -120,4 +120,5 @@ AblativeArmor.Attacker:	A barrier absorbs {0} damage of your attack!
 
 #Amnesia
 Amnesia.MessageToTarget:	Your mind goes blank and you forget what you were doing!
+Amnesia.MessageToArea:      {0} forgets what they were doing!
 
