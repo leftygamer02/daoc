@@ -17,3 +17,8 @@ GameNPC.Interact.IsFull:					This {0} is full.
 GameNPC.SayTo.Says:							{0} says, "{1}"
 GameNPC.SayTo.SpeaksTo:						{0} speaks to {1}
 
+# KING THRONE NPC
+CLWeaponNPC.ReceiveItem.RespecCL:			Thanks, I added a single champion skill respec to use /respec cl.
+KingNPC.WhisperReceive.IsNowChampion:			You have just embraced on the life of the champions!
+KingNPC.WhisperReceive.AlreadyChampion:			You are already a champion!
+KingNPC.WhisperReceive.AskForChampion:			Would you like to embrace in the life of [Champions]?

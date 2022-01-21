@@ -275,7 +275,7 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.Dead"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.Dead"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
@@ -283,7 +283,7 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.Mesmerized"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.Mesmerized"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
@@ -291,7 +291,7 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.Stunned"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.Stunned"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
@@ -299,7 +299,7 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.Sitting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.Sitting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
@@ -307,7 +307,7 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.Combat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.Combat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
@@ -315,7 +315,7 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.BeInCombat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.BeInCombat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
@@ -323,13 +323,13 @@ namespace DOL.GS.RealmAbilities
 			{
 				if (player != null)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.Stealthed"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.Stealthed"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				return true;
 			}
 			if (player != null && (bitmask & NOTINGROUP) != 0 && player.Group == null)
 			{
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility..CheckPreconditions.BeInGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.CheckPreconditions.BeInGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return true;
 			}
 			return false;

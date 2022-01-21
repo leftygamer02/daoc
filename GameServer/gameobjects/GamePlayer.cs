@@ -1278,7 +1278,7 @@ namespace DOL.GS
                 return;
             }
 			
-            string description = string.Format("in {0}", this.GetBindSpotDescription());
+            string description = string.Format("{0} in {1}", this.bindarea, this.GetBindSpotDescription());
             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Bind.LastBindPoint", description), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			
             bool bound = false;

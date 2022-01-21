@@ -52,11 +52,11 @@ GamePlayer.Attack.Type.Throw:				throw
 GamePlayer.Attack.WithYour:					with your	
 GamePlayer.Attack.YouAttack:				You attack	
 GamePlayer.Attack.YouShot:					You shot
-GamePlayer.Bind.Bound:						You are now bound to this location.
-GamePlayer.Bind.CantBindDead:				You can not bind while dead!	
-GamePlayer.Bind.CantHere:					You cannot bind here!	
-GamePlayer.Bind.LastBindPoint:				Last Bind Point : {0}.	
-GamePlayer.Bind.MustWait:					You must wait {0} seconds to bind again!	
+GamePlayer.Bind.Bound:						        You are now bound to this location.
+GamePlayer.Bind.CantBindDead:				        You can't bind while dead!	
+GamePlayer.Bind.CantHere:					        You can't bind here!
+GamePlayer.Bind.LastBindPoint:				        Last Bind Point: {0} in {1}.	
+GamePlayer.Bind.MustWait:					        You must wait {0} seconds to bind again!
 
 GamePlayer.CastSpell.AlreadyCastFollow:			You are already casting a spell! You prepare this spell as a follow up!		
 GamePlayer.CastSpell.AlreadyCastNoQueue:		You are already casting a spell, to enable spell queueing use '/noqueue'!			
@@ -121,17 +121,17 @@ GamePlayer.GainRealmPoints.NewRealmTitle:		Your new realm title is {0}!
 GamePlayer.GainRealmPoints.ReachedRank:			You reached realm rank {0}L0!
 GamePlayer.GainRealmPoints.ReachedRankNews:			{0} reached realm rank {1:#L#} in {2}!		
 GamePlayer.GainRealmPoints.YouGet:				You get {0} realm points!		
-GamePlayer.GetExamineMessages.EnemyRealmMember:		You examine {0}. {1} is a member of an enemy realm!
-GamePlayer.GetExamineMessages.NeutralMember:		You examine {0}. {1} is a neutral member with no guild allegiance.
-GamePlayer.GetExamineMessages.OtherGuildMember:		You examine {0}. {1} is a member of the {2} guild.
-GamePlayer.GetExamineMessages.RealmMember:			You examine {0}. {1} is a member of the {2} class in your realm.
-GamePlayer.GetExamineMessages.YouExamine:			You examine {0}.
-GamePlayer.GetExamineMessages.YourGuildMember:		You examine {0}. {1} is a member of the {2} class in your guild.
+GamePlayer.GetExamineMessages.EnemyRealmMember:		    You examine {0}. {1} is a member of an enemy realm!
+GamePlayer.GetExamineMessages.NeutralMember:		    You examine {0}. {1} is a neutral member with no guild allegiance.
+GamePlayer.GetExamineMessages.OtherGuildMember:		    You examine {0}. {1} is a member of the {2} guild.
+GamePlayer.GetExamineMessages.RealmMember:			    You examine {0}. {1} is a member of the {2} class in your realm.
+GamePlayer.GetExamineMessages.YouExamine:			    You examine {0}.
+GamePlayer.GetExamineMessages.YourGuildMember:		    You examine {0}. {1} is a member of the {2} class in your guild.
 GamePlayer.IsCloakHoodUp.NoLongerWear:				You will no longer wear your hood up.		
 GamePlayer.IsCloakHoodUp.NowWear:					You will now wear your hood up.		
-GamePlayer.IsCloakInvisible.Invisible:				You will now don't see your cloak.		
+GamePlayer.IsCloakInvisible.Invisible:				    You will no longer see your cloak.		
 GamePlayer.IsCloakInvisible.Visible:				You will now see your cloak.		
-GamePlayer.IsHelmInvisible.Invisible:				You will now don't see your helm.		
+GamePlayer.IsHelmInvisible.Invisible:				    You will no longer see your helm.		
 GamePlayer.IsHelmInvisible.Visible:					You will now see your helm.		
 GamePlayer.IsOnHorse.DismountSteed:			You dismount your steed.
 GamePlayer.IsOnHorse.MountSteed:			You mount your steed.
@@ -175,7 +175,7 @@ GamePlayer.OnLevelUp.StatRaise:				Your stats raise!
 GamePlayer.OnLevelUp.YouAchieved:			You have achieved level {0}!		
 GamePlayer.OnLevelUp.YouGetSpec:			You get {0} more Specialization Points to spend at this level!		
 GamePlayer.OnLevelUp.YouRaise:				You raise to level {0}!	
-GamePlayer.OnLinkdeath.Linkdead:			{0} went linkdead!		
+GamePlayer.OnLinkdeath.Linkdead:			{0} went linkdead!
 GamePlayer.OnPlayerMove.CannotCallMount:		You are moving and cannot call your mount.			
 GamePlayer.OnPlayerMove.InterruptCrafting:		You move and interrupt your crafting.			
 GamePlayer.OnSkillTrained.TrainsInVarious:		{0} trains in various specializations.			
@@ -216,10 +216,10 @@ GamePlayer.Quit.CantQuitCrafting:			You can't quit while you're crafting.
 GamePlayer.Quit.CantQuitDead:				You can't quit now, you're dead.  Type '/release' to release your corpse.	
 GamePlayer.Quit.CantQuitInInstance:			You cannot quit in an instance!
 GamePlayer.Quit.CantQuitMount:				You have to dismount before you can quit.	
-GamePlayer.Quit.CantQuitStanding:			You must be standing still to quit.		
-GamePlayer.Quit.RecentlyInCombat:			You were recently in combat and must wait longer to quit.		
-GamePlayer.Quit.YouWillQuit1:				You will quit after sitting for {0} seconds...	
-GamePlayer.Quit.YouWillQuit2:				You will quit after sitting for {0} seconds. Type '/stand' or move if you don't want to quit.	
+GamePlayer.Quit.CantQuitStanding:			        You must be standing still to quit.
+GamePlayer.Quit.RecentlyInCombat:			        You were recently in combat and must wait longer to quit.	
+GamePlayer.Quit.YouWillQuit1:				        You will quit in {0} seconds.
+GamePlayer.Quit.YouWillQuit2:				        You will quit after sitting for {0} seconds. Type '/stand' or move if you don't want to quit.
 GamePlayer.RealmTitle.UnknownRealm:			Unknown realm
 GamePlayer.ReceiveItem.Receive:				You receive {0}!
 GamePlayer.ReceiveItem.ReceiveFrom:			You receive {0} from {1}!
@@ -258,14 +258,19 @@ GamePlayer.RemoveSpecialization.YouLose:		You lose the {0} skill!
 GamePlayer.RemoveSpellLine.YouLose:				You lose the {0} spell line!		
 GamePlayer.SaveIntoDatabase.CharacterSaved:		Your character has been saved.
 GamePlayer.Say.YouSay:							You say, "{0}"
-GamePlayer.SayReceive.Says:						{0} says, "{1}"
-GamePlayer.SayReceive.FalseLanguage:			{0} says something in a language you don't understand.
-GamePlayer.SendReceive.Sends:					{0} sends, "{1}"
+GamePlayer.SayReceive.Says:						        {0} says, "{1}"
+GamePlayer.YellReceive.Yells:                           {0} yells, "{1}"
+GamePlayer.YellReceive.YellsForHelp:                    {0} yells for help from the {1}!
+GamePlayer.YellReceive.YouYellHelp:                     You yell for help!
+GamePlayer.SayReceive.FalseLanguage:			        {0} says something in a language you don't understand.
+GamePlayer.YellReceive.FalseLanguage:                   {0} yells something in a language you don't understand.
+GamePlayer.SendReceive.Sends:					        {0} sends, "{1}"
+GamePlayer.Send.YouCantSend:                            You cannot reply until you receive a message.
 GamePlayer.SendReceive.FalseLanguage:			{0} sends something in a language you don't understand.
-GamePlayer.SendReceive.Afk:						{0} is currently AFK.
+GamePlayer.SendReceive.Afk:						    {0} is currently AFK.
 GamePlayer.SendReceive.AfkMessage:				<AFK> {0} sends, "{1}"
 GamePlayer.Send.target.DontUnderstandYou:				{0} doesn't seem to understand you!
-GamePlayer.Send.YouSendTo:						You send, "{0}" to {1}.
+GamePlayer.Send.YouSendTo:						        You send, "{0}" to {1}
 GamePlayer.SetControlledNpc.ReleaseTarget:		You release control of your controlled target.
 GamePlayer.SetControlledNpc.ReleaseTarget2:		You lose control of the {0}.
 GamePlayer.Shade.AlreadyShade:				You are already a shade!	
@@ -277,7 +282,7 @@ GamePlayer.Sit.CantSitStunned:				You can't rest when you are stunned!
 GamePlayer.Sit.InterruptCallMount:			You attempt to sit down and interrupt your call for your mount!		
 GamePlayer.Sit.MustDismount:				You must dismount first.	
 GamePlayer.Sit.MustStandingStill:			You must be standing still to sit down.		
-GamePlayer.Sit.NoLongerWaitingQuit:			You are no longer waiting to quit.		
+GamePlayer.Sit.NoLongerWaitingQuit:			        You are no longer waiting to quit.
 GamePlayer.Sit.NotSitting:					You are not sitting!	
 GamePlayer.Sit.YouSitDown:					You sit down.  Type '/stand' or move to stand up.	
 GamePlayer.Sit.YouStandUp:					You stand up.	

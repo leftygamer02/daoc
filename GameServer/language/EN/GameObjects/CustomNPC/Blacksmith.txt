@@ -1,5 +1,5 @@
 ﻿
-
+# Blacksmith NPC
 Scripts.Blacksmith.AbortRepair:				You refuse letting you repair the {0}.
 Scripts.Blacksmith.CantRepairThat:			I can't repair that.
 Scripts.Blacksmith.GiveObject:				[Give {0} an object to be repaired]
@@ -14,6 +14,6 @@ Scripts.Blacksmith.Say:					I can repair weapons or armor for you, Just hand me 
 Scripts.Blacksmith.StackedObjets:			{0} can't repair stacked objets.
 Scripts.Blacksmith.YouExamine:				You examine {0}. {1} is {2} and is a smith.
 Scripts.Blacksmith.YouPay:				You pay {0} {1}.
-Scripts.Blacksmith.YouTarget:				You target [{0}].
+Scripts.Blacksmith.YouTarget:				You target [{0}]
 
 

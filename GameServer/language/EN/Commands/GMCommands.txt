@@ -50,7 +50,7 @@ GMCommands.Ban.AAlreadyBanned:				This account has already been banned.
 GMCommands.Ban.ABanned:						Account {0} has been banned.
 GMCommands.Ban.IAlreadyBanned:				This IP has already been banned.
 GMCommands.Ban.IBanned:						IP {0} has been banned.
-GMCommands.Ban.BAlreadyBanned:				These account and IP have already been banned.
+GMCommands.Ban.BAlreadyBanned:				This account and IP have already been banned.
 GMCommands.Ban.BBanned:						Account {0} and IP {1} have been banned.
 
 # /cast Command

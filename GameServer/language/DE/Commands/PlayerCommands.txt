@@ -1,6 +1,6 @@
 ﻿# /Advice
 Scripts.Players.Advice.Advice:				[Anfrage{0}] {1}: "{2}"
-Scripts.Players.Advice.AdvicersOn:			Es sind {0} Ratgeber online!
+Scripts.Players.Advice.AdvisorsOn:			Es sind {0} Ratgeber online!
 
 # /Advisor
 Scripts.Players.Advisor.Off:				Eure Ratgeberkennung wurde ausgeschaltet.

@@ -241,7 +241,7 @@ namespace DOL.GS
 			if (player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, m_item))
 			{
 				if (m_item == null)
-					log.Warn("GameRelic: Could not retrive " + Name + " as InventoryItem on player " + player.Name);
+					log.Warn("GameRelic: Could not retrieve " + Name + " as InventoryItem on player " + player.Name);
 				InventoryLogging.LogInventoryAction(this, player, eInventoryActionType.Other, m_item.Template, m_item.Count);
 
 
@@ -480,7 +480,7 @@ namespace DOL.GS
 		{
 
 			IList messages = base.GetExamineMessages(player);
-			messages.Add((IsMounted) ? ("It is owned by " + ((player.Realm == Realm) ? "your realm" : GlobalConstants.RealmToName((eRealm)Realm)) + ".") : "It is without owner, take it!");
+			messages.Add((IsMounted) ? ("It belongs to " + ((player.Realm == Realm) ? "your realm" : GlobalConstants.RealmToName((eRealm)Realm)) + ".") : "It is without an owner, take it!");
 			return messages;
 		}
 

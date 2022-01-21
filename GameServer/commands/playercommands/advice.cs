@@ -68,7 +68,7 @@ namespace DOL.GS.Commands
 					}
 
 				}
-				client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Advice.AdvicersOn", total), eChatType.CT_System, eChatLoc.CL_PopupWindow);
+				client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Advice.AdvisorsOn", total), eChatType.CT_System, eChatLoc.CL_PopupWindow);
 				return;
 			}
 			foreach (GameClient playerClient in WorldMgr.GetAllClients())

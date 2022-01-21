@@ -432,9 +432,9 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_BANG = {
 			"You bang on your shield!",
-			"{0} bangs on his shield!",
+			"{0} bangs on their shield!",
 			"You bang on your shield at {0}!",
-			"{0} bangs on his shield at {1}!",
+			"{0} bangs on their shield at {1}!",
 		};
 
 		private readonly string[] EMOTE_MESSAGES_BECKON = {
@@ -502,7 +502,7 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_DANCE = {
 			"You begin dancing!",
-			"{0} dances!",
+			"{0} begins dancing!",
 			"You dance with {0}!",
 			"{0} dances with {1}!",
 		};
@@ -523,7 +523,7 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_HUG = {
 			"You hug yourself.",
-			"{0} hugs himself.",
+			"{0} hugs themselves.",
 			"You hug {0}.",
 			"{0} hugs {1}.",
 		};
@@ -558,9 +558,9 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_NO = {
 			"You shake your head no.",
-			"{0} shakes his head no.",
+			"{0} shakes their head no.",
 			"You shake your head no at {0}.",
-			"{0} shakes his head no at {1}.",
+			"{0} shakes their head no at {1}.",
 		};
 
 		private readonly string[] EMOTE_MESSAGES_POINT = {
@@ -586,16 +586,16 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_RAISE = {
 			"You raise your hand.",
-			"{0} raises his hand.",
+			"{0} raises their hand.",
 			"You raise your hand at {0}.",
-			"{0} raises his hand at {1}.",
+			"{0} raises their hand at {1}.",
 		};
 
 		private readonly string[] EMOTE_MESSAGES_RUDE = {
-			"You make a rude gesture.",
-			"{0} makes a rude gesture.",
-			"You make a rude gesture at {0}.",
-			"{0} makes a rude gesture at {1}.",
+			"You make a strange gesture.",
+			"{0} makes a foreign gesture.",
+			"You gesture at {0}.",
+			"{0} gestures at {1}.",
 		};
 
 		private readonly string[] EMOTE_MESSAGES_SALUTE = {
@@ -656,9 +656,9 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_YES = {
 			"You nod your head yes.",
-			"{0} nods his head yes.",
+			"{0} nods their head yes.",
 			"You nod your head yes at {0}.",
-			"{0} nods his head yes at {1}.",
+			"{0} nods their head yes at {1}.",
 		};
 		private readonly string[] EMOTE_MESSAGES_SWEAT = {
 			"You break into a sweat.",
@@ -682,7 +682,7 @@ namespace DOL.GS.Commands
 			"You slap your head in confusion.",
 			"{0} slaps your head in confusion.",
 			"You slap your head in confusion at {0}.",
-			"{0} slaps his head in confusion at {1}.",
+			"{0} slaps their head in confusion at {1}.",
 		};
 		private readonly string[] EMOTE_MESSAGES_CONFUSE = {
 			"You look at yourself, clearly confused.",
@@ -698,7 +698,7 @@ namespace DOL.GS.Commands
 		};
 		private readonly string[] EMOTE_MESSAGES_ROFL = {
 			"You roll on the floor laughing.",
-			"{0} rolls on the floor laughing at.",
+			"{0} rolls on the floor laughing.",
 			"You roll on the floor laughing at {0}.",
 			"{0} rolls on the floor laughing at {1}.",
 		};
@@ -737,7 +737,7 @@ namespace DOL.GS.Commands
 
 		private readonly string[] EMOTE_MESSAGES_RIDER_STENCH = {
 			"You wave away the local stench.",
-			"{0} waves away the local stench.",
+			"{0} waves away your stench.",
 			"You wave away the stench of {0}.",
 			"{0} waves away the stench of {1}.",
 		};

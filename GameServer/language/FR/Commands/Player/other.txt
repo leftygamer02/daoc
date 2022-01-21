@@ -2,7 +2,7 @@
 # PlayerCommands
 # /Advice
 Scripts.Players.Advice.Advice:				[CONSEIL{0}] {1}: "{2}"
-Scripts.Players.Advice.AdvicersOn:			Il y a {0} conseillers en ligne !
+Scripts.Players.Advice.AdvisorsOn:			Il y a {0} conseillers en ligne !
 
 # /Advisor
 Scripts.Players.Advisor.Off:				Vous ne recevrez désormais plus de message du canal conseil.
