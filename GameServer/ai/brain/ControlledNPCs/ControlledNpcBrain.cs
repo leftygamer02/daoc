@@ -336,7 +336,7 @@ namespace DOL.AI.Brain
 			WalkState = eWalkState.GoTarget;
 			Body.StopFollowing();
 			//Body.WalkTo(target, Body.MaxSpeed);
-			Body.PathTo(Owner, Body.MaxSpeed);
+			Body.PathTo(target, Body.MaxSpeed);
 		}
 
 		public virtual void SetAggressionState(eAggressionState state)

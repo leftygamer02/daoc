@@ -1920,7 +1920,8 @@ namespace DOL.GS
                     WalkTo(newX, newY, (ushort)newZ, (short)(GetDistance(new Point2D(newX, newY)) + 110));
             }
             else
-                WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+                //WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+                PathTo(new Point3D(newX, newY, newZ), MaxSpeed);
             return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
         }
 
@@ -5776,11 +5777,6 @@ namespace DOL.GS
         public override void Notify(DOLEvent e, object sender, EventArgs args)
         {
             base.Notify(e, sender, args);
-
-            if(e == GameNPCEvent.ArriveAtTarget)
-            {
-
-            }
 
             ABrain brain = Brain;
             if (brain != null)

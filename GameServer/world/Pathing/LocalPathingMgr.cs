@@ -75,10 +75,11 @@ namespace DOL.GS
             _navmeshPtrs = new Dictionary<ushort, IntPtr[]>();
             foreach (var zone in WorldMgr.Zones.Values)
             {
-                if (zone.ID == 52 || zone.ID == 21)
-                {
-                    LoadNavMesh(zone);
-                }
+                LoadNavMesh(zone);
+                //if (zone.ID == 52 || zone.ID == 21 || zone.ID == 51 || zone.ID == 0)
+                //{
+                //    LoadNavMesh(zone);
+                //}
             }
             return true;
         }
