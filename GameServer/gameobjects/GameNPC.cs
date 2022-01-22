@@ -1383,7 +1383,9 @@ namespace DOL.GS
                     npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
                 }
                 if (arriveAtSpawnPoint)
+                {
                     npc.Notify(GameNPCEvent.ArriveAtSpawnPoint, npc);
+                }
             }
         }
 
@@ -1658,7 +1660,8 @@ namespace DOL.GS
 
             IsReturningHome = true;
             IsReturningToSpawnPoint = true;
-            WalkTo(SpawnPoint, speed);
+            PathTo(SpawnPoint, speed);
+            //WalkTo(SpawnPoint, speed);
         }
 
         /// <summary>
