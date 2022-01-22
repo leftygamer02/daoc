@@ -422,6 +422,16 @@ namespace DOL.GS
         }
         
         /// <summary>
+        /// Gets or sets the boosted flag for this player
+        /// (delegate to property in DBCharacter)
+        /// </summary>
+        public bool Boosted
+        {
+            get { return (DBCharacter != null ? DBCharacter.isBoosted : true); }
+            set { if (DBCharacter != null) DBCharacter.isBoosted = value; }
+        }
+        
+        /// <summary>
         /// gets or sets the guildnote for this player
         /// (delegate to property in DBCharacter)
         /// </summary>
@@ -4902,12 +4912,12 @@ namespace DOL.GS
         public virtual long GetExperienceNeededForLevel(int level)
         {
             if (level > MaxLevel)
-                return GetExperienceAmountForLevel(MaxLevel);
+                return GetScaledExperienceAmountForLevel(MaxLevel);
 
             if (level <= 0)
-                return GetExperienceAmountForLevel(0);
+                return GetScaledExperienceAmountForLevel(0);
 
-            return GetExperienceAmountForLevel(level - 1);
+            return GetScaledExperienceAmountForLevel(level - 1);
         }
 		
         /// <summary>
@@ -4920,6 +4930,18 @@ namespace DOL.GS
             try
             {
                 return XPForLevel[level];
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+        
+        public static long GetScaledExperienceAmountForLevel(int level)
+        {
+            try
+            {
+                return ScaledXPForLevel[level];
             }
             catch
             {
@@ -4974,6 +4996,65 @@ namespace DOL.GS
             6899999950, // xp to level 39
             8599999950, // xp to level 40
             12899999950, // xp to level 41
+            20699999950, // xp to level 42
+            29999999950, // xp to level 43
+            40799999950, // xp to level 44
+            53999999950, // xp to level 45
+            69599999950, // xp to level 46
+            88499999950, // xp to level 47
+            110999999950, // xp to level 48
+            137999999950, // xp to level 49
+            169999999950, // xp to level 50
+            999999999950, // xp to level 51
+        };
+        
+        /// <summary>
+        /// A table that holds the required XP/Level
+        /// This must include a final entry for MaxLevel + 1
+        /// </summary>
+        private static readonly long[] ScaledXPForLevel =
+        {
+            0, // xp to level 1
+            50, // xp to level 2
+            250, // xp to level 3
+            850, // xp to level 4
+            2300, // xp to level 5
+            6350, // xp to level 6
+            15950, // xp to level 7
+            37950, // xp to level 8
+            88950, // xp to level 9
+            203950, // xp to level 10
+            459950, // xp to level 11
+            839950, // xp to level 12
+            1399950, // xp to level 13
+            2199950, // xp to level 14
+            3399950, // xp to level 15
+            6499938, // xp to level 16
+            9953937, // xp to level 17
+            14985937, // xp to level 18
+            22399936, // xp to level 19
+            33410936, // xp to level 20
+            49659935, // xp to level 21
+            71656935, // xp to level 22
+            101639934, // xp to level 23
+            142309934, // xp to level 24
+            196979933, // xp to level 25
+            269999933, // xp to level 26
+            367199932, // xp to level 27
+            493199932, // xp to level 28
+            662399931, // xp to level 29
+            889599931, // xp to level 30
+            1189999930, // xp to level 31
+            1579199930, // xp to level 32
+            2087399929, // xp to level 33
+            2759899929, // xp to level 34
+            3643199928, // xp to level 35
+            4813999928, // xp to level 36
+            6277999927, // xp to level 37
+            8084999927, // xp to level 38
+            10211999926, // xp to level 39
+            12813999926, // xp to level 40
+            16382999937, // xp to level 41
             20699999950, // xp to level 42
             29999999950, // xp to level 43
             40799999950, // xp to level 44
@@ -8026,14 +8107,13 @@ namespace DOL.GS
 
             if (HCFlag)
             {
-                playerMessage += " [HARDCORE]";
-                publicMessage += " [HARDCORE]";
-                
+                playerMessage = "[HC Lv" + Level + "] " + playerMessage;
+                publicMessage = "[HC Lv" + Level + "] " + publicMessage;
+
                 if (Properties.DISCORD_ACTIVE && !string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID))
                 {
                     BroadcastDeathOnDiscord(publicMessage, Name, LastName, CharacterClass.Name, Level, PlayedTime);
                 }
-                
             }
                 
 
@@ -9351,8 +9431,9 @@ namespace DOL.GS
                         if (ActiveWeaponSlot != eActiveWeaponSlot.Distance)
                         {
                             SwitchWeapon(eActiveWeaponSlot.Distance);
+                            if(useItem.Object_Type == (int)eObjectType.Instrument) return;
                         }
-                        else if (!attackComponent.AttackState)
+                        else if (!attackComponent.AttackState && useItem.Object_Type != (int)eObjectType.Instrument)
                         {
                             StopCurrentSpellcast();
                             attackComponent.StartAttack(TargetObject);

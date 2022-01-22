@@ -1868,16 +1868,21 @@ namespace DOL.GS
                     }
                 }
 
-                //If we're part of a formation, we can get out early.
-                newX = followTarget.X;
-                newY = followTarget.Y;
-                newZ = followTarget.Z;
-                if (brain.CheckFormation(ref newX, ref newY, ref newZ))
-                {
-                    WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
-                    return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
-                }
-            }
+				//If we're part of a formation, we can get out early.
+				newX = followTarget.X;
+				newY = followTarget.Y;
+				newZ = followTarget.Z;
+				if (TargetObject != null && TargetObject.Realm != this.Realm)
+				{
+					//do nothing 
+				}
+				else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
+				{
+					WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+					
+					return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
+				}
+			}
 
             // Tolakram - Distances under 100 do not calculate correctly leading to the mob always being told to walkto
             int minAllowedFollowDistance = MIN_ALLOWED_FOLLOW_DISTANCE;
@@ -2509,13 +2514,14 @@ namespace DOL.GS
             if (!template.ReplaceMobValues && !LoadedFromScript)
                 return;
 
-            var m_templatedInventory = new List<string>();
-            this.TranslationId = template.TranslationId;
-            this.Name = template.Name;
-            this.Suffix = template.Suffix;
-            this.GuildName = template.GuildName;
-            this.ExamineArticle = template.ExamineArticle;
-            this.MessageArticle = template.MessageArticle;
+			var m_templatedInventory = new List<string>();
+			this.TranslationId = template.TranslationId;
+			this.Name = template.Name;
+			this.Suffix = template.Suffix;
+			this.GuildName = template.GuildName;
+			this.ExamineArticle = template.ExamineArticle;
+			this.MessageArticle = template.MessageArticle;
+			this.Faction = FactionMgr.GetFactionByID(template.FactionId);
 
             #region Models, Sizes, Levels, Gender
             // Grav: this.Model/Size/Level accessors are triggering SendUpdate()
@@ -3796,19 +3802,19 @@ namespace DOL.GS
         /// </summary>
         public IList<MobXAmbientBehaviour> ambientTexts;
 
-        /// <summary>
-        /// This function is called from the ObjectInteractRequestHandler
-        /// </summary>
-        /// <param name="player">GamePlayer that interacts with this object</param>
-        /// <returns>false if interaction is prevented</returns>
-        public override bool Interact(GamePlayer player)
-        {
-            if (!base.Interact(player)) return false;
-            //if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction.GetAggroToFaction(player) > 25)
-            if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction != null && Faction.GetAggroToFaction(player) > 25)
-            {
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
-                    GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+		/// <summary>
+		/// This function is called from the ObjectInteractRequestHandler
+		/// </summary>
+		/// <param name="player">GamePlayer that interacts with this object</param>
+		/// <returns>false if interaction is prevented</returns>
+		public override bool Interact(GamePlayer player)
+		{
+			if (!base.Interact(player)) return false;
+			//if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction.GetAggroToFaction(player) > 25)
+			if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction != null && Faction.GetAggroToFaction(player) > 50)
+			{
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
+					GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
                 Notify(GameObjectEvent.InteractFailed, this, new InteractEventArgs(player));
                 return false;
