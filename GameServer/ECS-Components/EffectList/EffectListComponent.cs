@@ -352,31 +352,37 @@ namespace DOL.GS
 
         public bool ContainsEffectForEffectType(eEffect effectType)
         {
-            try
+            lock (_effectsLock)
             {
-                if (Effects.ContainsKey(effectType))
+                try
                 {
-                    return true;
+                    if (Effects.ContainsKey(effectType))
+                    {
+                        return true;
+                    } 
+                    else
+                    {
+                        return false;
+                    }
                 } 
-                else
+                catch (Exception e)
                 {
+                    //Console.WriteLine($"Error attempting to check effect type");
                     return false;
-                }
-            } 
-            catch (Exception e)
-            {
-                //Console.WriteLine($"Error attempting to check effect type");
-                return false;
+                } 
             }
         }
 
         public void CancelAll()
         {
-            foreach (var effects in Effects.Values.ToList())
+            lock (_effectsLock)
             {
-                for (int j = 0; j < effects.Count; j++)
+                foreach (var effects in Effects.Values.ToList())
                 {
-                    EffectService.RequestCancelEffect(effects[j]);
+                    for (int j = 0; j < effects.Count; j++)
+                    {
+                        EffectService.RequestCancelEffect(effects[j]);
+                    }
                 }
             }
         }
