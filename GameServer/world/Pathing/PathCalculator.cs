@@ -75,10 +75,10 @@ namespace DOL.GS
     /// </summary>
     public bool DidFindPath { get; private set; }
 
-    /// <summary>
-    /// True if this path should be visualized
-    /// </summary>
-    public bool VisualizePath { get; set; }
+        /// <summary>
+        /// True if this path should be visualized
+        /// </summary>
+        public bool VisualizePath { get; set; } = false;
 
     /// <summary>
     /// Creates a path calculator for the given NPC
@@ -204,23 +204,24 @@ namespace DOL.GS
 
     private void DoVisualizePath(WrappedPathingResult pathingResult)
     {
-      //Commented out until understood better.
-      //_visualizationPath?.Hide();
-      //_visualizationPath = new GamePath($"path({Owner.Name})", Owner.Region) { HasLavaEffect = false };
-      //foreach (var node in pathingResult.Points)
-      //{
-      //  var model = GamePath.MarkerModel.Green;
-      //  if ((node.Flags & dtPolyFlags.DOOR) != 0)
-      //    model = GamePath.MarkerModel.Red;
-      //  else if ((node.Flags & dtPolyFlags.SWIM) != 0)
-      //    model = GamePath.MarkerModel.Blue;
-      //  else if ((node.Flags & dtPolyFlags.JUMP) != 0)
-      //    model = GamePath.MarkerModel.Yellow;
-      //  _visualizationPath.Append(new GameLocation(Owner.Region, node.Position, 0), Owner.MaxSpeed, model);
-      //}
-      //Owner.DebugSend("Visualizing Path");
-      //_visualizationPath.Show();
-    }
+            //Commented out until understood better.
+            _visualizationPath?.Hide();
+            _visualizationPath = new GamePath($"path({Owner.Name})", Owner.CurrentRegionID) { HasLavaEffect = false };
+            int nodeCount = 0;
+            foreach (var node in pathingResult.Points)
+            {
+                var model = GamePath.MarkerModel.Green;
+                if ((node.Flags & dtPolyFlags.DOOR) != 0)
+                    model = GamePath.MarkerModel.Red;
+                else if ((node.Flags & dtPolyFlags.SWIM) != 0)
+                    model = GamePath.MarkerModel.Blue;
+                else if ((node.Flags & dtPolyFlags.JUMP) != 0)
+                    model = GamePath.MarkerModel.Yellow;
+                _visualizationPath.Append(new GameLocation($"{Owner.Name}{nodeCount}", Owner.CurrentRegionID, (int)node.Position.X, (int)node.Position.Y, (int)node.Position.Z), Owner.MaxSpeed, model);
+                //_visualizationPath.Append(new GameLocation(Owner.Region, node.Position, 0), Owner.MaxSpeed, model);
+            }
+            _visualizationPath.Show();
+        }
 
     /// <summary>
     /// Calculates the next point this NPC should walk to to reach the target

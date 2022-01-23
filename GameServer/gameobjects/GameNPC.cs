@@ -1373,13 +1373,15 @@ namespace DOL.GS
 
                 bool arriveAtSpawnPoint = npc.IsReturningToSpawnPoint;
 
-                if(_onCloseToTarget != null)
+                if (_onCloseToTarget != null)
                 {
                     _onCloseToTarget(npc);
                 }
                 else
                 {
                     npc.StopMoving();
+                    npc.CurrentSpeed = 0;
+                    npc.BroadcastUpdate();
                     npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
                 }
                 if (arriveAtSpawnPoint)
@@ -1431,7 +1433,8 @@ namespace DOL.GS
 
         public virtual void WalkTo(Vector3 position, short speed, Action<GameNPC> closeToTargetCallback = null)
         {
-            WalkTo(new Point3D((int)position.X, (int)position.Y, (int)position.Z), speed, closeToTargetCallback);
+
+            WalkTo(new Point3D(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), Convert.ToInt32(position.Z)), speed, closeToTargetCallback);
             //WalkTo((int)position.X, (int)position.Y, (int)position.Z, speed);
         }
 
@@ -1580,7 +1583,7 @@ namespace DOL.GS
                 didFindPath = PathCalculator.DidFindPath;
             }
 
-            if(nextNode == null)
+            if (nextNode == null)
             {
                 WalkTo(dest, (short)walkSpeed);
                 return true;
@@ -1699,9 +1702,13 @@ namespace DOL.GS
         public virtual void StopMoving()
         {
             CancelWalkToSpawn();
-
-            if (IsMoving)
-                CurrentSpeed = 0;
+            //if (InternalID == "e79fed05-0e51-421d-a975-b8066d30195f")
+            //{
+            //    log.Debug($"Stop Moving Called: IsMoving:{IsMoving}");
+            //}
+            //It's this right here that needs some good testing.
+            //if (IsMoving)
+            //    CurrentSpeed = 0;
         }
 
         /// <summary>
@@ -1871,21 +1878,21 @@ namespace DOL.GS
                     }
                 }
 
-				//If we're part of a formation, we can get out early.
-				newX = followTarget.X;
-				newY = followTarget.Y;
-				newZ = followTarget.Z;
-				if (TargetObject != null && TargetObject.Realm != this.Realm)
-				{
-					//do nothing 
-				}
-				else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
-				{
-					WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
-					
-					return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
-				}
-			}
+                //If we're part of a formation, we can get out early.
+                newX = followTarget.X;
+                newY = followTarget.Y;
+                newZ = followTarget.Z;
+                if (TargetObject != null && TargetObject.Realm != this.Realm)
+                {
+                    //do nothing 
+                }
+                else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
+                {
+                    WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+
+                    return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
+                }
+            }
 
             // Tolakram - Distances under 100 do not calculate correctly leading to the mob always being told to walkto
             int minAllowedFollowDistance = MIN_ALLOWED_FOLLOW_DISTANCE;
@@ -2517,14 +2524,14 @@ namespace DOL.GS
             if (!template.ReplaceMobValues && !LoadedFromScript)
                 return;
 
-			var m_templatedInventory = new List<string>();
-			this.TranslationId = template.TranslationId;
-			this.Name = template.Name;
-			this.Suffix = template.Suffix;
-			this.GuildName = template.GuildName;
-			this.ExamineArticle = template.ExamineArticle;
-			this.MessageArticle = template.MessageArticle;
-			this.Faction = FactionMgr.GetFactionByID(template.FactionId);
+            var m_templatedInventory = new List<string>();
+            this.TranslationId = template.TranslationId;
+            this.Name = template.Name;
+            this.Suffix = template.Suffix;
+            this.GuildName = template.GuildName;
+            this.ExamineArticle = template.ExamineArticle;
+            this.MessageArticle = template.MessageArticle;
+            this.Faction = FactionMgr.GetFactionByID(template.FactionId);
 
             #region Models, Sizes, Levels, Gender
             // Grav: this.Model/Size/Level accessors are triggering SendUpdate()
@@ -3805,19 +3812,19 @@ namespace DOL.GS
         /// </summary>
         public IList<MobXAmbientBehaviour> ambientTexts;
 
-		/// <summary>
-		/// This function is called from the ObjectInteractRequestHandler
-		/// </summary>
-		/// <param name="player">GamePlayer that interacts with this object</param>
-		/// <returns>false if interaction is prevented</returns>
-		public override bool Interact(GamePlayer player)
-		{
-			if (!base.Interact(player)) return false;
-			//if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction.GetAggroToFaction(player) > 25)
-			if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction != null && Faction.GetAggroToFaction(player) > 50)
-			{
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
-					GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+        /// <summary>
+        /// This function is called from the ObjectInteractRequestHandler
+        /// </summary>
+        /// <param name="player">GamePlayer that interacts with this object</param>
+        /// <returns>false if interaction is prevented</returns>
+        public override bool Interact(GamePlayer player)
+        {
+            if (!base.Interact(player)) return false;
+            //if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction.GetAggroToFaction(player) > 25)
+            if (!GameServer.ServerRules.IsSameRealm(this, player, true) && Faction != null && Faction.GetAggroToFaction(player) > 50)
+            {
+                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.DirtyLook",
+                    GetName(0, true, player.Client.Account.Language, this)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
                 Notify(GameObjectEvent.InteractFailed, this, new InteractEventArgs(player));
                 return false;
