@@ -663,31 +663,15 @@ namespace DOL.GS
                     {
                         p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.StartAttack.CantUseQuiver"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                         return;
-                    }                    
-
-                    lock (p.effectListComponent.Effects)
-                    {
-                        foreach (ECSGameAbilityEffect effect in p.effectListComponent.GetAbilityEffects()) // switch to the correct range attack type
-                        {
-                            if (effect is SureShotECSGameEffect)
-                            {
-                                p.rangeAttackComponent.RangedAttackType = eRangedAttackType.SureShot;
-                                break;
-                            }
-
-                            if (effect is RapidFireECSGameEffect)
-                            {
-                                p.rangeAttackComponent.RangedAttackType = eRangedAttackType.RapidFire;
-                                break;
-                            }
-
-                            if (effect is TrueShotECSGameEffect)
-                            {
-                                p.rangeAttackComponent.RangedAttackType = eRangedAttackType.Long;
-                                break;
-                            }
-                        }
                     }
+
+                    if (EffectListService.GetAbilityEffectOnTarget(p, eEffect.SureShot) != null)
+                        p.rangeAttackComponent.RangedAttackType = eRangedAttackType.SureShot;
+                    if (EffectListService.GetAbilityEffectOnTarget(p, eEffect.RapidFire) != null)
+                        p.rangeAttackComponent.RangedAttackType = eRangedAttackType.RapidFire;
+                    if (EffectListService.GetAbilityEffectOnTarget(p, eEffect.TrueShot) != null)
+                        p.rangeAttackComponent.RangedAttackType = eRangedAttackType.Long;
+
 
                     if (p.rangeAttackComponent?.RangedAttackType == eRangedAttackType.Critical && p.Endurance < RangeAttackComponent.CRITICAL_SHOT_ENDURANCE)
                     {
@@ -730,6 +714,7 @@ namespace DOL.GS
                     }
                 }
 
+                /*
                 if (p.CharacterClass is PlayerClass.ClassVampiir)
                 {
                     GameSpellEffect removeEffect = SpellHandler.FindEffectOnTarget(p, "VampiirSpeedEnhancement");
@@ -742,7 +727,7 @@ namespace DOL.GS
                     IGameEffect DreamweaverRR5 = p.EffectList.GetOfType<DreamweaverEffect>();
                     if (DreamweaverRR5 != null)
                         DreamweaverRR5.Cancel(false);
-                }
+                }*/
                 LivingStartAttack(attackTarget);
 
                 if (p.IsCasting && !p.castingComponent.spellHandler.Spell.Uninterruptible)
@@ -1343,12 +1328,13 @@ namespace DOL.GS
                 return ad;
             }
 
+            /*
             if (SpellHandler.FindEffectOnTarget(owner, "Phaseshift") != null)
             {
                 ad.AttackResult = eAttackResult.Phaseshift;
                 SendAttackingCombatMessages(ad);
                 return ad;
-            }
+            }*/
 
             if (ad.Target.IsSitting)
                 effectiveness *= 2;
@@ -1849,128 +1835,35 @@ namespace DOL.GS
             //owner.effectListComponent.Effects.TryGetValue(eEffect.Bladeturn, out List<ECSGameEffect> btlist);
             //ecsbladeturn = btlist?.FirstOrDefault();
 
-            lock (owner.effectListComponent.Effects)
+            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.Guard) is GuardECSGameEffect guardEffect)
             {
-                foreach (ECSGameEffect effect in owner.effectListComponent.GetAllEffects())
-                {
-                    if (effect is GuardECSGameEffect)
-                    {
-                        if (guard == null && ((GuardECSGameEffect)effect).GuardTarget == owner)
-                            guard = (GuardECSGameEffect)effect;
-                        continue;
-                    }
-
-                    //if (effect is DashingDefenseECSGameEffect)
-                    //{
-                    //    if (dashing == null && ((DashingDefenseECSGameEffect)effect).GuardTarget == owner)
-                    //        dashing = (DashingDefenseECSGameEffect)effect; //Dashing
-                    //    continue;
-                    //}
-
-                    if (effect is BerserkECSGameEffect)
-                    {
-                        defenseDisabled = true;
-                        continue;
-                    }
-
-                    if (effect is EngageECSGameEffect)
-                    {
-                        if (engage == null)
-                            engage = (EngageECSGameEffect)effect;
-                        continue;
-                    }
-
-                    if (effect.EffectType == eEffect.Bladeturn)
-                    {
-                        if (ecsbladeturn == null)
-                            ecsbladeturn = (ECSGameSpellEffect)effect;
-                        continue;
-                    }
-
-                    // We check if interceptor can intercept
-
-                    // we can only intercept attacks on livings, and can only intercept when active
-                    // you cannot intercept while you are sitting
-                    // if you are stuned or mesmeried you cannot intercept...
-                    int rand = Util.Random(100);
-                    InterceptECSGameEffect inter = effect as InterceptECSGameEffect;
-                    if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
-                        && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
-                        && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && inter.InterceptChance > rand)
-                    {
-                        intercept = inter;
-                        continue;
-                    }
-                }
+                if (guard == null && guardEffect.GuardTarget == owner)
+                    guard = guardEffect;
             }
 
-            lock (owner.EffectList)
+            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.Berserk) != null)
+                defenseDisabled = true;
+
+            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.Berserk) is EngageECSGameEffect engageEffect)
+                if (engage == null)
+                    engage = engageEffect;
+
+            if (EffectListService.GetSpellEffectOnTarget(owner, eEffect.Bladeturn) is ECSGameSpellEffect bladeturnEffect)
+                if (ecsbladeturn == null)
+                    ecsbladeturn = bladeturnEffect;
+
+            // We check if interceptor can intercept
+
+            // we can only intercept attacks on livings, and can only intercept when active
+            // you cannot intercept while you are sitting
+            // if you are stuned or mesmeried you cannot intercept...
+            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.Intercept) is InterceptECSGameEffect inter)
             {
-                foreach (IGameEffect effect in owner.EffectList)
+                if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
+                    && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
+                    && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
                 {
-                    //if (effect is GuardEffect)
-                    //{
-                    //    if (guard == null && ((GuardEffect)effect).GuardTarget == owner)
-                    //        guard = (GuardEffect)effect;
-                    //    continue;
-                    //}
-
-                    if (effect is DashingDefenseEffect)
-                    {
-                        if (dashing == null && ((DashingDefenseEffect)effect).GuardTarget == owner)
-                            dashing = (DashingDefenseEffect)effect; //Dashing
-                        continue;
-                    }
-
-                    //if (effect is BerserkEffect)
-                    //{
-                    //    defenseDisabled = true;
-                    //    continue;
-                    //}
-
-                    //if (effect is EngageEffect)
-                    //{
-                    //    if (engage == null)
-                    //        engage = (EngageEffect)effect;
-                    //    continue;
-                    //}
-
-                    if (effect is GameSpellEffect)
-                    {
-                        switch ((effect as GameSpellEffect).Spell.SpellType)
-                        {
-                            case (byte)eSpellType.Phaseshift:
-                                if (phaseshift == null)
-                                    phaseshift = (GameSpellEffect)effect;
-                                continue;
-                            case (byte)eSpellType.Grapple:
-                                if (grapple == null)
-                                    grapple = (GameSpellEffect)effect;
-                                continue;
-                            case (byte)eSpellType.BrittleGuard:
-                                if (brittleguard == null)
-                                    brittleguard = (GameSpellEffect)effect;
-                                continue;
-                            case (byte)eSpellType.Bladeturn:
-                                if (bladeturn == null)
-                                    bladeturn = (GameSpellEffect)effect;
-                                continue;
-                        }
-                    }
-
-                    // We check if interceptor can intercept
-
-                    // we can only intercept attacks on livings, and can only intercept when active
-                    // you cannot intercept while you are sitting
-                    // if you are stuned or mesmeried you cannot intercept...
-                    //InterceptEffect inter = effect as InterceptEffect;
-                    //if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
-                    //    && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
-                    //    && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
-                    //{
-                    //    intercept = inter;
-                    //    continue;
-                    //}
+                    intercept = inter;
                 }
             }
 
@@ -2054,6 +1947,8 @@ namespace DOL.GS
                 if (lastAD != null &&lastAD.AttackResult != eAttackResult.HitStyle)
                     lastAD = null;
 
+                bool UseRNGOverride = ServerProperties.Properties.OVERRIDE_DECK_RNG;
+
                 double defensePenetration = Math.Round(ad.Attacker.GetAttackerDefensePenetration(ad.Attacker, ad.Weapon), 2);
 
                 double evadeChance = owner.TryEvade(ad, lastAD, attackerConLevel, attackerCount);
@@ -2062,18 +1957,30 @@ namespace DOL.GS
                 randomEvadeNum = Math.Floor(randomEvadeNum);
                 randomEvadeNum /= 100;
                 evadeChance *= 100;
+
+                double? evadeDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
+                double? evadeOutput = (evadeDouble != null) ? evadeDouble * 100 : randomEvadeNum;
                 if(ad.Attacker is GamePlayer evadeAtk && evadeAtk.UseDetailedCombatLog && evadeChance > 0)
                 {
-                    evadeAtk.Out.SendMessage($"target evade%: {Math.Round(evadeChance,2)} rand: {randomEvadeNum} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    evadeAtk.Out.SendMessage($"target evade%: {Math.Round(evadeChance,2)} rand: {evadeOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
 
                 if(ad.Target is GamePlayer evadeTarg && evadeTarg.UseDetailedCombatLog  && evadeChance > 0)
                 {
-                    evadeTarg.Out.SendMessage($"your evade%: {Math.Round(evadeChance,2)} rand: {randomEvadeNum} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    evadeTarg.Out.SendMessage($"your evade%: {Math.Round(evadeChance,2)} rand: {evadeOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
 
-                if (evadeChance > randomEvadeNum)
-                    return eAttackResult.Evaded;
+                if (evadeDouble == null || UseRNGOverride)
+                {
+                    if(evadeChance > randomEvadeNum)
+                        return eAttackResult.Evaded;    
+                }
+                else
+                {
+                    evadeDouble *= 100;
+                    if(evadeChance > evadeDouble)
+                        return eAttackResult.Evaded;
+                }
 
                 if (ad.IsMeleeAttack)
                 {
@@ -2084,18 +1991,30 @@ namespace DOL.GS
                     ranParryNum /= 100;
                     parryChance *= 100;
 
+                    double? parryDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
+                    double? parryOutput = (parryDouble != null) ? parryDouble * 100 : ranParryNum;
                     if (ad.Attacker is GamePlayer parryAtk && parryAtk.UseDetailedCombatLog  && parryChance > 0)
                     {
-                        parryAtk.Out.SendMessage($"target parry%: {Math.Round(parryChance,2)} rand: {ranParryNum} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                        parryAtk.Out.SendMessage($"target parry%: {Math.Round(parryChance,2)} rand: {parryOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
                     if (ad.Target is GamePlayer parryTarg && parryTarg.UseDetailedCombatLog  && parryChance > 0)
                     {
-                        parryTarg.Out.SendMessage($"your parry%: {Math.Round(parryChance,2)} rand: {ranParryNum} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                        parryTarg.Out.SendMessage($"your parry%: {Math.Round(parryChance,2)} rand: {parryOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    }
+                    
+                    if (parryDouble == null || UseRNGOverride)
+                    {
+                        if(parryChance > ranParryNum)
+                            return eAttackResult.Parried;    
+                    }
+                    else
+                    {
+                        parryDouble *= 100;
+                        if(parryChance > parryDouble)
+                            return eAttackResult.Parried;
                     }
 
-                    if (parryChance > ranParryNum)
-                        return eAttackResult.Parried;
                 }
 
                 double blockChance = owner.TryBlock(ad, lastAD, attackerConLevel, attackerCount, engage);
@@ -2105,21 +2024,32 @@ namespace DOL.GS
                 ranBlockNum /= 100;
                 blockChance *= 100;
 
+                double? blockDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
+                double? blockOutput = (blockDouble != null) ? blockDouble * 100: ranBlockNum;
                 if (ad.Attacker is GamePlayer blockAttk && blockAttk.UseDetailedCombatLog  && blockChance > 0)
                 {
-                    blockAttk.Out.SendMessage($"target block%: {Math.Round(blockChance, 2)} rand: {ranBlockNum} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    
+                    blockAttk.Out.SendMessage($"target block%: {Math.Round(blockChance, 2)} rand: {blockOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
 
                 if (ad.Target is GamePlayer blockTarg && blockTarg.UseDetailedCombatLog  && blockChance > 0)
                 {
-                    blockTarg.Out.SendMessage($"your block%: {Math.Round(blockChance, 2)} rand: {ranBlockNum} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    blockTarg.Out.SendMessage($"your block%: {Math.Round(blockChance, 2)} rand: {blockOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
-
-                if (blockChance > ranBlockNum)
+                
+                if (blockDouble == null || UseRNGOverride)
                 {
-                    // reactive effects on block moved to GamePlayer
-                    return eAttackResult.Blocked;
+                    if(blockChance > ranBlockNum)
+                        return eAttackResult.Blocked;    
                 }
+                else
+                {
+                    blockDouble *= 100;
+                    if(blockChance > blockDouble)
+                        return eAttackResult.Blocked;
+                }
+                
+                // reactive effects on block moved to GamePlayer
             }
 
             if (ad.Attacker.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
@@ -2189,20 +2119,29 @@ namespace DOL.GS
                         ranBlockNum /= 100;
                         guardchance *= 100;
 
+                        double? blockDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
+                        double? blockOutput = (blockDouble != null) ? blockDouble * 100: ranBlockNum;
                         if (guard.GuardSource is GamePlayer blockAttk && blockAttk.UseDetailedCombatLog)
                         {
-                            blockAttk.Out.SendMessage($"Chance to guard: {guardchance} RandomNumber: {ranBlockNum} GuardSuccess? {guardchance > ranBlockNum}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                            blockAttk.Out.SendMessage($"Chance to guard: {guardchance} rand: {blockOutput} GuardSuccess? {guardchance > ranBlockNum}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                         }
 
                         if (guard.GuardTarget is GamePlayer blockTarg && blockTarg.UseDetailedCombatLog)
                         {
-                            blockTarg.Out.SendMessage($"Chance to be guarded: {guardchance} RandomNumber: {ranBlockNum} GuardSuccess? {guardchance > ranBlockNum}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                            blockTarg.Out.SendMessage($"Chance to be guarded: {guardchance} rand: {blockOutput} GuardSuccess? {guardchance > ranBlockNum}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                         }
 
-                        if (guardchance > ranBlockNum)
+                        bool UseRNGOverride = ServerProperties.Properties.OVERRIDE_DECK_RNG;
+                        if (blockDouble == null || UseRNGOverride)
                         {
-                            ad.Target = guard.GuardSource;
-                            return eAttackResult.Blocked;
+                            if(guardchance > ranBlockNum)
+                                return eAttackResult.Blocked;    
+                        }
+                        else
+                        {
+                            blockDouble *= 100;
+                            if(guardchance > blockDouble)
+                                return eAttackResult.Blocked;
                         }
                     }
                 }
@@ -2361,7 +2300,17 @@ namespace DOL.GS
                 missrate >>= 1; //halved
             }
             ad.MissRate = missrate;
-            int rando = Util.CryptoNextInt(100);
+            int rando = 0;
+            bool skipDeckUsage = ServerProperties.Properties.OVERRIDE_DECK_RNG;
+            if (ad.Attacker is GamePlayer atkkr && !skipDeckUsage )
+            {
+                rando = atkkr.RandomNumberDeck.GetInt();
+            }
+            else
+            {
+                rando = Util.CryptoNextInt(100);
+            }
+            
             
             if(ad.Attacker is GamePlayer misser && misser.UseDetailedCombatLog && missrate > 0)
                 misser.Out.SendMessage($"miss rate on target: {missrate}% rand: {rando}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);

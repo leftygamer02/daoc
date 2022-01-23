@@ -749,18 +749,19 @@ namespace DOL.GS.PacketHandler
             if (m_gameClient.Player == null)
                 return;
 
-            using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.ConcentrationList)))
-            {
-                lock (m_gameClient.Player.ConcentrationEffects)
-                {
-                    pak.WriteByte((byte)(m_gameClient.Player.ConcentrationEffects.Count));
-                    pak.WriteByte(0); // unknown
-                    pak.WriteByte(0); // unknown
-                    pak.WriteByte(0); // unknown
+			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.ConcentrationList)))
+			{
+				lock (m_gameClient.Player.effectListComponent._effectsLock)
+				{
+					pak.WriteByte((byte)(m_gameClient.Player.ConcentrationEffectsCount));
+					pak.WriteByte(0); // unknown
+					pak.WriteByte(0); // unknown
+					pak.WriteByte(0); // unknown
 
-                    for (int i = 0; i < m_gameClient.Player.ConcentrationEffects.Count; i++)
+					var effects = m_gameClient.Player.effectListComponent.GetConcentrationEffects();
+                    for (int i = 0; i < effects.Count; i++)
                     {
-                        IConcentrationEffect effect = m_gameClient.Player.ConcentrationEffects[i];
+                        IConcentrationEffect effect = effects[i];
                         pak.WriteByte((byte)i);
                         pak.WriteByte(0); // unknown
                         pak.WriteByte(effect.Concentration);
@@ -2385,27 +2386,27 @@ namespace DOL.GS.PacketHandler
                 }
                 pak.WriteByte(0x00); //unused
 
-                if (pet != null)
-                {
-                    //lock (pet.EffectList)
-                    //{
-                    //	ArrayList icons = new ArrayList();
-                    //	foreach (IGameEffect effect in pet.EffectList)
-                    //	{
-                    //		if (icons.Count >= 8)
-                    //			break;
-                    //		if (effect.Icon == 0)
-                    //			continue;
-                    //		icons.Add(effect.Icon);
-                    //	}
-                    //	pak.WriteByte((byte)icons.Count); // effect count
-                    //									  // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
-                    //	foreach (ushort icon in icons)
-                    //	{
-                    //		pak.WriteShort(icon);
-                    //	}
-                    //}
-                    lock (pet.EffectList)
+				if (pet != null)
+				{
+					//lock (pet.EffectList)
+					//{
+					//	ArrayList icons = new ArrayList();
+					//	foreach (IGameEffect effect in pet.EffectList)
+					//	{
+					//		if (icons.Count >= 8)
+					//			break;
+					//		if (effect.Icon == 0)
+					//			continue;
+					//		icons.Add(effect.Icon);
+					//	}
+					//	pak.WriteByte((byte)icons.Count); // effect count
+					//									  // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
+					//	foreach (ushort icon in icons)
+					//	{
+					//		pak.WriteShort(icon);
+					//	}
+					//}
+                    lock (pet.effectListComponent._effectsLock)
                     {
                         ArrayList icons = new ArrayList();
                         foreach (var effects in pet.effectListComponent.Effects.Values)
