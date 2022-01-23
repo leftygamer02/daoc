@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameServerScripts", "GameSe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{FC0B2007-16A2-4854-AB24-0266F3482C7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DOL.Geometry", "DOL.Geometry\DOL.Geometry.csproj", "{69E958DF-964A-48C8-9CC7-53C748B7731F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DOL.Numbers", "DOL.Numbers\DOL.Numbers.csproj", "{FB7605E8-2AE8-4306-BE29-9DC8662DB974}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +49,14 @@ Global
 		{FC0B2007-16A2-4854-AB24-0266F3482C7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC0B2007-16A2-4854-AB24-0266F3482C7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC0B2007-16A2-4854-AB24-0266F3482C7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69E958DF-964A-48C8-9CC7-53C748B7731F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69E958DF-964A-48C8-9CC7-53C748B7731F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69E958DF-964A-48C8-9CC7-53C748B7731F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69E958DF-964A-48C8-9CC7-53C748B7731F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB7605E8-2AE8-4306-BE29-9DC8662DB974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB7605E8-2AE8-4306-BE29-9DC8662DB974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB7605E8-2AE8-4306-BE29-9DC8662DB974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB7605E8-2AE8-4306-BE29-9DC8662DB974}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
