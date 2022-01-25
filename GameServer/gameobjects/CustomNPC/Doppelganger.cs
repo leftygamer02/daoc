@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using DOL.AI;
 using DOL.Database;
 using DOL.GS.Keeps;
@@ -394,6 +395,48 @@ namespace DOL.GS
             else
                 SwitchWeapon(eActiveWeaponSlot.Standard);
             
+        }
+    }
+    
+    public class DoppelgangerTracker : GameNPC
+    {
+
+        public DoppelgangerTracker() : base() { }
+        public override bool AddToWorld()
+        {
+            GuildName = "Tracker";
+            Level = 50;
+            Flags |= eFlags.PEACE;
+            base.AddToWorld();
+            return true;
+        }
+
+        public override bool Interact(GamePlayer player)
+        {
+            if (!base.Interact(player))
+                return false;
+
+            string message = "";
+            
+            List<GameNPC> doppelGanger = WorldMgr.GetNPCsByType(typeof(Doppelganger), eRealm.None);
+
+            if (doppelGanger == null || doppelGanger.Count <= 0)
+            {
+                message = "Sorry, but there no invaders have been spotted in the world right now.";
+            }
+            
+            else
+            {
+                message = "The following invaders have been spotted in the world: \n";
+                foreach (Doppelganger dg in doppelGanger)
+                {
+                    message += "\n" + dg.Name + " in " + dg.CurrentZone.Description;
+                }
+            }
+                     
+            SayTo(player, message);
+            
+            return true;
         }
     }
 }
