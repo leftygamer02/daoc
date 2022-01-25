@@ -422,7 +422,7 @@ namespace DOL.GS
 
             if (doppelGanger == null || doppelGanger.Count <= 0)
             {
-                message = "Sorry, but there no invaders have been spotted in the world right now.";
+                message = "Sorry, but no invaders have been spotted in the world right now.";
             }
             
             else
