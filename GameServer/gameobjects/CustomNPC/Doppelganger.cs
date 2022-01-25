@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
+using System;
 using DOL.AI;
 using DOL.Database;
 using DOL.GS.Keeps;
@@ -24,6 +26,7 @@ using DOL.GS.ServerProperties;
 using DOL.Language;
 using log4net;
 using System.Reflection;
+using DOL.GS.PacketHandler;
 
 namespace DOL.GS
 {
@@ -58,7 +61,7 @@ namespace DOL.GS
         /// </summary>
         public override int RealmPointsValue
         {
-            get { return Properties.DOPPELGANGER_REALM_POINTS; }
+            get { return Properties.DOPPELGANGER_REALM_POINTS / 2; } // this is /2 because we have RP rate 2x currently
         }
 
         /// <summary>
@@ -106,7 +109,98 @@ namespace DOL.GS
         {
             Flags = 0;
             Disguise();
+            GameLocation spawnlocation = GetRandomLocation();
+            Z = spawnlocation.Z;
+            X = spawnlocation.X;
+            Y = spawnlocation.Y;
+            m_respawnInterval = 100;
+            Heading = spawnlocation.Heading;
+            CurrentRegionID = spawnlocation.RegionID;
+
+            string message = $"{Name} has been last spotted in {CurrentZone.Description}";
+
+            foreach (GameClient pclient in WorldMgr.GetAllPlayingClients())
+            {
+                if (pclient == null)
+                    continue;
+                
+                if (pclient.Account.PrivLevel > 1)
+                {
+                    message += $" at {X} {Y} {Z}";
+                }
+                
+                pclient.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_ChatWindow);
+            }
+            
+            Console.WriteLine(spawnlocation.Name);
             return base.AddToWorld();
+        }
+
+        public GameLocation GetRandomLocation()
+        {
+            GameLocation spawnlocation = new GameLocation("doppleganger", 0, 0, 0, 0, 0);
+
+            // Albion locations
+            GameLocation location1 = new GameLocation("Forest Sauvage DG", 1, 594571, 449523, 5125, 1014);
+            GameLocation location2 = new GameLocation("Pennine Mountains DG", 1, 589003, 382870, 5818, 3620);
+            GameLocation location3 = new GameLocation("Hadrian's Wall DG", 1, 635536, 330629, 5183, 761);
+            GameLocation location4 = new GameLocation("Snowdonia DG", 1, 531330, 336193, 7120, 4086);
+            
+            // Midgard locations
+            GameLocation location5 = new GameLocation("Uppland DG", 100, 755349, 640806, 4780, 982);
+            GameLocation location6 = new GameLocation("Jamtland Mountains DG", 100, 692850, 645156, 5417, 1500);
+            GameLocation location7 = new GameLocation("Odin's Gate DG", 100, 638904, 607120, 5512, 2854);
+            GameLocation location8 = new GameLocation("Yggdra Forest DG", 100, 687558, 695521, 7251, 4033);
+            
+            // Hibernia locations
+            GameLocation location9 = new GameLocation("Cruachan Gorge DG", 200, 346904, 386003, 3243, 2904);
+            GameLocation location10 = new GameLocation("Breifine DG", 200, 412592, 386623, 4686, 844);
+            GameLocation location11 = new GameLocation("Emain Macha DG", 200, 435842, 311014, 6308, 3980);
+            GameLocation location12 = new GameLocation("Snowdonia DG", 200, 433660, 447794, 3607, 603);
+
+            int randomLoc = Util.Random(1, 12);
+
+            switch (randomLoc)
+            {
+                case 1:
+                    spawnlocation = location1;
+                    break;
+                case 2:
+                    spawnlocation = location2;
+                    break;
+                case 3:
+                    spawnlocation = location3;
+                    break;
+                case 4:
+                    spawnlocation = location4;
+                    break;
+                case 5:
+                    spawnlocation = location5;
+                    break;
+                case 6:
+                    spawnlocation = location6;
+                    break;
+                case 7:
+                    spawnlocation = location7;
+                    break;
+                case 8:
+                    spawnlocation = location8;
+                    break;
+                case 9:
+                    spawnlocation = location9;
+                    break;
+                case 10:
+                    spawnlocation = location10;
+                    break;
+                case 11:
+                    spawnlocation = location11;
+                    break;
+                case 12:
+                    spawnlocation = location12;
+                    break;
+            }
+
+            return spawnlocation;
         }
 
         /// <summary>
