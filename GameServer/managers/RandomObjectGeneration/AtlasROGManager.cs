@@ -87,7 +87,7 @@ namespace DOL.GS {
                 
                 player.Inventory.AddTemplate(item, amount, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
                 
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.PickupObject.YouGet", item.Name), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
+                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.PickupObject.YouGet", amount + " " + item.Name), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
             }
         }
 
