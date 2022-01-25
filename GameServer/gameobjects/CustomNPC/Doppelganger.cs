@@ -124,11 +124,6 @@ namespace DOL.GS
                 if (pclient == null)
                     continue;
                 
-                if (pclient.Account.PrivLevel > 1)
-                {
-                    message += $" at {X} {Y} {Z}";
-                }
-                
                 pclient.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_ChatWindow);
             }
             
@@ -256,6 +251,25 @@ namespace DOL.GS
             Disguise();
             base.StopAttack();
         }
+        
+        public override void Die(GameObject killer)
+         {
+             if (killer != this)
+                 base.Die(killer);
+
+             foreach (GameClient client in WorldMgr.GetClientsOfZone(killer.CurrentZone.ID))
+             {
+                 if (client == null)
+                     continue;
+                 
+                 if (client.Player.Realm != killer.Realm)
+                     continue;
+                 
+                 
+                 AtlasROGManager.GenerateOrbAmount(client.Player,100);
+                 client.Player.UpdatePlayerStatus();
+             }
+         }
 
         /// <summary>
         /// Disguise the doppelganger as an invader

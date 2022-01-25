@@ -1507,6 +1507,33 @@ namespace DOL.GS
 
 			return targetClients;
 		}
+		
+		/// <summary>
+		/// Returns a list of playing clients inside a zone
+		/// </summary>
+		/// <param name="regionID">The ID of the Region</param>
+		/// <returns>Array of GameClients from that Region</returns>
+		public static IList<GameClient> GetClientsOfZone(ushort zoneID)
+		{
+			var targetClients = new  List<GameClient>();
+
+			lock (m_clients.SyncRoot)
+			{
+				foreach (GameClient client in m_clients)
+				{
+					if (client != null)
+					{
+						if (client.IsPlaying
+						    && client.Player != null
+						    && client.Player.ObjectState == GameObject.eObjectState.Active
+						    && client.Player.CurrentZone.ID == zoneID)
+							targetClients.Add(client);
+					}
+				}
+			}
+
+			return targetClients;
+		}
 
 		/// <summary>
 		/// Find a GameClient by the Player's ID
