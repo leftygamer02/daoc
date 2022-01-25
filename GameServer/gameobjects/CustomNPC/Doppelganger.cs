@@ -70,6 +70,19 @@ namespace DOL.GS
         }
 
         protected const ushort doppelModel = 2248;
+        
+        public override int MaxHealth
+        {
+            get
+            {
+                return base.MaxHealth * 8;
+            }
+        }
+        
+        public override double AttackDamage(InventoryItem weapon)
+        {
+            return base.AttackDamage(weapon) * 4;
+        }
 
         /// <summary>
         /// Gets/sets the object health
@@ -86,14 +99,14 @@ namespace DOL.GS
                     if (Model == doppelModel)
                         Disguise();
                 }
-                else if (value <= MaxHealth >> 1 && Model != doppelModel)
-                {
-                    Model = doppelModel;
-                    Name = "doppelganger";
-                    Inventory = new GameNPCInventory(GameNpcInventoryTemplate.EmptyTemplate);
-                    BroadcastLivingEquipmentUpdate();
-                }
             }
+        }
+
+        public override bool AddToWorld()
+        {
+            Flags = 0;
+            Disguise();
+            return base.AddToWorld();
         }
 
         /// <summary>
@@ -111,8 +124,18 @@ namespace DOL.GS
         /// Starts a melee or ranged attack on a given target.
         /// </summary>
         /// <param name="attackTarget">The object to attack.</param>
-        public void StartAttack(GameObject attackTarget)
+        public override void StartAttack(GameObject attackTarget)
         {
+            Level = 68;
+            
+            if (Model != doppelModel)
+            {
+                Model = doppelModel;
+                Name = "doppelganger";
+                Inventory = new GameNPCInventory(GameNpcInventoryTemplate.EmptyTemplate);
+                BroadcastLivingEquipmentUpdate();
+            }
+            
             // Don't allow ranged attacks
             if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
             {
@@ -133,6 +156,12 @@ namespace DOL.GS
             }
             attackComponent.StartAttack(attackTarget);
         }
+        
+        public override void StopAttack()
+        {
+            Disguise();
+            base.StopAttack();
+        }
 
         /// <summary>
         /// Disguise the doppelganger as an invader
@@ -143,6 +172,7 @@ namespace DOL.GS
                 Gender = eGender.Male;
             else
                 Gender = eGender.Female;
+            Level = 50;
 
             ICharacterClass characterClass = new DefaultCharacterClass();
 
