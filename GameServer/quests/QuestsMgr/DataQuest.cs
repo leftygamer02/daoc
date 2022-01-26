@@ -1588,7 +1588,7 @@ namespace DOL.GS.Quests
 
 				if (ExecuteCustomQuestStep(QuestPlayer, Step, eStepCheckType.Step))
 				{
-					if (RewardXP > 0 && m_questPlayer.GainXP == false)
+					if (RewardXP > 0 && m_questPlayer.ExpComponent.GainXP == false)
 					{
 						QuestPlayer.Out.SendMessage("Your XP is turned off, you must turn it on to complete this quest step!", eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 						return false;
@@ -2918,7 +2918,7 @@ namespace DOL.GS.Quests
 	
 						if (rewardXP > 0)
 						{
-							if (!m_questPlayer.GainXP)
+							if (!m_questPlayer.ExpComponent.GainXP)
 							{
 								QuestPlayer.Out.SendMessage(xpError, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 								return false;
@@ -3002,7 +3002,7 @@ namespace DOL.GS.Quests
 	
 						if (rewardXP > 0)
 						{
-							if (!m_questPlayer.GainXP)
+							if (!m_questPlayer.ExpComponent.GainXP)
 							{
 								QuestPlayer.Out.SendMessage(xpError, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 								return false;

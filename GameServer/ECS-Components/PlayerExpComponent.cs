@@ -14,6 +14,20 @@ public class PlayerExpComponent
     }
     
     /// <summary>
+    /// Gets or sets the gain XP flag for this player
+    /// (delegate to property in DBCharacter)
+    /// </summary>
+    public bool GainXP
+    {
+        get => _player.DBCharacter?.GainXP ?? true;
+        set 
+        { 
+            if (_player.DBCharacter != null)
+                _player.DBCharacter.GainXP = value;
+        }
+    }
+    
+    /// <summary>
     /// What is the maximum level a player can achieve?
     /// To alter this in a custom GamePlayer class you must override this method and
     /// provide your own XPForLevel array with MaxLevel + 1 entries
@@ -193,7 +207,7 @@ public class PlayerExpComponent
     public void GainExperience(eXPSource xpSource, long expTotal, long expCampBonus, long expGroupBonus,
         long expOutpostBonus, long atlasBonus, bool sendMessage, bool allowMultiply, bool notify)
     {
-        if (!_player.GainXP && expTotal > 0)
+        if (!GainXP && expTotal > 0)
             return;
 
         if (_player.HCFlag && _player.Group != null)

@@ -388,16 +388,6 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// Gets or sets the gain XP flag for this player
-        /// (delegate to property in DBCharacter)
-        /// </summary>
-        public bool GainXP
-        {
-            get { return DBCharacter != null ? DBCharacter.GainXP : true; }
-            set { if (DBCharacter != null) DBCharacter.GainXP = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the gain RP flag for this player
         /// (delegate to property in DBCharacter)
         /// </summary>
