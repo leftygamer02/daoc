@@ -380,7 +380,7 @@ namespace DOL.GS.Commands
 					info.Add(" ");
                     info.Add("  - Money : " + Money.GetString(target.GetCurrentMoney()) + "\n");
 					info.Add("  - Speed : " + target.MaxSpeedBase);
-					info.Add("  - XPs : " + target.Experience);
+					info.Add("  - XPs : " + target.ExpComponent.Experience);
 					info.Add("  - RPs : " + target.RealmPoints);
 					info.Add("  - BPs : " + target.BountyPoints);
 					info.Add(" ");

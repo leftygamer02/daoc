@@ -72,8 +72,8 @@ namespace DOL.GS.PacketHandler
 				foreach (Specialization spec in specs)
 				{
 					pak.WriteByte((byte)i++);
-					pak.WriteByte((byte)Math.Min(player.MaxLevel, spec.Level));
-					pak.WriteByte((byte)(Math.Min(player.MaxLevel, spec.Level) + 1)); 
+					pak.WriteByte((byte)Math.Min(player.ExpComponent.MaxLevel, spec.Level));
+					pak.WriteByte((byte)(Math.Min(player.ExpComponent.MaxLevel, spec.Level) + 1)); 
 					pak.WritePascalString(spec.Name);
 				}
 				SendTCP(pak);
@@ -114,12 +114,12 @@ namespace DOL.GS.PacketHandler
 				{
 					var toAdd = new List<Tuple<int, int, Skill>>();
 					
-					foreach (Ability ab in spec.PretendAbilitiesForLiving(player, player.MaxLevel))
+					foreach (Ability ab in spec.PretendAbilitiesForLiving(player, player.ExpComponent.MaxLevel))
 					{
 						toAdd.Add(new Tuple<int, int, Skill>(5, ab.InternalID, ab));
 					}
 					
-					foreach (KeyValuePair<SpellLine, List<Skill>> ls in spec.PretendLinesSpellsForLiving(player, player.MaxLevel).Where(k => !k.Key.IsBaseLine))
+					foreach (KeyValuePair<SpellLine, List<Skill>> ls in spec.PretendLinesSpellsForLiving(player, player.ExpComponent.MaxLevel).Where(k => !k.Key.IsBaseLine))
 					{
 						foreach (Skill sk in ls.Value)
 						{
@@ -127,7 +127,7 @@ namespace DOL.GS.PacketHandler
 						}
 					}
 					
-					foreach (Style st in spec.PretendStylesForLiving(player, player.MaxLevel))
+					foreach (Style st in spec.PretendStylesForLiving(player, player.ExpComponent.MaxLevel))
 					{
 						toAdd.Add(new Tuple<int, int, Skill>((int)st.SkillType, st.InternalID, st));
 					}
@@ -252,7 +252,7 @@ namespace DOL.GS.PacketHandler
 						else if (sk.Item3 is Style)
 						{
 							Style st = (Style)sk.Item3;
-							pakskill.WriteByte((byte)Math.Min(player.MaxLevel, st.SpecLevelRequirement));
+							pakskill.WriteByte((byte)Math.Min(player.ExpComponent.MaxLevel, st.SpecLevelRequirement));
 							// tooltip
 							pakskill.WriteShort((ushort)st.Icon);
 							pakskill.WriteByte((byte)sk.Item1);

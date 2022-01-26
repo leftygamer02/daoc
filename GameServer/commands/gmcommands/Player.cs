@@ -213,7 +213,7 @@ namespace DOL.GS.Commands
                         }
                         else
                         {
-                            pToLevel.GainExperience(eXPSource.Other, pToLevel.ExperienceForCurrentLevelSecondStage - pToLevel.Experience);
+                            pToLevel.GainExperience(eXPSource.Other, pToLevel.ExpComponent.ExperienceForCurrentLevelSecondStage - pToLevel.ExpComponent.Experience);
 
                             client.Out.SendMessage("You gave " + pToLevel.Name + " a free half level!",
                                                        eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -2354,7 +2354,7 @@ namespace DOL.GS.Commands
 			text.Add("  - Name Lastname : " + player.Name + " " + player.LastName);
 			text.Add("  - Realm Level Gender Class : " + GlobalConstants.RealmToName(player.Realm) + " " + player.Level + " " + player.Gender + " " + player.CharacterClass.Name + " (" + player.CharacterClass.ID + ")");
 			text.Add("  - Guild : " + player.GuildName + " " + (player.GuildRank != null ? "Rank: " + player.GuildRank.RankLevel.ToString() : ""));
-			text.Add("  - XPs/RPs/BPs : " + player.Experience + " xp, " + player.RealmPoints + " rp, " + player.BountyPoints + " bp");
+			text.Add("  - XPs/RPs/BPs : " + player.ExpComponent.Experience + " xp, " + player.RealmPoints + " rp, " + player.BountyPoints + " bp");
 
             if (player.DamageRvRMemory > 0)
                 text.Add("  - Damage RvR Memory: " + player.DamageRvRMemory);

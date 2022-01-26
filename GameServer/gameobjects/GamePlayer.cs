@@ -1789,12 +1789,12 @@ namespace DOL.GS
                 if (Level >= ServerProperties.Properties.PVE_EXP_LOSS_LEVEL && !HCFlag)
                 {
                     // actual lost exp, needed for 2nd stage deaths
-                    long lostExp = Experience;
+                    long lostExp = ExpComponent.Experience;
                     long lastDeathExpLoss = TempProperties.getProperty<long>(DEATH_EXP_LOSS_PROPERTY);
                     TempProperties.removeProperty(DEATH_EXP_LOSS_PROPERTY);
 
                     GainExperience(eXPSource.Other, -lastDeathExpLoss);
-                    lostExp -= Experience;
+                    lostExp -= ExpComponent.Experience;
 
                     // raise only the gravestone if xp has to be stored in it
                     if (lostExp > 0)
@@ -3325,7 +3325,7 @@ namespace DOL.GS
         {
             byte originalLevel = Level;
             Level = 1;
-            Experience = 0;
+            ExpComponent.Experience = 0;
             RespecAllLines();
 
             if (Level < originalLevel && originalLevel > 5)
@@ -4912,413 +4912,9 @@ namespace DOL.GS
 
         #region Level/Experience
 
-        /// <summary>
-        /// What is the maximum level a player can achieve?
-        /// To alter this in a custom GamePlayer class you must override this method and
-        /// provide your own XPForLevel array with MaxLevel + 1 entries
-        /// </summary>
-        public virtual byte MaxLevel
-        {
-            get { return 50; }
-        }
-
-        /// <summary>
-        /// How much experience is needed for a given level?
-        /// </summary>
-        public virtual long GetExperienceNeededForLevel(int level)
-        {
-            if (level > MaxLevel)
-                return GetScaledExperienceAmountForLevel(MaxLevel);
-
-            if (level <= 0)
-                return GetScaledExperienceAmountForLevel(0);
-
-            return GetScaledExperienceAmountForLevel(level - 1);
-        }
-		
-        /// <summary>
-        /// How Much Experience Needed For Level
-        /// </summary>
-        /// <param name="level"></param>
-        /// <returns></returns>
-        public static long GetExperienceAmountForLevel(int level)
-        {
-            try
-            {
-                return XPForLevel[level];
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-        
-        public static long GetScaledExperienceAmountForLevel(int level)
-        {
-            try
-            {
-                return ScaledXPForLevel[level];
-            }
-            catch
-            {
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// A table that holds the required XP/Level
-        /// This must include a final entry for MaxLevel + 1
-        /// </summary>
-        private static readonly long[] XPForLevel =
-        {
-            0, // xp to level 1
-            50, // xp to level 2
-            250, // xp to level 3
-            850, // xp to level 4
-            2300, // xp to level 5
-            6350, // xp to level 6
-            15950, // xp to level 7
-            37950, // xp to level 8
-            88950, // xp to level 9
-            203950, // xp to level 10
-            459950, // xp to level 11
-            839950, // xp to level 12
-            1399950, // xp to level 13
-            2199950, // xp to level 14
-            3399950, // xp to level 15
-            5199950, // xp to level 16
-            7899950, // xp to level 17
-            11799950, // xp to level 18
-            17499950, // xp to level 19
-            25899950, // xp to level 20
-            38199950, // xp to level 21
-            54699950, // xp to level 22
-            76999950, // xp to level 23
-            106999950, // xp to level 24
-            146999950, // xp to level 25
-            199999950, // xp to level 26
-            269999950, // xp to level 27
-            359999950, // xp to level 28
-            479999950, // xp to level 29
-            639999950, // xp to level 30
-            849999950, // xp to level 31
-            1119999950, // xp to level 32
-            1469999950, // xp to level 33
-            1929999950, // xp to level 34
-            2529999950, // xp to level 35
-            3319999950, // xp to level 36
-            4299999950, // xp to level 37
-            5499999950, // xp to level 38
-            6899999950, // xp to level 39
-            8599999950, // xp to level 40
-            12899999950, // xp to level 41
-            20699999950, // xp to level 42
-            29999999950, // xp to level 43
-            40799999950, // xp to level 44
-            53999999950, // xp to level 45
-            69599999950, // xp to level 46
-            88499999950, // xp to level 47
-            110999999950, // xp to level 48
-            137999999950, // xp to level 49
-            169999999950, // xp to level 50
-            999999999950, // xp to level 51
-        };
-        
-        /// <summary>
-        /// A table that holds the required XP/Level
-        /// This must include a final entry for MaxLevel + 1
-        /// </summary>
-        private static readonly long[] ScaledXPForLevel =
-        {
-            0, // xp to level 1
-            50, // xp to level 2
-            250, // xp to level 3
-            850, // xp to level 4
-            2300, // xp to level 5
-            6350, // xp to level 6
-            15950, // xp to level 7
-            37950, // xp to level 8
-            88950, // xp to level 9
-            203950, // xp to level 10
-            459950, // xp to level 11
-            839950, // xp to level 12
-            1399950, // xp to level 13
-            2199950, // xp to level 14
-            3399950, // xp to level 15
-            6499938, // xp to level 16
-            9953937, // xp to level 17
-            14985937, // xp to level 18
-            22399936, // xp to level 19
-            33410936, // xp to level 20
-            49659935, // xp to level 21
-            71656935, // xp to level 22
-            101639934, // xp to level 23
-            142309934, // xp to level 24
-            196979933, // xp to level 25
-            269999933, // xp to level 26
-            367199932, // xp to level 27
-            493199932, // xp to level 28
-            662399931, // xp to level 29
-            889599931, // xp to level 30
-            1189999930, // xp to level 31
-            1579199930, // xp to level 32
-            2087399929, // xp to level 33
-            2759899929, // xp to level 34
-            3643199928, // xp to level 35
-            4813999928, // xp to level 36
-            6277999927, // xp to level 37
-            8084999927, // xp to level 38
-            10211999926, // xp to level 39
-            12813999926, // xp to level 40
-            16382999937, // xp to level 41
-            20699999950, // xp to level 42
-            29999999950, // xp to level 43
-            40799999950, // xp to level 44
-            53999999950, // xp to level 45
-            69599999950, // xp to level 46
-            88499999950, // xp to level 47
-            110999999950, // xp to level 48
-            137999999950, // xp to level 49
-            169999999950, // xp to level 50
-            999999999950, // xp to level 51
-        };
-
-        /// <summary>
-        /// Gets or sets the current xp of this player
-        /// </summary>
-        public virtual long Experience
-        {
-            get { return DBCharacter != null ? DBCharacter.Experience : 0; }
-            set
-            {
-                if (DBCharacter != null)
-                    DBCharacter.Experience = value;
-            }
-        }
-
-        /// <summary>
-        /// Returns the xp that are needed for the next level
-        /// </summary>
-        public virtual long ExperienceForNextLevel
-        {
-            get
-            {
-                return GetExperienceNeededForLevel(Level + 1);
-            }
-        }
-
-        /// <summary>
-        /// Returns the xp that were needed for the current level
-        /// </summary>
-        public virtual long ExperienceForCurrentLevel
-        {
-            get
-            {
-                return GetExperienceNeededForLevel(Level);
-            }
-        }
-
-        /// <summary>
-        /// Returns the xp that is needed for the second stage of current level
-        /// </summary>
-        public virtual long ExperienceForCurrentLevelSecondStage
-        {
-            get { return 1 + ExperienceForCurrentLevel + (ExperienceForNextLevel - ExperienceForCurrentLevel) / 2; }
-        }
-
-        /// <summary>
-        /// Returns how far into the level we have progressed
-        /// A value between 0 and 1000 (1 bubble = 100)
-        /// </summary>
-        public virtual ushort LevelPermill
-        {
-            get
-            {
-                //No progress if we haven't even reached current level!
-                if (Experience < ExperienceForCurrentLevel)
-                    return 0;
-                //No progess after maximum level
-                if (Level > MaxLevel)
-                    return 0;
-                return (ushort)(1000 * (Experience - ExperienceForCurrentLevel) / (ExperienceForNextLevel - ExperienceForCurrentLevel));
-            }
-        }
-
-        /// <summary>
-        /// Called whenever this player gains experience
-        /// </summary>
-        /// <param name="expTotal"></param>
-        /// <param name="expCampBonus"></param>
-        /// <param name="expGroupBonus"></param>
-        /// <param name="expOutpostBonus"></param>
-        /// <param name="sendMessage"></param>
-        public void GainExperience(eXPSource xpSource, long expTotal, long expCampBonus, long expGroupBonus, long atlasBonus, long expOutpostBonus, bool sendMessage)
-        {
-            GainExperience(xpSource, expTotal, expCampBonus, expGroupBonus, expOutpostBonus, atlasBonus, sendMessage, true);
-        }
-
-        /// <summary>
-        /// Called whenever this player gains experience
-        /// </summary>
-        /// <param name="expTotal"></param>
-        /// <param name="expCampBonus"></param>
-        /// <param name="expGroupBonus"></param>
-        /// <param name="expOutpostBonus"></param>
-        /// <param name="sendMessage"></param>
-        /// <param name="allowMultiply"></param>
-        public void GainExperience(eXPSource xpSource, long expTotal, long expCampBonus, long expGroupBonus, long atlasBonus, long expOutpostBonus, bool sendMessage, bool allowMultiply)
-        {
-            GainExperience(xpSource, expTotal, expCampBonus, expGroupBonus, expOutpostBonus, atlasBonus, sendMessage, allowMultiply, true);
-        }
-
-        /// <summary>
-        /// Called whenever this player gains experience
-        /// </summary>
-        /// <param name="expTotal"></param>
-        /// <param name="expCampBonus"></param>
-        /// <param name="expGroupBonus"></param>
-        /// <param name="expOutpostBonus"></param>
-        /// <param name="sendMessage"></param>
-        /// <param name="allowMultiply"></param>
-        /// <param name="notify"></param>
-        public override void GainExperience(eXPSource xpSource, long expTotal, long expCampBonus, long expGroupBonus, long expOutpostBonus, long atlasBonus, bool sendMessage, bool allowMultiply, bool notify)
-        {
-            if (!GainXP && expTotal > 0)
-                return;
-
-            if (HCFlag && this.Group != null)
-            {
-                foreach (var player in this.Group.GetPlayersInTheGroup())
-                {
-                    if (player.Level > this.Level + 5)
-                        expTotal = 0;
-                }
-                if(expTotal == 0)
-                    this.Out.SendMessage("This kill was not hardcore enough to gain experience.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            }
-
-            //xp rate modifier
-            if (allowMultiply)
-            {
-                //we only want to modify the base rate, not the group or camp bonus
-                expTotal -= expGroupBonus;
-                expTotal -= expCampBonus;
-                expTotal -= expOutpostBonus;
-                expTotal -= atlasBonus;
-                //[StephenxPimentel] - Zone Bonus XP Support
-                if (ServerProperties.Properties.ENABLE_ZONE_BONUSES)
-                {
-                    long zoneBonus = expTotal * ZoneBonus.GetXPBonus(this) / 100;
-                    if (zoneBonus > 0)
-                    {
-                        long tmpBonus = (long)(zoneBonus * ServerProperties.Properties.XP_RATE);
-                        Out.SendMessage(ZoneBonus.GetBonusMessage(this, (int)tmpBonus, ZoneBonus.eZoneBonusType.XP),
-                            eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                        GainExperience(eXPSource.Other, tmpBonus, 0, 0, 0, 0, false, false, false);
-                    }
-                }
 
 
-                if (this.CurrentRegion.IsRvR)
-                    expTotal = (long)(expTotal * ServerProperties.Properties.RvR_XP_RATE);
-                else
-                    expTotal = (long)(expTotal * ServerProperties.Properties.XP_RATE);
-
-                // [Freya] Nidel: ToA Xp Bonus
-                long xpBonus = GetModified(eProperty.XpPoints);
-                if (xpBonus != 0)
-                {
-                    expTotal += (expTotal * xpBonus) / 100;
-                }
-
-                long hardXPCap = (long)(GameServer.ServerRules.GetExperienceForLiving(Level) * ServerProperties.Properties.XP_HARDCAP_PERCENT / 100);
-
-                if (expTotal > hardXPCap)
-                    expTotal = hardXPCap;
-
-                expTotal += expOutpostBonus;
-                expTotal += expGroupBonus;
-                expTotal += expCampBonus;
-                expTotal += atlasBonus;
-
-            }
-
-            // Get Champion Experience too
-            GainChampionExperience(expTotal);
-
-            base.GainExperience(xpSource, expTotal, expCampBonus, expGroupBonus, expOutpostBonus, atlasBonus, sendMessage, allowMultiply, notify);
-
-            if (IsLevelSecondStage)
-            {
-                if (Experience + expTotal < ExperienceForCurrentLevelSecondStage)
-                {
-                    expTotal = ExperienceForCurrentLevelSecondStage - Experience;
-                }
-            }
-            else if (Experience + expTotal < ExperienceForCurrentLevel)
-            {
-                expTotal = ExperienceForCurrentLevel - Experience;
-            }
-
-            if (sendMessage && expTotal > 0)
-            {
-                System.Globalization.NumberFormatInfo format = System.Globalization.NumberFormatInfo.InvariantInfo;
-                string totalExpStr = expTotal.ToString("N0", format);
-                string expCampBonusStr = "";
-                string expGroupBonusStr = "";
-                string expOutpostBonusStr = "";
-                string expSoloBonusStr = "";
-
-                if (expCampBonus > 0)
-                {
-                    expCampBonusStr = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.CampBonus", expCampBonus.ToString("N0", format)) + " ";
-                }
-                if (expGroupBonus > 0)
-                {
-                    expGroupBonusStr = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.GroupBonus", expGroupBonus.ToString("N0", format)) + " ";
-                }
-                if (expOutpostBonus > 0)
-                {
-                    expOutpostBonusStr = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.OutpostBonus", expOutpostBonus.ToString("N0", format)) + " ";
-                }
-                if(atlasBonus > 0)
-                {
-                    expSoloBonusStr = "("+ atlasBonus.ToString("N0", format) + " Atlas bonus)";
-                }
-
-                Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.YouGet", totalExpStr) + expCampBonusStr + expGroupBonusStr + expOutpostBonusStr + expSoloBonusStr, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-            }
-
-            Experience += expTotal;
-
-            if (expTotal >= 0)
-            {
-                //Level up
-                if (Level >= 5 && !CharacterClass.HasAdvancedFromBaseClass())
-                {
-                    if (expTotal > 0)
-                    {
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.CannotRaise"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.GainExperience.TalkToTrainer"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                    }
-                }
-                else if (Level >= 40 && Level < MaxLevel && !IsLevelSecondStage && Experience >= ExperienceForCurrentLevelSecondStage)
-                {
-                    OnLevelSecondStage();
-                    Notify(GamePlayerEvent.LevelSecondStage, this);
-                }
-                else if (Level < MaxLevel && Experience >= ExperienceForNextLevel)
-                {
-                    Level++;
-                }
-
-                if(Level >= 50)
-                {
-
-                }
-            }
-            Out.SendUpdatePoints();
-        }
+        public readonly PlayerExpComponent ExpComponent;
 
         /// <summary>
         /// Gets or sets the level of the player
@@ -5601,7 +5197,7 @@ namespace DOL.GS
 
             }
 
-            if (Level == MaxLevel)
+            if (Level == ExpComponent.MaxLevel)
             {
                 if (CanGenerateNews)
                 {
@@ -7197,7 +6793,7 @@ namespace DOL.GS
         {
             if (reactiveItem != null)
             {
-                int requiredLevel = reactiveItem.Template.LevelRequirement > 0 ? reactiveItem.Template.LevelRequirement : Math.Min(MaxLevel, reactiveItem.Level);
+                int requiredLevel = reactiveItem.Template.LevelRequirement > 0 ? reactiveItem.Template.LevelRequirement : Math.Min(ExpComponent.MaxLevel, reactiveItem.Level);
 
                 if (requiredLevel <= Level)
                 {
@@ -8241,11 +7837,11 @@ namespace DOL.GS
                 int xpLossPercent;
                 if (Level < 40)
                 {
-                    xpLossPercent = MaxLevel - Level;
+                    xpLossPercent = ExpComponent.MaxLevel - Level;
                 }
                 else
                 {
-                    xpLossPercent = MaxLevel - 40;
+                    xpLossPercent = ExpComponent.MaxLevel - 40;
                 }
 
                 if (realmDeath) //Live PvP servers have 3 con loss on pvp death, can be turned off in server properties -Unty
@@ -8292,8 +7888,8 @@ namespace DOL.GS
 
                         DeathCount++;
                         m_deathtype = eDeathType.PvE;
-                        long xpLoss = (ExperienceForNextLevel - ExperienceForCurrentLevel) * xpLossPercent / 1000;
-                        GainExperience(eXPSource.Other, -xpLoss, 0, 0, 0, 0, false, true);
+                        long xpLoss = (ExpComponent.ExperienceForNextLevel - ExpComponent.ExperienceForCurrentLevel) * xpLossPercent / 1000;
+                        ExpComponent.GainExperience(eXPSource.Other, -xpLoss, 0, 0, 0, 0, false, true);
                         TempProperties.setProperty(DEATH_EXP_LOSS_PROPERTY, xpLoss);
                     }
 
@@ -9580,7 +9176,7 @@ namespace DOL.GS
                                 {
                                     if (potionEffectLine != null)
                                     {
-                                        int requiredLevel = useItem.Template.LevelRequirement > 0 ? useItem.Template.LevelRequirement : Math.Min(MaxLevel, useItem.Level);
+                                        int requiredLevel = useItem.Template.LevelRequirement > 0 ? useItem.Template.LevelRequirement : Math.Min(ExpComponent.MaxLevel, useItem.Level);
 
                                         if (requiredLevel <= Level)
                                         {
@@ -9884,7 +9480,7 @@ namespace DOL.GS
         /// <param name="type">1 == use1, 2 == use2</param>
         protected virtual void UseItemCharge(InventoryItem useItem, int type)
         {
-            int requiredLevel = useItem.Template.LevelRequirement > 0 ? useItem.Template.LevelRequirement : Math.Min(MaxLevel, useItem.Level);
+            int requiredLevel = useItem.Template.LevelRequirement > 0 ? useItem.Template.LevelRequirement : Math.Min(ExpComponent.MaxLevel, useItem.Level);
 
             if (requiredLevel > Level)
             {
@@ -10012,7 +9608,7 @@ namespace DOL.GS
 
                 if (spell != null)
                 {
-                    int requiredLevel = item.Template.LevelRequirement > 0 ? item.Template.LevelRequirement : Math.Min(MaxLevel, item.Level);
+                    int requiredLevel = item.Template.LevelRequirement > 0 ? item.Template.LevelRequirement : Math.Min(ExpComponent.MaxLevel, item.Level);
 
                     if (requiredLevel > Level)
                     {
@@ -13190,7 +12786,7 @@ namespace DOL.GS
                 if (i > 5) allpoints += CharacterClass.SpecPointsMultiplier * i / 10; //normal levels
                 if (i > 40) allpoints += CharacterClass.SpecPointsMultiplier * (i - 1) / 20; //half levels
             }
-            if (IsLevelSecondStage && Level != MaxLevel)
+            if (IsLevelSecondStage && Level != ExpComponent.MaxLevel)
                 allpoints += CharacterClass.SpecPointsMultiplier * Level / 20; // add current half level
 
             // calc spec points player have (autotrain is not anymore processed here - 1.87 livelike)
@@ -16433,6 +16029,8 @@ namespace DOL.GS
             //Add to EntityManager
             EntityManager.AddPlayer((this));
             EntityManager.RemoveNpc(this);
+
+            ExpComponent = new PlayerExpComponent(this);
         }
 
         /// <summary>

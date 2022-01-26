@@ -155,7 +155,7 @@ namespace DOL.GS.Quests
 		{ 
 			get
 			{
-				long XPNeeded = m_taskPlayer.GetExperienceNeededForLevel((byte)(m_taskPlayer.Level));
+				long XPNeeded = m_taskPlayer.ExpComponent.GetExperienceNeededForLevel((byte)(m_taskPlayer.Level));
 				return (long)(XPNeeded*0.50/(m_taskPlayer.Level - 1)); // 50% of total xp for level
 			}
 		}

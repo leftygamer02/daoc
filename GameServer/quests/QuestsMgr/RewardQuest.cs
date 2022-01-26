@@ -648,10 +648,10 @@ namespace DOL.GS.Quests
 			public int ExperiencePercent(GamePlayer player)
 			{
 				int currentLevel = player.Level;
-				if (currentLevel > player.MaxLevel)
+				if (currentLevel > player.ExpComponent.MaxLevel)
 					return 0;
-				long experienceToLevel = player.GetExperienceNeededForLevel(currentLevel + 1) -
-					player.GetExperienceNeededForLevel(currentLevel);
+				long experienceToLevel = player.ExpComponent.GetExperienceNeededForLevel(currentLevel + 1) -
+					player.ExpComponent.GetExperienceNeededForLevel(currentLevel);
 
 				return (int)((m_experience * 100) / experienceToLevel);
 			}

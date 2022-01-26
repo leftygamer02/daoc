@@ -2097,7 +2097,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				// Skill = GetSpecToInternalIndex
 				// find opening style, and follow up !!
 				
-				IEnumerable<Style> styles = clt.Player.GetSpecList().SelectMany(e => e.PretendStylesForLiving(clt.Player, clt.Player.MaxLevel));
+				IEnumerable<Style> styles = clt.Player.GetSpecList().SelectMany(e => e.PretendStylesForLiving(clt.Player, clt.Player.ExpComponent.MaxLevel));
 				
 				// Is a followup
 				if (style.OpeningRequirementType == Style.eOpening.Offensive && style.AttackResultRequirement == Style.eAttackResultRequirement.Style)

@@ -28,7 +28,7 @@ namespace DOL.GS.GameEvents
 	/// This class hold the Character Creation Custom Settings
 	/// This is the best example on how to change Characters parameters on Creation.
 	/// </summary>
-	public static class CharacterCreationSettings
+	public class CharacterCreationSettings
 	{
 		#region Properties
 		/// <summary>
@@ -127,11 +127,11 @@ namespace DOL.GS.GameEvents
 			}
 			
 			// Property Starting Level
-			if (STARTING_LEVEL > 1 && ch.Experience < GamePlayer.GetExperienceAmountForLevel(STARTING_LEVEL - 1))
+			/*if (STARTING_LEVEL > 1 && ch.Experience < GamePlayer.ExpComponent.GetExperienceAmountForLevel(STARTING_LEVEL - 1))
 			{
-				ch.Experience = GamePlayer.GetExperienceAmountForLevel(STARTING_LEVEL - 1);
+				ch.Experience = PlayerExpComponent.GetExperienceAmountForLevel(STARTING_LEVEL - 1);
 				ch.Level = STARTING_LEVEL;
-			}
+			}*/
 
 
 			// Default 2 Respec Realm Skill

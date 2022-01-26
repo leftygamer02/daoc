@@ -217,7 +217,7 @@ namespace DOL.GS
 					bonusXP /= 2;
 				}
 
-				player.GainExperience(eXPSource.Other, bonusXP, 0, 0, 0, 0, false);
+				player.ExpComponent.GainExperience(eXPSource.Other, bonusXP, 0, 0, 0, 0, false);
 				player.Out.SendMessage("You gain an additional " + bonusXP + " experience due to your guild's buff!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 				player.Guild.UpdateGuildWindow();
 			}

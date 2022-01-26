@@ -3481,7 +3481,7 @@ namespace DOL.GS.Spells
 				GamePlayer playerCaster = Caster as GamePlayer;
 				if (playerCaster != null)
 				{
-					int itemSpellLevel = m_spellItem.Template.LevelRequirement > 0 ? m_spellItem.Template.LevelRequirement : Math.Min(playerCaster.MaxLevel, m_spellItem.Level);
+					int itemSpellLevel = m_spellItem.Template.LevelRequirement > 0 ? m_spellItem.Template.LevelRequirement : Math.Min(playerCaster.ExpComponent.MaxLevel, m_spellItem.Level);
 					return 100 - (85 + ((itemSpellLevel - target.Level) / 2));
 				}
 			}
@@ -4194,15 +4194,15 @@ namespace DOL.GS.Spells
 
 			if (playerCaster != null)
 			{
-				if (spellLevel > playerCaster.MaxLevel)
+				if (spellLevel > playerCaster.ExpComponent.MaxLevel)
 				{
-					spellLevel = playerCaster.MaxLevel;
+					spellLevel = playerCaster.ExpComponent.MaxLevel;
 				}
 			}
 
 			if (playerCaster != null && (m_spellLine.KeyName == GlobalSpellsLines.Combat_Styles_Effect || m_spellLine.KeyName.StartsWith(GlobalSpellsLines.Champion_Lines_StartWith)))
 			{
-				spellLevel = Math.Min(playerCaster.MaxLevel, target.Level);
+				spellLevel = Math.Min(playerCaster.ExpComponent.MaxLevel, target.Level);
 			}
 
 			int bonustohit = m_caster.GetModified(eProperty.ToHitBonus);

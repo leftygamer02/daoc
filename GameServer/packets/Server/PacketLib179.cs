@@ -118,7 +118,7 @@ namespace DOL.GS.PacketHandler
 			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.CharacterPointsUpdate)))
 			{
 				pak.WriteInt((uint)m_gameClient.Player.RealmPoints);
-				pak.WriteShort(m_gameClient.Player.LevelPermill);
+				pak.WriteShort(m_gameClient.Player.ExpComponent.LevelPermill);
 				pak.WriteShort((ushort) m_gameClient.Player.SkillSpecialtyPoints);
 				pak.WriteInt((uint)m_gameClient.Player.BountyPoints);
 				pak.WriteShort((ushort) m_gameClient.Player.RealmSpecialtyPoints);

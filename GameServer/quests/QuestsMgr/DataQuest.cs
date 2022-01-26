@@ -1506,10 +1506,10 @@ namespace DOL.GS.Quests
 				return 0;
 			}
             int currentLevel = player.Level;
-            if (currentLevel > player.MaxLevel)
+            if (currentLevel > player.ExpComponent.MaxLevel)
                 return 0;
-            long experienceToLevel = player.GetExperienceNeededForLevel(currentLevel + 1) -
-                player.GetExperienceNeededForLevel(currentLevel);
+            long experienceToLevel = player.ExpComponent.GetExperienceNeededForLevel(currentLevel + 1) -
+                player.ExpComponent.GetExperienceNeededForLevel(currentLevel);
 
             return (int)((m_rewardXPs[0] * 100) / experienceToLevel);
         }
@@ -2239,7 +2239,7 @@ namespace DOL.GS.Quests
 				if (charQuest.Count < MaxQuestCount && player.Level <= MaxLevel && player.Level >= Level)
 				{
 					TryTurnTo(obj, player);
-					long lvlXP  = (player.ExperienceForNextLevel - player.ExperienceForCurrentLevel) / player.Level;
+					long lvlXP  = (player.ExpComponent.ExperienceForNextLevel - player.ExpComponent.ExperienceForCurrentLevel) / player.Level;
 					if (item.Count == 1)
 					{
 						RemoveItem(obj, player, item, false);
@@ -2250,7 +2250,7 @@ namespace DOL.GS.Quests
 						if (long.TryParse(DBDataQuest.RewardXP, out rewardXP))
 						{
 							if(rewardXP == 0)
-								rewardXP = player.GetExperienceNeededForLevel(player.Level) / 50;
+								rewardXP = player.ExpComponent.GetExperienceNeededForLevel(player.Level) / 50;
 							else if (lvlXP > rewardXP)
 								rewardXP = lvlXP;
 							player.GainExperience(eXPSource.Quest, rewardXP);
@@ -2277,7 +2277,7 @@ namespace DOL.GS.Quests
 								if (long.TryParse(DBDataQuest.RewardXP, out rewardXP))
 								{
 									if(rewardXP == 0)
-										rewardXP = player.GetExperienceNeededForLevel(player.Level) / 50;
+										rewardXP = player.ExpComponent.GetExperienceNeededForLevel(player.Level) / 50;
 									else if (lvlXP > rewardXP)
 										rewardXP = lvlXP;
 									player.GainExperience(eXPSource.Quest, rewardXP);
@@ -2296,7 +2296,7 @@ namespace DOL.GS.Quests
 								if (long.TryParse(DBDataQuest.RewardXP, out rewardXP))
 								{
 									if(rewardXP == 0)
-										rewardXP = player.GetExperienceNeededForLevel(player.Level) / 50;
+										rewardXP = player.ExpComponent.GetExperienceNeededForLevel(player.Level) / 50;
 									else if (lvlXP > rewardXP)
 										rewardXP = lvlXP;
 									player.GainExperience(eXPSource.Quest, rewardXP);

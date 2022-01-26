@@ -157,7 +157,7 @@ namespace DOL.GS
 				{
 					player.LastFreeLevel = player.Level;
 					//long xp = GameServer.ServerRules.GetExperienceForLevel(player.PlayerCharacter.LastFreeLevel + 3) - GameServer.ServerRules.GetExperienceForLevel(player.PlayerCharacter.LastFreeLevel + 2);
-					long xp = player.GetExperienceNeededForLevel(player.LastFreeLevel + 1) - player.GetExperienceNeededForLevel(player.LastFreeLevel);
+					long xp = player.ExpComponent.GetExperienceNeededForLevel(player.LastFreeLevel + 1) - player.ExpComponent.GetExperienceNeededForLevel(player.LastFreeLevel);
 					//player.PlayerCharacter.LastFreeLevel = player.Level;
 					player.GainExperience(eXPSource.Other, xp);
 					player.LastFreeLeveled = DateTime.Now;
@@ -180,7 +180,7 @@ namespace DOL.GS
 		/// <returns></returns>
 		public virtual bool CanTrainChampionLevels(GamePlayer player)
 		{
-			return player.Level >= player.MaxLevel && player.Champion && m_championTrainerType != eChampionTrainerType.None && m_championTrainerType != player.CharacterClass.ChampionTrainerType();
+			return player.Level >= player.ExpComponent.MaxLevel && player.Champion && m_championTrainerType != eChampionTrainerType.None && m_championTrainerType != player.CharacterClass.ChampionTrainerType();
 		}
 
 		/// <summary>

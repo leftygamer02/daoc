@@ -1404,7 +1404,7 @@ namespace DOL.GS.ServerRules
 								double campPercent = ((double)campBonus / (baseXP)) * 100.0;
 								double groupPercent = ((double)groupExp / (baseXP)) * 100.0;
 								double outpostPercent = ((double)outpostXP / (baseXP)) * 100.0;
-								double levelPercent = ((double)(player.Experience + xpReward - player.ExperienceForCurrentLevel) / (player.ExperienceForNextLevel - player.ExperienceForCurrentLevel)) * 100;
+								double levelPercent = ((double)(player.ExpComponent.Experience + xpReward - player.ExpComponent.ExperienceForCurrentLevel) / (player.ExpComponent.ExperienceForNextLevel - player.ExpComponent.ExperienceForCurrentLevel)) * 100;
 
 								if (atlasBonus > 0)
 									player.Out.SendMessage($"Atlas: {atlasBonus.ToString("N0", format)} | {soloPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -1419,8 +1419,8 @@ namespace DOL.GS.ServerRules
 									player.Out.SendMessage($"Outpost: {outpostXP.ToString("N0", format)} | {outpostPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 								//player.Out.SendMessage($"Total Bonus: {((double)((atlasBonus + campBonus + groupExp + outpostXP) / xpReward) * 100).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-								player.Out.SendMessage($"XP needed: {player.ExperienceForNextLevel.ToString("N0", format)} | {levelPercent.ToString("0.##")}% done with current level", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-								player.Out.SendMessage($"# of kills needed to level at this rate: {(player.ExperienceForNextLevel - player.Experience) / xpReward}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								player.Out.SendMessage($"XP needed: {player.ExpComponent.ExperienceForNextLevel.ToString("N0", format)} | {levelPercent.ToString("0.##")}% done with current level", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								player.Out.SendMessage($"# of kills needed to level at this rate: {(player.ExpComponent.ExperienceForNextLevel - player.ExpComponent.Experience) / xpReward}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 							}
 						}
