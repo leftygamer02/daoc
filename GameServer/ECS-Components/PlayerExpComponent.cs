@@ -47,65 +47,6 @@ public class PlayerExpComponent
     /// A table that holds the required XP/Level
     /// This must include a final entry for MaxLevel + 1
     /// </summary>
-    private static readonly long[] XpForLevel =
-    {
-        0, // xp to level 1
-        50, // xp to level 2
-        250, // xp to level 3
-        850, // xp to level 4
-        2300, // xp to level 5
-        6350, // xp to level 6
-        15950, // xp to level 7
-        37950, // xp to level 8
-        88950, // xp to level 9
-        203950, // xp to level 10
-        459950, // xp to level 11
-        839950, // xp to level 12
-        1399950, // xp to level 13
-        2199950, // xp to level 14
-        3399950, // xp to level 15
-        5199950, // xp to level 16
-        7899950, // xp to level 17
-        11799950, // xp to level 18
-        17499950, // xp to level 19
-        25899950, // xp to level 20
-        38199950, // xp to level 21
-        54699950, // xp to level 22
-        76999950, // xp to level 23
-        106999950, // xp to level 24
-        146999950, // xp to level 25
-        199999950, // xp to level 26
-        269999950, // xp to level 27
-        359999950, // xp to level 28
-        479999950, // xp to level 29
-        639999950, // xp to level 30
-        849999950, // xp to level 31
-        1119999950, // xp to level 32
-        1469999950, // xp to level 33
-        1929999950, // xp to level 34
-        2529999950, // xp to level 35
-        3319999950, // xp to level 36
-        4299999950, // xp to level 37
-        5499999950, // xp to level 38
-        6899999950, // xp to level 39
-        8599999950, // xp to level 40
-        12899999950, // xp to level 41
-        20699999950, // xp to level 42
-        29999999950, // xp to level 43
-        40799999950, // xp to level 44
-        53999999950, // xp to level 45
-        69599999950, // xp to level 46
-        88499999950, // xp to level 47
-        110999999950, // xp to level 48
-        137999999950, // xp to level 49
-        169999999950, // xp to level 50
-        999999999950, // xp to level 51
-    };
-
-    /// <summary>
-    /// A table that holds the required XP/Level
-    /// This must include a final entry for MaxLevel + 1
-    /// </summary>
     private static readonly long[] ScaledXpForLevel =
     {
         0, // xp to level 1
