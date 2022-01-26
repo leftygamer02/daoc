@@ -31,28 +31,11 @@ public class PlayerExpComponent
         return level <= 0 ? GetScaledExperienceAmountForLevel(0) : GetScaledExperienceAmountForLevel(level - 1);
     }
 
-    /// <summary>
-    /// How Much Experience Needed For Level
-    /// </summary>
-    /// <param name="level"></param>
-    /// <returns></returns>
-    public long GetExperienceAmountForLevel(int level)
+    private static long GetScaledExperienceAmountForLevel(int level)
     {
         try
         {
-            return XPForLevel[level];
-        }
-        catch
-        {
-            return 0;
-        }
-    }
-
-    public static long GetScaledExperienceAmountForLevel(int level)
-    {
-        try
-        {
-            return ScaledXPForLevel[level];
+            return ScaledXpForLevel[level];
         }
         catch
         {
@@ -64,7 +47,7 @@ public class PlayerExpComponent
     /// A table that holds the required XP/Level
     /// This must include a final entry for MaxLevel + 1
     /// </summary>
-    private static readonly long[] XPForLevel =
+    private static readonly long[] XpForLevel =
     {
         0, // xp to level 1
         50, // xp to level 2
@@ -123,7 +106,7 @@ public class PlayerExpComponent
     /// A table that holds the required XP/Level
     /// This must include a final entry for MaxLevel + 1
     /// </summary>
-    private static readonly long[] ScaledXPForLevel =
+    private static readonly long[] ScaledXpForLevel =
     {
         0, // xp to level 1
         50, // xp to level 2
@@ -395,29 +378,37 @@ public class PlayerExpComponent
 
         if (expTotal >= 0)
         {
-            //Level up
-            if (_player.Level >= 5 && !_player.CharacterClass.HasAdvancedFromBaseClass())
+            switch (_player.Level)
             {
-                if (expTotal > 0)
+                //Level up
+                case >= 5 when !_player.CharacterClass.HasAdvancedFromBaseClass():
                 {
-                    _player.Out.SendMessage(
-                        LanguageMgr.GetTranslation(_player.Client.Account.Language,
-                            "GamePlayer.GainExperience.CannotRaise"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                    _player.Out.SendMessage(
-                        LanguageMgr.GetTranslation(_player.Client.Account.Language,
-                            "GamePlayer.GainExperience.TalkToTrainer"), eChatType.CT_Important,
-                        eChatLoc.CL_SystemWindow);
+                    if (expTotal > 0)
+                    {
+                        _player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(_player.Client.Account.Language,
+                                "GamePlayer.GainExperience.CannotRaise"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                        _player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(_player.Client.Account.Language,
+                                "GamePlayer.GainExperience.TalkToTrainer"), eChatType.CT_Important,
+                            eChatLoc.CL_SystemWindow);
+                    }
+
+                    break;
                 }
-            }
-            else if (_player.Level >= 40 && _player.Level < MaxLevel && !_player.IsLevelSecondStage &&
-                     Experience >= ExperienceForCurrentLevelSecondStage)
-            {
-                _player.OnLevelSecondStage();
-                _player.Notify(GamePlayerEvent.LevelSecondStage, this);
-            }
-            else if (_player.Level < MaxLevel && Experience >= ExperienceForNextLevel)
-            {
-                _player.Level++;
+                case >= 40 when _player.Level < MaxLevel && !_player.IsLevelSecondStage && Experience >= ExperienceForCurrentLevelSecondStage:
+                    _player.OnLevelSecondStage();
+                    _player.Notify(GamePlayerEvent.LevelSecondStage, this);
+                    break;
+                default:
+                {
+                    if (_player.Level < MaxLevel && Experience >= ExperienceForNextLevel)
+                    {
+                        _player.Level++;
+                    }
+
+                    break;
+                }
             }
 
             if (_player.Level >= 50)
