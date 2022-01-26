@@ -234,12 +234,11 @@ public class PlayerExpComponent
             //[StephenxPimentel] - Zone Bonus XP Support
             if (ServerProperties.Properties.ENABLE_ZONE_BONUSES)
             {
-                var zoneBonus = expTotal * ZoneBonus.GetXPBonus(_player) / 100;
+                long zoneBonus = expTotal * ZoneBonus.GetXPBonus(_player) / 100;
                 if (zoneBonus > 0)
                 {
-                    var tmpBonus = (long) (zoneBonus * ServerProperties.Properties.XP_RATE);
-                    _player.Out.SendMessage(
-                        ZoneBonus.GetBonusMessage(_player, (int) tmpBonus, ZoneBonus.eZoneBonusType.XP),
+                    long tmpBonus = (long) (zoneBonus * ServerProperties.Properties.XP_RATE);
+                    _player.Out.SendMessage(ZoneBonus.GetBonusMessage(_player, (int) tmpBonus, ZoneBonus.eZoneBonusType.XP),
                         eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                     GainExperience(eXPSource.Other, tmpBonus, 0, 0, 0, 0, false, false, false);
                 }
@@ -258,11 +257,11 @@ public class PlayerExpComponent
                 expTotal += (expTotal * xpBonus) / 100;
             }
 
-            var hardXpCap = GameServer.ServerRules.GetExperienceForLiving(_player.Level) *
-                ServerProperties.Properties.XP_HARDCAP_PERCENT / 100;
+            long hardXPCap = (long) (GameServer.ServerRules.GetExperienceForLiving(_player.Level) *
+                ServerProperties.Properties.XP_HARDCAP_PERCENT / 100);
 
-            if (expTotal > hardXpCap)
-                expTotal = hardXpCap;
+            if (expTotal > hardXPCap)
+                expTotal = hardXPCap;
 
             expTotal += expOutpostBonus;
             expTotal += expGroupBonus;
@@ -272,12 +271,8 @@ public class PlayerExpComponent
         }
 
         // Get Champion Experience too
-        _player.GainChampionExperience(expTotal);
-
-        if (expTotal > 0 && notify)
-            _player.Notify(GameLivingEvent.GainedExperience, this,
-                new GainedExperienceEventArgs(expTotal, expCampBonus, expGroupBonus, expOutpostBonus, sendMessage,
-                    allowMultiply, xpSource));
+        _player.GainChampionExperience(expTotal); 
+        _player.GainExperience(xpSource, expTotal, expCampBonus, expGroupBonus, expOutpostBonus, atlasBonus, sendMessage, allowMultiply, notify);
 
         if (_player.IsLevelSecondStage)
         {
@@ -293,12 +288,12 @@ public class PlayerExpComponent
 
         if (sendMessage && expTotal > 0)
         {
-            var format = System.Globalization.NumberFormatInfo.InvariantInfo;
-            var totalExpStr = expTotal.ToString("N0", format);
-            var expCampBonusStr = "";
-            var expGroupBonusStr = "";
-            var expOutpostBonusStr = "";
-            var expSoloBonusStr = "";
+            System.Globalization.NumberFormatInfo format = System.Globalization.NumberFormatInfo.InvariantInfo;
+            string totalExpStr = expTotal.ToString("N0", format);
+            string expCampBonusStr = "";
+            string expGroupBonusStr = "";
+            string expOutpostBonusStr = "";
+            string expSoloBonusStr = "";
 
             if (expCampBonus > 0)
             {
@@ -333,37 +328,29 @@ public class PlayerExpComponent
 
         if (expTotal >= 0)
         {
-            switch (_player.Level)
+            //Level up
+            if (_player.Level >= 5 && !_player.CharacterClass.HasAdvancedFromBaseClass())
             {
-                //Level up
-                case >= 5 when !_player.CharacterClass.HasAdvancedFromBaseClass():
+                if (expTotal > 0)
                 {
-                    if (expTotal > 0)
-                    {
-                        _player.Out.SendMessage(
-                            LanguageMgr.GetTranslation(_player.Client.Account.Language,
-                                "GamePlayer.GainExperience.CannotRaise"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                        _player.Out.SendMessage(
-                            LanguageMgr.GetTranslation(_player.Client.Account.Language,
-                                "GamePlayer.GainExperience.TalkToTrainer"), eChatType.CT_Important,
-                            eChatLoc.CL_SystemWindow);
-                    }
-
-                    break;
+                    _player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(_player.Client.Account.Language,
+                            "GamePlayer.GainExperience.CannotRaise"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                    _player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(_player.Client.Account.Language,
+                            "GamePlayer.GainExperience.TalkToTrainer"), eChatType.CT_Important,
+                        eChatLoc.CL_SystemWindow);
                 }
-                case >= 40 when _player.Level < MaxLevel && !_player.IsLevelSecondStage && Experience >= ExperienceForCurrentLevelSecondStage:
-                    _player.OnLevelSecondStage();
-                    _player.Notify(GamePlayerEvent.LevelSecondStage, this);
-                    break;
-                default:
-                {
-                    if (_player.Level < MaxLevel && Experience >= ExperienceForNextLevel)
-                    {
-                        _player.Level++;
-                    }
-
-                    break;
-                }
+            }
+            else if (_player.Level >= 40 && _player.Level < MaxLevel && !_player.IsLevelSecondStage &&
+                     Experience >= ExperienceForCurrentLevelSecondStage)
+            {
+                _player.OnLevelSecondStage();
+                _player.Notify(GamePlayerEvent.LevelSecondStage, this);
+            }
+            else if (_player.Level < MaxLevel && Experience >= ExperienceForNextLevel)
+            {
+                _player.Level++;
             }
 
             if (_player.Level >= 50)
