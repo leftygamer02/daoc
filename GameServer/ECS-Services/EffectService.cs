@@ -83,12 +83,17 @@ namespace DOL.GS
             // Update the Concentration List if Conc Buff/Song/Chant.
             if (spellEffect != null && spellEffect.ShouldBeAddedToConcentrationList() && !spellEffect.RenewEffect)
             {
-                if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.effectListComponent.GetConcentrationEffects() != null)
+                if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects != null)
                 {
-                    //spellEffect.SpellHandler.Caster.ConcentrationEffects.Add(spellEffect);
-
-                    spellEffect.SpellHandler.Caster.ConcentrationEffectsCount++;
                     spellEffect.SpellHandler.Caster.UsedConcentration += spellEffect.SpellHandler.Spell.Concentration;
+
+                    lock (spellEffect.SpellHandler.Caster.effectListComponent._concentrationEffectsLock)
+                    {
+                        spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.Add(spellEffect);
+                    }
+
+                    if (spellEffect.SpellHandler.Caster is GamePlayer p)
+                        p.Out.SendConcentrationList();
                 }
             }
 
@@ -198,11 +203,28 @@ namespace DOL.GS
                 // Update the Concentration List if Conc Buff/Song/Chant.
                 if (e.CancelEffect && e.ShouldBeRemovedFromConcentrationList())
                 {
-                    if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.effectListComponent.GetConcentrationEffects() != null)
+                    if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects != null)
                     {
-                        //spellEffect.SpellHandler.Caster.ConcentrationEffects.Remove((ECSGameSpellEffect)e);
-                        spellEffect.SpellHandler.Caster.ConcentrationEffectsCount--;
                         spellEffect.SpellHandler.Caster.UsedConcentration -= spellEffect.SpellHandler.Spell.Concentration;
+
+                        lock (spellEffect.SpellHandler.Caster.effectListComponent._concentrationEffectsLock)
+                        {
+                            if (spellEffect is ECSPulseEffect)
+                            {                               
+                                for (int i = 0; i < spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.Count; i++)
+                                {
+                                    if (spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects[i] is ECSPulseEffect)
+                                    {
+                                        spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.RemoveAt(i);
+                                    }
+                                }
+                            }
+                            else
+                                spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.Remove(spellEffect);
+                        }
+
+                        if (spellEffect.SpellHandler.Caster is GamePlayer p)
+                            p.Out.SendConcentrationList();
                     }
                 }
             }
