@@ -270,20 +270,22 @@ namespace DOL.GS
 
         public ECSGameSpellEffect GetSpellEffect(Spell spell)
         {
-            foreach (var effects in Effects.Values.ToList())
+            lock (_effectsLock)
             {
-                for (int j = 0; j < effects.Count; j++)
+                foreach (var effects in Effects.Values.ToList())
                 {
-                    if (effects[j] is ECSGameSpellEffect eff)
+                    for (int j = 0; j < effects.Count; j++)
                     {
-                        if (eff.SpellHandler.Spell.ID == spell.ID)
+                        if (effects[j] is ECSGameSpellEffect eff)
                         {
-                            return eff;
+                            if (eff.SpellHandler.Spell.ID == spell.ID)
+                            {
+                                return eff;
+                            }
                         }
                     }
                 }
             }
-
             return null;
         }
 
