@@ -83,7 +83,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					updateTempProperties = true;
 					player.EnteredGame = true;
 					player.Notify(GamePlayerEvent.GameEntered, player);
-					player.EffectList.RestoreAllEffects();
+					//player.EffectList.RestoreAllEffects();
 					checkInstanceLogin = true;
 				}
 				else

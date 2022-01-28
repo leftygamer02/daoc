@@ -165,26 +165,26 @@ namespace DOL.GS.Spells
 			}
 
 			//check for spell.
-			foreach (GameSpellEffect effect in target.EffectList.GetAllOfType<GameSpellEffect>())
-			{
-				if (effect.Spell.SpellType.ToString() == ShearSpellType)
-				{
-					if ((effect.Owner != effect.SpellHandler.Caster || effect.Spell.IsShearable) && effect.Spell.Value <= Spell.Value)
-					{
-						SendEffectAnimation(target, 0, false, 1);
-						effect.Cancel(false);
-						MessageToCaster("Your spell rips away some of your target's enhancing magic.", eChatType.CT_Spell);
-						MessageToLiving(target, "Some of your enhancing magic has been ripped away by a spell!", eChatType.CT_Spell);
-					}
-					else
-					{
-						SendEffectAnimation(target, 0, false, 0);
-						MessageToCaster("The target's connection to their enhancement is too strong for you to remove.", eChatType.CT_SpellResisted);
-					}
+			//foreach (GameSpellEffect effect in target.EffectList.GetAllOfType<GameSpellEffect>())
+			//{
+			//	if (effect.Spell.SpellType.ToString() == ShearSpellType)
+			//	{
+			//		if ((effect.Owner != effect.SpellHandler.Caster || effect.Spell.IsShearable) && effect.Spell.Value <= Spell.Value)
+			//		{
+			//			SendEffectAnimation(target, 0, false, 1);
+			//			effect.Cancel(false);
+			//			MessageToCaster("Your spell rips away some of your target's enhancing magic.", eChatType.CT_Spell);
+			//			MessageToLiving(target, "Some of your enhancing magic has been ripped away by a spell!", eChatType.CT_Spell);
+			//		}
+			//		else
+			//		{
+			//			SendEffectAnimation(target, 0, false, 0);
+			//			MessageToCaster("The target's connection to their enhancement is too strong for you to remove.", eChatType.CT_SpellResisted);
+			//		}
 
-					return;
-				}
-			}
+			//		return;
+			//	}
+			//}
 
 			SendEffectAnimation(target, 0, false, 0);
 			MessageToCaster("No enhancement of that type found on the target.", eChatType.CT_SpellResisted);
@@ -291,20 +291,20 @@ namespace DOL.GS.Spells
 			}
 
 			//check for spell.
-			foreach (GameSpellEffect effect in target.EffectList.GetAllOfType<GameSpellEffect>())
-			{
-				foreach (Type buffType in buffs)
-				{
-					if (effect.SpellHandler.GetType().Equals(buffType))
-					{
-						SendEffectAnimation(target, 0, false, 1);
-						effect.Cancel(false);
-						MessageToCaster("Your spell rips away some of your target's enhancing magic.", eChatType.CT_Spell);
-						MessageToLiving(target, "Some of your enhancing magic has been ripped away by a spell!", eChatType.CT_Spell);
-						return;
-					}
-				}
-			}
+			//foreach (GameSpellEffect effect in target.EffectList.GetAllOfType<GameSpellEffect>())
+			//{
+			//	foreach (Type buffType in buffs)
+			//	{
+			//		if (effect.SpellHandler.GetType().Equals(buffType))
+			//		{
+			//			SendEffectAnimation(target, 0, false, 1);
+			//			effect.Cancel(false);
+			//			MessageToCaster("Your spell rips away some of your target's enhancing magic.", eChatType.CT_Spell);
+			//			MessageToLiving(target, "Some of your enhancing magic has been ripped away by a spell!", eChatType.CT_Spell);
+			//			return;
+			//		}
+			//	}
+			//}
 
 			SendEffectAnimation(target, 0, false, 0);
 			MessageToCaster("No enhancement of that type found on the target.", eChatType.CT_SpellResisted);

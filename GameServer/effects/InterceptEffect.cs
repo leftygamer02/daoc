@@ -116,8 +116,8 @@ namespace DOL.GS.Effects
 				if (intercepted is GamePlayer && interceptor is GamePlayer)
 					((GamePlayer)intercepted).Out.SendMessage(LanguageMgr.GetTranslation(((GamePlayer)intercepted).Client, "Effects.InterceptEffect.XAttemptInterceptYou", interceptor.GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			}
-			interceptor.EffectList.Add(this);
-			intercepted.EffectList.Add(this);
+			//interceptor.EffectList.Add(this);
+			//intercepted.EffectList.Add(this);
 		}
 
 		/// <summary>
@@ -130,8 +130,8 @@ namespace DOL.GS.Effects
 				GameEventMgr.RemoveHandler(m_group, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback));
 				m_group = null;
 			}
-			InterceptSource.EffectList.Remove(this);
-			InterceptTarget.EffectList.Remove(this);
+			//InterceptSource.EffectList.Remove(this);
+			//InterceptTarget.EffectList.Remove(this);
 			if (playerCancel)
 			{
 				if (InterceptSource is GamePlayer)

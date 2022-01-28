@@ -91,11 +91,14 @@ namespace DOL.GS
 
 			var target = Target;
 			Target = null;
-			
-			foreach (GameSpellEffect effect in Starter.EffectList.GetAllOfType<GameSpellEffect>())
+
+			lock (Starter.effectListComponent._effectsLock)
 			{
-				if (effect.SpellHandler.Caster == target && !effect.SpellHandler.HasPositiveEffect)
-					effect.Cancel(false);
+				foreach (var effect in Starter.effectListComponent.GetAllEffects())
+				{
+					if (effect.SpellHandler.Caster == target && !effect.SpellHandler.HasPositiveEffect)
+						EffectService.RequestCancelEffect(effect)
+				}
 			}
 
 			GameEventMgr.RemoveHandler(Starter, GamePlayerEvent.Quit, new DOLEventHandler(DuelOnPlayerQuit));

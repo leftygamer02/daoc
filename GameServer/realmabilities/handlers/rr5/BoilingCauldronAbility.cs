@@ -42,17 +42,17 @@ namespace DOL.GS.RealmAbilities
         /// <param name="living"></param>
         public override void Execute(GameLiving living)
         {
-            if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
+            //if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-            GamePlayer player = living as GamePlayer;
-            if (player != null)
-            {
-            	BoilingCauldronEffect BoilingCauldron = player.EffectList.GetOfType<BoilingCauldronEffect>();
-                if (BoilingCauldron != null)
-                    BoilingCauldron.Cancel(false);
+            //GamePlayer player = living as GamePlayer;
+            //if (player != null)
+            //{
+            //	BoilingCauldronEffect BoilingCauldron = player.EffectList.GetOfType<BoilingCauldronEffect>();
+            //    if (BoilingCauldron != null)
+            //        BoilingCauldron.Cancel(false);
 
-                new BoilingCauldronEffect().Start(player);
-            }
+            //    new BoilingCauldronEffect().Start(player);
+            //}
             DisableSkill(living);
         }
 

@@ -1036,9 +1036,8 @@ namespace DOL.GS
             // cancel all effects until saving of running effects is done
             try
             {
-                EffectList.SaveAllEffects();
+                //EffectList.SaveAllEffects();
                 CancelAllConcentrationEffects(false);
-                EffectList.CancelAll();
             }
             catch (Exception e)
             {
@@ -4270,15 +4269,6 @@ namespace DOL.GS
         {
             get { return m_playereffectiveness; }
             set { m_playereffectiveness = value; }
-        }
-
-        /// <summary>
-        /// Creates new effects list for this living.
-        /// </summary>
-        /// <returns>New effects list instance</returns>
-        protected override GameEffectList CreateEffectsList()
-        {
-            return new GameEffectPlayerList(this);
         }
 
         #endregion
@@ -8833,14 +8823,14 @@ namespace DOL.GS
                 {
                     if (spell.CastTime > 0)
                     {
-                        GameSpellEffect effect = SpellHandler.FindEffectOnTarget(this, "Chamber", spell.Name);
+                        //GameSpellEffect effect = SpellHandler.FindEffectOnTarget(this, "Chamber", spell.Name);
 
-                        if (effect != null && spell.Name == effect.Spell.Name)
-                        {
-                            casted = spellhandler.CastSpell();
-                        }
-                        else
-                        {
+                        //if (effect != null && spell.Name == effect.Spell.Name)
+                        //{
+                        //    casted = spellhandler.CastSpell();
+                        //}
+                        //else
+                        //{
                             if (spellhandler is ChamberSpellHandler && m_runningSpellHandler == null)
                             {
                                 ((ChamberSpellHandler)spellhandler).EffectSlot = ChamberSpellHandler.GetEffectSlot(spellhandler.Spell.Name);
@@ -8854,7 +8844,7 @@ namespace DOL.GS
                                 m_runningSpellHandler.CastingCompleteEvent += new CastingCompleteCallback(OnAfterSpellCastSequence);
                                 casted = spellhandler.CastSpell();
                             }
-                        }
+                        //}
                     }
                     else
                     {
@@ -13896,8 +13886,8 @@ namespace DOL.GS
                 return false;
             if (!IsAlive)
                 return false;
-            if (enemy.EffectList.GetOfType<VanishEffect>() != null)
-                return false;
+            //if (enemy.EffectList.GetOfType<VanishEffect>() != null)
+                //return false;
             if (this.Client.Account.PrivLevel > 1)
                 return true;
             if (enemy.Client.Account.PrivLevel > 1)
@@ -16520,7 +16510,7 @@ namespace DOL.GS
             //	evade = SpellHandler.FindEffectOnTarget(this, "SavageEvadeBuff");
             ECSGameEffect evade = EffectListService.GetEffectOnTarget(this, eEffect.SavageBuff, eSpellType.SavageEvadeBuff);
 
-            if (HasAbility(Abilities.Advanced_Evade) || EffectList.GetOfType<CombatAwarenessEffect>() != null || EffectList.GetOfType<RuneOfUtterAgilityEffect>() != null)
+            if (HasAbility(Abilities.Advanced_Evade)) //|| EffectList.GetOfType<CombatAwarenessEffect>() != null || EffectList.GetOfType<RuneOfUtterAgilityEffect>() != null)
                 evadeChance = GetModified(eProperty.EvadeChance);
             else if (evade != null || HasAbility(Abilities.Evade))
             {
@@ -16578,8 +16568,8 @@ namespace DOL.GS
 
             if ((HasSpecialization(Specs.Parry) || parry != null) && (attackComponent.AttackWeapon != null))
                 parryChance = GetModified(eProperty.ParryChance);
-            else if (EffectList.GetOfType<BladeBarrierEffect>() != null)
-                parryChance = GetModified(eProperty.ParryChance);
+            //else if (EffectList.GetOfType<BladeBarrierEffect>() != null)
+            //    parryChance = GetModified(eProperty.ParryChance);
 
             if (parryChance > 0)
             {
@@ -16616,19 +16606,20 @@ namespace DOL.GS
         {
             get
             {
-                var bodyguardEffects = EffectList.GetAllOfType<BodyguardEffect>();
+                return null;
+                //var bodyguardEffects = EffectList.GetAllOfType<BodyguardEffect>();
 
-                BodyguardEffect bodyguardEffect = bodyguardEffects.FirstOrDefault();
-                if (bodyguardEffect == null || bodyguardEffect.GuardTarget != this)
-                    return null;
+                //BodyguardEffect bodyguardEffect = bodyguardEffects.FirstOrDefault();
+                //if (bodyguardEffect == null || bodyguardEffect.GuardTarget != this)
+                //    return null;
 
-                GamePlayer guard = bodyguardEffect.GuardSource;
-                GamePlayer guardee = this;
+                //GamePlayer guard = bodyguardEffect.GuardSource;
+                //GamePlayer guardee = this;
 
-                return (guard.IsAlive && guard.IsWithinRadius(guardee, BodyguardAbilityHandler.BODYGUARD_DISTANCE) &&
-                        !guard.IsCasting && guardee.IsStandingStill)
-                    ? guard
-                    : null;
+                //return (guard.IsAlive && guard.IsWithinRadius(guardee, BodyguardAbilityHandler.BODYGUARD_DISTANCE) &&
+                //        !guard.IsCasting && guardee.IsStandingStill)
+                //    ? guard
+                //    : null;
             }
         }
         #endregion

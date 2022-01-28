@@ -277,8 +277,8 @@ namespace DOL.AI.Brain
             {
                 // Target has started attacking someone else.
 
-				if (Body.EffectList.GetOfType<TauntEffect>() != null)
-                    (Body as NecromancerPet).Taunt();            
+				//if (Body.EffectList.GetOfType<TauntEffect>() != null)
+    //                (Body as NecromancerPet).Taunt();            
             }
             else if (e == GameNPCEvent.AttackFinished)
             {
@@ -314,7 +314,7 @@ namespace DOL.AI.Brain
 		/// <param name="seconds"></param>
 		public void SetTetherTimer(int seconds)
 		{
-			NecromancerShadeEffect shadeEffect = Owner.EffectList.GetOfType<NecromancerShadeEffect>();
+		    NecromancerShadeECSGameEffect shadeEffect = (NecromancerShadeECSGameEffect)EffectListService.GetEffectOnTarget(Owner, eEffect.Shade);
 
 			if (shadeEffect != null)
 			{

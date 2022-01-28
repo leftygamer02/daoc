@@ -20,10 +20,10 @@ namespace DOL.GS.RealmAbilities
         {
             GamePlayer player = living as GamePlayer;
             if (CheckPreconditions(living, DEAD | SITTING | STEALTHED)) return;
-			if (player.EffectList.CountOfType<AdrenalineRushEffect>() > 0)
-            {
-                player.Out.SendMessage("You already an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-            }
+			//if (player.EffectList.CountOfType<AdrenalineRushEffect>() > 0)
+   //         {
+   //             player.Out.SendMessage("You already an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+   //         }
             SendCasterSpellEffectAndCastMessage(living, 7002, true);
             if (player != null)
             {

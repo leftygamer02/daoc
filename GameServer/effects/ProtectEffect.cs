@@ -87,8 +87,8 @@ namespace DOL.GS.Effects
 
 			GameEventMgr.AddHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback));
 
-			m_protectSource.EffectList.Add(this);
-			m_protectTarget.EffectList.Add(this);
+			//m_protectSource.EffectList.Add(this);
+			//m_protectTarget.EffectList.Add(this);
 
 			if (!protectSource.IsWithinRadius(protectTarget, ProtectAbilityHandler.PROTECT_DISTANCE))
 			{
@@ -125,8 +125,8 @@ namespace DOL.GS.Effects
 		{
 			GameEventMgr.RemoveHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback));
 			// intercept handling is done by the active part             
-			m_protectSource.EffectList.Remove(this);
-			m_protectTarget.EffectList.Remove(this);
+			//m_protectSource.EffectList.Remove(this);
+			//m_protectTarget.EffectList.Remove(this);
 
 			m_protectSource.Out.SendMessage(LanguageMgr.GetTranslation(m_protectSource.Client, "Effects.ProtectEffect.YouNoProtectY", m_protectTarget.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			m_protectTarget.Out.SendMessage(LanguageMgr.GetTranslation(m_protectTarget.Client, "Effects.ProtectEffect.XNoProtectYou", m_protectSource.GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);

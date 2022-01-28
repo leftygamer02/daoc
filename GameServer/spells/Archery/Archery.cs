@@ -68,26 +68,26 @@ namespace DOL.GS.Spells
 			}
 
 			// Is Shield Disarm ?
-			ShieldTripDisarmEffect shieldDisarm = Caster.EffectList.GetOfType<ShieldTripDisarmEffect>();
-			if (shieldDisarm != null)
-			{
-				MessageToCaster("You're disarmed and can't cast a spell", eChatType.CT_System);
-				return false;
-			}
+			//ShieldTripDisarmEffect shieldDisarm = Caster.EffectList.GetOfType<ShieldTripDisarmEffect>();
+			//if (shieldDisarm != null)
+			//{
+			//	MessageToCaster("You're disarmed and can't cast a spell", eChatType.CT_System);
+			//	return false;
+			//}
 
 			// Is Mentalist RA5L ?
-			SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
-			if (SelectiveBlindness != null)
-			{
-				GameLiving EffectOwner = SelectiveBlindness.EffectSource;
-				if(EffectOwner==selectedTarget)
-				{
-					if (m_caster is GamePlayer)
-						((GamePlayer)m_caster).Out.SendMessage(string.Format("{0} is invisible to you!", selectedTarget.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+			//SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
+			//if (SelectiveBlindness != null)
+			//{
+			//	GameLiving EffectOwner = SelectiveBlindness.EffectSource;
+			//	if(EffectOwner==selectedTarget)
+			//	{
+			//		if (m_caster is GamePlayer)
+			//			((GamePlayer)m_caster).Out.SendMessage(string.Format("{0} is invisible to you!", selectedTarget.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
 					
-					return false;
-				}
-			}
+			//		return false;
+			//	}
+			//}
 			
 			// Is immune ?
 			if (selectedTarget!=null&&selectedTarget.HasAbility("DamageImmunity"))

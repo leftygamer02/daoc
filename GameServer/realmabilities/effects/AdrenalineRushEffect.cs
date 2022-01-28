@@ -42,13 +42,13 @@ namespace DOL.GS.RealmAbilities
 		/// <param name="args">EventArgs associated with the event</param>
 		private static void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
 		{
-			GamePlayer player = (GamePlayer)sender;
+			//GamePlayer player = (GamePlayer)sender;
 
-			AdrenalineRushEffect SPEffect = player.EffectList.GetOfType<AdrenalineRushEffect>();
-			if (SPEffect != null)
-			{
-				SPEffect.Cancel(false);
-			}
+			//AdrenalineRushEffect SPEffect = player.EffectList.GetOfType<AdrenalineRushEffect>();
+			//if (SPEffect != null)
+			//{
+			//	SPEffect.Cancel(false);
+			//}
 		}
 
 		public override void Stop()

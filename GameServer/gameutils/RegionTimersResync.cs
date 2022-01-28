@@ -152,19 +152,19 @@ namespace DOL.GS.GameEvents
 										plr.StartInvulnerabilityTimer(1000, null);
 
                                         
-										try
-										{
-											foreach (IGameEffect effect in plr.EffectList)
-											{
-												var gsp = effect as GameSpellEffect;
-												if (gsp != null)
-													gsp.RestartTimers();
-											}
-										}
-										catch(Exception e)
-										{
-											log.Error("Can't cancel immunty effect : "+e);
-										}
+										//try
+										//{
+										//	foreach (IGameEffect effect in plr.EffectList)
+										//	{
+										//		var gsp = effect as GameSpellEffect;
+										//		if (gsp != null)
+										//			gsp.RestartTimers();
+										//	}
+										//}
+										//catch(Exception e)
+										//{
+										//	log.Error("Can't cancel immunty effect : "+e);
+										//}
 
 										
 									}

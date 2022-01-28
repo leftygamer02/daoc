@@ -55,17 +55,17 @@ namespace DOL.GS.SkillHandler
                 return;
             }
 
-            GameObject targetObject = player.TargetObject;
-            if (targetObject == null)
-            {
-				foreach (BodyguardEffect bg in player.EffectList.GetAllOfType<BodyguardEffect>())
-                {
-                    if (bg.GuardSource == player)
-                        bg.Cancel(false);
-                }
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.CannotUse.Bodyguard.Dead"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return;
-            }
+    //        GameObject targetObject = player.TargetObject;
+    //        if (targetObject == null)
+    //        {
+				//foreach (BodyguardEffect bg in player.EffectList.GetAllOfType<BodyguardEffect>())
+    //            {
+    //                if (bg.GuardSource == player)
+    //                    bg.Cancel(false);
+    //            }
+    //            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.CannotUse.Bodyguard.Dead"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+    //            return;
+    //        }
 
             // You cannot guard attacks on yourself            
             GamePlayer guardTarget = player.TargetObject as GamePlayer;
@@ -85,33 +85,33 @@ namespace DOL.GS.SkillHandler
             }
 
             // check if someone is guarding the target
-			foreach (BodyguardEffect bg in guardTarget.EffectList.GetAllOfType<BodyguardEffect>())
-            {
-                if (bg.GuardTarget != guardTarget) continue;
-                if (bg.GuardSource == player)
-                {
-                    bg.Cancel(false);
-                    return;
-                }
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.CannotUse.Bodyguard.GuardTargetAlreadyBodyGuarded", bg.GuardSource.GetName(0, true), bg.GuardTarget.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return;
-            }
+			//foreach (BodyguardEffect bg in guardTarget.EffectList.GetAllOfType<BodyguardEffect>())
+   //         {
+   //             if (bg.GuardTarget != guardTarget) continue;
+   //             if (bg.GuardSource == player)
+   //             {
+   //                 bg.Cancel(false);
+   //                 return;
+   //             }
+   //             player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.CannotUse.Bodyguard.GuardTargetAlreadyBodyGuarded", bg.GuardSource.GetName(0, true), bg.GuardTarget.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+   //             return;
+   //         }
 
-			foreach (BodyguardEffect bg in player.EffectList.GetAllOfType<BodyguardEffect>())
-            {
-                    if (bg != null && player == bg.GuardTarget)
-                    {
-                        player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.CannotUse.Bodyguard.GuardSourceBodyGuarded"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        return;
-                    }
-            }
+			//foreach (BodyguardEffect bg in player.EffectList.GetAllOfType<BodyguardEffect>())
+   //         {
+   //                 if (bg != null && player == bg.GuardTarget)
+   //                 {
+   //                     player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.CannotUse.Bodyguard.GuardSourceBodyGuarded"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+   //                     return;
+   //                 }
+   //         }
 
-            // cancel all guard effects by this player before adding a new one
-			foreach (BodyguardEffect bg in player.EffectList.GetAllOfType<BodyguardEffect>())
-            {
-                if (bg.GuardSource == player)
-                    bg.Cancel(false);
-            }
+   //         // cancel all guard effects by this player before adding a new one
+			//foreach (BodyguardEffect bg in player.EffectList.GetAllOfType<BodyguardEffect>())
+   //         {
+   //             if (bg.GuardSource == player)
+   //                 bg.Cancel(false);
+   //         }
 
             new BodyguardEffect().Start(player, guardTarget);
         }

@@ -47,13 +47,13 @@ namespace DOL.GS.RealmAbilities
 
 		private void DamageTarget(GameLiving target, GameLiving caster)
 		{
-			if (!target.IsAlive)
-				return;
-			if (target.EffectList.GetOfType<BlindingDustEffect>() == null)
-			{
-				BlindingDustEffect effect = new BlindingDustEffect();
-				effect.Start(target);
-			}
+			//if (!target.IsAlive)
+			//	return;
+			//if (target.EffectList.GetOfType<BlindingDustEffect>() == null)
+			//{
+			//	BlindingDustEffect effect = new BlindingDustEffect();
+			//	effect.Start(target);
+			//}
 
 		}
 

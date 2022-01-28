@@ -65,14 +65,17 @@ namespace DOL.GS.PacketHandler.Client.v168
 				GamePlayer player = (GamePlayer) m_actionSource;
 
 				IGameEffect found = null;
-				lock (player.EffectList)
+				lock (player.effectListComponent._effectsLock)
 				{
-					foreach (IGameEffect effect in player.EffectList)
+					foreach (var effects in player.effectListComponent.Effects)
 					{
-						if (effect.InternalID == m_effectId)
+						foreach (var effect in effects)
 						{
-							found = effect;
-							break;
+							if (effect.InternalID == m_effectId)
+							{
+								found = effect;
+								break;
+							}
 						}
 					}
 				}

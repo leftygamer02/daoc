@@ -342,56 +342,56 @@ namespace DOL.GS
 						break;
 				}
 			}
-			lock (Playerlist)
-			{
-				foreach (GamePlayer plr in Playerlist)
-				{
-					if(plr == null) continue;
-					if (!newPlayerlist.Contains(plr))
-					{
-						try
-						{
-							lock (plr.EffectList)
-							{
-								GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
-								if (check != null)
-									check.Cancel(false);
-							}
-						}
-						catch(Exception e)
-						{
-							if (log.IsErrorEnabled)
-								log.Error("Minotaur Relics : Effect Cancel : " + e);
-						}
-					}
-				}
-				foreach (GamePlayer plr in newPlayerlist)
-				{
-					if (plr == null) continue;
-					try
-					{
-						lock (plr.EffectList)
-						{
-							GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
-							if (check == null)
-							{
-								ISpellHandler handler = ScriptMgr.CreateSpellHandler(plr, RelicSpell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
-								GameSpellEffect plreffect = null;
-								if (handler != null)
-									plreffect = new GameSpellEffect(handler, RelicSpell.Duration, 0);
-								if (plreffect != null)
-									plreffect.Start(plr);
-							}
-						}
-					}
-					catch(Exception e)
-					{
-						if (log.IsErrorEnabled)
-							log.Error("Minotaur Relics : Effect Start : " + e);
-					}
-				}
-				Playerlist = newPlayerlist;
-			}
+			//lock (Playerlist)
+			//{
+			//	foreach (GamePlayer plr in Playerlist)
+			//	{
+			//		if(plr == null) continue;
+			//		if (!newPlayerlist.Contains(plr))
+			//		{
+			//			try
+			//			{
+			//				lock (plr.EffectList)
+			//				{
+			//					GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
+			//					if (check != null)
+			//						check.Cancel(false);
+			//				}
+			//			}
+			//			catch(Exception e)
+			//			{
+			//				if (log.IsErrorEnabled)
+			//					log.Error("Minotaur Relics : Effect Cancel : " + e);
+			//			}
+			//		}
+			//	}
+			//	foreach (GamePlayer plr in newPlayerlist)
+			//	{
+			//		if (plr == null) continue;
+			//		try
+			//		{
+			//			lock (plr.EffectList)
+			//			{
+			//				GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
+			//				if (check == null)
+			//				{
+			//					ISpellHandler handler = ScriptMgr.CreateSpellHandler(plr, RelicSpell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
+			//					GameSpellEffect plreffect = null;
+			//					if (handler != null)
+			//						plreffect = new GameSpellEffect(handler, RelicSpell.Duration, 0);
+			//					if (plreffect != null)
+			//						plreffect.Start(plr);
+			//				}
+			//			}
+			//		}
+			//		catch(Exception e)
+			//		{
+			//			if (log.IsErrorEnabled)
+			//				log.Error("Minotaur Relics : Effect Start : " + e);
+			//		}
+			//	}
+			//	Playerlist = newPlayerlist;
+			//}
 		}
 		protected void StopRelicEffect()
 		{

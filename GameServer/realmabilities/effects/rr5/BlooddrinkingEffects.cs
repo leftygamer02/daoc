@@ -75,11 +75,11 @@ namespace DOL.GS.Effects
         /// <param name="args">EventArgs associated with the event</param>
         protected void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
         {
-            GamePlayer player = sender as GamePlayer;
+            //GamePlayer player = sender as GamePlayer;
 
-            BloodDrinkingEffect BloodDrinking = (BloodDrinkingEffect)player.EffectList.GetOfType<BloodDrinkingEffect>();
-            if (BloodDrinking != null)
-                BloodDrinking.Cancel(false);
+            //BloodDrinkingEffect BloodDrinking = (BloodDrinkingEffect)player.EffectList.GetOfType<BloodDrinkingEffect>();
+            //if (BloodDrinking != null)
+            //    BloodDrinking.Cancel(false);
         }
 
         /// <summary>

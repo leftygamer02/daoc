@@ -2910,33 +2910,33 @@ namespace DOL.GS.PacketHandler
 				return;
 			using (var pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.UpdateIcons)))
 			{
-				lock (m_gameClient.Player.EffectList)
-				{
-					foreach (IGameEffect effect in m_gameClient.Player.EffectList)
-					{
-						if (effect.Icon != 0)
-							fxcount++;
-					}
+				//lock (m_gameClient.Player.EffectList)
+				//{
+				//	foreach (IGameEffect effect in m_gameClient.Player.EffectList)
+				//	{
+				//		if (effect.Icon != 0)
+				//			fxcount++;
+				//	}
 
-					pak.WriteByte(fxcount);
-					pak.WriteByte(0); // unknown
-					pak.WriteByte(0); // unknown
-					pak.WriteByte(0); // unknown
-					byte i = 0;
-					foreach (IGameEffect effect in m_gameClient.Player.EffectList)
-					{
-						if (effect.Icon != 0)
-						{
-							pak.WriteByte((effect is GameSpellEffect || effect.Icon > 5000) ? i++ : (byte) 0xff);
-							pak.WriteByte(0);
-							pak.WriteShort(effect.Icon);
-							//pak.WriteShort(effect.IsFading ? (ushort)1 : (ushort) (effect.RemainingTime/1000));
-							pak.WriteShort((ushort) (effect.RemainingTime/1000));
-							pak.WriteShort(effect.InternalID); // reference for shift+i or cancel spell
-							pak.WritePascalString(effect.Name);
-						}
-					}
-				}
+				//	pak.WriteByte(fxcount);
+				//	pak.WriteByte(0); // unknown
+				//	pak.WriteByte(0); // unknown
+				//	pak.WriteByte(0); // unknown
+				//	byte i = 0;
+				//	foreach (IGameEffect effect in m_gameClient.Player.EffectList)
+				//	{
+				//		if (effect.Icon != 0)
+				//		{
+				//			pak.WriteByte((effect is GameSpellEffect || effect.Icon > 5000) ? i++ : (byte) 0xff);
+				//			pak.WriteByte(0);
+				//			pak.WriteShort(effect.Icon);
+				//			//pak.WriteShort(effect.IsFading ? (ushort)1 : (ushort) (effect.RemainingTime/1000));
+				//			pak.WriteShort((ushort) (effect.RemainingTime/1000));
+				//			pak.WriteShort(effect.InternalID); // reference for shift+i or cancel spell
+				//			pak.WritePascalString(effect.Name);
+				//		}
+				//	}
+				//}
 				SendTCP(pak);
 			}
 		}
@@ -3146,18 +3146,18 @@ namespace DOL.GS.PacketHandler
 				}
 				pak.WriteByte(0x00); //unused
 
-				if (pet != null)
-				{
-					lock (pet.EffectList)
-					{
-						int count = 0;
-						foreach (IGameEffect effect in pet.EffectList)
-						{
-							pak.WriteShort(effect.Icon); // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
-							if (++count > 8) break;
-						}
-					}
-				}
+				//if (pet != null)
+				//{
+				//	lock (pet.EffectList)
+				//	{
+				//		int count = 0;
+				//		foreach (IGameEffect effect in pet.EffectList)
+				//		{
+				//			pak.WriteShort(effect.Icon); // 0x08 - null terminated - (byte) list of shorts - spell icons on pet
+				//			if (++count > 8) break;
+				//		}
+				//	}
+				//}
 
 				pak.WriteByte(0x00); //null termination
 
@@ -4085,23 +4085,23 @@ namespace DOL.GS.PacketHandler
 				// 0x00 = Normal , 0x01 = Dead , 0x02 = Mezzed , 0x04 = Diseased ,
 				// 0x08 = Poisoned , 0x10 = Link Dead , 0x20 = In Another Region
 
-				if (updateIcons)
-				{
-					pak.WriteByte((byte) (0x80 | living.GroupIndex));
-					lock (living.EffectList)
-					{
-						byte i = 0;
-						foreach (IGameEffect effect in living.EffectList)
-							if (effect is GameSpellEffect)
-								i++;
-						pak.WriteByte(i);
-						foreach (IGameEffect effect in living.EffectList)
-							if (effect is GameSpellEffect)
-						{
-							pak.WriteShort(effect.Icon);
-						}
-					}
-				}
+				//if (updateIcons)
+				//{
+				//	pak.WriteByte((byte) (0x80 | living.GroupIndex));
+				//	lock (living.EffectList)
+				//	{
+				//		byte i = 0;
+				//		foreach (IGameEffect effect in living.EffectList)
+				//			if (effect is GameSpellEffect)
+				//				i++;
+				//		pak.WriteByte(i);
+				//		foreach (IGameEffect effect in living.EffectList)
+				//			if (effect is GameSpellEffect)
+				//		{
+				//			pak.WriteShort(effect.Icon);
+				//		}
+				//	}
+				//}
 			}
 			else
 			{

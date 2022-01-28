@@ -127,28 +127,28 @@ namespace DOL.GS.Spells
 		public override void OnEffectStart(GameSpellEffect effect)
 		{
 
-			base.OnEffectStart(effect);
-			GamePlayer player = effect.Owner as GamePlayer;
-            GameLiving living = effect.Owner as GameLiving;
+			//base.OnEffectStart(effect);
+			//GamePlayer player = effect.Owner as GamePlayer;
+   //         GameLiving living = effect.Owner as GameLiving;
 
-			BedazzlingAuraEffect boad = player.EffectList.GetOfType<BedazzlingAuraEffect>();
-			if (boad != null) boad.Cancel(false);
+			//BedazzlingAuraEffect boad = player.EffectList.GetOfType<BedazzlingAuraEffect>();
+			//if (boad != null) boad.Cancel(false);
 			
-            int value = (int)Spell.Value;
-            living.AbilityBonus[(int)eProperty.Resist_Body] += value;
-            living.AbilityBonus[(int)eProperty.Resist_Cold] += value;
-            living.AbilityBonus[(int)eProperty.Resist_Energy] += value;
-            living.AbilityBonus[(int)eProperty.Resist_Heat] += value;
-            living.AbilityBonus[(int)eProperty.Resist_Matter] += value;
-            living.AbilityBonus[(int)eProperty.Resist_Spirit] += value;
-            if(player != null)
-            {
-                player.Out.SendCharStatsUpdate();
-                player.UpdatePlayerStatus();
-                player.Out.SendCharResistsUpdate();
-            }
-			MessageToLiving(effect.Owner, Spell.Message1, eChatType.CT_Spell);
-			Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell, effect.Owner);
+   //         int value = (int)Spell.Value;
+   //         living.AbilityBonus[(int)eProperty.Resist_Body] += value;
+   //         living.AbilityBonus[(int)eProperty.Resist_Cold] += value;
+   //         living.AbilityBonus[(int)eProperty.Resist_Energy] += value;
+   //         living.AbilityBonus[(int)eProperty.Resist_Heat] += value;
+   //         living.AbilityBonus[(int)eProperty.Resist_Matter] += value;
+   //         living.AbilityBonus[(int)eProperty.Resist_Spirit] += value;
+   //         if(player != null)
+   //         {
+   //             player.Out.SendCharStatsUpdate();
+   //             player.UpdatePlayerStatus();
+   //             player.Out.SendCharResistsUpdate();
+   //         }
+			//MessageToLiving(effect.Owner, Spell.Message1, eChatType.CT_Spell);
+			//Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell, effect.Owner);
 		}
 
 		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)

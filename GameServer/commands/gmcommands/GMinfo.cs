@@ -302,13 +302,17 @@ namespace DOL.GS.Commands
 							info.Add(attacker.Name);
 					}
 
-					if (target.EffectList.Count > 0)
+					if (target.effectListComponent.Effects.Count > 0)
 					{
 						info.Add("");
 						info.Add("Effect List:");
 
-						foreach (IGameEffect effect in target.EffectList)
-							info.Add(effect.Name + " remaining " + effect.RemainingTime);
+						lock (target.effectListComponent._effectsLock)
+						{
+							foreach (var effects in target.effectListComponent.Effects)
+								foreach (var effect in effects)
+									info.Add(effect.Name + " remaining " + effect.GetRemainingTimeForClient());
+						}
 					}
 										
 					info.Add("");

@@ -365,7 +365,7 @@ namespace DOL.AI.Brain
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, player, true)) continue;
                 // Don't aggro on immune players.
 
-                if (player.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+                if (EffectListService.GetPulseEffectOnTarget(player, eEffect.Shade));
                     continue;
 
                 if (Body.CurrentZone.IsDungeon)
@@ -779,7 +779,7 @@ namespace DOL.AI.Brain
                     }
 
                     // Don't bother about necro shade, can't attack it anyway.
-                    if (living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+                    if (EffectListService.GetEffectOnTarget(living, eEffect.Shade));
                         continue;
 
                     long amount = aggros.Current.Value;
@@ -1663,18 +1663,8 @@ namespace DOL.AI.Brain
 
         protected bool LivingIsPoisoned(GameLiving target)
         {
-            foreach (IGameEffect effect in target.EffectList)
-            {
-                //If the effect we are checking is not a gamespelleffect keep going
-                if (effect is GameSpellEffect == false)
-                    continue;
-
-                GameSpellEffect speffect = effect as GameSpellEffect;
-
-                // if this is a DOT then target is poisoned
-                if (speffect.Spell.SpellType == (byte)eSpellType.DamageOverTime)
-                    return true;
-            }
+            if (EffectListService.GetEffectOnTarget(target, eEffect.DamageOverTime))
+                return true;
 
             return false;
         }

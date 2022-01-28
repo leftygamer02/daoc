@@ -33,21 +33,21 @@ namespace DOL.GS.Effects
 		/// <param name="value">The percentage additional value for melee absorb</param>
 		public void Start(GamePlayer player, int duration, int value)
 		{
-			m_player = player;
-			m_effectDuration = duration;
-			m_value = value;
+			//m_player = player;
+			//m_effectDuration = duration;
+			//m_value = value;
 
-			if (player.TempProperties.getProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb, false))
-				return;
+			//if (player.TempProperties.getProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb, false))
+			//	return;
 
-			StartTimers();
+			//StartTimers();
 
-			GameEventMgr.AddHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
+			//GameEventMgr.AddHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
 
-			m_player.AbilityBonus[(int)eProperty.ArmorAbsorption] += m_value;
+			//m_player.AbilityBonus[(int)eProperty.ArmorAbsorption] += m_value;
 
-			m_player.EffectList.Add(this);
-			player.TempProperties.setProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb, true);
+			//m_player.EffectList.Add(this);
+			//player.TempProperties.setProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb, true);
 		}
 
 		/// <summary>
@@ -58,13 +58,13 @@ namespace DOL.GS.Effects
 		/// <param name="args">EventArgs associated with the event</param>
 		private static void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
 		{
-			GamePlayer player = (GamePlayer)sender;
+			//GamePlayer player = (GamePlayer)sender;
 
-			XBarrierOfFortitudeEffect BoFEffect = player.EffectList.GetOfType<XBarrierOfFortitudeEffect>();
-			if (BoFEffect != null)
-			{
-				BoFEffect.Cancel(false);
-			}
+			//XBarrierOfFortitudeEffect BoFEffect = player.EffectList.GetOfType<XBarrierOfFortitudeEffect>();
+			//if (BoFEffect != null)
+			//{
+			//	BoFEffect.Cancel(false);
+			//}
 		}
 
 		/// <summary>
@@ -74,11 +74,11 @@ namespace DOL.GS.Effects
 		public override void Cancel(bool playerCancel)
 		{
 
-			StopTimers();
-			m_player.AbilityBonus[(int)eProperty.ArmorAbsorption] -= m_value;
-			m_player.EffectList.Remove(this);
-			GameEventMgr.RemoveHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
-			m_player.TempProperties.removeProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb);
+			//StopTimers();
+			//m_player.AbilityBonus[(int)eProperty.ArmorAbsorption] -= m_value;
+			//m_player.EffectList.Remove(this);
+			//GameEventMgr.RemoveHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
+			//m_player.TempProperties.removeProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb);
 		}
 
 		/// <summary>

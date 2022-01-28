@@ -760,21 +760,21 @@ namespace DOL.GS.Spells
 			}*/
 
 			// Apply Mentalist RA5L
-			if (Spell.Range>0)
-			{
-				SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
-				if (SelectiveBlindness != null)
-				{
-					GameLiving EffectOwner = SelectiveBlindness.EffectSource;
-					if(EffectOwner==selectedTarget)
-					{
-						if (m_caster is GamePlayer && !quiet)
-							((GamePlayer)m_caster).Out.SendMessage(string.Format("{0} is invisible to you!", selectedTarget.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+			//if (Spell.Range>0)
+			//{
+			//	SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
+			//	if (SelectiveBlindness != null)
+			//	{
+			//		GameLiving EffectOwner = SelectiveBlindness.EffectSource;
+			//		if(EffectOwner==selectedTarget)
+			//		{
+			//			if (m_caster is GamePlayer && !quiet)
+			//				((GamePlayer)m_caster).Out.SendMessage(string.Format("{0} is invisible to you!", selectedTarget.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
 
-						return false;
-					}
-				}
-			}
+			//			return false;
+			//		}
+			//	}
+			//}
 
 			if (selectedTarget!=null && selectedTarget.HasAbility("DamageImmunity") && Spell.SpellType == (byte)eSpellType.DirectDamage && Spell.Radius == 0)
 			{
@@ -902,7 +902,7 @@ namespace DOL.GS.Spells
 							return false;
 						}
 
-						if (FindStaticEffectOnTarget(selectedTarget, typeof(NecromancerShadeEffect)) != null)
+						if (EffectListService.GetEffectOnTarget(selectedTarget, eEffect.shade) != null)
 						{
 							if (!quiet) MessageToCaster("Invalid target.", eChatType.CT_System);
 							return false;
@@ -1824,16 +1824,16 @@ namespace DOL.GS.Spells
 				return 0;*/
 
 			//1.108 - Valhallas Blessing now has a 75% chance to not use power.
-			ValhallasBlessingEffect ValhallasBlessing = m_caster.EffectList.GetOfType<ValhallasBlessingEffect>();
-			if (ValhallasBlessing != null && Util.Chance(75))
-				return 0;
+			//ValhallasBlessingEffect ValhallasBlessing = m_caster.EffectList.GetOfType<ValhallasBlessingEffect>();
+			//if (ValhallasBlessing != null && Util.Chance(75))
+			//	return 0;
 
-			//patch 1.108 increases the chance to not use power to 50%.
-			FungalUnionEffect FungalUnion = m_caster.EffectList.GetOfType<FungalUnionEffect>();
-			{
-				if (FungalUnion != null && Util.Chance(50))
-					return 0;
-			}
+			////patch 1.108 increases the chance to not use power to 50%.
+			//FungalUnionEffect FungalUnion = m_caster.EffectList.GetOfType<FungalUnionEffect>();
+			//{
+			//	if (FungalUnion != null && Util.Chance(50))
+			//		return 0;
+			//}
 
 			// Arcane Syphon chance
 			int syphon = Caster.GetModified(eProperty.ArcaneSyphon);
@@ -2383,18 +2383,19 @@ namespace DOL.GS.Spells
 						{
 							if (GameServer.ServerRules.IsAllowedToAttack(Caster, player, true))
 							{
-								// Apply Mentalist RA5L
-								SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
-								if (SelectiveBlindness != null)
-								{
-									GameLiving EffectOwner = SelectiveBlindness.EffectSource;
-									if (EffectOwner == player)
-									{
-										if (Caster is GamePlayer) ((GamePlayer)Caster).Out.SendMessage(string.Format("{0} is invisible to you!", player.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
-									}
-									else list.Add(player);
-								}
-								else list.Add(player);
+								//// Apply Mentalist RA5L
+								//SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
+								//if (SelectiveBlindness != null)
+								//{
+								//	GameLiving EffectOwner = SelectiveBlindness.EffectSource;
+								//	if (EffectOwner == player)
+								//	{
+								//		if (Caster is GamePlayer) ((GamePlayer)Caster).Out.SendMessage(string.Format("{0} is invisible to you!", player.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+								//	}
+								//	else list.Add(player);
+								//}
+								//else 
+									list.Add(player);
 							}
 						}
 						foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(Caster.CurrentRegionID, Caster.GroundTarget.X, Caster.GroundTarget.Y, Caster.GroundTarget.Z, modifiedRadius))
@@ -2488,17 +2489,18 @@ namespace DOL.GS.Spells
 						{
 							if (GameServer.ServerRules.IsAllowedToAttack(Caster, player, true))
 							{
-								SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
-								if (SelectiveBlindness != null)
-								{
-									GameLiving EffectOwner = SelectiveBlindness.EffectSource;
-									if (EffectOwner == player)
-									{
-										if (Caster is GamePlayer) ((GamePlayer)Caster).Out.SendMessage(string.Format("{0} is invisible to you!", player.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
-									}
-									else list.Add(player);
-								}
-								else list.Add(player);
+								//SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
+								//if (SelectiveBlindness != null)
+								//{
+								//	GameLiving EffectOwner = SelectiveBlindness.EffectSource;
+								//	if (EffectOwner == player)
+								//	{
+								//		if (Caster is GamePlayer) ((GamePlayer)Caster).Out.SendMessage(string.Format("{0} is invisible to you!", player.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+								//	}
+								//	else list.Add(player);
+								//}
+								//else 
+									list.Add(player);
 							}
 						}
 						foreach (GameNPC npc in target.GetNPCsInRadius(modifiedRadius))
@@ -2514,21 +2516,22 @@ namespace DOL.GS.Spells
 						if (target != null && GameServer.ServerRules.IsAllowedToAttack(Caster, target, true))
 						{
 							// Apply Mentalist RA5L
-							if (Spell.Range > 0)
-							{
-								SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
-								if (SelectiveBlindness != null)
-								{
-									GameLiving EffectOwner = SelectiveBlindness.EffectSource;
-									if (EffectOwner == target)
-									{
-										if (Caster is GamePlayer) ((GamePlayer)Caster).Out.SendMessage(string.Format("{0} is invisible to you!", target.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
-									}
-									else if (!target.HasAbility("DamageImmunity")) list.Add(target);
-								}
-								else if (!target.HasAbility("DamageImmunity")) list.Add(target);
-							}
-							else if (!target.HasAbility("DamageImmunity")) list.Add(target);
+							//if (Spell.Range > 0)
+							//{
+							//	SelectiveBlindnessEffect SelectiveBlindness = Caster.EffectList.GetOfType<SelectiveBlindnessEffect>();
+							//	if (SelectiveBlindness != null)
+							//	{
+							//		GameLiving EffectOwner = SelectiveBlindness.EffectSource;
+							//		if (EffectOwner == target)
+							//		{
+							//			if (Caster is GamePlayer) ((GamePlayer)Caster).Out.SendMessage(string.Format("{0} is invisible to you!", target.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+							//		}
+							//		else if (!target.HasAbility("DamageImmunity")) list.Add(target);
+							//	}
+							//	else if (!target.HasAbility("DamageImmunity")) list.Add(target);
+							//}
+							//else 
+							if (!target.HasAbility("DamageImmunity")) list.Add(target);
 						}
 					}
 					break;
@@ -3375,22 +3378,21 @@ namespace DOL.GS.Spells
 					FocusSpellAction(/*null, Caster, null*/);
 				}
 				// Re-Enable Cancellable Effects.
-				var enableEffect = effect.Owner.EffectList.OfType<GameSpellEffect>()
-					.Where(eff => eff != effect && eff.SpellHandler != null && eff.SpellHandler.IsOverwritable(effect) && eff.SpellHandler.IsCancellable(effect));
+				//var enableEffect = effect.Owner.EffectList.OfType<GameSpellEffect>()
+				//	.Where(eff => eff != effect && eff.SpellHandler != null && eff.SpellHandler.IsOverwritable(effect) && eff.SpellHandler.IsCancellable(effect));
 				
 				// Find Best Remaining Effect
 				GameSpellEffect best = null;
-				foreach (var eff in enableEffect)
-				{
-					if (best == null)
-						best = eff;
-					else if (best.SpellHandler.IsCancellableEffectBetter(best, eff))
-						best = eff;
-				}
+				//foreach (var eff in enableEffect)
+				//{
+				//	if (best == null)
+				//		best = eff;
+				//	else if (best.SpellHandler.IsCancellableEffectBetter(best, eff))
+				//		best = eff;
+				//}
 				
 				if (best != null)
 				{
-					effect.Owner.EffectList.BeginChanges();
 					try
 					{
 						// Enable Best Effect
@@ -3398,7 +3400,7 @@ namespace DOL.GS.Spells
 					}
 					finally
 					{
-						effect.Owner.EffectList.CommitChanges();
+
 					}
 				}
 			}
@@ -3814,27 +3816,7 @@ namespace DOL.GS.Spells
 				return list;
 			}
 		}
-		// warlock add
-		public static GameSpellEffect FindEffectOnTarget(GameLiving target, string spellType, string spellName)
-		{
-			lock (target.EffectList)
-			{
-				foreach (IGameEffect fx in target.EffectList)
-				{
-					if (!(fx is GameSpellEffect))
-						continue;
-					GameSpellEffect effect = (GameSpellEffect)fx;
-					if (fx is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)fx).ImmunityState)
-						continue; // ignore immunity effects
-
-					if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType.ToString() == spellType) && (effect.SpellHandler.Spell.Name == spellName))
-					{
-						return effect;
-					}
-				}
-			}
-			return null;
-		}
+		
 		/// <summary>
 		/// Find effect by spell type
 		/// </summary>
@@ -3843,24 +3825,24 @@ namespace DOL.GS.Spells
 		/// <returns>first occurance of effect in target's effect list or null</returns>
 		public static GameSpellEffect FindEffectOnTarget(GameLiving target, string spellType)
 		{
-			if (target == null)
-				return null;
+			//if (target == null)
+			//	return null;
 
-			lock (target.EffectList)
-			{
-				foreach (IGameEffect fx in target.EffectList)
-				{
-					if (!(fx is GameSpellEffect))
-						continue;
-					GameSpellEffect effect = (GameSpellEffect)fx;
-					if (fx is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)fx).ImmunityState)
-						continue; // ignore immunity effects
-					if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType.ToString() == spellType))
-					{
-						return effect;
-					}
-				}
-			}
+			//lock (target.EffectList)
+			//{
+			//	foreach (IGameEffect fx in target.EffectList)
+			//	{
+			//		if (!(fx is GameSpellEffect))
+			//			continue;
+			//		GameSpellEffect effect = (GameSpellEffect)fx;
+			//		if (fx is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)fx).ImmunityState)
+			//			continue; // ignore immunity effects
+			//		if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType.ToString() == spellType))
+			//		{
+			//			return effect;
+			//		}
+			//	}
+			//}
 			return null;
 		}
 
@@ -3872,20 +3854,20 @@ namespace DOL.GS.Spells
 		/// <returns>first occurance of effect in target's effect list or null</returns>
 		public static GameSpellEffect FindEffectOnTarget(GameLiving target, ISpellHandler spellHandler)
 		{
-			lock (target.EffectList)
-			{
-				foreach (IGameEffect effect in target.EffectList)
-				{
-					GameSpellEffect gsp = effect as GameSpellEffect;
-					if (gsp == null)
-						continue;
-					if (gsp.SpellHandler != spellHandler)
-						continue;
-					if (gsp is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)gsp).ImmunityState)
-						continue; // ignore immunity effects
-					return gsp;
-				}
-			}
+			//lock (target.EffectList)
+			//{
+			//	foreach (IGameEffect effect in target.EffectList)
+			//	{
+			//		GameSpellEffect gsp = effect as GameSpellEffect;
+			//		if (gsp == null)
+			//			continue;
+			//		if (gsp.SpellHandler != spellHandler)
+			//			continue;
+			//		if (gsp is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)gsp).ImmunityState)
+			//			continue; // ignore immunity effects
+			//		return gsp;
+			//	}
+			//}
 			return null;
 		}
 
@@ -3897,44 +3879,23 @@ namespace DOL.GS.Spells
 		/// <returns>first occurance of effect in target's effect list or null</returns>
 		public static GameSpellEffect FindEffectOnTarget(GameLiving target, Type spellHandler)
 		{
-			if (spellHandler.IsInstanceOfType(typeof(SpellHandler)) == false)
-				return null;
+			//if (spellHandler.IsInstanceOfType(typeof(SpellHandler)) == false)
+			//	return null;
 
-			lock (target.EffectList)
-			{
-				foreach (IGameEffect effect in target.EffectList)
-				{
-					GameSpellEffect gsp = effect as GameSpellEffect;
-					if (gsp == null)
-						continue;
-					if (gsp.SpellHandler.GetType().IsInstanceOfType(spellHandler) == false)
-						continue;
-					if (gsp is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)gsp).ImmunityState)
-						continue; // ignore immunity effects
-					return gsp;
-				}
-			}
-			return null;
-		}
-
-		/// <summary>
-		/// Returns true if the target has the given static effect, false
-		/// otherwise.
-		/// </summary>
-		/// <param name="target"></param>
-		/// <param name="effectType"></param>
-		/// <returns></returns>
-		public static IGameEffect FindStaticEffectOnTarget(GameLiving target, Type effectType)
-		{
-			if (target == null)
-				return null;
-
-			lock (target.EffectList)
-			{
-				foreach (IGameEffect effect in target.EffectList)
-					if (effect.GetType() == effectType)
-						return effect;
-			}
+			//lock (target.EffectList)
+			//{
+			//	foreach (IGameEffect effect in target.EffectList)
+			//	{
+			//		GameSpellEffect gsp = effect as GameSpellEffect;
+			//		if (gsp == null)
+			//			continue;
+			//		if (gsp.SpellHandler.GetType().IsInstanceOfType(spellHandler) == false)
+			//			continue;
+			//		if (gsp is GameSpellAndImmunityEffect && ((GameSpellAndImmunityEffect)gsp).ImmunityState)
+			//			continue; // ignore immunity effects
+			//		return gsp;
+			//	}
+			//}
 			return null;
 		}
 

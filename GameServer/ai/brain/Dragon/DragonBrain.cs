@@ -326,7 +326,7 @@ namespace DOL.AI.Brain
 					GameLiving living = enumerator.Current.Key;
 					if (living != null && 
 						living.IsAlive &&
-						living.EffectList.GetOfType<NecromancerShadeEffect>() == null && 
+						EffectListService.GetEffectOnTarget(living, eEffect.Shade) == null && 
 						!dragon.IsWithinRadius(living, dragon.AttackRange))
 					{
 						inRangeLiving.Add(living);
@@ -358,7 +358,7 @@ namespace DOL.AI.Brain
 			ArrayList inRangeLiving = new ArrayList();
 			foreach (GamePlayer player in dragon.GetPlayersInRadius((ushort)dragon.AttackRange))
 			{
-				if (player.IsAlive && player.EffectList.GetOfType<NecromancerShadeEffect>() == null)
+				if (player.IsAlive && EffectListService.GetEffectOnTarget(player, eEffect.Shade) == null)
 				{
 					inRangeLiving.Add(player);
 				}

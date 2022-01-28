@@ -3166,7 +3166,6 @@ namespace DOL.GS
 				ABrain brain = Brain;
 				brain.Stop();
 			}
-			EffectList.CancelAll();
 
 			if (ShowTeleporterIndicator && m_teleporterIndicator != null)
 			{
@@ -5611,7 +5610,7 @@ namespace DOL.GS
 
 				GameLiving living = TargetObject as GameLiving;
 
-				if (living != null && living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+				if (living != null && living.effectListComponent.ContainsEffectForEffectType(eEffect.Shade))
 				{
 					if (living is GamePlayer && (living as GamePlayer).ControlledBrain != null)
 					{

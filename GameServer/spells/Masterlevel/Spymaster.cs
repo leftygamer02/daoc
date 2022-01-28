@@ -311,9 +311,7 @@ namespace DOL.GS.Spells
             if (player == null) return;
             MessageToLiving((GameLiving)player, "You are moving. Your concentration fades!", eChatType.CT_SpellResisted);
             GameSpellEffect effect = SpellHandler.FindEffectOnTarget(m_target, "Loockout");
-            if (effect != null) effect.Cancel(false);
-            IGameEffect effect2 = SpellHandler.FindStaticEffectOnTarget(Caster, typeof(LoockoutOwner));
-            if (effect2 != null) effect2.Cancel(false);
+            if (effect != null) effect.Cancel(false);            
             OnEffectExpires(effect, true);
         }
         public LoockoutSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }

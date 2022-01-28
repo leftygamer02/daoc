@@ -38,7 +38,7 @@ namespace DOL.GS.Effects
 		public void Start(GamePlayer player)
 		{
 			m_player = player;
-			player.EffectList.Add(this);
+			//player.EffectList.Add(this);
 		}
 
 		/// <summary>
@@ -52,7 +52,7 @@ namespace DOL.GS.Effects
 				if (camouflage!=null)
 					EffectService.RequestImmediateCancelEffect(camouflage, false);
 			}
-			m_player.EffectList.Remove(this);
+			//m_player.EffectList.Remove(this);
 		}
 
 		/// <summary>

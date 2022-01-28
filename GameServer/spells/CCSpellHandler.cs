@@ -43,11 +43,6 @@ namespace DOL.GS.Spells
 				MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
 				return;
 			}
-			if (target.EffectList.GetOfType<ChargeEffect>() != null || target.TempProperties.getProperty("Charging", false))
-			{
-				MessageToCaster(target.Name + " is moving too fast for this spell to have any effect!", eChatType.CT_SpellResisted);
-				return;
-			}
 
 			base.ApplyEffectOnTarget(target, effectiveness);
 		}
@@ -166,12 +161,6 @@ namespace DOL.GS.Spells
 			{
 				resist += (int)fury.Spell.Value;
 			}*/
-
-            //bonedancer rr5
-            if (target.EffectList.GetOfType<AllureofDeathEffect>() != null)
-            {
-                return AllureofDeathEffect.ccchance;
-            }
 
 			if (m_spellLine.KeyName == GlobalSpellsLines.Combat_Styles_Effect)
 				return 0;
@@ -387,13 +376,13 @@ namespace DOL.GS.Spells
 				target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
 				return;
 			}
-			if (FindStaticEffectOnTarget(target, typeof(MezzRootImmunityEffect)) != null)
-			{
-				MessageToCaster("Your target is immune!", eChatType.CT_System);
-				SendEffectAnimation(target, 0, false, 0);
-				target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
-				return;
-			}
+			//if (FindStaticEffectOnTarget(target, typeof(MezzRootImmunityEffect)) != null)
+			//{
+			//	MessageToCaster("Your target is immune!", eChatType.CT_System);
+			//	SendEffectAnimation(target, 0, false, 0);
+			//	target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
+			//	return;
+			//}
 			if(target is GameNPC && target.HealthPercent < 75)
             {
 				MessageToCaster("Your target is enraged and resists the spell!", eChatType.CT_System);

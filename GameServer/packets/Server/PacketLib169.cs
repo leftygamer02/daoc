@@ -139,24 +139,24 @@ namespace DOL.GS.PacketHandler
 				// 0x00 = Normal , 0x01 = Dead , 0x02 = Mezzed , 0x04 = Diseased , 
 				// 0x08 = Poisoned , 0x10 = Link Dead , 0x20 = In Another Region
 
-				if (updateIcons)
-				{
-					pak.WriteByte((byte)(0x80 | living.GroupIndex));
-					lock (living.EffectList)
-					{
-						byte i=0;
-						foreach (IGameEffect effect in living.EffectList)
-							if(effect is GameSpellEffect)
-								i++;
-						pak.WriteByte(i);
-						foreach (IGameEffect effect in living.EffectList)
-							if(effect is GameSpellEffect)
-							{
-								pak.WriteByte(0);
-								pak.WriteShort(effect.Icon);
-							}
-					}
-				}
+				//if (updateIcons)
+				//{
+				//	pak.WriteByte((byte)(0x80 | living.GroupIndex));
+				//	lock (living.EffectList)
+				//	{
+				//		byte i=0;
+				//		foreach (IGameEffect effect in living.EffectList)
+				//			if(effect is GameSpellEffect)
+				//				i++;
+				//		pak.WriteByte(i);
+				//		foreach (IGameEffect effect in living.EffectList)
+				//			if(effect is GameSpellEffect)
+				//			{
+				//				pak.WriteByte(0);
+				//				pak.WriteShort(effect.Icon);
+				//			}
+				//	}
+				//}
 			}
 			else
 			{

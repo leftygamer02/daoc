@@ -368,7 +368,7 @@ namespace DOL.GS.Effects
 				
 			//	// Remove concentration Effect from Caster List.
 			//	if (Concentration > 0 && SpellHandler != null && SpellHandler.Caster != null && SpellHandler.Caster.ConcentrationEffects != null) 
-			//		//SpellHandler.Caster.ConcentrationEffects.Remove(this);
+			//		SpellHandler.Caster.ConcentrationEffects.Remove(this);
 				
 			//	// Remove effect from Owner list
 			//	if(Owner != null && Owner.EffectList != null) 
@@ -386,71 +386,71 @@ namespace DOL.GS.Effects
 		/// <param name="enable"></param>
 		protected virtual void AddEffect(GameLiving target, bool enable)
 		{
-			bool commitChange = false;
-			try
-			{
-				lock (m_LockObject)
-				{
-					// already started ?
-					if (!IsExpired)
-					{
-						if (log.IsErrorEnabled)
-							log.ErrorFormat("Tried to start non-expired effect ({0})).\n{1}", this, Environment.StackTrace);
-						return; 
-					}
+			//bool commitChange = false;
+			//try
+			//{
+			//	lock (m_LockObject)
+			//	{
+			//		// already started ?
+			//		if (!IsExpired)
+			//		{
+			//			if (log.IsErrorEnabled)
+			//				log.ErrorFormat("Tried to start non-expired effect ({0})).\n{1}", this, Environment.StackTrace);
+			//			return; 
+			//		}
 					
-					// already added ?
-					if (Owner != null)
-					{
-						if (log.IsErrorEnabled)
-							log.ErrorFormat("Tried to start an already owned effect ({0})).\n{1}", this, Environment.StackTrace);
-						return; 
-					}
+			//		// already added ?
+			//		if (Owner != null)
+			//		{
+			//			if (log.IsErrorEnabled)
+			//				log.ErrorFormat("Tried to start an already owned effect ({0})).\n{1}", this, Environment.StackTrace);
+			//			return; 
+			//		}
 					
-					//Enable Effect
-					Owner = target;
-					IsExpired = false;
-					try
-					{
-						Owner.EffectList.BeginChanges();
-						commitChange = true;
-					}
-					catch (Exception ex)
-					{
-						if (log.IsWarnEnabled)
-							log.WarnFormat("Effect ({0}) Could not Begin Change in living - {1} - Spell Effect List, {2}", this, Owner, ex);
-						commitChange = false;
-					}
+			//		//Enable Effect
+			//		Owner = target;
+			//		IsExpired = false;
+			//		try
+			//		{
+			//			Owner.EffectList.BeginChanges();
+			//			commitChange = true;
+			//		}
+			//		catch (Exception ex)
+			//		{
+			//			if (log.IsWarnEnabled)
+			//				log.WarnFormat("Effect ({0}) Could not Begin Change in living - {1} - Spell Effect List, {2}", this, Owner, ex);
+			//			commitChange = false;
+			//		}
 					
-					// Insert into Owner Effect List
-					if (!Owner.EffectList.Add(this))
-					{
-						if (log.IsWarnEnabled)
-							log.WarnFormat("{0}: effect was not added to the effects list, not starting it either. (effect class:{1} spell type:{2} spell name:'{3}')", Owner.Name, GetType().FullName, Spell.SpellType, Name);
-						return;
-					}
+			//		// Insert into Owner Effect List
+			//		if (!Owner.EffectList.Add(this))
+			//		{
+			//			if (log.IsWarnEnabled)
+			//				log.WarnFormat("{0}: effect was not added to the effects list, not starting it either. (effect class:{1} spell type:{2} spell name:'{3}')", Owner.Name, GetType().FullName, Spell.SpellType, Name);
+			//			return;
+			//		}
 					
-					// Add concentration Effect To Caster List.
-					if (Concentration > 0 && SpellHandler != null && SpellHandler.Caster != null && SpellHandler.Caster.effectListComponent.ConcentrationEffects != null)
-						//SpellHandler.Caster.ConcentrationEffects.Add(this);
+			//		// Add concentration Effect To Caster List.
+			//		if (Concentration > 0 && SpellHandler != null && SpellHandler.Caster != null && SpellHandler.Caster.ConcentrationEffects != null)
+			//			SpellHandler.Caster.ConcentrationEffects.Add(this);
 					
-					StartTimers();
-				}
+			//		StartTimers();
+			//	}
 				
-				// Try Enabling Effect
-				if (enable)
-					EnableEffect();
+			//	// Try Enabling Effect
+			//	if (enable)
+			//		EnableEffect();
 				
-				SpellHandler.OnEffectAdd(this);
-			}
-			finally
-			{
-				if (commitChange)
-					Owner.EffectList.CommitChanges();
-			}
+			//	SpellHandler.OnEffectAdd(this);
+			//}
+			//finally
+			//{
+			//	if (commitChange)
+			//		Owner.EffectList.CommitChanges();
+			//}
 			
-			// Start first pulse.
-			PulseCallback();
+			//// Start first pulse.
+			//PulseCallback();
 		}
 		
 		/// <summary>
@@ -459,18 +459,18 @@ namespace DOL.GS.Effects
 		protected virtual void UpdateEffect()
 		{
 			// Update effect in player display.
-			if (Owner != null && Owner.EffectList != null)
-			{
-				Owner.EffectList.BeginChanges();
-				try
-				{
-					Owner.EffectList.OnEffectsChanged(this);
-				}
-				finally
-				{
-					Owner.EffectList.CommitChanges();
-				}
-			}
+			//if (Owner != null && Owner.EffectList != null)
+			//{
+			//	Owner.EffectList.BeginChanges();
+			//	try
+			//	{
+			//		Owner.EffectList.OnEffectsChanged(this);
+			//	}
+			//	finally
+			//	{
+			//		Owner.EffectList.CommitChanges();
+			//	}
+			//}
 		}
 		#endregion
 		
@@ -500,49 +500,49 @@ namespace DOL.GS.Effects
 		/// <param name="playerCanceled">true if canceled by the player</param>
 		public virtual void Cancel(bool playerCanceled)
 		{
-			lock (m_LockObject)
-			{
-				// Player can't remove negative effect or Effect in Immunity State
-				if (playerCanceled && ((SpellHandler != null && !SpellHandler.HasPositiveEffect) || ImmunityState))
-				{
-					GamePlayer player = Owner as GamePlayer;
-					if (player != null)
-						player.Out.SendMessage(LanguageMgr.GetTranslation((Owner as GamePlayer).Client, "Effects.GameSpellEffect.CantRemoveEffect"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			//lock (m_LockObject)
+			//{
+			//	// Player can't remove negative effect or Effect in Immunity State
+			//	if (playerCanceled && ((SpellHandler != null && !SpellHandler.HasPositiveEffect) || ImmunityState))
+			//	{
+			//		GamePlayer player = Owner as GamePlayer;
+			//		if (player != null)
+			//			player.Out.SendMessage(LanguageMgr.GetTranslation((Owner as GamePlayer).Client, "Effects.GameSpellEffect.CantRemoveEffect"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 	
-					return;
-				}
+			//		return;
+			//	}
 				
-				// Can't Cancel Immunity Effect from Alive Living
-				if (ImmunityState && Owner != null && Owner.IsAlive)
-					return;
+			//	// Can't Cancel Immunity Effect from Alive Living
+			//	if (ImmunityState && Owner != null && Owner.IsAlive)
+			//		return;
 				
-				// Expire Effect
-				IsExpired = true;
-			}
+			//	// Expire Effect
+			//	IsExpired = true;
+			//}
 			
-			// Check if Immunity needed.
-			Owner.EffectList.BeginChanges();
-			try
-			{
-				DisableEffect(false);
-				SpellHandler.OnEffectRemove(this, false);
-				lock (m_LockObject)
-				{
-					if (m_immunityDuration > 0)
-					{
-						Duration = m_immunityDuration;
-						StartTimers();
-						UpdateEffect();
-						return;
-					}
-				}
+			//// Check if Immunity needed.
+			////Owner.EffectList.BeginChanges();
+			//try
+			//{
+			//	DisableEffect(false);
+			//	SpellHandler.OnEffectRemove(this, false);
+			//	lock (m_LockObject)
+			//	{
+			//		if (m_immunityDuration > 0)
+			//		{
+			//			Duration = m_immunityDuration;
+			//			StartTimers();
+			//			UpdateEffect();
+			//			return;
+			//		}
+			//	}
 				
-				RemoveEffect(false);
-			}
-			finally
-			{
-				Owner.EffectList.CommitChanges();
-			}
+			//	RemoveEffect(false);
+			//}
+			//finally
+			//{
+			//	//Owner.EffectList.CommitChanges();
+			//}
 		}
 
 		/// <summary>

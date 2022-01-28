@@ -1324,14 +1324,17 @@ namespace DOL.GS.Commands
 
                         m_hasEffect = false;
 
-                        lock (player.EffectList)
+                        lock (player.effectListComponent._effectsLock)
                         {
-                            foreach (GameSpellEffect effect in player.EffectList)
+                            foreach (var effects in player.effectListComponent.Effects)
                             {
-                                if (!effect.SpellHandler.HasPositiveEffect)
+                                foreach (var effect in effects)
                                 {
-                                    m_hasEffect = true;
-                                    break;
+                                    if (!effect.SpellHandler.HasPositiveEffect)
+                                    {
+                                        m_hasEffect = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -1342,13 +1345,16 @@ namespace DOL.GS.Commands
                             return;
                         }
 
-                        lock (player.EffectList)
+                        lock (player.effectListComponent._effectsLock)
                         {
-                            foreach (GameSpellEffect effect in player.EffectList)
+                            foreach (var effects in player.effectListComponent.Effects)
                             {
-                                if (!effect.SpellHandler.HasPositiveEffect)
+                                foreach (GameSpellEffect effect in effects)
                                 {
-                                    effect.Cancel(false);
+                                    if (!effect.SpellHandler.HasPositiveEffect)
+                                    {
+                                        EffectService.RequestCancelEffect(effect);
+                                    }
                                 }
                             }
                         }
@@ -2075,9 +2081,15 @@ namespace DOL.GS.Commands
                         }
 
                         var text = new List<string>();
-                        foreach (IGameEffect effect in player.EffectList)
+                        lock (player.effectListComponent._effectsLock)
                         {
-                            text.Add(effect.Name + " remaining " + effect.RemainingTime);
+                            foreach (var effects in player.effectListComponent.Effects)
+                            {
+                                foreach (var effect in effects)
+                                {
+                                    text.Add(effect.Name + " remaining " + effect.RemainingTime);
+                                }
+                            }
                         }
                         client.Out.SendCustomTextWindow("Player Effects ", text);
                         break;

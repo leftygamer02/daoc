@@ -39,18 +39,18 @@ namespace DOL.GS.RealmAbilities
         /// <param name="living"></param>
         public override void Execute(GameLiving living)
         {
-            if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
+            //if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-            GamePlayer player = living as GamePlayer;
-            if (player != null)
-            {
-            	CallOfDarknessEffect CallOfDarkness = player.EffectList.GetOfType<CallOfDarknessEffect>();
-                if (CallOfDarkness != null)
-                    CallOfDarkness.Cancel(false);
+            //GamePlayer player = living as GamePlayer;
+            //if (player != null)
+            //{
+            //	CallOfDarknessEffect CallOfDarkness = player.EffectList.GetOfType<CallOfDarknessEffect>();
+            //    if (CallOfDarkness != null)
+            //        CallOfDarkness.Cancel(false);
 
-                new CallOfDarknessEffect().Start(player);
-            }
-            DisableSkill(living);
+            //    new CallOfDarknessEffect().Start(player);
+            //}
+            //DisableSkill(living);
         }
 
         public override int GetReUseDelay(int level)

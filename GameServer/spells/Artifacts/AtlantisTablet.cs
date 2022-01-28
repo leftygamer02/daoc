@@ -14,19 +14,19 @@ namespace DOL.GS.Spells
 			if(effect.Owner is GamePlayer)
 			{
 				GamePlayer player=effect.Owner as GamePlayer;
-				foreach (GameSpellEffect Effect in player.EffectList.GetAllOfType<GameSpellEffect>())
-                {
-                    if (Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
-                    {
-                        player.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
-                        return;
-                    }
-                }
+				//foreach (GameSpellEffect Effect in player.EffectList.GetAllOfType<GameSpellEffect>())
+    //            {
+    //                if (Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
+    //                    Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
+    //                    Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
+    //                    Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
+    //                    Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
+    //                    Effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
+    //                {
+    //                    player.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
+    //                    return;
+    //                }
+    //            }
 				if(player.CharacterClass.ID!=(byte)eCharacterClass.Necromancer && (ushort)Spell.LifeDrainReturn > 0) 
                     player.Model = (ushort)Spell.LifeDrainReturn;
 				player.Out.SendUpdatePlayer();

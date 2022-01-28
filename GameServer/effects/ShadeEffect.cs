@@ -44,7 +44,7 @@ namespace DOL.GS.Effects
 			{
 				m_player = player;
 
-				player.EffectList.Add(this);
+				//player.EffectList.Add(this);
                 player.Out.SendUpdatePlayer();       
 			}
 		}
@@ -56,7 +56,7 @@ namespace DOL.GS.Effects
 		{
             if (m_player != null)
             {
-                m_player.EffectList.Remove(this);
+                //m_player.EffectList.Remove(this);
                 m_player.Out.SendUpdatePlayer();
             }
 		}

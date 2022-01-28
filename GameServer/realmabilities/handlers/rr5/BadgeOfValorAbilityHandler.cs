@@ -19,12 +19,12 @@ namespace DOL.GS.RealmAbilities
             #region preCheck
 			if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-			if (living.EffectList.CountOfType<BadgeOfValorEffect>() > 0)
-            {
-				if (living is GamePlayer)
-					(living as GamePlayer).Out.SendMessage("You already an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-                return;
-            }
+			//if (living.EffectList.CountOfType<BadgeOfValorEffect>() > 0)
+   //         {
+			//	if (living is GamePlayer)
+			//		(living as GamePlayer).Out.SendMessage("You already an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+   //             return;
+   //         }
 
             #endregion
 

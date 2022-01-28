@@ -74,7 +74,7 @@ namespace DOL.GS.Effects
 		/// </summary>
 		public override void Cancel(bool playerCancel)
 		{
-			m_owner.EffectList.Remove(this);
+			//m_owner.EffectList.Remove(this);
 			//base.Cancel(playerCancel);
 			if (m_owner is GamePlayer)
 			{

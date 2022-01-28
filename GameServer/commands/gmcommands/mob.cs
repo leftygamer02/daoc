@@ -3158,14 +3158,18 @@ namespace DOL.GS.Commands
 				}
 			}
 
-			if (targetMob.EffectList.Count > 0)
+			if (targetMob.effectListComponent.Effects.Count > 0)
 			{
 				text.Add("");
 				text.Add("Effect List:");
 
-				foreach (IGameEffect effect in targetMob.EffectList)
+				lock (targetMob.effectListComponent._effectsLock)
 				{
-					text.Add(effect.Name + " remaining " + effect.RemainingTime);
+					foreach (var effects in targetMob.effectListComponent.Effects)
+					{
+						foreach (var effect in effects)
+							text.Add(effect.Name + " remaining " + effect.RemainingTime);
+					}
 				}
 			}
 

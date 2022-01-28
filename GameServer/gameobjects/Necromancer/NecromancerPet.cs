@@ -87,7 +87,7 @@ namespace DOL.GS
 			{
 				case "lesser zombie servant":
 				case "zombie servant":
-					EffectList.Add(new MezzRootImmunityEffect());
+					//EffectList.Add(new MezzRootImmunityEffect());
 					LoadEquipmentTemplate("barehand_weapon");
 					InventoryItem item;
 					if (Inventory != null &&
@@ -350,28 +350,28 @@ namespace DOL.GS
 		/// </summary>
 		private void ToggleTauntMode()
 		{
-			TauntEffect tauntEffect = EffectList.GetOfType<TauntEffect>();
-			GamePlayer owner = (Brain as IControlledBrain).Owner as GamePlayer;
+			//TauntEffect tauntEffect = EffectList.GetOfType<TauntEffect>();
+			//GamePlayer owner = (Brain as IControlledBrain).Owner as GamePlayer;
 
-			if (tauntEffect != null)
-			{
-				// It's on, so let's switch it off.
+			//if (tauntEffect != null)
+			//{
+			//	// It's on, so let's switch it off.
 
-				tauntEffect.Stop();
-				if (owner != null)
-					owner.Out.SendMessage(String.Format("{0} seems to be less aggressive than before.",
-					                                    GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-			}
-			else
-			{
-				// It's off, so let's turn it on.
+			//	tauntEffect.Stop();
+			//	if (owner != null)
+			//		owner.Out.SendMessage(String.Format("{0} seems to be less aggressive than before.",
+			//		                                    GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			//}
+			//else
+			//{
+			//	// It's off, so let's turn it on.
 
-				if (owner != null)
-					owner.Out.SendMessage(String.Format("{0} enters an aggressive stance.",
-					                                    GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			//	if (owner != null)
+			//		owner.Out.SendMessage(String.Format("{0} enters an aggressive stance.",
+			//		                                    GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-				new TauntEffect().Start(this);
-			}
+			//	new TauntEffect().Start(this);
+			//}
 		}
 
 		#endregion

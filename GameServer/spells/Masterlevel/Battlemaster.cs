@@ -95,20 +95,20 @@ namespace DOL.GS.Spells
 
         public override void OnEffectStart(GameSpellEffect effect)
         {
-            if (effect.Owner is GamePlayer)
-            {
-                GamePlayer player = effect.Owner as GamePlayer;
-				if (player.EffectList.GetOfType<ChargeEffect>() == null && player != null)
-                {
-                    effect.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, effect, 0);
-                    player.Client.Out.SendUpdateMaxSpeed();
-                    check = 1;
-                }
-                effect.Owner.attackComponent.LivingStopAttack();
-                effect.Owner.StopCurrentSpellcast();
-                effect.Owner.DisarmedTime = effect.Owner.CurrentRegion.Time + Spell.Duration;
-            }
-            base.OnEffectStart(effect);
+    //        if (effect.Owner is GamePlayer)
+    //        {
+    //            GamePlayer player = effect.Owner as GamePlayer;
+				//if (player.EffectList.GetOfType<ChargeEffect>() == null && player != null)
+    //            {
+    //                effect.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, effect, 0);
+    //                player.Client.Out.SendUpdateMaxSpeed();
+    //                check = 1;
+    //            }
+    //            effect.Owner.attackComponent.LivingStopAttack();
+    //            effect.Owner.StopCurrentSpellcast();
+    //            effect.Owner.DisarmedTime = effect.Owner.CurrentRegion.Time + Spell.Duration;
+    //        }
+    //        base.OnEffectStart(effect);
         }
 
         protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
@@ -582,9 +582,9 @@ namespace DOL.GS.Spells
                 damage *= (player.GetWeaponSkill(weapon) + 90.68) / (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67);
 
                 //If they have badge of Valor, we need to modify the damage
-				if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
-                    damage *= 1.0 + Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
-                else
+				//if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
+    //                damage *= 1.0 + Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
+    //            else
                     damage *= 1.0 - Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
 
                 damage *= (lowerboundary + Util.Random(50)) * 0.01;

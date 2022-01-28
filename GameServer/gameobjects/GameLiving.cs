@@ -986,7 +986,7 @@ namespace DOL.GS
 			{
 				return (IsAlive &&
 				        !IsStealthed &&
-				        EffectList.GetOfType<NecromancerShadeEffect>() == null &&
+				        !effectListComponent.ContainsEffectForEffectType(eEffect.Shade) &&
 				        ObjectState == GameObject.eObjectState.Active);
 			}
 		}
@@ -2928,12 +2928,12 @@ namespace DOL.GS
 
 			if (weapon.PoisonSpellID != 0)
 			{
-				if (ad.Target.EffectList.GetOfType<RemedyEffect>() != null)
-				{
-					if (this is GamePlayer)
-						(this as GamePlayer).Out.SendMessage(LanguageMgr.GetTranslation((this as GamePlayer).Client.Account.Language, "GameLiving.CheckWeaponMagicalEffect.Protected"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-					return;
-				}
+				//if (ad.Target.EffectList.GetOfType<RemedyEffect>() != null)
+				//{
+				//	if (this is GamePlayer)
+				//		(this as GamePlayer).Out.SendMessage(LanguageMgr.GetTranslation((this as GamePlayer).Client.Account.Language, "GameLiving.CheckWeaponMagicalEffect.Protected"), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				//	return;
+				//}
 
 				StartWeaponMagicalEffect(weapon, ad, SkillBase.GetSpellLine(GlobalSpellsLines.Mundane_Poisons), weapon.PoisonSpellID, true);
 
@@ -3675,9 +3675,9 @@ namespace DOL.GS
 
 			if( player != null )
 			{
-				if (player.HasAbility(Abilities.Advanced_Evade) ||
-				    player.EffectList.GetOfType<CombatAwarenessEffect>() != null ||
-				    player.EffectList.GetOfType<RuneOfUtterAgilityEffect>() != null)
+				if (player.HasAbility(Abilities.Advanced_Evade))// ||
+				    //player.EffectList.GetOfType<CombatAwarenessEffect>() != null ||
+				    //player.EffectList.GetOfType<RuneOfUtterAgilityEffect>() != null)
 					evadeChance = GetModified( eProperty.EvadeChance );
 				else if( IsObjectInFront( ad.Attacker, 180 ) && ( evadeBuff != null || player.HasAbility( Abilities.Evade ) ) )
 				{
@@ -3720,15 +3720,15 @@ namespace DOL.GS
 				evadeChance = Math.Max(evadeChance * 0.5, 0);
 			}
 			//Excalibur : infi RR5
-			GamePlayer p = ad.Attacker as GamePlayer;
-			if (p != null)
-			{
-				OverwhelmEffect Overwhelm = (OverwhelmEffect)p.EffectList.GetOfType<OverwhelmEffect>();
-				if (Overwhelm != null)
-				{
-					evadeChance = Math.Max(evadeChance - OverwhelmAbility.BONUS, 0);
-				}
-			}
+			//GamePlayer p = ad.Attacker as GamePlayer;
+			//if (p != null)
+			//{
+			//	OverwhelmEffect Overwhelm = (OverwhelmEffect)p.EffectList.GetOfType<OverwhelmEffect>();
+			//	if (Overwhelm != null)
+			//	{
+			//		evadeChance = Math.Max(evadeChance - OverwhelmAbility.BONUS, 0);
+			//	}
+			//}
 
 			
 
@@ -3770,13 +3770,14 @@ namespace DOL.GS
 				if( player != null )
 				{
 					//BladeBarrier overwrites all parrying, 90% chance to parry any attack, does not consider other bonuses to parry
-					BladeBarrier = player.EffectList.GetOfType<BladeBarrierEffect>();
+					//BladeBarrier = player.EffectList.GetOfType<BladeBarrierEffect>();
 					//They still need an active weapon to parry with BladeBarrier
-					if( BladeBarrier != null && (attackComponent.AttackWeapon != null ) )
-					{
-						parryChance = 0.90;
-					}
-					else if( IsObjectInFront( ad.Attacker, 120 ) )
+					//if( BladeBarrier != null && (attackComponent.AttackWeapon != null ) )
+					//{
+					//	parryChance = 0.90;
+					//}
+					//else 
+					if( IsObjectInFront( ad.Attacker, 120 ) )
 					{
 						if( ( player.HasSpecialization( Specs.Parry ) || parryBuff != null ) && (attackComponent.AttackWeapon != null ) )
 							parryChance = GetModified( eProperty.ParryChance );
@@ -3821,15 +3822,15 @@ namespace DOL.GS
 			}
 
 			//Excalibur : infi RR5
-			GamePlayer p = ad.Attacker as GamePlayer;
-			if (p != null)
-			{
-				OverwhelmEffect Overwhelm = (OverwhelmEffect)p.EffectList.GetOfType<OverwhelmEffect>();
-				if (Overwhelm != null)
-				{
-					parryChance = Math.Max(parryChance - OverwhelmAbility.BONUS, 0);
-				}
-			}
+			//GamePlayer p = ad.Attacker as GamePlayer;
+			//if (p != null)
+			//{
+			//	OverwhelmEffect Overwhelm = (OverwhelmEffect)p.EffectList.GetOfType<OverwhelmEffect>();
+			//	if (Overwhelm != null)
+			//	{
+			//		parryChance = Math.Max(parryChance - OverwhelmAbility.BONUS, 0);
+			//	}
+			//}
 			return parryChance;
 		}
 
@@ -3942,15 +3943,15 @@ namespace DOL.GS
 				blockChance = Math.Max(blockChance * 0.5, 0);
 			}
 			//Excalibur : infi RR5
-			GamePlayer p = ad.Attacker as GamePlayer;
-			if (p != null)
-			{
-				OverwhelmEffect Overwhelm = (OverwhelmEffect)p.EffectList.GetOfType<OverwhelmEffect>();
-				if (Overwhelm != null)
-				{
-					blockChance = Math.Max(blockChance - OverwhelmAbility.BONUS, 0);
-				}
-			}
+			//GamePlayer p = ad.Attacker as GamePlayer;
+			//if (p != null)
+			//{
+			//	OverwhelmEffect Overwhelm = (OverwhelmEffect)p.EffectList.GetOfType<OverwhelmEffect>();
+			//	if (Overwhelm != null)
+			//	{
+			//		blockChance = Math.Max(blockChance - OverwhelmAbility.BONUS, 0);
+			//	}
+			//}
 			return blockChance;
 		}
 
@@ -4029,19 +4030,19 @@ namespace DOL.GS
 			if (attackerPlayer != null && attackerPlayer != this)
 			{
 				// Apply Mauler RA5L
-				GiftOfPerizorEffect GiftOfPerizor = EffectList.GetOfType<GiftOfPerizorEffect>();
-				if (GiftOfPerizor != null)
-				{
-					int difference = (int)(0.25 * damageDealt); // RA absorb 25% damage
-					damageDealt -= difference;
-					GamePlayer TheMauler = (GamePlayer)(this.TempProperties.getProperty<object>("GiftOfPerizorOwner", null));
-					if (TheMauler != null && TheMauler.IsAlive)
-					{
-						// Calculate mana using %. % is calculated with target maxhealth and damage difference, apply this % to mauler maxmana
-						double manareturned = (difference / this.MaxHealth * TheMauler.MaxMana);
-						TheMauler.ChangeMana(source, eManaChangeType.Spell, (int)manareturned);
-					}
-				}
+				//GiftOfPerizorEffect GiftOfPerizor = EffectList.GetOfType<GiftOfPerizorEffect>();
+				//if (GiftOfPerizor != null)
+				//{
+				//	int difference = (int)(0.25 * damageDealt); // RA absorb 25% damage
+				//	damageDealt -= difference;
+				//	GamePlayer TheMauler = (GamePlayer)(this.TempProperties.getProperty<object>("GiftOfPerizorOwner", null));
+				//	if (TheMauler != null && TheMauler.IsAlive)
+				//	{
+				//		// Calculate mana using %. % is calculated with target maxhealth and damage difference, apply this % to mauler maxmana
+				//		double manareturned = (difference / this.MaxHealth * TheMauler.MaxMana);
+				//		TheMauler.ChangeMana(source, eManaChangeType.Spell, (int)manareturned);
+				//	}
+				//}
 
 				Group attackerGroup = attackerPlayer.Group;
 				if (attackerGroup != null)
@@ -4781,7 +4782,6 @@ namespace DOL.GS
 			TargetObject = null;
 
 			// cancel all left effects
-			EffectList.CancelAll();
 			effectListComponent.CancelAll();
 
 			// Stop the regeneration timers
@@ -6567,31 +6567,6 @@ namespace DOL.GS
 			}
 		}
 		#endregion
-		#region Effects
-		/// <summary>
-		/// currently applied effects
-		/// </summary>
-		protected readonly GameEffectList m_effects;
-
-		/// <summary>
-		/// gets a list of active effects
-		/// </summary>
-		/// <returns></returns>
-		public GameEffectList EffectList
-		{
-			get { return m_effects; }
-		}
-
-		/// <summary>
-		/// Creates new effects list for this living.
-		/// </summary>
-		/// <returns>New effects list instance</returns>
-		protected virtual GameEffectList CreateEffectsList()
-		{
-			return new GameEffectList(this);
-		}
-
-        #endregion
         #region Abilities
 
         /// <summary>
@@ -6993,20 +6968,22 @@ namespace DOL.GS
 		/// <returns></returns>
 		public override bool HasEffect(Spell spell)
 		{
-			lock (EffectList)
-			{
-				foreach (IGameEffect effect in EffectList)
-				{
-					if (effect is GameSpellEffect)
-					{
-						GameSpellEffect spellEffect = effect as GameSpellEffect;
+			if (effectListComponent.GetSpellEffects((eEffect)spell.SpellType).Where(e => e.SpellHandler.Spell.ID == spell.ID).Count() > 0)
+				return true;
+			//lock (EffectList)
+			//{
+			//	foreach (IGameEffect effect in EffectList)
+			//	{
+			//		if (effect is GameSpellEffect)
+			//		{
+			//			GameSpellEffect spellEffect = effect as GameSpellEffect;
 
-						if (spellEffect.Spell.SpellType == spell.SpellType &&
-						    spellEffect.Spell.EffectGroup == spell.EffectGroup)
-							return true;
-					}
-				}
-			}
+			//			if (spellEffect.Spell.SpellType == spell.SpellType &&
+			//			    spellEffect.Spell.EffectGroup == spell.EffectGroup)
+			//				return true;
+			//		}
+			//	}
+			//}
 
 			return base.HasEffect(spell);
 		}
@@ -7019,12 +6996,12 @@ namespace DOL.GS
 		/// <returns></returns>
 		public override bool HasEffect(Type effectType)
 		{
-			lock (EffectList)
-			{
-				foreach (IGameEffect effect in EffectList)
-					if (effect.GetType() == effectType)
-						return true;
-			}
+			//lock (EffectList)
+			//{
+			//	foreach (IGameEffect effect in EffectList)
+			//		if (effect.GetType() == effectType)
+			//			return true;
+			//}
 
 			return base.HasEffect(effectType);
 		}
@@ -7313,8 +7290,7 @@ namespace DOL.GS
             rangeAttackComponent.RangedAttackState = eRangedAttackState.None;
             rangeAttackComponent.RangedAttackType = eRangedAttackType.Normal;
 			m_xpGainers = new HybridDictionary();
-			m_effects = CreateEffectsList();
-			
+			m_concEffects = new ConcentrationList(this);
 			//m_attackers = new List<GameObject>();
 
 			m_health = 1;

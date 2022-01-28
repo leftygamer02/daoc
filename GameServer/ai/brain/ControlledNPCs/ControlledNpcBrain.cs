@@ -1040,7 +1040,7 @@ namespace DOL.AI.Brain
 			{
 				if (!Body.IsAttacking || target != Body.TargetObject)
 				{
-					Body.TargetObject = target;
+					//Body.TargetObject = target;
 
                     //if (target is GamePlayer)
                     //{
@@ -1052,36 +1052,6 @@ namespace DOL.AI.Brain
                     //    Body.LastAttackTickPvE = GameLoop.GameLoopTime;
                     //    Owner.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
                     //}
-
-                    List<GameSpellEffect> effects = new List<GameSpellEffect>();
-
-					lock (Body.EffectList)
-					{
-						foreach (IGameEffect effect in Body.EffectList)
-						{
-							if (effect is GameSpellEffect && (effect as GameSpellEffect).SpellHandler is SpeedEnhancementSpellHandler)
-							{
-								effects.Add(effect as GameSpellEffect);
-							}
-						}
-					}
-
-					lock (Owner.EffectList)
-					{
-						foreach (IGameEffect effect in Owner.EffectList)
-						{
-							if (effect is GameSpellEffect && (effect as GameSpellEffect).SpellHandler is SpeedEnhancementSpellHandler)
-							{
-								effects.Add(effect as GameSpellEffect);
-							}
-						}
-					}
-
-					foreach (GameSpellEffect effect in effects)
-					{
-						effect.Cancel(false);
-					}
-
 				}
 
 				if (!CheckSpells(eCheckSpellType.Offensive))

@@ -36,7 +36,7 @@ namespace DOL.GS.Effects
 		public virtual void Start(GameLiving target)
 		{
 			m_owner = target;
-			target.EffectList.Add(this);
+			//target.EffectList.Add(this);
 		}
 
 		/// <summary>
@@ -47,7 +47,7 @@ namespace DOL.GS.Effects
 			if (m_owner == null)
 				return;
 
-			m_owner.EffectList.Remove(this);
+			//m_owner.EffectList.Remove(this);
 		}
 
 		/// <summary>

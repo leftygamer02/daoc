@@ -580,11 +580,15 @@ namespace DOL.GS
 		{
 			if (m_buffedTargets != null)
 				foreach (GameLiving living in m_buffedTargets)
-					if (living != this && living.EffectList != null)
-						foreach (IGameEffect effect in living.EffectList)
-							if (effect is GameSpellEffect spellEffect && spellEffect.SpellHandler != null 
-								&& spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster == this)
-								effect.Cancel(false);
+					if (living != this && living.effectListComponent != null)
+						lock (living.effectListComponent._effectsLock)
+						{
+							foreach (var effects in living.effectListComponent.Effects)
+								foreach (IGameEffect effect in effects)
+									if (effect is GameSpellEffect spellEffect && spellEffect.SpellHandler != null
+										&& spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster == this)
+										EffectService.RequestCancelEffect(effect);
+						}
 		}
 		
 		/// <summary>

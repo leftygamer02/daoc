@@ -44,20 +44,20 @@ namespace DOL.GS.Spells
                 MessageToCaster("You must be under water to use this ability.", eChatType.CT_SpellResisted);
                 return;
             }
-			foreach (GameSpellEffect Effect in targetPlayer.EffectList.GetAllOfType<GameSpellEffect>())
-            {
-                if (
-                    Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") || 
-                    Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph"))
-                {
-                    targetPlayer.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
-                    return;
-                }
-            }
+			//foreach (GameSpellEffect Effect in targetPlayer.EffectList.GetAllOfType<GameSpellEffect>())
+   //         {
+   //             if (
+   //                 Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") || 
+   //                 Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
+   //                 Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
+   //                 Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
+   //                 Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
+   //                 Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph"))
+   //             {
+   //                 targetPlayer.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
+   //                 return;
+   //             }
+   //         }
             base.ApplyEffectOnTarget(target, effectiveness);
         }
         public override void OnEffectStart(GameSpellEffect effect)

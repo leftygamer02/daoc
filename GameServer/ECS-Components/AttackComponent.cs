@@ -723,11 +723,11 @@ namespace DOL.GS
                 }
                 else
                 {
-                    // Bard RR5 ability must drop when the player starts a melee attack
-                    IGameEffect DreamweaverRR5 = p.EffectList.GetOfType<DreamweaverEffect>();
-                    if (DreamweaverRR5 != null)
-                        DreamweaverRR5.Cancel(false);
-                }*/
+                    //// Bard RR5 ability must drop when the player starts a melee attack
+                    //IGameEffect DreamweaverRR5 = p.EffectList.GetOfType<DreamweaverEffect>();
+                    //if (DreamweaverRR5 != null)
+                    //    DreamweaverRR5.Cancel(false);
+                }
                 LivingStartAttack(attackTarget);
 
                 if (p.IsCasting && !p.castingComponent.spellHandler.Spell.Uninterruptible)
@@ -1340,19 +1340,19 @@ namespace DOL.GS
                 effectiveness *= 2;
 
             // Apply Mentalist RA5L
-            SelectiveBlindnessEffect SelectiveBlindness = owner.EffectList.GetOfType<SelectiveBlindnessEffect>();
-            if (SelectiveBlindness != null)
-            {
-                GameLiving EffectOwner = SelectiveBlindness.EffectSource;
-                if (EffectOwner == ad.Target)
-                {
-                    if (owner is GamePlayer)
-                        ((GamePlayer)owner).Out.SendMessage(string.Format(LanguageMgr.GetTranslation(((GamePlayer)owner).Client.Account.Language, "GameLiving.AttackData.InvisibleToYou"), ad.Target.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
-                    ad.AttackResult = eAttackResult.NoValidTarget;
-                    SendAttackingCombatMessages(ad);
-                    return ad;
-                }
-            }
+            //SelectiveBlindnessEffect SelectiveBlindness = owner.EffectList.GetOfType<SelectiveBlindnessEffect>();
+            //if (SelectiveBlindness != null)
+            //{
+            //    GameLiving EffectOwner = SelectiveBlindness.EffectSource;
+            //    if (EffectOwner == ad.Target)
+            //    {
+            //        if (owner is GamePlayer)
+            //            ((GamePlayer)owner).Out.SendMessage(string.Format(LanguageMgr.GetTranslation(((GamePlayer)owner).Client.Account.Language, "GameLiving.AttackData.InvisibleToYou"), ad.Target.GetName(0, true)), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+            //        ad.AttackResult = eAttackResult.NoValidTarget;
+            //        SendAttackingCombatMessages(ad);
+            //        return ad;
+            //    }
+            //}
 
             // DamageImmunity Ability
             if ((GameLiving)target != null && ((GameLiving)target).HasAbility(Abilities.DamageImmunity))
@@ -1449,14 +1449,14 @@ namespace DOL.GS
                     attackee.Out.SendMessage($"WS/AF Damage Multiplier: {(int)(((owner.GetWeaponSkill(weapon) + 90.68) * specModifier / (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67)) * 1000)}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 
                 // Badge Of Valor Calculation 1+ absorb or 1- absorb
-                if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
-                {
-                    damage *= 1.0 + Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
-                }
-                else
-                {
+                //if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
+                //{
+                //    damage *= 1.0 + Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
+                //}
+                //else
+                //{
                     damage *= 1.0 - Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
-                }
+                //}
 
                 // Added to ensure damage variance never exceeds 150%
                 int range = upperboundary - lowerboundary;
@@ -1854,18 +1854,90 @@ namespace DOL.GS
 
             // We check if interceptor can intercept
 
-            // we can only intercept attacks on livings, and can only intercept when active
-            // you cannot intercept while you are sitting
-            // if you are stuned or mesmeried you cannot intercept...
-            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.Intercept) is InterceptECSGameEffect inter)
-            {
-                if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
-                    && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
-                    && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
-                {
-                    intercept = inter;
+                    // we can only intercept attacks on livings, and can only intercept when active
+                    // you cannot intercept while you are sitting
+                    // if you are stuned or mesmeried you cannot intercept...
+
+                    InterceptECSGameEffect inter = effect as InterceptECSGameEffect;
+                    if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
+                        && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
+                        && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
+                    {
+                        intercept = inter;
+                        continue;
+                    }
                 }
             }
+
+            //lock (owner.EffectList)
+            //{
+            //    foreach (IGameEffect effect in owner.EffectList)
+            //    {
+            //        //if (effect is GuardEffect)
+            //        //{
+            //        //    if (guard == null && ((GuardEffect)effect).GuardTarget == owner)
+            //        //        guard = (GuardEffect)effect;
+            //        //    continue;
+            //        //}
+
+            //        if (effect is DashingDefenseEffect)
+            //        {
+            //            if (dashing == null && ((DashingDefenseEffect)effect).GuardTarget == owner)
+            //                dashing = (DashingDefenseEffect)effect; //Dashing
+            //            continue;
+            //        }
+
+            //        //if (effect is BerserkEffect)
+            //        //{
+            //        //    defenseDisabled = true;
+            //        //    continue;
+            //        //}
+
+            //        //if (effect is EngageEffect)
+            //        //{
+            //        //    if (engage == null)
+            //        //        engage = (EngageEffect)effect;
+            //        //    continue;
+            //        //}
+
+            //        if (effect is GameSpellEffect)
+            //        {
+            //            switch ((effect as GameSpellEffect).Spell.SpellType)
+            //            {
+            //                case (byte)eSpellType.Phaseshift:
+            //                    if (phaseshift == null)
+            //                        phaseshift = (GameSpellEffect)effect;
+            //                    continue;
+            //                case (byte)eSpellType.Grapple:
+            //                    if (grapple == null)
+            //                        grapple = (GameSpellEffect)effect;
+            //                    continue;
+            //                case (byte)eSpellType.BrittleGuard:
+            //                    if (brittleguard == null)
+            //                        brittleguard = (GameSpellEffect)effect;
+            //                    continue;
+            //                case (byte)eSpellType.Bladeturn:
+            //                    if (bladeturn == null)
+            //                        bladeturn = (GameSpellEffect)effect;
+            //                    continue;
+            //            }
+            //        }
+
+            //        // We check if interceptor can intercept
+
+            //        // we can only intercept attacks on livings, and can only intercept when active
+            //        // you cannot intercept while you are sitting
+            //        // if you are stuned or mesmeried you cannot intercept...
+            //        //InterceptEffect inter = effect as InterceptEffect;
+            //        //if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
+            //        //    && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
+            //        //    && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
+            //        //{
+            //        //    intercept = inter;
+            //        //    continue;
+            //        //}
+            //    }
+            //}
 
             bool stealthStyle = false;
             if (ad.Style != null && ad.Style.StealthRequirement && ad.Attacker is GamePlayer && StyleProcessor.CanUseStyle((GamePlayer)ad.Attacker, ad.Style, weapon))
@@ -2463,7 +2535,7 @@ namespace DOL.GS
         {
             get
             {
-                return owner.EffectList.CountOfType<NecromancerShadeEffect>() <= 0;
+                return owner.effectListComponent.ContainsEffectForEffectType(eEffect.Shade);
             }
         }
 

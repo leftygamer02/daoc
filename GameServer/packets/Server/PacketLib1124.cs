@@ -4412,53 +4412,53 @@ namespace DOL.GS.PacketHandler
 				sortList.Add(3, null);
 				sortList.Add(4, null);
 				sortList.Add(5, null);
-				lock (player.EffectList)
-				{
-					foreach (IGameEffect fx in player.EffectList)
-					{
-						if (fx is GameSpellEffect)
-						{
-							GameSpellEffect effect = (GameSpellEffect)fx;
-							if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == (byte)eSpellType.Chamber))
-							{
-								ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
-								sortList[chamber.EffectSlot] = effect;
-							}
-						}
-					}
-					foreach (GameSpellEffect effect in sortList.Values)
-					{
-						if (effect == null)
-						{
-							pak.WriteByte((byte)0);
-						}
-						else
-						{
-							ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
-							if (chamber.PrimarySpell != null && chamber.SecondarySpell == null)
-							{
-								pak.WriteByte((byte)3);
-							}
-							else if (chamber.PrimarySpell != null && chamber.SecondarySpell != null)
-							{
-								if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Lifedrain)
-									pak.WriteByte(0x11);
-								else if (chamber.SecondarySpell.SpellType.ToString().IndexOf("SpeedDecrease") != -1)
-									pak.WriteByte(0x33);
-								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.PowerRegenBuff)
-									pak.WriteByte(0x77);
-								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DirectDamage)
-									pak.WriteByte(0x66);
-								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.SpreadHeal)
-									pak.WriteByte(0x55);
-								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Nearsight)
-									pak.WriteByte(0x44);
-								else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DamageOverTime)
-									pak.WriteByte(0x22);
-							}
-						}
-					}
-				}
+				//lock (player.EffectList)
+				//{
+				//	foreach (IGameEffect fx in player.EffectList)
+				//	{
+				//		if (fx is GameSpellEffect)
+				//		{
+				//			GameSpellEffect effect = (GameSpellEffect)fx;
+				//			if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == (byte)eSpellType.Chamber))
+				//			{
+				//				ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
+				//				sortList[chamber.EffectSlot] = effect;
+				//			}
+				//		}
+				//	}
+				//	foreach (GameSpellEffect effect in sortList.Values)
+				//	{
+				//		if (effect == null)
+				//		{
+				//			pak.WriteByte((byte)0);
+				//		}
+				//		else
+				//		{
+				//			ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
+				//			if (chamber.PrimarySpell != null && chamber.SecondarySpell == null)
+				//			{
+				//				pak.WriteByte((byte)3);
+				//			}
+				//			else if (chamber.PrimarySpell != null && chamber.SecondarySpell != null)
+				//			{
+				//				if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Lifedrain)
+				//					pak.WriteByte(0x11);
+				//				else if (chamber.SecondarySpell.SpellType.ToString().IndexOf("SpeedDecrease") != -1)
+				//					pak.WriteByte(0x33);
+				//				else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.PowerRegenBuff)
+				//					pak.WriteByte(0x77);
+				//				else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DirectDamage)
+				//					pak.WriteByte(0x66);
+				//				else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.SpreadHeal)
+				//					pak.WriteByte(0x55);
+				//				else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Nearsight)
+				//					pak.WriteByte(0x44);
+				//				else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DamageOverTime)
+				//					pak.WriteByte(0x22);
+				//			}
+				//		}
+				//	}
+				//}
 				//pak.WriteByte(0x11);
 				//pak.WriteByte(0x22);
 				//pak.WriteByte(0x33);

@@ -58,13 +58,13 @@ namespace DOL.GS.RealmAbilities
 		/// <param name="args">EventArgs associated with the event</param>
 		private static void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
 		{
-			GamePlayer player = (GamePlayer)sender;
+			//GamePlayer player = (GamePlayer)sender;
 
-			BedazzlingAuraEffect BoFEffect = player.EffectList.GetOfType<BedazzlingAuraEffect>();
-			if (BoFEffect != null)
-			{
-				BoFEffect.Cancel(false);
-			}
+			//BedazzlingAuraEffect BoFEffect = player.EffectList.GetOfType<BedazzlingAuraEffect>();
+			//if (BoFEffect != null)
+			//{
+			//	BoFEffect.Cancel(false);
+			//}
 		}
 
 		public override void Stop()

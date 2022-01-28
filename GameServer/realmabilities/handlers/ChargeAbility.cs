@@ -15,8 +15,8 @@ namespace DOL.GS.RealmAbilities
 		// no charge when snared
 		public override bool CheckPreconditions(GameLiving living, long bitmask)
 		{
-			lock (living.EffectList)
-			{
+			//lock (living.EffectList)
+			//{
 				//foreach (IGameEffect effect in living.EffectList)
 				//{
 				//	if (effect is GameSpellEffect)
@@ -37,7 +37,7 @@ namespace DOL.GS.RealmAbilities
                     if (player != null) player.Out.SendMessage("You may not use this ability while snared!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     return true;
                 }
-			}
+			//}
 			return base.CheckPreconditions(living, bitmask);
 		}
 		

@@ -40,7 +40,7 @@ namespace DOL.GS.Effects
 		public void Start(GamePlayer player)
 		{
 			m_player = player;
-			m_player.EffectList.Add(this);
+			//m_player.EffectList.Add(this);
 			m_player.Out.SendMessage(LanguageMgr.GetTranslation(m_player.Client, "Effects.SureShotEffect.YouSwitchToSSMode"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 		}
 
@@ -49,7 +49,7 @@ namespace DOL.GS.Effects
 		/// </summary>
 		public override void Cancel(bool playerCancel) 
 		{
-			m_player.EffectList.Remove(this);
+			//m_player.EffectList.Remove(this);
 		}
 
 		/// <summary>

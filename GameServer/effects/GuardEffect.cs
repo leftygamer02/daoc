@@ -105,8 +105,8 @@ namespace DOL.GS.Effects
 					((GamePlayer)guardTarget).Out.SendMessage(LanguageMgr.GetTranslation(((GamePlayer)guardTarget).Client, "Effects.GuardEffect.XIsNowGuardingYou", guardSource.GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			}
 			
-			m_guardSource.EffectList.Add(this);
-			m_guardTarget.EffectList.Add(this);
+			//m_guardSource.EffectList.Add(this);
+			//m_guardTarget.EffectList.Add(this);
 		}
 
 		/// <summary>
@@ -135,8 +135,8 @@ namespace DOL.GS.Effects
 				GameEventMgr.RemoveHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback));
 				m_playerGroup = null;
 			}
-			m_guardSource.EffectList.Remove(this);
-			m_guardTarget.EffectList.Remove(this);
+			//m_guardSource.EffectList.Remove(this);
+			//m_guardTarget.EffectList.Remove(this);
 
 			if(m_guardSource is GamePlayer)
 				((GamePlayer)m_guardSource).Out.SendMessage(LanguageMgr.GetTranslation(((GamePlayer)m_guardSource).Client, "Effects.GuardEffect.YourNoLongerGuardingY", m_guardTarget.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);

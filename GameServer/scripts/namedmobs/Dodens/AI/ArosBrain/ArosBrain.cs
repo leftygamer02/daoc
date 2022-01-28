@@ -295,7 +295,7 @@ namespace DOL.AI.Brain
                     GameLiving living = enumerator.Current.Key;
                     if (living != null &&
                         living.IsAlive &&
-                        living.EffectList.GetOfType<NecromancerShadeEffect>() == null &&
+                        EffectListService.GetEffectOnTarget(living, eEffect.Shade) == null &&
                         !aros.IsWithinRadius(living, aros.AttackRange))
                     {
                         inRangeLiving.Add(living);

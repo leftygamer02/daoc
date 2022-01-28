@@ -89,8 +89,8 @@ namespace DOL.GS.Effects
 
             GameEventMgr.AddHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback1));
 
-            m_guardSource.EffectList.Add(this);
-            m_guardTarget.EffectList.Add(this);
+            //m_guardSource.EffectList.Add(this);
+            //m_guardTarget.EffectList.Add(this);
 
 			if (!guardSource.IsWithinRadius(guardTarget, BodyguardAbilityHandler.BODYGUARD_DISTANCE))
 			{
@@ -127,8 +127,8 @@ namespace DOL.GS.Effects
         public override void Cancel(bool playerCancel)
         {
             GameEventMgr.RemoveHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback1));
-            m_guardSource.EffectList.Remove(this);
-            m_guardTarget.EffectList.Remove(this);
+            //m_guardSource.EffectList.Remove(this);
+            //m_guardTarget.EffectList.Remove(this);
 
 			m_guardSource.Out.SendMessage(LanguageMgr.GetTranslation(m_guardSource.Client, "Effects.BodyguardEffect.YouAreNoLongerBGX", m_guardTarget.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 			m_guardTarget.Out.SendMessage(LanguageMgr.GetTranslation(m_guardTarget.Client, "Effects.BodyguardEffect.XIsNoLongerBGYou", m_guardSource.GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
