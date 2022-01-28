@@ -28,19 +28,19 @@ namespace DOL.GS
         public WeaponAction weaponAction;
         public AttackAction attackAction;
 
-        
-        /// <summary>
-		/// The objects currently attacking this living
-		/// To be more exact, the objects that are in combat
-		/// and have this living as target.
-		/// </summary>
-		protected List<GameObject> m_attackers;
-        
 
         /// <summary>
-		/// Returns the list of attackers
-		/// </summary>
-		public List<GameObject> Attackers
+        /// The objects currently attacking this living
+        /// To be more exact, the objects that are in combat
+        /// and have this living as target.
+        /// </summary>
+        protected List<GameObject> m_attackers;
+
+
+        /// <summary>
+        /// Returns the list of attackers
+        /// </summary>
+        public List<GameObject> Attackers
         {
             get { return m_attackers; }
         }
@@ -95,7 +95,7 @@ namespace DOL.GS
                 if (weaponAction.AttackFinished)
                     weaponAction = null;
             }
-            
+
             if (weaponAction is null && attackAction is null && !owner.InCombat)
             {
                 if (EntityManager.GetLivingByComponent(typeof(AttackComponent)).ToArray().Contains(owner))
@@ -105,86 +105,86 @@ namespace DOL.GS
 
 
 
-  //      /// <summary>
-		///// The result of an attack
-		///// </summary>
-		//public enum eAttackResult : int
-  //      {
-  //          /// <summary>
-  //          /// No specific attack
-  //          /// </summary>
-  //          Any = 0,
-  //          /// <summary>
-  //          /// The attack was a hit
-  //          /// </summary>
-  //          HitUnstyled = 1,
-  //          /// <summary>
-  //          /// The attack was a hit
-  //          /// </summary>
-  //          HitStyle = 2,
-  //          /// <summary>
-  //          /// Attack was denied by server rules
-  //          /// </summary>
-  //          NotAllowed_ServerRules = 3,
-  //          /// <summary>
-  //          /// No target for the attack
-  //          /// </summary>
-  //          NoTarget = 5,
-  //          /// <summary>
-  //          /// Target is already dead
-  //          /// </summary>
-  //          TargetDead = 6,
-  //          /// <summary>
-  //          /// Target is out of range
-  //          /// </summary>
-  //          OutOfRange = 7,
-  //          /// <summary>
-  //          /// Attack missed
-  //          /// </summary>
-  //          Missed = 8,
-  //          /// <summary>
-  //          /// The attack was evaded
-  //          /// </summary>
-  //          Evaded = 9,
-  //          /// <summary>
-  //          /// The attack was blocked
-  //          /// </summary>
-  //          Blocked = 10,
-  //          /// <summary>
-  //          /// The attack was parried
-  //          /// </summary>
-  //          Parried = 11,
-  //          /// <summary>
-  //          /// The target is invalid
-  //          /// </summary>
-  //          NoValidTarget = 12,
-  //          /// <summary>
-  //          /// The target is not visible
-  //          /// </summary>
-  //          TargetNotVisible = 14,
-  //          /// <summary>
-  //          /// The attack was fumbled
-  //          /// </summary>
-  //          Fumbled = 15,
-  //          /// <summary>
-  //          /// The attack was Bodyguarded
-  //          /// </summary>
-  //          Bodyguarded = 16,
-  //          /// <summary>
-  //          /// The attack was Phaseshiftet
-  //          /// </summary>
-  //          Phaseshift = 17,
-  //          /// <summary>
-  //          /// The attack was Grappled
-  //          /// </summary>
-  //          Grappled = 18
-  //      }
+        //      /// <summary>
+        ///// The result of an attack
+        ///// </summary>
+        //public enum eAttackResult : int
+        //      {
+        //          /// <summary>
+        //          /// No specific attack
+        //          /// </summary>
+        //          Any = 0,
+        //          /// <summary>
+        //          /// The attack was a hit
+        //          /// </summary>
+        //          HitUnstyled = 1,
+        //          /// <summary>
+        //          /// The attack was a hit
+        //          /// </summary>
+        //          HitStyle = 2,
+        //          /// <summary>
+        //          /// Attack was denied by server rules
+        //          /// </summary>
+        //          NotAllowed_ServerRules = 3,
+        //          /// <summary>
+        //          /// No target for the attack
+        //          /// </summary>
+        //          NoTarget = 5,
+        //          /// <summary>
+        //          /// Target is already dead
+        //          /// </summary>
+        //          TargetDead = 6,
+        //          /// <summary>
+        //          /// Target is out of range
+        //          /// </summary>
+        //          OutOfRange = 7,
+        //          /// <summary>
+        //          /// Attack missed
+        //          /// </summary>
+        //          Missed = 8,
+        //          /// <summary>
+        //          /// The attack was evaded
+        //          /// </summary>
+        //          Evaded = 9,
+        //          /// <summary>
+        //          /// The attack was blocked
+        //          /// </summary>
+        //          Blocked = 10,
+        //          /// <summary>
+        //          /// The attack was parried
+        //          /// </summary>
+        //          Parried = 11,
+        //          /// <summary>
+        //          /// The target is invalid
+        //          /// </summary>
+        //          NoValidTarget = 12,
+        //          /// <summary>
+        //          /// The target is not visible
+        //          /// </summary>
+        //          TargetNotVisible = 14,
+        //          /// <summary>
+        //          /// The attack was fumbled
+        //          /// </summary>
+        //          Fumbled = 15,
+        //          /// <summary>
+        //          /// The attack was Bodyguarded
+        //          /// </summary>
+        //          Bodyguarded = 16,
+        //          /// <summary>
+        //          /// The attack was Phaseshiftet
+        //          /// </summary>
+        //          Phaseshift = 17,
+        //          /// <summary>
+        //          /// The attack was Grappled
+        //          /// </summary>
+        //          Grappled = 18
+        //      }
 
         /// <summary>
-		/// The chance for a critical hit
-		/// </summary>
-		/// <param name="weapon">attack weapon</param>
-		public int AttackCriticalChance(InventoryItem weapon)
+        /// The chance for a critical hit
+        /// </summary>
+        /// <param name="weapon">attack weapon</param>
+        public int AttackCriticalChance(InventoryItem weapon)
         {
             if (owner is GamePlayer)
             {
@@ -263,7 +263,8 @@ namespace DOL.GS
             else if (owner is GameNPC)
             {
                 return (owner as GameNPC).MeleeDamageType;
-            } else return eDamageType.Natural;
+            }
+            else return eDamageType.Natural;
         }
 
         /// <summary>
@@ -723,11 +724,11 @@ namespace DOL.GS
                 }
                 else
                 {
-                    //// Bard RR5 ability must drop when the player starts a melee attack
-                    //IGameEffect DreamweaverRR5 = p.EffectList.GetOfType<DreamweaverEffect>();
-                    //if (DreamweaverRR5 != null)
-                    //    DreamweaverRR5.Cancel(false);
-                }
+                    // Bard RR5 ability must drop when the player starts a melee attack
+                    IGameEffect DreamweaverRR5 = p.EffectList.GetOfType<DreamweaverEffect>();
+                    if (DreamweaverRR5 != null)
+                        DreamweaverRR5.Cancel(false);
+                }*/
                 LivingStartAttack(attackTarget);
 
                 if (p.IsCasting && !p.castingComponent.spellHandler.Spell.Uninterruptible)
@@ -801,7 +802,7 @@ namespace DOL.GS
                 //m_attackAction = CreateAttackAction();
                 //attackAction = new AttackAction(owner);
                 attackAction = owner.CreateAttackAction();
-               
+
                 if (owner.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
                 {
                     // only start another attack action if we aren't already aiming to shoot
@@ -1261,9 +1262,9 @@ namespace DOL.GS
             AttackState = true;
 
             // Asp style range add
-            int addRange = style?.Procs?.FirstOrDefault()?.Item1.SpellType == (byte)eSpellType.StyleRange ? (int)style?.Procs?.FirstOrDefault()?.Item1.Value - AttackRange: 0;
+            int addRange = style?.Procs?.FirstOrDefault()?.Item1.SpellType == (byte)eSpellType.StyleRange ? (int)style?.Procs?.FirstOrDefault()?.Item1.Value - AttackRange : 0;
 
-            if (dualWield && (ad.Attacker is GamePlayer gPlayer)  && gPlayer.CharacterClass.ID != (int)eCharacterClass.Savage)
+            if (dualWield && (ad.Attacker is GamePlayer gPlayer) && gPlayer.CharacterClass.ID != (int)eCharacterClass.Savage)
                 ad.AttackType = AttackData.eAttackType.MeleeDualWield;
             else if (weapon == null)
                 ad.AttackType = AttackData.eAttackType.MeleeOneHand;
@@ -1414,7 +1415,7 @@ namespace DOL.GS
                             weaponTypeToUse.Object_Type = (int)eObjectType.ThrustWeapon;
                         }
                     }
-                }                
+                }
                 int spec = owner.WeaponSpecLevel(weaponTypeToUse);
                 // Modified to change the lowest value being 75
                 int lowerboundary = (int)((spec - 1) / (ad.Target.EffectiveLevel * 1.0 + 1) * 75.0 + 25);
@@ -1436,18 +1437,18 @@ namespace DOL.GS
                     styleSpec = owner.GetModifiedSpecLevel(ad.Style.Spec);
                 }
 
-                double specModifier = styleSpec > 0 ? ((100 + styleSpec) / 100.0)  : ((100 + spec) / 100.0);
+                double specModifier = styleSpec > 0 ? ((100 + styleSpec) / 100.0) : ((100 + spec) / 100.0);
                 //Console.WriteLine($"spec: {spec} stylespec: {styleSpec} specMod: {specModifier}");
-                damage *= (owner.GetWeaponSkill(weapon) + 90.68) * specModifier/ (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67);
-                
-                if(ad.Attacker is GamePlayer weaponskiller && weaponskiller.UseDetailedCombatLog)
+                damage *= (owner.GetWeaponSkill(weapon) + 90.68) * specModifier / (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67);
+
+                if (ad.Attacker is GamePlayer weaponskiller && weaponskiller.UseDetailedCombatLog)
                 {
-                    weaponskiller.Out.SendMessage($"WS: {(owner.GetWeaponSkill(weapon) + 90.68)* specModifier} AF: {(ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67)}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    weaponskiller.Out.SendMessage($"WS: {(owner.GetWeaponSkill(weapon) + 90.68) * specModifier} AF: {(ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67)}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     weaponskiller.Out.SendMessage($"WS/AF Damage Multiplier: {(int)(((owner.GetWeaponSkill(weapon) + 90.68) * specModifier / (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67)) * 1000)}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
-                if(ad.Target is GamePlayer attackee && attackee.UseDetailedCombatLog)
+                if (ad.Target is GamePlayer attackee && attackee.UseDetailedCombatLog)
                     attackee.Out.SendMessage($"WS/AF Damage Multiplier: {(int)(((owner.GetWeaponSkill(weapon) + 90.68) * specModifier / (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67)) * 1000)}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
-                
+
                 // Badge Of Valor Calculation 1+ absorb or 1- absorb
                 //if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
                 //{
@@ -1480,9 +1481,9 @@ namespace DOL.GS
 
                 // apply total damage cap
                 ad.UncappedDamage = ad.Damage;
-                if(owner.rangeAttackComponent?.RangedAttackType == eRangedAttackType.Critical)
+                if (owner.rangeAttackComponent?.RangedAttackType == eRangedAttackType.Critical)
                     ad.Damage = Math.Min(ad.Damage, (int)(UnstyledDamageCap(weapon) * 2));
-                else 
+                else
                     ad.Damage = Math.Min(ad.Damage, (int)(UnstyledDamageCap(weapon)/* * effectiveness*/));
 
                 if ((owner is GamePlayer || (owner is GameNPC && (owner as GameNPC).Brain is IControlledBrain && owner.Realm != 0)) && target is GamePlayer)
@@ -1493,7 +1494,7 @@ namespace DOL.GS
                 {
                     ad.Damage = (int)((double)ad.Damage * ServerProperties.Properties.PVE_MELEE_DAMAGE);
                 }
-                
+
                 ad.UncappedDamage = ad.Damage;
 
                 //Eden - Conversion Bonus (Crocodile Ring)  - tolakram - critical damage is always 0 here, needs to be moved
@@ -1854,90 +1855,18 @@ namespace DOL.GS
 
             // We check if interceptor can intercept
 
-                    // we can only intercept attacks on livings, and can only intercept when active
-                    // you cannot intercept while you are sitting
-                    // if you are stuned or mesmeried you cannot intercept...
-
-                    InterceptECSGameEffect inter = effect as InterceptECSGameEffect;
-                    if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
-                        && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
-                        && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
-                    {
-                        intercept = inter;
-                        continue;
-                    }
+            // we can only intercept attacks on livings, and can only intercept when active
+            // you cannot intercept while you are sitting
+            // if you are stuned or mesmeried you cannot intercept...
+            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.Intercept) is InterceptECSGameEffect inter)
+            {
+                if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
+                    && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
+                    && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
+                {
+                    intercept = inter;
                 }
             }
-
-            //lock (owner.EffectList)
-            //{
-            //    foreach (IGameEffect effect in owner.EffectList)
-            //    {
-            //        //if (effect is GuardEffect)
-            //        //{
-            //        //    if (guard == null && ((GuardEffect)effect).GuardTarget == owner)
-            //        //        guard = (GuardEffect)effect;
-            //        //    continue;
-            //        //}
-
-            //        if (effect is DashingDefenseEffect)
-            //        {
-            //            if (dashing == null && ((DashingDefenseEffect)effect).GuardTarget == owner)
-            //                dashing = (DashingDefenseEffect)effect; //Dashing
-            //            continue;
-            //        }
-
-            //        //if (effect is BerserkEffect)
-            //        //{
-            //        //    defenseDisabled = true;
-            //        //    continue;
-            //        //}
-
-            //        //if (effect is EngageEffect)
-            //        //{
-            //        //    if (engage == null)
-            //        //        engage = (EngageEffect)effect;
-            //        //    continue;
-            //        //}
-
-            //        if (effect is GameSpellEffect)
-            //        {
-            //            switch ((effect as GameSpellEffect).Spell.SpellType)
-            //            {
-            //                case (byte)eSpellType.Phaseshift:
-            //                    if (phaseshift == null)
-            //                        phaseshift = (GameSpellEffect)effect;
-            //                    continue;
-            //                case (byte)eSpellType.Grapple:
-            //                    if (grapple == null)
-            //                        grapple = (GameSpellEffect)effect;
-            //                    continue;
-            //                case (byte)eSpellType.BrittleGuard:
-            //                    if (brittleguard == null)
-            //                        brittleguard = (GameSpellEffect)effect;
-            //                    continue;
-            //                case (byte)eSpellType.Bladeturn:
-            //                    if (bladeturn == null)
-            //                        bladeturn = (GameSpellEffect)effect;
-            //                    continue;
-            //            }
-            //        }
-
-            //        // We check if interceptor can intercept
-
-            //        // we can only intercept attacks on livings, and can only intercept when active
-            //        // you cannot intercept while you are sitting
-            //        // if you are stuned or mesmeried you cannot intercept...
-            //        //InterceptEffect inter = effect as InterceptEffect;
-            //        //if (intercept == null && inter != null && inter.InterceptTarget == owner && !inter.InterceptSource.IsStunned && !inter.InterceptSource.IsMezzed
-            //        //    && !inter.InterceptSource.IsSitting && inter.InterceptSource.ObjectState == eObjectState.Active && inter.InterceptSource.IsAlive
-            //        //    && owner.IsWithinRadius(inter.InterceptSource, InterceptAbilityHandler.INTERCEPT_DISTANCE) && Util.Chance(inter.InterceptChance))
-            //        //{
-            //        //    intercept = inter;
-            //        //    continue;
-            //        //}
-            //    }
-            //}
 
             bool stealthStyle = false;
             if (ad.Style != null && ad.Style.StealthRequirement && ad.Attacker is GamePlayer && StyleProcessor.CanUseStyle((GamePlayer)ad.Attacker, ad.Style, weapon))
@@ -2016,7 +1945,7 @@ namespace DOL.GS
 
             if (!defenseDisabled)
             {
-                if (lastAD != null &&lastAD.AttackResult != eAttackResult.HitStyle)
+                if (lastAD != null && lastAD.AttackResult != eAttackResult.HitStyle)
                     lastAD = null;
 
                 bool UseRNGOverride = ServerProperties.Properties.OVERRIDE_DECK_RNG;
@@ -2032,25 +1961,25 @@ namespace DOL.GS
 
                 double? evadeDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
                 double? evadeOutput = (evadeDouble != null) ? evadeDouble * 100 : randomEvadeNum;
-                if(ad.Attacker is GamePlayer evadeAtk && evadeAtk.UseDetailedCombatLog && evadeChance > 0)
+                if (ad.Attacker is GamePlayer evadeAtk && evadeAtk.UseDetailedCombatLog && evadeChance > 0)
                 {
-                    evadeAtk.Out.SendMessage($"target evade%: {Math.Round(evadeChance,2)} rand: {evadeOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    evadeAtk.Out.SendMessage($"target evade%: {Math.Round(evadeChance, 2)} rand: {evadeOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
 
-                if(ad.Target is GamePlayer evadeTarg && evadeTarg.UseDetailedCombatLog  && evadeChance > 0)
+                if (ad.Target is GamePlayer evadeTarg && evadeTarg.UseDetailedCombatLog && evadeChance > 0)
                 {
-                    evadeTarg.Out.SendMessage($"your evade%: {Math.Round(evadeChance,2)} rand: {evadeOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                    evadeTarg.Out.SendMessage($"your evade%: {Math.Round(evadeChance, 2)} rand: {evadeOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
 
                 if (evadeDouble == null || UseRNGOverride)
                 {
-                    if(evadeChance > randomEvadeNum)
-                        return eAttackResult.Evaded;    
+                    if (evadeChance > randomEvadeNum)
+                        return eAttackResult.Evaded;
                 }
                 else
                 {
                     evadeDouble *= 100;
-                    if(evadeChance > evadeDouble)
+                    if (evadeChance > evadeDouble)
                         return eAttackResult.Evaded;
                 }
 
@@ -2065,25 +1994,25 @@ namespace DOL.GS
 
                     double? parryDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
                     double? parryOutput = (parryDouble != null) ? parryDouble * 100 : ranParryNum;
-                    if (ad.Attacker is GamePlayer parryAtk && parryAtk.UseDetailedCombatLog  && parryChance > 0)
+                    if (ad.Attacker is GamePlayer parryAtk && parryAtk.UseDetailedCombatLog && parryChance > 0)
                     {
-                        parryAtk.Out.SendMessage($"target parry%: {Math.Round(parryChance,2)} rand: {parryOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                        parryAtk.Out.SendMessage($"target parry%: {Math.Round(parryChance, 2)} rand: {parryOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
-                    if (ad.Target is GamePlayer parryTarg && parryTarg.UseDetailedCombatLog  && parryChance > 0)
+                    if (ad.Target is GamePlayer parryTarg && parryTarg.UseDetailedCombatLog && parryChance > 0)
                     {
-                        parryTarg.Out.SendMessage($"your parry%: {Math.Round(parryChance,2)} rand: {parryOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                        parryTarg.Out.SendMessage($"your parry%: {Math.Round(parryChance, 2)} rand: {parryOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
-                    
+
                     if (parryDouble == null || UseRNGOverride)
                     {
-                        if(parryChance > ranParryNum)
-                            return eAttackResult.Parried;    
+                        if (parryChance > ranParryNum)
+                            return eAttackResult.Parried;
                     }
                     else
                     {
                         parryDouble *= 100;
-                        if(parryChance > parryDouble)
+                        if (parryChance > parryDouble)
                             return eAttackResult.Parried;
                     }
 
@@ -2097,30 +2026,30 @@ namespace DOL.GS
                 blockChance *= 100;
 
                 double? blockDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
-                double? blockOutput = (blockDouble != null) ? blockDouble * 100: ranBlockNum;
-                if (ad.Attacker is GamePlayer blockAttk && blockAttk.UseDetailedCombatLog  && blockChance > 0)
+                double? blockOutput = (blockDouble != null) ? blockDouble * 100 : ranBlockNum;
+                if (ad.Attacker is GamePlayer blockAttk && blockAttk.UseDetailedCombatLog && blockChance > 0)
                 {
-                    
+
                     blockAttk.Out.SendMessage($"target block%: {Math.Round(blockChance, 2)} rand: {blockOutput} defense pen: {defensePenetration}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
 
-                if (ad.Target is GamePlayer blockTarg && blockTarg.UseDetailedCombatLog  && blockChance > 0)
+                if (ad.Target is GamePlayer blockTarg && blockTarg.UseDetailedCombatLog && blockChance > 0)
                 {
                     blockTarg.Out.SendMessage($"your block%: {Math.Round(blockChance, 2)} rand: {blockOutput} \nattkr def pen reduced % by {defensePenetration}%", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                 }
-                
+
                 if (blockDouble == null || UseRNGOverride)
                 {
-                    if(blockChance > ranBlockNum)
-                        return eAttackResult.Blocked;    
+                    if (blockChance > ranBlockNum)
+                        return eAttackResult.Blocked;
                 }
                 else
                 {
                     blockDouble *= 100;
-                    if(blockChance > blockDouble)
+                    if (blockChance > blockDouble)
                         return eAttackResult.Blocked;
                 }
-                
+
                 // reactive effects on block moved to GamePlayer
             }
 
@@ -2177,7 +2106,7 @@ namespace DOL.GS
                         if (guardchance < 0.01)
                             guardchance = 0.01;
                         //else if (ad.Attacker is GamePlayer && guardchance > .6)
-                           // guardchance = .6;
+                        // guardchance = .6;
                         else if (shieldSize == 1 && guardchance > .8)
                             guardchance = .8;
                         else if (shieldSize == 2 && guardchance > .9)
@@ -2192,7 +2121,7 @@ namespace DOL.GS
                         guardchance *= 100;
 
                         double? blockDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
-                        double? blockOutput = (blockDouble != null) ? blockDouble * 100: ranBlockNum;
+                        double? blockOutput = (blockDouble != null) ? blockDouble * 100 : ranBlockNum;
                         if (guard.GuardSource is GamePlayer blockAttk && blockAttk.UseDetailedCombatLog)
                         {
                             blockAttk.Out.SendMessage($"Chance to guard: {guardchance} rand: {blockOutput} GuardSuccess? {guardchance > ranBlockNum}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
@@ -2206,13 +2135,13 @@ namespace DOL.GS
                         bool UseRNGOverride = ServerProperties.Properties.OVERRIDE_DECK_RNG;
                         if (blockDouble == null || UseRNGOverride)
                         {
-                            if(guardchance > ranBlockNum)
-                                return eAttackResult.Blocked;    
+                            if (guardchance > ranBlockNum)
+                                return eAttackResult.Blocked;
                         }
                         else
                         {
                             blockDouble *= 100;
-                            if(guardchance > blockDouble)
+                            if (guardchance > blockDouble)
                                 return eAttackResult.Blocked;
                         }
                     }
@@ -2362,7 +2291,7 @@ namespace DOL.GS
                     {
                         // http://rothwellhome.org/guides/archery.htm
                         case 0: missrate += (int)Math.Round(missrate * .15); break; // Rough
-                                                       //						case 1: missrate -= 0; break;
+                                                                                    //						case 1: missrate -= 0; break;
                         case 2: missrate -= (int)Math.Round(missrate * .15); break; // doesn't exist (?)
                         case 3: missrate -= (int)Math.Round(missrate * .25); break; // Footed
                     }
@@ -2374,7 +2303,7 @@ namespace DOL.GS
             ad.MissRate = missrate;
             int rando = 0;
             bool skipDeckUsage = ServerProperties.Properties.OVERRIDE_DECK_RNG;
-            if (ad.Attacker is GamePlayer atkkr && !skipDeckUsage )
+            if (ad.Attacker is GamePlayer atkkr && !skipDeckUsage)
             {
                 rando = atkkr.RandomNumberDeck.GetInt();
             }
@@ -2382,14 +2311,14 @@ namespace DOL.GS
             {
                 rando = Util.CryptoNextInt(100);
             }
-            
-            
-            if(ad.Attacker is GamePlayer misser && misser.UseDetailedCombatLog && missrate > 0)
+
+
+            if (ad.Attacker is GamePlayer misser && misser.UseDetailedCombatLog && missrate > 0)
                 misser.Out.SendMessage($"miss rate on target: {missrate}% rand: {rando}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
-            if(ad.Target is GamePlayer missee && missee.UseDetailedCombatLog&& missrate > 0)
+            if (ad.Target is GamePlayer missee && missee.UseDetailedCombatLog && missrate > 0)
                 missee.Out.SendMessage($"chance to be missed: {missrate}% rand: {rando}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
 
-            
+
             if (missrate > rando)
             {
                 return eAttackResult.Missed;
@@ -2419,7 +2348,7 @@ namespace DOL.GS
             {
                 bool penetrate = false;
 
-                
+
                 if (stealthStyle)
                     return eAttackResult.HitUnstyled; //exit early for stealth to prevent breaking bubble but still register a hit
 
@@ -2535,7 +2464,7 @@ namespace DOL.GS
         {
             get
             {
-                return owner.effectListComponent.ContainsEffectForEffectType(eEffect.Shade);
+                return EffectListService.GetEffectOnTarget(owner, eEffect.Shade) == null;
             }
         }
 
@@ -2994,5 +2923,5 @@ namespace DOL.GS
             }
             return effectiveness;
         }
-    }  
+    }
 }
