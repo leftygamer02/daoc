@@ -17,10 +17,10 @@ namespace DOL.GS.RealmAbilities
         {
             if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
             GamePlayer player = living as GamePlayer;
-			if (player.EffectList.CountOfType<StrikePredictionEffect>() > 0)
-            {
-                player.Out.SendMessage("You already have an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-            }
+			//if (player.EffectList.CountOfType<StrikePredictionEffect>() > 0)
+   //         {
+   //             player.Out.SendMessage("You already have an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+   //         }
 			
 			if(ServerProperties.Properties.USE_NEW_ACTIVES_RAS_SCALING)
 			{
@@ -54,17 +54,17 @@ namespace DOL.GS.RealmAbilities
                     if (grpMate.IsWithinRadius(player, m_range) && grpMate.IsAlive)
                         targets.Add(grpMate);
             bool success;
-            foreach (GamePlayer target in targets)
-            {
-				success = (target.EffectList.CountOfType<StrikePredictionEffect>() == 0);
-                foreach (GamePlayer visPlayer in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                    visPlayer.Out.SendSpellEffectAnimation(player, target, 7037, 0, false, CastSuccess(success));
-                if (success)
-                    if (target != null)
-                    {
-                        new StrikePredictionEffect().Start(target, m_duration, m_value);
-                    }
-            }
+    //        foreach (GamePlayer target in targets)
+    //        {
+				//success = (target.EffectList.CountOfType<StrikePredictionEffect>() == 0);
+    //            foreach (GamePlayer visPlayer in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+    //                visPlayer.Out.SendSpellEffectAnimation(player, target, 7037, 0, false, CastSuccess(success));
+    //            if (success)
+    //                if (target != null)
+    //                {
+    //                    new StrikePredictionEffect().Start(target, m_duration, m_value);
+    //                }
+    //        }
 
         }
         private byte CastSuccess(bool suc)

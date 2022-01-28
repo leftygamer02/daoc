@@ -94,10 +94,10 @@ namespace DOL.GS
 
 			lock (Starter.effectListComponent._effectsLock)
 			{
-				foreach (var effect in Starter.effectListComponent.GetAllEffects())
+				foreach (var effect in Starter.effectListComponent.GetSpellEffects())
 				{
 					if (effect.SpellHandler.Caster == target && !effect.SpellHandler.HasPositiveEffect)
-						EffectService.RequestCancelEffect(effect)
+						EffectService.RequestCancelEffect(effect);
 				}
 			}
 

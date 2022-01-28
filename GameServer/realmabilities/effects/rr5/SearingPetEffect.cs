@@ -125,14 +125,14 @@ namespace DOL.GS.Effects
         /// <param name="args">EventArgs associated with the event</param>
         private static void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
         {
-            GamePlayer player = sender as GamePlayer;
-            if (player != null && player.ControlledBrain != null && player.ControlledBrain.Body != null)
-            {
-                GameNPC pet = player.ControlledBrain.Body as GameNPC;
-				SearingPetEffect SearingPet = pet.EffectList.GetOfType<SearingPetEffect>();
-                if (SearingPet != null)
-                    SearingPet.Cancel(false);
-            }
+    //        GamePlayer player = sender as GamePlayer;
+    //        if (player != null && player.ControlledBrain != null && player.ControlledBrain.Body != null)
+    //        {
+    //            GameNPC pet = player.ControlledBrain.Body as GameNPC;
+				//SearingPetEffect SearingPet = pet.EffectList.GetOfType<SearingPetEffect>();
+    //            if (SearingPet != null)
+    //                SearingPet.Cancel(false);
+    //        }
         }
 
         public override string Name { get { return "Searing pet"; } }

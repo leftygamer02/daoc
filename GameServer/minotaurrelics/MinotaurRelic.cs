@@ -404,12 +404,12 @@ namespace DOL.GS
 					if (plr == null) continue;
 					try
 					{
-						lock (plr.EffectList)
-						{
-							GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
-							if (check != null)
-								check.Cancel(false);
-						}
+						//lock (plr.EffectList)
+						//{
+						//	GameSpellEffect check = SpellHandler.FindEffectOnTarget(plr, m_gameSpellEffect.Spell.SpellType.ToString());
+						//	if (check != null)
+						//		check.Cancel(false);
+						//}
 					}
 					catch (Exception e)
 					{

@@ -51,14 +51,14 @@ namespace DOL.GS.RealmAbilities
 				  			|| grpMate.CharacterClass.ClassType == eClassType.PureTank)
 							targets.Add(grpMate);
 			
-			foreach (GamePlayer target in targets)
-			{
-				FanatacismEffect Fanatacism = target.EffectList.GetOfType<FanatacismEffect>();
-                if (Fanatacism != null)
-                    Fanatacism.Cancel(false);
+			//foreach (GamePlayer target in targets)
+			//{
+			//	FanatacismEffect Fanatacism = target.EffectList.GetOfType<FanatacismEffect>();
+   //             if (Fanatacism != null)
+   //                 Fanatacism.Cancel(false);
 
-                new FanatacismEffect().Start(target);
-			}
+   //             new FanatacismEffect().Start(target);
+			//}
 			DisableSkill(player);
         }
 		

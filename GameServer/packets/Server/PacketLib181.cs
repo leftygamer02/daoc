@@ -120,59 +120,59 @@ namespace DOL.GS.PacketHandler
 
 		public override void SendPetWindow(GameLiving pet, ePetWindowAction windowAction, eAggressionState aggroState, eWalkState walkState)
 		{
-			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.PetWindow)))
-			{
-				pak.WriteShort((ushort)(pet == null ? 0 : pet.ObjectID));
-				pak.WriteByte(0x00); //unused
-				pak.WriteByte(0x00); //unused
-				switch (windowAction) //0-released, 1-normal, 2-just charmed? | Roach: 0-close window, 1-update window, 2-create window
-				{
-					case ePetWindowAction.Open  : pak.WriteByte(2); break;
-					case ePetWindowAction.Update: pak.WriteByte(1); break;
-					default: pak.WriteByte(0); break;
-				}
-				switch (aggroState) //1-aggressive, 2-defensive, 3-passive
-				{
-					case eAggressionState.Aggressive: pak.WriteByte(1); break;
-					case eAggressionState.Defensive : pak.WriteByte(2); break;
-					case eAggressionState.Passive   : pak.WriteByte(3); break;
-					default: pak.WriteByte(0); break;
-				}
-				switch (walkState) //1-follow, 2-stay, 3-goto, 4-here
-				{
-					case eWalkState.Follow  : pak.WriteByte(1); break;
-					case eWalkState.Stay    : pak.WriteByte(2); break;
-					case eWalkState.GoTarget: pak.WriteByte(3); break;
-					case eWalkState.ComeHere: pak.WriteByte(4); break;
-					default: pak.WriteByte(0); break;
-				}
-				pak.WriteByte(0x00); //unused
+			//using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.PetWindow)))
+			//{
+			//	pak.WriteShort((ushort)(pet == null ? 0 : pet.ObjectID));
+			//	pak.WriteByte(0x00); //unused
+			//	pak.WriteByte(0x00); //unused
+			//	switch (windowAction) //0-released, 1-normal, 2-just charmed? | Roach: 0-close window, 1-update window, 2-create window
+			//	{
+			//		case ePetWindowAction.Open  : pak.WriteByte(2); break;
+			//		case ePetWindowAction.Update: pak.WriteByte(1); break;
+			//		default: pak.WriteByte(0); break;
+			//	}
+			//	switch (aggroState) //1-aggressive, 2-defensive, 3-passive
+			//	{
+			//		case eAggressionState.Aggressive: pak.WriteByte(1); break;
+			//		case eAggressionState.Defensive : pak.WriteByte(2); break;
+			//		case eAggressionState.Passive   : pak.WriteByte(3); break;
+			//		default: pak.WriteByte(0); break;
+			//	}
+			//	switch (walkState) //1-follow, 2-stay, 3-goto, 4-here
+			//	{
+			//		case eWalkState.Follow  : pak.WriteByte(1); break;
+			//		case eWalkState.Stay    : pak.WriteByte(2); break;
+			//		case eWalkState.GoTarget: pak.WriteByte(3); break;
+			//		case eWalkState.ComeHere: pak.WriteByte(4); break;
+			//		default: pak.WriteByte(0); break;
+			//	}
+			//	pak.WriteByte(0x00); //unused
 	
-				if (pet != null)
-				{
-					lock (pet.EffectList)
-					{
-						ArrayList icons = new ArrayList();
-						foreach (IGameEffect effect in pet.EffectList)
-						{
-							if (icons.Count >= 8)
-								break;
-							if (effect.Icon == 0)
-								continue;
-							icons.Add(effect.Icon);
-						}
-						pak.WriteByte((byte)icons.Count); // effect count
-						// 0x08 - null terminated - (byte) list of shorts - spell icons on pet
-						foreach (ushort icon in icons)
-						{
-							pak.WriteShort(icon);
-						}
-					}
-				}
-				else
-					pak.WriteByte((byte)0); // effect count
-				SendTCP(pak);
-			}
+			//	if (pet != null)
+			//	{
+			//		lock (pet.EffectList)
+			//		{
+			//			ArrayList icons = new ArrayList();
+			//			foreach (IGameEffect effect in pet.EffectList)
+			//			{
+			//				if (icons.Count >= 8)
+			//					break;
+			//				if (effect.Icon == 0)
+			//					continue;
+			//				icons.Add(effect.Icon);
+			//			}
+			//			pak.WriteByte((byte)icons.Count); // effect count
+			//			// 0x08 - null terminated - (byte) list of shorts - spell icons on pet
+			//			foreach (ushort icon in icons)
+			//			{
+			//				pak.WriteShort(icon);
+			//			}
+			//		}
+			//	}
+			//	else
+			//		pak.WriteByte((byte)0); // effect count
+			//	SendTCP(pak);
+			//}
 		}
 	}
 }

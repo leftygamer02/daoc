@@ -48,7 +48,7 @@ namespace DOL.GS.Effects
 
 			m_living.Size += (byte)m_growSize;
 			m_living.Level = (byte)Math.Min(m_living.Level+m_value, JUGGERNAUT_CAP_EFFECT);
-			m_living.EffectList.Add(this);
+			//m_living.EffectList.Add(this);
 
 		}
 
@@ -61,7 +61,7 @@ namespace DOL.GS.Effects
 			StopTimers();
 			m_living.Size -= (byte)m_growSize;
 			m_living.Level -= m_value;
-			m_living.EffectList.Remove(this);
+			//m_living.EffectList.Remove(this);
 		}
 
 		/// <summary>

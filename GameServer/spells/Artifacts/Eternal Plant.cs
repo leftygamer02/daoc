@@ -15,24 +15,24 @@ namespace DOL.GS.Spells
         {
             AttackData ad = CalculateDamageToTarget(target, effectiveness);
             base.OnDirectEffect(target, effectiveness);
-            foreach (GameSpellEffect effect in target.EffectList.GetAllOfType(typeof(GameSpellEffect)))
-            {
-                if (effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
-                    effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
-                    effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
-                    effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
-                    effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
-                    effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph") ||
-                    effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
-                {
-                    ad.Damage = (int)Spell.Damage;
-                    effect.Cancel(false);
-                    SendEffectAnimation(target, 0, false, 1);
-                    SendDamageMessages(ad);
-                    DamageTarget(ad);
-                    return;
-                }
-            }
+            //foreach (GameSpellEffect effect in target.EffectList.GetAllOfType(typeof(GameSpellEffect)))
+            //{
+            //    if (effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
+            //        effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
+            //        effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
+            //        effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
+            //        effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
+            //        effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph") ||
+            //        effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
+            //    {
+            //        ad.Damage = (int)Spell.Damage;
+            //        effect.Cancel(false);
+            //        SendEffectAnimation(target, 0, false, 1);
+            //        SendDamageMessages(ad);
+            //        DamageTarget(ad);
+            //        return;
+            //    }
+            //}
         }
         public virtual void DamageTarget(AttackData ad)
         {

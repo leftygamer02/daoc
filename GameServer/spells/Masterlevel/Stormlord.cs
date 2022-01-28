@@ -94,7 +94,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
 
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -238,7 +238,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
 
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -318,7 +318,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
 
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -430,7 +430,7 @@ namespace DOL.GS.Spells
         }
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
     }
@@ -555,7 +555,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
 
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -649,7 +649,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
 
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -766,7 +766,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
 
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 

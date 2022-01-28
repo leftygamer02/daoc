@@ -310,7 +310,7 @@ namespace DOL.GS.Commands
 						lock (target.effectListComponent._effectsLock)
 						{
 							foreach (var effects in target.effectListComponent.Effects)
-								foreach (var effect in effects)
+								foreach (var effect in effects.Value)
 									info.Add(effect.Name + " remaining " + effect.GetRemainingTimeForClient());
 						}
 					}

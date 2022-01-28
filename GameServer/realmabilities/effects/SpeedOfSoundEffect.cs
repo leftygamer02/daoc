@@ -56,12 +56,12 @@ namespace DOL.GS.Effects
 					return;
 
 				//cancel if the effectowner casts a non-positive spell
-				if (!cfea.SpellHandler.HasPositiveEffect)
-				{
-					SpeedOfSoundEffect effect = player.EffectList.GetOfType<SpeedOfSoundEffect>();
-					if (effect != null)
-						effect.Cancel(false);
-				}
+				//if (!cfea.SpellHandler.HasPositiveEffect)
+				//{
+				//	SpeedOfSoundEffect effect = player.EffectList.GetOfType<SpeedOfSoundEffect>();
+				//	if (effect != null)
+				//		effect.Cancel(false);
+				//}
 			}
 			else if (e == GameLivingEvent.AttackFinished)
 			{
@@ -72,20 +72,20 @@ namespace DOL.GS.Effects
 				if (afargs.AttackData.Attacker != player)
 					return;
 
-				switch (afargs.AttackData.AttackResult)
-				{
-					case eAttackResult.HitStyle:
-					case eAttackResult.HitUnstyled:
-					case eAttackResult.Blocked:
-					case eAttackResult.Evaded:
-					case eAttackResult.Fumbled:
-					case eAttackResult.Missed:
-					case eAttackResult.Parried:
-						SpeedOfSoundEffect effect = player.EffectList.GetOfType<SpeedOfSoundEffect>();
-						if (effect != null)
-							effect.Cancel(false);
-						break;
-				}
+				//switch (afargs.AttackData.AttackResult)
+				//{
+				//	case eAttackResult.HitStyle:
+				//	case eAttackResult.HitUnstyled:
+				//	case eAttackResult.Blocked:
+				//	case eAttackResult.Evaded:
+				//	case eAttackResult.Fumbled:
+				//	case eAttackResult.Missed:
+				//	case eAttackResult.Parried:
+				//		SpeedOfSoundEffect effect = player.EffectList.GetOfType<SpeedOfSoundEffect>();
+				//		if (effect != null)
+				//			effect.Cancel(false);
+				//		break;
+				//}
 			}
 		}
 

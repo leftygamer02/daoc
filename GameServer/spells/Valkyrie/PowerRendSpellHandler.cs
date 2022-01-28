@@ -42,13 +42,13 @@ namespace DOL.GS.spells
 
 			SendEffectAnimation(target, m_spell.ClientEffect, boltDuration: 0, noSound: false, success: 1);
 						
-			var mesmerizeEffect = target.FindEffectOnTarget("Mesmerize");
-			if (mesmerizeEffect != null)
-				mesmerizeEffect.Cancel(false);
+			//var mesmerizeEffect = target.FindEffectOnTarget(eEffect.Mez);
+			//if (mesmerizeEffect != null)
+			//	mesmerizeEffect.Cancel(false);
 
-			var speedDecreaseEffect = target.FindEffectOnTarget("SpeedDecrease");
-			if (speedDecreaseEffect != null)
-				speedDecreaseEffect.Cancel(false);
+			//var speedDecreaseEffect = target.FindEffectOnTarget(eEffect.MovementSpeedDebuff);
+			//if (speedDecreaseEffect != null)
+			//	speedDecreaseEffect.Cancel(false);
 
 						
 			bool targetIsGameplayer = target is GamePlayer;

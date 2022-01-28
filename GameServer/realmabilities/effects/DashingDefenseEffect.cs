@@ -103,8 +103,8 @@ namespace DOL.GS.Effects
             m_effectDuration = duration;
             StartTimers();
 
-            m_guardSource.EffectList.Add(this);
-            m_guardTarget.EffectList.Add(this);
+            //m_guardSource.EffectList.Add(this);
+            //m_guardTarget.EffectList.Add(this);
 
             if (!guardSource.IsWithinRadius(guardTarget, DashingDefenseEffect.GUARD_DISTANCE))
             {
@@ -126,8 +126,8 @@ namespace DOL.GS.Effects
         {
             //Stop Timers
             StopTimers();
-            m_guardSource.EffectList.Remove(this);
-            m_guardTarget.EffectList.Remove(this);
+            //m_guardSource.EffectList.Remove(this);
+            //m_guardTarget.EffectList.Remove(this);
 
             m_guardTarget.TempProperties.removeProperty(RealmAbilities.DashingDefenseAbility.Dashing);
 

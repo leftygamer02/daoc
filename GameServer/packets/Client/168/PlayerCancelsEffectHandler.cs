@@ -64,23 +64,20 @@ namespace DOL.GS.PacketHandler.Client.v168
 			{
 				GamePlayer player = (GamePlayer) m_actionSource;
 
-				IGameEffect found = null;
+				ECSGameEffect found = null;
 				lock (player.effectListComponent._effectsLock)
 				{
-					foreach (var effects in player.effectListComponent.Effects)
+					foreach (var effect in player.effectListComponent.GetSpellEffects())
 					{
-						foreach (var effect in effects)
+						if (effect.SpellHandler.Spell.InternalID == m_effectId)
 						{
-							if (effect.InternalID == m_effectId)
-							{
-								found = effect;
-								break;
-							}
+							found = effect;
+							break;
 						}
 					}
 				}
 				if (found != null)
-					found.Cancel(true);
+					EffectService.RequestCancelEffect(found);
 			}
 		}
 

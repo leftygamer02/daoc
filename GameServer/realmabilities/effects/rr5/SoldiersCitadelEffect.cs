@@ -77,11 +77,11 @@ namespace DOL.GS.Effects
         /// <param name="args">EventArgs associated with the event</param>
         protected void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
         {
-			GamePlayer player = sender as GamePlayer;
+			//GamePlayer player = sender as GamePlayer;
 
-			SoldiersCitadelEffect SoldiersCitadel = player.EffectList.GetOfType<SoldiersCitadelEffect>();
-			if (SoldiersCitadel != null)
-				SoldiersCitadel.Cancel(false);
+			//SoldiersCitadelEffect SoldiersCitadel = player.EffectList.GetOfType<SoldiersCitadelEffect>();
+			//if (SoldiersCitadel != null)
+			//	SoldiersCitadel.Cancel(false);
 		}
 
         public override string Name { get { return "Soldier's Citadel"; } }
@@ -144,11 +144,11 @@ namespace DOL.GS.Effects
         /// <param name="args">EventArgs associated with the event</param>
         private static void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
         {
-            GamePlayer player = sender as GamePlayer;
+   //         GamePlayer player = sender as GamePlayer;
 
-			SoldiersCitadelSecondaryEffect SoldiersCitadel = player.EffectList.GetOfType<SoldiersCitadelSecondaryEffect>();
-            if (SoldiersCitadel != null)
-                SoldiersCitadel.Cancel(false);
+			//SoldiersCitadelSecondaryEffect SoldiersCitadel = player.EffectList.GetOfType<SoldiersCitadelSecondaryEffect>();
+   //         if (SoldiersCitadel != null)
+   //             SoldiersCitadel.Cancel(false);
        }
 
         public override string Name { get { return "Soldier's Citadel"; } }

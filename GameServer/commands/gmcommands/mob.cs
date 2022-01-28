@@ -3167,8 +3167,8 @@ namespace DOL.GS.Commands
 				{
 					foreach (var effects in targetMob.effectListComponent.Effects)
 					{
-						foreach (var effect in effects)
-							text.Add(effect.Name + " remaining " + effect.RemainingTime);
+						foreach (var effect in effects.Value)
+							text.Add(effect.Name + " remaining " + effect.GetRemainingTimeForClient);
 					}
 				}
 			}

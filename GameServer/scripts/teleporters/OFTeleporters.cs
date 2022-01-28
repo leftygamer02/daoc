@@ -718,13 +718,13 @@ namespace DOL.GS.Scripts
 
             GameSpellEffect effect = null;
 
-            foreach (GameSpellEffect activeEffect in teleporter.EffectList)
-            {
-                if (activeEffect.Name == "TELEPORTER_EFFECT")
-                {
-                    effect = activeEffect;
-                }
-            }
+            //foreach (GameSpellEffect activeEffect in teleporter.EffectList)
+            //{
+            //    if (activeEffect.Name == "TELEPORTER_EFFECT")
+            //    {
+            //        effect = activeEffect;
+            //    }
+            //}
 
             if (effect != null || teleporter.IsCasting)
                 return;

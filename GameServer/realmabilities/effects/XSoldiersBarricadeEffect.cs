@@ -56,7 +56,7 @@ namespace DOL.GS.Effects
 			m_player.AbilityBonus[(int)eProperty.Resist_Slash] += m_value;
 			m_player.AbilityBonus[(int)eProperty.Resist_Thrust] += m_value;
 			m_player.Out.SendCharResistsUpdate();
-			m_player.EffectList.Add(this);
+			//m_player.EffectList.Add(this);
 			player.TempProperties.setProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb, true);
 		}
 
@@ -70,11 +70,11 @@ namespace DOL.GS.Effects
 		{
 			GamePlayer player = (GamePlayer)sender;
 
-			XSoldiersBarricadeEffect SBEffect = player.EffectList.GetOfType<XSoldiersBarricadeEffect>();
-			if (SBEffect != null)
-			{
-				SBEffect.Cancel(false);
-			}
+			//XSoldiersBarricadeEffect SBEffect = player.EffectList.GetOfType<XSoldiersBarricadeEffect>();
+			//if (SBEffect != null)
+			//{
+			//	SBEffect.Cancel(false);
+			//}
 		}
 
 		/// <summary>
@@ -95,7 +95,7 @@ namespace DOL.GS.Effects
 			m_player.AbilityBonus[(int)eProperty.Resist_Slash] -= m_value;
 			m_player.AbilityBonus[(int)eProperty.Resist_Thrust] -= m_value;
 			m_player.Out.SendCharResistsUpdate();
-			m_player.EffectList.Remove(this);
+			//m_player.EffectList.Remove(this);
 			GameEventMgr.RemoveHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
 			m_player.TempProperties.removeProperty(RealmAbilities.BarrierOfFortitudeAbility.BofBaSb);
 

@@ -222,7 +222,7 @@ namespace DOL.GS.Spells
 
             #region change target to Necromancer Pet, if Necromancer was targeted for heal
             // check if its a necro in shade mode
-            if (target.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+            if (EffectListService.GetEffectOnTarget(target, eEffect.Shade) != null)
             {
                 if (target.ControlledBrain != null)
                 {

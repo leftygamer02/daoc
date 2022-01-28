@@ -39,20 +39,20 @@ namespace DOL.GS.RealmAbilities
 			if (caster == null)
 				return;
 
-			XMasteryofConcentrationEffect MoCEffect = caster.EffectList.GetOfType<XMasteryofConcentrationEffect>();
-			if (MoCEffect != null)
-			{
-				MoCEffect.Cancel(false);
-				return;
-			}
+			//XMasteryofConcentrationEffect MoCEffect = caster.EffectList.GetOfType<XMasteryofConcentrationEffect>();
+			//if (MoCEffect != null)
+			//{
+			//	MoCEffect.Cancel(false);
+			//	return;
+			//}
 			
-			// Check for the RA5L on the Sorceror: he cannot cast MoC when the other is up
-			ShieldOfImmunityEffect ra5l = caster.EffectList.GetOfType<ShieldOfImmunityEffect>();
-			if (ra5l != null)
-			{
-				caster.Out.SendMessage("You cannot currently use this ability", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
-				return;
-			}
+			//// Check for the RA5L on the Sorceror: he cannot cast MoC when the other is up
+			//ShieldOfImmunityEffect ra5l = caster.EffectList.GetOfType<ShieldOfImmunityEffect>();
+			//if (ra5l != null)
+			//{
+			//	caster.Out.SendMessage("You cannot currently use this ability", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+			//	return;
+			//}
 			
 			SendCasterSpellEffectAndCastMessage(living, 7007, true);
 			foreach (GamePlayer player in caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))

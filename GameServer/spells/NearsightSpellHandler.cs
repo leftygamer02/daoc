@@ -62,11 +62,11 @@ namespace DOL.GS.Spells
         /// <returns>chance that spell will be resisted for specific target</returns>
         public override int CalculateSpellResistChance(GameLiving target)
         {
-            //Bonedancer rr5
-            if (target.EffectList.GetOfType<AllureofDeathEffect>() != null)
-            {
-                return AllureofDeathEffect.nschance;
-            }
+            ////Bonedancer rr5
+            //if (target.EffectList.GetOfType<AllureofDeathEffect>() != null)
+            //{
+            //    return AllureofDeathEffect.nschance;
+            //}
             return base.CalculateSpellResistChance(target);
 
         }

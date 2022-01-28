@@ -30,27 +30,27 @@ namespace DOL.GS.RealmAbilities
 				if (player.Group != null)
 				{
 					SendCasterSpellEffectAndCastMessage(living, 7071, true);
-					foreach (GamePlayer member in player.Group.GetPlayersInTheGroup())
-					{
-						RestorativeMindEffect aog = member.EffectList.GetOfType<RestorativeMindEffect>();
-						if (!CheckPreconditions(member, DEAD) && aog == null
-							&& living.IsWithinRadius( member, 2000 ))
-						{
-							RestorativeMindEffect effect = new RestorativeMindEffect();
-							effect.Start(member);
-							deactivate = true;
-						}
-					}
+					//foreach (GamePlayer member in player.Group.GetPlayersInTheGroup())
+					//{
+					//	RestorativeMindEffect aog = member.EffectList.GetOfType<RestorativeMindEffect>();
+					//	if (!CheckPreconditions(member, DEAD) && aog == null
+					//		&& living.IsWithinRadius( member, 2000 ))
+					//	{
+					//		RestorativeMindEffect effect = new RestorativeMindEffect();
+					//		effect.Start(member);
+					//		deactivate = true;
+					//	}
+					//}
 				}
 				else
 				{
-					RestorativeMindEffect aog = player.EffectList.GetOfType<RestorativeMindEffect>();
-					if (!CheckPreconditions(player, DEAD) && aog == null)
-					{
-						RestorativeMindEffect effect = new RestorativeMindEffect();
-						effect.Start(player);
-						deactivate = true;
-					}
+					//RestorativeMindEffect aog = player.EffectList.GetOfType<RestorativeMindEffect>();
+					//if (!CheckPreconditions(player, DEAD) && aog == null)
+					//{
+					//	RestorativeMindEffect effect = new RestorativeMindEffect();
+					//	effect.Start(player);
+					//	deactivate = true;
+					//}
 				}
 			}
 			if (deactivate)

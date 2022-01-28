@@ -56,16 +56,16 @@ namespace DOL.GS.RealmAbilities
 				VanishEffect vanish = new VanishEffect(duration, speedBonus);
 				vanish.Start(player);
 
-				foreach (GameSpellEffect effect in living.EffectList.GetAllOfType<GameSpellEffect>())
-				{
-					if (effect.SpellHandler is DoTSpellHandler ||
-						effect.SpellHandler is StyleBleeding ||
-							effect.SpellHandler is AbstractCCSpellHandler ||
-							effect.SpellHandler is SpeedDecreaseSpellHandler)
-					{
-						effect.Cancel(false);
-					}
-				}
+				//foreach (GameSpellEffect effect in living.EffectList.GetAllOfType<GameSpellEffect>())
+				//{
+				//	if (effect.SpellHandler is DoTSpellHandler ||
+				//		effect.SpellHandler is StyleBleeding ||
+				//			effect.SpellHandler is AbstractCCSpellHandler ||
+				//			effect.SpellHandler is SpeedDecreaseSpellHandler)
+				//	{
+				//		effect.Cancel(false);
+				//	}
+				//}
 			}
 
 			var attackers = new List<GameObject>();

@@ -111,12 +111,12 @@ namespace DOL.GS.SkillHandler
 			}*/
 			if(player.TargetObject is GamePlayer)
 			{
-				SputinsLegacyEffect SputinLegacy = (player.TargetObject as GamePlayer).EffectList.GetOfType<SputinsLegacyEffect>();
-				if(SputinLegacy != null)
-				{
-                    player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.TargetIsUnderSputinLegacy", player.TargetObject.Name), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
-                    return;
-				}
+				//SputinsLegacyEffect SputinLegacy = (player.TargetObject as GamePlayer).EffectList.GetOfType<SputinsLegacyEffect>();
+				//if(SputinLegacy != null)
+				//{
+    //                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.TargetIsUnderSputinLegacy", player.TargetObject.Name), eChatType.CT_Missed, eChatLoc.CL_SystemWindow);
+    //                return;
+				//}
 			}
 			#endregion
 

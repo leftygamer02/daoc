@@ -42,15 +42,15 @@ namespace DOL.GS.RealmAbilities
         {
             if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-            GamePlayer player = living as GamePlayer;
-            if (player != null)
-            {
-            	SoldiersCitadelEffect SoldiersCitadel = player.EffectList.GetOfType<SoldiersCitadelEffect>();
-                if (SoldiersCitadel != null)
-                    SoldiersCitadel.Cancel(false);
+            //GamePlayer player = living as GamePlayer;
+            //if (player != null)
+            //{
+            //	SoldiersCitadelEffect SoldiersCitadel = player.EffectList.GetOfType<SoldiersCitadelEffect>();
+            //    if (SoldiersCitadel != null)
+            //        SoldiersCitadel.Cancel(false);
 
-                new SoldiersCitadelEffect().Start(player);
-            }
+            //    new SoldiersCitadelEffect().Start(player);
+            //}
             DisableSkill(living);
         }
 

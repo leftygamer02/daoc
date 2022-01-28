@@ -1328,13 +1328,14 @@ namespace DOL.GS.Commands
                         {
                             foreach (var effects in player.effectListComponent.Effects)
                             {
-                                foreach (var effect in effects)
+                                foreach (var effect in effects.Value)
                                 {
-                                    if (!effect.SpellHandler.HasPositiveEffect)
-                                    {
-                                        m_hasEffect = true;
-                                        break;
-                                    }
+                                    if (effect is ECSGameSpellEffect eff)
+                                        if (!eff.SpellHandler.HasPositiveEffect)
+                                        {
+                                            m_hasEffect = true;
+                                            break;
+                                        }
                                 }
                             }
                         }
@@ -1349,12 +1350,13 @@ namespace DOL.GS.Commands
                         {
                             foreach (var effects in player.effectListComponent.Effects)
                             {
-                                foreach (GameSpellEffect effect in effects)
+                                foreach (ECSGameEffect effect in effects.Value)
                                 {
-                                    if (!effect.SpellHandler.HasPositiveEffect)
-                                    {
-                                        EffectService.RequestCancelEffect(effect);
-                                    }
+                                    if (effect is ECSGameSpellEffect eff)
+                                        if (!eff.SpellHandler.HasPositiveEffect)
+                                        {
+                                            EffectService.RequestCancelEffect(effect);
+                                        }
                                 }
                             }
                         }
@@ -2085,9 +2087,9 @@ namespace DOL.GS.Commands
                         {
                             foreach (var effects in player.effectListComponent.Effects)
                             {
-                                foreach (var effect in effects)
+                                foreach (var effect in effects.Value)
                                 {
-                                    text.Add(effect.Name + " remaining " + effect.RemainingTime);
+                                    text.Add(effect.Name + " remaining " + effect.GetRemainingTimeForClient);
                                 }
                             }
                         }

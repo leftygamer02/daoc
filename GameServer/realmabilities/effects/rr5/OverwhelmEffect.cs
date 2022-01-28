@@ -76,9 +76,9 @@ namespace DOL.GS.Effects
         {
             GamePlayer player = sender as GamePlayer;
 
-            OverwhelmEffect Overwhelm = (OverwhelmEffect)player.EffectList.GetOfType<OverwhelmEffect>();
-            if (Overwhelm != null)
-                Overwhelm.Cancel(false);
+            //OverwhelmEffect Overwhelm = (OverwhelmEffect)player.EffectList.GetOfType<OverwhelmEffect>();
+            //if (Overwhelm != null)
+            //    Overwhelm.Cancel(false);
         }
 
         public override string Name { get { return "Overwhelm"; } }

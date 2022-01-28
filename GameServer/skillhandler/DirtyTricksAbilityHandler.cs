@@ -141,12 +141,12 @@ namespace DOL.GS.Effects
 			if (atkArgs.AttackData.IsOffHand) return; // only react to main hand
 			if (atkArgs.AttackData.Weapon == null) return; // no weapon attack
 
-			DTdetrimentalEffect dt = target.EffectList.GetOfType<DTdetrimentalEffect>();
-			if (dt == null)
-			{
-				new DTdetrimentalEffect().Start(target);
-				// Log.Debug("Effect Started from dirty tricks handler on " + target.Name);
-			}
+			//DTdetrimentalEffect dt = target.EffectList.GetOfType<DTdetrimentalEffect>();
+			//if (dt == null)
+			//{
+			//	new DTdetrimentalEffect().Start(target);
+			//	// Log.Debug("Effect Started from dirty tricks handler on " + target.Name);
+			//}
 		}
 
         public override string Name { get { return LanguageMgr.GetTranslation(((GamePlayer)Owner).Client, "Skill.Ability.DirtyTricks.Name");} }
@@ -208,7 +208,7 @@ namespace DOL.GS.Effects
 			m_player = living;
 			//    Log.Debug("Effect Started from DT detrimental effect on " + m_player.Name);
 			StartTimers(); // start the timers before adding to the list!
-			m_player.EffectList.Add(this);
+			//m_player.EffectList.Add(this);
 			m_player.DebuffCategory[(int)eProperty.FumbleChance] += 50;
 			//  foreach (GamePlayer visiblePlayer in m_player.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			//  {
@@ -227,7 +227,7 @@ namespace DOL.GS.Effects
 				return;
 			//  Log.Debug("Effect Canceled from DT Detrimental effect on "+ m_player.Name);
 			StopTimers();
-			m_player.EffectList.Remove(this);
+			//m_player.EffectList.Remove(this);
 			m_player.DebuffCategory[(int)eProperty.FumbleChance] -= 50;
 			GamePlayer player = m_player as GamePlayer;
 			if (player != null)

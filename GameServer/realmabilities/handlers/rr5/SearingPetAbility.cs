@@ -46,12 +46,12 @@ namespace DOL.GS.RealmAbilities
             if (player != null && player.ControlledBrain != null && player.ControlledBrain.Body != null)
             {
                 GameNPC pet = player.ControlledBrain.Body as GameNPC;
-                if (pet.IsAlive)
-                {
-					SearingPetEffect SearingPet = pet.EffectList.GetOfType<SearingPetEffect>();
-                    if (SearingPet != null) SearingPet.Cancel(false);
-                    new SearingPetEffect(player).Start(pet);
-                }
+     //           if (pet.IsAlive)
+     //           {
+					//SearingPetEffect SearingPet = pet.EffectList.GetOfType<SearingPetEffect>();
+     //               if (SearingPet != null) SearingPet.Cancel(false);
+     //               new SearingPetEffect(player).Start(pet);
+     //           }
                 DisableSkill(living);
             }
             else if (player != null)

@@ -365,7 +365,7 @@ namespace DOL.AI.Brain
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, player, true)) continue;
                 // Don't aggro on immune players.
 
-                if (EffectListService.GetPulseEffectOnTarget(player, eEffect.Shade));
+                if (EffectListService.GetEffectOnTarget(player, eEffect.Shade) != null)
                     continue;
 
                 if (Body.CurrentZone.IsDungeon)
@@ -779,7 +779,7 @@ namespace DOL.AI.Brain
                     }
 
                     // Don't bother about necro shade, can't attack it anyway.
-                    if (EffectListService.GetEffectOnTarget(living, eEffect.Shade));
+                    if (EffectListService.GetEffectOnTarget(living, eEffect.Shade) != null);
                         continue;
 
                     long amount = aggros.Current.Value;
@@ -1663,7 +1663,7 @@ namespace DOL.AI.Brain
 
         protected bool LivingIsPoisoned(GameLiving target)
         {
-            if (EffectListService.GetEffectOnTarget(target, eEffect.DamageOverTime))
+            if (EffectListService.GetEffectOnTarget(target, eEffect.DamageOverTime) != null)
                 return true;
 
             return false;

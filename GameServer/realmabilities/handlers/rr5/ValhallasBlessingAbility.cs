@@ -63,15 +63,15 @@ namespace DOL.GS.RealmAbilities
                             targets.Add(grpplayer);
                     }
                 }
-                foreach (GamePlayer target in targets)
-                {
-                    //send spelleffect
-                    if (!target.IsAlive) continue;
-					ValhallasBlessingEffect ValhallasBlessing = target.EffectList.GetOfType<ValhallasBlessingEffect>();
-                    if (ValhallasBlessing != null)
-                        ValhallasBlessing.Cancel(false);
-                    new ValhallasBlessingEffect().Start(target);
-                }
+     //           foreach (GamePlayer target in targets)
+     //           {
+     //               //send spelleffect
+     //               if (!target.IsAlive) continue;
+					//ValhallasBlessingEffect ValhallasBlessing = target.EffectList.GetOfType<ValhallasBlessingEffect>();
+     //               if (ValhallasBlessing != null)
+     //                   ValhallasBlessing.Cancel(false);
+     //               new ValhallasBlessingEffect().Start(target);
+     //           }
             }
             DisableSkill(living);
         }

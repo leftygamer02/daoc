@@ -77,11 +77,11 @@ namespace DOL.GS.RealmAbilities
 			target.OnAttackedByEnemy(ad);
 			caster.DealDamage(ad);
 
-			if (target.EffectList.GetOfType<WhirlingStaffEffect>() == null)
-			{
-				WhirlingStaffEffect effect = new WhirlingStaffEffect();
-				effect.Start(target);
-			}
+			//if (target.EffectList.GetOfType<WhirlingStaffEffect>() == null)
+			//{
+			//	WhirlingStaffEffect effect = new WhirlingStaffEffect();
+			//	effect.Start(target);
+			//}
 
 		}
 

@@ -1090,7 +1090,7 @@ namespace DOL.GS.PacketHandler
 								playerStatus |= 0x02;
 							if (living.IsDiseased)
 								playerStatus |= 0x04;
-							if (SpellHelper.FindEffectOnTarget(living, "DamageOverTime") != null)
+							if (SpellHelper.FindEffectOnTarget(living, eEffect.DamageOverTime) != null)
 								playerStatus |= 0x08;
 							if (living is GamePlayer && ((GamePlayer)living).Client.ClientState == GameClient.eClientState.Linkdead)
 								playerStatus |= 0x10;
@@ -4828,7 +4828,7 @@ namespace DOL.GS.PacketHandler
 				playerStatus |= 0x02;
 			if (living.IsDiseased)
 				playerStatus |= 0x04;
-			if (SpellHelper.FindEffectOnTarget(living, "DamageOverTime") != null)
+			if (SpellHelper.FindEffectOnTarget(living, eEffect.DamageOverTime) != null)
 				playerStatus |= 0x08;
 			if (player?.Client?.ClientState == GameClient.eClientState.Linkdead)
 				playerStatus |= 0x10;

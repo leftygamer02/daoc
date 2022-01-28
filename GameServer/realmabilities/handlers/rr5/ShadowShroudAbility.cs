@@ -45,15 +45,15 @@ namespace DOL.GS.RealmAbilities
 		{
 			if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-			GamePlayer player = living as GamePlayer;
-			if (player != null)
-			{
-				ShadowShroudEffect ShadowShroud = (ShadowShroudEffect)player.EffectList.GetOfType<ShadowShroudEffect>();
-				if (ShadowShroud != null)
-					ShadowShroud.Cancel(false);
+			//GamePlayer player = living as GamePlayer;
+			//if (player != null)
+			//{
+			//	ShadowShroudEffect ShadowShroud = (ShadowShroudEffect)player.EffectList.GetOfType<ShadowShroudEffect>();
+			//	if (ShadowShroud != null)
+			//		ShadowShroud.Cancel(false);
 
-				new ShadowShroudEffect().Start(player);
-			}
+			//	new ShadowShroudEffect().Start(player);
+			//}
 			DisableSkill(living);
 		}
 

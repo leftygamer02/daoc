@@ -157,13 +157,13 @@ namespace DOL.GS.RealmAbilities
 				return 0;
 			}
 
-			if (living.EffectList.GetOfType<ChargeEffect>() == null && living.EffectList.GetOfType<SpeedOfSoundEffect>() != null)
-			{
-				living.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, 1.0 - 99 * 0.01);
-				m_rootExpire = new RegionTimer(living, new RegionTimerCallback(RootExpires), duration);
-				GameEventMgr.AddHandler(living, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
-				SendUpdates(living);
-			}
+			//if (living.EffectList.GetOfType<ChargeEffect>() == null && living.EffectList.GetOfType<SpeedOfSoundEffect>() != null)
+			//{
+			//	living.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, 1.0 - 99 * 0.01);
+			//	m_rootExpire = new RegionTimer(living, new RegionTimerCallback(RootExpires), duration);
+			//	GameEventMgr.AddHandler(living, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
+			//	SendUpdates(living);
+			//}
 
 			foreach (GamePlayer player in living.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			{
@@ -186,13 +186,13 @@ namespace DOL.GS.RealmAbilities
 				
 				mob.TakeDamage(caster, eDamageType.Spirit, dmgValue, 0);
 
-				if (mob.EffectList.GetOfType<ChargeEffect>() == null && mob.EffectList.GetOfType<SpeedOfSoundEffect>() == null)
-				{
-					mob.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, 1.0 - 99 * 0.01);
-					m_rootExpire = new RegionTimer(mob, new RegionTimerCallback(RootExpires), duration);
-					GameEventMgr.AddHandler(mob, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
-					SendUpdates(mob);
-				}
+				//if (mob.EffectList.GetOfType<ChargeEffect>() == null && mob.EffectList.GetOfType<SpeedOfSoundEffect>() == null)
+				//{
+				//	mob.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, 1.0 - 99 * 0.01);
+				//	m_rootExpire = new RegionTimer(mob, new RegionTimerCallback(RootExpires), duration);
+				//	GameEventMgr.AddHandler(mob, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
+				//	SendUpdates(mob);
+				//}
 
 				caster.Out.SendMessage("You hit the " + mob.Name + " for " + dmgValue + " damage.", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 
@@ -215,13 +215,13 @@ namespace DOL.GS.RealmAbilities
 				aeplayer.TakeDamage(caster, eDamageType.Spirit, dmgValue, 0);
 				aeplayer.StartInterruptTimer(3000, AttackData.eAttackType.Spell, caster);
 
-				if (aeplayer.EffectList.GetOfType<ChargeEffect>() == null && aeplayer.EffectList.GetOfType<SpeedOfSoundEffect>() == null)
-				{
-					(aeplayer as GameLiving).BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, 1.0 - 99 * 0.01);
-					m_rootExpire = new RegionTimer(aeplayer, new RegionTimerCallback(RootExpires), duration);
-					GameEventMgr.AddHandler(aeplayer, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
-					SendUpdates(aeplayer);
-				}
+				//if (aeplayer.EffectList.GetOfType<ChargeEffect>() == null && aeplayer.EffectList.GetOfType<SpeedOfSoundEffect>() == null)
+				//{
+				//	(aeplayer as GameLiving).BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, 1.0 - 99 * 0.01);
+				//	m_rootExpire = new RegionTimer(aeplayer, new RegionTimerCallback(RootExpires), duration);
+				//	GameEventMgr.AddHandler(aeplayer, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnAttacked));
+				//	SendUpdates(aeplayer);
+				//}
 
 				caster.Out.SendMessage("You hit " + aeplayer.Name + " for " + dmgValue + " damage.", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
 

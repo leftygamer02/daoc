@@ -57,15 +57,15 @@ namespace DOL.GS.RealmAbilities
 							targets.Add(p);
 					}
 				}
-				foreach (GamePlayer target in targets)
-				{
-					//send spelleffect
-					if (!target.IsAlive) continue;
-					GiftOfPerizorEffect GiftOfPerizor = target.EffectList.GetOfType<GiftOfPerizorEffect>();
-					if (GiftOfPerizor != null) GiftOfPerizor.Cancel(false);
-					target.TempProperties.setProperty("GiftOfPerizorOwner", player);
-					new GiftOfPerizorEffect().Start(target);
-				}
+				//foreach (GamePlayer target in targets)
+				//{
+				//	//send spelleffect
+				//	if (!target.IsAlive) continue;
+				//	GiftOfPerizorEffect GiftOfPerizor = target.EffectList.GetOfType<GiftOfPerizorEffect>();
+				//	if (GiftOfPerizor != null) GiftOfPerizor.Cancel(false);
+				//	target.TempProperties.setProperty("GiftOfPerizorOwner", player);
+				//	new GiftOfPerizorEffect().Start(target);
+				//}
 			}
 			DisableSkill(living);
 		}

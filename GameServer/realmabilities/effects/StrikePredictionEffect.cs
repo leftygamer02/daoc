@@ -36,7 +36,7 @@ namespace DOL.GS.Effects
             GameEventMgr.AddHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
             m_player.AbilityBonus[(int)eProperty.EvadeChance] += m_value;
 
-            m_player.EffectList.Add(this);
+            //m_player.EffectList.Add(this);
         }
 
         /// <summary>
@@ -49,11 +49,11 @@ namespace DOL.GS.Effects
         {
             GamePlayer player = (GamePlayer)sender;
 
-        	StrikePredictionEffect SPEffect = player.EffectList.GetOfType<StrikePredictionEffect>();
-            if (SPEffect != null)
-            {
-                SPEffect.Cancel(false);
-            }
+        	//StrikePredictionEffect SPEffect = player.EffectList.GetOfType<StrikePredictionEffect>();
+         //   if (SPEffect != null)
+         //   {
+         //       SPEffect.Cancel(false);
+         //   }
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace DOL.GS.Effects
         {
             StopTimers();
             m_player.AbilityBonus[(int)eProperty.EvadeChance] -= m_value;
-            m_player.EffectList.Remove(this);
+            //m_player.EffectList.Remove(this);
             GameEventMgr.RemoveHandler(m_player, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
         }
 

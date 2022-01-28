@@ -37,26 +37,26 @@ namespace DOL.GS.Spells
         {
 
             base.OnEffectStart(effect);
-            if (effect.Owner is GamePlayer)
-            {
-                GamePlayer player = effect.Owner as GamePlayer;
-                foreach (GameSpellEffect Effect in player.EffectList.GetAllOfType<GameSpellEffect>())
-                {
-                    if (Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
-                    {
-                        player.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
-                        return;
-                    }
-                }
-                player.Model = player.ShadeModel;
-                player.Out.SendUpdatePlayer();
-                GameEventMgr.AddHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(EventHandler));
-            }
+            //if (effect.Owner is GamePlayer)
+            //{
+            //    GamePlayer player = effect.Owner as GamePlayer;
+            //    foreach (GameSpellEffect Effect in player.EffectList.GetAllOfType<GameSpellEffect>())
+            //    {
+            //        if (Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
+            //            Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
+            //            Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
+            //            Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
+            //            Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph") ||
+            //            Effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
+            //        {
+            //            player.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
+            //            return;
+            //        }
+            //    }
+            //    player.Model = player.ShadeModel;
+            //    player.Out.SendUpdatePlayer();
+            //    GameEventMgr.AddHandler(effect.Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(EventHandler));
+            //}
         }
 
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)

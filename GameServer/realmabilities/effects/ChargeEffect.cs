@@ -48,15 +48,15 @@ namespace DOL.GS.Effects
 			//sets player into combat mode
 			living.LastAttackTickPvP = m_startTick;
 			ArrayList speedSpells = new ArrayList();
-			lock(living.EffectList)
-			{
-				foreach (IGameEffect effect in living.EffectList)
-				{
-					if (effect is GameSpellEffect == false) continue;
-					if ((effect as GameSpellEffect).Spell.SpellType == (byte)eSpellType.SpeedEnhancement)
-						speedSpells.Add(effect);
-				}
-			}
+			//lock(living.EffectList)
+			//{
+			//	foreach (IGameEffect effect in living.EffectList)
+			//	{
+			//		if (effect is GameSpellEffect == false) continue;
+			//		if ((effect as GameSpellEffect).Spell.SpellType == (byte)eSpellType.SpeedEnhancement)
+			//			speedSpells.Add(effect);
+			//	}
+			//}
 			foreach (GameSpellEffect spell in speedSpells)
 				spell.Cancel(false);
 			m_living.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, this, PropertyCalc.MaxSpeedCalculator.SPEED3);
@@ -64,13 +64,13 @@ namespace DOL.GS.Effects
 			if (m_living is GamePlayer)
 				((GamePlayer)m_living).Out.SendUpdateMaxSpeed();
 			StartTimers();
-			m_living.EffectList.Add(this);
+			//m_living.EffectList.Add(this);
 		}
 
 		public override void Cancel(bool playerCancel)
 		{
 			m_living.TempProperties.removeProperty("Charging");
-			m_living.EffectList.Remove(this);
+			//m_living.EffectList.Remove(this);
 			m_living.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, this);
 			//Send messages
 			if (m_living is GamePlayer)

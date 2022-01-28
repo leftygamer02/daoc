@@ -49,14 +49,14 @@ namespace DOL.GS.RealmAbilities
 					if (player.IsWithinRadius( grpMate, RANGE ) && grpMate.IsAlive)
 						targets.Add(grpMate);
 
-			foreach (GamePlayer target in targets)
-			{
-				MarkofPreyEffect MarkOfPrey = target.EffectList.GetOfType<MarkofPreyEffect>();
-                if (MarkOfPrey != null)
-                    MarkOfPrey.Cancel(false);
+			//foreach (GamePlayer target in targets)
+			//{
+			//	MarkofPreyEffect MarkOfPrey = target.EffectList.GetOfType<MarkofPreyEffect>();
+   //             if (MarkOfPrey != null)
+   //                 MarkOfPrey.Cancel(false);
 
-                new MarkofPreyEffect().Start(player,target);
-			}
+   //             new MarkofPreyEffect().Start(player,target);
+			//}
 
 			DisableSkill(living);
         }

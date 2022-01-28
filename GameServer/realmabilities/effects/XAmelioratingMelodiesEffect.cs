@@ -50,7 +50,7 @@ namespace DOL.GS.RealmAbilities
 			base.Start(target);
 			GamePlayer player = target as GamePlayer;
 			if (player == null) return;
-			player.EffectList.Add(this);
+			//player.EffectList.Add(this);
 			m_range = (int)(2000 * (player.GetModified(eProperty.SpellRange) * 0.01));
 			m_countDownTimer = new RegionTimer(player, new RegionTimerCallback(CountDown));
 			m_countDownTimer.Start(1);
@@ -62,7 +62,7 @@ namespace DOL.GS.RealmAbilities
 		public override void Stop()
 		{
 			base.Stop();
-			Owner.EffectList.Remove(this);
+			//Owner.EffectList.Remove(this);
 			if (m_countDownTimer != null)
 			{
 				m_countDownTimer.Stop();

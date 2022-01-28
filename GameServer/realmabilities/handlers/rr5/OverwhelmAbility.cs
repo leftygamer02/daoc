@@ -47,9 +47,9 @@ namespace DOL.GS.RealmAbilities
             GamePlayer player = living as GamePlayer;
             if (player != null)
             {
-                OverwhelmEffect Overwhelm = (OverwhelmEffect)player.EffectList.GetOfType<OverwhelmEffect>();
-                if (Overwhelm != null)
-                    Overwhelm.Cancel(false);
+                //OverwhelmEffect Overwhelm = (OverwhelmEffect)player.EffectList.GetOfType<OverwhelmEffect>();
+                //if (Overwhelm != null)
+                    //Overwhelm.Cancel(false);
 
                 new OverwhelmEffect().Start(player);
             }

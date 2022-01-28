@@ -42,12 +42,12 @@ namespace DOL.GS.Effects
 		public void Start(GameNPC controllednpc) { base.Start(controllednpc); m_pet = controllednpc; }
 		public override void Stop()
 		{
-			if (m_pet != null)
-			{
-				if (m_pet.EffectList.GetOfType<ResoluteMinionEffect>() != null) m_pet.EffectList.Remove(this);
-				if (m_pet.HasAbility(Abilities.CCImmunity)) m_pet.RemoveAbility("CCImmunity");
-			}
-			base.Stop();
+			//if (m_pet != null)
+			//{
+			//	if (m_pet.EffectList.GetOfType<ResoluteMinionEffect>() != null) m_pet.EffectList.Remove(this);
+			//	if (m_pet.HasAbility(Abilities.CCImmunity)) m_pet.RemoveAbility("CCImmunity");
+			//}
+			//base.Stop();
 		}
 		public override ushort Icon { get { return 7047; } }
 	}

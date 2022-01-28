@@ -584,8 +584,8 @@ namespace DOL.GS
 						lock (living.effectListComponent._effectsLock)
 						{
 							foreach (var effects in living.effectListComponent.Effects)
-								foreach (IGameEffect effect in effects)
-									if (effect is GameSpellEffect spellEffect && spellEffect.SpellHandler != null
+								foreach (ECSGameEffect effect in effects.Value)
+									if (effect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler != null
 										&& spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster == this)
 										EffectService.RequestCancelEffect(effect);
 						}

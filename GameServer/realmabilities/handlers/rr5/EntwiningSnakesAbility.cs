@@ -57,11 +57,11 @@ namespace DOL.GS.RealmAbilities
 			}
 
 
-			if (target.EffectList.GetOfType<EntwiningSnakesEffect>() == null)
-			{
-				EntwiningSnakesEffect effect = new EntwiningSnakesEffect();
-				effect.Start(target);
-			}
+			//if (target.EffectList.GetOfType<EntwiningSnakesEffect>() == null)
+			//{
+			//	EntwiningSnakesEffect effect = new EntwiningSnakesEffect();
+			//	effect.Start(target);
+			//}
 
 		}
 

@@ -1066,7 +1066,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
             if (font != null) font.Delete();
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -1132,7 +1132,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
             if (mine != null) mine.Delete();
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
         // constructor
@@ -1192,7 +1192,7 @@ namespace DOL.GS.Spells
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
             if (storm != null) storm.Delete();
-            effect.Owner.EffectList.Remove(effect);
+            //effect.Owner.EffectList.Remove(effect);
             return base.OnEffectExpires(effect, noMessages);
         }
 

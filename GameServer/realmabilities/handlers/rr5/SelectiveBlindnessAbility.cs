@@ -119,15 +119,15 @@ namespace DOL.GS.RealmAbilities
                 m_player.DisableSkill(this, 3 * 1000);
                 return;
             }
-            foreach (GamePlayer radiusPlayer in m_targetPlayer.GetPlayersInRadius(SpellRadius))
-            {
-                if (!GameServer.ServerRules.IsAllowedToAttack(m_player, radiusPlayer, true))
-                    continue;
+    //        foreach (GamePlayer radiusPlayer in m_targetPlayer.GetPlayersInRadius(SpellRadius))
+    //        {
+    //            if (!GameServer.ServerRules.IsAllowedToAttack(m_player, radiusPlayer, true))
+    //                continue;
 
-				SelectiveBlindnessEffect SelectiveBlindness = radiusPlayer.EffectList.GetOfType<SelectiveBlindnessEffect>();
-                if (SelectiveBlindness != null) SelectiveBlindness.Cancel(false);
-                new SelectiveBlindnessEffect(m_player).Start(radiusPlayer);
-            }
+				//SelectiveBlindnessEffect SelectiveBlindness = radiusPlayer.EffectList.GetOfType<SelectiveBlindnessEffect>();
+    //            if (SelectiveBlindness != null) SelectiveBlindness.Cancel(false);
+    //            new SelectiveBlindnessEffect(m_player).Start(radiusPlayer);
+    //        }
         }
 
         public override int GetReUseDelay(int level)

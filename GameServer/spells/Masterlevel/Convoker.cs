@@ -337,7 +337,7 @@ namespace DOL.GS.Spells
 				GameEventMgr.RemoveHandler(casterPlayer, GamePlayerEvent.CastStarting, new DOLEventHandler(PlayerMoves));
 				GameEventMgr.RemoveHandler(casterPlayer, GamePlayerEvent.AttackFinished, new DOLEventHandler(PlayerMoves));
 			}
-			effect.Owner.EffectList.Remove(effect);
+			//effect.Owner.EffectList.Remove(effect);
 			return base.OnEffectExpires(effect, noMessages);
 		}
 
@@ -555,14 +555,14 @@ namespace DOL.GS.Spells
 
 		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
-			foreach (JuggernautEffect jg in target.EffectList.GetAllOfType<JuggernautEffect>())
-			{
-				if (jg != null)
-				{
-					MessageToCaster("Your Pet already has an ability of this type active", eChatType.CT_SpellResisted);
-					return;
-				}
-			}
+			//foreach (JuggernautEffect jg in target.EffectList.GetAllOfType<JuggernautEffect>())
+			//{
+			//	if (jg != null)
+			//	{
+			//		MessageToCaster("Your Pet already has an ability of this type active", eChatType.CT_SpellResisted);
+			//		return;
+			//	}
+			//}
 
 			// Add byNefa 04.02.2011 13:35
 			// Check if Necro try to use ML9 Convoker at own Pet

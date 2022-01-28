@@ -196,7 +196,7 @@ namespace DOL.AI.Brain
                     GameLiving living = enumerator.Current.Key;
                     if (living != null &&
                         living.IsAlive &&
-                        living.EffectList.GetOfType<NecromancerShadeEffect>() == null &&
+                        EffectListService.GetEffectOnTarget(living, eEffect.Shade) == null &&
                         !mistress.IsWithinRadius(living, mistress.AttackRange))
                     {
                         inRangeLiving.Add(living);
@@ -235,7 +235,7 @@ namespace DOL.AI.Brain
                     GameLiving living = enumerator.Current.Key;
                     if (living != null &&
                         living.IsAlive &&
-                        living.EffectList.GetOfType<NecromancerShadeEffect>() == null &&
+                        EffectListService.GetEffectOnTarget(living, eEffect.Shade) == null &&
                         !mistress.IsWithinRadius(living, mistress.AttackRange))
                     {
                         inRangeLiving.Add(living);

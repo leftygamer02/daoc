@@ -902,7 +902,7 @@ namespace DOL.GS.Spells
 							return false;
 						}
 
-						if (EffectListService.GetEffectOnTarget(selectedTarget, eEffect.shade) != null)
+						if (EffectListService.GetEffectOnTarget(selectedTarget, eEffect.Shade) != null)
 						{
 							if (!quiet) MessageToCaster("Invalid target.", eChatType.CT_System);
 							return false;

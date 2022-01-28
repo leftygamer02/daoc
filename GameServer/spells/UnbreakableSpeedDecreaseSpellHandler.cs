@@ -46,11 +46,11 @@ namespace DOL.GS.Spells
 				OnSpellResisted(target);
 				return;
 			}
-			if (target.EffectList.GetOfType<ChargeEffect>() != null)
-			{
-				MessageToCaster(target.Name + " is moving to fast for this spell to have any effect!", eChatType.CT_SpellResisted);
-				return;
-			}
+			//if (target.EffectList.GetOfType<ChargeEffect>() != null)
+			//{
+			//	MessageToCaster(target.Name + " is moving to fast for this spell to have any effect!", eChatType.CT_SpellResisted);
+			//	return;
+			//}
 
 			base.ApplyEffectOnTarget(target, effectiveness);
 		}

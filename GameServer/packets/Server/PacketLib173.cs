@@ -53,149 +53,149 @@ namespace DOL.GS.PacketHandler
 
         public override void SendWarlockChamberEffect(GamePlayer player)
         {
-        	using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.VisualEffect)))
-        	{
+        	//using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.VisualEffect)))
+        	//{
 
-	            pak.WriteShort((ushort)player.ObjectID);
-	            pak.WriteByte((byte)3);
+	        //    pak.WriteShort((ushort)player.ObjectID);
+	        //    pak.WriteByte((byte)3);
 	
-	            SortedList sortList = new SortedList();
-	            sortList.Add(1, null);
-	            sortList.Add(2, null);
-	            sortList.Add(3, null);
-	            sortList.Add(4, null);
-	            sortList.Add(5, null);
-	            lock (player.EffectList)
-	            {
-	                foreach (IGameEffect fx in player.EffectList)
-	                {
-	                    if (fx is GameSpellEffect)
-	                    {
-	                        GameSpellEffect effect = (GameSpellEffect)fx;
-	                        if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == (byte)eSpellType.Chamber))
-	                        {
-	                            ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
-	                            sortList[chamber.EffectSlot] = effect;
-	                        }
-	                    }
-	                }
-	                foreach (GameSpellEffect effect in sortList.Values)
-	                {
-	                    if (effect == null)
-	                    {
-	                        pak.WriteByte((byte)0);
-	                    }
-	                    else
-	                    {
-	                        ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
-	                        if (chamber.PrimarySpell != null && chamber.SecondarySpell == null)
-	                        {
-	                            pak.WriteByte((byte)3);
-	                        }
-	                        else if (chamber.PrimarySpell != null && chamber.SecondarySpell != null)
-	                        {
-	                            if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Lifedrain)
-	                                pak.WriteByte(0x11);
-	                            else if (chamber.SecondarySpell.SpellType.ToString().IndexOf("SpeedDecrease") != -1)
-	                                pak.WriteByte(0x33);
-	                            else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.PowerRegenBuff)
-	                                pak.WriteByte(0x77);
-	                            else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DirectDamage)
-	                                pak.WriteByte(0x66);
-	                            else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.SpreadHeal)
-	                                pak.WriteByte(0x55);
-	                            else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Nearsight)
-	                                pak.WriteByte(0x44);
-	                            else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DamageOverTime)
-	                                pak.WriteByte(0x22);
-	                        }
-	                    }
-	                }
-	            }
-	            //pak.WriteByte(0x11);
-	            //pak.WriteByte(0x22);
-	            //pak.WriteByte(0x33);
-	            //pak.WriteByte(0x44);
-	            //pak.WriteByte(0x55);
-	            pak.WriteInt(0);
+	        //    SortedList sortList = new SortedList();
+	        //    sortList.Add(1, null);
+	        //    sortList.Add(2, null);
+	        //    sortList.Add(3, null);
+	        //    sortList.Add(4, null);
+	        //    sortList.Add(5, null);
+	        //    lock (player.EffectList)
+	        //    {
+	        //        foreach (IGameEffect fx in player.EffectList)
+	        //        {
+	        //            if (fx is GameSpellEffect)
+	        //            {
+	        //                GameSpellEffect effect = (GameSpellEffect)fx;
+	        //                if (effect.SpellHandler.Spell != null && (effect.SpellHandler.Spell.SpellType == (byte)eSpellType.Chamber))
+	        //                {
+	        //                    ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
+	        //                    sortList[chamber.EffectSlot] = effect;
+	        //                }
+	        //            }
+	        //        }
+	        //        foreach (GameSpellEffect effect in sortList.Values)
+	        //        {
+	        //            if (effect == null)
+	        //            {
+	        //                pak.WriteByte((byte)0);
+	        //            }
+	        //            else
+	        //            {
+	        //                ChamberSpellHandler chamber = (ChamberSpellHandler)effect.SpellHandler;
+	        //                if (chamber.PrimarySpell != null && chamber.SecondarySpell == null)
+	        //                {
+	        //                    pak.WriteByte((byte)3);
+	        //                }
+	        //                else if (chamber.PrimarySpell != null && chamber.SecondarySpell != null)
+	        //                {
+	        //                    if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Lifedrain)
+	        //                        pak.WriteByte(0x11);
+	        //                    else if (chamber.SecondarySpell.SpellType.ToString().IndexOf("SpeedDecrease") != -1)
+	        //                        pak.WriteByte(0x33);
+	        //                    else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.PowerRegenBuff)
+	        //                        pak.WriteByte(0x77);
+	        //                    else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DirectDamage)
+	        //                        pak.WriteByte(0x66);
+	        //                    else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.SpreadHeal)
+	        //                        pak.WriteByte(0x55);
+	        //                    else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.Nearsight)
+	        //                        pak.WriteByte(0x44);
+	        //                    else if (chamber.SecondarySpell.SpellType == (byte)eSpellType.DamageOverTime)
+	        //                        pak.WriteByte(0x22);
+	        //                }
+	        //            }
+	        //        }
+	        //    }
+	        //    //pak.WriteByte(0x11);
+	        //    //pak.WriteByte(0x22);
+	        //    //pak.WriteByte(0x33);
+	        //    //pak.WriteByte(0x44);
+	        //    //pak.WriteByte(0x55);
+	        //    pak.WriteInt(0);
 	
-	            foreach (GamePlayer plr in player.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-	            {
-	                if (player != plr)
-	                    plr.Client.PacketProcessor.SendTCP(pak);
-	            }
+	        //    foreach (GamePlayer plr in player.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+	        //    {
+	        //        if (player != plr)
+	        //            plr.Client.PacketProcessor.SendTCP(pak);
+	        //    }
 	
-	            SendTCP(pak);
-        	}
+	        //    SendTCP(pak);
+        	//}
         }
 
 		public override void SendUpdateIcons(IList changedEffects, ref int lastUpdateEffectsCount)
 		{
-			if (m_gameClient.Player == null)
-				return;
-			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.UpdateIcons)))
-			{
-				long initPos = pak.Position;
+			//if (m_gameClient.Player == null)
+			//	return;
+			//using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.UpdateIcons)))
+			//{
+			//	long initPos = pak.Position;
 	
-				int fxcount = 0;
-				int entriesCount = 0;
-				lock (m_gameClient.Player.EffectList)
-				{
-					pak.WriteByte(0);	// effects count set in the end
-					pak.WriteByte(0);	// unknown
-					pak.WriteByte(0);	// unknown
-					pak.WriteByte(0);	// unknown
-					foreach (IGameEffect effect in m_gameClient.Player.EffectList)
-					{
-						if (effect.Icon != 0)
-						{
-							fxcount++;
-							if (changedEffects != null && !changedEffects.Contains(effect))
-								continue;
-							//						Log.DebugFormat("adding [{0}] '{1}'", fxcount-1, effect.Name);
-							pak.WriteByte((byte)(fxcount - 1)); // icon index
-							pak.WriteByte((effect is GameSpellEffect) ? (byte)(fxcount - 1) : (byte)0xff);
+			//	int fxcount = 0;
+			//	int entriesCount = 0;
+			//	lock (m_gameClient.Player.EffectList)
+			//	{
+			//		pak.WriteByte(0);	// effects count set in the end
+			//		pak.WriteByte(0);	// unknown
+			//		pak.WriteByte(0);	// unknown
+			//		pak.WriteByte(0);	// unknown
+			//		foreach (IGameEffect effect in m_gameClient.Player.EffectList)
+			//		{
+			//			if (effect.Icon != 0)
+			//			{
+			//				fxcount++;
+			//				if (changedEffects != null && !changedEffects.Contains(effect))
+			//					continue;
+			//				//						Log.DebugFormat("adding [{0}] '{1}'", fxcount-1, effect.Name);
+			//				pak.WriteByte((byte)(fxcount - 1)); // icon index
+			//				pak.WriteByte((effect is GameSpellEffect) ? (byte)(fxcount - 1) : (byte)0xff);
 							
-							byte ImmunByte = 0;
-							var gsp = effect as GameSpellEffect;
-							if (gsp != null && gsp.IsDisabled)
-								ImmunByte = 1;
-							pak.WriteByte(ImmunByte); // new in 1.73; if non zero says "protected by" on right click
+			//				byte ImmunByte = 0;
+			//				var gsp = effect as GameSpellEffect;
+			//				if (gsp != null && gsp.IsDisabled)
+			//					ImmunByte = 1;
+			//				pak.WriteByte(ImmunByte); // new in 1.73; if non zero says "protected by" on right click
 							
-							// bit 0x08 adds "more..." to right click info
-							pak.WriteShort(effect.Icon);
-							//pak.WriteShort(effect.IsFading ? (ushort)1 : (ushort)(effect.RemainingTime / 1000));
-							pak.WriteShort((ushort)(effect.RemainingTime / 1000));
-							pak.WriteShort(effect.InternalID);      // reference for shift+i or cancel spell
-							pak.WritePascalString(effect.Name);
-							entriesCount++;
-						}
-					}
+			//				// bit 0x08 adds "more..." to right click info
+			//				pak.WriteShort(effect.Icon);
+			//				//pak.WriteShort(effect.IsFading ? (ushort)1 : (ushort)(effect.RemainingTime / 1000));
+			//				pak.WriteShort((ushort)(effect.RemainingTime / 1000));
+			//				pak.WriteShort(effect.InternalID);      // reference for shift+i or cancel spell
+			//				pak.WritePascalString(effect.Name);
+			//				entriesCount++;
+			//			}
+			//		}
 	
-					int oldCount = lastUpdateEffectsCount;
-					lastUpdateEffectsCount = fxcount;
-					while (oldCount > fxcount)
-					{
-						pak.WriteByte((byte)(fxcount++));
-						pak.Fill(0, 9);
-						entriesCount++;
-						//					Log.DebugFormat("adding [{0}] (empty)", fxcount-1);
-					}
+			//		int oldCount = lastUpdateEffectsCount;
+			//		lastUpdateEffectsCount = fxcount;
+			//		while (oldCount > fxcount)
+			//		{
+			//			pak.WriteByte((byte)(fxcount++));
+			//			pak.Fill(0, 9);
+			//			entriesCount++;
+			//			//					Log.DebugFormat("adding [{0}] (empty)", fxcount-1);
+			//		}
 	
-					if (changedEffects != null)
-						changedEffects.Clear();
+			//		if (changedEffects != null)
+			//			changedEffects.Clear();
 	
-					if (entriesCount == 0)
-						return; // nothing changed - no update is needed
+			//		if (entriesCount == 0)
+			//			return; // nothing changed - no update is needed
 	
-					pak.Position = initPos;
-					pak.WriteByte((byte)entriesCount);
-					pak.Seek(0, SeekOrigin.End);
+			//		pak.Position = initPos;
+			//		pak.WriteByte((byte)entriesCount);
+			//		pak.Seek(0, SeekOrigin.End);
 	
-					SendTCP(pak);
-					//				Log.Debug("packet sent.");
-				}
-			}
+			//		SendTCP(pak);
+			//		//				Log.Debug("packet sent.");
+			//	}
+			//}
 		}
 
 		public override void SendRegions(ushort regionId)
