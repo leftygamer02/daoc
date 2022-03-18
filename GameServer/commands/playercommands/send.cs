@@ -24,25 +24,36 @@ namespace DOL.GS.Commands
 	[CmdAttribute(
 		"&send",
 		new [] { "&tell", "&t" },
-		ePrivLevel.Player,
-		// Displays next to the command when '/cmd' is entered
-		"Sends a private message to the target player.",
-		"PLCommands.SendMessage.Syntax.Send")]
+		// Message: '/send', '/tell', '/t' - Sends a private message to the target player.
+		"PLCommands.SendMessage.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		ePrivLevel.Player, // Required minimum privilege level to use the command
+		// Message: Sends a private message to the target player, which no one else can see. These messages cannot be sent if the target is offline or '/anon' is enabled.
+		"PLCommands.SendMessage.Description",
+		// Syntax: /send <targetName> <message>
+		"PLCommands.SendMessage.Syntax.Send",
+		// Syntax: /tell <targetName> <message>
+		"PLCommands.SendMessage.Syntax.Tell1",
+		// Syntax: /t <targetName> <message>
+		"PLCommands.SendMessage.Syntax.Tell2",
+		// Message: Sends a private message to the target player.
+		"PLCommands.SendMessage.Usage.Send")]
 	public class SendCommandHandler : AbstractCommandHandler, ICommandHandler
 	{
 		public void OnCommand(GameClient client, string[] args)
 		{
 			if (args.Length < 3)
 			{
-				// Message: '/send <targetName> <message>' - Sends a private message to the target player.
-				ChatUtil.SendSystemMessage(client, "PLCommands.SendMessage.Syntax.Send", null);
+				// Lists '/send' command syntax (see section above)
+				DisplaySyntax(client);
 				return;
 			}
 
 			if (IsSpammingCommand(client.Player, "send", 500))
 			{
-				// Message: "Slow down, you're typing too fast--make the moment last."
-				ChatUtil.SendSystemMessage(client, "Social.SendMessage.Err.SlowDown", null);
+				// Message: Slow down, you're typing too fast--make the moment last.
+				ChatUtil.SendTypeMessage("system", client, "AllCommands.Command.Spam.SlowDown", null);
 				return;
 			}
 
@@ -60,7 +71,7 @@ namespace DOL.GS.Commands
 			if (targetClient == null)
 			{
 				// Message: "{0} is not in the game, or is a member of another realm."
-				ChatUtil.SendSystemMessage(client, "Social.SendMessage.Err.OfflineOtherRealm", name);
+				ChatUtil.SendTypeMessage("error", client, "Social.SendMessage.Err.OfflineOtherRealm", name);
 				return;
 			}
 
@@ -70,17 +81,17 @@ namespace DOL.GS.Commands
 				if (client.Account.PrivLevel == (uint)ePrivLevel.Player)
 				{
 					// Message: "{0} is not in the game, or is a member of another realm."
-					ChatUtil.SendSystemMessage(client, "Social.SendMessage.Err.OfflineOtherRealm", name);
+					ChatUtil.SendTypeMessage("error", client, "Social.SendMessage.Err.OfflineOtherRealm", name);
 					// Message: {0} tried to send you a message: "{1}"
-					ChatUtil.SendSendMessage(targetClient.Player, "Social.ReceiveMessage.Staff.TriedToSend", client.Player.Name, message);
+					ChatUtil.SendTypeMessage("send", targetClient.Player, "Social.ReceiveMessage.Staff.TriedToSend", client.Player.Name, message);
 				}
+				// Let staff ignore the '.IsAnonymous' state with other team members
 				if (client.Account.PrivLevel > (uint)ePrivLevel.Player)
 				{
-					// Let staff ignore anon state for other staff members
 					// Message: You send, "{0}" to {1} [ANON].
-					ChatUtil.SendSendMessage(client, "Social.SendMessage.Staff.YouSendAnon", message, targetClient.Player.Name);
+					ChatUtil.SendTypeMessage("send", client, "Social.SendMessage.Staff.YouSendAnon", message, targetClient.Player.Name);
 					// Message: {0} [TEAM] sends, "{1}"
-					ChatUtil.SendGMMessage(targetClient.Player, "Social.ReceiveMessage.Staff.SendsToYou", client.Player.Name, message);
+					ChatUtil.SendTypeMessage("staff", targetClient.Player, "Social.ReceiveMessage.Staff.SendsToYou", client.Player.Name, message);
 				}
                 return;
             }
@@ -89,14 +100,14 @@ namespace DOL.GS.Commands
 			{
 				case 2: // Name not unique based on partial entry
 					// Message: "{0} is not a unique character name."
-					ChatUtil.SendSystemMessage(client, "Social.SendMessage.Err.NameNotUnique", name);
+					ChatUtil.SendTypeMessage("error", client, "Social.SendMessage.Err.NameNotUnique", name);
 					return;
 				case 3: // Exact name match
 				case 4: // Guessed name based on partial entry
 					if (targetClient == client)
 					{
 						// Message: "You can't message yourself!"
-						ChatUtil.SendSystemMessage(client, "Social.SendMessage.Err.CantMsgYourself", null);
+						ChatUtil.SendTypeMessage("error", client, "Social.SendMessage.Err.CantMsgYourself", null);
 					}
 					else
 					{
