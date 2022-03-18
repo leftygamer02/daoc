@@ -5,10 +5,21 @@ using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Commands
 {
-    [Cmd(
+    [CmdAttribute(
+        // Enter '/summonmerchant' to list all associated subcommands
         "&summonmerchant",
-        ePrivLevel.Admin, // Set to player.
-        "/summonmerchant - summon a merchant at the cost of 10g")]
+        // Message: '/summonmerchant' - Summons a merchant that sells charged items to summon additional merchants.
+        "PLCommands.SummonMerch.CmdList.Description",
+        // Message: <----- '/{0}' Command {1}----->
+        "AllCommands.Header.General.Commands",
+        // Required minimum privilege level to use the command
+        ePrivLevel.Admin,
+        // Message: Summons a merchant that sells charged items to summon additional merchants.
+        "PLCommands.SummonMerch.Description",
+        // Syntax: /summonmerchant
+        "PLCommands.SummonMerch.Syntax.SummonMerchant",
+        // Message: Summons a merchant.
+        "PLCommands.SummonMerch.Usage.SummonMerchant")]
     public class SummonMerchantCommandHandler : AbstractCommandHandler, ICommandHandler
     {
         [ScriptLoadedEvent]
@@ -18,39 +29,30 @@ namespace DOL.GS.Commands
             load = MerchantSpell;
         }
 
-        #region Command Timer
-
         public const string SummonMerch = "SummonMerch";
 
         public void OnCommand(GameClient client, string[] args)
-        {
+        { 
             var player = client.Player;
             var merchTick = player.TempProperties.getProperty(SummonMerch, 0L);
             var changeTime = GameLoop.GameLoopTime - merchTick;
-            if (changeTime < 30000)
+            
+            if (changeTime < 30000 && client.Account.PrivLevel == 1) // Staff can override timer
             {
-                player.Out.SendMessage(
-                    "You must wait " + ((30000 - changeTime)/1000) + " more second to attempt to use this command!",
-                    eChatType.CT_System, eChatLoc.CL_ChatWindow);
+                // Message: You must wait {0} more seconds before you may use this command again!
+                ChatUtil.SendTypeMessage("error", client, "AllCommands.Command.Err.YouMustWaitToUse", null);
                 return;
             }
-            player.TempProperties.setProperty(SummonMerch, GameLoop.GameLoopTime);
-
-            #endregion Command timer
             
-            #region Command spell Loader             
+            player.TempProperties.setProperty(SummonMerch, GameLoop.GameLoopTime);
 
             var line = new SpellLine("MerchantCast", "Merchant Cast", "unknown", false);
             var spellHandler = ScriptMgr.CreateSpellHandler(client.Player, MerchantSpell, line);
             if (spellHandler != null)
                 spellHandler.StartSpell(client.Player);
-            client.Player.Out.SendMessage("You have summoned a merchant!", eChatType.CT_Important,
-                eChatLoc.CL_SystemWindow);
-
-            #endregion command spell loader
+            // Message: You have summoned a merchant!
+            ChatUtil.SendTypeMessage("success", client, "PLCommands.SummonMerch.Msg.YouSummoned", null);
         }
-
-        #region Spell
 
         protected static Spell MMerchantSpell;
 
@@ -60,7 +62,7 @@ namespace DOL.GS.Commands
             {
                 if (MMerchantSpell == null)
                 {
-                    var spell = new DBSpell {CastTime = 0, ClientEffect = 0, Duration = 15};
+                    var spell = new DBSpell {CastTime = 0, ClientEffect = 0, Duration = 30};
                     spell.Description = "Summons a merchant to your location for " + spell.Duration + " seconds.";
                     spell.Name = "Merchant Spell";
                     spell.Type = "SummonMerchant";
@@ -74,10 +76,6 @@ namespace DOL.GS.Commands
                 return MMerchantSpell;
             }
         }
-
-        #endregion
-
-        #region Npc
 
         protected static NpcTemplate MMerchantTemplate;
 
@@ -98,7 +96,5 @@ namespace DOL.GS.Commands
                 return MMerchantTemplate;
             }
         }
-
-        #endregion
     }
 }
