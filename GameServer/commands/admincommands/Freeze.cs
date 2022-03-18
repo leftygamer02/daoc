@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 using DOL.GS.PacketHandler;
@@ -24,10 +25,20 @@ using DOL.Language;
 namespace DOL.GS.Commands
 {
 	[CmdAttribute(
+		// Enter '/freeze' to list all associated subcommands
 		"&freeze",
+		// Message: '/freeze' - Triggers a brief pause in the region time for testing purposes.
+		"AdminCommands.Freeze.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		// Required minimum privilege level to use the command
 		ePrivLevel.Admin,
-		"Freeze The region timer you're in. (Test purpose only)",
-		"/freeze {seconds}")]
+		// Message: "Triggers a brief pause in the region time for testing purposes."
+		"AdminCommands.Freeze.Description",
+		// Syntax: /freeze <seconds>
+		"AdminCommands.Freeze.Syntax.Freeze",
+		// Message: "Freezes the region time for the specified number of seconds."
+		"AdminCommands.Freeze.Usage.Freeze")]
 	public class Freeze : AbstractCommandHandler, ICommandHandler
 	{
 		private int delay = 0;
@@ -36,6 +47,7 @@ namespace DOL.GS.Commands
 		{
 			if (args.Length < 2)
 			{
+				// Lists all '/freeze' type commands' syntax (see section above)
 				DisplaySyntax(client);
 				return;
 			}
@@ -46,9 +58,15 @@ namespace DOL.GS.Commands
 				{
 					delay = Convert.ToInt32(args[1]);
 					new RegionTimer(client.Player, FreezeCallback).Start(1);
+					
+					// Message: "The region time will now stop for {0} seconds. Please stand by..."
+					ChatUtil.SendTypeMessage("staff", client, "AdminCommands.Freeze.Msg.Freezing", delay);
 				}
 				catch
 				{
+					// Message: "The command did not work as expected! Please make sure you entered a numeric value to indicate the number of seconds to freeze the region timer."
+					ChatUtil.SendTypeMessage("error", client, "AdminCommands.Freeze.Err.Freeze", null);
+					ChatUtil.SendTypeMessage("", client, "", null);
 				}
 			}
 
