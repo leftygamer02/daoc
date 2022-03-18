@@ -2,7 +2,9 @@
 
 ## System
 GamePlayer.SaveIntoDatabase.CharacterSaved:		Your character has been saved.
+GamePlayer.State.Saved.CharacterSaved:              Your character has been saved.
 GamePlayer.OnLinkdeath.Linkdead:			    {0} went linkdead!
+GamePlayer.State.Linkdead.WentLinkdead:             {0} went linkdead!
 
 ## Examine
 GamePlayer.GetExamineMessages.RealmMember:			You examine {0}. {1} is a member of the {2} class in your realm.
@@ -65,7 +67,7 @@ GamePlayer.Attack.Location.Torso:			torso
 
 ## Communication
 System.NoSense:								That would make no sense!
-Social.SendMessage.Err.SlowDown:                        Slow down, you're typing too fast--make the moment last.
+
 Social.SendMessage.Err.OfflineOtherRealm:                {0} is not in the game, or is a member of another realm.
 Social.SendMessage.Err.CantMsgYourself:                 You can't message yourself!
 Social.SendAdvice.Msg.Channel:				                [ADVICE {0}] {1}: {2}
@@ -127,6 +129,7 @@ GameNPC.Interact.AlreadyRiding:				You are already riding this {0}.
 GamePlayer.IsOnHorse.MountSteed:			You mount your steed.
 GamePlayer.Sit.MustDismount:				You must dismount first.
 GamePlayer.UseSlot.MustDismountBefore:			You must dismount first.
+GamePlayer.Action.Err.DismountFirst:				You must dismount first!
 
 ## Kill Spam
 GamePlayer.Die.Killed:							{0} was just killed!

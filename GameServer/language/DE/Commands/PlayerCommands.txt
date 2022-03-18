@@ -246,9 +246,9 @@ Scripts.Players.Chatgroup.Usage:			Verwendet: /c <text>
 Scripts.Players.Chatgroup.UsageInvite:			Verwendet: /cg invite <playername>"
 
 # /Cmdhelp
-Scripts.Players.Cmdhelp.NoCommand:			Den Befehl {0} gibt es nicht.
-Scripts.Players.Cmdhelp.PlvlCommands:			<---------Befehle für Berechtigungsstufe {0}--------->
-Scripts.Players.Cmdhelp.Usage:				>-------Befehlsform für {0}-------<
+PLCommands.Cmd.Err.DoesNotExist:			    Den Befehl {0} gibt es nicht.
+PLCommands.Header.Cmd.AvailableCmds:			<----- {0} Befehle ----->
+PLCommands.Header.Cmd.Subcommands:				<----- '/{0}' Befehlsform ----->
 
 # /Disband
 Scripts.Players.Disband.Disbanded:			{o} wurde aus der Gruppe entlassen.

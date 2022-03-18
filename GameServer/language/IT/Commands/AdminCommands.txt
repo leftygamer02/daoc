@@ -1,9 +1,9 @@
 ﻿
 # /serverproperties Command
-AdminCommands.ServerProperties.Description:			Ricarica le proprietà del server dal database
-AdminCommands.ServerProperties.Usage:				/serverproperties
-AdminCommands.ServerProperties.DataBaseXML:			XML è cache, non poi aggiornare le proprietà del server a meno che non usi il database MySQL!
-AdminCommands.ServerProperties.PropertiesRefreshed:	Le proprietà del server aggiornati!
+AdminCommands.ServerProp.Description:			Ricarica le proprietà del server dal database
+AdminCommands.ServerProp.Syntax.ServerProp:				/serverproperties
+AdminCommands.ServerProp.XMLOld.Sorry:			XML è cache, non poi aggiornare le proprietà del server a meno che non usi il database MySQL!
+AdminCommands.ServerProp.Msg.PropsRefreshed:	Le proprietà del server aggiornati!
 
 
 # /plvl Command
@@ -20,9 +20,9 @@ AdminCommands.plvl.PlayerPlvlHasBeenSetted:			{0} livello di privilegio è stato
 
 # /code Command
 AdminCommands.Code.Description:						Esegue codice personalizzato!
-AdminCommands.Code.Usage:							/code <FrammentoDiCodice>
-AdminCommands.Code.ErrorCompiling:					Errore durante la compilazione dell'espressione:
-AdminCommands.Code.CodeExecuted:					Codice eseguito...
+AdminCommands.Code.Syntax.Code:							/code <FrammentoDiCodice>
+AdminCommands.Code.Err.Compiling:					Errore durante la compilazione dell'espressione:
+AdminCommands.Code.Msg.CodeExecuted:					Codice eseguito...
 
 
 # /account Command
