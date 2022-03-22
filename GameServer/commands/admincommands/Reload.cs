@@ -25,6 +25,9 @@ using log4net;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/reload' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/reload' to list all associated subcommands
 		"&reload",
@@ -96,9 +99,7 @@ namespace DOL.GS.Commands
 		{
 			if (client.Player == null) return;
 			
-			ushort region = 0;
-			if (client.Player != null)
-				region = client.Player.CurrentRegionID;
+			ushort region = client.Player.CurrentRegionID;
 			string arg = "";
 			int argLength = args.Length - 1;
 
@@ -108,227 +109,236 @@ namespace DOL.GS.Commands
 				return;
 			}
 			
-			if (argLength > 1)
+			if (args[1] == "mob" && args.Length == 1)
 			{
-				switch (args[1])
+				// Message: <----- '/{0}{1}' Subcommand {3}----->
+				// Message: Use the following syntax for this command:
+				// Syntax: /reload mob [all|model|name|realm]
+				// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and the filter specified.
+				DisplayHeadSyntax(client, "reload", "mob", "", 3, false, "AdminCommands.Reload.Syntax.Mob", "AdminCommands.Reload.Usage.Mob");
+				return;
+			}
+			
+			switch (args[1].ToLower())
+			{
+				case "mob":
 				{
-					case "mob":
-					{
-						switch (args[2])
-						{
-							case "all":
-							case "":
-							{
-								arg = "all";
-								ReloadMobs(client, region, arg, arg);
-								return;
-							}
-							case "model":
-							{
-								if (argLength == 2)
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload mob model <modelID>
-									// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and the model ID specified.
-									DisplayHeadSyntax(client, "reload", "mob", "model", 3, false, "AdminCommands.Reload.Syntax.ModelMob", "AdminCommands.Reload.Usage.ModelMob");
-									return;
-								}
-								arg = args[3];
-								ReloadMobs(client, region, args[2], arg);
-								return;
-							}
-							case "name":
-							{
-								if (argLength == 2)
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload mob name <mobName>
-									// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the name specified.
-									DisplayHeadSyntax(client, "reload", "mob", "name", 3, false, "AdminCommands.Reload.Syntax.NameMob", "AdminCommands.Reload.Usage.NameMob");
-									return;
-								}
-								
-								arg = String.Join(" ", args, 3, args.Length - 3);
-								ReloadMobs(client, region, args[2], arg);
-								return;
-							}
-							case "realm":
-							{
-								if (argLength == 2)
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload mob realm <realm>
-									// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
-									DisplayHeadSyntax(client, "reload", "mob", "realm", 3, false, "AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
-									return;
-								}
-								
-								if (args[3] == "0" || args[3] == "None" || args[3] == "none" || args[3] == "no" || args[3] == "n")
-									arg = "None";
-								else if (args[3] == "1" || args[3] == "a" || args[3] == "alb" || args[3] == "Alb" || args[3] == "albion" || args[3] == "Albion")
-									arg = "Albion";
-								else if (args[3] == "2" || args[3] == "m" || args[3] == "mid" || args[3] == "Mid" || args[3] == "midgard" || args[3] == "Midgard")
-									arg = "Midgard";
-								else if (args[3] == "3" || args[3] == "h" || args[3] == "hib" || args[3] == "Hib" || args[3] == "hibernia" || args[3] == "Hibernia")
-									arg = "Hibernia";
-								else
-								{
-									// Message: <----- '/{0}' Command {1}----->
-									// Message: <----- '/{0}{1}' Subcommand {2}----->
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: It is recommended that you perform actions associated with this command with the Atlas Admin (https://admin.atlasfreeshard.com). Otherwise, use the following syntax:
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload mob realm <realm>
-									// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
-									DisplayHeadSyntax(client, "reload", "mob", "realm", 3, false,
-										"AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
-									return;
-								}
-								
-								ReloadMobs(client, region, args[2], arg);
-							} 
-								break;
-						}
-						break;
-					}
-					case "npctemplates":
-					{
-						NpcTemplateMgr.Reload();
-						client.Out.SendMessage("NPC templates reloaded.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						// Message: Reload complete! All NPC Templates have been added to the live cache.
-						ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.NPCTempReloaded", null);
-						log.Info("NPC templates reloaded.");
-						return;
-					}
-					case "object":
-					{
-						switch (args[2])
-						{
-							case "all":
-							case "":
-							{
-								arg = "all";
-								ReloadStaticItem(client, region, arg, arg);
-								return;
-							}
-							case "model":
-							{
-								if (argLength == 2)
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload object model <modelID>
-									// Message: Reloads all in-game objects in your current region with the 'GameStaticItem' type and the model ID specified.
-									DisplayHeadSyntax(client, "reload", "mob", "model", 3, false, "AdminCommands.Reload.Syntax.ModelObject", "AdminCommands.Reload.Usage.ModelObject");
-									return;
-								}
-								arg = args[3];
-								ReloadStaticItem(client, region, args[2], arg);
-								return;
-							}
-							case "name":
-							{
-								if (argLength == 2)
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload object name <objName>
-									// Message: Reloads all in-game objects in your current region with the 'GameStaticItem' type and matching the name specified.
-									DisplayHeadSyntax(client, "reload", "object", "name", 3, false, "AdminCommands.Reload.Syntax.NameObject", "AdminCommands.Reload.Usage.NameObject");
-									return;
-								}
-								
-								arg = String.Join(" ", args, 3, args.Length - 3);
-								ReloadStaticItem(client, region, args[2], arg);
-								return;
-							}
-							case "realm":
-							{
-								if (argLength == 2)
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload mob realm <realm>
-									// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
-									DisplayHeadSyntax(client, "reload", "object", "realm", 3, false, "AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
-									return;
-								}
-								
-								if (args[3] == "0" || args[3] == "None" || args[3] == "none" || args[3] == "no" || args[3] == "n")
-									arg = "None";
-								else if (args[3] == "1" || args[3] == "a" || args[3] == "alb" || args[3] == "Alb" || args[3] == "albion" || args[3] == "Albion")
-									arg = "Albion";
-								else if (args[3] == "2" || args[3] == "m" || args[3] == "mid" || args[3] == "Mid" || args[3] == "midgard" || args[3] == "Midgard")
-									arg = "Midgard";
-								else if (args[3] == "3" || args[3] == "h" || args[3] == "hib" || args[3] == "Hib" || args[3] == "hibernia" || args[3] == "Hibernia")
-									arg = "Hibernia";
-								else
-								{
-									// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
-									// Message: Use the following syntax for this command:
-									// Syntax: /reload mob realm <realm>
-									// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
-									DisplayHeadSyntax(client, "reload", "object", "realm", 3, false,
-										"AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
-									return;
-								}
-								
-								ReloadStaticItem(client, region, args[2], arg);
-								return;
-							}
-						}
-						break;
-					}
-					case "realm":
-					{
-						// Message: <----- Realm Syntax ----->
+					if (args.Length == 1)
 						ChatUtil.SendTypeMessage("cmdHeader", client, "AdminCommands.Reload.Header.Realms", null);
-						// Message: None = 0, n, no, none
-						ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.NoneRealm", null);
-						// Message: Albion = 1, a, alb, albion
-						ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.AlbRealm", null);
-						// Message: Midgard = 2, m, mid, midgard
-						ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.MidRealm", null);
-						// Message: Hibernia = 3, h, hib, hibernia
-						ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.HibRealm", null);
-						return;
-					}
-					case "specs":
+					if (args.Length >= 2)
 					{
-						int count = SkillBase.LoadSpecializations();
-						// Message: Reload complete! {0} specializations have been added to the live cache.
-						ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.SpecsReloaded", count);
-						log.Info(string.Format("{0} specializations loaded.", count));
-						return;
+						if (args[2] == "all")
+						{
+							arg = "all";
+							ReloadMobs(client, region, arg, arg);
+							return;
+						}
+						if (args[2] == "model")
+						{
+							if (argLength == 2)
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload mob model <modelID>
+								// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and the model ID specified.
+								DisplayHeadSyntax(client, "reload", "mob", "model", 3, false, "AdminCommands.Reload.Syntax.ModelMob", "AdminCommands.Reload.Usage.ModelMob");
+								return;
+							}
+							arg = args[3];
+							ReloadMobs(client, region, args[2], arg);
+							return;
+						}
+						if (args[2] == "name")
+						{
+							if (argLength == 2)
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload mob name <mobName>
+								// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the name specified.
+								DisplayHeadSyntax(client, "reload", "mob", "name", 3, false, "AdminCommands.Reload.Syntax.NameMob", "AdminCommands.Reload.Usage.NameMob");
+								return;
+							}
+								
+							arg = String.Join(" ", args, 3, args.Length - 3);
+							ReloadMobs(client, region, args[2], arg);
+							return;
+						}
+						if (args[2] == "realm")
+						{
+							if (argLength == 2)
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload mob realm <realm>
+								// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
+								DisplayHeadSyntax(client, "reload", "mob", "realm", 3, false, "AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
+								return;
+							}
+								
+							if (args[3] == "0" || args[3] == "none" || args[3] == "no" || args[3] == "n")
+								arg = "None";
+							else if (args[3] == "1" || args[3] == "a" || args[3] == "alb" || args[3] == "albion")
+								arg = "Albion";
+							else if (args[3] == "2" || args[3] == "m" || args[3] == "mid" || args[3] == "midgard")
+								arg = "Midgard";
+							else if (args[3] == "3" || args[3] == "h" || args[3] == "hib" || args[3] == "hibernia")
+								arg = "Hibernia";
+							else
+							{
+								// Message: <----- '/{0}' Command {1}----->
+								// Message: <----- '/{0}{1}' Subcommand {2}----->
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: It is recommended that you perform actions associated with this command with the Atlas Admin (https://admin.atlasfreeshard.com). Otherwise, use the following syntax:
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload mob realm <realm>
+								// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
+								DisplayHeadSyntax(client, "reload", "mob", "realm", 3, false,
+									"AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
+								return;
+							}
+								
+							ReloadMobs(client, region, args[2], arg);
+							return;
+						}
 					}
-					case "spells":
+					break;
+				}
+				case "npctemplates":
+				{
+					NpcTemplateMgr.Reload();
+					client.Out.SendMessage("NPC templates reloaded.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					// Message: Reload complete! All NPC Templates have been added to the live cache.
+					ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.NPCTempReloaded", null);
+					log.Info("NPC templates reloaded.");
+					return;
+				}
+				case "object":
+				{
+					switch (args[2])
 					{
-						SkillBase.ReloadDBSpells();
-						int loaded = SkillBase.ReloadSpellLines();
-						// Message: Reload complete! {0} spells from all spell lines have been added to the live cache.
-						ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.SpellsReloaded", loaded);
-						log.Info(string.Format("Reloaded db spells and {0} spells for all spell lines !", loaded));
-						return;
+						case "all":
+						case "":
+						{
+							arg = "all";
+							ReloadStaticItem(client, region, arg, arg);
+							return;
+						}
+						case "model":
+						{
+							if (argLength == 2)
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload object model <modelID>
+								// Message: Reloads all in-game objects in your current region with the 'GameStaticItem' type and the model ID specified.
+								DisplayHeadSyntax(client, "reload", "mob", "model", 3, false, "AdminCommands.Reload.Syntax.ModelObject", "AdminCommands.Reload.Usage.ModelObject");
+								return;
+							}
+							arg = args[3];
+							ReloadStaticItem(client, region, args[2], arg);
+							return;
+						}
+						case "name":
+						{
+							if (argLength == 2)
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload object name <objName>
+								// Message: Reloads all in-game objects in your current region with the 'GameStaticItem' type and matching the name specified.
+								DisplayHeadSyntax(client, "reload", "object", "name", 3, false, "AdminCommands.Reload.Syntax.NameObject", "AdminCommands.Reload.Usage.NameObject");
+								return;
+							}
+							
+							arg = String.Join(" ", args, 3, args.Length - 3);
+							ReloadStaticItem(client, region, args[2], arg);
+							return;
+						}
+						case "realm":
+						{
+							if (argLength == 2)
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload mob realm <realm>
+								// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
+								DisplayHeadSyntax(client, "reload", "object", "realm", 3, false, "AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
+								return;
+							}
+							
+							if (args[3] == "0" || args[3] == "None" || args[3] == "none" || args[3] == "no" || args[3] == "n")
+								arg = "None";
+							else if (args[3] == "1" || args[3] == "a" || args[3] == "alb" || args[3] == "Alb" || args[3] == "albion" || args[3] == "Albion")
+								arg = "Albion";
+							else if (args[3] == "2" || args[3] == "m" || args[3] == "mid" || args[3] == "Mid" || args[3] == "midgard" || args[3] == "Midgard")
+								arg = "Midgard";
+							else if (args[3] == "3" || args[3] == "h" || args[3] == "hib" || args[3] == "Hib" || args[3] == "hibernia" || args[3] == "Hibernia")
+								arg = "Hibernia";
+							else
+							{
+								// Message: <----- '/{0}{1}{2}' Subcommand {3}----->
+								// Message: Use the following syntax for this command:
+								// Syntax: /reload mob realm <realm>
+								// Message: Reloads all in-game objects in your current region with the 'GameNPC' type and matching the realm specified.
+								DisplayHeadSyntax(client, "reload", "object", "realm", 3, false,
+									"AdminCommands.Reload.Syntax.RealmMob", "AdminCommands.Reload.Usage.RealmMob");
+								return;
+							}
+							
+							ReloadStaticItem(client, region, args[2], arg);
+							return;
+						}
 					}
-					case "teleports":
-					{
-						WorldMgr.LoadTeleports();
-						// Message: Reload complete! All teleport locations have been added to the live cache.
-						ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.TeleportsReloaded", null);
-						log.Info("Teleport locations reloaded.");
-						return;
-					}
-					default:
-					{
-						// Lists all '/reload' type subcommand syntax (see section above)
-						DisplaySyntax(client);
-						break;
-					}
+					break;
+				}
+				case "realm":
+				{
+					// Message: <----- Realm Syntax ----->
+					ChatUtil.SendTypeMessage("cmdHeader", client, "AdminCommands.Reload.Header.Realms", null);
+					// Message: None = 0, n, no, none
+					ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.NoneRealm", null);
+					// Message: Albion = 1, a, alb, albion
+					ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.AlbRealm", null);
+					// Message: Midgard = 2, m, mid, midgard
+					ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.MidRealm", null);
+					// Message: Hibernia = 3, h, hib, hibernia
+					ChatUtil.SendTypeMessage("command", client, "AdminCommands.Reload.Usage.HibRealm", null);
+					return;
+				}
+				case "specs":
+				{
+					int count = SkillBase.LoadSpecializations();
+					// Message: Reload complete! {0} specializations have been added to the live cache.
+					ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.SpecsReloaded", count);
+					log.Info(string.Format("{0} specializations loaded.", count));
+					return;
+				}
+				case "spells":
+				{
+					SkillBase.ReloadDBSpells();
+					int loaded = SkillBase.ReloadSpellLines();
+					// Message: Reload complete! {0} spells from all spell lines have been added to the live cache.
+					ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.SpellsReloaded", loaded);
+					log.Info(string.Format("Reloaded db spells and {0} spells for all spell lines !", loaded));
+					return;
+				}
+				case "teleports":
+				{
+					WorldMgr.LoadTeleports();
+					// Message: Reload complete! All teleport locations have been added to the live cache.
+					ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.TeleportsReloaded", null);
+					log.Info("Teleport locations reloaded.");
+					return;
+				}
+				default:
+				{
+					// Lists all '/reload' type subcommand syntax (see section above)
+					DisplaySyntax(client);
+					break;
 				}
 			}
+			
 		}
 
 		private void ReloadMobs(GameClient client, ushort region, string arg1, string arg2)
@@ -427,7 +437,7 @@ namespace DOL.GS.Commands
 			}
 
 			// Message: Reload complete! {0} mobs were removed and {1} added to this region.
-			ChatUtil.SendTypeMessage("important", client, "AdminCommands.Reload.Msg.TotalMobsRemovedAdded", removed, added);
+			ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.TotalMobsRemovedAdded", removed, added);
 		}
 
 		private void ReloadStaticItem(GameClient client, ushort region, string arg1, string arg2)
@@ -525,7 +535,7 @@ namespace DOL.GS.Commands
 			}
 			
 			// Message: Reload complete! {0} objects were removed and {1} added to this region.
-			ChatUtil.SendTypeMessage("important", client, "AdminCommands.Reload.Msg.TotalObjRemovedAdded", removed, added);
+			ChatUtil.SendTypeMessage("debug", client, "AdminCommands.Reload.Msg.TotalObjRemovedAdded", removed, added);
 		}
 	}
 }

@@ -23,6 +23,9 @@ using DOL.Language;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/serverproperties' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/serverproperties' to list all associated subcommands
 		"&serverproperties",

@@ -27,7 +27,9 @@ using DOL.Language;
 
 namespace DOL.GS.Commands
 {
-	// See the comments above 'using' about SendMessage translation IDs
+	/// <summary>
+	/// Handles all user-based interaction for the '/shutdown' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/shutdown' to list all associated subcommands
 		"&shutdown",

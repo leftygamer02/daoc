@@ -27,6 +27,9 @@ using DOL.Language;
 
 namespace DOL.GS.Commands
 {
+    /// <summary>
+    /// Handles all user-based interaction for the '/code' command
+    /// </summary>
 	[CmdAttribute(
         // Enter '/code' to list all associated subcommands
         "&code",

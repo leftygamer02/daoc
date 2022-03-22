@@ -24,6 +24,9 @@ using DOL.Language;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/freeze' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/freeze' to list all associated subcommands
 		"&freeze",

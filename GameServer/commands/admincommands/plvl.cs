@@ -23,6 +23,9 @@ using DOL.Language;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/plvl' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/plvl' to list all associated subcommands
 		"&plvl",

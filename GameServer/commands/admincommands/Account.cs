@@ -26,13 +26,19 @@ using DOL.Language;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/account' command
+	/// </summary>
 	[CmdAttribute(
-		"&account", // Enter '/account' to list all associated subcommands
+		// Enter '/account' to list all associated subcommands
+		"&account",
 		// Message: '/account' - Creates new, manages existing, and controls character assignment for Atlas DAoC accounts.
 		"AdminCommands.Account.CmdList.Description",
 		// Message: <----- '/{0}' Command {1}----->
 		"AllCommands.Header.General.Commands",
-		ePrivLevel.Admin, // Required minimum privilege level to use the command
+		// Required minimum privilege level to use the command
+		ePrivLevel.Admin,
+		// Message: Creates new, manages existing, and controls character assignment for Atlas DAoC accounts.
 		"AdminCommands.Account.Description",
 		// Syntax: /account command
 		"AdminCommands.Account.Syntax.Comm",

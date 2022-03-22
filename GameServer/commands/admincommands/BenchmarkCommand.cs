@@ -21,6 +21,9 @@ using System.Linq;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/benchmark' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/benchmark' to list all associated subcommands
 		"&benchmark",

@@ -5,6 +5,9 @@ using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Commands
 {
+    /// <summary>
+    /// Handles all user-based interaction for the '/summonmerchant' command
+    /// </summary>
     [CmdAttribute(
         // Enter '/summonmerchant' to list all associated subcommands
         "&summonmerchant",

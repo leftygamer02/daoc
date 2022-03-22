@@ -26,6 +26,9 @@ using DOL.GS;
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/refresh' command
+	/// </summary>
 	[CmdAttribute(
 		// Enter '/refresh' to list all associated subcommands
 		"&refresh",
