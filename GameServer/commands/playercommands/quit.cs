@@ -19,10 +19,24 @@
 
 namespace DOL.GS.Commands
 {
-	[CmdAttribute("&quit", new string[] { "&q" }, //command to handle
-		ePrivLevel.Player, //minimum privelege level
-		"Removes the player from the world", //command description
-		"/quit")] //usage
+	/// <summary>
+	/// Handles all user-based interaction for the '/quit' command
+	/// </summary>
+	[CmdAttribute(
+		"&quit",
+		new[] { "&q" },
+		// Message: '/quit' or '/q' - Removes the player from the world to the character selection screen.
+		"PLCommands.Quit.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		// Required minimum privilege level to use the command
+		ePrivLevel.Player,
+		// Message: Removes the player from the world to the character selection screen, after a wait of 20 seconds.
+		"PLCommands.Quit.Description",
+		// Syntax: /quit
+		"PLCommands.Quit.Syntax.Quit",
+		// Message: Removes the player from the world after 20 seconds.
+		"PLCommands.Quit.Usage.Quit")]
 	public class QuitCommandHandler : AbstractCommandHandler, ICommandHandler
 	{
 		public void OnCommand(GameClient client, string[] args)
