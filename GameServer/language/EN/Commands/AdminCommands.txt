@@ -139,8 +139,10 @@ AdminCommands.Refresh.Msg.AvailableModules:             <----- '/refresh' Module
 ## /reload
 AdminCommands.Reload.CmdList.Description:               '/reload' - Removes and then re-adds specific in-game elements. This is used to apply any recent database changes to the live server.
 AdminCommands.Reload.Description:                       Removes and then re-adds specific in-game elements. This is used to apply any recent database changes to the live server.
-AdminCommands.Reload.Syntax.Mob:                        /reload mob all
-AdminCommands.Reload.Usage.Mob:                         Reloads all in-game objects in your current region with the 'GameNPC' type.
+AdminCommands.Reload.Syntax.Mob:                        /reload mob [all|model|name|realm]
+AdminCommands.Reload.Usage.Mob:                         Reloads all in-game objects in your current region with the 'GameNPC' type and the filter specified.
+AdminCommands.Reload.Syntax.AllMob:                        /reload mob all
+AdminCommands.Reload.Usage.AllMob:                         Reloads all in-game objects in your current region with the 'GameNPC' type.
 AdminCommands.Reload.Syntax.ModelMob:                   /reload mob model <modelID>
 AdminCommands.Reload.Usage.ModelMob:                    Reloads all in-game objects in your current region with the 'GameNPC' type and the model ID specified.
 AdminCommands.Reload.Syntax.NameMob:                    /reload mob name <mobName>

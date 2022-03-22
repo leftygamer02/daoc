@@ -153,16 +153,20 @@ Scripts.Players.Battlegroup.BattlegroupTreasurerOff:	The battlegroup does not cu
 Scripts.Players.Battlegroup.BattlegroupTreasurerOn:	You have changed the treasurer of the Battlegroup to: {0}.
 
 ## /bind
+PLCommands.Bind.CmdList.Description:                    '/bind' - Sets a respawn point for your character. After you die, '/release' will send you to this location.
+PLCommands.Bind.Description:                             Sets a respawn point for your character. After you die, '/release' will send you to this location.
+PLCommands.Bind.Syntax.Bind:                            /bind
+PLCommands.Bind.Usage.Bind:                             Binds your character to a location, which serves as your default respawn location after you die and release.
 GamePlayer.Bind.Bound:						        You are now bound to this location.
 PLCommands.Bind.Msg.BoundThisLocation:				    You are now bound to this location.
 GamePlayer.Bind.CantBindDead:				        You cannot bind while dead!
-PLCommands.Bind.Err.CantBindDead:				        You can't bind while dead.
+PLCommands.Bind.Err.CantBindDead:				        You can't bind while dead!
 GamePlayer.Bind.CantHere:					        You can't bind here!
-PLCommands.Bind.Err.CantHere:					        You can't bind here.
+PLCommands.Bind.Err.CantBindHere:					    You can't bind here!
 GamePlayer.Bind.LastBindPoint:				        Last Bind Point: {0}.
 PLCommands.Bind.Msg.LastBindPoint:				        Last Bind Point: {0}.
 GamePlayer.Bind.MustWait:					        You must wait {0} seconds to bind again!
-PLCommands.Bind.Err.MustWait:					        You must wait {0} seconds to bind again.
+PLCommands.Bind.Err.MustWait:					        You must wait {0} seconds to bind again!
 
 ## /bonuses
 PlayerBonusesListRequestHandler.HandlePacket.Bonuses:	Bonuses (snapshot)
@@ -311,12 +315,11 @@ Scripts.Players.Duel.YouSurrender:			You surrender to {0}!
 GamePlayer.Die.DuelDefeated:					{0} was just defeated in a duel by {1}!
 GamePlayer.Die.DuelWinner:				 wins the duel!
 GamePlayer.DuelStop.DuelEnds:					Your duel ends!
-GamePlayer.Release.CantReleaseDuel:				You can't alter your release on a duel death!
 
 ## /freelevel
 PLCommands.FreeLevel.AboveMaximumLevel:	            You are above the maximum allowable level to obtain a free level.
 PLCommands.FreeLevel.EligibleFreeLevel:	            You are eligible for a free level! Click on your trainer to receive it (or type '/freelevel decline' to discard).
-GamePlayer.OnLevelUp.FreeLevelEligible:		You are eligible for a free level! Click on your trainer to receive it (or type /freelevel decline to discard your free level).
+GamePlayer.OnLevelUp.FreeLevelEligible:		You are eligible for a free level! Click on your trainer to receive it (or type '/freelevel decline' to discard your free level).
 PlayerInitRequestHandler.FreeLevel:			            You are eligible for a free level! Click on your trainer to receive it (or type /freelevel decline to discard your free level).
 PLCommands.FreeLevel.FreeLevelIn:	                You will be eligible for a free level in {0} day(s), {1} hour(s), {2} minute(s).
 PLCommands.FreeLevel.FreeLevelIn2:	                You will be eligible for a free level after your next level, and then in {0} day(s), {1} hour(s), {2} minute(s).
@@ -534,28 +537,45 @@ Scripts.Players.Language.Set:				You change your server display language to {0}.
 Scripts.Players.Language.AvailableLanguages: Available languages: {0}
 
 ## /pray
+PLCommands.Pray.CmdList.Description:                '/pray' - Recover lost experience from your gravestone by praying nearby.
+PLCommands.Pray.Description:                        Recover lost experience from your gravestone by praying nearby.
+PLCommands.Pray.Syntax.Pray:                        /pray
+PLCommands.Pray.Usage.Pray:                         Target your gravestone to recover lost experience from death.
 GamePlayer.Pray.AlreadyPraying:					You are already praying!
+PLCommands.Pray.Err.AlreadyPraying:					You are already praying!
 GamePlayer.Pray.Begin:							You begin your prayers!
+PLCommands.Pray.Msg.BeginPrayers:							You begin your prayers!
 GamePlayer.Pray.CantPrayNow:					You can't pray now!
+PLCommands.Pray.Err.CantPrayNow:					You can't pray now!
 GamePlayer.Pray.GainBack:						You pray at your grave and gain back experience!
+PLCommands.Pray.Msg.GainBackEXP:						You pray at your grave and gain back experience!
 GamePlayer.Pray.MustGetCloser:				You must get closer to your grave and sit to pray!
+PLCommands.Pray.Err.MustGetCloser:				You must get closer to your grave and sit to pray!
 GamePlayer.Pray.MustStandingStill:			You must be standing still to pray.
+PLCommands.Pray.Err.StandStill:			You must be standing still to pray.
 GamePlayer.Pray.NeedTarget:					You need to target a grave at which to pray!
+PLCommands.Pray.Err.NeedTarget:					You need to target a grave at which to pray!
 GamePlayer.Pray.SelectGrave:				Select your gravestone to pray!
+PLCommands.Pray.Err.SelectGrave:				Select your gravestone to pray!
 GamePlayer.Pray.CantPrayRiding:				You can't pray while riding!
+PLCommands.Pray.Err.CantPrayRiding:				You can't pray while riding!
 
 ## /quit
+PLCommands.Quit.CmdList.Description:        '/quit' or '/q' - Removes the player from the world to the character selection screen, after a wait of 20 seconds.
+PLCommands.Quit.Description:                Removes the player from the world to the character selection screen, after a wait of 20 seconds.
+PLCommands.Quit.Syntax.Quit:                /quit
+PLCommands.Quit.Usage.Quit:                 Removes the player from the world after 20 seconds.
 GamePlayer.Quit.CantQuitCrafting:			You can't quit while you're crafting.
 PLCommands.Quit.Err.CraftingQuit:			You can't quit while you're crafting.
 GamePlayer.Quit.CantQuitDead:				You can't quit now, you're dead. Type '/release' to release your corpse.
 PLCommands.Quit.Err.CantQuitDead:				You can't quit now, you're dead. Type '/release' to release your corpse.
 GamePlayer.Quit.CantQuitInInstance:			You cannot quit in an instance!
-PLCommands.Quit.Err.InInstance:			        You cannot quit in this location!
+PLCommands.Quit.Err.CantQuitLoc:			        You cannot quit in this location!
 GamePlayer.Quit.CantQuitMount:				You have to dismount before you can quit.
 GamePlayer.Quit.CantQuitStanding:			        You must be standing still to quit.
 PLCommands.Quit.Err.StandingStill:                  You must be standing still to quit.
 GamePlayer.Quit.RecentlyInCombat:			        You were recently in combat and must wait longer to quit.
-PLCommands.Quit.Err.RecentlyCombat:                 You were recently in combat and must wait longer to quit.
+PLCommands.Quit.Msg.RecentlyCombat:                 You were recently in combat and must wait longer to quit.
 GamePlayer.Quit.YouWillQuit1:				You will quit in {0} seconds.
 PLCommands.Quit.Msg.QuitInSeconds:                  You will quit in {0} seconds.
 GamePlayer.Quit.YouWillQuit2:				You will quit after sitting for {0} seconds. Type '/stand' or move if you don't want to quit.
@@ -578,18 +598,34 @@ Scripts.Players.Realm.Title:            Realm status
 Scripts.Players.Realm.UseRelicCommand:      Use '/relic' for Relic info
 
 ## /release
+GamePlayer.Release.NotDead:						You are not dead!
+PLCommands.Release.Err.NotDead:                 You are not dead!
 GamePlayer.Release.SurroundingChange:			Your surroundings suddenly change!
+PLCommands.Release.Msg.SurroundingsChange:       Your surroundings suddenly change!
 GamePlayer.Release.LostConstitution:			You've lost some constitution, go to a healer to have it restored!
+PLCommands.Release.Msg.YouveLostCon:            You've lost some constitution, go to a healer to have it restored!
 GamePlayer.Release.NoLongerReleaseAuto:			You will no longer release automatically. ({0} more seconds)
-GamePlayer.Release.NoValidBindpoint:			You have no valid bindpoint! Releasing here instead!	
+PLCommands.Release.Msg.NoLongerRelease:			You will no longer release automatically. ({0} more seconds)
+GamePlayer.Release.NoValidBindpoint:			You have no valid bindpoint! Releasing here instead!
+PLCommands.Release.Err.NoLocBindPoint:             No valid bind spot exists for this location! Releasing to your last bind point.
 GamePlayer.Release.ReturnToPray:				Return to /pray at your grave to regain experience.
 GamePlayer.Release.WillReleaseAuto:				You will now release automatically in {0} more seconds!
+PLCommands.Release.Msg.AutoYouRelease:          You will now release automatically in {0} more seconds!
 GamePlayer.Release.WillReleaseAutoCity:			You will now release automatically to your home city in {0} more seconds!
+PLCommands.Release.Msg.AutoCityYouRelease:      You will now release automatically to your home city in {0} more seconds!
 GamePlayer.Release.WillReleaseIn:				You will autorelease in {0} seconds.
+PLCommands.Release.Msg.YouWillAutoRelease:          You will auto-release in {0} seconds.
 GamePlayer.Release.YouRelease:					You release your corpse unto death.
+PLCommands.Release.Msg.YouRelease:					You release your corpse unto death.
 GamePlayer.Release.ReleaseToPortalKeep: 		You will now release to the nearest border or portal keep in {0} more seconds!
+PLCommands.Release.Msg.PKYouRelease: 		    You will now release to the nearest border or portal keep in {0} more seconds!
 GamePlayer.Release.ReleaseToHouse:				You will now release to your house in {0} more seconds!
+PLCommands.Release.Msg.HouseYouRelease:				You will now release to your house in {0} more seconds!
 System.ReleaseTimer:						Release Timer
+GamePlayer.Release.CantReleaseDuel:				You can't alter your release on a duel death!
+PLCommands.Release.Err.ReleaseDuel:             You can't alter your release on a duel death!
+PLCommands.Release.Msg.GraveErected:				A grave was erected where you were slain.
+PLCommands.Release.Msg.ReturnToPray:                Return to '/pray' at your grave to regain experience.
 
 ## /relic
 Scripts.Players.Relic.AlbRelics:         Albion Relics
