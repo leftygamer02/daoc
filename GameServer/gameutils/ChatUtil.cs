@@ -19,6 +19,7 @@
 
 using System.Collections.Generic;
 using DOL.GS.PacketHandler;
+using DOL.GS.Spells;
 using DOL.Language;
 
 namespace DOL.GS
@@ -165,16 +166,22 @@ namespace DOL.GS
 				case "spell": // Spell casting and effects
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					break;
-				case "staff": // Atlas Admin
+				case "staff": // Atlas Admin communication w/players or GM-related messages (e.g., /mute  restrictions)
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Staff, eChatLoc.CL_ChatWindow);
 					break;
 				case "success": // Important command execution messages
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					break;
+				case "sysArea":
+					Message.SystemToArea(target, translatedMsg, eChatType.CT_System, target);
+					break;
+				case "sysOthers":
+					Message.SystemToOthers(target, translatedMsg, eChatType.CT_System);
+					break;
 				case "system": // Standard system messages
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					break;
-				case "team": // Atlas Team channel
+				case "team" when target.Client.Account.PrivLevel > (int)ePrivLevel.Player: // Atlas Team channel
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Help, eChatLoc.CL_SystemWindow);
 					break;
 				case "trade": // Trade channel
@@ -332,16 +339,22 @@ namespace DOL.GS
 				case "spell": // Spell casting and effects
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					break;
-				case "staff": // Atlas Admin
+				case "staff": // Atlas Admin communication w/players or GM-related messages (e.g., /mute  restrictions)
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Staff, eChatLoc.CL_ChatWindow);
 					break;
 				case "success": // Important command execution messages
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					break;
+				case "sysArea":
+					Message.SystemToArea(target.Player, translatedMsg, eChatType.CT_System, target.Player);
+					break;
+				case "sysOthers":
+					Message.SystemToOthers(target.Player, translatedMsg, eChatType.CT_System);
+					break;
 				case "system": // Standard system messages
 					target.Out.SendMessage(translatedMsg, eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					break;
-				case "team": // Atlas Team channel
+				case "team" when target.Account.PrivLevel > (int)ePrivLevel.Player: // Atlas Team channel
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Help, eChatLoc.CL_SystemWindow);
 					break;
 				case "trade": // Trade channel
@@ -495,16 +508,22 @@ namespace DOL.GS
 				case "spell": // Spell casting and effects
 					target.Client.Out.SendMessage(message, eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					break;
-				case "staff": // Atlas Admin
+				case "staff": // Atlas Admin communication w/players or GM-related messages (e.g., /mute  restrictions)
 					target.Client.Out.SendMessage(message, eChatType.CT_Staff, eChatLoc.CL_ChatWindow);
 					break;
 				case "success": // Important command execution messages
 					target.Client.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					break;
+				case "sysArea":
+					Message.SystemToArea(target, message, eChatType.CT_System, target);
+					break;
+				case "sysOthers":
+					Message.SystemToOthers(target, message, eChatType.CT_System);
+					break;
 				case "system": // Standard system messages
 					target.Client.Out.SendMessage(message, eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					break;
-				case "team": // Atlas Team channel
+				case "team" when target.Client.Account.PrivLevel > (int)ePrivLevel.Player: // Atlas Team channel
 					target.Client.Out.SendMessage(message, eChatType.CT_Help, eChatLoc.CL_SystemWindow);
 					break;
 				case "trade": // Trade channel
@@ -658,16 +677,22 @@ namespace DOL.GS
 				case "spell": // Spell casting and effects
 					target.Out.SendMessage(message, eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					break;
-				case "staff": // Atlas Admin
+				case "staff": // Atlas Admin communication w/players or GM-related messages (e.g., /mute  restrictions)
 					target.Out.SendMessage(message, eChatType.CT_Staff, eChatLoc.CL_ChatWindow);
 					break;
 				case "success": // Important command execution messages
 					target.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					break;
+				case "sysArea":
+					Message.SystemToArea(target.Player, message, eChatType.CT_System, target.Player);
+					break;
+				case "sysOthers":
+					Message.SystemToOthers(target.Player, message, eChatType.CT_System);
+					break;
 				case "system": // Standard system messages
 					target.Out.SendMessage(message, eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					break;
-				case "team": // Atlas Team channel
+				case "team" when target.Account.PrivLevel > (int)ePrivLevel.Player: // Atlas Team channel
 					target.Out.SendMessage(message, eChatType.CT_Help, eChatLoc.CL_SystemWindow);
 					break;
 				case "trade": // Trade channel
@@ -703,7 +728,7 @@ namespace DOL.GS
 			
 			target.Out.SendCustomTextWindow(title, info);
 		}
-		
+
 		/// <summary>
 		/// Used to send translated messages contained in a text window
 		/// </summary>
