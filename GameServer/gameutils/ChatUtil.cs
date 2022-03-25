@@ -17,6 +17,7 @@
  *
  */
 
+using System;
 using System.Collections.Generic;
 using DOL.GS.PacketHandler;
 using DOL.GS.Spells;
@@ -32,7 +33,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Used to send translated messages
 		/// </summary>
-		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
+		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "emoteSysOthers", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "playerDiedOthers2", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "sysArea", "sysOthers", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
 		/// <param name="target">The target client receiving the message (e.g., "client")</param>
 		/// <param name="translationID">The translation ID for the message (e.g., "AdminCommands.Command.Err.NoPlayerFound")</param>
 		/// <param name="args">Any argument values to include in the message, such as "client.Player.Name" (if no args, then use "null")</param>
@@ -45,7 +46,10 @@ namespace DOL.GS
 
 			switch (type)
 			{
-				case "":
+				case "" when target.Client.Account.PrivLevel > (int)ePrivLevel.Player:
+					// Message: No message type was specified for: "{0}"
+					translatedMsg = LanguageMgr.GetTranslation(target.Client.Account.Language, "GamePlayer.Debug.Err.NoMsgType", translationID);
+					target.Out.SendMessage(translatedMsg, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 					return;
 				case "advise": // Advice channel
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Advise, eChatLoc.CL_ChatWindow);
@@ -93,6 +97,9 @@ namespace DOL.GS
 					break;
 				case "emote":
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Emote, eChatLoc.CL_SystemWindow);
+					break;
+				case "emoteSysOthers":
+					Message.SystemToOthers(target, translatedMsg, eChatType.CT_Emote);
 					break;
 				case "error": // Incorrect outputs or problems with command syntax
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -144,6 +151,9 @@ namespace DOL.GS
 					break;
 				case "playerDied": // Player died
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_PlayerDied, eChatLoc.CL_SystemWindow);
+					break;
+				case "playerDiedOthers2":
+					Message.SystemToOthers2(target, eChatType.CT_PlayerDied, translationID, args);
 					break;
 				case "pulse": // Spell pulse
 					target.Client.Out.SendMessage(translatedMsg, eChatType.CT_SpellPulse, eChatLoc.CL_SystemWindow);
@@ -205,7 +215,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Used to send translated messages
 		/// </summary>
-		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
+		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "emoteSysOthers", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "playerDiedOthers2", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
 		/// <param name="target">The target client receiving the message (e.g., "client")</param>
 		/// <param name="translationID">The translation ID for the message (e.g., "AdminCommands.Command.Err.NoPlayerFound")</param>
 		/// <param name="args">Any argument values to include in the message, such as "client.Player.Name" (if no args, then use "null")</param>
@@ -218,7 +228,10 @@ namespace DOL.GS
 
 			switch (type)
 			{
-				case "":
+				case "" when target.Account.PrivLevel > (int)ePrivLevel.Player:
+					// Message: No message type was specified for: "{0}"
+					translatedMsg = LanguageMgr.GetTranslation(target.Account.Language, "GamePlayer.Debug.Err.NoMsgType", translationID);
+					target.Out.SendMessage(translatedMsg, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 					return;
 				case "advise": // Advice channel
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Advise, eChatLoc.CL_ChatWindow);
@@ -266,6 +279,9 @@ namespace DOL.GS
 					break;
 				case "emote":
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Emote, eChatLoc.CL_SystemWindow);
+					break;
+				case "emoteSysOthers":
+					Message.SystemToOthers(target.Player, translatedMsg, eChatType.CT_Emote);
 					break;
 				case "error": // Incorrect outputs or problems with command syntax
 					target.Out.SendMessage(translatedMsg, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -317,6 +333,9 @@ namespace DOL.GS
 					break;
 				case "playerDied": // Player died
 					target.Out.SendMessage(translatedMsg, eChatType.CT_PlayerDied, eChatLoc.CL_SystemWindow);
+					break;
+				case "playerDiedOthers2":
+					Message.SystemToOthers2(target.Player, eChatType.CT_PlayerDied, translationID, args);
 					break;
 				case "pulse": // Spell pulse
 					target.Out.SendMessage(translatedMsg, eChatType.CT_SpellPulse, eChatLoc.CL_SystemWindow);
@@ -378,7 +397,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Used to send translated messages
 		/// </summary>
-		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
+		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "sysArea", "sysOthers", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
 		/// <param name="target">The target client receiving the message (e.g., "player")</param>
 		/// <param name="message">The string message (e.g., "You died!")</param>
 		/// <returns>The identified string message</returns>
@@ -387,7 +406,10 @@ namespace DOL.GS
 		{
 			switch (type)
 			{
-				case "":
+				case "" when target.Client.Account.PrivLevel > (int)ePrivLevel.Player:
+					// Message: No message type was specified for: "{0}"
+					var error = LanguageMgr.GetTranslation(target.Client.Account.Language, "GamePlayer.Debug.Err.NoMsgType", message);
+					target.Client.Out.SendMessage(error, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 					return;
 				case "advise": // Advice channel
 					target.Client.Out.SendMessage(message, eChatType.CT_Advise, eChatLoc.CL_ChatWindow);
@@ -547,7 +569,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Used to send translated messages
 		/// </summary>
-		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
+		/// <param name="type">Determines the eChatType and eChatLoc to use for the message. Options include: "advise", "alliance", "battlegroup", "bgLeader", "broadcast", "centerSys", "chat", "command", "cmdDesc", "cmdHeader","cmdSyntax", "cmdUsage", "damageAdd", "damaged", "debug", "dialog", "emote", "error", "expires", "group", "guild", "help", "important", "killedByAlb", "killedByHib", "killedByMid", "lfg", "loot", "merchant", "missed", "officer", "othersCombat", "playerDied", "pulse", "resisted", "say", "screenCenter", "send", "skill", "spell", "staff", "sysArea", "sysOthers", "system", "team", "trade", "yell", "youDied", "youHit", "youWereHit".</param>
 		/// <param name="target">The target client receiving the message (e.g., "client")</param>
 		/// <param name="message">The string message (e.g., "You died!")</param>
 		/// <returns>The identified string message</returns>
@@ -556,7 +578,10 @@ namespace DOL.GS
 		{
 			switch (type)
 			{
-				case "":
+				case "" when target.Account.PrivLevel > (int)ePrivLevel.Player:
+					// Message: No message type was specified for: "{0}"
+					var error = LanguageMgr.GetTranslation(target.Account.Language, "GamePlayer.Debug.Err.NoMsgType", message);
+					target.Out.SendMessage(error, eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
 					return;
 				case "advise": // Advice channel
 					target.Out.SendMessage(message, eChatType.CT_Advise, eChatLoc.CL_ChatWindow);
@@ -716,33 +741,55 @@ namespace DOL.GS
 		/// <summary>
 		/// Used to send translated messages contained in a text window
 		/// </summary>
-		/// /// <param name="target">The player triggering/receiving the message (i.e., typically "client").</param>
-		/// /// <param name="title">The string to appear along the top border of the text window.</param>
+		/// <param name="type">Determines the type of UI element to send to the target. Current options include: "text", "timer".</param>
+		/// <param name="target">The player triggering/receiving the message (i.e., typically "client").</param>
+		/// <param name="title">The string to appear along the top border of the text window.</param>
 		/// <param name="args">Additional translation IDs or strings to include in the body ot the text window.</param>
 		/// <note>To include empty spaces between paragraphs, input a space between apostrophies (e.g., " ").</note>
-		public static void SendWindowMessage(GameClient target, string title, params string[] args)
+		public static void SendWindowMessage(string type, GameClient target, string title, params object[] args)
 		{
-			var info = new List<string>();
-			foreach (var translation in args)
-				info.Add(LanguageMgr.GetTranslation(target.Account.Language, translation));
+			switch (type)
+			{
+				case "text":
+					var info = new List<string>();
+					foreach (string translation in args)
+						info.Add(LanguageMgr.GetTranslation(target.Account.Language, translation));
 			
-			target.Out.SendCustomTextWindow(title, info);
+					target.Out.SendCustomTextWindow(title, info);
+					break;
+				case "timer":
+					var timerTitle = LanguageMgr.GetTranslation(target.Account.Language, title);
+					var seconds = Convert.ToInt32(args);
+					target.Out.SendTimerWindow(timerTitle, seconds);
+					break;
+			}
 		}
 
 		/// <summary>
 		/// Used to send translated messages contained in a text window
 		/// </summary>
+		/// <param name="type">Determines the type of UI element to send to the target. Current options include: "text", "timer".</param>
 		/// /// <param name="target">The player triggering/receiving the message (i.e., typically "client").</param>
 		/// /// <param name="title">The string to appear along the top border of the text window.</param>
 		/// <param name="args">Additional translation IDs or strings to include in the body ot the text window.</param>
 		/// <note>To include empty spaces between paragraphs, input a space between apostrophies (e.g., " ").</note>
-		public static void SendWindowMessage(GamePlayer target, string title, params string[] args)
+		public static void SendWindowMessage(string type, GamePlayer target, string title, params string[] args)
 		{
-			var info = new List<string>();
-			foreach (var translation in args)
-				info.Add(LanguageMgr.GetTranslation(target.Client.Account.Language, translation));
+			switch (type)
+			{
+				case "text":
+					var info = new List<string>();
+					foreach (var translation in args)
+						info.Add(LanguageMgr.GetTranslation(target.Client.Account.Language, translation));
 			
-			target.Client.Out.SendCustomTextWindow(title, info);
+					target.Client.Out.SendCustomTextWindow(title, info);
+					break;
+				case "timer":
+					var timerTitle = LanguageMgr.GetTranslation(target.Client.Account.Language, title);
+					var seconds = Convert.ToInt16(args);
+					target.Client.Out.SendTimerWindow(timerTitle, seconds);
+					break;
+			}
 		}
 
 		public static void SendSystemMessage(GamePlayer target, string message)

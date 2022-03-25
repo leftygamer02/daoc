@@ -6,14 +6,16 @@ SpellHandler.CancelPulsingSpell:	        You stop playing your song.
 SpellHandler.CasterMove:	                        You move and interrupt your spellcast!
 GamePlayer.CastSpell.MustWaitBeforeCast:	You need to wait {0} more seconds before casting a spell!
 SpellHandler.DelveInfo.Sec:	                sec
-GamePlayer.CastSpell.AlreadyCastFollow:			You are already casting a spell! You prepare this spell as a follow up!		
-GamePlayer.CastSpell.AlreadyCastNoQueue:		You are already casting a spell, to enable spell queueing use '/noqueue'!			
-GamePlayer.CastSpell.AlreadyPlaySong:			You are already playing a song!		
-GamePlayer.CastSpell.CantCastMezzed:			You can't cast while mesmerized!		
-GamePlayer.CastSpell.CantCastStunned:			You can't cast while stunned!		
+GamePlayer.CastSpell.AlreadyCastFollow:			You are already casting a spell! You prepare this spell as a follow up!
+GamePlayer.CastSpell.AlreadyCastNoQueue:		You are already casting a spell, to enable spell queueing use '/noqueue'!
+GamePlayer.CastSpell.FollowSpell:			You ready a {0} as a follow up!
+GamePlayer.CastSpell.AlreadyPlaySong:			You are already playing a song!
+GamePlayer.CastSpell.CantCastMezzed:			You can't cast while mesmerized!
+GamePlayer.CastSpell.CantCastStunned:			You can't cast while stunned!
 GamePlayer.CastSpell.CantCastFumblingWords:		You are fumbling for your words, and cannot cast!
 GamePlayer.StartAttack.SpellCancelled:			Your spell is cancelled!
 GamePlayer.SwitchWeapon.SpellCancelled:			Your spell is cancelled!
+GamePlayer.Spell.Cast.Cancelled:               Your spell is cancelled!
 
 ## Delve Information
 DelveInfo.CastingTime:				Casting time: {0}

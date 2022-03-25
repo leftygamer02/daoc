@@ -407,7 +407,7 @@ namespace DOL.GS.Commands
 				// See the comments above 'using' about SendMessage translation IDs
 				case "command":
 					{
-						ChatUtil.SendWindowMessage(client, "Using the '/plvl' Command",
+						ChatUtil.SendWindowMessage("text", client, "Using the '/plvl' Command",
 							" ", 
 							// Message: ----- Privilege Levels -----
 							"Dialog.Header.Content.PrivLevels", 

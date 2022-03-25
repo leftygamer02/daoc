@@ -1,6 +1,7 @@
 ﻿# GamePlayer
 
 ## System
+GamePlayer.Debug.Err.NoMsgType:                     No message type was specified for: "{0}"
 GamePlayer.SaveIntoDatabase.CharacterSaved:		Your character has been saved.
 GamePlayer.State.Saved.CharacterSaved:              Your character has been saved.
 GamePlayer.OnLinkdeath.Linkdead:			    {0} went linkdead!
@@ -24,14 +25,20 @@ GamePlayer.IsHelmInvisible.Visible:					You will now see your helm.
 
 ## Attack Data
 GamePlayer.Attack.AlreadyDead:				{0} is already dead!
-GamePlayer.Release.NotDead:						You are not dead!
 GamePlayer.Attack.Miss:						You miss!
 GamePlayer.Attack.StrafMiss:				You were strafing in combat and miss!
 GamePlayer.Attack.Fumble:					You fumble the attack and take time to recover!
 GamePlayer.Attack.Fumbled:					{0} fumbled!
+GamePlayer.Attacker.Result.TheyFumbled:				{0} fumbled!
 GameLiving.AttackData.AttacksYou:		    {0} attacks you and you block the blow!
+GamePlayer.Attacker.Result.YouBlock1:		    {0} attacks you and you block the blow!
+GamePlayer.Attacker.Result.YouBlock2:		    {0} attacks you and you block the blow! ({1}%)
 GamePlayer.Attack.Parry:					{0} attacks you and you parry the blow!
+GamePlayer.Attacker.Result.YouParry1:					{0} attacks you and you parry the blow!
+GamePlayer.Attacker.Result.YouParry2:					{0} attacks you and you parry the blow! ({1}%)
 GamePlayer.Attack.Evade:					{0} attacks you and you evade the blow!
+GamePlayer.Attacker.Result.YouEvade1:					{0} attacks you and you evade the blow!
+GamePlayer.Attacker.Result.YouEvade2:					{0} attacks you and you evade the blow! ({1}%)
 GamePlayer.Attack.Critical:					You critical hit {0} for an additional {1} damage!
 GamePlayer.StartAttack.CannotMelee:			You cannot enter melee combat mode with an instrument!
 GamePlayer.StartAttack.CannotWithoutWeapon:		You cannot enter combat mode without a weapon!
@@ -59,11 +66,16 @@ StyleProcessor.TryToUseStyle.StyleRequires:		        This style requires a {0} w
 
 ## Attack Locations
 GamePlayer.Attack.Location.Arm:				arm	
-GamePlayer.Attack.Location.Foot:			foot		
-GamePlayer.Attack.Location.Hand:			hand		
-GamePlayer.Attack.Location.Head:			head		
+GamePlayer.Attack.Location.Foot:			foot
+GamePlayer.Attack.Location.Hand:			hand
+GamePlayer.Attack.Location.Head:			head
 GamePlayer.Attack.Location.Leg:				leg	
 GamePlayer.Attack.Location.Torso:			torso
+
+## Beta
+Beta.AtlasOrbs.Bonus.Level:                             You have been awarded {0} Atlas Orbs for achieving level {1} with a beta test character.
+Beta.AtlasOrbs.Bonus.Ding50:                           Your journey from level {0} has come to an end. You have been awarded {1} Atlas Orbs.
+
 
 ## Communication
 System.NoSense:								That would make no sense!
@@ -106,23 +118,34 @@ GamePlayer.ReceiveTradeItem.StillSelfcrafting:	You are still selfcrafting.
 ## Death (PvE)
 GamePlayer.Die.LoseExperience:					You lose some experience!
 GamePlayer.Die.ReleaseToReturn:					You have died.  Type /release to return to your last bindpoint.
+GamePlayer.Event.Die.ReleaseToBindPoint:                You have died. Type '/release' to return to your last bind point.
 GamePlayer.Die.DeadRVR:							You died fighting for your realm and lose no experience!
-GamePlayer.Die.DeathN1:							This is your first death for this level.  Your experience and constitution losses are greatly reduced.
-GamePlayer.Die.DeathN2:							This is your second death for this level.  Your experience and constitution losses are reduced.
+GamePlayer.Event.Die.LoseNoEXP:                         You died fighting for your realm and lose no experience!
+GamePlayer.Die.DeathN1:							This is your first death for this level. Your experience and constitution losses are greatly reduced.
+GamePlayer.Die.DeathN2:							This is your second death for this level. Your experience and constitution losses are reduced.
 GamePlayer.Release.GraveErected:				A grave was erected where you were slain.
-
+GamePlayer.Release.ReturnToPray:                Return to '/pray' at your grave to regain experience.
 GamePlayer.StartAttack.YouCantCombat:			You can't enter combat mode while lying down!
 GamePlayer.Die.CorpseLies:						{0} just died. {1} corpse lies on the ground.
 
 ## Environmental
 GamePlayer.DrowningTimerCallback.CannotBreath:	You cannot breathe underwater and take damage!
 GamePlayer.DrowningTimerCallback.Take5%Damage:	You take 5% of your max hits in damage.
-GamePlayer.LavaBurnTimerCallback.YourInLava:	You are in Lava and take damage!			
+GamePlayer.LavaBurnTimerCallback.YourInLava:	You are in Lava and take damage!
 GamePlayer.LavaBurnTimerCallback.Take34%Damage:	You take 34% of your max hits in damage.
 PlayerPositionUpdateHandler.Endurance:			        You lose endurance!
+GamePlayer.Environment.Fall.YouLoseEnd:			            You lose endurance!
 PlayerPositionUpdateHandler.FallingDamage:		        You take falling damage!
+GamePlayer.Environment.Fall.YouTakeDmg:		        You take falling damage!
 PlayerPositionUpdateHandler.FallPercent:		        You take {0}% of your max hits in damage.
+GamePlayer.Environment.Fall.FallPercent:		        You take {0}% of your max hits in damage!
 PlayerPositionUpdateHandler.SafeFall:			        The damage was lessened by your Safe Fall ability!
+GamePlayer.Ability.SafeFall.DamageLessened:			        The damage was lessened by your Safe Fall ability!
+
+## Hardcore
+GamePlayer.Hardcore.Announce.Level50:                       Congratulations! You have reached level 50 without dying, and you are awarded {0) Atlas Orbs. People will sing tales of your accomplishment and tenacity!
+GamePlayer.Hardcore.Disable.Level50:                              Your Hardcore flag has been disabled, and death is no longer permanent for this character.
+GamePlayer.Hardcore.Death.Deleted:                              It is a sad day for {0}. This character will be automatically deleted.
 
 ## Horse
 GameNPC.Interact.AlreadyRiding:				You are already riding this {0}.
@@ -133,31 +156,47 @@ GamePlayer.Action.Err.DismountFirst:				You must dismount first!
 
 ## Kill Spam
 GamePlayer.Die.Killed:							{0} was just killed!
-GamePlayer.Die.KilledBy:						{0} was just killed by {1}.
-GamePlayer.Die.KilledByLocation:				{0} was just killed by {1} in {2}.
+GamePlayer.Die.KilledBy:						{0} was just killed by {1}!
+GamePlayer.Die.KilledByLocation:				{0} was just killed by {1} in {2}!
 GamePlayer.Die.KilledLocation:					{0} was just killed in {1}!
 GamePlayer.Die.YouKilled:						You just killed {0}!
 
 ## Level/RR Up
 ### Level
-GamePlayer.GainExperience.CannotRaise:			You cannot raise to the 6th level until you join an advanced guild!
+GamePlayer.GainExperience.CannotRaise:		You cannot raise to the 6th level until you join an advanced guild!
+GamePlayer.LevelUp.Class.6thLevel:			    You cannot raise to the 6th level until you join an advanced guild!
 GamePlayer.OnLevelUp.HitsRaise:				Your hits raise by {0} points.
+GamePlayer.LevelUp.Raise.YourHits:				Your hits raise by {0} points.
 GamePlayer.OnLevelUp.PowerRaise:			Your power raises by {0} points.
+GamePlayer.LevelUp.Raise.YouPower:			    Your power raises by {0} points.
 GamePlayer.OnLevelUp.SecondStage:			You raise to level {0} Stage 2!
+GamePlayer.LevelUp.EXP.SecondStage:			    You raise to level {0} Stage 2!
 GamePlayer.OnLevelUp.StatRaise:				Your stats raise!
+GamePlayer.LevelUp.Raise.YourStats:				Your stats raise!
 GamePlayer.OnLevelUp.YouAchieved:			You have achieved level {0}!
+GamePlayer.LevelUp.Level.YouAchieved:			You have achieved level {0}!
 GamePlayer.OnLevelUp.YouGetSpec:			You get {0} more Specialization Points to spend at this level!
+GamePlayer.LevelUp.Spec.YouGetPts:			    You get {0} more Specialization Points to spend this level!
 GamePlayer.OnLevelUp.YouRaise:				You raise to level {0}!
+GamePlayer.LevelUp.Raise.YouLevel:				You raise to level {0}!
 GamePlayer.OnLevelUp.AttainedRank:			You have attained the rank of {0}!
+GamePlayer.LevelUp.Rank.YouAttain:			    You have attained the rank of {0}!
 GamePlayer.UpdateSpellLine.GainPower:			You gain power in the {0} spell list!
+GamePlayer.LevelUp.SpellLine.YouGainPower:		You gain power in the {0} spell line!
 
 ### Realm Rank
 GamePlayer.GainRealmPoints.GainBonus:			You gain a +{0} bonus to all specializations!
+GamePlayer.RealmPoints.Bonus.YouGain:			You gain a +{0} bonus to all specializations!
 GamePlayer.GainRealmPoints.GainedLevel:			You have gained a realm level!
+GamePlayer.RealmPoints.Gain.NewRealmLevel:			You have gained a realm level!
 GamePlayer.GainRealmPoints.GainedRank:			You have gained a new rank and a new realm title!
+GamePlayer.RealmPoints.Gain.NewRealmRank:			You have gained a new rank and a new realm title!
 GamePlayer.GainRealmPoints.NewRealmTitle:		Your new realm title is {0}!
+GamePlayer.RealmPoints.Gain.NewRealmTitle:		Your new realm title is {0}!
 GamePlayer.GainRealmPoints.ReachedRank:			You reached realm rank {0}L0!
+GamePlayer.RealmPoints.Gain.ReachedRank:			You reached realm rank {0}L0!
 GamePlayer.GainRealmPoints.ReachedRankNews:			{0} reached realm rank {1:#L#} in {2}!
+GamePlayer.RealmPoints.Gain.RealmRankNews:			{0} reached realm rank {1:#L#} in {2}!
 
 ## Movement
 GamePlayer.UpdateEncumberance.Encumbered:		You are encumbered!
@@ -193,6 +232,7 @@ Skill.Ability.CannotUse.CriticalShot.MustBeStanding:	You must be standing to att
 Skill.Ability.CriticalShot.AlreadyFiring:	You are already firing this weapon!
 GamePlayer.Attack.ReadyToFire:				You are ready to fire!
 GamePlayer.Attack.Interrupted:				{0} is attacking you and your {1} is interrupted!
+GamePlayer.Attack.Interrupt.AttackingYou:				{0} is attacking you and your {1} is interrupted!
 GamePlayer.Attack.TooTired:					You are too tired to hold your shot any longer!
 GamePlayer.StartAttack.CantUseQuiver:			You can't use the selected quiver ammo with your weapon!
 GamePlayer.StartAttack.SelectQuiver:			You must select a quiver slot to draw from!
@@ -210,31 +250,59 @@ GamePlayer.UseSlot.NoAutoReleaseShotReload:		You will no longer automatically re
 GamePlayer.StartAttack.YouPrepare:				You prepare your {0} ({1}.{2}s to fire{3})
 
 ## Rewards (PvE/RvR)
+GamePlayer.EXP.Hardcore.NoEXP:                      This monster is not hardcore enough and is worth no experience!
 GamePlayer.GainExperience.CampBonus:			({0} camp bonus)
+GamePlayer.EXP.Bonus.Camp:			                {0}({1} camp bonus)
 GamePlayer.GainExperience.GroupBonus:			({0} group bonus)
+GamePlayer.EXP.Bonus.Group:			                {0}({1} group bonus)
 GamePlayer.GainExperience.OutpostBonus:			({0} outpost bonus)
+GamePlayer.EXP.Bonus.Outpost:			            {0}({1} outpost bonus)
+GamePlayer.EXP.Bonus.Atlas:                         {0}({1} Atlas bonus)
+GamePlayer.EXP.Bonus.RealmLoyalty:                  {0}({1} realm loyalty bonus)
 GamePlayer.GainBountyPoints.YouGet:				You get {0} bounty points!
-GamePlayer.GainExperience.YouGet:				You get {0} experience points.
+GamePlayer.BountyPoints.Gain.YouGet:				You get {0} bounty points!
+GamePlayer.GainExperience.YouGet:				You get {0} experience points.{1}
+GamePlayer.EXP.Gain.YouGet:				            You get {0} experience points.
 GamePlayer.GainRealmPoints.YouGet:				You get {0} realm points!
+GamePlayer.RealmPoints.Gain.YouGet:				You get {0} realm points!
 GameNPC.DropLoot.AdditionalMoney:			You find an additional {0} thanks to your realm owning outposts!
+GameNPC.Loot.Drop.AdditionalMoney:			You find an additional {0} thanks to your realm owning outposts!
 GameNPC.DropLoot.ItemAdditionalMoney:		You get an additional {0} thanks to your equipment!
+GameNPC.Loot.Drop.ItemAdditionalMoney:		You get an additional {0} thanks to your equipment!
+GameNPC.DropLoot.Drops:						{0} drops {1}.
 GameNPC.DropLoot.Drops:						{0} drops {1}.
 GamePlayer.PickupObject.Autosplit:				(Autosplit) {0} goes to {1}.
+GamePlayer.PickupObject.Autosplit:				(Autosplit) {0} goes to {1}.
+GamePlayer.PickupObject.BackpackFull:			Your backpack is full. You must drop something first.
 GamePlayer.PickupObject.BackpackFull:			Your backpack is full. You must drop something first.
 GamePlayer.PickupObject.GroupMemberPicksUp:		{0} picks up {1}.
+GamePlayer.PickupObject.GroupMemberPicksUp:		{0} picks up {1}.
+GamePlayer.PickupObject.ItemBelowBGThreshold:	That item is below your battlegroups lootlevel.
 GamePlayer.PickupObject.ItemBelowBGThreshold:	That item is below your battlegroups lootlevel.
 GamePlayer.PickupObject.LootDoesntBelongYou:	That loot doesn't belong to you - you can't pick it up.
+GamePlayer.PickupObject.LootDoesntBelongYou:	That loot doesn't belong to you - you can't pick it up.
+GamePlayer.PickupObject.NoOneGroupWantsMoney:	No one in group wants the money.
 GamePlayer.PickupObject.NoOneGroupWantsMoney:	No one in group wants the money.
 GamePlayer.PickupObject.NoOneWantsThis:			No one in group wants the {0}.
+GamePlayer.PickupObject.NoOneWantsThis:			No one in group wants the {0}.
+GamePlayer.PickupObject.YouGet:					You get {0} and put it in your backpack.
 GamePlayer.PickupObject.YouGet:					You get {0} and put it in your backpack.
 GamePlayer.PickupObject.YouGetAmount:			You get {0} {1} and put it in your backpack.
+GamePlayer.PickupObject.YouGetAmount:			You get {0} {1} and put it in your backpack.
+GamePlayer.PickupObject.YouPickUp:				You pick up {0}.
 GamePlayer.PickupObject.YouPickUp:				You pick up {0}.
 GamePlayer.PickupObject.YourLootShare:			Your share of the loot is {0}.
+GamePlayer.PickupObject.YourLootShare:			Your share of the loot is {0}.
+GamePlayer.RealmLoyalty.Bonus.Percent:          Loyalty: {0} | {1}% bonus
 
 ## Server Announcements
-GamePlayer.GainRealmPoints.Earned:				{0} has earned 1,000,000 realm points in {1}
-GamePlayer.GainCraftingSkill.ReachedSkill:		{0} reached 1000 skill in {1}
+GamePlayer.GainRealmPoints.Earned:				{0} has earned 1,000,000 realm points in {1}!
+GamePlayer.GainCraftingSkill.ReachedSkill:		{0} reached 1000 skill in {1}!
 GamePlayer.OnLevelUp.Reached:				{0} reached level {1} in {2}!
+
+## Solo Mode
+GamePlayer.SoloMode.Announce.Level50:           Congratulations! You have reached level 50 without help from other players, and you are awarded {0) Atlas Orbs. People will sing tales of your accomplishment and tenacity!
+GamePlayer.SoloMode.Disable.Level50:             Your Solo flag has been disabled, and you are no longer prevented from grouping with other players.
 
 ## Targeting/Line of Sight
 GamePlayer.Attack.CantBeAttacked:			This can't be attacked!

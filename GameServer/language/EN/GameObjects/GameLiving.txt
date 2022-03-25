@@ -36,13 +36,19 @@ GameLiving.AttackData.YourHits:			Your {0} {1} {2} and hits for {3}{4} damage!
 GamePlayer.CommandNpcAttack.TooFarAwayForPet:		Your target is too far away to attack by your pet!
 
 ## Attack Data (Attacker)
+GamePlayer.Attacker.Entity.ADeadEnemy:                  A dead enemy
 GamePlayer.Attack.Blocked:					{0} blocks your attack!
 GamePlayer.Attack.Parried:					{0} parries your attack!
 GamePlayer.Attack.Evaded:					{0} evades your attack!
 GamePlayer.Attack.Missed:					{0} attacks you and misses!
+GamePlayer.Attacker.Result.TheyMissed1:					{0} attacks you and misses!
+GamePlayer.Attacker.Result.TheyMissed2:					{0} attacks you and misses! ({1}%)
 GamePlayer.Attack.HitsYou:					{0} hits you for {1}{2} damage!
+GamePlayer.Attacker.Result.HitsYou:					{0} hits you for {1} ({2}) damage!
 GamePlayer.Attack.HitsYouCritical:			{0} critical hits you for an additional {1} damage!
-GamePlayer.Attack.HitsYour:					{0} hits your {1} for {2}{3} damage!
+GamePlayer.Attacker.Result.CriticalHitsYou:			{0} critical hits you for an additional {1} damage!
+GamePlayer.Attack.HitsYour:					{0} hits your {1} for {2} ({3}) damage!
+GamePlayer.Attacker.Result.HitsYour:					{0} hits your {1} for {2} ({3}) damage!
 
 ## Intercept (Other)
 GamePlayer.Attack.Intercepted:				{0} steps in front of {1} and takes the blow!
