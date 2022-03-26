@@ -6176,7 +6176,7 @@ namespace DOL.GS
             {
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnLevelUp.YouGetSpec", specpoints), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                 // Message: You get {0} more Specialization Points to spend this level!
-                ChatUtil.SendTypeMessage("important, Client, "GamePlayer.LevelUp.Spec.YouGetPts", specpoints);
+                ChatUtil.SendTypeMessage("important", Client, "GamePlayer.LevelUp.Spec.YouGetPts", specpoints);
             }
 
             //death penalty reset on mini-ding
@@ -6236,7 +6236,8 @@ namespace DOL.GS
                                 { 
                                     Out.SendDialogBox(eDialogCode.SimpleWarning, 0, 0, 0, 0, eDialogType.Ok, true, LanguageMgr.GetTranslation(Client.Account.Language, "PlayerClass.OnLevelUp.Autotrain", spec.Name, max_autotrain));
                                     // Message: You can now train {0} to level {1} for free.
-                                    ChatUtil.SendTypeMessage("dialog", Client, "PlayerClass.OnLevelUp.Autotrain", spec.Name, max_autotrain)
+                                    ChatUtil.SendTypeMessage("dialog", Client, "PlayerClass.OnLevelUp.Autotrain",
+                                        spec.Name, max_autotrain);
                                 }
                             return 0;
                         }
@@ -8740,7 +8741,7 @@ namespace DOL.GS
             if (m_releaseType == eReleaseType.Duel)
             {
                 messageType = eChatType.CT_Emote;
-                sendType = "emote"
+                sendType = "emote";
             }
             else if (killer == null)
             {
@@ -8969,13 +8970,16 @@ namespace DOL.GS
             // GamePlayer.Die.CorpseLies:		{0} just died. {1} corpse lies on the ground.
             Message.SystemToOthers2(this, eChatType.CT_PlayerDied, "GamePlayer.Die.CorpseLies", GetName(0, true), GetPronoun(this.Client, 1, true));
             // Message: {0} just died. {1} corpse lies on the ground.
-            ChatUtil.SendTypeMessage("playerDiedOthers2", this, "GamePlayer.Die.CorpseLies", GetName(0, true), GetPronoun(this.Client, 1, true));
+            // todo: fix below
+            // ChatUtil.SendTypeMessage("playerDiedOthers2", this, "GamePlayer.Die.CorpseLies", GetName(0, true), GetPronoun(this.Client, 1, true));
+            Message.SystemToOthers2(this, eChatType.CT_PlayerDied, "GamePlayer.Die.CorpseLies", GetName(0, true), GetPronoun(this.Client, 1, true));
 
             if (m_releaseType == eReleaseType.Duel)
             {
                 Message.SystemToOthers(this, killer.Name + "GamePlayer.Die.DuelWinner", eChatType.CT_Emote);
                 // Message: 
-                ChatUtil.SendTypeMessage("emoteSysOthers", killer, "GamePlayer.Duel.Die.WinsTheDuel", killer.Name);
+                // todo: fix below
+                // ChatUtil.SendTypeMessage("emoteSysOthers", killer, "GamePlayer.Duel.Die.WinsTheDuel", killer.Name);
             }
 
             // deal out exp and realm points based on server rules

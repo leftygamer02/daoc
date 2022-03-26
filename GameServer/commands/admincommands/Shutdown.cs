@@ -335,7 +335,7 @@ namespace DOL.GS.Commands
 				case "command":
 				{
 					// Triggers a text window popup
-					ChatUtil.SendWindowMessage(client, "Using the '/shutdown' Command",
+					ChatUtil.SendWindowMessage("text",client, "Using the '/shutdown' Command",
 						" ",
 						" ",
 						// Message: ----- Implications of a Shutdown -----

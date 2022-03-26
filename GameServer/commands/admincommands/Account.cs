@@ -553,7 +553,7 @@ namespace DOL.GS.Commands
 				// See the comments above 'using' about SendMessage translation IDs
 				case "command":
 				{
-					ChatUtil.SendWindowMessage(client, "Using the '/account' Command", 
+					ChatUtil.SendWindowMessage("text",client, "Using the '/account' Command", 
 						" ", 
 						" ", 
 						// Message: ----- Web Admin Tool -----
