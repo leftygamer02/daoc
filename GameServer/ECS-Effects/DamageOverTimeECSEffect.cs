@@ -20,7 +20,7 @@ namespace DOL.GS
         {
             // Remove stealth on first application since the code that normally handles removing stealth on
             // attack ignores DoT damage, since only the first tick of a DoT should remove stealth.            
-            if (OwnerPlayer != null)
+            if (OwnerPlayer != null && !OwnerPlayer.effectListComponent.ContainsEffectForEffectType(eEffect.Vanish))
                 OwnerPlayer.Stealth(false);
             
             // "Searing pain fills your mind!"
@@ -56,7 +56,12 @@ namespace DOL.GS
                         // "{0} is wracked with pain!"
                         OnEffectStartsMsg(Owner, true, false, true);
                     }
-                    handler.OnDirectEffect(Owner, Effectiveness);
+
+                    double postRAEffectiveness = Effectiveness;
+                    if (handler.Caster.effectListComponent.ContainsEffectForEffectType(eEffect.Viper))
+                        postRAEffectiveness *= 2;
+                    
+                    handler.OnDirectEffect(Owner, postRAEffectiveness);
                 }
                 else if (SpellHandler is StyleBleeding bleedHandler)
                 {

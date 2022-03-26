@@ -142,6 +142,13 @@ namespace DOL.GS
         AmelioratingMelodies,
         SoldiersBarricade,
         ReflexAttack,
+        WhirlingDervish,
+        Viper,
+        MajesticWill,
+        TrueSight,
+        ShadowRun,
+        Vanish,
+        BatteryOfLife,
         MasteryOfConcentration,
     }
 }
