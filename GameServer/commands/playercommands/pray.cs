@@ -19,11 +19,24 @@
 
 namespace DOL.GS.Commands
 {
+	/// <summary>
+	/// Handles all user-based interaction for the '/pray' command
+	/// </summary>
 	[CmdAttribute(
+		// Enter '/pray' to execute this command
 		"&pray",
+		// Message: '/pray' - Recover lost experience from your gravestone by praying nearby.
+		"PLCommands.Pray.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		// Required minimum privilege level to use the command
 		ePrivLevel.Player,
-		"You can pray on your gravestones to get some experience back",
-		"/pray")]
+		// Message: Recover lost experience from your gravestone by praying nearby.
+		"PLCommands.Pray.Description",
+		// Syntax: /pray
+		"PLCommands.Pray.Syntax.Pray",
+		// Message: Target your gravestone to recover lost experience from death.
+		"PLCommands.Pray.Usage.Pray")]
 	public class PrayCommandHandler : AbstractCommandHandler, ICommandHandler
 	{
 		public void OnCommand(GameClient client, string[] args)

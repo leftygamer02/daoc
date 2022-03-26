@@ -20,13 +20,23 @@
 namespace DOL.GS.Commands
 {
 	/// <summary>
-	/// Command handler for the /bind command
+	/// Handles all user-based interaction for the '/bind' command
 	/// </summary>
 	[CmdAttribute(
+		// Enter '/bind' to activate this command
 		"&bind",
+		// Message: '/bind' - Sets a respawn point for your character. After you die, '/release' will send you to this location.
+		"PLCommands.Bind.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		// Required minimum privilege level to use the command
 		ePrivLevel.Player,
-		"Binds your soul to a bind location, you will start from there after you die and /release",
-		"/bind")]
+		// Message: Sets a respawn point for your character. After you die, '/release' will send you to this location.
+		"PLCommands.Bind.Description",
+		// Syntax: /bind
+		"PLCommands.Bind.Syntax.Bind",
+		// Message: Binds your character to a location, which serves as your default respawn location after you die and release.
+		"PLCommands.Bind.Usage.Bind")]
 	public class BindCommandHandler : AbstractCommandHandler, ICommandHandler
 	{
 		/// <summary>
@@ -38,7 +48,7 @@ namespace DOL.GS.Commands
 		{
 			if (IsSpammingCommand(client.Player, "bind"))
 				return;
-
+			
 			client.Player.Bind(false);
 		}
 	}

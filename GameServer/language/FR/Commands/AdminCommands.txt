@@ -1,9 +1,9 @@
 ﻿
 # /serverproperties Command
-AdminCommands.ServerProperties.Description:			Recharger les propriétés du serveur depuis la base de données.
-AdminCommands.ServerProperties.Usage:				/serverproperties
-AdminCommands.ServerProperties.DataBaseXML:			Désolé! XML utilise un cache, vous ne pouvez pas recharger les propriétés du serveur à moins d'utiliser MySQL.
-AdminCommands.ServerProperties.PropertiesRefreshed:	Les propriétés du serveur ont été rechargées.
+AdminCommands.ServerProp.Description:			Recharger les propriétés du serveur depuis la base de données.
+AdminCommands.ServerProp.Syntax.ServerProp:				/serverproperties
+AdminCommands.ServerProp.XMLOld.Sorry:			Désolé! XML utilise un cache, vous ne pouvez pas recharger les propriétés du serveur à moins d'utiliser MySQL.
+AdminCommands.ServerProp.Msg.PropsRefreshed:	Les propriétés du serveur ont été rechargées.
 
 
 # /plvl Command
@@ -24,9 +24,9 @@ AdminCommands.plvl.PlayerPlvlHasBeenSetted:			Le niveau de privilèges du joueur
 
 # /code Command
 AdminCommands.Code.Description:						Permet l'exécution de code à partir du jeu!
-AdminCommands.Code.Usage:							/code <code>
-AdminCommands.Code.ErrorCompiling:					Erreur de Compilation de l'Expression:
-AdminCommands.Code.CodeExecuted:					Code exécuté...
+AdminCommands.Code.Syntax.Code:							/code <code>
+AdminCommands.Code.Err.Compiling:					Erreur de Compilation de l'Expression:
+AdminCommands.Code.Msg.CodeExecuted:					Code exécuté...
 
 
 # /account Command

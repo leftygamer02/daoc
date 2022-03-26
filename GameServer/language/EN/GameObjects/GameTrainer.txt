@@ -19,22 +19,42 @@ GameTrainer.ReceiveItem.RespecRealm:		Thanks, I added a realm respec to use /res
 GameTrainer.ReceiveItem.RespecSingle:		Thanks, I added a single spec respec to use /respec <linename>
 GameTrainer.Interact.RegainPoints:		    You regain {0} specialization points!
 GamePlayer.RemoveAbility.YouLose:				You lose the {0} ability!
+GamePlayer.Train.Respec.YouLoseAbility:				You lose the {0} ability!
 GamePlayer.RemoveSpecialization.YouLose:		You lose the {0} skill!
+GamePlayer.Train.Respec.YouLoseSkill:               You lose the {0} skill!
 GamePlayer.RemoveSpellLine.YouLose:				You lose the {0} spell line!
+GamePlayer.Train.Respec.YouLoseSpellLine:			You lose the {0} spell line!
+GamePlayer.Train.Respec.YouLoseRA:				You lose the {0} realm ability!
+GamePlayer.Train.Respec.YouLoseStyle:				You lose the {0} combat style!
 
 ## Training
 GameTrainer.Train.WouldYouLikeTo:		    Would you like to do some training?
+GameNPC.Trainer.Dialogue.WouldYouLikeTo:		    {0} says, "Would you like to do some training?"
 GameTrainer.Train.SeekElsewhere:		    You must seek elsewhere for your training.
+GameNPC.Trainer.Dialogue.SeekElsewhere:		        {0} says, "You must seek elsewhere for your training."
 GameTrainer.AddGift.NotEnoughSpace:		    Not Space inventory space to receive your gift. Please make room.
+GameNPC.Trainer.Dialogue.NotEnoughSpace:		    {0} says, "There's not enough room in your inventory to receive my gift."
 GamePlayer.GainExperience.TalkToTrainer:		Talk to your trainer for more information.
-GamePlayer.AddAbility.YouLearn:				You learn the {0} ability!	
-GamePlayer.AddSpecialisation.YouLearn:		You learn the {0} skill!		
-GamePlayer.AddSpellLine.YouLearn:			You learn the {0} spell list!		
+GamePlayer.LevelUp.Msg.TalkToTrainer:		        Talk to your trainer for more information.
+GamePlayer.AddAbility.YouLearn:				You learn the {0} ability!
+GamePlayer.Train.Spec.YouLearnAbility:				You learn the {0} ability!
+GamePlayer.AddSpecialisation.YouLearn:		You learn the {0} skill!
+GamePlayer.Train.Spec.YouLearnSkill:		        You learn the {0} skill!
+GamePlayer.AddSpellLine.YouLearn:			You learn the {0} spell list!
+GamePlayer.Train.Spec.YouLearnSpellLine:			You learn the {0} spell line!
+GamePlayer.Train.Spec.YouLearnSpellAbility:         You learn the {0} spell ability!
+GamePlayer.Train.Spec.YouLearnRA:                   You learn the {0} realm ability!
 GamePlayer.AddToWorld.SpecsPointsIncorrect:		Your Specs points total was incorrect. Now corrected, please train again.
+GamePlayer.Train.Spec.SpecsPointsIncorrect:		    You had an incorrect number of Specialization Points, which has been adjusted. Please train again.
 GamePlayer.OnSkillTrained.TrainsInVarious:		{0} trains in various specializations.
+GameNPC.Trainer.Interact.TrainsInVarious:		    {0} trains in various specializations.
 GamePlayer.OnSkillTrained.YouHave:				You have {0} specialization points left this level.
+GamePlayer.Train.Spec.SpecPtsLeft:				    You have {0} specialization points left this level.
 GamePlayer.OnSkillTrained.YouSpend:				You spend {0} points and specialize further in {1}
+GamePlayer.Train.Spec.YouSpecFurther:				You spend {0} points and specialize further in {1}.
+GamePlayer.Train.Spec.SpendRealmSkillPts:           You spend {0} realm skill points and learn the {1} ability.
 GamePlayer.RefreshSpec.YouLearn:				You learn the {0} combat style!
+GamePlayer.Train.Spec.YouLearnStyle:				You learn the {0} combat style!
 
 ## Albion
 ### Friar

@@ -756,10 +756,10 @@ Scripts.Players.Chatgroup.Public:				Il chat group e' ora publico.
 Scripts.Players.Chatgroup.Usage:				Utilizzo: /c <text>
 Scripts.Players.Chatgroup.UsageInvite:			Utilizzo: /cg invite <playername>"
 
-# /Cmdhelp
-Scripts.Players.Cmdhelp.NoCommand:				Il comando {0} non esiste.
-Scripts.Players.Cmdhelp.PlvlCommands:			<----------Comandi disponibili per plvl {0}---------->
-Scripts.Players.Cmdhelp.Usage:				>----------Utilizzo di {0}----------<
+# /Cmdhelp or /cmd
+PLCommands.Cmd.Err.DoesNotExist:				Il comando {0} non esiste.
+PLCommands.Header.Cmd.AvailableCmds:			<----- {0} Comandi ----->
+PLCommands.Header.Cmd.Subcommands:				    <----- Utilizzo di '/{0}' ----->
 
 # /Disband
 Scripts.Players.Disband.Disbanded:			{o} e' stato espulso dal gruppo.

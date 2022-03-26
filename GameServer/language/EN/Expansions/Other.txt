@@ -148,7 +148,7 @@ KingNPC.WhisperReceive.AskForChampion:			Would you like to embrace in the life o
 
 ## Warlock
 GamePlayer.CastSpell.AlreadyChosenSpells:		You have already chosen your spells for this chamber.
-GamePlayer.CastSpell.FollowSpell:			You ready a {0} as a follow up!
+
 GamePlayer.CastSpell.NotAFollowSpell:			You may not ready this spell as a followup!
 GamePlayer.CastSpell.PrimarySpellFirst:			You must store a primary spell first!
 GamePlayer.CastSpell.PrepareSecondarySpell:		You prepare this as a secondary spell!

@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -26,13 +27,29 @@ using DOL.GS;
 namespace DOL.GS.Commands
 {
 	/// <summary>
-	/// Refresh Command Handler to handle resetting Object using Static Cache.
+	/// Handles all user-based interaction for the '/refresh' command
 	/// </summary>
-	[Cmd("&refresh",
+	[CmdAttribute(
+		// Enter '/refresh' to list all associated subcommands
+		"&refresh",
+		// Message: '/refresh' - Refreshes specific static data caches stored via scripts and other objects.
+		"AdminCommands.Refresh.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		// Required minimum privilege level to use the command
 		ePrivLevel.Admin,
-		"Refresh some specific static data cache stored in scripts or other objects",
-		"/refresh list | ClassName 'dot' MethodName"
-		)]
+		// Message: Refreshes specific static data caches stored using scripts and other objects.
+		"AdminCommands.Refresh.Description",
+		// Syntax: /refresh <className>.<methodName>
+		"AdminCommands.Refresh.Syntax.RefreshModule",
+		// Message: Refreshes a specific module's static cache.
+		"AdminCommands.Refresh.Usage.RefreshModule",
+		// Syntax: /refresh list
+		"AdminCommands.Refresh.Syntax.RefreshList",
+		// Message: Returns a list of all available modules that with static caches that may be refreshed.
+		"AdminCommands.Refresh.Usage.RefreshList",
+		// Message: <----- '/refresh' Modules ----->
+		"AdminCommands.Refresh.Msg.AvailableModules")]
 	public class RefreshCommand : AbstractCommandHandler, ICommandHandler
 	{
 		private static readonly Dictionary<string, MethodInfo> m_refreshCommandCache = new Dictionary<string, MethodInfo>();
@@ -79,23 +96,28 @@ namespace DOL.GS.Commands
 				
 				if (method.Value == null)
 				{
-					DisplayMessage(client, "Wrong Module argument given... try /refresh list!");
+					// Message: The module specified does not exist. Try '/refresh list' to see available modules.
+					ChatUtil.SendTypeMessage("error", client, "AdminCommands.Refresh.Err.WrongModule", null);
 				}
 				else
 				{
-					DisplayMessage(client, string.Format("--- Refreshing Module's static cache for: {0}", method.Key));
+					// Message: [START] Refreshing the module static cache for: {0}
+					ChatUtil.SendTypeMessage("important", client, "AdminCommands.Refresh.Msg.RefreshingModules", method.Key);
 					try
 					{
 						object value = method.Value.Invoke(null, new object[] { });
 						if (value != null)
-							DisplayMessage(client, string.Format("--- Module returned value: {0}", value));
+							// Message: [RETURN] Module returned value: {0}
+							ChatUtil.SendTypeMessage("cmdUsage", client, "AdminCommands.Refresh.Msg.ReturnedValue", value);
 					}
 					catch(Exception e)
 					{
-						DisplayMessage(client, string.Format("-!- Error while refreshing Module's static cache for: {0} - {1}", method.Key, e));
+						// Message: [ERROR] An unexpected issue occurred: {0}, {1}
+						ChatUtil.SendTypeMessage("error", client, "AdminCommands.Refresh.Err.ErrorStaticCache", method.Key, e);
 					}
-						
-					DisplayMessage(client, string.Format("-.- Refresh Module's static cache Finished for: {0}", method.Key));
+					
+					// Message: [DONE] Refreshed the static cache for: {0}
+					ChatUtil.SendTypeMessage("important", client, "AdminCommands.Refresh.Msg.StaticCacheFinished", method.Key);
 				}
 			}
 		}
@@ -106,9 +128,10 @@ namespace DOL.GS.Commands
 		/// <param name="client"></param>
 		private void DisplayAvailableModules(GameClient client)
 		{
-			DisplayMessage(client, "Available Refreshables Modules: ");
+			// Message: <----- '/refresh' Modules ----->
+			ChatUtil.SendTypeMessage("cmdHeader", client, "AdminCommands.Refresh.Msg.AvailableModules", null);
 			foreach(var mods in m_refreshCommandCache.Keys)
-				DisplayMessage(client, mods);
+				ChatUtil.SendTypeMessage("cmdUsage", client, mods);
 		}
 
 		/// <summary>

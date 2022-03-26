@@ -1,9 +1,9 @@
 ﻿
 # /serverproperties Command
-AdminCommands.ServerProperties.Description:			Herlaad server eigenschappen van de database
-AdminCommands.ServerProperties.Usage:				/serverproperties
-AdminCommands.ServerProperties.DataBaseXML:			XML is cached sorry, je kan niet de server eigenschappen vernieuwen tenzij van MySQL gebruiken!
-AdminCommands.ServerProperties.PropertiesRefreshed:		server eigenschappen vernieuwen!
+AdminCommands.ServerProp.Description:			Herlaad server eigenschappen van de database
+AdminCommands.ServerProp.Syntax.ServerProp:				/serverproperties
+AdminCommands.ServerProp.XMLOld.Sorry:			XML is cached sorry, je kan niet de server eigenschappen vernieuwen tenzij van MySQL gebruiken!
+AdminCommands.ServerProp.Msg.PropsRefreshed:		Server eigenschappen vernieuwen!
 
 
 # /plvl Command
@@ -24,9 +24,9 @@ AdminCommands.plvl.PlayerPlvlHasBeenSetted:			{0} voorrecht is ingesteld op {1}.
 
 # /code Command
 AdminCommands.Code.Description:					Voert aangepaste code!
-AdminCommands.Code.Usage:					/code <codesnippet>
-AdminCommands.Code.ErrorCompiling:				Fout Compileren Expression:
-AdminCommands.Code.CodeExecuted:				Code uitgevoerd...
+AdminCommands.Code.Syntax.Code:					/code <codesnippet>
+AdminCommands.Code.Err.Compiling:				Fout Compileren Expression:
+AdminCommands.Code.Msg.CodeExecuted:				Code uitgevoerd...
 
 
 # /account Command

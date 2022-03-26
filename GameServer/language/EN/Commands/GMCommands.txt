@@ -12,6 +12,7 @@ GMCommands.HookPoint.Usage:					'/addhookpoint <skin> <id>' to add a hookpoint (
 GMCommands.HookPoint.NoGKCTarget:			You are not targeting a GameKeepComponent!
 
 ## /alert
+GMCommands.Alert.CmdList.Description:               '/alert' - Controls whether sound alerts are triggered when receiving Player messages and appeals.
 GMCommands.Header.Syntax.Alert:                     <----- '/alert' Commands (plvl 2) ----->
 GMCommands.Alert.Syntax.All:                        /alert all < on | off >
 GMCommands.Alert.Usage.All:                         Activates/Deactivates sound alerts for all alert types.
@@ -375,9 +376,11 @@ GMCommands.Mute.Err.NoSpeakChannel:                   You have been muted by Atl
 GMCommands.Mute.Err.NoUseCommand:                     You have been muted by Atlas staff and are not allowed to use this command.
 
 ## /team or /te
+GMCommands.CmdList.Team.Description:                    '/team' or '/te' - Broadcasts a message to all Atlas server team members (i.e., plvl 2+).
 GMCommands.Header.Command.Team:                         <----- '/team' Commands (plvl 2) ----->
+GMCommands.Team.Description:                            Broadcasts a message to all Atlas server team members (i.e., plvl 2+).
 GMCommands.Team.Syntax.Team:                            '/team <message>' or '/te <message>'
-GMCommands.Team.Usage.Team:                             Broadcasts a message to all Atlas server team members (i.e., plvl 2+).
+GMCommands.Team.Usage.Team:                             Broadcasts a message to the [TEAM] channel.
 
 ## /viewreports
 Scripts.Player.ViewReport.Usage: 			Usage:

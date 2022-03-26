@@ -17,51 +17,31 @@
  *
  */
 
-/* <--- SendMessage Standardization --->
-*  All messages now use translation IDs to both
-*  centralize their location and standardize the method
-*  of message calls used throughout this project. All messages affected
-*  are in English. Other languages are not yet supported.
-* 
-*  To  find a message at its source location, either use
-*  the message body contained in the comment above the return
-*  (e.g., // Message: "This is a message.") or the
-*  translation ID (e.g., "AdminCommands.Account.Description").
-* 
-*  To perform message changes, take note of your server settings.
-*  If the `serverproperty` table setting `use_dblanguage`
-*  is set to `True`, you must make your changes from the
-*  `languagesystem` DB table.
-* 
-*  If the `serverproperty` table setting
-*  `update_existing_db_system_sentences_from_files` is set to `True`,
-*  perform changes to messages from this file at "GameServer >
-*  language > EN > Commands > AdminCommands.txt".
-*
-*  OPTIONAL: After changing a message, paste the new content
-*  into the comment above the affected message return(s). This is
-*  done for ease of reference. */
-
 using System.Linq;
 
 namespace DOL.GS.Commands
 {
-	// See the comments above 'using' about SendMessage translation IDs
+	/// <summary>
+	/// Handles all user-based interaction for the '/benchmark' command
+	/// </summary>
 	[CmdAttribute(
-		// Enter '/benchmark' to list all commands
+		// Enter '/benchmark' to list all associated subcommands
 		"&benchmark",
-		// Message: <----- '/benchmark' Commands (plvl 3) ----->
-		"AdminCommands.Header.Syntax.Benchmark",
+		// Message: '/benchmark' - Performs a system benchmark of the specified type. This is used to gauge overall system performance.
+		"AdminCommands.Benchmark.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		// Required minimum privilege level to use the command
 		ePrivLevel.Admin,
-		// Message: "Performs a system benchmark of the specified type. This is used to gauge overall system performance."
+		// Message: Performs a system benchmark of the specified type. This is used to gauge overall system performance.
 		"AdminCommands.Benchmark.Description",
 		// Syntax: /benchmark listskills
 		"AdminCommands.Benchmark.Syntax.Listskills",
-		// Message: "Tests the total amount of time (in milliseconds) the system takes to list a set number of cached skills. This does not include spellcasting specializations."
+		// Message: Tests the total amount of time (in milliseconds) the system takes to list a set number of cached skills. This does not include spellcasting specializations.
 		"AdminCommands.Benchmark.Usage.Listskills",
 		// Syntax: /benchmark listspells
 		"AdminCommands.Benchmark.Syntax.Listspells",
-		// Message: "Tests the total amount of time (in milliseconds) the system takes to list a sec number of cached spells."
+		// Message: Tests the total amount of time (in milliseconds) the system takes to list a sec number of cached spells.
 		"AdminCommands.Benchmark.Usage.Listspells")]
 	public class BenchmarkCommand : AbstractCommandHandler, ICommandHandler
 	{		
@@ -69,7 +49,7 @@ namespace DOL.GS.Commands
 		{
 			if (args.Length < 2)
 			{
-				// Lists '/benchmark' commands' syntax (see '&benchmark' section above)
+				// Lists '/benchmark' commands' syntax (see section above)
 				DisplaySyntax(client);
 				return;
 			}
@@ -97,14 +77,13 @@ namespace DOL.GS.Commands
 						var tmp = client.Player.GetAllUsableSkills(true);
 					}
 					
-					// For each usable skill, execute the ActionSkill method until the max range is hit
+					// For each usable skill, execute the ActionSkill function until the max range is hit
 					Util.ForEach(Enumerable.Range(min, max).AsParallel(), ActionSkill);
-					
 					// Final duration to list full range of spells/skills
 					spent = GameTimer.GetTickCount() - start;
 					
-					// Message: "The skills benchmark took {0}ms to list {1} usable skills."
-					ChatUtil.SendErrorMessage(client, "AdminCommands.Benchmark.Msg.SkillsIterations", spent, max);
+					// Message: The skills benchmark took {0}ms to list {1} usable skills.
+					ChatUtil.SendTypeMessage("important", client, "AdminCommands.Benchmark.Msg.SkillsIterations", spent, max);
 					return;
 				}
 				#endregion Listskills
@@ -124,11 +103,11 @@ namespace DOL.GS.Commands
 					}
 					
 					Util.ForEach(Enumerable.Range(min, max).AsParallel(), ActionSpell);
-					
+					// Final duration to list full range of spells/skills
 					spent = GameTimer.GetTickCount() - start;
 					
-					// Message: "The spells benchmark took {0}ms to list {1} usable spells."
-					ChatUtil.SendErrorMessage(client, "AdminCommands.Benchmark.Msg.SpellsIterations", spent, max);
+					// Message: The spells benchmark took {0}ms to list {1} usable spells.
+					ChatUtil.SendTypeMessage("important", client, "AdminCommands.Benchmark.Msg.SpellsIterations", spent, max);
 					return;
 				}
 				#endregion Listspells

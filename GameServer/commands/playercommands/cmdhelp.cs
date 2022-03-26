@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.PacketHandler;
 using DOL.Language;
@@ -23,24 +24,41 @@ using System.Collections.Generic;
 
 namespace DOL.GS.Commands
 {
-	[CmdAttribute("&cmdhelp", //command to handle
-		ePrivLevel.Player, //minimum privelege level
-		"Displays available commands", //command description
-		//usage
-		"'/cmdhelp' displays a list of all the commands and their descriptions",
-		"'/cmdhelp <plvl>' displays a list of all commands that require at least plvl",
-		"'/cmdhelp <cmd>' displays the usage for cmd")]
+	[CmdAttribute("&cmd", // The main command controlled here
+		new[] {"&cmdhelp"}, // Secondary syntax to trigger the main command
+		// Message: '/cmd' - Returns a list of all available commands, along with a description of their purpose.
+		"PLCommands.Cmd.CmdList.Description",
+		// Message: <----- '/{0}' Command {1}----->
+		"AllCommands.Header.General.Commands",
+		ePrivLevel.Player, // Required minimum privilege level to use the command
+		// Message: Returns a list of all available commands, along with a description of their purpose.
+		"PLCommands.Cmd.Description",
+		// Syntax: /cmd
+		"PLCommands.Cmd.Syntax.Cmdhelp",
+		// Message: Returns a list of all commands available to the player.
+		"PLCommands.Cmd.Usage.Cmdhelp",
+		// Syntax: /cmd <plvl>
+		"PLCommands.Cmd.Syntax.Plvl",
+		// Message: Returns a list of all commands available to the privilege level specified.
+		"PLCommands.Cmd.Usage.Plvl",
+		// Syntax: /cmd <command>
+		"PLCommands.Cmd.Syntax.Command",
+		// Message: Returns a list of all subcommands associated with the command type specified.
+		"PLCommands.Cmd.Usage.Command")]
 	public class CmdHelpCommandHandler : AbstractCommandHandler, ICommandHandler
 	{
 		public void OnCommand(GameClient client, string[] args)
 		{
-			if (IsSpammingCommand(client.Player, "cmdhelp"))
+			// Anti-spamming measure
+			if (IsSpammingCommand(client.Player, "cmd", 500))
 				return;
 
+			// Players may only view commands associated with their plvl
 			ePrivLevel privilegeLevel = (ePrivLevel)client.Account.PrivLevel;
-			bool isCommand = true;
+			bool isCommand = true; // Checks to make sure the related command(s) exist
 
-			if (args.Length > 1)
+			// Check if client is trying to list commands by plvl (e.g., '/cmd 3') by trying to convert arg[1] into int
+			if (args.Length > 1 && client.Account.PrivLevel > 1)
 			{
 				try
 				{
@@ -52,31 +70,43 @@ namespace DOL.GS.Commands
 				}
 			}
 
-			if (isCommand)
+			// If converted to int successfully, display commands by plvl association
+			if (isCommand && client.Account.PrivLevel > 1)
 			{
-                String[] commandList = GetCommandList(privilegeLevel);
-				DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Cmdhelp.PlvlCommands", privilegeLevel.ToString()));
+                String[] commandList = GetCommandList(privilegeLevel); // Get all commands for that plvl
+                // Message: <----- {0} Commands ----->
+				ChatUtil.SendTypeMessage("cmdHeader", client, "PLCommands.Header.Cmd.AvailableCmds", privilegeLevel.ToString());
 
-                foreach (String command in commandList)
-					DisplayMessage(client, command);
+				foreach (String command in commandList)
+				{
+					ChatUtil.SendTypeMessage("cmdUsage", client, command, null);
+				}
+					
 			}
-			else
+			else // If the player attempts to filter by command type (e.g., '/cmd jump')
 			{
 				string command = args[1];
-
+				
 				if (command[0] != '&')
 					command = "&" + command;
 
 				ScriptMgr.GameCommand gameCommand = ScriptMgr.GetCommand(command);
 
 				if (gameCommand == null)
-                    DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Cmdhelp.NoCommand", command));
+					// Message: The {0} command does not exist.
+					ChatUtil.SendTypeMessage("error", client, "PLCommands.Cmd.Err.DoesNotExist", command);
                 else
 				{
-					DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Cmdhelp.Usage", command));
+					// Message: <----- '/{0}' Subcommands ----->
+					ChatUtil.SendTypeMessage("cmdHeader", client, "PLCommands.Header.Cmd.Subcommands", command);
 
-					foreach (String usage in gameCommand.Usage)
-						DisplayMessage(client, usage);
+					foreach (var usage in gameCommand.Usage)
+					{
+						if (usage.Contains(".Syntax."))
+							ChatUtil.SendTypeMessage("cmdSyntax", client, usage, null);
+						else
+							ChatUtil.SendTypeMessage("cmdUsage", client, usage, null);
+					}
 				}
 			}
 		}
