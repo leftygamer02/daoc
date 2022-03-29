@@ -150,6 +150,7 @@ namespace DOL.GS
         Vanish,
         BatteryOfLife,
         RuneOfDecimation,
+        SeverTether,
         MasteryOfConcentration,
     }
 }

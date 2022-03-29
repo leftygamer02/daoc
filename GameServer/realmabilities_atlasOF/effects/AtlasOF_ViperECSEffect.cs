@@ -7,7 +7,6 @@ namespace DOL.GS.Effects
 {
     public class AtlasOF_ViperECSEffect : ECSGameAbilityEffect
     {
-        public new SpellHandler SpellHandler;
         public AtlasOF_ViperECSEffect(ECSGameEffectInitParams initParams)
             : base(initParams)
         {
