@@ -72,7 +72,7 @@ namespace DOL.GS
 
         public override bool AddToWorld()
         {
-            Strength = 5;
+            Strength = 550;
             Dexterity = 200;
             Constitution = 100;
             Quickness = 125;
