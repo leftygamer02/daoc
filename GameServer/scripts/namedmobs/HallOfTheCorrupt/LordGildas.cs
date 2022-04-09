@@ -268,6 +268,7 @@ namespace DOL.AI.Brain
                     Body.Quickness = npcTemplate.Quickness;
                     Body.ParryChance = npcTemplate.ParryChance;
                     Body.BlockChance = npcTemplate.BlockChance;
+                    Body.Strength = npcTemplate.Strength;
                     Stage2 = false;
                     Body.styleComponent.NextCombatStyle = LordGildas.taunt;
                     new RegionTimer(Body, new RegionTimerCallback(ResetGildas), 7000);
@@ -285,6 +286,7 @@ namespace DOL.AI.Brain
                         float angle = Body.TargetObject.GetAngle(Body);
                         if (angle >= 160 && angle <= 200)
                         {
+                            Body.Strength = (short)(npcTemplate.Strength + 100);
                             Body.Empathy = (short)(npcTemplate.Empathy + 70);
                             Body.ParryChance = 60;
                             Body.BlockChance = 0;
@@ -294,6 +296,7 @@ namespace DOL.AI.Brain
                         }
                         else
                         {
+                            Body.Strength = npcTemplate.Strength;
                             Body.Empathy = npcTemplate.Empathy;
                             Body.ParryChance = 25;
                             Body.BlockChance = 75;
@@ -303,6 +306,7 @@ namespace DOL.AI.Brain
                         }
                         if (!target.effectListComponent.ContainsEffectForEffectType(eEffect.Stun) && !target.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity))
                         {
+                            Body.Strength = npcTemplate.Strength;
                             Body.Empathy = npcTemplate.Empathy;
                             Body.SwitchWeapon(eActiveWeaponSlot.Standard);
                             Body.VisibleActiveWeaponSlots = 16;
@@ -347,6 +351,7 @@ namespace DOL.AI.Brain
                     INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(7719);
                     Body.Empathy = (short)(npcTemplate.Empathy+50);
                     Body.Quickness = (short)(npcTemplate.Quickness -50);
+                    Body.Strength = (short)(npcTemplate.Strength + 100);
                     Body.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
                     Body.MeleeDamageType = eDamageType.Crush;
                     Body.VisibleActiveWeaponSlots = 34;
