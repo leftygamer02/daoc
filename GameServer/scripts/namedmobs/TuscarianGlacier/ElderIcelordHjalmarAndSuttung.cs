@@ -515,11 +515,13 @@ namespace DOL.AI.Brain
                     {
                         if (angle >= 150 && angle < 210)
                         {
+                            Body.Strength = 650;
                             Body.Empathy = 240;
                             Body.styleComponent.NextCombatStyle = Hjalmar.back_style;
                         }
                         else
                         {
+                            Body.Strength = 500;
                             Body.Empathy = 200;
                             Body.styleComponent.NextCombatStyle = Hjalmar.taunt;
                         }
