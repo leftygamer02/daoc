@@ -91,7 +91,7 @@ namespace DOL.GS
 			Size = 180;
 			ParryChance = 70;
 
-			Strength = 5;
+			Strength = 500;
 			Dexterity = 200;
 			Constitution = 100;
 			Quickness = 100;
