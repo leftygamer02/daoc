@@ -287,6 +287,7 @@ namespace DOL.AI.Brain
                     {
                         if (!living.effectListComponent.ContainsEffectForEffectType(eEffect.Stun) && !living.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity))
                         {
+                            Body.Strength = npcTemplate.Strength;
                             Body.Empathy = npcTemplate.Empathy;
                             Body.Quickness = npcTemplate.Quickness;
                             Body.SwitchWeapon(eActiveWeaponSlot.Standard);
@@ -306,6 +307,7 @@ namespace DOL.AI.Brain
                         }
                         if ((angle >= 45 && angle < 150) || (angle >= 210 && angle < 315))//side
                         {
+                            Body.Strength = (short)(npcTemplate.Strength+100);
                             Body.Empathy = (short)(npcTemplate.Empathy + 80);
                             Body.Quickness = (short)(npcTemplate.Quickness - 20);
                             Body.BlockChance = 0;
@@ -318,6 +320,7 @@ namespace DOL.AI.Brain
                         }
                         else if(!living.effectListComponent.ContainsEffectForEffectType(eEffect.Stun) && living.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity))
                         {
+                            Body.Strength = npcTemplate.Strength;
                             Body.Empathy = npcTemplate.Empathy;
                             Body.Quickness = npcTemplate.Quickness;
                             Body.SwitchWeapon(eActiveWeaponSlot.Standard);
@@ -334,6 +337,7 @@ namespace DOL.AI.Brain
                     }
                     if(Phase2)
                     {
+                        Body.Strength = (short)(npcTemplate.Strength + 100);
                         Body.Empathy = (short)(npcTemplate.Empathy + 80);
                         Body.Quickness = (short)(npcTemplate.Quickness - 20);
                         Body.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
