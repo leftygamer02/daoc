@@ -487,7 +487,7 @@ namespace DOL.GS
                 OLC.Z = 11681;
                 OLC.Heading = 2491;
 
-                OLC.Strength = 5;
+                OLC.Strength = 800;
                 OLC.Intelligence = 200;
                 OLC.Piety = 200;
                 OLC.Dexterity = 200;
@@ -548,7 +548,7 @@ namespace DOL.AI.Brain
             Add.Faction = FactionMgr.GetFactionByID(96);
             Add.Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
 
-            Add.Strength = 5;
+            Add.Strength = 800;
             Add.Intelligence = 200;
             Add.Piety = 200;
             Add.Dexterity = 200;
