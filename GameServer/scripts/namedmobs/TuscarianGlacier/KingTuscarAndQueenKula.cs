@@ -342,8 +342,10 @@ namespace DOL.AI.Brain
             }
             else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
             {
+                INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60165083);
                 Body.Health = Body.MaxHealth;
                 message1 = false;
+                Body.Strength = npcTemplate.Strength;
             }
             if (Body.InCombat && HasAggro)
             {
@@ -380,10 +382,12 @@ namespace DOL.AI.Brain
                     }
                     if (KingTuscar.KingTuscarCount == 1)
                     {
+                        Body.Strength = 500;
                         Body.Empathy = 200;//if king is up it will deal less dmg
                     }
                     else if (KingTuscar.KingTuscarCount == 0)
                     {
+                        Body.Strength = 650;
                         Body.Empathy = 240;//king is dead so more dmg
                     }
                     Body.styleComponent.NextCombatStyle = QueenKula.taunt;
@@ -836,8 +840,10 @@ namespace DOL.AI.Brain
             }
             else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
             {
+                INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162909);
                 Body.Health = Body.MaxHealth;
                 message2 = false;
+                Body.Strength = npcTemplate.Strength;
             }
             if (Body.InCombat && HasAggro)
             {
@@ -857,10 +863,12 @@ namespace DOL.AI.Brain
                     GameLiving living = Body.TargetObject as GameLiving;
                     if(QueenKula.QueenKulaCount == 1)
                     {
+                        Body.Strength = 600;
                         Body.Empathy = 200;
                     }
                     else if (QueenKula.QueenKulaCount == 0 || Body.HealthPercent <=50)
                     {
+                        Body.Strength = 700;
                         Body.Empathy = 260;
                     }
                 }
