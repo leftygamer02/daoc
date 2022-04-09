@@ -2411,14 +2411,6 @@ namespace DOL.GS
                 }
             }
 
-            Strength = 5;//no need str at all
-            Dexterity = 200;
-            Constitution = 100;
-            Quickness = 10;//slow attacks
-            Piety = 350;
-            Intelligence = 350;
-            Charisma = 350;
-            Empathy = 302;//most important stat for boss damage, with this sestings it will hit for 940~
             KilledEnemys = 0;
             ApocalypseBrain adds = new ApocalypseBrain();
             SetOwnBrain(adds);
@@ -2802,7 +2794,7 @@ namespace DOL.GS
             Model = 952;
             Size = 90;
 
-            Strength = 5;
+            Strength = 150;
             Constitution = 100;
             Dexterity = 200;
             Quickness = 50;
