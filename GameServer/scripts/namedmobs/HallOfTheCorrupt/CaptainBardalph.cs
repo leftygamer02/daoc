@@ -130,6 +130,7 @@ namespace DOL.GS
             {
                 Styles.Add(Taunt);
             }
+            Strength = 500;
             EvadeChance = 50;
             MaxDistance = 2000;
             TetherRange = 1500;
@@ -167,7 +168,7 @@ namespace DOL.GS
                 HOC.Faction = FactionMgr.GetFactionByID(187);
                 HOC.Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
 
-                HOC.Strength = 5;
+                HOC.Strength = 500;
                 HOC.Constitution = 100;
                 HOC.Dexterity = 200;
                 HOC.Quickness = 145;
