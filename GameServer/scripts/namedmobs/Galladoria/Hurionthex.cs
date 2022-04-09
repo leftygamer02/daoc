@@ -230,7 +230,7 @@ namespace DOL.AI.Brain
             Body.MeleeDamageType = eDamageType.Crush;
             Body.BodyType = 5; // Giant
 
-            Body.Strength = 5;
+            Body.Strength = 500;
             Body.Dexterity = 200;
             Body.Quickness = 100;
             Body.Intelligence = 200;
@@ -257,7 +257,7 @@ namespace DOL.AI.Brain
             Body.MeleeDamageType = eDamageType.Spirit;
             Body.BodyType = 10; // Plant
 
-            Body.Strength = 5;
+            Body.Strength = 600;
             Body.Constitution = 100;
             Body.Dexterity = 200;
             Body.Quickness = 85;
@@ -285,7 +285,7 @@ namespace DOL.AI.Brain
             Body.MeleeDamageType = eDamageType.Spirit;
             Body.BodyType = 1; // Animal
 
-            Body.Strength = 5;
+            Body.Strength = 500;
             Body.Constitution = 100;
             Body.Dexterity = 200;
             Body.Quickness = 185;
@@ -312,7 +312,7 @@ namespace DOL.AI.Brain
             Body.AttackRange = 450;
             Body.MeleeDamageType = eDamageType.Spirit;
 
-            Body.Strength = 5;
+            Body.Strength = 450;
             Body.Constitution = 100;
             Body.Dexterity = 200;
             Body.Quickness = 125;
