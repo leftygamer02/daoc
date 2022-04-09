@@ -294,6 +294,7 @@ namespace DOL.AI.Brain
 					if (Stage2 == false)
 					{
 						BroadcastMessage(String.Format(Body.Name + " gathers more strength."));
+						Body.Empathy = 600;
 						Body.Empathy = 325;
 						Body.Size = 80;
 					}
@@ -318,12 +319,14 @@ namespace DOL.AI.Brain
 				Body.Model = Convert.ToUInt16(npcTemplate.Model);
 				Body.Size = Convert.ToByte(npcTemplate.Size);
 				Body.Empathy = Convert.ToInt16(npcTemplate.Empathy);
+				Body.Strength = Convert.ToInt16(npcTemplate.Strength);
 			}
 			base.Think();
 		}
 		public void MorphIntoDemon()
         {
 			this.Body.Health = this.Body.MaxHealth;//heal to max hp
+			Body.Strength = 800;
 			Body.Model = 636;//demon model
 			Body.Size = 170;//bigger size
 			Body.Empathy = 350;//more dmg
