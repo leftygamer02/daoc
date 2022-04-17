@@ -62,16 +62,28 @@ namespace DOL.GS.Spells
  			//	return;
 
 			//have to do it here because OnAttackedByEnemy is not called to not get aggro
-			//if (target.Realm == 0 || Caster.Realm == 0)
-				//target.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
-			//else target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+
+			var random = Util.Random(1000, 4000);
+			var startTick = Caster.CurrentRegion.Time;
+			if (Caster.Realm == 0 || target.Realm == 0)
+			{
+				target.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+				Caster.LastAttackTickPvE = GameLoop.GameLoopTime;
+			}
+			else
+			{
+				target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime + random;
+				Caster.LastAttackTickPvP = GameLoop.GameLoopTime;
+			}
+			
 			SendEffectAnimation(target, 0, false, 1);
 
 			if (target is GamePlayer)
 			{
-				((GamePlayer)target).styleComponent.NextCombatStyle = null;
-				((GamePlayer)target).styleComponent.NextCombatBackupStyle = null;
+				((GamePlayer) target).styleComponent.NextCombatStyle = null;
+				((GamePlayer) target).styleComponent.NextCombatBackupStyle = null;
 			}
+			
 			target.StopCurrentSpellcast(); //stop even if MoC or QC
 			target.rangeAttackComponent.RangeAttackTarget = null;
 			//if(target is GamePlayer)
@@ -89,10 +101,10 @@ namespace DOL.GS.Spells
                 return;
             }*/
 
-            if (target.effectListComponent.ContainsEffectForEffectType(eEffect.Pulse))
-            {
-	            EffectListService.TryCancelFirstEffectOfTypeOnTarget(target, eEffect.Pulse);
-            }
+            //if (target.effectListComponent.ContainsEffectForEffectType(eEffect.Pulse))
+            //{
+	        //    EffectListService.TryCancelFirstEffectOfTypeOnTarget(target, eEffect.Pulse);
+            //}
 
 			if (target is GameNPC)
 			{
@@ -117,6 +129,22 @@ namespace DOL.GS.Spells
 		protected override void OnSpellResisted(GameLiving target)
 		{
 			base.OnSpellResisted(target);
+			
+			var random = Util.Random(1000, 4000);
+			if (target is GamePlayer)
+			{
+				if (Caster.Realm == 0 || target.Realm == 0)
+				{
+					target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+					Caster.LastAttackTickPvE = GameLoop.GameLoopTime;
+				}
+				else
+				{
+					Caster.LastAttackTickPvP = GameLoop.GameLoopTime;
+					target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime + random;
+				}
+			}
+
 			if (Spell.CastTime == 0)
 			{
 				// start interrupt even for resisted instant amnesia
