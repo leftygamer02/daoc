@@ -73,7 +73,7 @@ namespace DOL.GS.Spells
 			else
 			{
 				target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime + random;
-				Caster.LastAttackTickPvP = GameLoop.GameLoopTime;
+				Caster.LastAttackTickPvP = random + GameLoop.GameLoopTime;
 			}
 			
 			SendEffectAnimation(target, 0, false, 1);
@@ -130,18 +130,22 @@ namespace DOL.GS.Spells
 		{
 			base.OnSpellResisted(target);
 			
-			var random = Util.Random(1000, 4000);
-			if (target is GamePlayer)
+			// Treat resists as attacks to trigger an immediate response and BAF
+			if (target is GameNPC)
 			{
+				IOldAggressiveBrain aggroBrain = ((GameNPC)target).Brain as IOldAggressiveBrain;
+				if (aggroBrain != null)
+					aggroBrain.AddToAggroList(Caster, 1);
+
 				if (Caster.Realm == 0 || target.Realm == 0)
 				{
-					target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+					target.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
 					Caster.LastAttackTickPvE = GameLoop.GameLoopTime;
 				}
 				else
 				{
+					target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
 					Caster.LastAttackTickPvP = GameLoop.GameLoopTime;
-					target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime + random;
 				}
 			}
 
