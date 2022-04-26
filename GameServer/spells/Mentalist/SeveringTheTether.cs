@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DOL.AI.Brain;
 using DOL.GS;
 using DOL.GS.Effects;
@@ -16,6 +17,7 @@ public class SeveringTheTetherSpellHandler : FearSpellHandler
     {
         return 0;
     }
+    
     public override IList<GameLiving> SelectTargets(GameObject castTarget)
     {
         var list = new List<GameLiving>();
@@ -32,25 +34,20 @@ public class SeveringTheTetherSpellHandler : FearSpellHandler
     {
         var npcTarget = target as GamePet;
         if (npcTarget == null) return;
-
-        base.ApplyEffectOnTarget(target, effectiveness);
-    }
-    
-    public override void OnEffectStart(GameSpellEffect effect)
-    {
-        var npcTarget = effect.Owner as GamePet;
+        
 			
         var STTBrain = new SeveringTheTetherBrain();
         m_NPCSTTBrains.AddOrReplace(npcTarget, STTBrain);
-			
+
+        npcTarget.RemoveControlledNpc(npcTarget.Brain as ControlledNpcBrain);
         npcTarget.AddBrain(STTBrain);
         STTBrain.Think();
 
         npcTarget.Realm = Caster.Realm;
-			
-        base.OnEffectStart(effect);
+
+        base.ApplyEffectOnTarget(target, effectiveness);
     }
-    
+
     public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
     {
         var npcTarget = effect.Owner as GamePet;
@@ -62,7 +59,7 @@ public class SeveringTheTetherSpellHandler : FearSpellHandler
         }
 
         if(npcTarget.Brain == null)
-            npcTarget.AddBrain(new StandardMobBrain());
+            npcTarget.AddBrain(new ControlledNpcBrain(npcTarget.Owner));
 
         npcTarget.Realm = npcTarget.Owner.Realm;
         

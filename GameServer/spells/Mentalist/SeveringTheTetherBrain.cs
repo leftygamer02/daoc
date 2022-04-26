@@ -2,7 +2,7 @@ using DOL.GS;
 
 namespace DOL.AI.Brain
 {
-	public class SeveringTheTetherBrain : StandardMobBrain
+	public class SeveringTheTetherBrain : StandardMobBrain, IControlledBrain
 	{
 		/// <summary>
 		/// Fixed thinking Interval for Fleeing
@@ -12,7 +12,7 @@ namespace DOL.AI.Brain
 				return 1500;
 			}
 		}
-		
+
 		/// <summary>
 		/// Flee from Players on Brain Think
 		/// </summary>
@@ -42,5 +42,89 @@ namespace DOL.AI.Brain
 				return;
 			Body.StartAttack(target);
 		}
+
+		public eWalkState WalkState { get; }
+		public eAggressionState AggressionState { get { return eAggressionState.Aggressive; } set { } }
+		public GameLiving Owner { get; }
+		public void Attack(GameObject target)
+		{
+			
+		}
+
+		public void Follow(GameObject target)
+		{
+			
+		}
+
+		public void FollowOwner()
+		{
+			
+		}
+
+		public void Stay()
+		{
+			
+		}
+
+		public void ComeHere()
+		{
+			
+		}
+
+		public void Goto(GameObject target)
+		{
+			
+		}
+
+		public void UpdatePetWindow()
+		{
+			
+		}
+		
+		public GamePlayer GetPlayerOwner() { return Owner as GamePlayer; }
+		
+		public virtual GameNPC GetNPCOwner()
+		{
+			if (!(Owner is GameNPC))
+				return null;
+
+			GameNPC owner = Owner as GameNPC;
+
+			int i = 0;
+			while (owner != null)
+			{
+				i++;
+				if (i > 50)
+				{
+					break;
+				}
+				if (owner.Brain is ForestheartAmbusherBrain)
+				{
+					if ((owner.Brain as ForestheartAmbusherBrain).Owner is GamePlayer)
+						return null;
+					else
+						owner = (owner.Brain as ForestheartAmbusherBrain).Owner as GameNPC;
+				}
+				else
+					break;
+			}
+			return owner;
+		}
+		public virtual GameLiving GetLivingOwner()
+		{
+			GamePlayer player = GetPlayerOwner();
+			if (player != null)
+				return player;
+
+			return null;
+		}
+
+		public void SetAggressionState(eAggressionState state)
+		{
+		}
+		
+		
+
+		public bool IsMainPet { get; set; }
 	}
 } 
