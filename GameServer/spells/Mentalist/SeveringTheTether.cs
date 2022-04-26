@@ -45,6 +45,8 @@ public class SeveringTheTetherSpellHandler : FearSpellHandler
 			
         npcTarget.AddBrain(STTBrain);
         STTBrain.Think();
+
+        npcTarget.Realm = Caster.Realm;
 			
         base.OnEffectStart(effect);
     }
@@ -62,6 +64,8 @@ public class SeveringTheTetherSpellHandler : FearSpellHandler
         if(npcTarget.Brain == null)
             npcTarget.AddBrain(new StandardMobBrain());
 
+        npcTarget.Realm = npcTarget.Owner.Realm;
+        
         return base.OnEffectExpires(effect, noMessages);
     }
 
