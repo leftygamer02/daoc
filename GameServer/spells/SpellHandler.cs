@@ -578,79 +578,82 @@ namespace DOL.GS.Spells
 		{
 			bool casting=false;
 
-			if (Spell.Target == "Self")
+			if (castState == eCastState.Precast)
 			{
-				// Self spells should ignore whatever we actually have selected.
-				m_spellTarget = Caster;
-			}
-			else
-			{
-				m_spellTarget = Caster?.TargetObject as GameLiving;
-
-				if (m_spellTarget is null && Caster is NecromancerPet nPet)
+				if (Spell.Target == "Self")
 				{
-					m_spellTarget = (nPet.Brain as NecromancerPetBrain).GetSpellTarget();
+					// Self spells should ignore whatever we actually have selected.
+					m_spellTarget = Caster;
 				}
-			}
-
-			if (CheckBeginCast(m_spellTarget))
-			{
-				m_started = GameLoop.GameLoopTime;
-				_castStartTick = currentTick;
-				if (!Spell.IsInstantCast)
-					SendSpellMessages();
-				if (Spell.IsInstantCast)
+				else
 				{
-					if (!CheckEndCast(m_spellTarget))
-						castState = eCastState.Interrupted;
+					m_spellTarget = Caster?.TargetObject as GameLiving;
+
+					if (m_spellTarget is null && Caster is NecromancerPet nPet)
+					{
+						m_spellTarget = (nPet.Brain as NecromancerPetBrain).GetSpellTarget();
+					}
+				}
+
+				if (CheckBeginCast(m_spellTarget))
+				{
+					m_started = GameLoop.GameLoopTime;
+					_castStartTick = currentTick;
+					if (!Spell.IsInstantCast)
+						SendSpellMessages();
+					if (Spell.IsInstantCast)
+					{
+						if (!CheckEndCast(m_spellTarget))
+							castState = eCastState.Interrupted;
+						else
+						{
+							SendCastAnimation(0);
+							castState = eCastState.Finished;
+							casting = true;
+						}
+					}
 					else
 					{
-						SendCastAnimation(0);
-						castState = eCastState.Finished;
+						SendCastAnimation();
+						castState = eCastState.Casting;
 						casting = true;
 					}
 				}
 				else
 				{
-					SendCastAnimation();
-					castState = eCastState.Casting;
-					casting = true;
-				}
-			}
-			else
-			{
-				if (Caster.InterruptAction > 0 && Caster.InterruptTime > GameLoop.GameLoopTime)
-					castState = eCastState.Interrupted;
-				else
-					castState = eCastState.Cleanup;
-			}
-
-			//Process cast on same tick if finished.
-			if (castState == eCastState.Finished)
-			{
-				FinishSpellCast(m_spellTarget);
-				if (Spell.IsFocus)
-				{
-					if (Spell.ID != 5998)
-					{
-						castState = eCastState.Focusing;
-					}
+					if (Caster.InterruptAction > 0 && Caster.InterruptTime > GameLoop.GameLoopTime)
+						castState = eCastState.Interrupted;
 					else
-					{
 						castState = eCastState.Cleanup;
+				}
 
-						var stone = Caster.Inventory.GetFirstItemByName("Personal Bind Recall Stone", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
-						stone.CanUseAgainIn = stone.CanUseEvery;
+				//Process cast on same tick if finished.
+				if (castState == eCastState.Finished)
+				{
+					FinishSpellCast(m_spellTarget);
+					if (Spell.IsFocus)
+					{
+						if (Spell.ID != 5998)
+						{
+							castState = eCastState.Focusing;
+						}
+						else
+						{
+							castState = eCastState.Cleanup;
 
-						//.SetCooldown();
-					}
-				}			
-				else
-					castState = eCastState.Cleanup;
-			}
-			if (castState == eCastState.Cleanup)
-			{
-				CleanupSpellCast();
+							var stone = Caster.Inventory.GetFirstItemByName("Personal Bind Recall Stone", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+							stone.CanUseAgainIn = stone.CanUseEvery;
+
+							//.SetCooldown();
+						}
+					}			
+					else
+						castState = eCastState.Cleanup;
+				}
+				if (castState == eCastState.Cleanup)
+				{
+					CleanupSpellCast();
+				}
 			}
 
 			return casting;
