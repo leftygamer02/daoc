@@ -147,11 +147,9 @@ namespace DOL.GS
                 }
 
             if (m_newSpellHandler.Spell.IsInstantCast)
-                instantSpellHandler.StartCastSpell(GameLoop.GameLoopTime);
-            // Commenting out the spellHandler.Tick as the CastingService should call that for every server tick. 
-            // We were having the occasional issue of double spell casts when both Ticks happened at same time
-            else 
-                spellHandler.StartCastSpell(GameLoop.GameLoopTime);
+                instantSpellHandler.Tick(GameLoop.GameLoopTime);
+            else //Set spell target but wait for the next tick to cast the spell
+                spellHandler.SetSpellTarget();
 
             return true;
         }

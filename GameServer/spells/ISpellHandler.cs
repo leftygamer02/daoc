@@ -50,6 +50,9 @@ namespace DOL.GS.Spells
 		/// Should be used with spells attached to items (procs, /use, etc)
 		/// </summary>
 		bool StartSpell(GameLiving target, InventoryItem item);
+		
+
+		void SetSpellTarget();
 
 		/// <summary>
         /// Called by the CastingComponent to Start casting spell

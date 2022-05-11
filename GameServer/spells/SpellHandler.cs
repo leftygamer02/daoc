@@ -569,8 +569,31 @@ namespace DOL.GS.Spells
 			return success;
 		}
 
+		public virtual void SetSpellTarget()
+		{
+			//Set Target if m_spellTarget is null and castState is in Precast
+			if(m_spellTarget==null && castState == eCastState.Precast )
+			{
+				if (Spell.Target == "Self")
+				{
+					// Self spells should ignore whatever we actually have selected.
+					m_spellTarget = Caster;
+				}
+				else
+				{
+					m_spellTarget = Caster?.TargetObject as GameLiving;
+
+					if (m_spellTarget is null && Caster is NecromancerPet nPet)
+					{
+						m_spellTarget = (nPet.Brain as NecromancerPetBrain).GetSpellTarget();
+					}
+				}
+			}
+		
+		}
 		/// <summary>
-        /// Called by the CastingComponent to Start casting spell
+        /// Called by the CastingComponent to Start casting spell.
+		/// Checks if castState is in Precast, if not, returns false.
         /// </summary>
 		/// <param name="currentTick"></param>
 		/// <returns>returns true if spell is casted or starts casting</returns>
@@ -1756,52 +1779,40 @@ namespace DOL.GS.Spells
 		{
 				switch (castState)
 				{
-					// case eCastState.Precast:
-					// 	if (Spell.Target == "Self")
-					// 	{
-					// 		// Self spells should ignore whatever we actually have selected.
-					// 		m_spellTarget = Caster;
-					// 	}
-					// 	else
-					// 	{
-					// 		m_spellTarget = Caster?.TargetObject as GameLiving;
-
-					// 		if (m_spellTarget is null && Caster is NecromancerPet nPet)
-					// 		{
-					// 			m_spellTarget = (nPet.Brain as NecromancerPetBrain).GetSpellTarget();
-					// 		}
-					// 	}
-
-					// 	if (CheckBeginCast(m_spellTarget))
-					// 	{
-					// 		m_started = GameLoop.GameLoopTime;
-					// 		_castStartTick = currentTick;
-					// 		if (!Spell.IsInstantCast)
-					// 			SendSpellMessages();
-					// 		if (Spell.IsInstantCast)
-					// 		{
-					// 			if (!CheckEndCast(m_spellTarget))
-					// 				castState = eCastState.Interrupted;
-					// 			else
-					// 			{
-					// 				SendCastAnimation(0);
-					// 				castState = eCastState.Finished;
-					// 			}
-					// 		}
-					// 		else
-					// 		{
-					// 			SendCastAnimation();
-					// 			castState = eCastState.Casting;
-					// 		}
-					// 	}
-					// 	else
-					// 	{
-					// 		if (Caster.InterruptAction > 0 && Caster.InterruptTime > GameLoop.GameLoopTime)
-					// 			castState = eCastState.Interrupted;
-					// 		else
-					// 			castState = eCastState.Cleanup;
-					// 	}
-					// 	break;
+					case eCastState.Precast:
+						
+						SetSpellTarget();
+						
+						if (CheckBeginCast(m_spellTarget))
+						{
+							m_started = GameLoop.GameLoopTime;
+							_castStartTick = currentTick;
+							if (!Spell.IsInstantCast)
+								SendSpellMessages();
+							if (Spell.IsInstantCast)
+							{
+								if (!CheckEndCast(m_spellTarget))
+									castState = eCastState.Interrupted;
+								else
+								{
+									SendCastAnimation(0);
+									castState = eCastState.Finished;
+								}
+							}
+							else
+							{
+								SendCastAnimation();
+								castState = eCastState.Casting;
+							}
+						}
+						else
+						{
+							if (Caster.InterruptAction > 0 && Caster.InterruptTime > GameLoop.GameLoopTime)
+								castState = eCastState.Interrupted;
+							else
+								castState = eCastState.Cleanup;
+						}
+						break;
 					case eCastState.Casting:
 						if (!CheckDuringCast(m_spellTarget))
 						{
@@ -2071,6 +2082,12 @@ namespace DOL.GS.Spells
             {
 				p.castingComponent.spellHandler = null;
 				p.castingComponent.queuedSpellHandler = null;
+            }
+
+			if(m_caster is GamePet pet && pet.castingComponent != null)
+            {
+				pet.castingComponent.spellHandler = null;
+				pet.castingComponent.queuedSpellHandler = null;
             }
 
 			if (m_castTimer != null)
