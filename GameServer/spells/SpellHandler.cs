@@ -569,6 +569,10 @@ namespace DOL.GS.Spells
 			return success;
 		}
 
+		/// <summary>
+        /// Set the spellHandler Target to the casters target
+        /// Will set target to Caster on self spells, and to necro pet target on necro pet spells.
+        /// </summary>
 		public virtual void SetSpellTarget()
 		{
 			//Set Target if m_spellTarget is null and castState is in Precast
@@ -591,98 +595,7 @@ namespace DOL.GS.Spells
 			}
 		
 		}
-		/// <summary>
-        /// Called by the CastingComponent to Start casting spell.
-		/// Checks if castState is in Precast, if not, returns false.
-        /// </summary>
-		/// <param name="currentTick"></param>
-		/// <returns>returns true if spell is casted or starts casting</returns>
-		public virtual bool StartCastSpell(long currentTick)
-		{
-			bool casting=false;
-
-			if (castState == eCastState.Precast)
-			{
-				if (Spell.Target == "Self")
-				{
-					// Self spells should ignore whatever we actually have selected.
-					m_spellTarget = Caster;
-				}
-				else
-				{
-					m_spellTarget = Caster?.TargetObject as GameLiving;
-
-					if (m_spellTarget is null && Caster is NecromancerPet nPet)
-					{
-						m_spellTarget = (nPet.Brain as NecromancerPetBrain).GetSpellTarget();
-					}
-				}
-
-				if (CheckBeginCast(m_spellTarget))
-				{
-					m_started = GameLoop.GameLoopTime;
-					_castStartTick = currentTick;
-					if (!Spell.IsInstantCast)
-						SendSpellMessages();
-					if (Spell.IsInstantCast)
-					{
-						if (!CheckEndCast(m_spellTarget))
-							castState = eCastState.Interrupted;
-						else
-						{
-							SendCastAnimation(0);
-							castState = eCastState.Finished;
-							casting = true;
-						}
-					}
-					else
-					{
-						SendCastAnimation();
-						castState = eCastState.Casting;
-						casting = true;
-					}
-				}
-				else
-				{
-					if (Caster.InterruptAction > 0 && Caster.InterruptTime > GameLoop.GameLoopTime)
-						castState = eCastState.Interrupted;
-					else
-						castState = eCastState.Cleanup;
-				}
-
-				//Process cast on same tick if finished.
-				if (castState == eCastState.Finished)
-				{
-					FinishSpellCast(m_spellTarget);
-					if (Spell.IsFocus)
-					{
-						if (Spell.ID != 5998)
-						{
-							castState = eCastState.Focusing;
-						}
-						else
-						{
-							castState = eCastState.Cleanup;
-
-							var stone = Caster.Inventory.GetFirstItemByName("Personal Bind Recall Stone", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
-							stone.CanUseAgainIn = stone.CanUseEvery;
-
-							//.SetCooldown();
-						}
-					}			
-					else
-						castState = eCastState.Cleanup;
-				}
-				if (castState == eCastState.Cleanup)
-				{
-					CleanupSpellCast();
-				}
-			}
-
-			return casting;
-		}
-
-
+		
 		public virtual void StartCastTimer(GameLiving target)
 		{
 			m_interrupted = false;
