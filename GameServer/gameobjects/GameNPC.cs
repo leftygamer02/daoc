@@ -2675,7 +2675,7 @@ namespace DOL.GS
 			#region Preliminary ReplaceMobValues
 			// We need to set the stats first, followed by level, before assigning spells
 			// so that both stats (Str,Dex,Con) and spells are scaled correctly
-			if (template.ReplaceMobValues && !LoadedFromScript)
+			if (template.ReplaceMobValues)
 			{
 				// Set the class type as stat autoscaling has conditions pertaining to this
 				ClassType = template.ClassType;
@@ -2760,7 +2760,7 @@ namespace DOL.GS
 			
 			// Replace mob values with everything below this point,
 			// as these parameters already exist on the mob table.
-			if (!template.ReplaceMobValues || LoadedFromScript)
+			if (!template.ReplaceMobValues)
 				return;
 			
 			#region All Other ReplaceMobValues
