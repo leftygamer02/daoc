@@ -248,13 +248,13 @@ namespace DOL.GS
 				return;
 			if (LoadedFromScript)
 				return;
-			
+
 			Mob mob = dbMob;
 			if (mob == null && !string.IsNullOrEmpty(InternalID))
 				// This should only happen when a GM command changes level on a mob with no npcTemplate,
 				mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
 			if (mob != null && mob.NPCTemplateID != -1)
-			    NPCTemplate = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
+				NPCTemplate = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
 
 			double regular = 1.5; // Based on (GameNPC)ScaleFactor = 15
 			double epic = 6; // Based on (GameEpicNPC)ScaleFactor = 60
@@ -284,21 +284,21 @@ namespace DOL.GS
 			{
 				mobScale = epic;
 				baseStat = epicBase;
-				strBase = (short)(Properties.MOB_AUTOSET_STR_BASE * 4);
-				strMultiplier = (short)(Properties.MOB_AUTOSET_STR_MULTIPLIER * 4);
-				conBase = (short)(Properties.MOB_AUTOSET_CON_BASE * 4);
-				conMultiplier = (short)(Properties.MOB_AUTOSET_CON_MULTIPLIER * 4);
-				dexBase = (short)(Properties.MOB_AUTOSET_DEX_BASE * 4);
-				dexMultiplier = (short)(Properties.MOB_AUTOSET_DEX_MULTIPLIER * 4);
-				quiBase = (short)(Properties.MOB_AUTOSET_QUI_BASE * 4);
-				quiMultiplier = (short)(Properties.MOB_AUTOSET_QUI_MULTIPLIER * 4);
-				empBase = (short)(baseStat * 4);
-				intBase = (short)(Properties.MOB_AUTOSET_INT_BASE * 4);
-				intMultiplier = (short)(Properties.MOB_AUTOSET_INT_MULTIPLIER * 4);
-				chaBase = (short)(baseStat * 4);
-				pieBase = (short)(baseStat * 4);
+				strBase = (short) (Properties.MOB_AUTOSET_STR_BASE * 4);
+				strMultiplier = (short) (Properties.MOB_AUTOSET_STR_MULTIPLIER * 4);
+				conBase = (short) (Properties.MOB_AUTOSET_CON_BASE * 4);
+				conMultiplier = (short) (Properties.MOB_AUTOSET_CON_MULTIPLIER * 4);
+				dexBase = (short) (Properties.MOB_AUTOSET_DEX_BASE * 4);
+				dexMultiplier = (short) (Properties.MOB_AUTOSET_DEX_MULTIPLIER * 4);
+				quiBase = (short) (Properties.MOB_AUTOSET_QUI_BASE * 4);
+				quiMultiplier = (short) (Properties.MOB_AUTOSET_QUI_MULTIPLIER * 4);
+				empBase = (short) (baseStat * 4);
+				intBase = (short) (Properties.MOB_AUTOSET_INT_BASE * 4);
+				intMultiplier = (short) (Properties.MOB_AUTOSET_INT_MULTIPLIER * 4);
+				chaBase = (short) (baseStat * 4);
+				pieBase = (short) (baseStat * 4);
 			}
-			
+
 			// We have to check both the DB and template values to account for mobs changing levels.
 			// Otherwise, high level mobs retain their stats when their level is lowered by a GM.
 			if (NPCTemplate != null && NPCTemplate.ReplaceMobValues)
@@ -309,11 +309,15 @@ namespace DOL.GS
 				if (mob != null)
 				{
 					Strength = (mob.Strength <= NPCTemplate.Strength) ? NPCTemplate.Strength : mob.Strength;
-					Constitution = (mob.Constitution <= NPCTemplate.Constitution) ? NPCTemplate.Constitution : mob.Constitution;
+					Constitution = (mob.Constitution <= NPCTemplate.Constitution)
+						? NPCTemplate.Constitution
+						: mob.Constitution;
 					Dexterity = (mob.Dexterity <= NPCTemplate.Dexterity) ? NPCTemplate.Dexterity : mob.Dexterity;
 					Quickness = (mob.Quickness <= NPCTemplate.Quickness) ? NPCTemplate.Quickness : mob.Quickness;
 					Empathy = (mob.Empathy <= NPCTemplate.Empathy) ? NPCTemplate.Empathy : mob.Empathy;
-					Intelligence = (mob.Intelligence <= NPCTemplate.Intelligence) ? NPCTemplate.Intelligence : mob.Intelligence;
+					Intelligence = (mob.Intelligence <= NPCTemplate.Intelligence)
+						? NPCTemplate.Intelligence
+						: mob.Intelligence;
 					Charisma = (mob.Charisma <= NPCTemplate.Charisma) ? NPCTemplate.Charisma : mob.Charisma;
 					Piety = (mob.Piety <= NPCTemplate.Piety) ? NPCTemplate.Piety : mob.Piety;
 				}
@@ -330,13 +334,15 @@ namespace DOL.GS
 					Piety = NPCTemplate.Piety;
 				}
 
-				string minLevel = NPCTemplate.Level; // Starting variable to determine base (lowest) level assigned to a template
-			
+				string
+					minLevel = NPCTemplate
+						.Level; // Starting variable to determine base (lowest) level assigned to a template
+
 				// Figure out what the lowest level is in NPCTemplate.Level
 				if (NPCTemplate.Level.Contains(';') || NPCTemplate.Level.Contains('-'))
 				{
 					var split = Util.SplitCSV(NPCTemplate.Level, true);
-				
+
 					minLevel = split.AsQueryable().Min(); // Grab the lowest value
 				}
 
@@ -356,19 +362,42 @@ namespace DOL.GS
 
 					if (baseLevel == Level)
 						baseLevel = Level;
-					
+
 					if (baseLevel <= 46)
-						Strength = (Strength == NPCTemplate.Strength && NPCTemplate.Strength > 200) ? (short) 1 : NPCTemplate.Strength;
-					
+						Strength = (Strength == NPCTemplate.Strength && NPCTemplate.Strength > 200)
+							? (short) strBase
+							: NPCTemplate.Strength;
+					if (baseLevel <= 65)
+						Strength = (Strength == NPCTemplate.Strength && NPCTemplate.Strength > 275 &&
+						            ClassType == "DOL.GS.GameNPC")
+							? strBase
+							: NPCTemplate.Strength;
+
 					// If stat is 0 or 1, then use multiplier against base level to bring it up to a "minimum" value
-					Strength += (Strength <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Constitution += (Constitution <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Dexterity += (Dexterity <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Quickness += (Quickness <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Empathy += (Empathy <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Intelligence += (Intelligence <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Charisma += (Charisma <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
-					Piety += (Piety <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
+					Strength += (Strength <= 1 || Strength == strBase)
+						? (short) (strBase + (baseLevel * strMultiplier))
+						: (short) 0;
+					Constitution += (Constitution <= 1 || Constitution == conBase)
+						? (short) (conBase + (baseLevel * conMultiplier))
+						: (short) 0;
+					Dexterity += (Dexterity <= 1 || Dexterity == dexBase)
+						? (short) (dexBase + (baseLevel * dexMultiplier))
+						: (short) 0;
+					Quickness += (Quickness <= 1 || Quickness == quiBase)
+						? (short) (quiBase + (baseLevel * quiMultiplier))
+						: (short) 0;
+					Empathy += (Empathy <= 1 || Empathy == empBase)
+						? (short) (empBase + (baseLevel * empMultiplier))
+						: (short) 0;
+					Intelligence += (Intelligence <= 1 || Intelligence == strBase)
+						? (short) (intBase + (baseLevel * intMultiplier))
+						: (short) 0;
+					Charisma += (Charisma <= 1 || Charisma == chaBase)
+						? (short) (chaBase + (baseLevel * chaMultiplier))
+						: (short) 0;
+					Piety += (Piety <= 1 || Piety == pieBase)
+						? (short) (pieBase + (baseLevel * pieMultiplier))
+						: (short) 0;
 
 					// Check mob's current level against the base level before we multiply again
 					// If the mob is higher level than baseLevel, we scale again
@@ -376,7 +405,7 @@ namespace DOL.GS
 					{
 						// Subtract level difference and multiply stats against multiplier
 						var difference = (short) ((Level - baseLevel) * mobScale);
-						
+
 						Strength += difference;
 						Constitution += difference;
 						Dexterity += difference;
@@ -431,53 +460,33 @@ namespace DOL.GS
 					Piety = 0;
 					Charisma = 0;
 				}
-				
+
 				// Mob stats must be set above 0 in order to scale with level
 				if (Strength <= 1)
-					Strength = baseStat;
-				Strength += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+					Strength = strBase;
+				Strength += (Level > 1) ? (short) (Level * strMultiplier) : (short) strMultiplier;
 				if (Constitution <= 1)
 					Constitution = baseStat;
-				Constitution += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Constitution += (Level > 1) ? (short) (Level * conMultiplier) : (short) conMultiplier;
 				if (Dexterity <= 1)
 					Dexterity = baseStat;
-				Dexterity += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Dexterity += (Level > 1) ? (short) (Level * dexMultiplier) : (short) dexMultiplier;
 				if (Quickness <= 1)
 					Quickness = baseStat;
-				Quickness += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Quickness += (Level > 1) ? (short) (Level * quiMultiplier) : (short) quiMultiplier;
 				if (Empathy <= 1)
 					Empathy = baseStat;
-				Empathy += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Empathy += (Level > 1) ? (short) (Level * empMultiplier) : (short) empMultiplier;
 				if (Intelligence <= 1)
 					Intelligence = baseStat;
-				Intelligence += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Intelligence += (Level > 1) ? (short) (Level * intMultiplier) : (short) intMultiplier;
 				if (Charisma <= 1)
 					Charisma = baseStat;
-				Charisma += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Charisma += (Level > 1) ? (short) (Level * chaMultiplier) : (short) chaMultiplier;
 				if (Piety <= 1)
 					Piety = baseStat;
-				Piety += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				Piety += (Level > 1) ? (short) (Level * pieMultiplier) : (short) pieMultiplier;
 			}
-
-			// Base for all stats is 30 and multiplier is 1
-			/*Strength = (Properties.MOB_AUTOSET_STR_BASE > 0) ? Properties.MOB_AUTOSET_STR_BASE : (short) 1;
-			if (Level > 1)
-				Strength += (byte) ((Level - 1) * Properties.MOB_AUTOSET_STR_MULTIPLIER);
-			Constitution = (Properties.MOB_AUTOSET_CON_BASE > 0) ? Properties.MOB_AUTOSET_CON_BASE : (short) 1;
-			if (Level > 1)
-				Constitution += (byte) ((Level - 1) * Properties.MOB_AUTOSET_CON_MULTIPLIER);
-			Quickness = (Properties.MOB_AUTOSET_QUI_BASE > 0) ? Properties.MOB_AUTOSET_QUI_BASE : (short) 1;
-			if (Level > 1)
-				Quickness += (byte) ((Level - 1) * Properties.MOB_AUTOSET_QUI_MULTIPLIER);
-			Dexterity = (Properties.MOB_AUTOSET_DEX_BASE > 0) ? Properties.MOB_AUTOSET_DEX_BASE : (short) 1;
-			if (Level > 1)
-				Dexterity += (byte) ((Level - 1) * Properties.MOB_AUTOSET_DEX_MULTIPLIER);
-			Intelligence = (Properties.MOB_AUTOSET_INT_BASE > 0) ? Properties.MOB_AUTOSET_INT_BASE : (short) 1;
-			if (Level > 1)
-				Intelligence += (byte) ((Level - 1) * Properties.MOB_AUTOSET_INT_MULTIPLIER);
-			Empathy = (short) (29 + Level);
-			Piety = (short) (29 + Level);
-			Charisma = (short) (29 + Level);*/
 		}
 
 		/// <summary>
