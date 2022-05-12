@@ -262,12 +262,41 @@ namespace DOL.GS
 			short regularBase = 30;
 			short epicBase = 60;
 			short baseStat = regularBase;
-			
+			var strBase = Properties.MOB_AUTOSET_STR_BASE;
+			var strMultiplier = Properties.MOB_AUTOSET_STR_MULTIPLIER;
+			var conBase = Properties.MOB_AUTOSET_CON_BASE;
+			var conMultiplier = Properties.MOB_AUTOSET_CON_MULTIPLIER;
+			var dexBase = Properties.MOB_AUTOSET_DEX_BASE;
+			var dexMultiplier = Properties.MOB_AUTOSET_DEX_MULTIPLIER;
+			var quiBase = Properties.MOB_AUTOSET_QUI_BASE;
+			var quiMultiplier = Properties.MOB_AUTOSET_QUI_MULTIPLIER;
+			var empBase = baseStat;
+			var empMultiplier = mobScale;
+			var intBase = Properties.MOB_AUTOSET_INT_BASE;
+			var intMultiplier = Properties.MOB_AUTOSET_INT_MULTIPLIER;
+			var chaBase = baseStat;
+			var chaMultiplier = mobScale;
+			var pieBase = baseStat;
+			var pieMultiplier = mobScale;
+
 			// Stat multiplier for epic mobs (not bosses)
-			if (dbMob != null && (NPCTemplate.ClassType == "DOL.GS.GameEpicNPC" || ClassType == "DOL.GS.GameEpicNPC" ||  NPCTemplate.ClassType == "DOL.GS.GameEpicBoss" || ClassType == "DOL.GS.GameEpicBoss"))
+			if (dbMob != null && ClassType == "DOL.GS.GameEpicNPC")
 			{
 				mobScale = epic;
 				baseStat = epicBase;
+				strBase = (short)(Properties.MOB_AUTOSET_STR_BASE * 4);
+				strMultiplier = (short)(Properties.MOB_AUTOSET_STR_MULTIPLIER * 4);
+				conBase = (short)(Properties.MOB_AUTOSET_CON_BASE * 4);
+				conMultiplier = (short)(Properties.MOB_AUTOSET_CON_MULTIPLIER * 4);
+				dexBase = (short)(Properties.MOB_AUTOSET_DEX_BASE * 4);
+				dexMultiplier = (short)(Properties.MOB_AUTOSET_DEX_MULTIPLIER * 4);
+				quiBase = (short)(Properties.MOB_AUTOSET_QUI_BASE * 4);
+				quiMultiplier = (short)(Properties.MOB_AUTOSET_QUI_MULTIPLIER * 4);
+				empBase = (short)(baseStat * 4);
+				intBase = (short)(Properties.MOB_AUTOSET_INT_BASE * 4);
+				intMultiplier = (short)(Properties.MOB_AUTOSET_INT_MULTIPLIER * 4);
+				chaBase = (short)(baseStat * 4);
+				pieBase = (short)(baseStat * 4);
 			}
 			
 			// We have to check both the DB and template values to account for mobs changing levels.
@@ -327,6 +356,9 @@ namespace DOL.GS
 
 					if (baseLevel == Level)
 						baseLevel = Level;
+					
+					if (baseLevel <= 46)
+						Strength = (Strength == NPCTemplate.Strength && NPCTemplate.Strength > 200) ? (short) 1 : NPCTemplate.Strength;
 					
 					// If stat is 0 or 1, then use multiplier against base level to bring it up to a "minimum" value
 					Strength += (Strength <= 1) ? (short) (baseLevel * mobScale) : (short) 0;
@@ -401,14 +433,30 @@ namespace DOL.GS
 				}
 				
 				// Mob stats must be set above 0 in order to scale with level
-				Strength += (Strength >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Constitution += (Constitution >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Dexterity += (Dexterity >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Quickness += (Quickness >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Empathy += (Empathy >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Intelligence += (Intelligence >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Charisma += (Charisma >= 1) ? (short) (Level * mobScale) : (short) 1;
-				Piety += (Piety >= 1) ? (short) (Level * mobScale) : (short) 1;
+				if (Strength <= 1)
+					Strength = baseStat;
+				Strength += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Constitution <= 1)
+					Constitution = baseStat;
+				Constitution += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Dexterity <= 1)
+					Dexterity = baseStat;
+				Dexterity += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Quickness <= 1)
+					Quickness = baseStat;
+				Quickness += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Empathy <= 1)
+					Empathy = baseStat;
+				Empathy += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Intelligence <= 1)
+					Intelligence = baseStat;
+				Intelligence += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Charisma <= 1)
+					Charisma = baseStat;
+				Charisma += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
+				if (Piety <= 1)
+					Piety = baseStat;
+				Piety += (Level > 1) ? (short) (Level * mobScale) : (short) mobScale;
 			}
 
 			// Base for all stats is 30 and multiplier is 1
@@ -2322,166 +2370,143 @@ namespace DOL.GS
 			Mob dbMob = (Mob)obj;
 			NPCTemplate = NpcTemplateMgr.GetTemplate(dbMob.NPCTemplateID);
 			
-			if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && NPCTemplate.ReplaceMobValues && m_loadedFromScript == false)
+			//log.Error("Couldn't fetch NPCTemplate for " + dbMob.Name + ".");
+			ClassType = dbMob.ClassType;
+			Level = dbMob.Level;
+			TranslationId = dbMob.TranslationId;
+			Name = dbMob.Name;
+			Suffix = dbMob.Suffix;
+			GuildName = dbMob.Guild;
+			ExamineArticle = dbMob.ExamineArticle;
+			MessageArticle = dbMob.MessageArticle;
+			Model = dbMob.Model;
+			Gender = (eGender)dbMob.Gender;
+			Realm = (eRealm)dbMob.Realm;
+			Size = dbMob.Size;
+			EquipmentTemplateID = dbMob.EquipmentTemplateID;
+			LoadEquipmentTemplateFromDatabase(dbMob.EquipmentTemplateID);
+			ItemsListTemplateID = dbMob.ItemsListTemplateID;
+			Flags = (eFlags)dbMob.Flags;
+			MeleeDamageType = (eDamageType)dbMob.MeleeDamageType;
+			if (MeleeDamageType == 0)
 			{
-				//log.Error("Attempting to load NPCTemplate #" + dbMob.NPCTemplateID + ".");
-				LoadTemplate(NPCTemplate);
-
-				X = dbMob.X;
-				Y = dbMob.Y;
-				Z = dbMob.Z;
-				Realm = (eRealm)dbMob.Realm;
-				Heading = (ushort)(dbMob.Heading & 0xFFF);
-				CurrentSpeed = 0;
-				CurrentRegionID = dbMob.Region;
-				HouseNumber = (ushort)dbMob.HouseNumber;
-				RoamingRange = dbMob.RoamingRange;
-				IsCloakHoodUp = dbMob.IsCloakHoodUp;
-				OwnerID = dbMob.OwnerID;
-				RespawnInterval = dbMob.RespawnInterval;
+				MeleeDamageType = eDamageType.Slash;
 			}
-			else
+			ParryChance = m_parryChance;
+			EvadeChance = m_evadeChance;
+			BlockChance = m_blockChance;
+			LeftHandSwingChance = m_leftHandSwingChance;
+			Spells = m_spells;
+			Styles = m_styles;
+			RespawnInterval = dbMob.RespawnInterval * 1000;
+			if (RespawnInterval <= 0)
+				RespawnInterval = 80 * 1000;
+
+			/* Set with AutoSetStats
+			Strength = dbMob.Strength;
+			Constitution = dbMob.Constitution; 
+			Dexterity = dbMob.Dexterity;
+			Quickness = dbMob.Quickness;
+			Intelligence = dbMob.Intelligence;
+			Empathy = dbMob.Empathy;
+			Charisma = dbMob.Charisma;
+			Piety = dbMob.Piety;
+			*/
+
+			AggroLevel = dbMob.AggroLevel;
+			AggroRange = dbMob.AggroRange;
+			Race = (short)dbMob.Race;
+			BodyType = (ushort)dbMob.BodyType;
+			MaxDistance = dbMob.MaxDistance;
+			TetherRange = 1000;
+			ItemsListTemplateID = dbMob.ItemsListTemplateID;
+			m_visibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
+			PackageID = dbMob.PackageID;
+			Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
+			
+			X = dbMob.X;
+			Y = dbMob.Y;
+			Z = dbMob.Z;
+			Heading = (ushort)(dbMob.Heading & 0xFFF);
+			CurrentSpeed = 0;
+			MaxSpeedBase = (short)dbMob.Speed;
+			CurrentRegionID = dbMob.Region;
+			HouseNumber = (ushort)dbMob.HouseNumber;
+			RoamingRange = dbMob.RoamingRange;
+			IsCloakHoodUp = dbMob.IsCloakHoodUp;
+			OwnerID = dbMob.OwnerID;
+
+			PathID = dbMob.PathID;
+
+			#region Mob Brains
+			if (dbMob.Brain != "")
 			{
-				//log.Error("Couldn't fetch NPCTemplate for " + dbMob.Name + ".");
-				ClassType = dbMob.ClassType;
-				Level = dbMob.Level;
-				TranslationId = dbMob.TranslationId;
-				Name = dbMob.Name;
-				Suffix = dbMob.Suffix;
-				GuildName = dbMob.Guild;
-				ExamineArticle = dbMob.ExamineArticle;
-				MessageArticle = dbMob.MessageArticle;
-				Model = dbMob.Model;
-				Gender = (eGender)dbMob.Gender;
-				Realm = (eRealm)dbMob.Realm;
-				Size = dbMob.Size;
-				EquipmentTemplateID = dbMob.EquipmentTemplateID;
-				LoadEquipmentTemplateFromDatabase(dbMob.EquipmentTemplateID);
-				ItemsListTemplateID = dbMob.ItemsListTemplateID;
-				Flags = (eFlags)dbMob.Flags;
-				MeleeDamageType = (eDamageType)dbMob.MeleeDamageType;
-				if (MeleeDamageType == 0)
+				try
 				{
-					MeleeDamageType = eDamageType.Slash;
-				}
-				ParryChance = m_parryChance;
-				EvadeChance = m_evadeChance;
-				BlockChance = m_blockChance;
-				LeftHandSwingChance = m_leftHandSwingChance;
-				Spells = m_spells;
-				Styles = m_styles;
-				RespawnInterval = dbMob.RespawnInterval;
-
-				/* Set with AutoSetStats
-				Strength = dbMob.Strength;
-				Constitution = dbMob.Constitution; 
-				Dexterity = dbMob.Dexterity;
-				Quickness = dbMob.Quickness;
-				Intelligence = dbMob.Intelligence;
-				Empathy = dbMob.Empathy;
-				Charisma = dbMob.Charisma;
-				Piety = dbMob.Piety;
-				*/
-
-				AggroLevel = dbMob.AggroLevel;
-				AggroRange = dbMob.AggroRange;
-				Race = (short)dbMob.Race;
-				BodyType = (ushort)dbMob.BodyType;
-				MaxDistance = dbMob.MaxDistance;
-				TetherRange = 1000;
-				ItemsListTemplateID = dbMob.ItemsListTemplateID;
-				m_visibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
-				PackageID = dbMob.PackageID;
-				Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
-				
-				X = dbMob.X;
-				Y = dbMob.Y;
-				Z = dbMob.Z;
-				Heading = (ushort)(dbMob.Heading & 0xFFF);
-				CurrentSpeed = 0;
-				MaxSpeedBase = (short)dbMob.Speed;
-				CurrentRegionID = dbMob.Region;
-				HouseNumber = (ushort)dbMob.HouseNumber;
-				RoamingRange = dbMob.RoamingRange;
-				IsCloakHoodUp = dbMob.IsCloakHoodUp;
-				OwnerID = dbMob.OwnerID;
-
-				if (dbMob.RespawnInterval == -1)
-				{
-					dbMob.RespawnInterval = 0;
-				}
-				m_respawnInterval = dbMob.RespawnInterval * 1000;
-
-				PathID = dbMob.PathID;
-
-				#region Mob Brains
-				if (dbMob.Brain != "")
-				{
-					try
+					ABrain brain = null;
+					foreach (Assembly asm in ScriptMgr.GameServerScripts)
 					{
-						ABrain brain = null;
-						foreach (Assembly asm in ScriptMgr.GameServerScripts)
-						{
-							brain = (ABrain) asm.CreateInstance(dbMob.Brain, false);
-							if (brain != null)
-								break;
-						}
-
+						brain = (ABrain) asm.CreateInstance(dbMob.Brain, false);
 						if (brain != null)
-							SetOwnBrain(brain);
+							break;
 					}
-					catch
-					{
-						log.ErrorFormat(
-							"GameNPC error in LoadFromDatabase: can not instantiate brain of type {0} for npc {1}, name = {2}.",
-							dbMob.Brain, dbMob.ClassType, dbMob.Name);
-					}
-				}
 
-				IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
-				if (aggroBrain != null)
+					if (brain != null)
+						SetOwnBrain(brain);
+				}
+				catch
 				{
-					aggroBrain.AggroLevel = dbMob.AggroLevel;
-					aggroBrain.AggroRange = dbMob.AggroRange;
-					if (aggroBrain.AggroRange == Constants.USE_AUTOVALUES)
+					log.ErrorFormat(
+						"GameNPC error in LoadFromDatabase: can not instantiate brain of type {0} for npc {1}, name = {2}.",
+						dbMob.Brain, dbMob.ClassType, dbMob.Name);
+				}
+			}
+
+			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
+			if (aggroBrain != null)
+			{
+				aggroBrain.AggroLevel = dbMob.AggroLevel;
+				aggroBrain.AggroRange = dbMob.AggroRange;
+				if (aggroBrain.AggroRange == Constants.USE_AUTOVALUES)
+				{
+					if (Realm == eRealm.None)
 					{
-						if (Realm == eRealm.None)
-						{
-							aggroBrain.AggroRange = 400;
-							if (Name != Name.ToLower())
-							{
-								aggroBrain.AggroRange = 500;
-							}
-							if (CurrentRegion.IsDungeon)
-							{
-								aggroBrain.AggroRange = 300;
-							}
-						}
-						else
+						aggroBrain.AggroRange = 400;
+						if (Name != Name.ToLower())
 						{
 							aggroBrain.AggroRange = 500;
 						}
+						if (CurrentRegion.IsDungeon)
+						{
+							aggroBrain.AggroRange = 300;
+						}
 					}
-					if (aggroBrain.AggroLevel == Constants.USE_AUTOVALUES)
+					else
 					{
-						aggroBrain.AggroLevel = 0;
-						if (Level > 5)
-						{
-							aggroBrain.AggroLevel = 30;
-						}
-						if (Name != Name.ToLower())
-						{
-							aggroBrain.AggroLevel = 30;
-						}
-						if (Realm != eRealm.None)
-						{
-							aggroBrain.AggroLevel = 60;
-						}
+						aggroBrain.AggroRange = 500;
 					}
 				}
-				#endregion Mob Brains
+				if (aggroBrain.AggroLevel == Constants.USE_AUTOVALUES)
+				{
+					aggroBrain.AggroLevel = 0;
+					if (Level > 5)
+					{
+						aggroBrain.AggroLevel = 30;
+					}
+					if (Name != Name.ToLower())
+					{
+						aggroBrain.AggroLevel = 30;
+					}
+					if (Realm != eRealm.None)
+					{
+						aggroBrain.AggroLevel = 60;
+					}
+				}
 			}
-
+			#endregion Mob Brains
+			
+			if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && NPCTemplate.ReplaceMobValues && m_loadedFromScript == false)
+				LoadTemplate(NPCTemplate);
 			/*
 						if (Inventory != null)
 							SwitchWeapon(ActiveWeaponSlot);
@@ -2636,8 +2661,6 @@ namespace DOL.GS
 		{
 			if (template == null)
 				return;
-			if (LoadedFromScript)
-				return;
 
 			// Save the template for later
 			NPCTemplate = template as NpcTemplate;
@@ -2652,7 +2675,7 @@ namespace DOL.GS
 			#region Preliminary ReplaceMobValues
 			// We need to set the stats first, followed by level, before assigning spells
 			// so that both stats (Str,Dex,Con) and spells are scaled correctly
-			if (template.ReplaceMobValues && LoadedFromScript == false)
+			if (template.ReplaceMobValues && !LoadedFromScript)
 			{
 				// Set the class type as stat autoscaling has conditions pertaining to this
 				ClassType = template.ClassType;
@@ -2735,13 +2758,13 @@ namespace DOL.GS
 				}
 			}
 			
-			#region All Other ReplaceMobValues
 			// Replace mob values with everything below this point,
 			// as these parameters already exist on the mob table.
 			if (!template.ReplaceMobValues || LoadedFromScript)
 				return;
 			
-			var m_templatedInventory = new List<string>();
+			#region All Other ReplaceMobValues
+			
 			TranslationId = template.TranslationId;
 			Name = template.Name;
 			Suffix = template.Suffix;
