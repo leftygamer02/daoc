@@ -22,11 +22,24 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 60;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 60;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 60;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+				case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+				default: return 70; // dmg reduction for rest resists
 			}
+		}
+		public override double GetArmorAF(eArmorSlot slot)
+		{
+			return 350;
+		}
+		public override double GetArmorAbsorb(eArmorSlot slot)
+		{
+			// 85% ABS is cap.
+			return 0.20;
+		}
+		public override int MaxHealth
+		{
+			get { return 30000; }
 		}
 		public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
 		{
@@ -66,19 +79,6 @@ namespace DOL.GS
 				return true;
 
 			return base.HasAbility(keyName);
-		}
-		public override double GetArmorAF(eArmorSlot slot)
-		{
-			return 700;
-		}
-		public override double GetArmorAbsorb(eArmorSlot slot)
-		{
-			// 85% ABS is cap.
-			return 0.45;
-		}
-		public override int MaxHealth
-		{
-			get { return 20000; }
 		}
 		public override bool AddToWorld()
 		{
@@ -227,7 +227,7 @@ namespace DOL.AI.Brain
 					Enemys_To_DD.Clear();
                 }
 			}
-			if (Body.InCombat && Body.IsAlive && HasAggro)
+			if (HasAggro)
 			{
 				foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
 				{
@@ -237,9 +237,11 @@ namespace DOL.AI.Brain
 							AddAggroListTo(npc.Brain as StandardMobBrain);
 					}
 				}
-				if(!Body.IsCasting)
-					Body.CastSpell(Boss_PBAOE, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-
+				if (!Body.IsCasting)
+				{
+					Body.SetGroundTarget(Body.X, Body.Y, Body.Z);
+					Body.CastSpell(Boss_PBAOE, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells),false);
+				}
 				PickRandomTarget();
 				TeleportRandomTarget();
 			}
@@ -289,10 +291,10 @@ namespace DOL.AI.Brain
 					spell.TooltipId = 1695;
 					spell.Name = "Thunder Stomp";
 					spell.Damage = 250;
-					spell.Range = 0;
+					spell.Range = 500;
 					spell.Radius = 1000;
 					spell.SpellID = 11836;
-					spell.Target = eSpellTarget.Enemy.ToString();
+					spell.Target = eSpellTarget.Area.ToString();
 					spell.Type = eSpellType.DirectDamageNoVariance.ToString();
 					spell.DamageType = (int)eDamageType.Energy;
 					spell.Uninterruptible = true;

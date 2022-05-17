@@ -24,13 +24,28 @@ namespace DOL.GS
         {
             return base.AttackDamage(weapon) * Strength / 100;
         }
-
+        public override int GetResist(eDamageType damageType)
+        {
+            switch (damageType)
+            {
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
+            }
+        }
+        public override double GetArmorAF(eArmorSlot slot)
+        {
+            return 350;
+        }
+        public override double GetArmorAbsorb(eArmorSlot slot)
+        {
+            // 85% ABS is cap.
+            return 0.20;
+        }
         public override int MaxHealth
         {
-            get
-            {
-                return 20000;
-            }
+            get { return 30000; }
         }
         public override int AttackRange
         {
@@ -44,20 +59,10 @@ namespace DOL.GS
         }
         public override bool HasAbility(string keyName)
         {
-            if (IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
+            if (IsAlive && keyName == GS.Abilities.CCImmunity)
                 return true;
 
             return base.HasAbility(keyName);
-        }
-        public override double GetArmorAF(eArmorSlot slot)
-        {
-            return 800;
-        }
-
-        public override double GetArmorAbsorb(eArmorSlot slot)
-        {
-            // 85% ABS is cap.
-            return 0.55;
         }
         
         public override bool AddToWorld()
@@ -194,7 +199,7 @@ namespace DOL.AI.Brain
                         case 1:
                             BroadcastMessage(String.Format("{0} picked up {1} on gust of winds and tossed {2} away! ", Body.Name, portPlayer[ranPlayer].Name, gender));
                             portPlayer[ranPlayer].Out.SendSpellEffectAnimation(portPlayer[ranPlayer], portPlayer[ranPlayer], 1735, 0, false, 1);
-                            portPlayer[ranPlayer].MoveTo(1, 400126, 754351, 325, 3120);
+                            portPlayer[ranPlayer].MoveTo(1, 401943, 753091, 222, 3499);
                             foreach (GameNPC npc in portPlayer[ranPlayer].GetNPCsInRadius(2000))
                             {
                                 npc.StartAttack(portPlayer[ranPlayer]);
@@ -204,7 +209,7 @@ namespace DOL.AI.Brain
                         case 2:
                             BroadcastMessage(String.Format("{0} picked up {1} on gust of winds and tossed {2} away! ", Body.Name, portPlayer[ranPlayer].Name, gender));
                             portPlayer[ranPlayer].Out.SendSpellEffectAnimation(portPlayer[ranPlayer], portPlayer[ranPlayer], 1735, 0, false, 1);
-                            portPlayer[ranPlayer].MoveTo(1, 406118, 744790, 776, 3926);
+                            portPlayer[ranPlayer].MoveTo(1, 406787, 749150, 213, 3926);
                             foreach (GameNPC npc in portPlayer[ranPlayer].GetNPCsInRadius(2000))
                             {
                                 npc.StartAttack(portPlayer[ranPlayer]);
@@ -214,7 +219,7 @@ namespace DOL.AI.Brain
                         case 3:
                             BroadcastMessage(String.Format("{0} picked up {1} on gust of winds and tossed {2} away! ", Body.Name, portPlayer[ranPlayer].Name, gender));
                             portPlayer[ranPlayer].Out.SendSpellEffectAnimation(portPlayer[ranPlayer], portPlayer[ranPlayer], 1735, 0, false, 1);
-                            portPlayer[ranPlayer].MoveTo(1, 412837, 740266, 242, 473);
+                            portPlayer[ranPlayer].MoveTo(1, 401061, 755882, 469, 3050);
                             foreach (GameNPC npc in portPlayer[ranPlayer].GetNPCsInRadius(2000))
                             {
                                 npc.StartAttack(portPlayer[ranPlayer]);

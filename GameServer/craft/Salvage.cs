@@ -257,7 +257,7 @@ namespace DOL.GS
 				return 0;
 			}
 
-			player.CraftTimer.Stop();
+			player.CraftTimer?.Stop();
 			player.Out.SendCloseTimerWindow();
 
 			if (!player.Inventory.RemoveItem(itemToSalvage)) // clean the free of the item to salvage
@@ -562,6 +562,9 @@ namespace DOL.GS
                 long usureoverall = (maxCount * ((item.Condition / 5) / 1000)) / 100; // assume that all items have 50000 base con
                 maxCount = usureoverall;
             }
+
+            if (item.IsROG)
+	            maxCount = (long)Math.Round(maxCount / 10d);
 
             if (maxCount < 1)
                 maxCount = 1;

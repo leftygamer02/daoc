@@ -825,7 +825,7 @@ namespace DOL.GS
                 }
                 else
                 {
-                    p.TempProperties.setProperty(RangeAttackComponent.RANGE_ATTACK_HOLD_START, 0L);
+                    p.TempProperties.setProperty(RangeAttackComponent.RANGE_ATTACK_HOLD_START, GameLoop.GameLoopTime);
 
                     string typeMsg = "shot";
                     if (AttackWeapon.Object_Type == (int) eObjectType.Thrown)
@@ -846,7 +846,10 @@ namespace DOL.GS
                     if (p.rangeAttackComponent.RangedAttackType == eRangedAttackType.RapidFire)
                         speed = Math.Max(15, speed / 2);
 
-                    p.Out.SendMessage(
+                    if (p.effectListComponent.ContainsEffectForEffectType(eEffect.Volley))//volley check
+                    { }
+                    else
+                        p.Out.SendMessage(
                         LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.StartAttack.YouPrepare",
                             typeMsg, speed / 10, speed % 10, targetMsg), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                 }
@@ -891,12 +894,16 @@ namespace DOL.GS
                     if (owner.rangeAttackComponent?.RangedAttackState != eRangedAttackState.Aim)
                     {
                         owner.rangeAttackComponent.RangedAttackState = eRangedAttackState.Aim;
-
-                        foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                            player.Out.SendCombatAnimation(owner, null,
-                                (ushort) (AttackWeapon == null ? 0 : AttackWeapon.Model),
-                                0x00, player.Out.BowPrepare, (byte) (speed / 100), 0x00, 0x00);
-
+                        if (owner is GamePlayer && owner.effectListComponent.ContainsEffectForEffectType(eEffect.Volley))//volley check
+                        {
+                        }
+                        else
+                        {
+                            foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                                player.Out.SendCombatAnimation(owner, null,
+                                    (ushort)(AttackWeapon == null ? 0 : AttackWeapon.Model),
+                                    0x00, player.Out.BowPrepare, (byte)(speed / 100), 0x00, 0x00);
+                        }
                         //m_attackAction.Start((RangedAttackType == eRangedAttackType.RapidFire) ? speed / 2 : speed);
                         attackAction.StartTime =
                             (owner.rangeAttackComponent?.RangedAttackType == eRangedAttackType.RapidFire)
@@ -1614,7 +1621,10 @@ namespace DOL.GS
                     if (ad.Attacker is GamePlayer weaponskiller && weaponskiller.UseDetailedCombatLog)
                     {
                         weaponskiller.Out.SendMessage(
-                            $"Base WS: {weaponskillCalc} | Calc WS: {(weaponskillCalc * specModifier * strengthRelicCount).ToString("0.00")} | AF/ABS: {armorMod.ToString("0.00")} | SpecMod: {specModifier.ToString("0.00")}",
+                            $"Base WS: {weaponskillCalc.ToString("0.00")} | Calc WS: {(weaponskillCalc * specModifier * strengthRelicCount).ToString("0.00")} | SpecMod: {specModifier.ToString("0.00")}",
+                            eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                        weaponskiller.Out.SendMessage(
+                            $"Base AF: {(ad.Target.GetArmorAF(ad.ArmorHitLocation)).ToString("0.00")} | ABS: {(ad.Target.GetArmorAbsorb(ad.ArmorHitLocation)*100).ToString("0.00")} | AF/ABS: {armorMod.ToString("0.00")}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                         weaponskiller.Out.SendMessage($"Damage Modifier: {(int) (DamageMod * 1000)}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
@@ -2495,6 +2505,7 @@ namespace DOL.GS
                 guard.GuardSource.ActiveWeaponSlot != eActiveWeaponSlot.Distance &&
                 //				guard.GuardSource.AttackState &&
                 guard.GuardSource.IsAlive &&
+                !guard.GuardSource.IsSitting &&
                 !stealthStyle)
             {
                 // check distance
@@ -2756,41 +2767,57 @@ namespace DOL.GS
             {
                 missrate >>= 1; //halved
             }
+            
+            //check for dirty trick fumbles before misses
+            DirtyTricksDetrimentalECSGameEffect dt = (DirtyTricksDetrimentalECSGameEffect)EffectListService.GetAbilityEffectOnTarget(ad.Attacker, eEffect.DirtyTricksDetrimental);
+            if (dt != null && ad.IsRandomFumble)
+                return eAttackResult.Fumbled;
 
             ad.MissRate = missrate;
-            int rando = 0;
+            double rando = 0;
             bool skipDeckUsage = ServerProperties.Properties.OVERRIDE_DECK_RNG;
             if (missrate > 0)
             {
                 if (ad.Attacker is GamePlayer atkkr && !skipDeckUsage)
                 {
-                    rando = atkkr.RandomNumberDeck.GetInt();
+                    rando = atkkr.RandomNumberDeck.GetPseudoDouble();
                 }
                 else
                 {
-                    rando = Util.CryptoNextInt(100);
+                    rando = Util.CryptoNextDouble();
                 }
 
 
                 if (ad.Attacker is GamePlayer misser && misser.UseDetailedCombatLog)
-                    misser.Out.SendMessage($"miss rate on target: {missrate}% rand: {rando}", eChatType.CT_DamageAdd,
+                {
+                    misser.Out.SendMessage($"miss rate on target: {missrate}% rand: {(rando * 100).ToString("0.##")}", eChatType.CT_DamageAdd,
                         eChatLoc.CL_SystemWindow);
+                    misser.Out.SendMessage($"Your chance to fumble: {(100 * ad.Attacker.ChanceToFumble).ToString("0.##")}% rand: {(100 * rando).ToString("0.##")}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                }
+
+                
                 if (ad.Target is GamePlayer missee && missee.UseDetailedCombatLog)
-                    missee.Out.SendMessage($"chance to be missed: {missrate}% rand: {rando}", eChatType.CT_DamageAdd,
+                    missee.Out.SendMessage($"chance to be missed: {missrate}% rand: {(rando * 100).ToString("0.##")}", eChatType.CT_DamageAdd,
                         eChatLoc.CL_SystemWindow);
 
+                //check for normal fumbles
+                //NOTE: fumbles are a subset of misses, and a player can only fumble if the attack would have
+                //been a miss anyways
+                if (ad.Attacker.ChanceToFumble > rando)
+                    return eAttackResult.Fumbled;
 
-                if (missrate > rando)
+                if (missrate > rando * 100)
                 {
                     return eAttackResult.Missed;
                 }
             }
 
+            /*
             if (ad.IsRandomFumble)
                 return eAttackResult.Fumbled;
 
             if (ad.IsRandomMiss)
-                return eAttackResult.Missed;
+                return eAttackResult.Missed;*/
 
 
             // Bladeturn
@@ -3406,6 +3433,8 @@ namespace DOL.GS
                         result += p.GetModified(eProperty.MeleeDamage) * 0.01;
                     }
 
+                    if (result <= 0) //Checking if 0 or negative
+                        result = 1;
                     return result;
                 }
                 else

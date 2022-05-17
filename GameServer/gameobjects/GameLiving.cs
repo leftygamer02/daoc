@@ -897,8 +897,8 @@ namespace DOL.GS
 			double afPerAbsorptionPercent = 6;
 			double liveBaseAFcap = 150 * 1.25 * 1.25;
 			double afBuffBonus = Math.Min(liveBaseAFcap, BaseBuffBonusCategory[eProperty.ArmorFactor] + SpecBuffBonusCategory[eProperty.ArmorFactor]);
-			double afDebuffMalus = Math.Abs(DebuffCategory[eProperty.ArmorFactor] + SpecDebuffCategory[eProperty.ArmorFactor]);
-			double afBuffAbsorb = (afBuffBonus - afDebuffMalus * debuffBuffRatio) / afPerAbsorptionPercent / 100;
+			//double afDebuffMalus = Math.Abs(DebuffCategory[eProperty.ArmorFactor] + SpecDebuffCategory[eProperty.ArmorFactor]);
+			double afBuffAbsorb = (afBuffBonus * debuffBuffRatio) / afPerAbsorptionPercent / 100;
 
 			double baseAbsorb = 0;
 
@@ -2114,6 +2114,16 @@ namespace DOL.GS
 					    && attackType != AttackData.eAttackType.MeleeDualWield)
 						return false;
 				}
+				long elapsedTime = GameLoop.GameLoopTime - this.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START);
+				long halfwayPoint = this.attackComponent.AttackSpeed(this.attackComponent.AttackWeapon) / 2;
+				
+				if (rangeAttackComponent.RangedAttackState != eRangedAttackState.ReadyToFire &&
+				    rangeAttackComponent.RangedAttackState != eRangedAttackState.None &&
+				    elapsedTime > halfwayPoint)
+				{
+					return false;
+				}
+
 				double mod = GetConLevel(attacker);
 				double interruptChance = BaseInterruptChance;
 				interruptChance += mod * 10;
@@ -3710,6 +3720,14 @@ namespace DOL.GS
 
 				if( evadeChance < 0.01 )
 					evadeChance = 0.01;
+				else if (IsObjectInFront( ad.Attacker, 180 ) 
+				         && ( evadeBuff != null || (player != null && player.HasAbility( Abilities.Evade )))
+				         && evadeChance < 0.05
+				         && ad.AttackType != AttackData.eAttackType.Ranged)
+				{
+					//if player has a hard evade source, 5% miniumum evade chance
+					evadeChance = 0.05;
+				}
 				else if( evadeChance > ServerProperties.Properties.EVADE_CAP && ad.Attacker is GamePlayer && ad.Target is GamePlayer )
 					evadeChance = ServerProperties.Properties.EVADE_CAP; //50% evade cap RvR only; http://www.camelotherald.com/more/664.shtml
 				else if( evadeChance > 0.995 )
@@ -3778,7 +3796,12 @@ namespace DOL.GS
 					}
 					else if( IsObjectInFront( ad.Attacker, 120 ) )
 					{
-						if( ( player.HasSpecialization( Specs.Parry ) || parryBuff != null ) && (attackComponent.AttackWeapon != null ) )
+						if( ( player.HasSpecialization( Specs.Parry ) || parryBuff != null ) && (attackComponent.AttackWeapon != null 
+							   && attackComponent.AttackWeapon.Object_Type != (int)eObjectType.RecurvedBow
+								&& attackComponent.AttackWeapon.Object_Type != (int)eObjectType.Longbow
+							   && attackComponent.AttackWeapon.Object_Type != (int)eObjectType.CompositeBow
+							   && attackComponent.AttackWeapon.Object_Type != (int)eObjectType.Crossbow
+							   && attackComponent.AttackWeapon.Object_Type != (int)eObjectType.Fired))
 							parryChance = GetModified( eProperty.ParryChance );
 					}
 				}
@@ -3878,9 +3901,9 @@ namespace DOL.GS
 			if( blockChance > 0 && IsObjectInFront( ad.Attacker, 120 ) && !ad.Target.IsStunned && !ad.Target.IsSitting )
 			{
 				// Reduce block chance if the shield used is too small (valable only for player because npc inventory does not store the shield size but only the model of item)
-				int shieldSize = 0;
+				double shieldSize = 0.0;
 				if( lefthand != null )
-					shieldSize = lefthand.Type_Damage;
+					shieldSize = (double)lefthand.Type_Damage;
 				if( player != null && attackerCount > shieldSize )
 					blockChance *= (shieldSize / attackerCount);
 
@@ -3985,22 +4008,25 @@ namespace DOL.GS
 		}
 
 		public double GetAttackerDefensePenetration(GameLiving living, InventoryItem weapon)
-        {            
-			//double statBasedReduction = (living.GetWeaponStat(living.attackComponent?.AttackWeapon) - 50) / 25.0;
-			//double weaponskillBasedReduction = living.GetWeaponSkill(living.attackComponent?.AttackWeapon) / 100;
-			double skillBasedReduction = living.WeaponSpecLevel(weapon) * 0.15;
-
-			//double combinedReduction = statBasedReduction + skillBasedReduction;
+		{
+			double totalReduction = 0.0;
 
 			if (living is GamePlayer p)
             {
+	            double skillBasedReduction = living.WeaponSpecLevel(weapon) * 0.15;
 				//p.CharacterClass.WeaponSkillBase returns unscaled damage table value
 				//divide by 200 to change to scaling factor. example: warrior's 460 WeaponSkillBase / 200 = 2.3 Damage Table
 				//divide by final 2 to use the 2.0 damage table as our anchor. classes below 2.0 damage table will have slightly reduced penetration, above 2.0 will have increased penetration
 				skillBasedReduction *= p.CharacterClass.WeaponSkillBase / 200.0 / 1.8;
+				totalReduction = skillBasedReduction;
+            }
+			else
+			{
+				double NPCReduction = 10.0 * (living.Level / 50.0); //10% penetration at level 50
+				totalReduction = NPCReduction;
 			}
 				
-			return skillBasedReduction;
+			return totalReduction;
 		}
 
 		/// <summary>

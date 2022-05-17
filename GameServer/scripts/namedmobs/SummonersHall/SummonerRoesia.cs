@@ -15,11 +15,24 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 60;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 60;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 60;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+				case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+				default: return 70; // dmg reduction for rest resists
 			}
+		}
+		public override double GetArmorAF(eArmorSlot slot)
+		{
+			return 350;
+		}
+		public override double GetArmorAbsorb(eArmorSlot slot)
+		{
+			// 85% ABS is cap.
+			return 0.20;
+		}
+		public override int MaxHealth
+		{
+			get { return 30000; }
 		}
 		public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
 		{
@@ -61,19 +74,6 @@ namespace DOL.GS
 				return true;
 
 			return base.HasAbility(keyName);
-		}
-		public override double GetArmorAF(eArmorSlot slot)
-		{
-			return 700;
-		}
-		public override double GetArmorAbsorb(eArmorSlot slot)
-		{
-			// 85% ABS is cap.
-			return 0.55;
-		}
-		public override int MaxHealth
-		{
-			get { return 20000; }
 		}
 		public override bool AddToWorld()
 		{
@@ -221,15 +221,18 @@ namespace DOL.AI.Brain
 								if (Body.IsMoving && Body.TargetObject.IsWithinRadius(Body.TargetObject, spells.Range) && Body.IsCasting)
 									Body.StopFollowing();
 
-								PickRandomTarget();
+								if(Body.GetSkillDisabledDuration(RoesiaDot) == 0)
+									PickRandomTarget();
+
+								GameLiving oldTarget = Body.TargetObject as GameLiving;
 								if (RandomTarget != null && RandomTarget.IsAlive && CanCast)
-								{
-									GameLiving oldTarget = Body.TargetObject as GameLiving;
+								{								
 									Body.TargetObject = RandomTarget;
-									Body.TurnTo(RandomTarget);
-									Body.CastSpell(RoesiaDot, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
-									if (oldTarget != null) Body.TargetObject = oldTarget;//return to old target
+									if (Body.GetSkillDisabledDuration(RoesiaDot) == 0 && !Body.IsCasting)
+										Body.TurnTo(RandomTarget);
+									Body.CastSpell(RoesiaDot, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);								
 								}
+								if (oldTarget != null) Body.TargetObject = oldTarget;//return to old target
 							}
 						}
 					}
@@ -264,7 +267,7 @@ namespace DOL.AI.Brain
 				{
 					GamePlayer Target = Enemys_To_DD[Util.Random(0, Enemys_To_DD.Count - 1)];//pick random target from list
 					RandomTarget = Target;//set random target to static RandomTarget
-					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDot), 15000);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDot), 3000);
 					CanCast = true;
 				}				
 			}

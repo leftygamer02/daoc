@@ -34,11 +34,13 @@ public class PredatorService
                 
                 if (activePlayer == null) continue;
 
-                AbstractArea area = activePlayer.CurrentZone.GetAreasOfSpot(activePlayer.X, activePlayer.Y, activePlayer.Z)
+                AbstractArea area = activePlayer.CurrentZone?.GetAreasOfSpot(activePlayer.X, activePlayer.Y, activePlayer.Z)
                     .FirstOrDefault() as AbstractArea;
                 
                 //if user is not in an RvR zone, or is in DF
-                if ((!activePlayer.CurrentZone.IsRvR 
+                if (activePlayer != null && 
+                     (activePlayer.CurrentZone != null && 
+                     !activePlayer.CurrentZone.IsRvR 
                      && (area == null || (area != null && !area.Description.Equals("Druim Ligen")))) 
                      || activePlayer.CurrentZone.ID == 249)
                 {
