@@ -203,20 +203,26 @@ namespace DOL.GS.Spells
 			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "GamePlayer.Target.Fail.IsDead", charmMob.GetName(0, true)), eChatType.CT_SpellResisted);
 			        return false;
 		        }
+		        
+		        // Make sure the pet is in the same zone
+		        if (charmMob.CurrentRegion != Caster.CurrentRegion)
+		        {
+			        return false;
+		        }
 	                
 		        // If the mob is "friendly"
 		        if (charmMob.Realm != 0)
 		        {
-			        // Message: This spell does not charm that type of monster!
-			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.WrongType"), eChatType.CT_SpellResisted);
+			        // Message: {0) can't be charmed!
+			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.CantBeCharmed", charmMob.GetName(0, true)), eChatType.CT_SpellResisted);
 			        return false;
 		        }
 	                
 		        // To make a mob uncharmable, give it a BodyType of 0
 		        if (charmMob.BodyType is < 1 or > 11)
 		        {
-			        // Message: This spell does not charm that type of monster!
-			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.WrongType"), eChatType.CT_SpellResisted);
+			        // Message: {0) can't be charmed!
+			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.CantBeCharmed", charmMob.GetName(0, true)), eChatType.CT_SpellResisted);
 			        return false;
 		        }
 	                
@@ -261,8 +267,8 @@ namespace DOL.GS.Spells
 			        // If the mob's ClassType matches any of the above, it cannot be charmed
 			        if (isCharmable == false)
 			        {
-				        // Message: This spell does not charm that type of monster!
-				        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.WrongType"), eChatType.CT_SpellResisted);
+				        // Message: {0) can't be charmed!
+				        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.CantBeCharmed", charmMob.GetName(0, true)), eChatType.CT_SpellResisted);
 				        return false;
 			        }
 		        }
@@ -270,8 +276,8 @@ namespace DOL.GS.Spells
 		        // If the target has an uppercase first letter in the name
 		        if (ServerProperties.Properties.SPELL_CHARM_NAMED_CHECK != 0 && char.IsUpper(charmMob.Name[0]))
 		        {
-			        // Message: {0} is too strong for you to charm!
-			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.TooStrong", charmMob.GetName(0, true)), eChatType.CT_SpellResisted);
+			        // Message: {0) can't be charmed!
+			        MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "CharmSpell.EndCast.Fail.CantBeCharmed", charmMob.GetName(0, true)), eChatType.CT_SpellResisted);
 			        return false;
 		        }
 
@@ -462,6 +468,16 @@ namespace DOL.GS.Spells
                 var resistString = String.Format("{0:0.##}", spellResistChance);
                 var rollString = String.Format("{0:0.##}", resistResult);
 
+                // Make sure the pet is in the same zone
+                if (target.CurrentRegion != Caster.CurrentRegion)
+                {
+	                ECSPulseEffect song = EffectListService.GetPulseEffectOnTarget(Caster as GamePlayer);
+	                if (song != null && song.SpellHandler.Spell.InstrumentRequirement == 0 && song.SpellHandler.Spell.CastTime == 0)
+	                {
+		                EffectService.RequestImmediateCancelConcEffect(song);
+	                }
+	                return;
+                }
                 if (target.IsWithinRadius(charmCaster, 2000))
                 {
 	                if (charmCaster.Client.Account.PrivLevel > 1)
@@ -856,17 +872,39 @@ namespace DOL.GS.Spells
 		Safety level formula:
         (level * .66) + (modified spec level * .33)
         modified spec level includes: trainings, items, and realm rank
-
-        Mastery of Focus:
+		-------------
+        Mastery of Focus
         Mastery of Focus affects SPELL level. Notice that SPELL level is not included in the above formula. SPEC level is important. If you raise the lvl 4 charm up to lvl 20 it makes NO difference to what you can charm.
-
+		-------------
         Current charm bugs:
         - Porting has the chance to completely break your charm if there is a delay in porting. Pet will show up at portal location very very mad.
         - Porting also causes your pet to completely disappear. Walk away and it should reappear. Maybe
 
         NOT A BUG, working as intended
         - Artifact chants (Cloudsong, Crown, etc.) will interfere and overwrite your charm.
+        -------------
+        Pulse Frequency
+        well: https://www.tapatalk.com/groups/bardsofcamelot/jjoe-nitro-s-guide-to-minstrel-charm-t692-s20.html
 
+		while both are a 10s pulse, minstrel pulses every 5 seconds, while mentalist pulses every 4.8 seconds meaning as a mentalist you get dumped out of speed a lot less.
+
+		Minstrel charm is exactly 10 secs with exactly 5 secs. However the pulse end check is done first, then the next pulse is issued, so we get a split second drop. Mentalists have oulses every 4.8s so after a ressit the next pulse is 9.6s into the current one, 0.4s before it's end hence no drop out. I can only assume since ours is 5 and their's is 4.8 that the drop out on a single resist is intentional, possibly because of charm being insta or something.
+
+
+		Basically it goes like this:
+		0 secs, charm pulses.
+		5 secs, charm pulses, resisted.
+		10 secs, first charm pulse ends, it's not been overwritten by a new pulse so pet drops.
+		10 secs, charm pulses, you regain the pet.
+
+		The issue is the because it's 5 seconds and 10 seconds and mythic check if you loose the pet before they do the next charm pulse you drop the pet.
+
+		Mentalist goes like this:
+		0 secs, charm pulses.
+		4.8 secs, charm pulses, resisted.
+		9.6 secs, charm pulses.
+		10 secs, first charm pulse ends, it's been overwritten by the pulse at 9.6s so there's no drop in speed.
+		-------------
          */
     }
 }

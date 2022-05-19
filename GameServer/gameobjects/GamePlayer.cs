@@ -1061,7 +1061,8 @@ namespace DOL.GS
             // cancel all effects until saving of running effects is done
             try
             {
-                EffectList.SaveAllEffects();
+                //EffectList.SaveAllEffects();
+                EffectService.SaveAllEffects(this);
                 CancelAllConcentrationEffects(false);
                 EffectList.CancelAll();
             }
@@ -1863,8 +1864,38 @@ namespace DOL.GS
             //Update health&sit state first!
             m_isDead = false;
             Health = MaxHealth;
+            Endurance = MaxEndurance;
+            Mana = MaxMana;
             StartPowerRegeneration();
             StartEnduranceRegeneration();
+
+            var maxChargeItems = ServerProperties.Properties.MAX_CHARGE_ITEMS;
+            
+            foreach (var item in this.Inventory.EquippedItems)
+            {
+                //max 2 charges
+                if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID) && LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
+                {
+                    if(ActiveBuffCharges < maxChargeItems)
+                        UseItemCharge(item, (int)eUseType.use1);
+                    else
+                    {
+                        Out.SendMessage("You may only use two buff charge effects. This item fails to affect you.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    }
+                }
+
+                //max 2 charges
+                if (item.SpellID1 > 0 && SelfBuffChargeIDs.Contains(item.SpellID1) && LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
+                {
+                    if(ActiveBuffCharges < maxChargeItems)
+                        UseItemCharge(item, (int)eUseType.use2);
+                    else
+                    {
+                        Out.SendMessage("You may only use two buff charge effects. This item fails to affect you.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    }
+                }
+            }
+            
             UpdatePlayerStatus();
 
             Region region = null;
@@ -1917,6 +1948,7 @@ namespace DOL.GS
                     loc.RegionID = CurrentRegionID;
                 }
             }
+            
         }
 
         /// <summary>
@@ -6230,8 +6262,17 @@ namespace DOL.GS
         public override void SwitchWeapon(eActiveWeaponSlot slot)
         {
             //When switching weapons, attackmode is removed!
-            if (attackComponent.AttackState)
+            if (attackComponent != null && attackComponent.AttackState && attackComponent.AttackWeapon != null)
+            {
+                if (attackComponent.AttackWeapon.Item_Type == (int)eInventorySlot.DistanceWeapon 
+                    && rangeAttackComponent.RangedAttackState != eRangedAttackState.None 
+                    && GameLoop.GameLoopTime - this.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START) > 500
+                    && attackComponent.attackAction != null)
+                {
+                    attackComponent.attackAction.StartTime = 1;
+                }
                 attackComponent.LivingStopAttack();
+            }
 
             if (CurrentSpellHandler != null)
             {
@@ -7496,7 +7537,7 @@ namespace DOL.GS
 
             #region PVP DAMAGE
 
-            if (source is GamePlayer || (source is GameNPC && (source as GameNPC).Brain is IControlledBrain && ((source as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null))
+            if (source is GamePlayer || (source is GameNPC && (source as GameNPC).Brain is IControlledBrain && ((source as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null) || source is GameSiegeWeapon)
             {
                 if (Realm != source.Realm && source.Realm != 0)
                     DamageRvRMemory += (long)(damageAmount + criticalAmount);
@@ -10151,9 +10192,20 @@ namespace DOL.GS
             {
                 spell = SkillBase.FindSpell(useItem.SpellID1, chargeEffectLine);
             }
-
+            
             if (spell != null)
             {
+                if (ActiveBuffCharges >= Properties.MAX_CHARGE_ITEMS && SelfBuffChargeIDs.Contains(spell.ID))
+                {
+                    Out.SendMessage("You may only use two buff charge effects.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    return;
+                }
+                
+                if (LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
+                {
+                    spell.Duration = 30 * 60 * 1000;
+                }
+
                 ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(this, spell, chargeEffectLine);
                 if (spellHandler != null)
                 {
@@ -10178,6 +10230,7 @@ namespace DOL.GS
                                 }
                             }
                         }
+
                         if (useItem.MaxCharges > 0)
                         {
                             useItem.Charges--;
@@ -12336,6 +12389,29 @@ namespace DOL.GS
             if (Client.Account.PrivLevel == (uint)ePrivLevel.Player && Client.Player != null && Client.Player.ObjectState == eObjectState.Active)
                 if (item.SpellID > 0 || item.SpellID1 > 0)
                     TempProperties.setProperty("ITEMREUSEDELAY" + item.Id_nb, CurrentRegion.Time);
+            
+            
+            //max 2 charges
+            if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID) && LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
+            {
+                if(ActiveBuffCharges < 2)
+                    UseItemCharge(item, (int)eUseType.use1);
+                else
+                {
+                    Out.SendMessage("You may only use two buff charge effects. This item fails to affect you.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                }
+            }
+
+            //max 2 charges
+            if (item.SpellID1 > 0 && SelfBuffChargeIDs.Contains(item.SpellID1) && LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
+            {
+                if(ActiveBuffCharges < 2)
+                    UseItemCharge(item, (int)eUseType.use2);
+                else
+                {
+                    Out.SendMessage("You may only use two buff charge effects. This item fails to affect you.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                }
+            }
 
             if (ObjectState == eObjectState.Active)
             {
@@ -12360,6 +12436,38 @@ namespace DOL.GS
                     if (Endurance < MaxEndurance) StartEnduranceRegeneration();
                     else if (Endurance > MaxEndurance) Endurance = MaxEndurance;
                 }
+            }
+        }
+
+        private int m_activeBuffCharges = 0;
+
+        public int ActiveBuffCharges
+        {
+            get
+            {
+                return m_activeBuffCharges;
+            }
+            set
+            {
+                m_activeBuffCharges = value;
+            }
+        }
+
+        private List<int> m_selfBuffIds;
+        public List<int> SelfBuffChargeIDs {
+            get
+            {
+                if (m_selfBuffIds == null)
+                {
+                    m_selfBuffIds = new List<int>();
+                    m_selfBuffIds.Add(31133); //str/con charge
+                    m_selfBuffIds.Add(31132); //dex/qui charge
+                    m_selfBuffIds.Add(31131); //acuity charge
+                    m_selfBuffIds.Add(31130); //AF charge
+                    m_selfBuffIds.Add(33512); //haste charge
+                }
+
+                return m_selfBuffIds;
             }
         }
 
@@ -12498,6 +12606,12 @@ namespace DOL.GS
             {
                 (item as IGameInventoryItem).OnUnEquipped(this);
             }
+            
+            //max 2 charges
+            if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID))
+            {
+                CancelChargeBuff(item.SpellID);
+            }
 
             if (ObjectState == eObjectState.Active)
             {
@@ -12522,6 +12636,11 @@ namespace DOL.GS
                     else if (Endurance > MaxEndurance) Endurance = MaxEndurance;
                 }
             }
+        }
+
+        private void CancelChargeBuff(int spellID)
+        {
+            EffectService.RequestCancelEffect(effectListComponent.GetSpellEffects().FirstOrDefault(x => x.SpellHandler.Spell.ID == spellID));
         }
 
         public virtual void RefreshItemBonuses()
@@ -14347,44 +14466,44 @@ namespace DOL.GS
 			*/
             range += BaseBuffBonusCategory[(int)eProperty.Skill_Stealth];
 
-            //Buff (Stealth Detection)
-            //Increases the target's ability to detect stealthed players and monsters.
-            GameSpellEffect iVampiirEffect = SpellHandler.FindEffectOnTarget((GameLiving)this, "VampiirStealthDetection");
-            if (iVampiirEffect != null)
-                range += (int)iVampiirEffect.Spell.Value;
-			
-            //Infill Only - Greater Chance to Detect Stealthed Enemies for 1 minute
-            //after executing a klling blow on a realm opponent.
-            GameSpellEffect HeightenedAwareness = SpellHandler.FindEffectOnTarget((GameLiving)this, "HeightenedAwareness");
-            if (HeightenedAwareness != null)
-                range += (int)HeightenedAwareness.Spell.Value;
-
-            //Nightshade Only - Greater chance of remaining hidden while stealthed for 1 minute
-            //after executing a killing blow on a realm opponent.
-            GameSpellEffect SubtleKills = SpellHandler.FindEffectOnTarget((GameLiving)enemy, "SubtleKills");
-            if (SubtleKills != null)
-            {
-                range -= (int)SubtleKills.Spell.Value;
-                if (range < 0) range = 0;
-            }
-
-            // Apply Blanket of camouflage effect
-            GameSpellEffect iSpymasterEffect1 = SpellHandler.FindEffectOnTarget((GameLiving)enemy, "BlanketOfCamouflage");
-            if (iSpymasterEffect1 != null)
-            {
-                range -= (int)iSpymasterEffect1.Spell.Value;
-                if (range < 0) range = 0;
-            }
-
-            // Apply Lookout effect
-            GameSpellEffect iSpymasterEffect2 = SpellHandler.FindEffectOnTarget((GameLiving)this, "Loockout");
-            if (iSpymasterEffect2 != null)
-                range += (int)iSpymasterEffect2.Spell.Value;
-
-            // Apply Prescience node effect
-            GameSpellEffect iConvokerEffect = SpellHandler.FindEffectOnTarget((GameLiving)enemy, "Prescience");
-            if (iConvokerEffect != null)
-                range += (int)iConvokerEffect.Spell.Value;
+            // //Buff (Stealth Detection)
+            // //Increases the target's ability to detect stealthed players and monsters.
+            // GameSpellEffect iVampiirEffect = SpellHandler.FindEffectOnTarget((GameLiving)this, "VampiirStealthDetection");
+            // if (iVampiirEffect != null)
+            //     range += (int)iVampiirEffect.Spell.Value;
+			         //
+            // //Infill Only - Greater Chance to Detect Stealthed Enemies for 1 minute
+            // //after executing a klling blow on a realm opponent.
+            // GameSpellEffect HeightenedAwareness = SpellHandler.FindEffectOnTarget((GameLiving)this, "HeightenedAwareness");
+            // if (HeightenedAwareness != null)
+            //     range += (int)HeightenedAwareness.Spell.Value;
+            //
+            // //Nightshade Only - Greater chance of remaining hidden while stealthed for 1 minute
+            // //after executing a killing blow on a realm opponent.
+            // GameSpellEffect SubtleKills = SpellHandler.FindEffectOnTarget((GameLiving)enemy, "SubtleKills");
+            // if (SubtleKills != null)
+            // {
+            //     range -= (int)SubtleKills.Spell.Value;
+            //     if (range < 0) range = 0;
+            // }
+            //
+            // // Apply Blanket of camouflage effect
+            // GameSpellEffect iSpymasterEffect1 = SpellHandler.FindEffectOnTarget((GameLiving)enemy, "BlanketOfCamouflage");
+            // if (iSpymasterEffect1 != null)
+            // {
+            //     range -= (int)iSpymasterEffect1.Spell.Value;
+            //     if (range < 0) range = 0;
+            // }
+            //
+            // // Apply Lookout effect
+            // GameSpellEffect iSpymasterEffect2 = SpellHandler.FindEffectOnTarget((GameLiving)this, "Loockout");
+            // if (iSpymasterEffect2 != null)
+            //     range += (int)iSpymasterEffect2.Spell.Value;
+            //
+            // // Apply Prescience node effect
+            // GameSpellEffect iConvokerEffect = SpellHandler.FindEffectOnTarget((GameLiving)enemy, "Prescience");
+            // if (iConvokerEffect != null)
+            //     range += (int)iConvokerEffect.Spell.Value;
 
             //Hard cap is 1900
             if (range > 1900)
@@ -15613,7 +15732,7 @@ namespace DOL.GS
         /// <summary>
         /// The timer to call invulnerability expired callbacks
         /// </summary>
-        protected class InvulnerabilityTimer : RegionAction
+        protected class InvulnerabilityTimer : RegionECSAction
         {
             /// <summary>
             /// Defines a logger for this class.
@@ -15641,7 +15760,7 @@ namespace DOL.GS
             /// <summary>
             /// Called on every timer tick
             /// </summary>
-            protected override void OnTick()
+            protected override int OnTick(ECSGameTimer timer)
             {
                 try
                 {
@@ -15651,6 +15770,8 @@ namespace DOL.GS
                 {
                     log.Error("InvulnerabilityTimer callback", e);
                 }
+
+                return 0;
             }
         }
 

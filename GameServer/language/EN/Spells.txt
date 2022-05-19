@@ -82,6 +82,7 @@ CharmSpell.EndCast.Fail.TooStrong:                               {0} is too stro
 CharmSpell.EndCast.Fail.CurrentlyControlled:                     {0} is currently being controlled.
 CharmSpell.EndCast.Fail.AlreadyOwnCharmed:                       You already have a charmed creature, release it first!
 CharmSpell.EndCast.Fail.InCombat:                               You can't charm {0} while {1} is in combat!
+CharmSpell.EndCast.Fail.CantBeCharmed:                          {0} can't be charmed!
 
 ## Damage Add & Damage Shield
 DamageAddAndShield.EventHandlerDA.DamageToYou:		{0} does {1} extra damage to you!
@@ -126,6 +127,9 @@ SavageEnduranceHeal.CheckBeginCast.InsuffiscientHealth:	You do not have enough h
 Effects.ShadeEffect.Name:						Shade
 GamePlayer.Shade.AlreadyShade:				You are already a shade!
 GamePlayer.Shade.NoLongerShade:				You are no longer a shade!
+
+## Summon Pets
+GamePlayer.CastEnd.Fail.BadRegion:                  You can't do that here!
 
 ## Summon Animist FnF Turret
 SummonAnimistFnF.CheckBeginCast.NoGroundTarget:		You can't summon a turret without a ground target !
