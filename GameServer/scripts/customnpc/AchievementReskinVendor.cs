@@ -106,7 +106,13 @@ public class AchievementReskinVendor : GameNPC
                 break;
             case Slot.RIGHTHAND:
             case Slot.LEFTHAND:
-                DisplayOneHandWeaponOption(t, item);
+                if (item.Object_Type != (int) eObjectType.Shield)
+                    DisplayOneHandWeaponOption(t, item);
+                else
+                    DisplayShieldOption(t, item);
+                break;
+            case Slot.TWOHAND:
+                DisplayTwoHandWeaponOption(t, item);
                 break;
         }
 
@@ -1065,6 +1071,440 @@ public class AchievementReskinVendor : GameNPC
 
         SendReply(player, sb.ToString());
     }
+    
+    public void DisplayTwoHandWeaponOption(GamePlayer player, InventoryItem item)
+    {
+        StringBuilder sb = new StringBuilder();
+        int RR = player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank);
+        int dragon = player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills);
+
+        switch (player.Realm)
+        {
+            case eRealm.Albion:
+                sb.Append($"Free\n" +
+                          $"[Battle Axe 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[War Mattock 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Albion War Axe 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Albion Great Hammer 2h] ({freebie} {currencyName})\n");
+
+                if (RR > 1)
+                {
+                    sb.Append($"Realm Rank 2+\n" +
+                              $"[Briton Arch Mace 2h] ({lowbie} {currencyName})\n");
+                    sb.Append($"[Briton Scimitar 2h] ({lowbie} {currencyName})\n");
+                    sb.Append($"[Briton War Pick 2h] ({lowbie} {currencyName})\n");
+                }
+                
+                if (RR > 3)
+                {
+                    sb.Append($"Realm Rank 4+\n" +
+                              $"[Zweihander 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Claymore 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Great Mace 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Dire Hammer 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Dire Axe 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Great Mattock 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Great Scimitar 2h] ({toageneric} {currencyName})\n");
+                }
+                break;
+            case eRealm.Midgard:
+                sb.Append($"Free\n" +
+                          $"[Norse Sword 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Norse Great Axe 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Norse Large Axe 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Norse Hammer 2h] ({freebie} {currencyName})\n");
+                
+                if (RR > 1)
+                {
+                    sb.Append($"Realm Rank 2+\n" +
+                              $"[Norse Greatsword 2h] ({lowbie} {currencyName})\n");
+                    sb.Append($"[Norse Warhammer 2h] ({lowbie} {currencyName})\n");
+                    sb.Append($"[Norse Greathammer 2h] ({lowbie} {currencyName})\n");
+                    sb.Append($"[Norse Battleaxe 2h] ({lowbie} {currencyName})\n");
+                }
+                
+                if (RR > 3)
+                {
+                    sb.Append($"Realm Rank 4+\n" +
+                              $"[Dwarven Sword 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Dwarven Greataxe 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Dwarven Great Hammer 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[War Cleaver 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Spiked Hammer 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Troll Greatsword 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Kobold Greataxe 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Kobold Great Club 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Kobold Great Sword 2h] ({toageneric} {currencyName})\n");
+                }
+                break;
+            case eRealm.Hibernia:
+                sb.Append($"Free\n" +
+                          $"[Celtic Greatsword 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Celtic Sword 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Celtic Great Hammer 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Celtic Spiked Mace 2h] ({freebie} {currencyName})\n");
+                sb.Append($"[Celtic Shillelagh 2h] ({freebie} {currencyName})\n");
+                
+                if (RR > 1)
+                {
+                    sb.Append($"Realm Rank 2+\n" +
+                              $"[Celtic Falcata 2h] ({lowbie} {currencyName})\n");
+                    sb.Append($"[Celtic Sledgehammer 2h] ({lowbie} {currencyName})\n");
+                }
+                
+                if (RR > 3)
+                {
+                    sb.Append($"Realm Rank 4+\n" +
+                              $"[Celtic Hammer 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Celtic Great Mace 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Celtic Dire Club 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Elven Greatsword 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Firbolg Hammer 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Firbolg Mace 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Firbolg Trollsplitter 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Leaf Point 2h] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Shod Shillelagh 2h] ({toageneric} {currencyName})\n");
+                }
+                break;
+        }
+
+        
+
+        SendReply(player, sb.ToString());
+    }
+    
+    public void DisplayShieldOption(GamePlayer player, InventoryItem item)
+    {
+        StringBuilder sb = new StringBuilder();
+        int RR = player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank);
+
+        switch (item.Type_Damage)
+        {
+            //small shields
+            case 1:
+                //add all basic options
+                sb.Append($"Free\n" +
+                          $"[Leather Buckler] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Buckler] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Buckler] ({freebie} {currencyName})\n");
+
+                switch (player.Realm)
+                {
+                    case eRealm.Albion:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Tri-Tip Buckler] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Tri-Tip Buckler] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Tri-Tip Buckler] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Kite Buckler] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Kite Buckler] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Kite Buckler] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Albion Dragonslayer Buckler] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                    case eRealm.Midgard:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Norse Buckler] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Norse Buckler] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Norse Buckler] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Grave Buckler] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Grave Buckler] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Grave Buckler] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Midgard Dragonslayer Buckler] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                    case eRealm.Hibernia:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Celtic Buckler] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Celtic Buckler] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Celtic Buckler] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Leaf Buckler] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Leaf Buckler] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Leaf Buckler] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Hibernia Dragonslayer Buckler] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                }
+                
+                if (RR > 3)
+                {
+                    sb.Append($"[Oceanus Small Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Aerus Small Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Magma Small Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Stygia Small Shield] ({toageneric} {currencyName})\n");
+                }
+                break;
+            case 2:
+                //add all basic options
+                sb.Append($"Free\n" +
+                          $"[Leather Medium Heater] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Medium Heater] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Medium Heater] ({freebie} {currencyName})\n");
+                
+                sb.Append($"[Leather Medium Tower] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Medium Tower] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Medium Tower] ({freebie} {currencyName})\n");
+                
+                sb.Append($"[Leather Medium Round] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Medium Round] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Medium Round] ({freebie} {currencyName})\n");
+
+                switch (player.Realm)
+                {
+                    case eRealm.Albion:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Medium Horned] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Medium Horned] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Medium Horned] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Medium Kite] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Medium Kite] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Medium Kite] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Albion Dragonslayer Medium] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                    case eRealm.Midgard:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Medium Crescent] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Medium Crescent] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Medium Crescent] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Medium Grave] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Medium Grave] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Medium Grave] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Midgard Dragonslayer Medium] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                    case eRealm.Hibernia:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Medium Celtic] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Medium Celtic] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Medium Celtic] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Medium Leaf] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Medium Leaf] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Medium Leaf] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Hibernia Dragonslayer Medium] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                }
+                
+                if (RR > 3)
+                {
+                    sb.Append($"[Oceanus Medium Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Aerus Medium Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Magma Medium Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Stygia Medium Shield] ({toageneric} {currencyName})\n");
+                }
+                
+                break;
+             case 3:
+                //add all basic options
+                sb.Append($"Free\n" +
+                          $"[Leather Large Heater] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Large Heater] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Large Heater] ({freebie} {currencyName})\n");
+                
+                sb.Append($"[Leather Large Tower] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Large Tower] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Large Tower] ({freebie} {currencyName})\n");
+                
+                sb.Append($"[Leather Large Round] ({freebie} {currencyName})\n");
+                sb.Append($"[Metal Large Round] ({freebie} {currencyName})\n");
+                sb.Append($"[Wood Large Round] ({freebie} {currencyName})\n");
+
+                switch (player.Realm)
+                {
+                    case eRealm.Albion:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Large Horned] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Large Horned] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Large Horned] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Large Kite] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Large Kite] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Large Kite] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Leather Studded Tower] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Metal Studded Tower] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Wood Studded Tower] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Albion Dragonslayer Large] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                    case eRealm.Midgard:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Large Crescent] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Large Crescent] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Large Crescent] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Large Grave] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Large Grave] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Large Grave] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Leather Norse Tower] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Metal Norse Tower] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Wood Norse Tower] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Midgard Dragonslayer Large] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                    case eRealm.Hibernia:
+                        if (RR > 1)
+                        {
+                            sb.Append($"Realm Rank 2+\n" +
+                                      $"[Leather Large Celtic] ({lowbie} {currencyName})\n" +
+                                      $"[Metal Large Celtic] ({lowbie} {currencyName})\n" +
+                                      $"[Wood Large Celtic] ({lowbie} {currencyName})\n");
+                        }
+                
+                        if (RR > 3)
+                        {
+                            sb.Append($"Realm Rank 4+\n" +
+                                      $"[Leather Large Leaf] ({toageneric} {currencyName})\n" +
+                                      $"[Metal Large Leaf] ({toageneric} {currencyName})\n" +
+                                      $"[Wood Large Leaf] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Leather Celtic Tower] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Metal Celtic Tower] ({toageneric} {currencyName})\n");
+                            sb.Append($"[Wood Celtic Tower] ({toageneric} {currencyName})\n");
+                        }
+
+                        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) > 24)
+                        {
+                            
+                            sb.Append($"25 Dragon Kills\n" +
+                                      $"[Hibernia Dragonslayer Large] (" + dragonCost * 1.5 + " " + currencyName +")\n");
+                            
+                        }
+                        break;
+                }
+
+                if (RR > 3)
+                {
+                    sb.Append($"Realm Rank 4+\n" +
+                              $"[Oceanus Large Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Aerus Large Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Magma Large Shield] ({toageneric} {currencyName})\n");
+                    sb.Append($"[Stygia Large Shield] ({toageneric} {currencyName})\n");
+                }
+                
+                break;
+             
+        }
+
+        if (RR > 5)
+        {
+            sb.Append($"Realm Rank 6+\n" +
+                      $"[Aten's Shield] ({toageneric} {currencyName})\n");
+            sb.Append($"[Cyclop's Eye] ({toageneric} {currencyName})\n");
+            sb.Append($"[Shield Of Khaos] ({toageneric} {currencyName})\n");
+        }
+        
+
+        SendReply(player, sb.ToString());
+    }
 
 
 public bool SetModel(GamePlayer player, int number, int price)
@@ -1220,7 +1660,17 @@ private void DisplayReskinPreviewTo(GamePlayer player, InventoryItem item)
     var tempAd = new AttackData();
     tempAd.Attacker = display;
     tempAd.Target = display;
-    tempAd.AttackType = AttackData.eAttackType.MeleeOneHand;
+    if (item.Hand == 1)
+    {
+        tempAd.AttackType = AttackData.eAttackType.MeleeTwoHand; 
+        display.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+    }
+    else
+    {
+        tempAd.AttackType = AttackData.eAttackType.MeleeOneHand;
+        display.SwitchWeapon(eActiveWeaponSlot.Standard);
+    }
+    
     tempAd.AttackResult = eAttackResult.HitUnstyled;
     display.AttackState = true;
     display.TargetObject = display;
@@ -9737,6 +10187,181 @@ public override bool WhisperReceive(GameLiving source, string str)
             price = champion;
             modelIDToAssign = 2984;
             break;
+        
+        case "hibernia dragonslayer sword 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Slash 
+                || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3895;
+            break;
+        case "hibernia dragonslayer hammer 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Crush 
+                || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3897;
+            break;
+        case "hibernia dragonslayer dagger 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Thrust 
+                || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3899;
+            break;
+        
+        case "midgard dragonslayer sword 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Object_Type != (int) eObjectType.Sword 
+                || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3936;
+            break;
+        case "midgard dragonslayer hammer 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Object_Type != (int) eObjectType.Hammer 
+                || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3938;
+            break;
+        case "midgard dragonslayer axe 1h":
+            
+        case "albion dragonslayer sword 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Slash
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3972;
+            break;
+        case "albion dragonslayer axe 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Slash
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3978;
+            break;
+        case "albion dragonslayer hammer 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Crush
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3974;
+            break;
+        case "albion dragonslayer dagger 1h":
+            if ((item.Item_Type != Slot.RIGHTHAND &&
+                 item.Item_Type != Slot.LEFTHAND) 
+                || item.Type_Damage != (int) eDamageType.Thrust
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3976;
+            break;
 
         //hand to hand
         case "snakecharmer's fist":
@@ -10074,7 +10699,7 @@ public override bool WhisperReceive(GameLiving source, string str)
                 break;
             }
 
-            price = lowbie;
+            price = freebie;
             modelIDToAssign = 574;
             break;
         case "norse warhammer 2h":
@@ -10493,6 +11118,120 @@ public override bool WhisperReceive(GameLiving source, string str)
 
             price = toageneric;
             modelIDToAssign = 1032;
+            break;
+        case "midgard dragonslayer sword 2h":
+            if (item.Object_Type != (int) eObjectType.Sword
+                || item.Hand != 1
+                || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3919;
+            break;
+        case "midgard dragonslayer hammer 2h":
+            if (item.Object_Type != (int) eObjectType.Hammer
+                || item.Hand != 1
+                || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3922;
+            break;
+        case "midgard dragonslayer axe 2h":
+            if (item.Object_Type != (int) eObjectType.Axe
+                || item.Hand != 1
+                || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3923;
+            break;
+        case "albion dragonslayer thrust 2h":
+            if (item.Object_Type != (int) eObjectType.TwoHandedWeapon
+                || item.Hand != 1
+                || item.Type_Damage != (int)eDamageType.Thrust
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3954;
+            break;
+        case "albion dragonslayer slash 2h":
+            if (item.Object_Type != (int) eObjectType.TwoHandedWeapon
+                || item.Hand != 1
+                || item.Type_Damage != (int)eDamageType.Slash
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3955;
+            break;
+        case "albion dragonslayer crush 2h":
+            if (item.Object_Type != (int) eObjectType.TwoHandedWeapon
+                || item.Hand != 1
+                || item.Type_Damage != (int)eDamageType.Crush
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3958;
+            break;
+        case "albion dragonslayer axe 2h":
+            if (item.Object_Type != (int) eObjectType.TwoHandedWeapon
+                || item.Hand != 1
+                || item.Type_Damage != (int)eDamageType.Slash
+                || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3959;
+            break;
+        case "hibernia dragonslayer slash 2h":
+            if (item.Object_Type != (int) eObjectType.LargeWeapons
+                || item.Hand != 1
+                || item.Type_Damage != (int)eDamageType.Slash
+                || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3878;
+            break;
+        case "hibernia dragonslayer crush 2h":
+            if (item.Object_Type != (int) eObjectType.LargeWeapons
+                || item.Hand != 1
+                || item.Type_Damage != (int)eDamageType.Crush
+                || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3881;
             break;
 
         #endregion
@@ -12576,6 +13315,1908 @@ public override bool WhisperReceive(GameLiving source, string str)
         #endregion
 
         #region shields
+
+        #region small shields
+        case "leather buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1040;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1043;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1046;
+                    break;
+            }
+            break;
+        case "metal buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1041;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1044;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1047;
+                    break;
+            }
+            break;
+        case "wood buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1042;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1045;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1048;
+                    break;
+            }
+            break;
+        
+        case "dragonsworn buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 10)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost;
+            modelIDToAssign = 3828;
+            break;
+        
+        //albion specific
+        case "leather tri-tip buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            
+            price = lowbie;
+            modelIDToAssign = 1103;
+            break;
+        case "metal tri-tip buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1104;
+            break;
+        case "wood tri-tip buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1105;
+            break;
+        
+        case "leather kite buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+            
+            price = toageneric;
+            modelIDToAssign = 1118;
+            break;
+        case "metal kite buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+            
+            price = toageneric;
+            modelIDToAssign = 1119;
+            break;
+        case "wood kite buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1120;
+            break;
+        
+        case "albion dragonslayer buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3965;
+            break;
+        
+        //midgard specific        
+        case "leather grave buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1130;
+            break;
+        case "metal grave buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+
+            price = lowbie;
+            modelIDToAssign = 1131;
+            break;
+        case "wood grave buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+
+            price = lowbie;
+            modelIDToAssign = 1132;
+            break;
+        
+        case "leather norse buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1139;
+            break;
+        case "metal norse buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1140;
+            break;
+        case "wood norse buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1141;
+            break;
+        
+        case "midgard dragonslayer buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3929;
+            break;
+        
+        //hibernia specific
+        case "leather celtic buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+
+            price = lowbie;
+            modelIDToAssign = 1148;
+            break;
+        case "metal celtic buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+
+            price = lowbie;
+            modelIDToAssign = 1149;
+            break;
+        case "wood celtic buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+
+            price = lowbie;
+            modelIDToAssign = 1150;
+            break;
+        
+        case "leather leaf buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+            
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1163;
+            break;
+        case "metal leaf buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1164;
+            break;
+        case "wood leaf buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1165;
+            break;
+        
+        case "hibernia dragonslayer buckler":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3888;
+            break;
+        
+        case "oceanus small shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2192;
+            break;
+        case "aerus small shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2210;
+            break;
+        case "magma small shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2218;
+            break;
+        case "stygia small shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2200;
+            break;
+
+        #endregion
+
+        #region medium shields
+
+        case "leather medium heater":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1049;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1052;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1055;
+                    break;
+            }
+            break;
+        case "metal medium heater":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1050;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1053;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1056;
+                    break;
+            }
+            break;
+        case "wood medium heater":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1051;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1054;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1057;
+                    break;
+            }
+            break;
+        
+        case "leather medium tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1085;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1088;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1091;
+                    break;
+            }
+            break;
+        case "metal medium tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1086;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1089;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1092;
+                    break;
+            }
+            break;
+        case "wood medium tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1087;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1090;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1093;
+                    break;
+            }
+            break;
+        
+        case "leather medium round":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1094;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1097;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1100;
+                    break;
+            }
+            break;
+        case "metal medium round":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1095;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1098;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1101;
+                    break;
+            }
+            break;
+        case "wood medium round":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1096;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1099;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1102;
+                    break;
+            }
+            break;
+        
+        case "dragonsworn medium":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 10)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost;
+            modelIDToAssign = 3829;
+            break;
+            
+        case "oceanus medium shield":
+        if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+        {
+            SendNotValidMessage(player);
+            break;
+        }
+
+        if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+        {
+            SendNotQualifiedMessage(player);
+            break;
+        }
+
+        price = toageneric;
+        modelIDToAssign = 2193;
+        break;
+        case "aerus medium shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2211;
+            break;
+        case "magma medium shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2219;
+            break;
+        case "stygia medium shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2201;
+            break;
+        
+        //albion specific        
+        case "leather medium horned":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1112;
+            break;
+        case "metal medium horned":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1113;
+            break;
+        case "wood medium horned":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1114;
+            break;
+        
+        case "leather medium kite":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1115;
+            break;
+        case "metal medium kite":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1116;
+            break;
+        case "wood medium kite":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1117;
+            break;
+        
+        case "albion dragonslayer medium":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3966;
+            break;
+        
+        //midgard specific
+        case "leather medium crescent":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1124;
+            break;
+        case "metal medium crescent":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1125;
+            break;
+        case "wood medium crescent":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1126;
+            break;
+        
+        case "leather medium grave":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1127;
+            break;
+        case "metal medium grave":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1128;
+            break;
+        case "wood medium grave":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1129;
+            break;
+        
+        case "midgard dragonslayer medium":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3930;
+            break;
+        
+        //hibernia specific
+        case "leather medium celtic":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1145;
+            break;
+        case "metal medium celtic":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1146;
+            break;
+        case "wood medium celtic":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1147;
+            break;
+        
+        case "leather medium leaf":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1160;
+            break;
+        case "metal medium leaf":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1161;
+            break;
+        case "wood medium leaf":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1162;
+            break;
+        
+        case "hibernia dragonslayer medium":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 2 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3889;
+            break;
+
+        #endregion
+
+        #region large shields
+        case "leather large tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1058;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1061;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1064;
+                    break;
+            }
+            break;
+        case "metal large tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1059;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1062;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1065;
+                    break;
+            }
+            break;
+        case "wood large tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1060;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1063;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1066;
+                    break;
+            }
+            break;
+        
+        case "leather large heater":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1067;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1070;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1073;
+                    break;
+            }
+            break;
+        case "metal large heater":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1068;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1071;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1074;
+                    break;
+            }
+            break;
+        case "wood large heater":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1069;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1072;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1075;
+                    break;
+            }
+            break;
+        
+        case "leather large round":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1076;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1079;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1082;
+                    break;
+            }
+            break;
+        case "metal large round":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1077;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1080;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1083;
+                    break;
+            }
+            break;
+        case "wood large round":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            price = freebie;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    modelIDToAssign = 1078;
+                    break;
+                case eRealm.Midgard:
+                    modelIDToAssign = 1081;
+                    break;
+                case eRealm.Hibernia:
+                    modelIDToAssign = 1084;
+                    break;
+            }
+            break;
+        
+        case "dragonsworn large":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 10)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost;
+            modelIDToAssign = 3830;
+            break;
+        
+        case "oceanus large shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2194;
+            break;
+        case "aerus large shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2212;
+            break;
+        case "magma large shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2220;
+            break;
+        case "stygia large shield":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 2202;
+            break;
+        
+        //albion specific        
+        case "leather large horned":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1106;
+            break;
+        case "metal large horned":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1107;
+            break;
+        case "wood large horned":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1108;
+            break;
+        
+        case "leather large kite":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1109;
+            break;
+        case "metal large kite":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1110;
+            break;
+        case "wood large kite":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 1 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = toageneric;
+            modelIDToAssign = 1111;
+            break;
+        
+        case "leather studded tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1121;
+            break;
+        case "metal studded tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1122;
+            break;
+        case "wood studded tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1123;
+            break;
+        
+        case "albion dragonslayer large":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Albion)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3967;
+            break;
+            
+        //midgard specific
+        case "leather large crescent":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1133;
+            break;
+        case "metal large crescent":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1134;
+            break;
+        case "wood large crescent":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3  || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1135;
+            break;
+        
+        case "leather large grave":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1136;
+            break;
+        case "metal large grave":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1137;
+            break;
+        case "wood large grave":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3  || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1138;
+            break;
+        
+        case "leather norse tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1142;
+            break;
+        case "metal norse tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1143;
+            break;
+        case "wood norse tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3  || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1144;
+            break;
+        
+        case "midgard dragonslayer large":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Midgard)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3931;
+            break;
+        
+        //hibernia specific
+        case "leather celtic tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1151;
+            break;
+        case "metal celtic tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1152;
+            break;
+        case "wood celtic tower":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3  || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1153;
+            break;
+        
+        case "leather large celtic":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1154;
+            break;
+        case "metal large celtic":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1155;
+            break;
+        case "wood large celtic":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3  || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 2)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1156;
+            break;
+        
+        case "leather large leaf":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1157;
+            break;
+        case "metal large leaf":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1158;
+            break;
+        case "wood large leaf":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3  || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Realm_Rank) < 4)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = lowbie;
+            modelIDToAssign = 1159;
+            break;
+        
+        case "hibernia dragonslayer large":
+            if (item.Object_Type != (int) eObjectType.Shield || item.Type_Damage != 3 || player.Realm != eRealm.Hibernia)
+            {
+                SendNotValidMessage(player);
+                break;
+            }
+
+            if (player.GetAchievementProgress(AchievementUtils.AchievementNames.Dragon_Kills) < 25)
+            {
+                SendNotQualifiedMessage(player);
+                break;
+            }
+
+            price = dragonCost * 2;
+            modelIDToAssign = 3890;
+            break;
+
+        #endregion    
+       
 
         case "aten's shield":
             if (item.Object_Type != (int) eObjectType.Shield)

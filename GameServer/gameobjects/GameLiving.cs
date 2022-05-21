@@ -433,7 +433,6 @@ namespace DOL.GS
         public virtual eActiveWeaponSlot ActiveWeaponSlot
 		{
 			get { return m_activeWeaponSlot; }
-			set { m_activeWeaponSlot = value; }
 		}
 
 		public object _xpGainersLock = new object();
@@ -898,8 +897,8 @@ namespace DOL.GS
 			double afPerAbsorptionPercent = 6;
 			double liveBaseAFcap = 150 * 1.25 * 1.25;
 			double afBuffBonus = Math.Min(liveBaseAFcap, BaseBuffBonusCategory[eProperty.ArmorFactor] + SpecBuffBonusCategory[eProperty.ArmorFactor]);
-			double afDebuffMalus = Math.Abs(DebuffCategory[eProperty.ArmorFactor] + SpecDebuffCategory[eProperty.ArmorFactor]);
-			double afBuffAbsorb = (afBuffBonus - afDebuffMalus * debuffBuffRatio) / afPerAbsorptionPercent / 100;
+			//double afDebuffMalus = Math.Abs(DebuffCategory[eProperty.ArmorFactor] + SpecDebuffCategory[eProperty.ArmorFactor]);
+			double afBuffAbsorb = (afBuffBonus * debuffBuffRatio) / afPerAbsorptionPercent / 100;
 
 			double baseAbsorb = 0;
 
@@ -2115,6 +2114,16 @@ namespace DOL.GS
 					    && attackType != AttackData.eAttackType.MeleeDualWield)
 						return false;
 				}
+				long elapsedTime = GameLoop.GameLoopTime - this.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START);
+				long halfwayPoint = this.attackComponent.AttackSpeed(this.attackComponent.AttackWeapon) / 2;
+				
+				if (rangeAttackComponent.RangedAttackState != eRangedAttackState.ReadyToFire &&
+				    rangeAttackComponent.RangedAttackState != eRangedAttackState.None &&
+				    elapsedTime > halfwayPoint)
+				{
+					return false;
+				}
+
 				double mod = GetConLevel(attacker);
 				double interruptChance = BaseInterruptChance;
 				interruptChance += mod * 10;
@@ -3715,11 +3724,25 @@ namespace DOL.GS
 					evadeChance = ServerProperties.Properties.EVADE_CAP; //50% evade cap RvR only; http://www.camelotherald.com/more/664.shtml
 				else if( evadeChance > 0.995 )
 					evadeChance = 0.995;
+				
+				if (ad.AttackType == AttackData.eAttackType.MeleeDualWield)
+				{
+					evadeChance = Math.Max(evadeChance * 0.5, 0);
+				}
+			
+				//do a second check to prevent dual wield from halving below the floor
+				if( evadeChance < 0.01 )
+					evadeChance = 0.01;
+				else if (IsObjectInFront( ad.Attacker, 180 ) 
+				         && ( evadeBuff != null || (player != null && player.HasAbility( Abilities.Evade )))
+				         && evadeChance < 0.05
+				         && ad.AttackType != AttackData.eAttackType.Ranged)
+				{
+					//if player has a hard evade source, 5% miniumum evade chance
+					evadeChance = 0.05;
+				}
 			}
-			if (ad.AttackType == AttackData.eAttackType.MeleeDualWield)
-			{
-				evadeChance = Math.Max(evadeChance * 0.5, 0);
-			}
+
 			//Excalibur : infi RR5
 			GamePlayer p = ad.Attacker as GamePlayer;
 			if (p != null)
@@ -3884,21 +3907,18 @@ namespace DOL.GS
 			if( blockChance > 0 && IsObjectInFront( ad.Attacker, 120 ) && !ad.Target.IsStunned && !ad.Target.IsSitting )
 			{
 				// Reduce block chance if the shield used is too small (valable only for player because npc inventory does not store the shield size but only the model of item)
-				int shieldSize = 0;
+				double shieldSize = 0.0;
 				if( lefthand != null )
-					shieldSize = lefthand.Type_Damage;
+					shieldSize = (double)lefthand.Type_Damage;
 				if( player != null && attackerCount > shieldSize )
 					blockChance *= (shieldSize / attackerCount);
-
 				blockChance *= 0.001;
 				// no chance bonus with ranged attacks?
 				//					if (ad.Attacker.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
 				//						blockChance += 0.25;
 				blockChance += attackerConLevel * 0.05;
 
-				
-			
-				if(lefthand != null && player.HasAbility( Abilities.Shield ))
+				if(lefthand != null && player.HasSpecialization(Abilities.Shield ))
                 {
 					double levelMod = (double)(lefthand.Level - 1) / 50 * 0.15;
 					blockChance += levelMod; //up to 15% extra block chance based on shield level (hidden mythic calc?)
@@ -3991,22 +4011,26 @@ namespace DOL.GS
 		}
 
 		public double GetAttackerDefensePenetration(GameLiving living, InventoryItem weapon)
-        {            
-			//double statBasedReduction = (living.GetWeaponStat(living.attackComponent?.AttackWeapon) - 50) / 25.0;
-			//double weaponskillBasedReduction = living.GetWeaponSkill(living.attackComponent?.AttackWeapon) / 100;
-			double skillBasedReduction = living.WeaponSpecLevel(weapon) * 0.15;
-
-			//double combinedReduction = statBasedReduction + skillBasedReduction;
+		{
+			double totalReduction = 0.0;
 
 			if (living is GamePlayer p)
             {
+	            double skillBasedReduction = living.WeaponSpecLevel(weapon) * 0.15;
 				//p.CharacterClass.WeaponSkillBase returns unscaled damage table value
 				//divide by 200 to change to scaling factor. example: warrior's 460 WeaponSkillBase / 200 = 2.3 Damage Table
 				//divide by final 2 to use the 2.0 damage table as our anchor. classes below 2.0 damage table will have slightly reduced penetration, above 2.0 will have increased penetration
 				skillBasedReduction *= p.CharacterClass.WeaponSkillBase / 200.0 / 1.8;
+				totalReduction = skillBasedReduction;
+            }
+			else
+			{
+				double NPCReduction = 7.5 * (living.Level / 50.0); //10% penetration at level 50
+				totalReduction = NPCReduction;
+				if(totalReduction < 0) totalReduction = 0;
 			}
 				
-			return skillBasedReduction;
+			return totalReduction;
 		}
 
 		/// <summary>
@@ -4036,7 +4060,7 @@ namespace DOL.GS
 			#region PVP DAMAGE
 
 			// Is this a GamePlayer behind the source?
-			if (source is GamePlayer || (source is GameNPC && (source as GameNPC).Brain is IControlledBrain && ((source as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null))
+			if (source is GamePlayer || (source is GameNPC && (source as GameNPC).Brain is IControlledBrain && ((source as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null) || source is GameSiegeWeapon)
 			{
 				// Only apply to necropet.
 				if (this is NecromancerPet)

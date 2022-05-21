@@ -145,11 +145,11 @@ namespace DOL.GS
                                 // stat bonuses, I fire that bow at 3.0 seconds. The resulting interrupt on the caster will last 3.0 seconds. If I rapid fire that same bow, I will fire at 1.5 seconds,
                                 // and the resulting interrupt will last 1.5 seconds."
 
-                                long rapidFireMaxDuration = owner.attackComponent.AttackSpeed(attackWeapon) / 2; // half of the total time
+                                long rapidFireMaxDuration = owner.attackComponent.AttackSpeed(attackWeapon);
                                 long elapsedTime = GameLoop.GameLoopTime - owner.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START); // elapsed time before ready to fire
                                 if (elapsedTime < rapidFireMaxDuration)
                                 {
-                                    effectiveness *= 0.5 + (double)elapsedTime * 0.5 / (double)rapidFireMaxDuration;
+                                    effectiveness *= 0.25 + (double)elapsedTime * 0.5 / (double)rapidFireMaxDuration;
                                     interruptDuration = (int)(interruptDuration * effectiveness);
                                 }
                             }
@@ -335,7 +335,7 @@ namespace DOL.GS
 
                         if (owner is GamePlayer)
                         {
-                            owner.TempProperties.setProperty(RangeAttackComponent.RANGE_ATTACK_HOLD_START, 0L);
+                            owner.TempProperties.setProperty(RangeAttackComponent.RANGE_ATTACK_HOLD_START, GameLoop.GameLoopTime);
                         }
 
                         int speed = owner.attackComponent.AttackSpeed(attackWeapon);
