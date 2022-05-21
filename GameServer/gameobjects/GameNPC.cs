@@ -2384,6 +2384,7 @@ namespace DOL.GS
 			if (obj == null) return;
 			base.LoadFromDatabase(obj);
 			if (!(obj is Mob dbMob)) return;
+			
 			LoadedFromScript = false;
 			NPCTemplate = NpcTemplateMgr.GetTemplate(dbMob.NPCTemplateID);
 			
@@ -2396,16 +2397,9 @@ namespace DOL.GS
 				
 				if (string.IsNullOrEmpty(NPCTemplate.GuildName) && !string.IsNullOrEmpty(dbMob.Guild))
 					GuildName = dbMob.Guild;
-				//ExamineArticle = (NPCTemplate.ExamineArticle == "" && !char.IsUpper(NPCTemplate.Name[0])) ? "the" : dbMob.ExamineArticle;
-				//MessageArticle = (NPCTemplate.MessageArticle == "" && !char.IsUpper(NPCTemplate.Name[0])) ? "The" : dbMob.MessageArticle;
-				//Model = (Model == 0 && dbMob.Model != 0) ? dbMob.Model : Model;
-				//Gender = (Gender == 0 && dbMob.Gender != 0) ? (eGender)dbMob.Gender : 0;
-				//Size = (Size == 0 && dbMob.Size != 0) ? dbMob.Size : Size;
+				
 				ItemsListTemplateID = (ItemsListTemplateID == NPCTemplate.ItemsListTemplateID && string.IsNullOrEmpty(NPCTemplate.ItemsListTemplateID) ? dbMob.ItemsListTemplateID : NPCTemplate.ItemsListTemplateID);
 				MeleeDamageType = (MeleeDamageType == eDamageType.Natural) ? eDamageType.Slash : NPCTemplate.MeleeDamageType;
-
-				//AggroLevel = (NPCTemplate.AggroLevel == 0 && dbMob.AggroLevel >= 100) ? dbMob.AggroLevel : NPCTemplate.AggroLevel;
-				//AggroRange = (NPCTemplate.AggroRange == 0 && dbMob.AggroRange >= 100) ? dbMob.AggroRange : NPCTemplate.AggroRange;
 				Race = (NPCTemplate.Race < 1 && dbMob.Race > 0) ? (short)dbMob.Race : (short)NPCTemplate.Race;
 				BodyType = (NPCTemplate.BodyType < 1 && dbMob.BodyType > 0) ? (ushort)dbMob.BodyType : NPCTemplate.BodyType;
 				MaxDistance = (NPCTemplate.MaxDistance < 1 && dbMob.MaxDistance > 0) ? dbMob.MaxDistance : NPCTemplate.MaxDistance;
@@ -2465,14 +2459,12 @@ namespace DOL.GS
 				Flags = (eFlags)dbMob.Flags;
 				MeleeDamageType = (eDamageType)dbMob.MeleeDamageType;
 				if (MeleeDamageType == 0)
-				{
 					MeleeDamageType = eDamageType.Slash;
-				}
 				RespawnInterval = dbMob.RespawnInterval * 1000;
 				if (RespawnInterval <= 0)
 					RespawnInterval = 80 * 1000;
 
-				if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && !NPCTemplate.ReplaceMobValues)
+				if (dbMob.NPCTemplateID != -1 && NPCTemplate != null)
 				{
 					LoadTemplate(NPCTemplate);
 					ParryChance = NPCTemplate.ParryChance;
@@ -2483,6 +2475,7 @@ namespace DOL.GS
 					Styles = NPCTemplate.Styles;
 					TetherRange = NPCTemplate.TetherRange;
 				}
+				
 				/*
 				These are controlled by AutoSetStats()
 				 
@@ -2506,7 +2499,6 @@ namespace DOL.GS
 				m_visibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
 				PackageID = dbMob.PackageID;
 				Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
-				
 				X = dbMob.X;
 				Y = dbMob.Y;
 				Z = dbMob.Z;
@@ -2518,12 +2510,10 @@ namespace DOL.GS
 				RoamingRange = dbMob.RoamingRange;
 				IsCloakHoodUp = dbMob.IsCloakHoodUp;
 				OwnerID = dbMob.OwnerID;
-
 				PathID = dbMob.PathID;
 
 				if (Inventory != null) 
 					SwitchWeapon(ActiveWeaponSlot);
-				
 			}
 			
 			#region Mob Brains
@@ -2551,28 +2541,33 @@ namespace DOL.GS
 			}
 
 			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
+			
 			if (aggroBrain != null)
 			{
-				aggroBrain.AggroLevel = AggroLevel;
-				aggroBrain.AggroRange = AggroRange;
+				if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && NPCTemplate.ReplaceMobValues)
+				{
+					aggroBrain.AggroLevel = (NPCTemplate.AggroLevel == 0 && dbMob.AggroLevel != 0) ? dbMob.AggroLevel : NPCTemplate.AggroLevel;
+					aggroBrain.AggroRange = (NPCTemplate.AggroRange == 0 && dbMob.AggroRange != 0) ? dbMob.AggroRange : NPCTemplate.AggroRange;
+				}
+				else
+				{
+					aggroBrain.AggroLevel = dbMob.AggroLevel;
+					aggroBrain.AggroRange = dbMob.AggroRange;
+				}
+				
 				if (aggroBrain.AggroRange == Constants.USE_AUTOVALUES)
 				{
 					if (Realm == eRealm.None)
 					{
 						aggroBrain.AggroRange = 400;
+						
 						if (Name != Name.ToLower())
-						{
 							aggroBrain.AggroRange = 500;
-						}
 						if (CurrentRegion.IsDungeon)
-						{
 							aggroBrain.AggroRange = 300;
-						}
 					}
 					else
-					{
 						aggroBrain.AggroRange = 500;
-					}
 				}
 				if (aggroBrain.AggroLevel == Constants.USE_AUTOVALUES)
 				{
@@ -2915,11 +2910,16 @@ namespace DOL.GS
 			// Set default Gender based on Model
 			if (Model != 0 && Model != 1)
 			{
-				eGender chosenGender = eGender.Neutral;
-				if (template.Gender == 0)
+				// Set default value
+				eGender chosenGender = (eGender)template.Gender;
+				
+				// Since most templates do not have a Gender set yet, we're going to change what we can as part of the initial server build
+				if (chosenGender == eGender.Neutral)
 				{
+					// Check the mob's Model and then assign gender based on this
 					switch (Model)
 					{
+						// Male models
 						case 8 or 9 or 10 or 14 or 16 or 17 or 18 or 20 or 27 or 28 or 32 or 33 or 34 or 39 or 40
 							or 41 or 42 or 48 or 49 or 50 or 51 or 61 or 62 or 63 or 64 or 73 or 74 or 78 or 79 or 80
 							or 84 or 85 or 86 or 90 or 91 or 92 or 137 or 138 or 139 or 140 or 141 or 142 or 143 or 144
@@ -2949,6 +2949,7 @@ namespace DOL.GS
 							or 2215 or 2310 or 2312 or 2314 or 2316 or 2347 or 2348 or 2349 or 2350 or 2364 or 2370:
 							chosenGender = eGender.Male;
 							break;
+						// Female models
 						case 5 or 6 or 7 or 19 or 35 or 36 or 37 or 38 or 43 or 44 or 45 or 46 or 52 or 53 or 54 or 55
 							or 65 or 66 or 67 or 68 or 75 or 76 or 77 or 81 or 82 or 83 or 87 or 88 or 89 or 145 or 146
 							or 147 or 148 or 149 or 150 or 151 or 152 or 161 or 162 or 163 or 164 or 165 or 166 or 167
@@ -2977,14 +2978,14 @@ namespace DOL.GS
 							or 2170 or 2212 or 2216 or 2311 or 2313 or 2315 or 2317 or 2365:
 							chosenGender = eGender.Female;
 							break;
+						// For all other models, just leave them alone
 						default:
-							chosenGender = eGender.Neutral;
+							chosenGender = (eGender)template.Gender;
 							break;
 					}
 				}
 				Gender = chosenGender;
 			}
-			
 			#endregion Gender
 			
 			#endregion Models, Sizes, Gender
