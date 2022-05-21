@@ -80,6 +80,7 @@ namespace DOL.GS
 		protected bool m_replaceMobValues;
 		protected byte m_visibleActiveWeaponSlot;
 		protected int m_factionid;
+		protected string m_packageID;
 
 		/// <summary>
 		/// Constructs a new NpcTemplate
@@ -482,6 +483,14 @@ namespace DOL.GS
 		{
 			get { return m_inventory; }
 			set { m_inventory = value; }
+		}
+		/// <summary>
+		/// Gets the PackageID value
+		/// </summary>
+		public string PackageID
+		{
+			get { return m_packageID; }
+			set { m_packageID = value; }
 		}
 		/// <summary>
 		/// Gets the template npc melee damage type
