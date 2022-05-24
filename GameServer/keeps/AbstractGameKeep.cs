@@ -614,6 +614,14 @@ namespace DOL.GS.Keeps
 			 	return false;
 			}
 
+			if (this.DBKeep.Name.ToLower().Contains("lamfhota") || this.DBKeep.Name.ToLower().Contains("dagda") ||
+			    this.DBKeep.Name.ToLower().Contains("mjollner") || this.DBKeep.Name.ToLower().Contains("excalibur")
+			    || this.DBKeep.Name.ToLower().Contains("grallarhorn") || this.DBKeep.Name.ToLower().Contains("myrddin"))
+			{
+				player.Out.SendMessage("This keep is not able to be claimed.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+			
 			if (player.Guild == null)
 			{
 				player.Out.SendMessage("You must be in a guild to claim a keep.",eChatType.CT_System,eChatLoc.CL_SystemWindow);
