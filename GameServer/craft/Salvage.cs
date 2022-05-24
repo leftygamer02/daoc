@@ -23,6 +23,7 @@ using System.Reflection;
 
 using DOL.Database;
 using DOL.GS.PacketHandler;
+using DOL.GS.ServerProperties;
 using DOL.Language;
 
 using log4net;
@@ -63,6 +64,28 @@ namespace DOL.GS
 		/// <returns></returns>
 		public static int BeginWork(GamePlayer player, InventoryItem item)
 		{
+			var firstSalvage = player.TempProperties.getProperty<int>("FirstSalvage");
+			var lastSalvage = player.TempProperties.getProperty<int>("LastSalvage");
+			var chainSalvage = false;
+			
+			if (firstSalvage != 0 && firstSalvage == lastSalvage)
+			{
+				player.TempProperties.removeProperty("FirstSalvage");
+				player.TempProperties.removeProperty("LastSalvage");
+				return 0;
+			}
+
+			if (firstSalvage > 0)
+			{
+				// item = player.Inventory.GetItem((eInventorySlot)firstSalvage);
+				// firstSalvage += 1;
+				// player.TempProperties.setProperty("FirstSalvage", firstSalvage);
+				// player.CraftTimer.Stop();
+				// player.Out.SendCloseTimerWindow();
+				// player.SalvageItem(item);
+				chainSalvage = true;
+			}
+			
             SalvageYield salvageYield = null;
 
 			if (!IsAllowedToBeginWork(player, item))
@@ -154,8 +177,9 @@ namespace DOL.GS
 			player.CraftTimer.Properties.setProperty(SALVAGED_ITEM, item);
 			player.CraftTimer.Properties.setProperty(SALVAGE_YIELD, yield);
 
-			player.CraftTimer.Start(yield.Count * 1000);
-			return 1;
+			player.CraftTimer.Start((int)(yield.Count * 1000 / Properties.CRAFTING_SPEED));
+			if (chainSalvage) return 0;
+				return 1;
 		}
 
 		/// <summary>
@@ -232,6 +256,8 @@ namespace DOL.GS
 		protected static int Proceed(ECSGameTimer timer)
 		{
 			GamePlayer player = timer.Properties.getProperty<GamePlayer>(AbstractCraftingSkill.PLAYER_CRAFTER, null);
+			var firstSalvage = player.TempProperties.getProperty<int>("FirstSalvage");
+			var lastSalvage = player.TempProperties.getProperty<int>("LastSalvage");
 			InventoryItem itemToSalvage = timer.Properties.getProperty<InventoryItem>(SALVAGED_ITEM, null);
 			SalvageYield yield = timer.Properties.getProperty<SalvageYield>(SALVAGE_YIELD, null);
 			int materialCount = yield.Count;
@@ -325,6 +351,17 @@ namespace DOL.GS
 
 			player.Inventory.CommitChanges();
 			player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.Proceed.GetBackMaterial", materialCount, rawMaterial.Name, itemToSalvage.Name), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+			
+			if (firstSalvage > 0)
+			{
+				firstSalvage += 1;
+				var item = player.Inventory.GetItem((eInventorySlot)firstSalvage);
+				player.TempProperties.setProperty("FirstSalvage", firstSalvage);
+				player.CraftTimer?.Stop();
+				player.Out.SendCloseTimerWindow();
+				player.SalvageItem(item);
+			}
+			
 			
 			return 0;
 		}
