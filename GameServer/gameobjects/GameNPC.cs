@@ -254,7 +254,7 @@ namespace DOL.GS
 				mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
 			if (mob != null && mob.NPCTemplateID != -1)
 				NPCTemplate = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
-			
+
 			var mobTypeName = npc?.GetType().FullName;
 			var isBoss = (mob != null && npc.GetType().IsSubclassOf(typeof(GameEpicBoss)) ||
 			                                      npc.GetType() == typeof(GameEpicBoss) || 
@@ -2428,7 +2428,6 @@ namespace DOL.GS
 			m_visibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
 			PackageID = dbMob.PackageID;
 			Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
-			
 			X = dbMob.X;
 			Y = dbMob.Y;
 			Z = dbMob.Z;
@@ -2440,8 +2439,10 @@ namespace DOL.GS
 			RoamingRange = dbMob.RoamingRange;
 			IsCloakHoodUp = dbMob.IsCloakHoodUp;
 			OwnerID = dbMob.OwnerID;
-
 			PathID = dbMob.PathID;
+
+			if (Inventory != null) 
+				SwitchWeapon(ActiveWeaponSlot);
 
 			#region Mob Brains
 			if (dbMob.Brain != "")
@@ -2468,19 +2469,35 @@ namespace DOL.GS
 			}
 
 			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
+
 			if (aggroBrain != null)
 			{
-				aggroBrain.AggroLevel = dbMob.AggroLevel;
-				aggroBrain.AggroRange = dbMob.AggroRange;
+				if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && NPCTemplate.ReplaceMobValues)
+				{
+					aggroBrain.AggroLevel = (NPCTemplate.AggroLevel == 0 && dbMob.AggroLevel != 0)
+						? dbMob.AggroLevel
+						: NPCTemplate.AggroLevel;
+					aggroBrain.AggroRange = (NPCTemplate.AggroRange == 0 && dbMob.AggroRange != 0)
+						? dbMob.AggroRange
+						: NPCTemplate.AggroRange;
+				}
+				else
+				{
+					aggroBrain.AggroLevel = dbMob.AggroLevel;
+					aggroBrain.AggroRange = dbMob.AggroRange;
+				}
+
 				if (aggroBrain.AggroRange == Constants.USE_AUTOVALUES)
 				{
 					if (Realm == eRealm.None)
 					{
 						aggroBrain.AggroRange = 400;
+
 						if (Name != Name.ToLower())
 						{
 							aggroBrain.AggroRange = 500;
 						}
+
 						if (CurrentRegion.IsDungeon)
 						{
 							aggroBrain.AggroRange = 300;
@@ -2491,20 +2508,18 @@ namespace DOL.GS
 						aggroBrain.AggroRange = 500;
 					}
 				}
+
 				if (aggroBrain.AggroLevel == Constants.USE_AUTOVALUES)
 				{
 					aggroBrain.AggroLevel = 0;
+
 					if (Level > 5)
-					{
 						aggroBrain.AggroLevel = 30;
-					}
 					if (Name != Name.ToLower())
 					{
 						aggroBrain.AggroLevel = 30;
-					}
-					if (Realm != eRealm.None)
-					{
-						aggroBrain.AggroLevel = 60;
+						if (Realm != eRealm.None)
+							aggroBrain.AggroLevel = 60;
 					}
 				}
 			}
@@ -2684,35 +2699,10 @@ namespace DOL.GS
 			{
 				// Set the class type as stat autoscaling has conditions pertaining to this
 				ClassType = template.ClassType;
-				
-				#region Stats
-				// Stats must be assigned/defined first for the purposes of AutoSetStats().
-				
-				// Overrides for stats so that not all mobs are broken if NPC template is outdated/incomplete.
-				// Override conditions:
-				//	1) If the NPC template stats are set to <= 1
-				//	2) The mob's stats exceed the NPC template values
-				// If either condition is met, then the NPC template stat values will be ignored.
-				/*if (template.Strength > 1 && template.Strength > Strength)
-					Strength = template.Strength;
-				if (template.Constitution > 1 && template.Constitution > Constitution)
-					Constitution = template.Constitution;
-				if (template.Dexterity > 1 && template.Dexterity > Dexterity)
-					Dexterity = template.Dexterity;
-				if (template.Quickness > 1 && template.Quickness > Quickness)
-					Quickness = template.Quickness;
-				if (template.Intelligence > 1 && template.Intelligence > Intelligence)
-					Intelligence = template.Intelligence;
-				if (template.Empathy > 1 && template.Empathy > Empathy)
-					Empathy = template.Empathy;
-				if (template.Charisma > 1 && template.Charisma > Charisma)
-					Charisma = template.Charisma;
-				if (template.Piety > 1 && template.Piety > Piety)
-					Piety = template.Piety;*/
-				#endregion Stats
-				
+				//ClassType = template.ClassType;
+
 				#region Level
-				// Now that the stat sources are determined, apply the level so that autoscaling correctly occurs
+				// Apply the level before Str/Con/Dex so that autoscaling correctly occurs with AutoSetStats()
 				// Select Level randomly based on ranges in field (e.g., '40-45;47;49')
 				if (!string.IsNullOrEmpty(template.Level))
 				{
@@ -2739,6 +2729,26 @@ namespace DOL.GS
 				}
 				#endregion Level
 				
+				#region Stats
+				// Stats are set/assigned using AutoSetStats()
+				/*if (template.Strength > 1 && template.Strength > Strength)
+					Strength = template.Strength;
+				if (template.Constitution > 1 && template.Constitution > Constitution)
+					Constitution = template.Constitution;
+				if (template.Dexterity > 1 && template.Dexterity > Dexterity)
+					Dexterity = template.Dexterity;
+				if (template.Quickness > 1 && template.Quickness > Quickness)
+					Quickness = template.Quickness;
+				if (template.Intelligence > 1 && template.Intelligence > Intelligence)
+					Intelligence = template.Intelligence;
+				if (template.Empathy > 1 && template.Empathy > Empathy)
+					Empathy = template.Empathy;
+				if (template.Charisma > 1 && template.Charisma > Charisma)
+					Charisma = template.Charisma;
+				if (template.Piety > 1 && template.Piety > Piety)
+					Piety = template.Piety;*/
+				#endregion Stats
+				
 				// Add any magical bonuses to stats
 				BuffBonusCategory4[(int)eStat.STR] += template.Strength;
 				BuffBonusCategory4[(int)eStat.DEX] += template.Dexterity;
@@ -2753,7 +2763,7 @@ namespace DOL.GS
 
 			// Add all spells and scale based on the mob's level
 			if (template.Spells != null) Spells = template.Spells;
-			if (template.Styles != null) Styles = template.Styles;
+			if (template.Styles != null)  Styles = template.Styles;
 			if (template.Abilities != null)
 			{
 				lock (m_lockAbilities)
@@ -2764,7 +2774,7 @@ namespace DOL.GS
 			}
 			
 			// Replace mob values with everything below this point,
-			// as these parameters already exist on the mob table.
+			// as these parameters already exist on the Mob table.
 			if (!template.ReplaceMobValues)
 				return;
 			
@@ -2774,16 +2784,16 @@ namespace DOL.GS
 			Name = template.Name;
 			Suffix = template.Suffix;
 			GuildName = template.GuildName;
-			ExamineArticle = template.ExamineArticle;
-			MessageArticle = template.MessageArticle;
+			ExamineArticle = (string.IsNullOrEmpty(template.ExamineArticle) && !char.IsUpper(template.Name[0])) ? "the" : template.ExamineArticle;
+			MessageArticle = (string.IsNullOrEmpty(template.MessageArticle) && !char.IsUpper(template.Name[0])) ? "The" : template.MessageArticle;
 			Faction = FactionMgr.GetFactionByID(template.FactionId);
 			MaxDistance = template.MaxDistance;
 			Race = (short)template.Race;
 			BodyType = template.BodyType;
-			MaxSpeedBase = template.MaxSpeed;
+			MaxSpeedBase = template.MaxSpeed < (short)0 ? (short)200 : template.MaxSpeed;
 			Flags = (eFlags)template.Flags;
-			MeleeDamageType = template.MeleeDamageType;
 			PackageID = template.PackageID;
+			MeleeDamageType = template.MeleeDamageType;
 			if (MeleeDamageType == 0)
 			{
 				MeleeDamageType = eDamageType.Slash;
@@ -2804,19 +2814,19 @@ namespace DOL.GS
 					
 				if (split.Count > 0)
 				{
-					ushort.TryParse(split[Util.Random(0, split.Count - 1)], out var chosenModel);
-					Model = chosenModel;
+					if (ushort.TryParse(split[Util.Random(0, split.Count - 1)], out var chosenModel))
+						Model = chosenModel;
 				}
-				else if (split.Count < 1)
+				else
 				{
-					ushort.TryParse(split[Util.Random(0, split.Count - 1)], out var chosenModel);
-					Model = chosenModel;
+					if (ushort.TryParse(split[Util.Random(0, split.Count - 1)], out var chosenModel))
+						Model = chosenModel;
 				}
 			}
 			else if (!string.IsNullOrEmpty(template.Model))
 			{
-				ushort.TryParse(template.Model, out var chosenModel);
-				Model = chosenModel;
+				if (ushort.TryParse(template.Model, out var chosenModel))
+					Model = chosenModel;
 			}
 			
 			// Select Size randomly
@@ -2826,19 +2836,19 @@ namespace DOL.GS
 					
 				if (split.Count > 0)
 				{
-					byte.TryParse(split[Util.Random(0, split.Count - 1)], out var chosenSize);
-					Size = chosenSize;
+					if (byte.TryParse(split[Util.Random(0, split.Count - 1)], out var chosenSize))
+						Size = chosenSize;
 				}
-				else if (split.Count < 1)
+				else
 				{
-					byte.TryParse(template.Size, out var chosenSize);
-					Size = chosenSize;
+					if (byte.TryParse(template.Size, out var chosenSize))
+						Size = chosenSize;
 				}
 			}
 			else if (!string.IsNullOrEmpty(template.Size))
 			{
-				byte.TryParse(template.Size, out var chosenSize);
-				Size = chosenSize;
+				if (byte.TryParse(template.Size, out var chosenSize))
+					Size = chosenSize;
 			}
 			
 			#region Gender
@@ -2846,11 +2856,16 @@ namespace DOL.GS
 			// Set default Gender based on Model
 			if (Model != 0 && Model != 1)
 			{
-				eGender chosenGender = eGender.Neutral;
-				if (template.Gender == 0)
+				// Set default value
+				eGender chosenGender = (eGender)template.Gender;
+				
+				// Since most templates do not have a Gender set yet, we're going to change what we can as part of the initial server build
+				if (chosenGender == eGender.Neutral)
 				{
+					// Check the mob's Model and then assign gender based on this
 					switch (Model)
 					{
+						// Male models
 						case 8 or 9 or 10 or 14 or 16 or 17 or 18 or 20 or 27 or 28 or 32 or 33 or 34 or 39 or 40
 							or 41 or 42 or 48 or 49 or 50 or 51 or 61 or 62 or 63 or 64 or 73 or 74 or 78 or 79 or 80
 							or 84 or 85 or 86 or 90 or 91 or 92 or 137 or 138 or 139 or 140 or 141 or 142 or 143 or 144
@@ -2880,6 +2895,7 @@ namespace DOL.GS
 							or 2215 or 2310 or 2312 or 2314 or 2316 or 2347 or 2348 or 2349 or 2350 or 2364 or 2370:
 							chosenGender = eGender.Male;
 							break;
+						// Female models
 						case 5 or 6 or 7 or 19 or 35 or 36 or 37 or 38 or 43 or 44 or 45 or 46 or 52 or 53 or 54 or 55
 							or 65 or 66 or 67 or 68 or 75 or 76 or 77 or 81 or 82 or 83 or 87 or 88 or 89 or 145 or 146
 							or 147 or 148 or 149 or 150 or 151 or 152 or 161 or 162 or 163 or 164 or 165 or 166 or 167
@@ -2908,26 +2924,24 @@ namespace DOL.GS
 							or 2170 or 2212 or 2216 or 2311 or 2313 or 2315 or 2317 or 2365:
 							chosenGender = eGender.Female;
 							break;
+						// For all other models, just leave them alone
 						default:
-							chosenGender = eGender.Neutral;
+							chosenGender = (eGender)template.Gender;
 							break;
 					}
 				}
 				Gender = chosenGender;
 			}
-			
 			#endregion Gender
 			
 			#endregion Models, Sizes, Gender
 
 			#region Inventory
-			LoadEquipmentTemplateFromDatabase(template);
-			/*if (!string.IsNullOrEmpty(template.EquipmentTemplateID))
-			{
-				LoadEquipmentTemplateFromDatabase(template);
-				//if (string.IsNullOrEmpty(template.Inventory))
-				//	LoadEquipmentTemplateFromDatabase(EquipmentTemplateID);
-			}*/
+
+			EquipmentTemplateID = template.EquipmentTemplateID;
+			ItemsListTemplateID = template.ItemsListTemplateID;
+			VisibleActiveWeaponSlots = template.VisibleActiveWeaponSlot;
+
 			#endregion Inventory
 			#endregion All Other ReplaceMobValues
 		}
@@ -5703,13 +5717,13 @@ namespace DOL.GS
 			if (m_styles == null)
 				return;
 
-			foreach (Style s in m_styles)
+			foreach (Style style in m_styles)
 			{
-				if (s == null)
+				if (style == null)
 				{
 					if (log.IsWarnEnabled)
 					{
-						String sError = $"GameNPC.SortStyles(): NULL style for NPC named {Name}";
+						var sError = $"GameNPC.SortStyles(): NULL style for NPC named {Name}";
 						if (m_InternalID != null)
 							sError += $", InternalID {this.m_InternalID}";
 						if (m_npcTemplate != null)
@@ -5719,48 +5733,48 @@ namespace DOL.GS
 					continue; // Keep sorting, as a later style may not be null
 				}// if (s == null)
 
-				switch (s.OpeningRequirementType)
+				switch (style.OpeningRequirementType)
 				{
 					case Style.eOpening.Defensive:
 						if (StylesDefensive == null)
 							StylesDefensive = new List<Style>(1);
-						StylesDefensive.Add(s);
+						StylesDefensive.Add(style);
 						break;
 					case Style.eOpening.Positional:
-						switch ((Style.eOpeningPosition)s.OpeningRequirementValue)
+						switch ((Style.eOpeningPosition)style.OpeningRequirementValue)
 						{
 							case Style.eOpeningPosition.Back:
 								if (StylesBack == null)
 									StylesBack = new List<Style>(1);
-								StylesBack.Add(s);
+								StylesBack.Add(style);
 								break;
 							case Style.eOpeningPosition.Side:
 								if (StylesSide == null)
 									StylesSide = new List<Style>(1);
-								StylesSide.Add(s);
+								StylesSide.Add(style);
 								break;
 							case Style.eOpeningPosition.Front:
 								if (StylesFront == null)
 									StylesFront = new List<Style>(1);
-								StylesFront.Add(s);
+								StylesFront.Add(style);
 								break;
 							default:
-								log.Warn($"GameNPC.SortStyles(): Invalid OpeningRequirementValue for positional style {s.Name }, ID {s.ID}, ClassId {s.ClassID}");
+								log.Warn($"GameNPC.SortStyles(): Invalid OpeningRequirementValue for positional style, {style.Name}: ID {style.ID}, ClassID {style.ClassID}");
 								break;
 						}
 						break;
 					default:
-						if (s.OpeningRequirementValue > 0)
+						if (style.OpeningRequirementValue > 0)
 						{
 							if (StylesChain == null)
 								StylesChain = new List<Style>(1);
-							StylesChain.Add(s);
+							StylesChain.Add(style);
 						}
 						else
 						{
 							if (StylesAnytime == null)
 								StylesAnytime = new List<Style>(1);
-							StylesAnytime.Add(s);
+							StylesAnytime.Add(style);
 						}
 						break;
 				}// switch (s.OpeningRequirementType)

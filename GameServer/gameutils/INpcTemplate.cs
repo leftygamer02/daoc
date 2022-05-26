@@ -68,6 +68,11 @@ namespace DOL.GS
 		/// List of items sold by this npc
 		/// </summary>
 		string ItemsListTemplateID { get; }
+		
+		/// <summary>
+		/// Gets the template ID for an NPC's equipment list (inventory)
+		/// </summary>
+		string EquipmentTemplateID { get; }
 
 		/// <summary>
 		/// Gets the template combat stats
@@ -79,9 +84,15 @@ namespace DOL.GS
 		byte LeftHandSwingChance { get; }
 
 		/// <summary>
-		/// Gets the template npc abilities
+		/// Gets the NPC's template spells
 		/// </summary>
 		IList Spells { get; }
+		
+		/// <summary>
+		/// Gets the NPC template's combat styles
+		/// </summary>
+		/// <description>This uses a semicolon delimiter, but does not support ranges. Instead, it treats each value as the desired StyleID. However, the StyleID is only accepted when there is one database entry for a given style. If multiple classes have access to a style, then a StyleID must be specified, followed by the pipe symbol ('|'), and then the ClassID (according to http://www.dolserver.net/articles/?article=47).</description>
+		/// <example>156|22;159;157|22;158|22</example>
 		IList Styles { get; }
 		IList SpellLines { get; }
 		IList Abilities { get; }
@@ -126,6 +137,10 @@ namespace DOL.GS
 		string ClassType { get; }
 		
 		int FactionId { get; }
+		
+		/// <summary>
+		/// Gets the PackageID value
+		/// </summary>
 		string PackageID { get; }
 	}
 }

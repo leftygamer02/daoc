@@ -1870,7 +1870,7 @@ namespace DOL.GS
             StartEnduranceRegeneration();
 
             var maxChargeItems = ServerProperties.Properties.MAX_CHARGE_ITEMS;
-            
+            /*
             foreach (var item in this.Inventory.EquippedItems)
             {
                 //max 2 charges
@@ -1894,7 +1894,7 @@ namespace DOL.GS
                         Out.SendMessage("You may only use two buff charge effects. This item fails to affect you.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     }
                 }
-            }
+            }*/
             
             UpdatePlayerStatus();
 
@@ -6266,10 +6266,10 @@ namespace DOL.GS
             {
                 if (attackComponent.AttackWeapon.Item_Type == (int)eInventorySlot.DistanceWeapon 
                     && rangeAttackComponent.RangedAttackState != eRangedAttackState.None 
-                    && GameLoop.GameLoopTime - this.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START) > 500
+                    && GameLoop.GameLoopTime - this.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START) > 100
                     && attackComponent.attackAction != null)
                 {
-                    attackComponent.attackAction.StartTime = 1;
+                    attackComponent.attackAction.StartTime = 1000;
                 }
                 attackComponent.LivingStopAttack();
             }
@@ -9733,12 +9733,24 @@ namespace DOL.GS
 
                     case Slot.RANGED:
                         bool newAttack = false;
+                        ///Volley TempProperties to not allow shot during volley and cancel aim animation
+                        ECSGameEffect volley = EffectListService.GetEffectOnTarget(this, eEffect.Volley);//check if player got volley
+                       /* var IsReadyToFire = TempProperties.getProperty<bool>("volley_IsReadyToFire");
+                        if(!IsReadyToFire && volley != null)
+                        {
+                            return;//dont shot until it's ready to fire
+                        }
+                        if(IsReadyToFire && volley != null && type == 0)//type == 0 means player click icon
+                            TempProperties.removeProperty("volley_IsReadyToFire");
+                        if(volley == null)//dont have volley so remove property
+                          TempProperties.removeProperty("volley_IsReadyToFire");*/
+                        ///////////////////////////////////////////////////////////////////////////////////
                         if (ActiveWeaponSlot != eActiveWeaponSlot.Distance)
                         {
                             SwitchWeapon(eActiveWeaponSlot.Distance);
                             if(useItem.Object_Type == (int)eObjectType.Instrument) return;
                         }
-                        else if (!attackComponent.AttackState && useItem.Object_Type != (int)eObjectType.Instrument)
+                        else if (!attackComponent.AttackState && useItem.Object_Type != (int)eObjectType.Instrument && volley == null)//volley check
                         {
                             StopCurrentSpellcast();
                             attackComponent.StartAttack(TargetObject);
@@ -9747,12 +9759,13 @@ namespace DOL.GS
 
                         //Clean up range attack state/type if we are not in combat mode
                         //anymore
-                        if (!attackComponent.AttackState)
+                        if (!attackComponent.AttackState && volley == null)//volley check
                         {
                             rangeAttackComponent.RangedAttackState = eRangedAttackState.None;
                             rangeAttackComponent.RangedAttackType = eRangedAttackType.Normal;
                         }
-                        if (!newAttack && rangeAttackComponent.RangedAttackState != eRangedAttackState.None)
+                        
+                        if (!newAttack && rangeAttackComponent.RangedAttackState != eRangedAttackState.None && volley == null)//volley check
                         {
                             if (rangeAttackComponent.RangedAttackState == eRangedAttackState.ReadyToFire)
                             {
@@ -9766,7 +9779,8 @@ namespace DOL.GS
                                 if (!TargetInView)
                                 {
                                     // Don't store last target if it's not visible
-                                    Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.CantSeeTarget"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                                    if(volley == null)//volley check
+                                        Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UseSlot.CantSeeTarget"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                                 }
                                 else
                                 {
@@ -10203,7 +10217,8 @@ namespace DOL.GS
                 
                 if (LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
                 {
-                    spell.Duration = 30 * 60 * 1000;
+                    spell.Duration = 0;
+                    spell.Concentration = 1;
                 }
 
                 ISpellHandler spellHandler = ScriptMgr.CreateSpellHandler(this, spell, chargeEffectLine);
@@ -12390,7 +12405,7 @@ namespace DOL.GS
                 if (item.SpellID > 0 || item.SpellID1 > 0)
                     TempProperties.setProperty("ITEMREUSEDELAY" + item.Id_nb, CurrentRegion.Time);
             
-            
+            /*
             //max 2 charges
             if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID) && LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
             {
@@ -12411,7 +12426,7 @@ namespace DOL.GS
                 {
                     Out.SendMessage("You may only use two buff charge effects. This item fails to affect you.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 }
-            }
+            }*/
 
             if (ObjectState == eObjectState.Active)
             {
@@ -14273,7 +14288,7 @@ namespace DOL.GS
         /// <summary>
         /// Uncovers the player if a mob is too close
         /// </summary>
-        protected class UncoverStealthAction : RegionAction
+        protected class UncoverStealthAction : RegionECSAction
         {
             /// <summary>
             /// Constructs a new uncover stealth action
@@ -14287,10 +14302,10 @@ namespace DOL.GS
             /// <summary>
             /// Called on every timer tick
             /// </summary>
-            protected override void OnTick()
+            protected override int OnTick(ECSGameTimer timer)
             {
                 GamePlayer player = (GamePlayer)m_actionSource;
-                if (player.Client.Account.PrivLevel > 1) return;
+                if (player.Client.Account.PrivLevel > 1) return 0;
 
                 bool checklos = false;
                 foreach (AbstractArea area in player.CurrentAreas)
@@ -14379,6 +14394,8 @@ namespace DOL.GS
                         }
                     }
                 }
+
+                return 0;
             }
         }
         /// <summary>

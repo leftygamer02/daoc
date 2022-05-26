@@ -492,6 +492,7 @@ namespace DOL.GS
 			get { return m_inventory; }
 			set { m_inventory = value; }
 		}
+		
 		/// <summary>
 		/// Gets the template npc melee damage type
 		/// </summary>

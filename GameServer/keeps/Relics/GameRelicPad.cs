@@ -152,8 +152,22 @@ namespace DOL.GS
 				/* Increasing of CapturedRelics */
 				//select targets to increase CapturedRelics
 				//TODO increase stats
-
+				
+				BattleGroup relicBG = (BattleGroup)relic.CurrentCarrier?.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
 				List<GamePlayer> targets = new List<GamePlayer>();
+
+				if (relicBG != null && (relicBG.Members.Contains(relic.CurrentCarrier) || (bool) relicBG.Members[relic.CurrentCarrier]!))
+				{
+					foreach (GamePlayer bgPlayer in relicBG.GetPlayersInTheBattleGroup())
+					{
+						if (bgPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+						{
+							targets.Add(bgPlayer);
+
+						}
+					}
+				}
+				else 
 				if (relic.CurrentCarrier.Group != null)
 				{
 					foreach (GamePlayer p in relic.CurrentCarrier.Group.GetPlayersInTheGroup())
@@ -252,7 +266,9 @@ namespace DOL.GS
 					return;
 				}
 
-				if (relicOnPlayer.RelicType != m_parent.PadType || m_parent.MountedRelic != null)
+				if (relicOnPlayer.RelicType != m_parent.PadType
+				    // || m_parent.MountedRelic != null
+				    )
 				{
                     player.Client.Out.SendMessage(string.Format(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameRelicPad.OnPlayerEnter.EmptyRelicPad"), relicOnPlayer.RelicType), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 					log.DebugFormat("Player {0} needs to find an empty {1} relic pad in order to place {2}.", player.Name, relicOnPlayer.RelicType, relicOnPlayer.Name);
