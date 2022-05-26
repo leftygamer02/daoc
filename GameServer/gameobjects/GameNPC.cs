@@ -420,14 +420,14 @@ namespace DOL.GS
 				// If mob is null (i.e., just created using '/mob create'), then use the NPC template where possible
 				else
 				{
-					Strength = (autoStr <= NPCTemplate.Strength && NPCTemplate.Strength < (short)(minLevel * maxLevel)) ? NPCTemplate.Strength : (short)(autoStr + (minLevel * multStr));
-					Constitution = (autoCon <= NPCTemplate.Constitution) ? NPCTemplate.Constitution : (short)(autoCon + (minLevel * multCon));
-					Dexterity = (autoDex <= NPCTemplate.Dexterity) ? NPCTemplate.Dexterity : (short)(autoDex + (minLevel * multDex));
-					Quickness = (autoQui <= NPCTemplate.Quickness) ? NPCTemplate.Quickness : (short)(autoQui + (minLevel * multQui));
-					Empathy = (autoEmp <= NPCTemplate.Empathy) ? NPCTemplate.Empathy : (short)(autoEmp + (minLevel * multEmp));
-					Intelligence = (autoInt <= NPCTemplate.Intelligence) ? NPCTemplate.Intelligence : (short)(autoInt + (minLevel * multInt));
-					Charisma = (autoCha <= NPCTemplate.Charisma) ? NPCTemplate.Charisma : (short)(autoCha + (minLevel * multCha));
-					Piety = (autoPie <= NPCTemplate.Piety) ? NPCTemplate.Piety : (short)(autoPie + (minLevel * multPie));
+					Strength = (autoStr <= NPCTemplate.Strength && NPCTemplate.Strength < (short)(minLevel * maxLevel)) ? (short)(NPCTemplate.Strength + (lvlDiff * multStr)) : (short)(autoStr + (minLevel * multStr));
+					Constitution = (autoCon <= NPCTemplate.Constitution) ? (short)(NPCTemplate.Constitution + (lvlDiff * multCon)) : (short)(autoCon + (minLevel * multCon));
+					Dexterity = (autoDex <= NPCTemplate.Dexterity) ? (short)(NPCTemplate.Dexterity + (lvlDiff * multDex)) : (short)(autoDex + (minLevel * multDex));
+					Quickness = (autoQui <= NPCTemplate.Quickness) ? (short)(NPCTemplate.Quickness + (lvlDiff * multQui)) : (short)(autoQui + (minLevel * multQui));
+					Empathy = (autoEmp <= NPCTemplate.Empathy) ? (short)(NPCTemplate.Empathy + (lvlDiff * multEmp)) : (short)(autoEmp + (minLevel * multEmp));
+					Intelligence = (autoInt <= NPCTemplate.Intelligence) ? (short)(NPCTemplate.Intelligence + (lvlDiff * multInt)) : (short)(autoInt + (minLevel * multInt));
+					Charisma = (autoCha <= NPCTemplate.Charisma) ? (short)(NPCTemplate.Charisma + (lvlDiff * multCha)) : (short)(autoCha + (minLevel * multCha));
+					Piety = (autoPie <= NPCTemplate.Piety) ? (short)(NPCTemplate.Piety + (lvlDiff * multPie)) : (short)(autoPie + (minLevel * multPie));
 				}
 			}
 			else
@@ -458,30 +458,33 @@ namespace DOL.GS
 				}
 
 				// Mob stats must be set above 0 in order to scale with level
-				if (Strength <= 1)
-					Strength = autoStr;
-				Strength += (Level > 1) ? (short) (Level * multStr) : (short) multStr;
-				if (Constitution <= 1)
-					Constitution = autoCon;
-				Constitution += (Level > 1) ? (short) (Level * multCon) : (short) multCon;
-				if (Dexterity <= 1)
-					Dexterity = autoDex;
-				Dexterity += (Level > 1) ? (short) (Level * multDex) : (short) multDex;
-				if (Quickness <= 1)
-					Quickness = autoQui;
-				Quickness += (Level > 1) ? (short) (Level * multQui) : (short) multQui;
-				if (Empathy <= 1)
-					Empathy = autoEmp;
-				Empathy += (Level > 1) ? (short) (Level * multEmp) : (short) multEmp;
-				if (Intelligence <= 1)
-					Intelligence = autoInt;
-				Intelligence += (Level > 1) ? (short) (Level * multInt) : (short) multInt;
-				if (Charisma <= 1)
-					Charisma = autoCha;
-				Charisma += (Level > 1) ? (short) (Level * multCha) : (short) multCha;
-				if (Piety <= 1)
-					Piety = autoPie;
-				Piety += (Level > 1) ? (short) (Level * multPie) : (short) multPie;
+				if (!isBoss)
+				{
+					if (Strength <= 1 || (Strength > autoStr + (Level * 2) && Level < 65)) 
+						Strength = autoStr;
+					Strength += (Level > 1) ? (short) (Level * multStr) : (short) multStr;
+					if (Constitution <= 1 || (Constitution > autoCon + (Level * 2) && Level < 65))
+						Constitution = autoCon;
+					Constitution += (Level > 1) ? (short) (Level * multCon) : (short) multCon;
+					if (Dexterity <= 1 || (Dexterity > autoDex + (Level * 2) && Level < 65))
+						Dexterity = autoDex;
+					Dexterity += (Level > 1) ? (short) (Level * multDex) : (short) multDex;
+					if (Quickness <= 1)
+						Quickness = autoQui;
+					Quickness += (Level > 1) ? (short) (Level * multQui) : (short) multQui;
+					if (Empathy <= 1 || (Empathy > autoEmp + (Level * 2) && Level < 65))
+						Empathy = autoEmp;
+					Empathy += (Level > 1) ? (short) (Level * multEmp) : (short) multEmp;
+					if (Intelligence <= 1)
+						Intelligence = autoInt;
+					Intelligence += (Level > 1) ? (short) (Level * multInt) : (short) multInt;
+					if (Charisma <= 1)
+						Charisma = autoCha;
+					Charisma += (Level > 1) ? (short) (Level * multCha) : (short) multCha;
+					if (Piety <= 1)
+						Piety = autoPie;
+					Piety += (Level > 1) ? (short) (Level * multPie) : (short) multPie;
+				}
 			}
 		}
 
