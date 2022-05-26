@@ -872,6 +872,7 @@ namespace DOL.GS
         /// <returns>0</returns>
         protected int LinkdeathTimerCallback(ECSGameTimer callingTimer)
         {
+            log.Debug("call back");
             //If we died during our callback time we release
             try
             {
@@ -935,12 +936,16 @@ namespace DOL.GS
                 m_quitTimer = null;
             }
 
-            int secondsToQuit = QuitTime;
+            // int secondsToQuit = QuitTime;
+            int secondsToQuit = 60;
+
             if (log.IsInfoEnabled)
                 log.InfoFormat("Linkdead player {0}({1}) will quit in {2}", Name, Client.Account.Name, secondsToQuit);
-            ECSGameTimer timer = new ECSGameTimer(this); // make sure it is not stopped!
-            timer.Callback = new ECSGameTimer.ECSTimerCallback(LinkdeathTimerCallback);
-            timer.StartTick = 1 + secondsToQuit * 1000;
+            log.Debug("starting timer");
+            ECSGameTimer timer = new ECSGameTimer(this, LinkdeathTimerCallback, secondsToQuit * 1000); // make sure it is not stopped!
+            
+            // timer.Callback = new ECSGameTimer.ECSTimerCallback(LinkdeathTimerCallback);
+            // timer.StartTick = 1 + secondsToQuit * 1000;
             timer.Start();
 
             if (TradeWindow != null)
@@ -4993,7 +4998,7 @@ namespace DOL.GS
         {
             get
             {
-                return 3 * prcRestore[Level < GamePlayer.prcRestore.Length ? Level : GamePlayer.prcRestore.Length - 1];
+                return 5 * prcRestore[Level < GamePlayer.prcRestore.Length ? Level : GamePlayer.prcRestore.Length - 1];
             }
         }
 
@@ -10215,7 +10220,7 @@ namespace DOL.GS
                     return;
                 }
                 
-                if (LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30)
+                if (LoyaltyManager.GetPlayerRealmLoyalty(this).Days > 30 && SelfBuffChargeIDs.Contains(spell.ID))
                 {
                     spell.Duration = 0;
                     spell.Concentration = 1;
@@ -11047,6 +11052,11 @@ namespace DOL.GS
                 m_guild.RemoveOnlineMember(this);
             }
             GroupMgr.RemovePlayerLooking(this);
+
+            if (Client.ClientState == GameClient.eClientState.Linkdead)
+            {
+                return;
+            }
             if (log.IsDebugEnabled)
             {
                 log.DebugFormat("({0}) player.Delete()", Name);
@@ -12479,7 +12489,6 @@ namespace DOL.GS
                     m_selfBuffIds.Add(31132); //dex/qui charge
                     m_selfBuffIds.Add(31131); //acuity charge
                     m_selfBuffIds.Add(31130); //AF charge
-                    m_selfBuffIds.Add(33512); //haste charge
                 }
 
                 return m_selfBuffIds;
@@ -12622,7 +12631,7 @@ namespace DOL.GS
                 (item as IGameInventoryItem).OnUnEquipped(this);
             }
             
-            //max 2 charges
+            //cancel any self buffs that are unequipped
             if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID))
             {
                 CancelChargeBuff(item.SpellID);
@@ -13942,6 +13951,9 @@ namespace DOL.GS
                 {
                     DBCharacter.IgnoreStatistics = true;
                 }
+                
+                //cache all active effects
+                EffectService.SaveAllEffects(this);
 
                 SaveSkillsToCharacter();
                 SaveCraftingSkills();
@@ -13989,6 +14001,14 @@ namespace DOL.GS
 
                     if (quest is WeeklyQuest wq)
                         wq.SaveQuestParameters();
+
+                    if (quest is LaunchQuestAlb lqa)
+                        lqa.SaveQuestParameters();
+                    if (quest is LaunchQuestHib lqh)
+                        lqh.SaveQuestParameters();
+                    if (quest is LaunchQuestMid lqm)
+                        lqm.SaveQuestParameters();
+                        
                 }
 
 
@@ -14263,8 +14283,8 @@ namespace DOL.GS
             //start the uncover timer
             if (action == null)
                 action = new UncoverStealthAction(this);
-            action.Interval = 2000;
-            action.Start(2000);
+            action.Interval = 1000;
+            action.Start(1000);
             TempProperties.setProperty(UNCOVER_STEALTH_ACTION_PROP, action);
         }
 
@@ -14395,7 +14415,7 @@ namespace DOL.GS
                     }
                 }
 
-                return 0;
+                return Interval;
             }
         }
         /// <summary>
@@ -14466,11 +14486,13 @@ namespace DOL.GS
             if (HasAbility(Abilities.DetectHidden) && !enemy.HasAbility(Abilities.DetectHidden) && !enemyHasCamouflage)
             {
                 // we have detect hidden and enemy don't = higher range
-                range = levelDiff * 50 + 250; // Detect Hidden advantage
+                //range = levelDiff * 50 + 250; // Detect Hidden advantage
+                range = levelDiff * 50 + 300; // Detect Hidden advantage
             }
             else
             {
-                range = levelDiff * 20 + 125; // Normal detection range
+                //range = levelDiff * 20 + 125; // Normal detection range
+                range = levelDiff * 20 + 175; 
             }
 
             // Mastery of Stealth Bonus
@@ -14611,6 +14633,13 @@ namespace DOL.GS
                     
                     if (quest is WeeklyQuest wq)
                         wq.LoadQuestParameters();
+                    
+                    if (quest is LaunchQuestAlb lqa)
+                        lqa.LoadQuestParameters();
+                    if (quest is LaunchQuestHib lqh)
+                        lqh.LoadQuestParameters();
+                    if (quest is LaunchQuestMid lqm)
+                        lqm.LoadQuestParameters();
                 }
             }
 

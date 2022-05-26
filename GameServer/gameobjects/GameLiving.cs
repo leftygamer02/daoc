@@ -4432,9 +4432,12 @@ namespace DOL.GS
 				{
 					removeMez = true;
 				}
+				
+				if (this is GameNPC && ad.SpellHandler is not MesmerizeSpellHandler)
+					removeMez = true;
 			}
 
-            // Remove Mez
+			// Remove Mez
             if (removeMez && effectListComponent.Effects.ContainsKey(eEffect.Mez))
 			{
 				var effect = EffectListService.GetEffectOnTarget(this, eEffect.Mez);
@@ -6389,6 +6392,19 @@ namespace DOL.GS
 				if (receiver != this && receiver != TargetObject)
 				{
 					receiver.SayReceive(this, str);
+				}
+			}
+
+			foreach (IDoor door in GetDoorsInRadius(150))
+			{
+				if (door is GameKeepDoor && (str.Contains("enter") || str.Contains("exit")))
+				{
+					GameKeepDoor receiver = door as GameKeepDoor;
+					if (this is GamePlayer)
+					{
+						receiver.SayReceive(this, str);
+						break; //only want to Say to one door
+					}
 				}
 			}
 			

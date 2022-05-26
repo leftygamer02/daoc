@@ -320,8 +320,14 @@ namespace DOL.GS
                             case eObjectType.CompositeBow:
                                 range = 1600;
                                 break;
+                            case eObjectType.Thrown:
+                                range = 1160;
+                                if (weapon.Name.ToLower().Contains("weighted"))
+                                    range *= 1450;
+                                break;
                             default:
                                 range = 1200;
+                                
                                 break; // shortbow, xbow, throwing
                         }
 
@@ -2003,12 +2009,8 @@ namespace DOL.GS
                     if (owner.IsObjectInFront(ad.Target, 120) && ad.Target.IsMoving)
                     {
                         bool preCheck = false;
-                        if (ad.Target is GamePlayer) //only start if we are behind the player
-                        {
-                            float angle = ad.Target.GetAngle(ad.Attacker);
-                            if (angle >= 150 && angle < 210) preCheck = true;
-                        }
-                        else preCheck = true;
+                        float angle = ad.Target.GetAngle(ad.Attacker);
+                        if (angle >= 150 && angle < 210) preCheck = true;
 
                         if (preCheck)
                         {
@@ -2773,10 +2775,10 @@ namespace DOL.GS
                     }
             }
 
-            if (owner is GamePlayer && ((GamePlayer) owner).IsSitting)
-            {
-                missrate >>= 1; //halved
-            }
+            // if (owner is GamePlayer && ((GamePlayer) owner).IsSitting)
+            // {
+            //     missrate >>= 1; //halved
+            // }
             
             //check for dirty trick fumbles before misses
             DirtyTricksDetrimentalECSGameEffect dt = (DirtyTricksDetrimentalECSGameEffect)EffectListService.GetAbilityEffectOnTarget(ad.Attacker, eEffect.DirtyTricksDetrimental);

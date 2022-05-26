@@ -920,7 +920,7 @@ namespace DOL.GS
                     //Console.WriteLine($"Spell {spell} handler {handler}");
                     handler.Spell.Duration = eff.Duration;
                     handler.Spell.CastTime = 1;
-                    handler.CastSpell();
+                    handler.StartSpell(player);
                     //ECSGameEffect e = new ECSGameSpellEffect(new ECSGameEffectInitParams(p, eff.Duration, eff.Var2, handler));
                     //Console.WriteLine($"Created ECS effect: {e} effectiveness {e.Effectiveness} type {e.EffectType} ownerplayer {e.OwnerPlayer} spellVal {handler.Spell.Value}");
                     player.Out.SendStatusUpdate();
@@ -937,6 +937,10 @@ namespace DOL.GS
 			
             if (player == null || player.effectListComponent.GetAllEffects().Count == 0)
                 return;
+            
+            var effs = DOLDB<PlayerXEffect>.SelectObjects(DB.Column("ChardID").IsEqualTo(player.ObjectId));
+            if (effs != null)
+                GameServer.Database.DeleteObject(effs);
 
             lock (player.effectListComponent._effectsLock)
             {
