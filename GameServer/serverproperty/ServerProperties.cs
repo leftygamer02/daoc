@@ -1085,65 +1085,101 @@ namespace DOL.GS.ServerProperties
 		public static int DOPPELGANGER_BOUNTY_POINTS;
 
 		/// <summary>
-		/// Base Value to use when auto-setting STR stat.
+		/// Base value to use when auto-setting STR stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_str_base", "Base Value to use when auto-setting STR stat. ", (short)30)]
+		[ServerProperty("npc", "mob_autoset_str_base", "Base Value to use when auto-setting STR stat.", (short)30)]
 		public static short MOB_AUTOSET_STR_BASE;
 
 		/// <summary>
-		/// Multiplier to use when auto-setting STR stat.
+		/// Multiplier to use when auto-setting STR stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_str_multiplier", "Multiplier to use when auto-setting STR stat. Multiplied by 10 when applied. ", 1.0)]
+		[ServerProperty("npc", "mob_autoset_str_multiplier", "Multiplier to use when auto-setting STR stat. Multiplied by 10 when applied.", 1.0)]
 		public static double MOB_AUTOSET_STR_MULTIPLIER;
 
 		/// <summary>
-		/// Base Value to use when auto-setting CON stat.
+		/// Base value to use when auto-setting CON stat.
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_con_base", "Base Value to use when auto-setting CON stat. ", (short)30)]
+		[ServerProperty("npc", "mob_autoset_con_base", "Base Value to use when auto-setting CON stat.", (short)30)]
 		public static short MOB_AUTOSET_CON_BASE;
 
 		/// <summary>
-		/// Multiplier to use when auto-setting CON stat.
+		/// Multiplier to use when auto-setting CON stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_con_multiplier", "Multiplier to use when auto-setting CON stat. ", 1.0)]
+		[ServerProperty("npc", "mob_autoset_con_multiplier", "Multiplier to use when auto-setting CON stat.", 1.0)]
 		public static double MOB_AUTOSET_CON_MULTIPLIER;
 
 		/// <summary>
-		/// Base Value to use when auto-setting QUI stat.
+		/// Base value to use when auto-setting QUI stat.
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_qui_base", "Base Value to use when auto-setting qui stat. ", (short)30)]
+		[ServerProperty("npc", "mob_autoset_qui_base", "Base Value to use when auto-setting qui stat.", (short)30)]
 		public static short MOB_AUTOSET_QUI_BASE;
 
 		/// <summary>
-		/// Multiplier to use when auto-setting QUI stat.
+		/// Multiplier to use when auto-setting QUI stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_qui_multiplier", "Multiplier to use when auto-setting QUI stat. ", 1.0)]
+		[ServerProperty("npc", "mob_autoset_qui_multiplier", "Multiplier to use when auto-setting QUI stat.", 1.0)]
 		public static double MOB_AUTOSET_QUI_MULTIPLIER;
 
 		/// <summary>
-		/// Base Value to use when auto-setting DEX stat.
+		/// Base value to use when auto-setting DEX stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_dex_base", "Base Value to use when auto-setting DEX stat. ", (short)30)]
+		[ServerProperty("npc", "mob_autoset_dex_base", "Base Value to use when auto-setting DEX stat.", (short)30)]
 		public static short MOB_AUTOSET_DEX_BASE;
 
 		/// <summary>
-		/// Multiplier to use when auto-setting DEX stat.
+		/// Multiplier to use when auto-setting DEX stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_dex_multiplier", "Multiplier to use when auto-setting DEX stat. ", 1.0)]
+		[ServerProperty("npc", "mob_autoset_dex_multiplier", "Multiplier to use when auto-setting DEX stat.", 1.0)]
 		public static double MOB_AUTOSET_DEX_MULTIPLIER;
 
 		/// <summary>
-		/// Base Value to use when auto-setting INT stat.
+		/// Base value to use when auto-setting INT stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_int_base", "Base Value to use when auto-setting INT stat. ", (short)30)]
+		[ServerProperty("npc", "mob_autoset_int_base", "Base Value to use when auto-setting INT stat.", (short)30)]
 		public static short MOB_AUTOSET_INT_BASE;
 
 		/// <summary>
-		/// Multiplier to use when auto-setting INT stat.
+		/// Multiplier to use when auto-setting INT stat
 		/// </summary>
-		[ServerProperty("npc", "mob_autoset_int_multiplier", "Multiplier to use when auto-setting INT stat. ", 1.0)]
+		[ServerProperty("npc", "mob_autoset_int_multiplier", "Multiplier to use when auto-setting INT stat.", 1.0)]
 		public static double MOB_AUTOSET_INT_MULTIPLIER;
+		
+		/// <summary>
+		/// Base value to use when auto-setting EMP stat
+		/// </summary>
+		[ServerProperty("npc", "mob_autoset_emp_base", "Base value to use when auto-setting EMP stat.", (short)30)]
+		public static short MOB_AUTOSET_EMP_BASE;
 
+		/// <summary>
+		/// Multiplier to use when auto-setting EMP stat
+		/// </summary>
+		[ServerProperty("npc", "mob_autoset_emp_multiplier", "Multiplier to use when auto-setting EMP stat.", 1.0)]
+		public static double MOB_AUTOSET_EMP_MULTIPLIER;
+
+		/// <summary>
+		/// Base value to use when auto-setting CHA stat
+		/// </summary>
+		[ServerProperty("npc", "mob_autoset_cha_base", "Base value to use when auto-setting CHA stat.", (short)30)]
+		public static short MOB_AUTOSET_CHA_BASE;
+
+		/// <summary>
+		/// Multiplier to use when auto-setting CHA stat
+		/// </summary>
+		[ServerProperty("npc", "mob_autoset_cha_multiplier", "Multiplier to use when auto-setting CHA stat.", 1.0)]
+		public static double MOB_AUTOSET_CHA_MULTIPLIER;
+		
+		/// <summary>
+		/// Base value to use when auto-setting PIE stat
+		/// </summary>
+		[ServerProperty("npc", "mob_autoset_pie_base", "Base value to use when auto-setting PIE stat.", (short)30)]
+		public static short MOB_AUTOSET_PIE_BASE;
+
+		/// <summary>
+		/// Multiplier to use when auto-setting PIE stat
+		/// </summary>
+		[ServerProperty("npc", "mob_autoset_pie_multiplier", "Multiplier to use when auto-setting PIE stat.", 1.0)]
+		public static double MOB_AUTOSET_PIE_MULTIPLIER;
+		
 		/// <summary>
 		/// Enable 2H weapon damage bonus for mobs?
 		/// </summary>

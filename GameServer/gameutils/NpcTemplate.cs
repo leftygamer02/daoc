@@ -80,6 +80,7 @@ namespace DOL.GS
 		protected bool m_replaceMobValues;
 		protected byte m_visibleActiveWeaponSlot;
 		protected int m_factionid;
+		protected string m_packageID;
 
 		/// <summary>
 		/// Constructs a new NpcTemplate
@@ -445,6 +446,14 @@ namespace DOL.GS
 		{
 			get { return m_level; }
 			set { m_level = value; }
+		}
+		/// <summary>
+		/// Gets the PackageID value
+		/// </summary>
+		public string PackageID
+		{
+			get { return m_packageID; }
+			set { m_packageID = value; }
 		}
 
 		public string EquipmentTemplateID

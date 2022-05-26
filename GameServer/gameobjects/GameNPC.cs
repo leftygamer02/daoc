@@ -246,106 +246,97 @@ namespace DOL.GS
 			// Don't set stats for mobs until their level is set
 			if (Level < 1)
 				return;
-			if (LoadedFromScript)
-				return;
 
+			GameNPC npc = this;
 			Mob mob = dbMob;
 			if (mob == null && !string.IsNullOrEmpty(InternalID))
 				// This should only happen when a GM command changes level on a mob with no npcTemplate,
 				mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
 			if (mob != null && mob.NPCTemplateID != -1)
 				NPCTemplate = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
+			
+			var mobTypeName = npc?.GetType().FullName;
+			var isBoss = (mob != null && npc.GetType().IsSubclassOf(typeof(GameEpicBoss)) ||
+			                                      npc.GetType() == typeof(GameEpicBoss) || 
+			                                      npc.GetType().IsSubclassOf(typeof(GameDragon)));
+			var isEpic = (mob != null && npc.GetType() == typeof(GameEpicNPC));
+			
+			// Multipliers, base levels, and placeholder vars
+			const double regMultiplier = 1; // Backup multiplier value for regular mob stats
+			const double epicMultiplier = 2;
+			const double bossMultiplier = 5;
+			const short mobBase = 29; // Static variable to autoset stat bases, where needed
 
-			double regular = 1.5; // Based on (GameNPC)ScaleFactor = 15
-			double epic = 6; // Based on (GameEpicNPC)ScaleFactor = 60
-			double mobScale = regular; // Base stat multiplier for mobs
-			short regularBase = 30;
-			short epicBase = 60;
-			short baseStat = regularBase;
-			var strBase = Properties.MOB_AUTOSET_STR_BASE;
-			var strMultiplier = Properties.MOB_AUTOSET_STR_MULTIPLIER;
-			var conBase = Properties.MOB_AUTOSET_CON_BASE;
-			var conMultiplier = Properties.MOB_AUTOSET_CON_MULTIPLIER;
-			var dexBase = Properties.MOB_AUTOSET_DEX_BASE;
-			var dexMultiplier = Properties.MOB_AUTOSET_DEX_MULTIPLIER;
-			var quiBase = Properties.MOB_AUTOSET_QUI_BASE;
-			var quiMultiplier = Properties.MOB_AUTOSET_QUI_MULTIPLIER;
-			var empBase = baseStat;
-			var empMultiplier = mobScale;
-			var intBase = Properties.MOB_AUTOSET_INT_BASE;
-			var intMultiplier = Properties.MOB_AUTOSET_INT_MULTIPLIER;
-			var chaBase = baseStat;
-			var chaMultiplier = mobScale;
-			var pieBase = baseStat;
-			var pieMultiplier = mobScale;
-
-			// Stat multiplier for epic mobs (not bosses)
-			if (dbMob != null && ClassType == "DOL.GS.GameEpicNPC")
+			// Mob stats must be set above 0 in order to scale with level
+			// If stats are 0, then first set to stat base
+			// This is intended for '/mob levela', which forces stats to scale with level
+			// NOTE: We should just avoid using anything other than NPC templates
+			// Individual autoset values for base stats
+			short autoStr = (Properties.MOB_AUTOSET_STR_BASE > 0) ? Properties.MOB_AUTOSET_STR_BASE : mobBase;
+			short autoCon = (Properties.MOB_AUTOSET_CON_BASE > 0) ? Properties.MOB_AUTOSET_CON_BASE : mobBase;
+			short autoDex = (Properties.MOB_AUTOSET_DEX_BASE > 0) ? Properties.MOB_AUTOSET_DEX_BASE : mobBase;
+			short autoQui = (Properties.MOB_AUTOSET_QUI_BASE > 0) ? Properties.MOB_AUTOSET_QUI_BASE : mobBase;
+			short autoInt = (Properties.MOB_AUTOSET_INT_BASE > 0) ? Properties.MOB_AUTOSET_INT_BASE : mobBase;
+			short autoEmp = (Properties.MOB_AUTOSET_EMP_BASE > 0) ? Properties.MOB_AUTOSET_EMP_BASE : mobBase;
+			short autoCha = (Properties.MOB_AUTOSET_CHA_BASE > 0) ? Properties.MOB_AUTOSET_CHA_BASE : mobBase;
+			short autoPie = (Properties.MOB_AUTOSET_PIE_BASE > 0) ? Properties.MOB_AUTOSET_PIE_BASE : mobBase;
+			
+			// Individual autoset values for base stat multipliers
+			double multStr = (Properties.MOB_AUTOSET_STR_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_STR_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multCon = (Properties.MOB_AUTOSET_CON_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_CON_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multDex = (Properties.MOB_AUTOSET_DEX_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_DEX_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multQui = (Properties.MOB_AUTOSET_QUI_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_QUI_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multInt = (Properties.MOB_AUTOSET_INT_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_INT_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multEmp = (Properties.MOB_AUTOSET_EMP_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_EMP_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multCha = (Properties.MOB_AUTOSET_CHA_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_CHA_MULTIPLIER : (short)regMultiplier; // Server property value
+			double multPie = (Properties.MOB_AUTOSET_PIE_MULTIPLIER > 0) ? Properties.MOB_AUTOSET_PIE_MULTIPLIER : (short)regMultiplier; // Server property value
+			
+			if (isEpic)
 			{
-				mobScale = epic;
-				baseStat = epicBase;
-				strBase = (short) (Properties.MOB_AUTOSET_STR_BASE * 4);
-				strMultiplier = (short) (Properties.MOB_AUTOSET_STR_MULTIPLIER * 4);
-				conBase = (short) (Properties.MOB_AUTOSET_CON_BASE * 4);
-				conMultiplier = (short) (Properties.MOB_AUTOSET_CON_MULTIPLIER * 4);
-				dexBase = (short) (Properties.MOB_AUTOSET_DEX_BASE * 4);
-				dexMultiplier = (short) (Properties.MOB_AUTOSET_DEX_MULTIPLIER * 4);
-				quiBase = (short) (Properties.MOB_AUTOSET_QUI_BASE * 4);
-				quiMultiplier = (short) (Properties.MOB_AUTOSET_QUI_MULTIPLIER * 4);
-				empBase = (short) (baseStat * 4);
-				intBase = (short) (Properties.MOB_AUTOSET_INT_BASE * 4);
-				intMultiplier = (short) (Properties.MOB_AUTOSET_INT_MULTIPLIER * 4);
-				chaBase = (short) (baseStat * 4);
-				pieBase = (short) (baseStat * 4);
+				autoStr = (short)(Properties.MOB_AUTOSET_STR_BASE * epicMultiplier);
+				autoCon = (short)(Properties.MOB_AUTOSET_CON_BASE * epicMultiplier);
+				autoDex = (short)(Properties.MOB_AUTOSET_DEX_BASE * epicMultiplier);
+				autoQui = (short)(Properties.MOB_AUTOSET_QUI_BASE * epicMultiplier);
+				autoInt = (short)(Properties.MOB_AUTOSET_INT_BASE * epicMultiplier);
+				autoEmp = (short)(Properties.MOB_AUTOSET_EMP_BASE * epicMultiplier);
+				autoCha = (short)(Properties.MOB_AUTOSET_CHA_BASE * epicMultiplier);
+				autoPie = (short)(Properties.MOB_AUTOSET_PIE_BASE * epicMultiplier);
+				
+				multStr = (Properties.MOB_AUTOSET_STR_MULTIPLIER * epicMultiplier);
+				multCon = (Properties.MOB_AUTOSET_CON_MULTIPLIER * epicMultiplier);
+				multDex = (Properties.MOB_AUTOSET_DEX_MULTIPLIER * epicMultiplier);
+				multQui = (Properties.MOB_AUTOSET_QUI_MULTIPLIER * epicMultiplier);
+				multInt = (Properties.MOB_AUTOSET_INT_MULTIPLIER * epicMultiplier);
+				multEmp = (Properties.MOB_AUTOSET_EMP_MULTIPLIER * epicMultiplier);
+				multCha = (Properties.MOB_AUTOSET_CHA_MULTIPLIER * epicMultiplier);
+				multPie = (Properties.MOB_AUTOSET_PIE_MULTIPLIER * epicMultiplier);
 			}
-
+			if (isBoss)
+			{
+				autoStr = (short)(Properties.MOB_AUTOSET_STR_BASE * bossMultiplier);
+				autoCon = (short)(Properties.MOB_AUTOSET_CON_BASE * bossMultiplier);
+				autoDex = (short)(Properties.MOB_AUTOSET_DEX_BASE * bossMultiplier);
+				autoQui = (short)(Properties.MOB_AUTOSET_QUI_BASE * bossMultiplier);
+				autoInt = (short)(Properties.MOB_AUTOSET_INT_BASE * bossMultiplier);
+				autoEmp = (short)(Properties.MOB_AUTOSET_EMP_BASE * bossMultiplier);
+				autoCha = (short)(Properties.MOB_AUTOSET_CHA_BASE * bossMultiplier);
+				autoPie = (short)(Properties.MOB_AUTOSET_PIE_BASE * bossMultiplier);
+				
+				multStr = (Properties.MOB_AUTOSET_STR_MULTIPLIER * bossMultiplier);
+				multCon = (Properties.MOB_AUTOSET_CON_MULTIPLIER * bossMultiplier);
+				multDex = (Properties.MOB_AUTOSET_DEX_MULTIPLIER * bossMultiplier);
+				multQui = (Properties.MOB_AUTOSET_QUI_MULTIPLIER * bossMultiplier);
+				multInt = (Properties.MOB_AUTOSET_INT_MULTIPLIER * bossMultiplier);
+				multEmp = (Properties.MOB_AUTOSET_EMP_MULTIPLIER * bossMultiplier);
+				multCha = (Properties.MOB_AUTOSET_CHA_MULTIPLIER * bossMultiplier);
+				multPie = (Properties.MOB_AUTOSET_PIE_MULTIPLIER * bossMultiplier);
+			}
+			
 			// We have to check both the DB and template values to account for mobs changing levels.
 			// Otherwise, high level mobs retain their stats when their level is lowered by a GM.
 			if (NPCTemplate != null && NPCTemplate.ReplaceMobValues)
 			{
-				// Compare mob's existing stats against the NPC template
-				// If template stats are lower than the mob's, then use mob stats
-				// This is a precaution in case the template is not current (so we don't accidentally break all the mobs)
-				if (mob != null)
-				{
-					Strength = (mob.Strength <= NPCTemplate.Strength) ? NPCTemplate.Strength : mob.Strength;
-					Constitution = (mob.Constitution <= NPCTemplate.Constitution)
-						? NPCTemplate.Constitution
-						: mob.Constitution;
-					Dexterity = (mob.Dexterity <= NPCTemplate.Dexterity) ? NPCTemplate.Dexterity : mob.Dexterity;
-					Quickness = (mob.Quickness <= NPCTemplate.Quickness) ? NPCTemplate.Quickness : mob.Quickness;
-					Empathy = (mob.Empathy <= NPCTemplate.Empathy) ? NPCTemplate.Empathy : mob.Empathy;
-					Intelligence = (mob.Intelligence <= NPCTemplate.Intelligence)
-						? NPCTemplate.Intelligence
-						: mob.Intelligence;
-					Charisma = (mob.Charisma <= NPCTemplate.Charisma) ? NPCTemplate.Charisma : mob.Charisma;
-					Piety = (mob.Piety <= NPCTemplate.Piety) ? NPCTemplate.Piety : mob.Piety;
-				}
-				// If mob is null (i.e., just created using '/mob create'), then use the NPC template where possible
-				else
-				{
-					Strength = NPCTemplate.Strength;
-					Constitution = NPCTemplate.Constitution;
-					Dexterity = NPCTemplate.Dexterity;
-					Quickness = NPCTemplate.Quickness;
-					Empathy = NPCTemplate.Empathy;
-					Intelligence = NPCTemplate.Intelligence;
-					Charisma = NPCTemplate.Charisma;
-					Piety = NPCTemplate.Piety;
-				}
-
-				string
-					minLevel = NPCTemplate
-						.Level; // Starting variable to determine base (lowest) level assigned to a template
-
-				// Figure out what the lowest level is in NPCTemplate.Level
-				if (NPCTemplate.Level.Contains(';') || NPCTemplate.Level.Contains('-'))
-				{
-					var split = Util.SplitCSV(NPCTemplate.Level, true);
-
-					minLevel = split.AsQueryable().Min(); // Grab the lowest value
-				}
-
+				#region Base Level
 				// This determines how to handle stat scaling for regular and epic NPCs with existing NPCTemplates.
 				// Stats are scaled based on the lowest level parsed from NPCTemplate.Level rather than assuming level 1.
 				// For example, NPCTemplate.Level is "12-15;20-25". AutoSetStats would then treat the current stats for the
@@ -353,85 +344,90 @@ namespace DOL.GS
 				// multiplier (mobScale) to increase the stat based on the mob's level, if it is above the base level (12),
 				// using the 'difference' variable.
 				// A level 13 mob with this template has a difference of 1 level from the base level, and as such would have
-				// the multiplier applied once (1 x mulitplier) to all stats. A level 25 mob has a difference of 13 from the
-				// base level (Level - baseLevel) and thus applies the multiplier 13 times (13 x mulitplier).
-				if (minLevel != null || minLevel != "0")
+				// the multiplier applied once (1 x multiplier) to all stats. A level 25 mob has a difference of 13 from the
+				// base level (Level - baseLevel) and thus applies the multiplier 13 times (13 x multiplier).
+
+				// We use the minimum level as the base level and max level for whatever else sounds fun
+				// Default values
+				var minLevel = Level;
+				
+				// First, we'll determine the template's base level, meaning the lowest level value found in NPCTemplate.Level
+				// This assumes ranges and separators are found in the value, which is then split. The lowest value is then
+				// used as the level for which NPC template stats apply before autoscaling is factored in.
+				if (!string.IsNullOrEmpty(NPCTemplate.Level))
 				{
-					// Convert string to short
-					short.TryParse(minLevel, out var baseLevel);
-
-					if (baseLevel == Level)
-						baseLevel = Level;
-
-					if (baseLevel <= 46)
-						Strength = (Strength == NPCTemplate.Strength && NPCTemplate.Strength > 200)
-							? (short) strBase
-							: NPCTemplate.Strength;
-					if (baseLevel <= 65)
-						Strength = (Strength == NPCTemplate.Strength && NPCTemplate.Strength > 275 &&
-						            ClassType == "DOL.GS.GameNPC")
-							? strBase
-							: NPCTemplate.Strength;
-
-					// If stat is 0 or 1, then use multiplier against base level to bring it up to a "minimum" value
-					Strength += (Strength <= 1 || Strength == strBase)
-						? (short) (strBase + (baseLevel * strMultiplier))
-						: (short) 0;
-					Constitution += (Constitution <= 1 || Constitution == conBase)
-						? (short) (conBase + (baseLevel * conMultiplier))
-						: (short) 0;
-					Dexterity += (Dexterity <= 1 || Dexterity == dexBase)
-						? (short) (dexBase + (baseLevel * dexMultiplier))
-						: (short) 0;
-					Quickness += (Quickness <= 1 || Quickness == quiBase)
-						? (short) (quiBase + (baseLevel * quiMultiplier))
-						: (short) 0;
-					Empathy += (Empathy <= 1 || Empathy == empBase)
-						? (short) (empBase + (baseLevel * empMultiplier))
-						: (short) 0;
-					Intelligence += (Intelligence <= 1 || Intelligence == strBase)
-						? (short) (intBase + (baseLevel * intMultiplier))
-						: (short) 0;
-					Charisma += (Charisma <= 1 || Charisma == chaBase)
-						? (short) (chaBase + (baseLevel * chaMultiplier))
-						: (short) 0;
-					Piety += (Piety <= 1 || Piety == pieBase)
-						? (short) (pieBase + (baseLevel * pieMultiplier))
-						: (short) 0;
-
-					// Check mob's current level against the base level before we multiply again
-					// If the mob is higher level than baseLevel, we scale again
-					if (Level - baseLevel > 0)
+					// Look for separators and ranges
+					if (NPCTemplate.Level.Contains(';') || NPCTemplate.Level.Contains('-'))
 					{
-						// Subtract level difference and multiply stats against multiplier
-						var difference = (short) ((Level - baseLevel) * mobScale);
+						var split = Util.SplitCSV(NPCTemplate.Level, true); // Create list and remove separators or express ranges
+						var levelRange = new List<byte>(); // Store list of levels from which to grab minimum int value
+						if (levelRange.Count > 0)
+							levelRange.Clear(); // Pre-usage cleanup
+						
+						// If we've added level entries to the split list
+						if (split.Count > 0)
+						{
+							foreach (var level in split)
+								if (byte.TryParse(level, out var levelEntry) && !levelRange.Contains(levelEntry))
+									levelRange.Add(levelEntry);
 
-						Strength += difference;
-						Constitution += difference;
-						Dexterity += difference;
-						Quickness += difference;
-						Empathy += difference;
-						Intelligence += difference;
-						Charisma += difference;
-						Piety += difference;
+							if (levelRange.Count > 0)
+								minLevel = levelRange.AsQueryable().Min();
+						}
+						// Try one more time to parse NPCTemplate.Level
+						else if (byte.TryParse(NPCTemplate.Level, out var tryLevel))
+							minLevel = tryLevel; // Grab the lowest value
 					}
+					// No separators or level ranges detected, so just treat as a single level entry
+					else if (byte.TryParse(NPCTemplate.Level, out var onlyLevel))
+						minLevel = onlyLevel; // Grab the lowest value
 				}
-				// If NPCTemplate.Level cannot be parsed, then just use mob.Level
+				// Use the mob's values instead
+				else
+					minLevel = Level;
+
+				// Check mob's current level against the base level before we scale further (add these results to the existing stats
+				// If the mob is higher level than baseLevel, then scale more
+				// The reason for this condition is that ideally the existing stat values for a mob or template are to be treated as "base level" values, meaning
+				// if a template's Strength is set to 40, then we'll take that value and use it for the lowest level range before autoscaling to the highest
+				// mob level for that template
+				// Subtract level difference and multiply stats against multiplier
+				// If 0 or less, then don't add anything more
+				var lvlDiff = (short)(Level - minLevel);
+				if (lvlDiff < 0)
+					lvlDiff = 0;
+				var maxLevel = 1.5;
+				if (isEpic)
+					maxLevel = epicMultiplier;
+				if (isBoss)
+					maxLevel = bossMultiplier;
+				#endregion Base Level
+
+				// Compare mob's existing stats against the NPC template
+				// If template stats are lower than the mob's, then use mob stats
+				// This is a precaution in case the template is not current (so we don't accidentally break all the mobs)
+				if (mob != null)
+				{
+					Strength = (mob.Strength <= NPCTemplate.Strength && NPCTemplate.Strength < (short)(minLevel * maxLevel)) ? (short)(NPCTemplate.Strength + (lvlDiff * multStr)) : mob.Strength;
+					Constitution = (mob.Constitution <= NPCTemplate.Constitution) ? (short)(NPCTemplate.Constitution + (lvlDiff * multCon)) : mob.Constitution;
+					Dexterity = (mob.Dexterity <= NPCTemplate.Dexterity) ? (short)(NPCTemplate.Dexterity + (lvlDiff * multDex)) : mob.Dexterity;
+					Quickness = (mob.Quickness <= NPCTemplate.Quickness) ? (short)(NPCTemplate.Quickness + (lvlDiff * multQui)) : mob.Quickness;
+					Empathy = (mob.Empathy <= NPCTemplate.Empathy) ? (short)(NPCTemplate.Empathy + (lvlDiff * multEmp)) : mob.Empathy;
+					Intelligence = (mob.Intelligence <= NPCTemplate.Intelligence) ? (short)(NPCTemplate.Intelligence + (lvlDiff * multInt)) : mob.Intelligence;
+					Charisma = (mob.Charisma <= NPCTemplate.Charisma) ?(short)(NPCTemplate.Charisma + (lvlDiff * multCha)) : mob.Charisma;
+					Piety = (mob.Piety <= NPCTemplate.Piety) ? (short)(NPCTemplate.Piety + (lvlDiff * multPie)) : mob.Piety;
+				}
+				// If mob is null (i.e., just created using '/mob create'), then use the NPC template where possible
 				else
 				{
-					var scale = (short) (Level * mobScale);
-
-					if (scale == 0)
-						scale = 1;
-					// If any stat has not been set, multiply difference between base and current level level against muliplier
-					Strength += scale;
-					Constitution += scale;
-					Dexterity += scale;
-					Quickness += scale;
-					Empathy += scale;
-					Intelligence += scale;
-					Charisma += scale;
-					Piety += scale;
+					Strength = (autoStr <= NPCTemplate.Strength && NPCTemplate.Strength < (short)(minLevel * maxLevel)) ? NPCTemplate.Strength : (short)(autoStr + (minLevel * multStr));
+					Constitution = (autoCon <= NPCTemplate.Constitution) ? NPCTemplate.Constitution : (short)(autoCon + (minLevel * multCon));
+					Dexterity = (autoDex <= NPCTemplate.Dexterity) ? NPCTemplate.Dexterity : (short)(autoDex + (minLevel * multDex));
+					Quickness = (autoQui <= NPCTemplate.Quickness) ? NPCTemplate.Quickness : (short)(autoQui + (minLevel * multQui));
+					Empathy = (autoEmp <= NPCTemplate.Empathy) ? NPCTemplate.Empathy : (short)(autoEmp + (minLevel * multEmp));
+					Intelligence = (autoInt <= NPCTemplate.Intelligence) ? NPCTemplate.Intelligence : (short)(autoInt + (minLevel * multInt));
+					Charisma = (autoCha <= NPCTemplate.Charisma) ? NPCTemplate.Charisma : (short)(autoCha + (minLevel * multCha));
+					Piety = (autoPie <= NPCTemplate.Piety) ? NPCTemplate.Piety : (short)(autoPie + (minLevel * multPie));
 				}
 			}
 			else
@@ -463,29 +459,29 @@ namespace DOL.GS
 
 				// Mob stats must be set above 0 in order to scale with level
 				if (Strength <= 1)
-					Strength = strBase;
-				Strength += (Level > 1) ? (short) (Level * strMultiplier) : (short) strMultiplier;
+					Strength = autoStr;
+				Strength += (Level > 1) ? (short) (Level * multStr) : (short) multStr;
 				if (Constitution <= 1)
-					Constitution = baseStat;
-				Constitution += (Level > 1) ? (short) (Level * conMultiplier) : (short) conMultiplier;
+					Constitution = autoCon;
+				Constitution += (Level > 1) ? (short) (Level * multCon) : (short) multCon;
 				if (Dexterity <= 1)
-					Dexterity = baseStat;
-				Dexterity += (Level > 1) ? (short) (Level * dexMultiplier) : (short) dexMultiplier;
+					Dexterity = autoDex;
+				Dexterity += (Level > 1) ? (short) (Level * multDex) : (short) multDex;
 				if (Quickness <= 1)
-					Quickness = baseStat;
-				Quickness += (Level > 1) ? (short) (Level * quiMultiplier) : (short) quiMultiplier;
+					Quickness = autoQui;
+				Quickness += (Level > 1) ? (short) (Level * multQui) : (short) multQui;
 				if (Empathy <= 1)
-					Empathy = baseStat;
-				Empathy += (Level > 1) ? (short) (Level * empMultiplier) : (short) empMultiplier;
+					Empathy = autoEmp;
+				Empathy += (Level > 1) ? (short) (Level * multEmp) : (short) multEmp;
 				if (Intelligence <= 1)
-					Intelligence = baseStat;
-				Intelligence += (Level > 1) ? (short) (Level * intMultiplier) : (short) intMultiplier;
+					Intelligence = autoInt;
+				Intelligence += (Level > 1) ? (short) (Level * multInt) : (short) multInt;
 				if (Charisma <= 1)
-					Charisma = baseStat;
-				Charisma += (Level > 1) ? (short) (Level * chaMultiplier) : (short) chaMultiplier;
+					Charisma = autoCha;
+				Charisma += (Level > 1) ? (short) (Level * multCha) : (short) multCha;
 				if (Piety <= 1)
-					Piety = baseStat;
-				Piety += (Level > 1) ? (short) (Level * pieMultiplier) : (short) pieMultiplier;
+					Piety = autoPie;
+				Piety += (Level > 1) ? (short) (Level * multPie) : (short) multPie;
 			}
 		}
 

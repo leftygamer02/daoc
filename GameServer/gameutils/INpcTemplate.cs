@@ -126,5 +126,6 @@ namespace DOL.GS
 		string ClassType { get; }
 		
 		int FactionId { get; }
+		string PackageID { get; }
 	}
 }
