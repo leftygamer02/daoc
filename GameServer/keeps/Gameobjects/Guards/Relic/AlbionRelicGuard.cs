@@ -17,7 +17,6 @@ namespace DOL.GS
             Flags ^= eFlags.CANTTARGET;
             Flags ^= eFlags.FLYING;
             Flags ^= eFlags.DONTSHOWNAME;
-            Flags ^= eFlags.PEACE;
             Model = 1;
             Name = "Benowyc Relic Guards Init";
             BenowycRGBrain brain = new BenowycRGBrain();
@@ -29,7 +28,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            log.Warn("Albion Relic Guards [Benowyc] initialised");
+            log.Info("Albion Relic Guards [Benowyc] initialised");
         }
     }
     
@@ -43,7 +42,6 @@ namespace DOL.GS
             Flags ^= eFlags.CANTTARGET;
             Flags ^= eFlags.FLYING;
             Flags ^= eFlags.DONTSHOWNAME;
-            Flags ^= eFlags.PEACE;
             Model = 1;
             Name = "Berkstead Relic Guards Init";
             BerksteadRGBrain brain = new BerksteadRGBrain();
@@ -55,7 +53,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            log.Warn("Albion Relic Guards [Benowyc] initialised");
+            log.Info("Albion Relic Guards [Berkstead] initialised");
         }
     }
     
@@ -69,7 +67,6 @@ namespace DOL.GS
             Flags ^= eFlags.CANTTARGET;
             Flags ^= eFlags.FLYING;
             Flags ^= eFlags.DONTSHOWNAME;
-            Flags ^= eFlags.PEACE;
             Model = 1;
             Name = "Boldiam Relic Guards Init";
             BoldiamRGBrain brain = new BoldiamRGBrain();
@@ -81,7 +78,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            log.Warn("Albion Relic Guards [Boldiam] initialised");
+            log.Info("Albion Relic Guards [Boldiam] initialised");
         }
     }
 }
@@ -153,7 +150,7 @@ namespace DOL.AI.Brain
                 numGuards = (int)(4 * (1 - 0.25 * (numRelics - 2)));
             }
 
-            for (int i = 0; i <= numGuards; i++)
+            for (int i = 0; i < numGuards; i++)
             {
                 var guard = new GuardFighter();
                 guard.X = Body.X + Util.Random(-100, 100);
@@ -245,7 +242,7 @@ namespace DOL.AI.Brain
                 numGuards = (int)(4 * (1 - 0.25 * (numRelics - 2)));
             }
 
-            for (int i = 0; i <= numGuards; i++)
+            for (int i = 0; i < numGuards; i++)
             {
                 var guard = new GuardFighter();
                 guard.X = Body.X + Util.Random(-100, 100);
@@ -337,7 +334,7 @@ namespace DOL.AI.Brain
                 numGuards = (int)(4 * (1 - 0.25 * (numRelics - 2)));
             }
 
-            for (int i = 0; i <= numGuards; i++)
+            for (int i = 0; i < numGuards; i++)
             {
                 var guard = new GuardFighter();
                 guard.X = Body.X + Util.Random(-100, 100);
