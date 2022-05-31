@@ -252,14 +252,14 @@ namespace DOL.GS
 			if (mob == null && !string.IsNullOrEmpty(InternalID))
 				// This should only happen when a GM command changes level on a mob with no npcTemplate,
 				mob = GameServer.Database.FindObjectByKey<Mob>(InternalID);
-			if (mob != null && mob.NPCTemplateID != -1)
-				NPCTemplate = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
-
-			var mobTypeName = npc?.GetType().FullName;
-			var isBoss = (mob != null && (npc.GetType().IsSubclassOf(typeof(GameEpicBoss)) ||
-			                                      npc.GetType() == typeof(GameEpicBoss) || 
-			                                      npc.GetType().IsSubclassOf(typeof(GameDragon))));
-			var isEpic = (mob != null && npc.GetType().FullName == "DOL.GS.GameEpicNPC");
+			//if (mob.NPCTemplateID != -1)
+			//	NPCTemplate = NpcTemplateMgr.GetTemplate(mob.NPCTemplateID);
+			
+			var isBoss = (npc.GetType().IsSubclassOf(typeof(GameEpicBoss)) ||
+			                              npc.GetType() == typeof(GameEpicBoss) || 
+			                              npc.GetType().IsSubclassOf(typeof(GameDragon)) ||
+			                              npc.GetType() == typeof(GameDragon));
+			var isEpic = npc.GetType().FullName == "DOL.GS.GameEpicNPC" || npc.GetType() == typeof(GameEpicNPC);
 			
 			// Multipliers, base levels, and placeholder vars
 			const double regMultiplier = 1; // Backup multiplier value for regular mob stats
@@ -334,7 +334,7 @@ namespace DOL.GS
 			
 			// We have to check both the DB and template values to account for mobs changing levels.
 			// Otherwise, high level mobs retain their stats when their level is lowered by a GM.
-			if (NPCTemplate != null && NPCTemplate.ReplaceMobValues)
+			if (NPCTemplate != null && NPCTemplate.TemplateId != -1 && NPCTemplate.ReplaceMobValues)
 			{
 				#region Base Level
 				// This determines how to handle stat scaling for regular and epic NPCs with existing NPCTemplates.
@@ -403,12 +403,25 @@ namespace DOL.GS
 					maxLevel = bossMultiplier;
 				#endregion Base Level
 
+				// Just grant bosses the stats as-written on their database entry, don't mess with things
+				if (LoadedFromScript || isBoss)
+				{
+					Strength = NPCTemplate.Strength;
+					Constitution = NPCTemplate.Constitution;
+					Quickness = NPCTemplate.Quickness;
+					Dexterity = NPCTemplate.Dexterity;
+					Intelligence = NPCTemplate.Intelligence;
+					Empathy = NPCTemplate.Empathy;
+					Piety = NPCTemplate.Piety;
+					Charisma = NPCTemplate.Charisma;
+					return;
+				}
 				// Compare mob's existing stats against the NPC template
 				// If template stats are lower than the mob's, then use mob stats
 				// This is a precaution in case the template is not current (so we don't accidentally break all the mobs)
 				if (mob != null)
 				{
-					Strength = (mob.Strength <= NPCTemplate.Strength && NPCTemplate.Strength < (autoStr + Level) + (minLevel * maxLevel)) ? (short)(NPCTemplate.Strength + (lvlDiff * multStr)) : mob.Strength;
+					Strength = (Strength <= NPCTemplate.Strength && NPCTemplate.Strength < (autoStr + Level) + (minLevel * maxLevel)) ? (short)(NPCTemplate.Strength + (lvlDiff * multStr)) : mob.Strength;
 					if ((Strength != NPCTemplate.Strength &&
 					     mob.Strength > (autoCon + Level) + (minLevel * maxLevel)) || Level >= 70)
 						Strength = (short) (NPCTemplate.Strength + (lvlDiff * multStr));
@@ -432,33 +445,106 @@ namespace DOL.GS
 					Charisma = (autoCha <= NPCTemplate.Charisma) ? (short)(NPCTemplate.Charisma + (lvlDiff * multCha)) : (short)(autoCha + (minLevel * multCha));
 					Piety = (autoPie <= NPCTemplate.Piety) ? (short)(NPCTemplate.Piety + (lvlDiff * multPie)) : (short)(autoPie + (minLevel * multPie));
 				}
+
+				// In case we come across any mobs that still somehow have a base stat level, increase them by Level and multiplier
+				if (Level > 5)
+				{
+					if (Strength <= 30)
+						Strength += (short) (Level * multStr);
+					if (Constitution < 30)
+						Constitution += (short) (Level * multCon);
+					if (Dexterity <= 30)
+						Dexterity += (short) (Level * multDex);
+					if (Quickness <= 30)
+						Quickness += (short) (Level * multQui);
+					if (Empathy <= 30)
+						Empathy += (short) (Level * multEmp);
+					if (Intelligence <= 30)
+						Intelligence += (short) (Level * multInt);
+					if (Charisma <= 30)
+						Charisma += (short) (Level * multCha);
+					if (Piety <= 30)
+						Piety += (short) (Level * multPie);
+				}
 			}
 			else
 			{
-				if (mob != null && !isBoss)
+				// Set thresholds to use for comparing existing stats against maximum "reasonable" levels
+				var statThreshold = regMultiplier;
+				var levelThreshold = 70;
+				if (isEpic)
+					statThreshold = epicMultiplier;
+
+				// If the mob exists on the Mob table, do the following:
+				// Check to make sure mob.Stat is higher than the base stat value
+				// Then make sure the stat is not ridiculously high
+				// If true, then use mob stat, otherwise use base stat and multiply by level and muliplier
+				if (mob != null)
 				{
-					if (mob.Strength >= 1 || (mob.Strength < (autoStr + Level) + (Level * 2) && Level < 65))
+					// Just grant bosses the stats as-written on their database entry, don't mess with things
+					if (LoadedFromScript || isBoss)
+					{
+						Strength = mob.Strength;
+						Constitution = mob.Constitution;
+						Quickness = mob.Quickness;
+						Dexterity = mob.Dexterity;
+						Intelligence = mob.Intelligence;
+						Empathy = mob.Empathy;
+						Piety = mob.Piety;
+						Charisma = mob.Charisma;
+						return;
+					}
+					
+					if ((mob.Strength > autoStr && (mob.Strength < (autoStr + Level) + (Level * statThreshold))) || Level > levelThreshold)
 						Strength = mob.Strength;
 					else
-						Strength = (short)(autoStr + (Level * multStr));
-					if (mob.Constitution >= 1 || (mob.Constitution < (autoCon + Level) + (Level * 2) && Level < 65))
+						Strength = autoStr;
+					if ((mob.Constitution > autoCon && (mob.Constitution < (autoCon + Level) + (Level * statThreshold))) || Level > levelThreshold)
 						Constitution = mob.Constitution;
 					else
-						Empathy = (short)(autoEmp + (Level * multEmp));
-					Quickness = mob.Quickness;
-					Dexterity = mob.Dexterity;
-					Intelligence = mob.Intelligence;
-					if (mob.Empathy >= 1 || (mob.Empathy < (autoEmp + Level) + (Level * 2) && Level < 65))
+						Constitution = autoCon;
+					if ((mob.Dexterity > autoDex && (mob.Dexterity < (autoDex + Level) + (Level * statThreshold))) || Level > levelThreshold)
+						Dexterity = mob.Dexterity;
+					else
+						Dexterity = autoDex;
+					if ((mob.Quickness > autoQui && (mob.Quickness < (autoQui + Level) + (Level * statThreshold))) || Level > levelThreshold)
+						Quickness = mob.Quickness;
+					else
+						Quickness = autoQui;
+					if ((mob.Intelligence > autoInt && (mob.Intelligence < (autoInt + Level) + (Level * statThreshold))) || Level > levelThreshold)
+						Intelligence = mob.Intelligence;
+					else
+						Intelligence = autoInt;
+					if ((mob.Empathy > autoEmp && (mob.Empathy < (autoEmp + Level) + (Level * statThreshold))) || Level > levelThreshold)
 						Empathy = mob.Empathy;
 					else
-						Empathy = (short)(autoEmp + (Level * multEmp));
-					Piety = mob.Piety;
-					Charisma = mob.Charisma;
+						Empathy = autoEmp;
+					if ((mob.Piety > autoPie && (mob.Piety < (autoPie + Level) + (Level * statThreshold))) || Level > levelThreshold)
+						Piety = mob.Piety;
+					else
+						Piety = autoPie;
+					if ((mob.Charisma > autoCha && (mob.Charisma < (autoCha + Level) + (Level * statThreshold))) || Level > levelThreshold)
+						Charisma = mob.Charisma;
+					else
+						Charisma = autoCha;
 				}
-				else if (mob == null)
+				else
 				{
+					if (LoadedFromScript || isBoss)
+					{
+						Strength = this.Strength;
+						Constitution = this.Constitution;
+						Quickness = this.Quickness;
+						Dexterity = this.Dexterity;
+						Intelligence = this.Intelligence;
+						Empathy = this.Empathy;
+						Piety = this.Piety;
+						Charisma = this.Charisma;
+						return;
+					}
 					// This is usually a mob about to be loaded from its DB entry,
-					//	but it could also be a new mob created by a GM command, so we need to assign stats.
+					// but it could also be a new mob created by an admin command,
+					// so here are some default stats.
 					Strength = 0;
 					Constitution = 0;
 					Quickness = 0;
@@ -468,47 +554,37 @@ namespace DOL.GS
 					Piety = 0;
 					Charisma = 0;
 				}
-				else if (isBoss)
-				{
-					Strength = mob.Strength;
-					Constitution = mob.Constitution;
-					Quickness = mob.Quickness;
-					Dexterity = mob.Dexterity;
-					Intelligence = mob.Intelligence;
-					Empathy = mob.Empathy;
-					Piety = mob.Piety;
-					Charisma = mob.Charisma;
-					return;
-				}
 
 				// Mob stats must be set above 0 in order to scale with level
-				if (!isBoss)
-				{
-					if (Strength <= 1 || (Strength > (autoStr + Level) + (Level * 2) && Level < 65)) 
-						Strength = autoStr;
-					Strength += (Level > 1) ? (short) (Level * multStr) : (short) multStr;
-					if (Constitution <= 1 || (Constitution > (autoCon + Level) + (Level * 2) && Level < 65))
-						Constitution = autoCon;
-					Constitution += (Level > 1) ? (short) (Level * multCon) : (short) multCon;
-					if (Dexterity <= 1 || (Dexterity > (autoDex + Level) + (Level * 2) && Level < 65))
-						Dexterity = autoDex;
-					Dexterity += (Level > 1) ? (short) (Level * multDex) : (short) multDex;
-					if (Quickness <= 1)
-						Quickness = autoQui;
-					Quickness += (Level > 1) ? (short) (Level * multQui) : (short) multQui;
-					if (Empathy <= 1 || (Empathy > (autoEmp + Level) + (Level * 2) && Level < 65))
-						Empathy = autoEmp;
-					Empathy += (Level > 1) ? (short) (Level * multEmp) : (short) multEmp;
-					if (Intelligence <= 1)
-						Intelligence = autoInt;
-					Intelligence += (Level > 1) ? (short) (Level * multInt) : (short) multInt;
-					if (Charisma <= 1)
-						Charisma = autoCha;
-					Charisma += (Level > 1) ? (short) (Level * multCha) : (short) multCha;
-					if (Piety <= 1)
-						Piety = autoPie;
-					Piety += (Level > 1) ? (short) (Level * multPie) : (short) multPie;
-				}
+				// Final check to make sure the stat is higher than 0 and less than a threshold
+				// Otherwise set the value up to base plus level times multiplier
+				Strength = (Strength < 1 || (Strength > (autoStr + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoStr + (Level * multStr)) : (short)1;
+				Constitution = (Constitution < 1 || (Constitution > (autoCon + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoCon + (Level * multCon)) : (short)1;
+				Dexterity = (Dexterity < 1 || (Dexterity > (autoDex + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoDex + (Level * multDex)) : (short)1;
+				Quickness = (Quickness < 1 || (Quickness > (autoQui + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoQui + (Level * multQui)) : (short)1;
+				Empathy = (Empathy < 1 || (Empathy > (autoEmp + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoEmp + (Level * multEmp)) : (short)1;
+				Intelligence = (Intelligence < 1 || (Intelligence > (autoInt + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoInt + (Level * multInt)) : (short)1;
+				Charisma = (Charisma < 1 || (Charisma > (autoCha + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoCha + (Level * multCha)) : (short)1;
+				Piety = (Piety < 1 || (Piety > (autoPie + Level) + (Level * statThreshold) && Level < levelThreshold)) ? (short)(autoPie + (Level * multPie)) : (short)1;
+			}
+
+			// Base stat value threshold
+			var baseAmt = 30;
+			if (isEpic)
+				baseAmt = 60;
+			
+
+			// Use this to auto-scale any values below the base stat amount
+			if (Level > 1 && !isBoss)
+			{
+				Strength += (Strength <= baseAmt) ? (short)((Level - 1) * multStr) : (short) multStr;
+				Constitution += (Constitution <= baseAmt) ? (short)((Level - 1) * multCon) : (short) multCon;
+				Dexterity += (Dexterity <= baseAmt) ? (short)((Level - 1) * multDex) : (short) multDex;
+				Quickness += (Quickness <= baseAmt) ? (short)((Level - 1) * multQui) : (short) multQui;
+				Empathy += (Empathy <= baseAmt) ? (short)((Level - 1) * multEmp) : (short) multEmp;
+				Intelligence += (Intelligence <= baseAmt) ? (short)((Level - 1) * multInt) : (short) multInt;
+				Charisma += (Charisma <= baseAmt) ? (short)((Level - 1) * multCha) : (short) multCha;
+				Piety += (Piety <= baseAmt) ? (short)((Level - 1) * multPie) : (short) multPie;
 			}
 		}
 
@@ -2223,43 +2299,153 @@ namespace DOL.GS
 			set { m_npcTemplate = value; }
 		}
 		/// <summary>
-		/// Loads the equipment template of this npc
+		/// Loads the equipment template of this NPC. Allows for the parsing of items and slots in EquipmentTemplateID columns for both NpcTemplate and Mob tables.
 		/// </summary>
-		/// <param name="equipmentTemplateID">The template id</param>
+		/// <param name="equipmentTemplateID">The EquipmentTemplateID value for the GameNPC or NPCTemplate</param>
+		/// <example>Items/slots: 10:322|323|324|;12:328;22:243. Multiple templates: MidClothYellowCloak;MidClothBlueCloak.</example>
 		public virtual void LoadEquipmentTemplateFromDatabase(string equipmentTemplateID)
 		{
 			EquipmentTemplateID = equipmentTemplateID;
-			if (EquipmentTemplateID != null && EquipmentTemplateID.Length > 0)
+			if (!string.IsNullOrEmpty(equipmentTemplateID))
 			{
 				GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-				if (template.LoadFromDatabase(EquipmentTemplateID))
+				var hasEquipment = template.LoadFromDatabase(EquipmentTemplateID);
+				if (hasEquipment)
 				{
-					m_inventory = template.CloseTemplate();
-				}
-				if (Inventory != null)
-				{
-					//if the distance slot isnt empty we use that
-					//Seems to always
-					if (Inventory.GetItem(eInventorySlot.DistanceWeapon) != null)
-						SwitchWeapon(eActiveWeaponSlot.Distance);
-					else
-                    {
-						InventoryItem twohand = Inventory.GetItem(eInventorySlot.TwoHandWeapon);
-						InventoryItem onehand = Inventory.GetItem(eInventorySlot.RightHandWeapon);
+					if (!template.IsClosed)
+						m_inventory = template.CloseTemplate();
+					if (Inventory != null)
+					{
+						//if the distance slot isnt empty we use that
+						//Seems to always
+						if (Inventory.GetItem(eInventorySlot.DistanceWeapon) != null)
+							SwitchWeapon(eActiveWeaponSlot.Distance);
+						else
+						{
+							InventoryItem twohand = Inventory.GetItem(eInventorySlot.TwoHandWeapon);
+							InventoryItem onehand = Inventory.GetItem(eInventorySlot.RightHandWeapon);
 
-						if (twohand != null && onehand != null)
-							//Let's add some random chance
-							SwitchWeapon(Util.Chance(50) ? eActiveWeaponSlot.TwoHanded : eActiveWeaponSlot.Standard);
-						else if (twohand != null)
-							//Hmm our right hand weapon may have been null
-							SwitchWeapon(eActiveWeaponSlot.TwoHanded);
-						else if (onehand != null)
-							//Hmm twohand was null lets default down here
-							SwitchWeapon(eActiveWeaponSlot.Standard);
+							if (twohand != null && onehand != null)
+								//Let's add some random chance
+								SwitchWeapon(Util.Chance(50) ? eActiveWeaponSlot.TwoHanded : eActiveWeaponSlot.Standard);
+							else if (twohand != null)
+								//Hmm our right hand weapon may have been null
+								SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+							else if (onehand != null)
+								//Hmm twohand was null lets default down here
+								SwitchWeapon(eActiveWeaponSlot.Standard);
+						}
 					}
 				}
-				//else
-					//log.Error("Inventory for " + this.Name + " is empty.");
+				else
+				{
+					var templatedInventory = new List<string>();
+					GameNPC mob = this;
+					// Try to reach the NPCEquipment table and load that
+					if (!Util.IsEmpty(equipmentTemplateID))
+					{
+						bool equipHasItems = false;
+						GameNpcInventoryTemplate inventoryTemp = new GameNpcInventoryTemplate();
+						
+						// Use a ';' split to allow NPCTemplates to support multiple equipment IDs
+						var equipIDs = Util.SplitCSV(equipmentTemplateID);
+						if (!equipmentTemplateID.Contains(':'))
+						{
+							foreach (var str in equipIDs)
+							{
+								templatedInventory.Add(str);
+							}
+
+							var equipid = "";
+
+							if (templatedInventory.Count >= 0)
+							{
+								if (templatedInventory.Count <= 1)
+									equipid = equipmentTemplateID;
+								else
+									equipid = templatedInventory[Util.Random(templatedInventory.Count - 1)];
+							}
+							if (inventoryTemp.LoadFromDatabase(equipid))
+								equipHasItems = true;
+						}
+
+						#region Manually Adding Equipment
+						// If nothing is found in the NPCEquipment table, manually parse the data
+						// This is considered "legacy code"
+						if (!equipHasItems && equipmentTemplateID.Contains(':'))
+						{
+							// Create a list to store equipment models
+							var tempModels = new List<int>();
+
+							// Go through each slot separated by ';'
+							foreach (var str in equipIDs)
+							{
+								// Clean out the previous entry, if any exists
+								tempModels.Clear();
+								// Split the equipment into slot and model(s)
+								var slotXModels = str.Split(':');
+								
+								// Each entry should consist of SLOT : MODELS
+								if (slotXModels.Length == 2)
+								{
+									// Identify the slots associated with each entry
+									if (int.TryParse(slotXModels[0], out var slot))
+									{
+										// Add models to the list
+										var models = slotXModels[1].Split('|');
+										
+										foreach (var strModel in models)
+										{
+											// Add items to the list if successfully parsed
+											if (int.TryParse(strModel, out var model))
+												tempModels.Add(model);
+										}
+
+										// If some models are found, randomly pick one and add it the NPC's equipment
+										if (tempModels.Count > 0)
+											equipHasItems |= inventoryTemp.AddNPCEquipment((eInventorySlot)slot, tempModels[Util.Random(tempModels.Count - 1)]);
+									}
+								}
+							}
+						}
+						#endregion Manually Adding Equipment
+
+						// Items added, make it into a new inventory
+						if (equipHasItems)
+						{
+							Inventory = new GameNPCInventory(inventoryTemp);
+							var twohand = Inventory.GetItem(eInventorySlot.TwoHandWeapon);
+							var onehand = Inventory.GetItem(eInventorySlot.RightHandWeapon);
+							var lefthand = Inventory.GetItem(eInventorySlot.LeftHandWeapon);
+							var distance = Inventory.GetItem(eInventorySlot.DistanceWeapon);
+							
+							// Default to ranged attacks, if a weapon is available
+							if (distance != null)
+								SwitchWeapon(eActiveWeaponSlot.Distance);
+							// Switch to melee weapons
+							else
+		                    {
+			                    if (twohand != null && onehand != null)
+								{
+										// Let's pick a weapon at random
+										SwitchWeapon(Util.Chance(50) ? eActiveWeaponSlot.TwoHanded : eActiveWeaponSlot.Standard);
+								}
+								else if (twohand != null)
+									// If right-hand weapon is maybe null for some reason
+									SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+								else if (onehand != null && lefthand != null)
+									// If there's a left-hand weapon, let's use it
+									SwitchWeapon(eActiveWeaponSlot.Standard);
+								else if (onehand != null)
+									// Let's just default to things here
+									SwitchWeapon(eActiveWeaponSlot.Standard);
+		                    }
+						}
+
+						if (VisibleActiveWeaponSlots > 0)
+							VisibleActiveWeaponSlots = mob.VisibleActiveWeaponSlots;
+					}
+				}
 			}
 		}
 
@@ -2401,77 +2587,211 @@ namespace DOL.GS
 			m_loadedFromScript = false;
 			Mob dbMob = (Mob)obj;
 			NPCTemplate = NpcTemplateMgr.GetTemplate(dbMob.NPCTemplateID);
+
+			var notNeg = dbMob.NPCTemplateID != -1;
+			var notNull = NPCTemplate != null;
+			var tryTemplate = notNeg && notNull;
+			var replaceVal = notNull && NPCTemplate.ReplaceMobValues;
 			
-			//log.Error("Couldn't fetch NPCTemplate for " + dbMob.Name + ".");
-			ClassType = dbMob.ClassType;
-			Level = dbMob.Level;
-			TranslationId = dbMob.TranslationId;
-			Name = dbMob.Name;
-			Suffix = dbMob.Suffix;
-			GuildName = dbMob.Guild;
-			ExamineArticle = dbMob.ExamineArticle;
-			MessageArticle = dbMob.MessageArticle;
-			Model = dbMob.Model;
-			Gender = (eGender)dbMob.Gender;
-			Realm = (eRealm)dbMob.Realm;
-			Size = dbMob.Size;
-			EquipmentTemplateID = dbMob.EquipmentTemplateID;
-			LoadEquipmentTemplateFromDatabase(dbMob.EquipmentTemplateID);
-			ItemsListTemplateID = dbMob.ItemsListTemplateID;
-			Flags = (eFlags)dbMob.Flags;
-			MeleeDamageType = (eDamageType)dbMob.MeleeDamageType;
-			if (MeleeDamageType == 0)
+			// Attempting to expedite/improve the process of loading NPC templates by loading the template at the start rather than setting all values with mob values and then replacing them
+			
+			#region Independent Template Values
+			// These stats aren't found in the mob table, so always get them from the template where possible
+			if (tryTemplate)
 			{
-				MeleeDamageType = eDamageType.Slash;
+				LoadTemplate(NPCTemplate);
+				
+				TetherRange = (NPCTemplate.TetherRange > 0) ? NPCTemplate.TetherRange : 2000;
+				// Template values set in LoadTemplate()
+				/*
+				ParryChance = NPCTemplate.ParryChance;
+				EvadeChance = NPCTemplate.EvadeChance;
+				BlockChance = NPCTemplate.BlockChance;
+				LeftHandSwingChance = NPCTemplate.LeftHandSwingChance;
+				*/
+				// Add all spells and scale based on the mob's level
+				if (NPCTemplate.Spells != null && NPCTemplate.Spells.Count > 0) 
+					Spells = NPCTemplate.Spells;
+				if (NPCTemplate.Styles != null && NPCTemplate.Styles.Count > 0) 
+					Styles = NPCTemplate.Styles;
 			}
-			ParryChance = m_parryChance;
-			EvadeChance = m_evadeChance;
-			BlockChance = m_blockChance;
-			LeftHandSwingChance = m_leftHandSwingChance;
-			Spells = m_spells;
-			Styles = m_styles;
-			RespawnInterval = dbMob.RespawnInterval * 1000;
-			if (RespawnInterval <= 0)
-				RespawnInterval = 80 * 1000;
+			// If no template exists, try to fetch default values
+			else
+			{
+				TetherRange = m_tetherRange;
+				ParryChance = m_parryChance;
+				EvadeChance = m_evadeChance;
+				BlockChance = m_blockChance;
+				LeftHandSwingChance = m_leftHandSwingChance;
+				Spells = m_spells;
+				Styles = m_styles;
+			}
+			#endregion Independent Template Values
 
-			/* Set with AutoSetStats
-			Strength = dbMob.Strength;
-			Constitution = dbMob.Constitution; 
-			Dexterity = dbMob.Dexterity;
-			Quickness = dbMob.Quickness;
-			Intelligence = dbMob.Intelligence;
-			Empathy = dbMob.Empathy;
-			Charisma = dbMob.Charisma;
-			Piety = dbMob.Piety;
-			*/
+			#region ReplaceMobValues
+			// Check for template values and determine what is and isn't being replaced
+			// If replace values set to true, then ignore mob values where possible
+			if (tryTemplate && replaceVal)
+			{
+				if (string.IsNullOrEmpty(NPCTemplate.ClassType))
+						ClassType = dbMob.ClassType;
+					
+				// Because NPCTemplate.Level is a string and may contain ranges and individual entries, this is
+				// parsed with LoadTemplate() and randomly assigned to mobs
+				// Level = (int)NPCTemplate.Level;
+				// Stats are automatically assigned and multiplied based on level using AutoSetStats()
+				/*
+				Strength = NPCTemplate.Strength;
+				Constitution = NPCTemplate.Constitution; 
+				Dexterity = NPCTemplate.Dexterity;
+				Quickness = NPCTemplate.Quickness;
+				Intelligence = NPCTemplate.Intelligence;
+				Empathy = NPCTemplate.Empathy;
+				Charisma = NPCTemplate.Charisma;
+				Piety = NPCTemplate.Piety;
+				*/
+				
+				// Default to mob values where necessary as not all NPC templates may be current, correct, or complete
+				if (string.IsNullOrEmpty(NPCTemplate.Name))
+					Name = dbMob.Name;
+				if (string.IsNullOrEmpty(NPCTemplate.GuildName))
+					GuildName = dbMob.Guild;
+				if (string.IsNullOrEmpty(NPCTemplate.ExamineArticle) && !string.IsNullOrEmpty(dbMob.ExamineArticle))
+					ExamineArticle = dbMob.ExamineArticle;
+				if (string.IsNullOrEmpty(NPCTemplate.MessageArticle) && !string.IsNullOrEmpty(dbMob.MessageArticle))
+					MessageArticle = dbMob.MessageArticle;
+				if (string.IsNullOrEmpty(NPCTemplate.Model))
+					Model = dbMob.Model;
+				if ((eGender)NPCTemplate.Gender == eGender.Neutral && (eGender)dbMob.Gender != eGender.Neutral)
+					Gender = (eGender)dbMob.Gender;
+				if (string.IsNullOrEmpty(NPCTemplate.Size))
+					Size = dbMob.Size;
+				if (NPCTemplate.MaxSpeed == 0)
+					MaxSpeedBase = (short)dbMob.Speed;
+				if (string.IsNullOrEmpty(NPCTemplate.ItemsListTemplateID))
+					ItemsListTemplateID = dbMob.ItemsListTemplateID;
+				if (NPCTemplate.MeleeDamageType == 0 && dbMob.MeleeDamageType != 0)
+					MeleeDamageType = (eDamageType)dbMob.MeleeDamageType;
+				if (NPCTemplate.AggroLevel == 0 && dbMob.AggroLevel != 0)
+					AggroLevel = dbMob.AggroLevel;
+				if (NPCTemplate.AggroRange == 0 && dbMob.AggroRange != 0)
+					AggroRange = dbMob.AggroRange;
+				if (NPCTemplate.Race == 0 && dbMob.Race != 0)
+					Race = (short)dbMob.Race;
+				if (NPCTemplate.BodyType == 0 && dbMob.BodyType != 0)
+					BodyType = (ushort)dbMob.BodyType;
+				if (NPCTemplate.MaxDistance == 0 && dbMob.MaxDistance != 0)
+					MaxDistance = dbMob.MaxDistance;
+				else if (NPCTemplate.MaxDistance == 0 && dbMob.MaxDistance == 0)
+					MaxDistance = 2000;
+				if (string.IsNullOrEmpty(NPCTemplate.PackageID))
+					PackageID = dbMob.PackageID;
+				if (NPCTemplate.FactionId == 0 && dbMob.FactionID != 0)
+					Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
+				
+				// If a value exists for either the mob of template, try to load the associated mob inventory
+				if (string.IsNullOrEmpty(NPCTemplate.EquipmentTemplateID) || string.IsNullOrEmpty(NPCTemplate.Inventory))
+				{
+					EquipmentTemplateID = dbMob.EquipmentTemplateID;
+					if (!string.IsNullOrEmpty(dbMob.EquipmentTemplateID))
+						LoadEquipmentTemplateFromDatabase(dbMob.EquipmentTemplateID);
+				}
+			}
+			#endregion ReplaceMobValues
+			
+			#region No NPCTemplate
+			// If no NPC template exists or ReplaceMobValues is false, then assign static Mob table values
+			else
+			{
+				if (!string.IsNullOrEmpty(dbMob.ClassType))
+					ClassType = dbMob.ClassType;
+				else
+					ClassType = "DOL.GS.GameNPC";
+				
+				// Levels assigned at the mob level will typically treat stats as static values, unless values of less than 30 are used.
+				// If any such values are found, then AutoSetStats() will treat them as "base" values* and increase based on the following formula:
+				// Stat = baseValue + (dbMob.Level x statMultiplier)
+				// * This is only applicable to non-GameEpicBosses
+				Level = dbMob.Level;
+				
+				// Stats are automatically assigned and multiplied based on Level using AutoSetStats()
+				// If any stat exceeds '(30 + Level) + (Level x 2)', then the formula above Level will instead be used.*
+				// * This is only applicable to non-GameEpicBosses
+				/*
+				Strength = dbMob.Strength;
+				Constitution = dbMob.Constitution; 
+				Dexterity = dbMob.Dexterity;
+				Quickness = dbMob.Quickness;
+				Intelligence = dbMob.Intelligence;
+				Empathy = dbMob.Empathy;
+				Charisma = dbMob.Charisma;
+				Piety = dbMob.Piety;
+				*/
 
-			AggroLevel = dbMob.AggroLevel;
-			AggroRange = dbMob.AggroRange;
-			Race = (short)dbMob.Race;
-			BodyType = (ushort)dbMob.BodyType;
-			MaxDistance = dbMob.MaxDistance;
-			TetherRange = 1000;
-			ItemsListTemplateID = dbMob.ItemsListTemplateID;
-			m_visibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
-			PackageID = dbMob.PackageID;
-			Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
-			X = dbMob.X;
-			Y = dbMob.Y;
-			Z = dbMob.Z;
-			Heading = (ushort)(dbMob.Heading & 0xFFF);
-			CurrentSpeed = 0;
-			MaxSpeedBase = (short)dbMob.Speed;
+				// All other values set from the Mob table
+				AggroLevel = dbMob.AggroLevel;
+				AggroRange = dbMob.AggroRange;
+				BodyType = (ushort) dbMob.BodyType;
+				EquipmentTemplateID = dbMob.EquipmentTemplateID; // Load equipment template below
+				// If no article is specified and the mob has a lowercase first letter in its name, then automatically assign an article
+				ExamineArticle = (string.IsNullOrEmpty(dbMob.ExamineArticle) && !char.IsUpper(dbMob.Name[0]))
+					? "the"
+					: dbMob.ExamineArticle;
+				Faction = FactionMgr.GetFactionByID(dbMob.FactionID);
+				Flags = (eFlags) dbMob.Flags;
+				Gender = (eGender) dbMob.Gender;
+				GuildName = dbMob.Guild;
+				ItemsListTemplateID = dbMob.ItemsListTemplateID;
+				MaxDistance = dbMob.MaxDistance;
+				MaxSpeedBase = (short) dbMob.Speed;
+				MeleeDamageType = (eDamageType) dbMob.MeleeDamageType;
+				// If no article is specified and the mob has a lowercase first letter in its name, then automatically assign an article
+				MessageArticle = (string.IsNullOrEmpty(dbMob.MessageArticle) && !char.IsUpper(dbMob.Name[0])) ? "The" : dbMob.MessageArticle;
+				Model = dbMob.Model;
+				Name = dbMob.Name;
+				PackageID = dbMob.PackageID;
+				Race = (short) dbMob.Race;
+				Size = dbMob.Size;
+				Suffix = dbMob.Suffix;
+				TranslationId = dbMob.TranslationId;
+				VisibleActiveWeaponSlots = dbMob.VisibleWeaponSlots;
+			}
+			#endregion No NPCTemplate
+			
+			// The following values are not found on NPC templates and controlled on a per-mob basis, so set them here regardless of template conditions
+			// Brain is set below, by default this is left blank
 			CurrentRegionID = dbMob.Region;
+			CurrentSpeed = 0;
+			Heading = (ushort)(dbMob.Heading & 0xFFF);
 			HouseNumber = (ushort)dbMob.HouseNumber;
-			RoamingRange = dbMob.RoamingRange;
 			IsCloakHoodUp = dbMob.IsCloakHoodUp;
 			OwnerID = dbMob.OwnerID;
 			PathID = dbMob.PathID;
-
-			if (Inventory != null) 
-				SwitchWeapon(ActiveWeaponSlot);
+			Realm = (eRealm)dbMob.Realm;
+			RespawnInterval = dbMob.RespawnInterval * 1000; // Value entered on DB in seconds, but treated in milliseconds
+			RoamingRange = dbMob.RoamingRange;
+			X = dbMob.X;
+			Y = dbMob.Y;
+			Z = dbMob.Z;
+			
+			// Catch some default values and redirect them to other default values
+			// Try to load equipment list (so they aren't naked)
+			// Equipping weapons is performed at bottom
+			if (EquipmentTemplateID == NPCTemplate?.EquipmentTemplateID && !string.IsNullOrEmpty(NPCTemplate.EquipmentTemplateID) && Inventory != null)
+				LoadEquipmentTemplateFromDatabase(NPCTemplate);
+			else if (EquipmentTemplateID == dbMob.EquipmentTemplateID && !string.IsNullOrEmpty(dbMob.EquipmentTemplateID))
+				LoadEquipmentTemplateFromDatabase(dbMob.EquipmentTemplateID);
+			if (Inventory != null) // Set visible weapon, if one exists
+				SwitchWeapon((eActiveWeaponSlot)VisibleActiveWeaponSlots);
+			if (MeleeDamageType == eDamageType.Natural)
+				MeleeDamageType = eDamageType.Slash;
+			if (MaxDistance == 0)
+				MaxDistance = 2000;
+			if (RespawnInterval <= 0) // Make sure there's no instant or negative respawn timers
+				RespawnInterval = 80 * 1000; // Default is 1min20sec
 
 			#region Mob Brains
+			// Time to set the brain and kick it into action
 			if (dbMob.Brain != "")
 			{
 				try
@@ -2501,6 +2821,7 @@ namespace DOL.GS
 			{
 				if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && NPCTemplate.ReplaceMobValues)
 				{
+					// Catch cases where the mob has a value assigned and ignore NPC template (in case template is outdated or incorrect)
 					aggroBrain.AggroLevel = (NPCTemplate.AggroLevel == 0 && dbMob.AggroLevel != 0)
 						? dbMob.AggroLevel
 						: NPCTemplate.AggroLevel;
@@ -2521,19 +2842,13 @@ namespace DOL.GS
 						aggroBrain.AggroRange = 400;
 
 						if (Name != Name.ToLower())
-						{
 							aggroBrain.AggroRange = 500;
-						}
 
 						if (CurrentRegion.IsDungeon)
-						{
 							aggroBrain.AggroRange = 300;
-						}
 					}
 					else
-					{
 						aggroBrain.AggroRange = 500;
-					}
 				}
 
 				if (aggroBrain.AggroLevel == Constants.USE_AUTOVALUES)
@@ -2542,6 +2857,7 @@ namespace DOL.GS
 
 					if (Level > 5)
 						aggroBrain.AggroLevel = 30;
+					
 					if (Name != Name.ToLower())
 					{
 						aggroBrain.AggroLevel = 30;
@@ -2551,13 +2867,6 @@ namespace DOL.GS
 				}
 			}
 			#endregion Mob Brains
-			
-			if (dbMob.NPCTemplateID != -1 && NPCTemplate != null && NPCTemplate.ReplaceMobValues && m_loadedFromScript == false)
-				LoadTemplate(NPCTemplate);
-			/*
-						if (Inventory != null)
-							SwitchWeapon(ActiveWeaponSlot);
-			*/
 		}
 		#endregion LoadFromDatabase
 
@@ -2711,22 +3020,24 @@ namespace DOL.GS
 
 			// Save the template for later
 			NPCTemplate = template as NpcTemplate;
-
+			GameNPC mob = this;
+			
 			// These stats aren't found in the mob table, so always get them from the template
-			TetherRange = template.TetherRange;
+			TetherRange = (template.TetherRange > 0) ? template.TetherRange : 2000;
 			ParryChance = template.ParryChance;
 			EvadeChance = template.EvadeChance;
 			BlockChance = template.BlockChance;
 			LeftHandSwingChance = template.LeftHandSwingChance;
 
 			#region Preliminary ReplaceMobValues
+			
 			// We need to set the stats first, followed by level, before assigning spells
 			// so that both stats (Str,Dex,Con) and spells are scaled correctly
 			if (template.ReplaceMobValues)
 			{
 				// Set the class type as stat autoscaling has conditions pertaining to this
-				ClassType = template.ClassType;
-				//ClassType = template.ClassType;
+				if (!string.IsNullOrEmpty(template.ClassType))
+					ClassType = template.ClassType;
 
 				#region Level
 				// Apply the level before Str/Con/Dex so that autoscaling correctly occurs with AutoSetStats()
@@ -2789,9 +3100,9 @@ namespace DOL.GS
 			#endregion Preliminary ReplaceMobValues
 
 			// Add all spells and scale based on the mob's level
-			if (template.Spells != null) Spells = template.Spells;
-			if (template.Styles != null)  Styles = template.Styles;
-			if (template.Abilities != null)
+			if (template.Spells != null && template.Spells.Count > 0) Spells = template.Spells;
+			if (template.Styles != null && template.Styles.Count > 0)  Styles = template.Styles;
+			if (template.Abilities != null && template.Abilities.Count > 0)
 			{
 				lock (m_lockAbilities)
 				{
@@ -2806,11 +3117,12 @@ namespace DOL.GS
 				return;
 			
 			#region All Other ReplaceMobValues
-			
+
 			TranslationId = template.TranslationId;
 			Name = template.Name;
 			Suffix = template.Suffix;
-			GuildName = template.GuildName;
+			if (!string.IsNullOrEmpty(template.GuildName))
+				GuildName = template.GuildName;
 			ExamineArticle = (string.IsNullOrEmpty(template.ExamineArticle) && !char.IsUpper(template.Name[0])) ? "the" : template.ExamineArticle;
 			MessageArticle = (string.IsNullOrEmpty(template.MessageArticle) && !char.IsUpper(template.Name[0])) ? "The" : template.MessageArticle;
 			Faction = FactionMgr.GetFactionByID(template.FactionId);
@@ -2821,10 +3133,10 @@ namespace DOL.GS
 			Flags = (eFlags)template.Flags;
 			PackageID = template.PackageID;
 			MeleeDamageType = template.MeleeDamageType;
+			
 			if (MeleeDamageType == 0)
-			{
 				MeleeDamageType = eDamageType.Slash;
-			}
+			
 			m_ownBrain = new StandardMobBrain
 			{
 				Body = this,
@@ -2883,81 +3195,88 @@ namespace DOL.GS
 			// Set default Gender based on Model
 			if (Model != 0 && Model != 1)
 			{
+				var chosenGender = (eGender) template.Gender;
+
 				// Set default value
-				eGender chosenGender = (eGender)template.Gender;
-				
-				// Since most templates do not have a Gender set yet, we're going to change what we can as part of the initial server build
-				if (chosenGender == eGender.Neutral)
+				if (template.Gender == (ushort) eGender.Neutral && mob != null && mob.Gender > eGender.Neutral)
+					Gender = mob.Gender;
+				else
 				{
-					// Check the mob's Model and then assign gender based on this
-					switch (Model)
+
+					// Since most templates do not have a Gender set yet, we're going to change what we can as part of the initial server build
+					if (chosenGender == eGender.Neutral)
 					{
-						// Male models
-						case 8 or 9 or 10 or 14 or 16 or 17 or 18 or 20 or 27 or 28 or 32 or 33 or 34 or 39 or 40
-							or 41 or 42 or 48 or 49 or 50 or 51 or 61 or 62 or 63 or 64 or 73 or 74 or 78 or 79 or 80
-							or 84 or 85 or 86 or 90 or 91 or 92 or 137 or 138 or 139 or 140 or 141 or 142 or 143 or 144
-							or 153 or 154 or 155 or 156 or 157 or 158 or 159 or 160 or 169 or 170 or 171 or 172 or 173
-							or 174 or 175 or 176 or 185 or 186 or 187 or 188 or 189 or 190 or 191 or 192 or 201 or 202
-							or 203 or 204 or 205 or 212 or 213 or 214 or 215 or 221 or 222 or 223 or 224 or 225 or 231
-							or 232 or 233 or 234 or 235 or 254 or 255 or 256 or 257 or 262 or 263 or 264 or 265 or 270
-							or 271 or 272 or 273 or 278 or 279 or 280 or 281 or 286 or 287 or 288 or 289 or 290 or 291
-							or 292 or 293 or 302 or 303 or 304 or 305 or 306 or 307 or 308 or 309 or 318 or 319 or 320
-							or 321 or 322 or 323 or 324 or 325 or 334 or 335 or 336 or 337 or 338 or 339 or 340 or 341
-							or 350 or 351 or 352 or 353 or 354 or 360 or 361 or 362 or 363 or 364 or 370 or 371 or 372
-							or 373 or 374 or 380 or 381 or 382 or 383 or 384 or 390 or 415 or 416 or 417 or 418 or 419
-							or 420 or 421 or 422 or 423 or 424 or 471 or 472 or 473 or 474 or 479 or 480 or 481 or 482
-							or 487 or 488 or 489 or 490 or 495 or 496 or 497 or 488 or 503 or 504 or 505 or 506 or 511
-							or 512 or 513 or 514 or 515 or 529 or 520 or 521 or 522 or 527 or 528 or 529 or 530 or 535
-							or 536 or 537 or 538 or 543 or 544 or 545 or 546 or 551 or 552 or 553 or 554 or 559 or 560
-							or 561 or 562 or 621 or 645 or 652 or 674 or 675 or 676 or 677 or 680 or 683 or 700 or 701
-							or 702 or 703 or 704 or 705 or 706 or 707 or 716 or 717 or 718 or 719 or 720 or 721 or 722
-							or 723 or 732 or 733 or 734 or 735 or 736 or 737 or 738 or 739 or 748 or 749 or 750 or 751
-							or 752 or 753 or 754 or 755 or 773 or 774 or 775 or 776 or 777 or 778 or 779 or 780 or 789
-							or 790 or 791 or 792 or 793 or 794 or 795 or 796 or 805 or 806 or 807 or 808 or 832 or 833
-							or 834 or 835 or 840 or 849 or 850 or 851 or 852 or 868 or 867 or 868 or 870 or 872 or 874
-							or 889 or 918 or 954 or 956 or 958 or 960 or 962 or 964 or 1210 or 1211 or 1265 or 1270
-							or 1271 or 1272 or 1273 or 1274 or 1741 or 1742 or 1743 or 1744 or 1976 or 1982 or 1984
-							or 2022 or 2078 or 2080 or 2082 or 2084 or 2086 or 2088 or 2090 or 2092 or 2094 or 2096
-							or 2098 or 2100 or 2102 or 2104 or 2106 or 2108 or 2110 or 2119 or 2133 or 2186 or 2211
-							or 2215 or 2310 or 2312 or 2314 or 2316 or 2347 or 2348 or 2349 or 2350 or 2364 or 2370:
-							chosenGender = eGender.Male;
-							break;
-						// Female models
-						case 5 or 6 or 7 or 19 or 35 or 36 or 37 or 38 or 43 or 44 or 45 or 46 or 52 or 53 or 54 or 55
-							or 65 or 66 or 67 or 68 or 75 or 76 or 77 or 81 or 82 or 83 or 87 or 88 or 89 or 145 or 146
-							or 147 or 148 or 149 or 150 or 151 or 152 or 161 or 162 or 163 or 164 or 165 or 166 or 167
-							or 168 or 177 or 178 or 179 or 180 or 181 or 182 or 183 or 184 or 193 or 194 or 195 or 196
-							or 197 or 198 or 199 or 200 or 206 or 207 or 208 or 209 or 210 or 211 or 214 or 216 or 217
-							or 218 or 219 or 220 or 226 or 227 or 228 or 229 or 230 or 236 or 237 or 238 or 239 or 240
-							or 244 or 258 or 259 or 260 or 261 or 266 or 267 or 268 or 269 or 274 or 275 or 276 or 277
-							or 282 or 283 or 284 or 285 or 294 or 295 or 296 or 297 or 298 or 299 or 300 or 301 or 310
-							or 311 or 312 or 313 or 314 or 315 or 316 or 317 or 326 or 327 or 328 or 329 or 330 or 331
-							or 332 or 333 or 342 or 343 or 344 or 345 or 346 or 347 or 348 or 349 or 355 or 356 or 357
-							or 358 or 359 or 365 or 366 or 367 or 368 or 369 or 375 or 376 or 377 or 378 or 379 or 385
-							or 386 or 387 or 388 or 389 or 425 or 426 or 427 or 428 or 429 or 430 or 431 or 432 or 433
-							or 434 or 435 or 436 or 437 or 438 or 439 or 475 or 476 or 477 or 478 or 483 or 484 or 845
-							or 486 or 491 or 492 or 493 or 494 or 499 or 500 or 501 or 502 or 507 or 508 or 509 or 510
-							or 516 or 517 or 518 or 523 or 524 or 525 or 526 or 531 or 532 or 533 or 534 or 539 or 540
-							or 541 or 542 or 547 or 548 or 549 or 550 or 555 or 556 or 557 or 558 or 563 or 564 or 565
-							or 566 or 622 or 631 or 638 or 644 or 646 or 681 or 682 or 708 or 709 or 710 or 711 or 712
-							or 713 or 714 or 715 or 724 or 725 or 726 or 727 or 728 or 729 or 730 or 731 or 740 or 741
-							or 742 or 743 or 744 or 745 or 746 or 747 or 756 or 757 or 758 or 759 or 760 or 761 or 762
-							or 763 or 781 or 782 or 783 or 784 or 785 or 786 or 787 or 788 or 797 or 798 or 799 or 800
-							or 801 or 802 or 803 or 804 or 809 or 810 or 811 or 812 or 836 or 837 or 838 or 839 or 841
-							or 845 or 853 or 854 or 855 or 856 or 861 or 864 or 865 or 869 or 871 or 873 or 875 or 890
-							or 945 or 955 or 957 or 959 or 961 or 963 or 965 or 1015 or 1018 or 1020 or 1030 or 1883
-							or 1983 or 1985 or 2023 or 2079 or 2081 or 2083 or 2085 or 2087 or 2089 or 2091 or 2093
-							or 2095 or 2097 or 2099 or 2101 or 2103 or 2105 or 2107 or 2109 or 2111 or 2120 or 2169
-							or 2170 or 2212 or 2216 or 2311 or 2313 or 2315 or 2317 or 2365:
-							chosenGender = eGender.Female;
-							break;
-						// For all other models, just leave them alone
-						default:
-							chosenGender = (eGender)template.Gender;
-							break;
+						// Check the mob's Model and then assign gender based on this
+						switch (Model)
+						{
+							// Male models
+							case 8 or 9 or 10 or 14 or 16 or 17 or 18 or 20 or 27 or 28 or 32 or 33 or 34 or 39 or 40
+								or 41 or 42 or 48 or 49 or 50 or 51 or 61 or 62 or 63 or 64 or 73 or 74 or 78 or 79 or 80
+								or 84 or 85 or 86 or 90 or 91 or 92 or 137 or 138 or 139 or 140 or 141 or 142 or 143 or 144
+								or 153 or 154 or 155 or 156 or 157 or 158 or 159 or 160 or 169 or 170 or 171 or 172 or 173
+								or 174 or 175 or 176 or 185 or 186 or 187 or 188 or 189 or 190 or 191 or 192 or 201 or 202
+								or 203 or 204 or 205 or 212 or 213 or 214 or 215 or 221 or 222 or 223 or 224 or 225 or 231
+								or 232 or 233 or 234 or 235 or 254 or 255 or 256 or 257 or 262 or 263 or 264 or 265 or 270
+								or 271 or 272 or 273 or 278 or 279 or 280 or 281 or 286 or 287 or 288 or 289 or 290 or 291
+								or 292 or 293 or 302 or 303 or 304 or 305 or 306 or 307 or 308 or 309 or 318 or 319 or 320
+								or 321 or 322 or 323 or 324 or 325 or 334 or 335 or 336 or 337 or 338 or 339 or 340 or 341
+								or 350 or 351 or 352 or 353 or 354 or 360 or 361 or 362 or 363 or 364 or 370 or 371 or 372
+								or 373 or 374 or 380 or 381 or 382 or 383 or 384 or 390 or 415 or 416 or 417 or 418 or 419
+								or 420 or 421 or 422 or 423 or 424 or 471 or 472 or 473 or 474 or 479 or 480 or 481 or 482
+								or 487 or 488 or 489 or 490 or 495 or 496 or 497 or 488 or 503 or 504 or 505 or 506 or 511
+								or 512 or 513 or 514 or 515 or 529 or 520 or 521 or 522 or 527 or 528 or 529 or 530 or 535
+								or 536 or 537 or 538 or 543 or 544 or 545 or 546 or 551 or 552 or 553 or 554 or 559 or 560
+								or 561 or 562 or 621 or 645 or 652 or 674 or 675 or 676 or 677 or 680 or 683 or 700 or 701
+								or 702 or 703 or 704 or 705 or 706 or 707 or 716 or 717 or 718 or 719 or 720 or 721 or 722
+								or 723 or 732 or 733 or 734 or 735 or 736 or 737 or 738 or 739 or 748 or 749 or 750 or 751
+								or 752 or 753 or 754 or 755 or 773 or 774 or 775 or 776 or 777 or 778 or 779 or 780 or 789
+								or 790 or 791 or 792 or 793 or 794 or 795 or 796 or 805 or 806 or 807 or 808 or 832 or 833
+								or 834 or 835 or 840 or 849 or 850 or 851 or 852 or 868 or 867 or 868 or 870 or 872 or 874
+								or 889 or 918 or 954 or 956 or 958 or 960 or 962 or 964 or 1210 or 1211 or 1265 or 1270
+								or 1271 or 1272 or 1273 or 1274 or 1741 or 1742 or 1743 or 1744 or 1976 or 1982 or 1984
+								or 2022 or 2078 or 2080 or 2082 or 2084 or 2086 or 2088 or 2090 or 2092 or 2094 or 2096
+								or 2098 or 2100 or 2102 or 2104 or 2106 or 2108 or 2110 or 2119 or 2133 or 2186 or 2211
+								or 2215 or 2310 or 2312 or 2314 or 2316 or 2347 or 2348 or 2349 or 2350 or 2364 or 2370:
+								chosenGender = eGender.Male;
+								break;
+							// Female models
+							case 5 or 6 or 7 or 19 or 35 or 36 or 37 or 38 or 43 or 44 or 45 or 46 or 52 or 53 or 54 or 55
+								or 65 or 66 or 67 or 68 or 75 or 76 or 77 or 81 or 82 or 83 or 87 or 88 or 89 or 145 or 146
+								or 147 or 148 or 149 or 150 or 151 or 152 or 161 or 162 or 163 or 164 or 165 or 166 or 167
+								or 168 or 177 or 178 or 179 or 180 or 181 or 182 or 183 or 184 or 193 or 194 or 195 or 196
+								or 197 or 198 or 199 or 200 or 206 or 207 or 208 or 209 or 210 or 211 or 214 or 216 or 217
+								or 218 or 219 or 220 or 226 or 227 or 228 or 229 or 230 or 236 or 237 or 238 or 239 or 240
+								or 244 or 258 or 259 or 260 or 261 or 266 or 267 or 268 or 269 or 274 or 275 or 276 or 277
+								or 282 or 283 or 284 or 285 or 294 or 295 or 296 or 297 or 298 or 299 or 300 or 301 or 310
+								or 311 or 312 or 313 or 314 or 315 or 316 or 317 or 326 or 327 or 328 or 329 or 330 or 331
+								or 332 or 333 or 342 or 343 or 344 or 345 or 346 or 347 or 348 or 349 or 355 or 356 or 357
+								or 358 or 359 or 365 or 366 or 367 or 368 or 369 or 375 or 376 or 377 or 378 or 379 or 385
+								or 386 or 387 or 388 or 389 or 425 or 426 or 427 or 428 or 429 or 430 or 431 or 432 or 433
+								or 434 or 435 or 436 or 437 or 438 or 439 or 475 or 476 or 477 or 478 or 483 or 484 or 845
+								or 486 or 491 or 492 or 493 or 494 or 499 or 500 or 501 or 502 or 507 or 508 or 509 or 510
+								or 516 or 517 or 518 or 523 or 524 or 525 or 526 or 531 or 532 or 533 or 534 or 539 or 540
+								or 541 or 542 or 547 or 548 or 549 or 550 or 555 or 556 or 557 or 558 or 563 or 564 or 565
+								or 566 or 622 or 631 or 638 or 644 or 646 or 681 or 682 or 708 or 709 or 710 or 711 or 712
+								or 713 or 714 or 715 or 724 or 725 or 726 or 727 or 728 or 729 or 730 or 731 or 740 or 741
+								or 742 or 743 or 744 or 745 or 746 or 747 or 756 or 757 or 758 or 759 or 760 or 761 or 762
+								or 763 or 781 or 782 or 783 or 784 or 785 or 786 or 787 or 788 or 797 or 798 or 799 or 800
+								or 801 or 802 or 803 or 804 or 809 or 810 or 811 or 812 or 836 or 837 or 838 or 839 or 841
+								or 845 or 853 or 854 or 855 or 856 or 861 or 864 or 865 or 869 or 871 or 873 or 875 or 890
+								or 945 or 955 or 957 or 959 or 961 or 963 or 965 or 1015 or 1018 or 1020 or 1030 or 1883
+								or 1983 or 1985 or 2023 or 2079 or 2081 or 2083 or 2085 or 2087 or 2089 or 2091 or 2093
+								or 2095 or 2097 or 2099 or 2101 or 2103 or 2105 or 2107 or 2109 or 2111 or 2120 or 2169
+								or 2170 or 2212 or 2216 or 2311 or 2313 or 2315 or 2317 or 2365:
+								chosenGender = eGender.Female;
+								break;
+							// For all other models, just leave them alone
+							default:
+								chosenGender = (eGender) template.Gender;
+								break;
+						}
 					}
+
+					Gender = chosenGender;
 				}
-				Gender = chosenGender;
 			}
 			#endregion Gender
 			
@@ -2966,6 +3285,44 @@ namespace DOL.GS
 			#region Inventory
 
 			EquipmentTemplateID = template.EquipmentTemplateID;
+			
+			if (!string.IsNullOrEmpty(template.EquipmentTemplateID))
+				LoadEquipmentTemplateFromDatabase(template.EquipmentTemplateID);
+			/*
+			if (mob != null && !string.IsNullOrEmpty(template.EquipmentTemplateID))
+				chosenEquipment = mob.EquipmentTemplateID;
+			
+			EquipmentTemplateID = chosenEquipment;
+			// In case someone's given multiple equipment templates to a mob, try to parse and randomly pick one
+			if (!string.IsNullOrEmpty(chosenEquipment))
+			{
+				if (chosenEquipment.Contains('|') || chosenEquipment.Contains(':'))
+				{
+					LoadEquipmentTemplateFromDatabase(chosenEquipment);
+				}
+				else if (chosenEquipment.Contains(';'))
+				{
+					var split = Util.SplitCSV(chosenEquipment, true);
+
+					if (split.Count > 0)
+					{
+						var temp = Util.Random(0, split.Count - 1);
+						if (!string.IsNullOrEmpty(split[temp]))
+							EquipmentTemplateID = split[temp];
+						else
+							EquipmentTemplateID = chosenEquipment;
+					}
+					else
+						EquipmentTemplateID = chosenEquipment;
+				}
+				else
+					EquipmentTemplateID = chosenEquipment;
+				
+				if (!string.IsNullOrEmpty(chosenEquipment))
+					LoadEquipmentTemplateFromDatabase(chosenEquipment);
+			} 
+			*/
+
 			ItemsListTemplateID = template.ItemsListTemplateID;
 			VisibleActiveWeaponSlots = template.VisibleActiveWeaponSlot;
 
