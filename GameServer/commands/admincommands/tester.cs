@@ -48,6 +48,7 @@ using System.Linq;
 using System.Security.Cryptography.Xml;
 using System.Text.RegularExpressions;
 using DOL.Database;
+using DOL.GS.PacketHandler;
 using DOL.GS.PacketHandler.Client.v168;
 using DOL.Language;
 
@@ -59,15 +60,15 @@ namespace DOL.GS.Commands
 		"&tester",
 		// Message: <----- '/tester' Commands (plvl 3) ----->
 		"<----- '/tester' Commands ----->",
-		ePrivLevel.Admin,
+		ePrivLevel.Player,
 		// Message:
 		"Perform various tester things, WIP",
 		// Syntax:
-		"'/tester speed <speed>' - Change your speed up to a maximum of 750.",
+		"'/tester speed' - Change your max speed, use it again to reset it",
 		// Message:
-		"'/tester heal' - Heals your end, HP, and power up to full.",
+		"'/tester heal' - Heals your end, HP, and power up to full."
 		// Syntax:
-		"'/tester godmode' - Prevents mobs from attacking you."
+		// "'/tester godmode' - Prevents mobs from attacking you."
 		)]
 	public class TesterCommand : AbstractCommandHandler, ICommandHandler
 	{
@@ -75,52 +76,55 @@ namespace DOL.GS.Commands
 		{
 			if (client == null)
 				return;
+			
+			if (!client.Account.IsTester)
+				return;
 
-			/*
-			if (args.Length < 1)
+			if (!ServerProperties.Properties.TESTER_LOGIN)
+				return;
+
+			if (args.Length < 2)
 			{
 				// Lists all '/tester' type subcommand syntax
 				DisplaySyntax(client);
 				return;
-			}*/
+			}
 
 			switch (args[1].ToLower())
 			{
 				#region Speed
-
 				case "speed":
 				{
-					GamePlayer player = client.Player;
+					var player = client.Player;
 
 					if (player == null)
 						return;
 
+					var testerSpeed = player.TempProperties.getProperty("tester_speed", false);
 
-					if (args.Length == 1)
+					if (!testerSpeed)
 					{
-						DisplayMessage(player, "Your" + " maximum speed is currently " + player.MaxSpeedBase + ".");
-						return;
+						player.TempProperties.setProperty("tester_speed", true);
+						player.MaxSpeedBase = 750;
+						DisplayMessage(player, "You move significantly faster.");
 					}
-
-					short speed;
-
-					if (short.TryParse(args[2], out speed))
-					{
-						if (speed is <= 750 and >= 1)
-						{
-							player.MaxSpeedBase = speed;
-							DisplayMessage(player, ("Your maximum speed is now " + player.MaxSpeedBase + "."));
-						}
+					else
+					{	
+						player.TempProperties.setProperty("tester_speed", false);
+						player.MaxSpeedBase = 191; // Default speed
+						DisplayMessage(player, "You resume moving at your normal speed.");
 					}
-
+					
+					player.Out.SendUpdateMaxSpeed();
 					break;
 				}
+				
 				#endregion Speed
 
 				#region Heal
 				case "heal":
 				{
-					GamePlayer player = client.Player;
+					var player = client.Player;
 
 					if (player == null)
 						return;
@@ -138,6 +142,7 @@ namespace DOL.GS.Commands
 					{
 						EffectService.RequestCancelEffect(player.effectListComponent.GetAllEffects().FirstOrDefault(e => e.EffectType == eEffect.RvrResurrectionIllness));
 					}
+					DisplayMessage(player, "You heal yourself.");
 				}
 					break;
 				#endregion Heal
