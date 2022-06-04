@@ -777,9 +777,11 @@ namespace DOL.AI.Brain
                 while (aggros.MoveNext())
                 {
                     GameLiving living = aggros.Current.Key;
+                    if(living == null)
+                        continue;
 
                     // check to make sure this target is still valid
-                    if (living == null || living.IsAlive == false ||
+                    if (living.IsAlive == false ||
                         living.ObjectState != GameObject.eObjectState.Active ||
                         living.IsStealthed ||
                         Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE ||
@@ -1548,8 +1550,14 @@ namespace DOL.AI.Brain
                 casted = Body.CastSpell(spell, m_mobSpellLine);
 
                 // if (casted && spell.CastTime > 0 && Body.IsMoving)
+                //Stopfollowing if spell casted and the cast time > 0 (non-instant spells)
                 if (casted && spell.CastTime > 0)
                     Body.StopFollowing();
+                //If instant cast and spell casted, and current follow target is not the target object, then switch follow target to current TargetObject
+                else if(casted && (spell.CastTime == 0 && Body.CurrentFollowTarget != Body.TargetObject))
+                {
+                    Body.Follow(Body.TargetObject, GameNPC.STICKMINIMUMRANGE, GameNPC.STICKMAXIMUMRANGE);
+                }
             }
             return casted;
         }

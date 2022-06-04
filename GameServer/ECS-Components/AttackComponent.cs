@@ -277,6 +277,8 @@ namespace DOL.GS
         /// </summary>
         public virtual bool AttackState { get; set; }
 
+        public bool LastAttackWasDualWield = false;
+
         /// <summary>
         /// Returns the AttackRange of this living
         /// </summary>
@@ -407,27 +409,37 @@ namespace DOL.GS
                 double speed = 0;
                 bool bowWeapon = true;
 
-                for (int i = 0; i < weapons.Length; i++)
+                if (LastAttackWasDualWield)
                 {
-                    if (weapons[i] != null)
+                    for (int i = 0; i < weapons.Length; i++)
                     {
-                        speed += weapons[i].SPD_ABS;
-                        count++;
-
-                        switch (weapons[i].Object_Type)
+                        if (weapons[i] != null)
                         {
-                            case (int) eObjectType.Fired:
-                            case (int) eObjectType.Longbow:
-                            case (int) eObjectType.Crossbow:
-                            case (int) eObjectType.RecurvedBow:
-                            case (int) eObjectType.CompositeBow:
-                                break;
-                            default:
-                                bowWeapon = false;
-                                break;
+                            speed += weapons[i].SPD_ABS;
+                            count++;
+
+                            switch (weapons[i].Object_Type)
+                            {
+                                case (int) eObjectType.Fired:
+                                case (int) eObjectType.Longbow:
+                                case (int) eObjectType.Crossbow:
+                                case (int) eObjectType.RecurvedBow:
+                                case (int) eObjectType.CompositeBow:
+                                    break;
+                                default:
+                                    bowWeapon = false;
+                                    break;
+                            }
                         }
                     }
                 }
+                else
+                {
+                    speed += weapons[0].SPD_ABS;
+                    count++;
+                }
+               
+                //Console.WriteLine($"DW? {LastAttackWasDualWield} speed {speed}");
 
                 if (count < 1)
                     return 0;
@@ -1616,8 +1628,9 @@ namespace DOL.GS
 
                     double weaponskillCalc = 1 + 
                         owner.GetWeaponSkill(weapon); //this provide level * damagetable * stats part of equation
-                    double strengthRelicCount =
-                        0.9 + (0.1 * Math.Max(1.0, RelicMgr.GetRelicBonusModifier(owner.Realm, eRelicType.Strength)));
+                    double strengthRelicCount = 1 + RelicMgr.GetRelicBonusModifier(owner.Realm, eRelicType.Strength);
+                    //Console.WriteLine($"relic count {strengthRelicCount} bonusmod {RelicMgr.GetRelicBonusModifier(owner.Realm, eRelicType.Strength)}");
+                       // 0.9 + (0.1 * Math.Max(1.0, RelicMgr.GetRelicBonusModifier(owner.Realm, eRelicType.Strength)));
                     double specModifier = lowerLimit + Util.Random(varianceRange) * 0.01;
 
                     double playerBaseAF = ad.Target is GamePlayer ? ad.Target.Level * 20 / 50d : 1;
@@ -1642,7 +1655,7 @@ namespace DOL.GS
                         weaponskiller.Out.SendMessage(
                             $"Base AF: {(ad.Target.GetArmorAF(ad.ArmorHitLocation) + playerBaseAF).ToString("0.00")} | ABS: {(ad.Target.GetArmorAbsorb(ad.ArmorHitLocation)*100).ToString("0.00")} | AF/ABS: {armorMod.ToString("0.00")}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
-                        weaponskiller.Out.SendMessage($"Attack Speed: {AttackSpeed(weapon)/1000.0}s | Damage Modifier: {(int) (DamageMod * 1000)}",
+                        weaponskiller.Out.SendMessage($"Damage Modifier: {(int) (DamageMod * 1000)}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
@@ -1692,6 +1705,7 @@ namespace DOL.GS
                     double weaponskillCalc = (owner.GetWeaponSkill(weapon) + ad.Attacker.Level * 45/50d);
                     double armorCalc = (ad.Target.GetArmorAF(ad.ArmorHitLocation) + ad.Target.Level * 45/50d) * (1 +
                         ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
+                    if (armorCalc <= 0) armorCalc = 0.1;
                     double DamageMod = weaponskillCalc / armorCalc;
                     if (DamageMod > 3.0) DamageMod = 3.0;
                     if (owner is GameEpicBoss)
@@ -1732,10 +1746,15 @@ namespace DOL.GS
                                     owner.GetModified(eProperty.OffhandDamageAndChance)) * .01);
                 }
 
-
+                //against NPC targets this just doubles the resists
+                //applying only to player targets as a fix
+                if (ad.Target is GamePlayer)
+                {
                 ad.Modifier = (int) (damage *
                                      (ad.Target.GetResist(ad.DamageType) +
                                       SkillBase.GetArmorResist(armor, ad.DamageType)) * -0.01);
+                }
+                
                 //damage += ad.Modifier;
                 // RA resist check
                 int resist = (int) (damage * ad.Target.GetDamageResist(owner.GetResistTypeForDamage(ad.DamageType)) *
@@ -1745,11 +1764,18 @@ namespace DOL.GS
                 int secondaryResistModifier = ad.Target.SpecBuffBonusCategory[(int) property];
                 int resistModifier = 0;
                 resistModifier +=
-                    (int) ((ad.Damage + (double) resistModifier) * (double) secondaryResistModifier * -0.01);
-
+                    (int) ((ad.Damage + (double) resist) * (double) secondaryResistModifier * -0.01);
+                /*
+                Console.WriteLine($"first mod {(ad.Target.GetResist(ad.DamageType) + SkillBase.GetArmorResist(armor, ad.DamageType)) * -0.01} " +
+                                  $"second mod {ad.Target.GetDamageResist(owner.GetResistTypeForDamage(ad.DamageType)) * -0.01} " +
+                                  $"resist modifier {resistModifier} " +
+                                  $"damage type {ad.DamageType}");
+                */
                 damage += resist;
                 damage += resistModifier;
                 ad.Modifier += resist;
+                
+                    
                 damage += ad.Modifier;
                 ad.Damage = (int) damage;
 
@@ -3565,25 +3591,26 @@ namespace DOL.GS
                 {
                     specLevel--;
                     int randomChance = Util.Random(99);
-                    int hitChance = specLevel >> 1;
-
+                    int doubleHitChance = (specLevel >> 1) + owner.GetModified(eProperty.OffhandChance) + owner.GetModified(eProperty.OffhandDamageAndChance);
+                    int tripleHitChance = doubleHitChance + (specLevel >> 2) + ((owner.GetModified(eProperty.OffhandChance) + owner.GetModified(eProperty.OffhandDamageAndChance)) >> 1);
+                    int quadHitChance = tripleHitChance + (specLevel >> 4) + ((owner.GetModified(eProperty.OffhandChance) + owner.GetModified(eProperty.OffhandDamageAndChance)) >> 2);
                     
                     if (owner is GamePlayer pl && pl.UseDetailedCombatLog)
                     {
                         pl.Out.SendMessage(
-                            $"Chance for 2 hits: {hitChance}% | 3 hits: { (specLevel > 25 ? (specLevel >> 2 ) : 0)}% | 4 hits: {(specLevel > 40 ? (specLevel >> 4 ) : 0)}% \n",
+                            $"Chance for 2 hits: {doubleHitChance}% | 3 hits: { (specLevel > 25 ? tripleHitChance-doubleHitChance : 0)}% | 4 hits: {(specLevel > 40 ? quadHitChance-tripleHitChance : 0)}% \n",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
                     
-                    if (randomChance < hitChance)
+                    if (randomChance < doubleHitChance)
                         return 1; // 1 hit = spec/2
                     
-                    hitChance += specLevel >> 2;
-                    if (randomChance < hitChance && specLevel > 25)
+                    //doubleHitChance += specLevel >> 2;
+                    if (randomChance < tripleHitChance && specLevel > 25)
                         return 2; // 2 hits = spec/4
                     
-                    hitChance += specLevel >> 4;
-                    if (randomChance < hitChance && specLevel > 40)
+                    //doubleHitChance += specLevel >> 4;
+                    if (randomChance < quadHitChance && specLevel > 40)
                         return 3; // 3 hits = spec/16
 
                     return 0;

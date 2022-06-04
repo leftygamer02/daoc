@@ -9302,12 +9302,16 @@ namespace DOL.GS
 
 
             double percent = DexterityCastTimeReduction;
-
             percent *= 1.0 - GetModified(eProperty.CastingSpeed) * 0.01;
 
             ticks = (int)(ticks * Math.Max(CastingSpeedReductionCap, percent));
             if (ticks < MinimumCastingSpeed)
                 ticks = MinimumCastingSpeed;
+
+            if (this.UseDetailedCombatLog)
+            {
+                this.Out.SendMessage($"Casting Speed: {ticks/1000.0}s", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+            }
 
             return ticks;
         }
@@ -11063,10 +11067,10 @@ namespace DOL.GS
             }
             GroupMgr.RemovePlayerLooking(this);
 
-            if (Client.ClientState == GameClient.eClientState.Linkdead)
-            {
-                return;
-            }
+            // if (Client.ClientState == GameClient.eClientState.Linkdead)
+            // {
+            //     return;
+            // }
             if (log.IsDebugEnabled)
             {
                 log.DebugFormat("({0}) player.Delete()", Name);
@@ -14493,7 +14497,8 @@ namespace DOL.GS
 
             int range = 0;
             bool enemyHasCamouflage = EffectListService.GetAbilityEffectOnTarget(enemy, eEffect.Camouflage) != null;
-            if (HasAbility(Abilities.DetectHidden) && !enemyHasCamouflage)
+            bool enemyHasVanish = EffectListService.GetAbilityEffectOnTarget(enemy, eEffect.Vanish) != null;
+            if (HasAbility(Abilities.DetectHidden) && !enemyHasVanish && !enemyHasCamouflage)
             {
                 // we have detect hidden and enemy don't = higher range
                 range = levelDiff * 50 + 250; // Detect Hidden advantage
