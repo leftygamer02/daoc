@@ -76,7 +76,7 @@ namespace DOL.GS.Commands
 		"PLCommands.Tester.Syntax.Heal",
 		// Message: Fully replenishes your HP, endurance, and power.
 		"PLCommands.Tester.Usage.Heal",
-		// Syntax: /tester godmode
+		// Syntax: /tester godmode on|off
 		"PLCommands.Tester.Syntax.GodMode",
 		// Message: Prevents mobs from engaging you in combat, but you may still attack them. Does not work against other players or realm-specific mobs/NPCs.
 		"PLCommands.Tester.Usage.GodMode",

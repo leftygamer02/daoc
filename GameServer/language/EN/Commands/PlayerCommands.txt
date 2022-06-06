@@ -579,7 +579,7 @@ PLCommands.Tester.Syntax.Speed:                     /tester speed
 PLCommands.Tester.Usage.Speed:					    Substantially increases your movement speed. Use again to return your speed to normal.
 PLCommands.Tester.Syntax.Heal:                      /tester heal
 PLCommands.Tester.Usage.Heal:					    Fully replenishes your HP, endurance, and power.
-PLCommands.Tester.Syntax.GodMode:                   /tester godmode
+PLCommands.Tester.Syntax.GodMode:                   /tester godmode <on|off>
 PLCommands.Tester.Usage.GodMode:				    Prevents mobs from engaging you in combat, but you may still attack them. Does not work against other players or realm-specific mobs/NPCs.
 PLCommands.Tester.Syntax.Level:                     /tester level <newLevel>
 PLCommands.Tester.Usage.Level:					    Changes your level to the specified value. All skill lines are reset upon changing levels.
