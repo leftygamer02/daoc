@@ -636,6 +636,30 @@ namespace DOL.GS.Commands
 							}
 						}
 
+						var lootTemplate = DOLDB<LootTemplate>.SelectObjects(DB.Column("TemplateName").IsEqualTo(target.Name));
+
+						if (lootTemplate != null)
+						{
+							info.Add("");
+							info.Add("Loot Drops");
+
+							foreach (LootTemplate loot in lootTemplate)
+							{
+								ItemTemplate drop = GameServer.Database.FindObjectByKey<ItemTemplate>(loot.ItemTemplateID);
+
+								string message = "";
+								if (drop == null)
+								{
+									message += "Item Template Not Found";
+								}
+								else
+								{
+									message += drop.Name;
+								}
+								info.Add(" - " + message);
+							}
+						}
+
 						if (targetMob.ambientTexts != null && targetMob.ambientTexts.Count > 0)
 						{
 							info.Add (" ");
