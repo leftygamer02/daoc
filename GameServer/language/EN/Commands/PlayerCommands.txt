@@ -572,5 +572,21 @@ PLCommands.SendMessage.Syntax.Send:                     '/send <targetName> <mes
 ## /setwho
 PLCommands.SetWho.Err.CraftAdvisor:             You cannot turn off your craft title while your Advisor flag is active, as you do not meet the other level and/or time played requirements.
 
+## /tester
+PLCommands.Header.Syntax.Tester:                       <----- '/tester' Commands (TESTER ONLY) ----->
+PLCommands.Tester.Description:					    Allows testers to perform expanded research and information gathering while on the Atlas test server.
+PLCommands.Tester.Syntax.Speed:                     /tester speed
+PLCommands.Tester.Usage.Speed:					    Substantially increases your movement speed. Use again to return your speed to normal.
+PLCommands.Tester.Syntax.Heal:                      /tester heal
+PLCommands.Tester.Usage.Heal:					    Fully replenishes your HP, endurance, and power.
+PLCommands.Tester.Syntax.GodMode:                   /tester godmode
+PLCommands.Tester.Usage.GodMode:				    Prevents mobs from engaging you in combat, but you may still attack them. Does not work against other players or realm-specific mobs/NPCs.
+PLCommands.Tester.Syntax.Level:                     /tester level <newLevel>
+PLCommands.Tester.Usage.Level:					    Changes your level to the specified value. All skill lines are reset upon changing levels.
+PLCommands.Tester.Syntax.MobLoc:                    /tester mobloc
+PLCommands.Tester.Usage.MobLoc:					    Inserts a targeted mob's physical location onto your chat/combat window.
+PLCommands.Tester.Syntax.Info:                      /tester info
+PLCommands.Tester.Usage.Info:					    Provides detailed information about a targeted mob.
+
 ## Misc
 Scripts.Player.Guild.InCombat:				You can't unsummon your Banner while you're in Combat!

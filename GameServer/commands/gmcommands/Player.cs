@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -2351,10 +2352,12 @@ namespace DOL.GS.Commands
 			var text = new List<string>();
 			text.Add(" ");
 			text.Add("PLAYER INFORMATION (Client # " + player.Client.SessionID + ", " + player.GetType().FullName + ")");
-			text.Add("  - Name Lastname : " + player.Name + " " + player.LastName);
-			text.Add("  - Realm Level Gender Class : " + GlobalConstants.RealmToName(player.Realm) + " " + player.Level + " " + player.Gender + " " + player.CharacterClass.Name + " (" + player.CharacterClass.ID + ")");
-			text.Add("  - Guild : " + player.GuildName + " " + (player.GuildRank != null ? "Rank: " + player.GuildRank.RankLevel.ToString() : ""));
-			text.Add("  - XPs/RPs/BPs : " + player.Experience + " xp, " + player.RealmPoints + " rp, " + player.BountyPoints + " bp");
+            if (player.Client.Account.IsTester && ServerProperties.Properties.TESTER_LOGIN)
+                text.Add("Tester Modifier: " + player.TesterModifier);
+			text.Add("  - Name: " + player.Name + " " + player.LastName);
+			text.Add("  - Realm Level Gender Class: " + GlobalConstants.RealmToName(player.Realm) + " " + player.Level + " " + player.Gender + " " + player.CharacterClass.Name + " (" + player.CharacterClass.ID + ")");
+			text.Add("  - Guild: " + player.GuildName + " " + (player.GuildRank != null ? "Rank: " + player.GuildRank.RankLevel.ToString() : ""));
+			text.Add("  - XPs/RPs/BPs: " + player.Experience + " xp, " + player.RealmPoints + " rp, " + player.BountyPoints + " bp");
 
             if (player.DamageRvRMemory > 0)
                 text.Add("  - Damage RvR Memory: " + player.DamageRvRMemory);

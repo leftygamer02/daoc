@@ -17300,5 +17300,20 @@ namespace DOL.GS
             }
         }
         #endregion
+
+        #region Tester Modifier
+
+        public int m_testerModifier = 0;
+
+        /// <summary>
+        /// Sets a modifier amount to offset all values deemed sensitive to Atlas that may be viewable by a tester
+        /// </summary>
+        public int TesterModifier
+        {
+            get { return m_testerModifier; }
+            set { m_testerModifier = value; }
+        }
+
+        #endregion Tester Modifier
     }
 }

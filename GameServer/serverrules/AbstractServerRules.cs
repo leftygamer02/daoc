@@ -72,7 +72,8 @@ namespace DOL.GS.ServerRules
 
 			// Ban account
 			IList<DBBannedAccount> objs;
-			objs = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("A").Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Account").IsEqualTo(username)));
+			objs = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("A")
+				.Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Account").IsEqualTo(username)));
 			if (objs.Count > 0)
 			{
 				client.IsConnected = false;
@@ -83,7 +84,8 @@ namespace DOL.GS.ServerRules
 
 			// Ban IP Address or range (example: 5.5.5.%)
 			string accip = client.TcpEndpointAddress;
-			objs = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("I").Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Ip").IsLike(accip)));
+			objs = DOLDB<DBBannedAccount>.SelectObjects(DB.Column("Type").IsEqualTo("I")
+				.Or(DB.Column("Type").IsEqualTo("B")).And(DB.Column("Ip").IsLike(accip)));
 			if (objs.Count > 0)
 			{
 				client.IsConnected = false;
@@ -92,7 +94,7 @@ namespace DOL.GS.ServerRules
 				return false;
 			}
 
-			GameClient.eClientVersion min = (GameClient.eClientVersion)Properties.CLIENT_VERSION_MIN;
+			GameClient.eClientVersion min = (GameClient.eClientVersion) Properties.CLIENT_VERSION_MIN;
 			if (min != GameClient.eClientVersion.VersionNotChecked && client.Version < min)
 			{
 				client.IsConnected = false;
@@ -101,7 +103,7 @@ namespace DOL.GS.ServerRules
 				return false;
 			}
 
-			GameClient.eClientVersion max = (GameClient.eClientVersion)Properties.CLIENT_VERSION_MAX;
+			GameClient.eClientVersion max = (GameClient.eClientVersion) Properties.CLIENT_VERSION_MAX;
 			if (max != GameClient.eClientVersion.VersionNotChecked && client.Version > max)
 			{
 				client.IsConnected = false;
@@ -112,8 +114,8 @@ namespace DOL.GS.ServerRules
 
 			if (Properties.CLIENT_TYPE_MAX > -1)
 			{
-				GameClient.eClientType type = (GameClient.eClientType)Properties.CLIENT_TYPE_MAX;
-				if ((int)client.ClientType > (int)type)
+				GameClient.eClientType type = (GameClient.eClientType) Properties.CLIENT_TYPE_MAX;
+				if ((int) client.ClientType > (int) type)
 				{
 					client.IsConnected = false;
 					client.Out.SendLoginDenied(eLoginError.ExpansionPacketNotAllowed);
@@ -178,7 +180,7 @@ namespace DOL.GS.ServerRules
 					return false;
 				}
 			}
-			
+
 			if (Properties.TESTER_LOGIN)
 			{
 				if (account == null || !account.IsTester && account.PrivLevel == 1)
@@ -191,7 +193,7 @@ namespace DOL.GS.ServerRules
 					return false;
 				}
 			}
-			
+
 			if (Properties.FORCE_DISCORD_LINK)
 			{
 				if (account == null || account.PrivLevel == 1 && account.DiscordID is (null or ""))
@@ -218,6 +220,7 @@ namespace DOL.GS.ServerRules
 							{
 								break;
 							}
+
 							client.IsConnected = false;
 							client.Out.SendLoginDenied(eLoginError.AccountAlreadyLoggedIntoOtherServer);
 							log.Debug("IsAllowedToConnect deny access; dual login not allowed");
@@ -239,7 +242,7 @@ namespace DOL.GS.ServerRules
 		/// <param name="args"></param>
 		public virtual void OnGameEntered(DOLEvent e, object sender, EventArgs args)
 		{
-			StartImmunityTimer((GamePlayer)sender, ServerProperties.Properties.TIMER_GAME_ENTERED * 1000);
+			StartImmunityTimer((GamePlayer) sender, ServerProperties.Properties.TIMER_GAME_ENTERED * 1000);
 		}
 
 		/// <summary>
@@ -250,7 +253,7 @@ namespace DOL.GS.ServerRules
 		/// <param name="args"></param>
 		public virtual void OnRegionChanged(DOLEvent e, object sender, EventArgs args)
 		{
-			StartImmunityTimer((GamePlayer)sender, ServerProperties.Properties.TIMER_REGION_CHANGED * 1000);
+			StartImmunityTimer((GamePlayer) sender, ServerProperties.Properties.TIMER_REGION_CHANGED * 1000);
 		}
 
 		/// <summary>
@@ -261,8 +264,8 @@ namespace DOL.GS.ServerRules
 		/// <param name="args"></param>
 		public virtual void OnReleased(DOLEvent e, object sender, EventArgs args)
 		{
-			GamePlayer player = (GamePlayer)sender;
-			StartImmunityTimer(player, ServerProperties.Properties.TIMER_KILLED_BY_MOB * 1000);//When Killed by a Mob
+			GamePlayer player = (GamePlayer) sender;
+			StartImmunityTimer(player, ServerProperties.Properties.TIMER_KILLED_BY_MOB * 1000); //When Killed by a Mob
 		}
 
 		/// <summary>
@@ -303,7 +306,8 @@ namespace DOL.GS.ServerRules
 			if (player.ObjectState != GameObject.eObjectState.Active) return;
 			if (player.Client.IsPlaying == false) return;
 
-			player.Out.SendMessage("Your temporary invulnerability timer has expired.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			player.Out.SendMessage("Your temporary invulnerability timer has expired.", eChatType.CT_System,
+				eChatLoc.CL_SystemWindow);
 
 			return;
 		}
@@ -345,6 +349,14 @@ namespace DOL.GS.ServerRules
 
 			GamePlayer playerAttacker = attacker as GamePlayer;
 			GamePlayer playerDefender = defender as GamePlayer;
+
+			if (playerDefender != null)
+			{
+				var godMode = playerDefender.TempProperties.getProperty("tester_godMode", false);
+
+				if (godMode && playerDefender.Client.Account.IsTester && Properties.TESTER_LOGIN && attacker is not GamePlayer && attacker.Realm == 0)
+					return false;
+			}
 
 			// if Pet, let's define the controller once
 			if (defender is GameNPC)
