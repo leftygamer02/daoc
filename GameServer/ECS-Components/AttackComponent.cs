@@ -407,7 +407,7 @@ namespace DOL.GS
 
                 int count = 0;
                 double speed = 0;
-                bool bowWeapon = true;
+                bool bowWeapon = false;
 
                 if (LastAttackWasDualWield)
                 {
@@ -425,6 +425,7 @@ namespace DOL.GS
                                 case (int) eObjectType.Crossbow:
                                 case (int) eObjectType.RecurvedBow:
                                 case (int) eObjectType.CompositeBow:
+                                    bowWeapon = true;
                                     break;
                                 default:
                                     bowWeapon = false;
@@ -435,11 +436,21 @@ namespace DOL.GS
                 }
                 else
                 {
+                    switch (weapons[0].Object_Type)
+                    {
+                        case (int) eObjectType.Fired:
+                        case (int) eObjectType.Longbow:
+                        case (int) eObjectType.Crossbow:
+                        case (int) eObjectType.RecurvedBow:
+                        case (int) eObjectType.CompositeBow:
+                            bowWeapon = true;
+                            break;
+                    }
                     speed += weapons[0].SPD_ABS;
                     count++;
                 }
                
-                //Console.WriteLine($"DW? {LastAttackWasDualWield} speed {speed}");
+                //Console.WriteLine($"DW? {LastAttackWasDualWield} speed {speed} count {count} bow {bowWeapon}");
 
                 if (count < 1)
                     return 0;
@@ -479,7 +490,8 @@ namespace DOL.GS
                 {
                     // TODO use haste
                     //Weapon Speed*(1-(Quickness-60)/500]*(1-Haste)
-                    speed *= (1.0 - (qui - 60) * 0.002) * 0.01 * p.GetModified(eProperty.MeleeSpeed);
+                    speed *= ((1.0 - (qui - 60) * 0.002) * 0.01 * p.GetModified(eProperty.MeleeSpeed));
+                    //Console.WriteLine($"Speed after {speed} quiMod {(1.0 - (qui - 60) * 0.002)} melee speed {0.01 * p.GetModified(eProperty.MeleeSpeed)} together {(1.0 - (qui - 60) * 0.002) * 0.01 * p.GetModified(eProperty.MeleeSpeed)}");
                 }
 
                 // apply speed cap
@@ -1633,7 +1645,7 @@ namespace DOL.GS
                        // 0.9 + (0.1 * Math.Max(1.0, RelicMgr.GetRelicBonusModifier(owner.Realm, eRelicType.Strength)));
                     double specModifier = lowerLimit + Util.Random(varianceRange) * 0.01;
 
-                    double playerBaseAF = ad.Target is GamePlayer ? ad.Target.Level * 20 / 50d : 1;
+                    double playerBaseAF = ad.Target is GamePlayer ? ad.Target.Level * 30 / 50d : 1;
                     if (playerBaseAF < 1)
                         playerBaseAF = 1;
 
@@ -2398,9 +2410,6 @@ namespace DOL.GS
 
                 bool UseRNGOverride = ServerProperties.Properties.OVERRIDE_DECK_RNG;
 
-                double defensePenetration =
-                    Math.Round(ad.Attacker.GetAttackerDefensePenetration(ad.Attacker, ad.Weapon), 2);
-
                 double evadeChance = owner.TryEvade(ad, lastAD, attackerConLevel, attackerCount);
                 ad.EvadeChance = evadeChance;
                 double randomEvadeNum = Util.CryptoNextDouble() * 10000;
@@ -2411,18 +2420,18 @@ namespace DOL.GS
                 if (evadeChance > 0)
                 {
                     double? evadeDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
-                    double? evadeOutput = (evadeDouble != null) ? evadeDouble * 100 : randomEvadeNum;
+                    double? evadeOutput = (evadeDouble != null) ? Math.Round((double) (evadeDouble * 100),2 ) : randomEvadeNum;
                     if (ad.Attacker is GamePlayer evadeAtk && evadeAtk.UseDetailedCombatLog)
                     {
                         evadeAtk.Out.SendMessage(
-                            $"target evade%: {Math.Round(evadeChance, 2)} rand: {evadeOutput} defense pen: {defensePenetration}",
+                            $"target evade%: {Math.Round(evadeChance, 2)} rand: {evadeOutput}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
                     if (ad.Target is GamePlayer evadeTarg && evadeTarg.UseDetailedCombatLog)
                     {
                         evadeTarg.Out.SendMessage(
-                            $"your evade%: {Math.Round(evadeChance, 2)} rand: {evadeOutput} \nattkr def pen reduced % by {defensePenetration}%",
+                            $"your evade%: {Math.Round(evadeChance, 2)} rand: {evadeOutput}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
@@ -2451,18 +2460,18 @@ namespace DOL.GS
                     if (parryChance > 0)
                     {
                         double? parryDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
-                        double? parryOutput = (parryDouble != null) ? parryDouble * 100 : ranParryNum;
+                        double? parryOutput = (parryDouble != null) ? Math.Round((double) (parryDouble * 100.0), 2) : ranParryNum;
                         if (ad.Attacker is GamePlayer parryAtk && parryAtk.UseDetailedCombatLog)
                         {
                             parryAtk.Out.SendMessage(
-                                $"target parry%: {Math.Round(parryChance, 2)} rand: {parryOutput} defense pen: {defensePenetration}",
+                                $"target parry%: {Math.Round(parryChance, 2)} rand: {parryOutput}",
                                 eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                         }
 
                         if (ad.Target is GamePlayer parryTarg && parryTarg.UseDetailedCombatLog)
                         {
                             parryTarg.Out.SendMessage(
-                                $"your parry%: {Math.Round(parryChance, 2)} rand: {parryOutput} \nattkr def pen reduced % by {defensePenetration}%",
+                                $"your parry%: {Math.Round(parryChance, 2)} rand: {parryOutput}",
                                 eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                         }
 
@@ -2490,18 +2499,18 @@ namespace DOL.GS
                 if (blockChance > 0)
                 {
                     double? blockDouble = (owner as GamePlayer)?.RandomNumberDeck.GetPseudoDouble();
-                    double? blockOutput = (blockDouble != null) ? blockDouble * 100 : ranBlockNum;
+                    double? blockOutput = (blockDouble != null) ? Math.Round((double) (blockDouble * 100), 2) : ranBlockNum;
                     if (ad.Attacker is GamePlayer blockAttk && blockAttk.UseDetailedCombatLog)
                     {
                         blockAttk.Out.SendMessage(
-                            $"target block%: {Math.Round(blockChance, 2)} rand: {blockOutput} defense pen: {defensePenetration}",
+                            $"target block%: {Math.Round(blockChance, 2)} rand: {blockOutput}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
                     if (ad.Target is GamePlayer blockTarg && blockTarg.UseDetailedCombatLog)
                     {
                         blockTarg.Out.SendMessage(
-                            $"your block%: {Math.Round(blockChance, 2)} rand: {blockOutput} \nattkr def pen reduced % by {defensePenetration}%",
+                            $"your block%: {Math.Round(blockChance, 2)} rand: {blockOutput}",
                             eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
 
