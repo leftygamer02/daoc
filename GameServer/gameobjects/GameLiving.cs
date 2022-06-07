@@ -605,9 +605,9 @@ namespace DOL.GS
 				m_lastAttackedByEnemyTickPvP = value;
 				if (this is GameNPC)
 				{
-					if ((this as GameNPC).Brain is IControlledBrain)
+					if ((this as GameNPC).Brain is IControlledBrain brain && brain.Owner != null)
 					{
-						((this as GameNPC).Brain as IControlledBrain).Owner.LastAttackedByEnemyTickPvP = value;
+						brain.Owner.LastAttackedByEnemyTickPvP = value;
 					}
 				}
 			}
@@ -4524,8 +4524,11 @@ namespace DOL.GS
 				}
 				else
                 {
-					ownerEffects = pet.Owner.effectListComponent.GetSpellEffects(eEffect.MovementSpeedBuff);
+					ownerEffects = pet?.Owner?.effectListComponent.GetSpellEffects(eEffect.MovementSpeedBuff);
 				}
+
+				if (ownerEffects == null)
+					return effectRemoved;
 
 				for (int i = 0; i < ownerEffects.Count; i++)
 				{

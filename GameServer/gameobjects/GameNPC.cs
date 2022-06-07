@@ -352,7 +352,7 @@ namespace DOL.GS
 			get
 			{
 				IControlledBrain brain = Brain as IControlledBrain;
-				if (brain != null)
+				if (brain != null && brain.Owner != null)
 					return brain.Owner.Realm; // always realm of the owner
 				return base.Realm;
 			}
@@ -1619,8 +1619,6 @@ namespace DOL.GS
 				m_followMinDist = minDistance;
 				m_followTarget.Target = target;
 				m_followTimer.StartExistingTimer(100);
-			
-		
 		}
 
 		/// <summary>
@@ -3890,6 +3888,7 @@ namespace DOL.GS
         /// <param name="target">The object to attack</param>
         public virtual void StartAttack(GameObject target)
         {
+	        Console.WriteLine($"Starting attack on {target}");
             attackComponent.StartAttack(target);
             //if(m_followTimer != null) m_followTimer.Stop();
 			if(CurrentFollowTarget!=target)
@@ -4286,6 +4285,7 @@ namespace DOL.GS
 		/// </summary>
 		public override void Die(GameObject killer)
 		{
+			Console.WriteLine($"GameNPC died from {killer}");
 			Brain?.KillFSM();
 
 			FireAmbientSentence(eAmbientTrigger.dying, killer);

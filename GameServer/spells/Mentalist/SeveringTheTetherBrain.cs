@@ -1,3 +1,4 @@
+using System;
 using DOL.GS;
 
 namespace DOL.AI.Brain
@@ -37,7 +38,9 @@ namespace DOL.AI.Brain
 
 		protected virtual void AttackOwner()
 		{
-			var target = Body.ControlledBrain.Owner;
+			//var target = Body?.ControlledBrain?.Owner;
+			var target = GetLivingOwner();
+			Console.WriteLine($"Target {target}");
 			if (target == null)
 				return;
 			Body.StartAttack(target);
@@ -45,7 +48,7 @@ namespace DOL.AI.Brain
 
 		public eWalkState WalkState { get; }
 		public eAggressionState AggressionState { get { return eAggressionState.Aggressive; } set { } }
-		public GameLiving Owner { get; }
+		public GameLiving Owner { get; set; }
 		public void Attack(GameObject target)
 		{
 			
@@ -80,8 +83,7 @@ namespace DOL.AI.Brain
 		{
 			
 		}
-		
-		public GamePlayer GetPlayerOwner() { return Owner as GamePlayer; }
+		public GamePlayer GetPlayerOwner(){ return Owner as GamePlayer; }
 		
 		public virtual GameNPC GetNPCOwner()
 		{
@@ -115,6 +117,10 @@ namespace DOL.AI.Brain
 			GamePlayer player = GetPlayerOwner();
 			if (player != null)
 				return player;
+
+			GameNPC npc = GetNPCOwner();
+			if (npc != null)
+				return npc;
 
 			return null;
 		}

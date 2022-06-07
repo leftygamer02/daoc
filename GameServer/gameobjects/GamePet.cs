@@ -552,6 +552,8 @@ namespace DOL.GS
 		public override void Die(GameObject killer)
 		{
 			StripBuffs();
+			
+			Console.WriteLine($"Pet died from {killer}");
 		
 			GameEventMgr.Notify(GameLivingEvent.PetReleased, this);
 			base.Die(killer);

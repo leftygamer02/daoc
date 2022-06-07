@@ -37,13 +37,13 @@ public class SeveringTheTetherSpellHandler : FearSpellHandler
         
 			
         var STTBrain = new SeveringTheTetherBrain();
+        //Console.WriteLine($"target {npcTarget} brain {npcTarget?.ControlledBrain} owner {npcTarget?.ControlledBrain?.Owner} owner2 {npcTarget.Owner}");
+        STTBrain.Owner = npcTarget.Owner;
         m_NPCSTTBrains.AddOrReplace(npcTarget, STTBrain);
-
         npcTarget.RemoveControlledNpc(npcTarget.Brain as ControlledNpcBrain);
         npcTarget.AddBrain(STTBrain);
-        STTBrain.Think();
-
         npcTarget.Realm = Caster.Realm;
+        STTBrain.Think();
 
         base.ApplyEffectOnTarget(target, effectiveness);
     }
