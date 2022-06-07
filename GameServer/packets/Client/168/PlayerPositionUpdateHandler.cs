@@ -376,7 +376,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						area.OnPlayerEnter(client.Player);
 				// set current areas to new one...
 				client.Player.CurrentAreas = newAreas;
-				client.Player.AreaUpdateTick = client.Player.CurrentRegion.Time + 2000; // update every 2 seconds
+				client.Player.AreaUpdateTick = client.Player.CurrentRegion.Time + 750; // update every .75 seconds
 			}
 			// End ---------- New Area System -----------
 
@@ -821,7 +821,11 @@ namespace DOL.GS.PacketHandler.Client.v168
             {
 				if (client.Player.CurrentSpeed == 0 && (client.Player.LastPositionUpdatePoint.X != newPlayerX 
 					|| client.Player.LastPositionUpdatePoint.Y != newPlayerY))
-					client.Player.CurrentSpeed = 1;
+				{
+					if(client.Player.IsSitting)
+						client.Player.Sit(false);
+					client.Player.CurrentSpeed = (short)newPlayerSpeed;
+				}
 				else
 					client.Player.CurrentSpeed = (short)newPlayerSpeed;
 			}
@@ -1198,6 +1202,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			{
 				client.Player.Heading = client.Player.Steed.Heading;
 				newHeading = (ushort)client.Player.Steed.ObjectID;
+				steedSeatPosition = (ushort)client.Player.Steed.RiderSlot(client.Player);
 			}
 			else if ((playerState >> 10) == 4) // patch 0062 fix bug on release preventing players from receiving res sickness
 				client.Player.IsSitting = true;

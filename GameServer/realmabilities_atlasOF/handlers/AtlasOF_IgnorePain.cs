@@ -56,6 +56,19 @@ namespace DOL.GS.RealmAbilities
 				list.Add("Pre-Requisit : First Aid lvl 2");
 			}
 		}
+	}
+	
+	public class AtlasOF_IgnorePainTank : AtlasOF_IgnorePain
+	{
+		public AtlasOF_IgnorePainTank(DBAbility dba, int level) : base(dba, level) { }
+		public override int CostForUpgrade(int level)
+		{
+			return 8;
+		}
 
-    }
+		public override string Name
+		{
+			get {return "Ignore Pain";}
+		}
+	}
 }

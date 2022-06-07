@@ -81,6 +81,13 @@ namespace DOL.Database
 			set { Dirty = true; m_iscrafted = value; }
 		}
 		
+		protected bool m_isROG;			// iscrafted or looted ?
+		[DataElement(AllowDbNull = false)]
+		public virtual bool IsROG {
+			get { return m_isROG; }
+			set { Dirty = true; m_isROG = value; }
+		}
+		
 		protected string m_creator;			// crafter or mob dropping it, but also quest, etc...
 		[DataElement(AllowDbNull = true)]
 		public virtual string Creator
@@ -443,7 +450,14 @@ namespace DOL.Database
 
 		public virtual int Weight
 		{
-			get { return (int)Math.Round(Template.Weight * m_count * .5) ; }
+			get
+			{
+				if (Object_Type is (43 or 46)) // halved weight for arrows and poisons
+				{
+					return (int)Math.Round((double)(Template.Weight * m_count * 0.6)) ;
+				}
+				return (int)Math.Round((double)(Template.Weight * m_count)) ;
+			}
 			set { Template.Weight = value; }
 		}
 

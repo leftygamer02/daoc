@@ -191,6 +191,19 @@ namespace DOL.GS.ServerRules
 					return false;
 				}
 			}
+			
+			if (Properties.FORCE_DISCORD_LINK)
+			{
+				if (account == null || account.PrivLevel == 1 && account.DiscordID is (null or ""))
+				{
+					// GMs are still allowed to enter server
+					// Normal Players will not be allowed to Log in unless they have linked their Discord
+					client.IsConnected = false;
+					client.Out.SendLoginDenied(eLoginError.AccountNoAccessThisGame);
+					log.Debug("Denied access, account is not linked to Discord");
+					return false;
+				}
+			}
 
 			if (!Properties.ALLOW_DUAL_LOGINS)
 			{
@@ -450,7 +463,7 @@ namespace DOL.GS.ServerRules
 		{
 			//we only allow certain spell targets to be cast when targeting a keep component
 			//tolakram - live allows most damage spells to be cast on doors. This should be handled in spell handlers
-			if (target is GameKeepComponent || target is GameKeepDoor)
+			if (target is GameKeepComponent || target is GameKeepDoor || target is GameSiegeWeapon)
 			{
 				bool isAllowed = false;
 
@@ -1025,7 +1038,7 @@ namespace DOL.GS.ServerRules
 				m_compatibleObjectTypes[(int)eObjectType.Hammer] = new eObjectType[] { eObjectType.Hammer, eObjectType.CrushingWeapon, eObjectType.Blunt };
 				m_compatibleObjectTypes[(int)eObjectType.Sword] = new eObjectType[] { eObjectType.Sword, eObjectType.SlashingWeapon, eObjectType.Blades };
 				m_compatibleObjectTypes[(int)eObjectType.LeftAxe] = new eObjectType[] { eObjectType.LeftAxe };
-				m_compatibleObjectTypes[(int)eObjectType.Axe] = new eObjectType[] { eObjectType.Axe, eObjectType.SlashingWeapon, eObjectType.Blades, eObjectType.LeftAxe };
+				m_compatibleObjectTypes[(int)eObjectType.Axe] = new eObjectType[] { eObjectType.Axe, eObjectType.SlashingWeapon, eObjectType.Blades }; //eObjectType.LeftAxe removed
 				m_compatibleObjectTypes[(int)eObjectType.HandToHand] = new eObjectType[] { eObjectType.HandToHand };
 				m_compatibleObjectTypes[(int)eObjectType.Spear] = new eObjectType[] { eObjectType.Spear, eObjectType.CelticSpear, eObjectType.PolearmWeapon };
 				m_compatibleObjectTypes[(int)eObjectType.CompositeBow] = new eObjectType[] { eObjectType.CompositeBow };
@@ -1872,31 +1885,48 @@ namespace DOL.GS.ServerRules
 						{
 							case eRealm.Albion:
 								expGainPlayer.KillsAlbionPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Players_Killed);
 								if (expGainPlayer == killer)
 								{
 									expGainPlayer.KillsAlbionDeathBlows++;
-									if ((float)de.Value == totalDamage)
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
 										expGainPlayer.KillsAlbionSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Solo_Kills);
+									}
+										
 								}
 								break;
 
 							case eRealm.Hibernia:
 								expGainPlayer.KillsHiberniaPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Players_Killed);
 								if (expGainPlayer == killer)
 								{
 									expGainPlayer.KillsHiberniaDeathBlows++;
-									if ((float)de.Value == totalDamage)
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
 										expGainPlayer.KillsHiberniaSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Solo_Kills);
+									}
 								}
 								break;
 
 							case eRealm.Midgard:
 								expGainPlayer.KillsMidgardPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Players_Killed);
 								if (expGainPlayer == killer)
 								{
 									expGainPlayer.KillsMidgardDeathBlows++;
-									if ((float)de.Value == totalDamage)
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
 										expGainPlayer.KillsMidgardSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Solo_Kills);
+									}
+										
 								}
 								break;
 						}
@@ -1910,7 +1940,7 @@ namespace DOL.GS.ServerRules
 					List<GamePlayer> players = new List<GamePlayer>();
 					foreach (GamePlayer pla in grp.GetPlayersInTheGroup())
                     {
-                        if (Util.Chance(50) && !playersToAward.Contains(pla))
+                        if (!playersToAward.Contains(pla))
                         {
 							playersToAward.Add(pla);
 						}
@@ -2359,7 +2389,21 @@ namespace DOL.GS.ServerRules
 					player.Out.SendMerchantWindow(HouseTemplateMgr.OutdoorShopItems, merchantType);
 					break;
 				case eMerchantWindowType.HousingBindstoneHookpoint:
-					player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItems, merchantType);
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItemsAlb, merchantType);
+							break;
+						case eRealm.Midgard:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItemsMid, merchantType);
+							break;
+						case eRealm.Hibernia:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItemsHib, merchantType);
+							break;
+						default:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItems, merchantType);
+							break;
+					}
 					break;
 				case eMerchantWindowType.HousingCraftingHookpoint:
 					player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorCraftShopItems, merchantType);
@@ -2368,7 +2412,21 @@ namespace DOL.GS.ServerRules
 					player.Out.SendMerchantWindow(HouseTemplateMgr.GetNpcShopItems(player), merchantType);
 					break;
 				case eMerchantWindowType.HousingVaultHookpoint:
-					player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItems, merchantType);
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItemsAlb, merchantType);
+							break;
+						case eRealm.Midgard:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItemsMid, merchantType);
+							break;
+						case eRealm.Hibernia:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItemsHib, merchantType);
+							break;
+						default:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItems, merchantType);
+							break;
+					}
 					break;
 				case eMerchantWindowType.HousingDeedMenu:
 					player.Out.SendMerchantWindow(/* TODO */HouseTemplateMgr.OutdoorMenuItems, eMerchantWindowType.HousingDeedMenu);
@@ -2402,7 +2460,21 @@ namespace DOL.GS.ServerRules
 					items = HouseTemplateMgr.OutdoorShopItems;
 					break;
 				case eMerchantWindowType.HousingBindstoneHookpoint:
-					items = HouseTemplateMgr.IndoorBindstoneShopItems;
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							items = HouseTemplateMgr.IndoorBindstoneShopItemsAlb;
+							break;
+						case eRealm.Hibernia:
+							items = HouseTemplateMgr.IndoorBindstoneShopItemsHib;
+							break;
+						case eRealm.Midgard:
+							items = HouseTemplateMgr.IndoorBindstoneShopItemsMid;
+							break;
+						default:
+							items = HouseTemplateMgr.IndoorBindstoneShopItems;
+							break;
+					}
 					break;
 				case eMerchantWindowType.HousingCraftingHookpoint:
 					items = HouseTemplateMgr.IndoorCraftShopItems;
@@ -2411,7 +2483,21 @@ namespace DOL.GS.ServerRules
 					items = HouseTemplateMgr.GetNpcShopItems(player);
 					break;
 				case eMerchantWindowType.HousingVaultHookpoint:
-					items = HouseTemplateMgr.IndoorVaultShopItems;
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							items = HouseTemplateMgr.IndoorVaultShopItemsAlb;
+							break;
+						case eRealm.Hibernia:
+							items = HouseTemplateMgr.IndoorVaultShopItemsHib;
+							break;
+						case eRealm.Midgard:
+							items = HouseTemplateMgr.IndoorVaultShopItemsMid;
+							break;
+						default:
+							items = HouseTemplateMgr.IndoorVaultShopItems;
+							break;
+					}
 					break;
 			}
 

@@ -1,6 +1,8 @@
 using System;
+using DOL.Database;
 using DOL.GS.Keeps;
 using DOL.GS.RealmAbilities;
+using log4net.Core;
 
 namespace DOL.GS.PropertyCalc
 {
@@ -187,14 +189,20 @@ namespace DOL.GS.PropertyCalc
 				}
 				else
 				{
+					double levelScalar = .5;
+					if (living.Level > 40)
+					{
+						//Console.WriteLine($"Scalar before {levelScalar} adding {(living.Level - 40) * .01} after {levelScalar + ((living.Level - 40) * .01)}");
+						levelScalar += (living.Level - 40) * .005;
+					}
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11*living.Level + 0.448331 * living.Level * (living.Level)) + (living as GameNPC).Constitution;
+					hp = (int)(50 + 13*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
 					if (living.Level < 25)
 						hp += 20;
 				}
 
 				int basecon = (living as GameNPC).Constitution;
-				int conmod = 20; // at level 50 +75 con ~= +300 hit points
+				int conmod = 25; // at level 50 +75 con ~= +300 hit points
 
 				// first adjust hitpoints based on base CON
 

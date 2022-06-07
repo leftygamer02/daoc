@@ -1,4 +1,6 @@
+using System;
 using DOL.AI.Brain;
+using DOL.Database;
 using DOL.GS.Effects;
 using DOL.GS.Spells;
 using DOL.GS.PacketHandler;
@@ -31,7 +33,8 @@ namespace DOL.GS
             {
                 TickInterval = 650;
                 NextTick = 1 + (Duration >> 1) + (int)StartTick;
-                TriggersImmunity = true;
+                if(!SpellHandler.Spell.Name.Equals("Prevent Flight"))
+					TriggersImmunity = true;
             }
             else if (SpellHandler.Spell.IsConcentration)
             {
@@ -80,7 +83,7 @@ namespace DOL.GS
             {
                 if (OwnerPlayer != null)
                 {
-                    if (EffectType == eEffect.Stun && SpellHandler.Caster is GamePet)
+                    if ((EffectType == eEffect.Stun && SpellHandler.Caster is GamePet) || SpellHandler is UnresistableStunSpellHandler)
                         return;
 
                     new ECSImmunityEffect(Owner, SpellHandler, ImmunityDuration, (int)PulseFreq, Effectiveness, Icon);
@@ -187,5 +190,24 @@ namespace DOL.GS
 			}
 		}
 		#endregion Effect End Messages
+
+		public override PlayerXEffect getSavedEffect()
+		{
+			if (SpellHandler == null || SpellHandler.Spell == null) return null;
+			
+			PlayerXEffect eff = new PlayerXEffect();
+			eff.Var1 = SpellHandler.Spell.ID;
+			eff.Var2 = Effectiveness;
+			eff.Var3 = (int)SpellHandler.Spell.Value;
+			
+			if (Duration > 0)
+				eff.Duration = (int)(ExpireTick - GameLoop.GameLoopTime);
+			else
+				eff.Duration = 30 * 60 * 1000;
+			
+			eff.IsHandler = true;
+			eff.SpellLine = SpellHandler.SpellLine.KeyName;
+			return eff;
+		}
     }
 }

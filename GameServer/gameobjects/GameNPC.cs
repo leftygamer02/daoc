@@ -1155,12 +1155,13 @@ namespace DOL.GS
 					SetTickSpeed(0, 0, 0);
 					return;
 				}
-
+		
 				double dx = (double)(TargetPosition.X - m_x) / dist;
 				double dy = (double)(TargetPosition.Y - m_y) / dist;
 				double dz = (double)(TargetPosition.Z - m_z) / dist;
 
 				SetTickSpeed(dx, dy, dz, CurrentSpeed);
+			
 				return;
 			}
 
@@ -1450,7 +1451,10 @@ namespace DOL.GS
 			if (speed <= 0)
 				return;
 
+
+		
 			TargetPosition = target; // this also saves the current position
+			
 
 			if (IsWithinRadius(TargetPosition, CONST_WALKTOTOLERANCE))
 			{
@@ -1467,13 +1471,15 @@ namespace DOL.GS
 
 			//kill everything below this line?
 			CancelWalkToTimer();
+		
 
 			m_Heading = GetHeading(TargetPosition);
 			m_currentSpeed = speed;
-
+			MovementStartTick = Environment.TickCount; //Adding this to prevent pets from warping when using GoTo and Here on the same target twice.
 			UpdateTickSpeed();
+			
 			Notify(GameNPCEvent.WalkTo, this, new WalkToEventArgs(TargetPosition, speed));
-
+			
 			StartArriveAtTargetAction(GetTicksToArriveAt(TargetPosition, speed));
 			BroadcastUpdate();
 		}
@@ -1599,18 +1605,22 @@ namespace DOL.GS
 		/// <param name="maxDistance">Max distance to keep following</param>
 		public virtual void Follow(GameObject target, int minDistance, int maxDistance)
 		{
-			if (m_followTimer.IsAlive)
-				return;
-				//m_followTimer.Stop();
-
-			if (target == null || target.ObjectState != eObjectState.Active)
-				return;
-
-			m_followMaxDist = maxDistance;
-			m_followMinDist = minDistance;
-			m_followTarget.Target = target;
-			//Console.WriteLine($"starting follow on {target} mindist {minDistance} maxdist {maxDistance}");
-			m_followTimer.Start(100);
+				if (target == null || target.ObjectState != eObjectState.Active)
+					return;
+			
+				if (m_followTimer.IsAlive && m_followTarget.Target == target && m_followMinDist == minDistance && m_followMaxDist == maxDistance)
+					return;
+				else
+				{
+					m_followTimer.Stop();
+				}
+			
+				m_followMaxDist = maxDistance;
+				m_followMinDist = minDistance;
+				m_followTarget.Target = target;
+				m_followTimer.StartExistingTimer(100);
+			
+		
 		}
 
 		/// <summary>
@@ -1623,7 +1633,6 @@ namespace DOL.GS
 				if (m_followTimer.IsAlive)
 				{
 					m_followTimer.Stop();
-					//Console.WriteLine($"stopping follow");
 				}
 					
 
@@ -1651,7 +1660,7 @@ namespace DOL.GS
 			//sirru
 			else if (attackComponent.Attackers.Count == 0 && this.Spells.Count > 0 && this.TargetObject != null && GameServer.ServerRules.IsAllowedToAttack(this, (this.TargetObject as GameLiving), true))
 			{
-				if (TargetObject.Realm == 0 || Realm == 0)
+				if (TargetObject?.Realm == 0 || Realm == 0)
 					m_lastAttackTickPvE = m_CurrentRegion.Time;
 				else m_lastAttackTickPvP = m_CurrentRegion.Time;
 				if (this.CurrentRegion.Time - LastAttackedByEnemyTick > 10 * 1000)
@@ -1672,6 +1681,8 @@ namespace DOL.GS
 		/// </summary>
 		protected virtual int FollowTimerCallback(ECSGameTimer callingTimer)
 		{
+			double followSpeedScaler = 2.5; //This is used to scale the follow speed based on the distance from target
+
 			if (IsCasting)
 				return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
 
@@ -1747,13 +1758,18 @@ namespace DOL.GS
 				newX = followTarget.X;
 				newY = followTarget.Y;
 				newZ = followTarget.Z;
+				
 				if (TargetObject != null && TargetObject.Realm != this.Realm)
 				{
 					//do nothing 
 				}
-				else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
+				//else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
+				else if (brain.CheckFormation(ref newX, ref newY, ref newZ))
 				{
-					WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+					short followspeed= (short) Math.Max(Math.Min(MaxSpeed,GetDistance(new Point2D(newX, newY))*followSpeedScaler),50);
+					//log.Debug($"Followspeed: {followspeed}");
+					WalkTo(newX, newY, (ushort) newZ, followspeed);
+					//WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
 					
 					return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
 				}
@@ -1794,17 +1810,19 @@ namespace DOL.GS
 			{
 				if (InCombat || Brain is BomberBrain || TargetObject != null)
 					WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
-				else if
-					(!IsWithinRadius(new Point2D(newX, newY),
-						200)) // MaxSpeed < GetDistance(new Point2D(newX, newY)))
-					WalkTo(newX, newY, (ushort) newZ,
-						MaxSpeed); //(short)Math.Min(MaxSpeed, followLiving.CurrentSpeed + 50));
-				else
-					WalkTo(newX, newY, (ushort) newZ, (short)185);//(GetDistance(new Point2D(newX, newY)) + 191));
+				// else if (!IsWithinRadius(new Point2D(newX, newY),200)) // MaxSpeed < GetDistance(new Point2D(newX, newY)))
+				// 	WalkTo(newX, newY, (ushort) newZ, MaxSpeed); //(short)Math.Min(MaxSpeed, followLiving.CurrentSpeed + 50));
+				else //If close, slow down followspeed to target. This is based on distance and followSpeedScaler
+				{
+					// WalkTo(newX, newY, (ushort) newZ, (short)185);//(GetDistance(new Point2D(newX, newY)) + 191));
+					short followspeed = (short) Math.Max(Math.Min(MaxSpeed,GetDistance(new Point2D(newX, newY))*followSpeedScaler),50);
+					WalkTo(newX, newY, (ushort) newZ, followspeed);
+				}
 			}
 			else
 				WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
 			return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
+			
 		}
 
 		/// <summary>
@@ -3456,10 +3474,18 @@ namespace DOL.GS
 			// TODO: correct aggro strings
 			string aggroLevelString = "";
 			int aggroLevel;
-			if (Faction != null)
+			IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
+			//Calculate Faction aggro - base AggroLevel needs to be greater tha 0 for Faction aggro calc to work.
+			if (Faction != null && aggroBrain != null && aggroBrain.AggroLevel > 0 && aggroBrain.AggroRange > 0)
 			{
 				aggroLevel = Faction.GetAggroToFaction(player);
-				if (aggroLevel > 75)
+				
+				if (GameServer.ServerRules.IsSameRealm(this, player, true))
+				{
+					if (firstLetterUppercase) aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Friendly2");
+					else aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Friendly1");
+				}
+				else if (aggroLevel > 75)
 					aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Aggressive1");
 				else if (aggroLevel > 50)
 					aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Hostile1");
@@ -3470,7 +3496,6 @@ namespace DOL.GS
 			}
 			else
 			{
-				IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
 				if (GameServer.ServerRules.IsSameRealm(this, player, true))
 				{
 					if (firstLetterUppercase) aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Friendly2");
@@ -3705,6 +3730,13 @@ namespace DOL.GS
 				if (this is GameSiegeRam)
 					name = "ram";
 
+				if (this is GameSiegeRam && player.Realm != this.Realm)
+				{
+					player.Out.SendMessage($"This siege equipment is owned by an enemy realm!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					return false;
+				}
+				
+
 				if (RiderSlot(player) != -1)
 				{
 					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.AlreadyRiding", name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -3859,8 +3891,13 @@ namespace DOL.GS
         public virtual void StartAttack(GameObject target)
         {
             attackComponent.StartAttack(target);
-            if(m_followTimer != null) m_followTimer.Stop();
-            Follow(target, m_followMinDist, m_followMaxDist);
+            //if(m_followTimer != null) m_followTimer.Stop();
+			if(CurrentFollowTarget!=target)
+			{
+				StopFollowing();
+				Follow(target, m_followMinDist, m_followMaxDist);
+			}
+            
             FireAmbientSentence(eAmbientTrigger.fighting, target);
             //if (target == null)
             //    return;
@@ -4258,6 +4295,7 @@ namespace DOL.GS
 
 			if (killer != null)
 			{
+				if (killer is GamePet pet) killer = pet.Owner;
 				if (IsWorthReward)
 					DropLoot(killer);
 
@@ -4879,6 +4917,11 @@ namespace DOL.GS
 						}
 						else
 							invitem = GameInventoryItem.Create(lootTemplate);
+
+						if (lootTemplate is GeneratedUniqueItem)
+						{
+							invitem.IsROG = true;
+						}
 
 						loot = new WorldInventoryItem(invitem);
 						loot.X = X;
@@ -5586,8 +5629,9 @@ namespace DOL.GS
 				return false;
 
 			if (TempProperties.getProperty<Spell>(LOSCURRENTSPELL, null) != null)
+			{
 				return false;
-
+			}
 			bool casted = false;
 			Spell spellToCast = null;
 
@@ -5604,7 +5648,6 @@ namespace DOL.GS
 
 			// Let's do a few checks to make sure it doesn't just wait on the LOS check
 			int tempProp = TempProperties.getProperty<int>(LOSTEMPCHECKER);
-
 			if (tempProp <= 0)
 			{
 				GamePlayer LOSChecker = TargetObject as GamePlayer;
@@ -5615,6 +5658,11 @@ namespace DOL.GS
 						LOSChecker = player;
 					else if (pet.Owner is CommanderPet petComm && petComm.Owner is GamePlayer owner)
 						LOSChecker = owner;
+				}
+				else if (LOSChecker == null && this.Brain is IControlledBrain brain) // Check for charmed pets
+				{
+					if (brain.Owner is GamePlayer player)
+						LOSChecker = player;
 				}
 
 				if (LOSChecker == null)
@@ -5643,7 +5691,8 @@ namespace DOL.GS
 					TempProperties.setProperty(LOSCURRENTSPELL, spellToCast);
 					TempProperties.setProperty(LOSCURRENTLINE, line);
 					TempProperties.setProperty(LOSSPELLTARGET, TargetObject);
-					LOSChecker.Out.SendCheckLOS(LOSChecker, this, new CheckLOSResponse(StartSpellAttackCheckLOS));
+					//LOSChecker.Out.SendCheckLOS(LOSChecker, this, new CheckLOSResponse(StartSpellAttackCheckLOS)); //is this checking LOS between player and pet?
+					LOSChecker.Out.SendCheckLOS(this, TargetObject, new CheckLOSResponse(StartSpellAttackCheckLOS)); 
 					casted = true;
 				}
 			}
@@ -5737,8 +5786,8 @@ namespace DOL.GS
 
 			if (TargetObject == null)
 			{
-				text = chosen.Text.Replace("{sourcename}", Brain.Body.Name) // '{sourcename}' returns the mob or NPC name
-					.Replace("{targetname}", living.Name) // '{targetname}' returns the mob/NPC target's name
+				text = chosen.Text.Replace("{sourcename}", Brain?.Body?.Name) // '{sourcename}' returns the mob or NPC name
+					.Replace("{targetname}", living?.Name) // '{targetname}' returns the mob/NPC target's name
 					.Replace("{controller}", controller); // '{controller}' returns the result of the controller var (use this when pets have dialogue)
 				
 				// Replace trigger keywords

@@ -15,17 +15,30 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 70;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 70;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 70;// dmg reduction for melee dmg
-				default: return 50;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+				case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+				default: return 70; // dmg reduction for rest resists
 			}
+		}
+		public override double GetArmorAF(eArmorSlot slot)
+		{
+			return 350;
+		}
+		public override double GetArmorAbsorb(eArmorSlot slot)
+		{
+			// 85% ABS is cap.
+			return 0.20;
+		}
+		public override int MaxHealth
+		{
+			get { return 30000; }
 		}
 		public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
 		{
 			if (source is GamePlayer || source is GamePet)
 			{
-				if (this.IsOutOfTetherRange)//dont take any dmg if is too far away from spawn point
+				if (IsOutOfTetherRange)//dont take any dmg if is too far away from spawn point
 				{
 					if (damageType == eDamageType.Body || damageType == eDamageType.Cold || damageType == eDamageType.Energy || damageType == eDamageType.Heat
 						|| damageType == eDamageType.Matter || damageType == eDamageType.Spirit || damageType == eDamageType.Crush || damageType == eDamageType.Thrust
@@ -37,14 +50,19 @@ namespace DOL.GS
 						else
 							truc = ((source as GamePet).Owner as GamePlayer);
 						if (truc != null)
-							truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System, eChatLoc.CL_ChatWindow);
+							truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System, eChatLoc.CL_ChatWindow);
 						base.TakeDamage(source, damageType, 0, 0);
 						return;
 					}
 				}
 				else//take dmg
 				{
-					base.TakeDamage(source, damageType, damageAmount, criticalAmount);
+					if (source is GamePet)
+					{
+						base.TakeDamage(source, damageType, 5, 5);
+					}
+					else
+						base.TakeDamage(source, damageType, damageAmount, criticalAmount);
 				}
 			}
 		}
@@ -59,23 +77,10 @@ namespace DOL.GS
 		}
 		public override bool HasAbility(string keyName)
 		{
-			if (this.IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
+			if (IsAlive && keyName == GS.Abilities.CCImmunity)
 				return true;
 
 			return base.HasAbility(keyName);
-		}
-		public override double GetArmorAF(eArmorSlot slot)
-		{
-			return 800;
-		}
-		public override double GetArmorAbsorb(eArmorSlot slot)
-		{
-			// 85% ABS is cap.
-			return 0.55;
-		}
-		public override int MaxHealth
-		{
-			get { return 20000; }
 		}
 		public override bool AddToWorld()
 		{
@@ -94,17 +99,6 @@ namespace DOL.GS
 			IsCloakHoodUp = true;
 			SummonerLossrenBrain.IsCreatingSouls = false;
 			TorturedSouls.TorturedSoulKilled = 0;
-
-			GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-			template.AddNPCEquipment(eInventorySlot.TorsoArmor, 139, 43, 0, 0); //Slot,model,color,effect,extension
-			template.AddNPCEquipment(eInventorySlot.ArmsArmor, 141, 43);
-			template.AddNPCEquipment(eInventorySlot.LegsArmor, 140, 43);
-			template.AddNPCEquipment(eInventorySlot.HandsArmor, 142, 43, 0, 0);
-			template.AddNPCEquipment(eInventorySlot.FeetArmor, 143, 43, 0, 0);
-			template.AddNPCEquipment(eInventorySlot.Cloak, 57, 70, 0, 0);
-			template.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 468, 43, 92, 0);
-			Inventory = template.CloseTemplate();
-			SwitchWeapon(eActiveWeaponSlot.TwoHanded);
 
 			SummonerLossrenBrain sbrain = new SummonerLossrenBrain();
 			SetOwnBrain(sbrain);
@@ -184,7 +178,7 @@ namespace DOL.AI.Brain
 			{
 				//set state to RETURN TO SPAWN
 				FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-				this.Body.Health = this.Body.MaxHealth;
+				Body.Health = Body.MaxHealth;
 				TorturedSouls.TorturedSoulKilled = 0;
 				TorturedSouls.TorturedSoulCount = 0;
 				foreach (GameNPC souls in Body.GetNPCsInRadius(5000))
@@ -218,7 +212,7 @@ namespace DOL.AI.Brain
 			}
 			if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000) && !HasAggro)
 			{
-				this.Body.Health = this.Body.MaxHealth;
+				Body.Health = Body.MaxHealth;
 			}
 			base.Think();
 		}
@@ -227,9 +221,7 @@ namespace DOL.AI.Brain
 			if (Body.InCombat && Body.IsAlive && HasAggro)
 			{
 				if(TorturedSouls.TorturedSoulCount == 0)
-                {
 					SpawnSouls();
-				}
 			}
 			SpawnBigZombie();
 			IsCreatingSouls = false;
@@ -277,7 +269,6 @@ namespace DOL.AI.Brain
 						}
 						break;
 				}
-				add.Flags = GameNPC.eFlags.GHOST;
 				add.CurrentRegion = Body.CurrentRegion;
 				add.Heading = Body.Heading;
 				add.AddToWorld();
@@ -291,7 +282,7 @@ namespace DOL.AI.Brain
 			Point3D point2 = new Point3D(38505, 41211, 16001);
 			Point3D point3 = new Point3D(39180, 40583, 16000);
 			Point3D point4 = new Point3D(39745, 41176, 16001);
-			if (TorturedSouls.TorturedSoulKilled == 50 && ExplodeUndead.ExplodeZombieCount==0)//spawn explode zombie
+			if (TorturedSouls.TorturedSoulKilled == 20 && ExplodeUndead.ExplodeZombieCount==0)//spawn explode zombie
 			{
 				ExplodeUndead add2 = new ExplodeUndead();
 				switch (Util.Random(1, 4))
@@ -366,7 +357,7 @@ namespace DOL.GS
 		}
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 300;
+			return 200;
 		}
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
@@ -395,6 +386,9 @@ namespace DOL.GS
 			++TorturedSoulKilled;
             base.Die(killer);
         }
+        public override void DropLoot(GameObject killer)//dont drop loot
+        {
+        }
         List<string> soul_names = new List<string>()
 		{
 			"Aphryx's Tortured Soul","Arus's Tortured Soul","Briandina's Tortured Soul","Dwuanne's Tortured Soul",
@@ -402,42 +396,22 @@ namespace DOL.GS
 		};
 		public override bool AddToWorld()
 		{
-			switch(Util.Random(1,5))
+			switch(Util.Random(1,2))
             {
 				case 1:
                     {
-						Model = (ushort)Util.Random(302,317);//celts
+						Model = 123;
 						Name = (string)soul_names[Util.Random(0, soul_names.Count - 1)];
 					}
 					break;
 				case 2:
                     {
-						Model = (ushort)Util.Random(318,333);//luri
-						Name = (string)soul_names[Util.Random(0, soul_names.Count - 1)];
-					}
-					break;
-				case 3:
-					{
-						Model = (ushort)Util.Random(334, 349);//elf
-						Name = (string)soul_names[Util.Random(0, soul_names.Count - 1)];
-					}
-					break;
-				case 4:
-					{
-						Model = (ushort)Util.Random(700, 715);//sylvan
-						Name = (string)soul_names[Util.Random(0, soul_names.Count - 1)];
-					}
-					break;
-				case 5:
-					{
-						Model = (ushort)Util.Random(286, 301);//firbolg
+						Model = 659;
 						Name = (string)soul_names[Util.Random(0, soul_names.Count - 1)];
 					}
 					break;
 			}
 			RespawnInterval = -1;
-			MaxDistance = 2400;
-			TetherRange = 2500;
 			MaxSpeedBase = 200;
 			RoamingRange = 150;
 			Size = (byte)Util.Random(45,55);
@@ -518,7 +492,7 @@ namespace DOL.AI.Brain
 					spell.Damage = 1000;
 					spell.Name = "Plague";
 					spell.Radius = 500;
-					spell.Range = AggroRange;
+					spell.Range = 500;
 					spell.SpellID = 11760;
 					spell.Target = eSpellTarget.Enemy.ToString();
 					spell.Type = eSpellType.DirectDamageNoVariance.ToString();
@@ -539,18 +513,18 @@ namespace DOL.GS
 	{
 		public override int MaxHealth
 		{
-			get { return 3000; }
+			get { return 4000; }
 		}
 		public void BroadcastMessage(String message)
 		{
-			foreach (GamePlayer player in this.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
+			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
 			{
 				player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
 			}
 		}
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 400;
+			return 300;
 		}
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
@@ -583,7 +557,10 @@ namespace DOL.GS
 			RandomTarget = null;
 			base.Die(killer);
 		}
-		public static GamePlayer randomtarget = null;
+        public override void DropLoot(GameObject killer)//dont drop loot
+        {
+        }
+        public static GamePlayer randomtarget = null;
 		public static GamePlayer RandomTarget
 		{
 			get { return randomtarget; }

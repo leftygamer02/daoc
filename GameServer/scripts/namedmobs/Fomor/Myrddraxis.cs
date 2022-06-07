@@ -103,16 +103,29 @@ namespace DOL.GS
 		{
 			if (log.IsInfoEnabled)
 				log.Info("Myrddraxis Initializing...");
-		}	
+		}
 		public override int GetResist(eDamageType damageType)
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 80;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 80;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 80;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+				case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+				default: return 70; // dmg reduction for rest resists
 			}
+		}
+		public override double GetArmorAF(eArmorSlot slot)
+		{
+			return 350;
+		}
+		public override double GetArmorAbsorb(eArmorSlot slot)
+		{
+			// 85% ABS is cap.
+			return 0.20;
+		}
+		public override int MaxHealth
+		{
+			get { return 200000; }
 		}
 		public override int AttackRange
 		{
@@ -141,19 +154,6 @@ namespace DOL.GS
             }
             base.OnAttackEnemy(ad);
         }
-        public override double GetArmorAF(eArmorSlot slot)
-		{
-			return 800;
-		}
-		public override double GetArmorAbsorb(eArmorSlot slot)
-		{
-			// 85% ABS is cap.
-			return 0.55;
-		}
-		public override int MaxHealth
-		{
-			get { return 40000; }
-		}
 		public override bool AddToWorld()
 		{
 			INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60164337);
@@ -165,7 +165,7 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			Level = Convert.ToByte(npcTemplate.Level);
+
 			RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 			MaxSpeedBase = 0;
 			X = 32302;
@@ -177,9 +177,10 @@ namespace DOL.GS
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(82));
 
 			CanSpawnHeads = false;
-			if(CanSpawnHeads==false)
+			if(CanSpawnHeads == false)
             {
 				SpawnHeads();
+				CanSpawnHeads = true;
             }
 
 			MyrddraxisBrain sbrain = new MyrddraxisBrain();
@@ -353,9 +354,7 @@ namespace DOL.AI.Brain
 						if (player.IsAlive && player.Client.Account.PrivLevel == 1)
 						{
 							if (!Enemys_To_DOT.Contains(player))
-							{
 								Enemys_To_DOT.Add(player);
-							}
 						}
 					}
 				}
@@ -365,9 +364,7 @@ namespace DOL.AI.Brain
 					{
 						GamePlayer Target = (GamePlayer)Enemys_To_DOT[Util.Random(0, Enemys_To_DOT.Count - 1)];//pick random target from list
 						RandomTarget2 = Target;//set random target to static RandomTarget
-						int _castDotTime = 2000;
-						ECSGameTimer _CastDot = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastDOT), _castDotTime);
-						_CastDot.Start(_castDotTime);
+						new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastDOT), 2000);
 						CanCast2 = true;
 					}
 				}
@@ -386,9 +383,7 @@ namespace DOL.AI.Brain
 					Body.CastSpell(Hydra_Dot, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
 				}
 				if (oldTarget != null) Body.TargetObject = oldTarget;//return to old target
-				int _resetDotTime = 5000;
-				ECSGameTimer _ResetDot = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDOT), _resetDotTime);
-				_ResetDot.Start(_resetDotTime);
+				new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDOT), 5000);
 			}
 			return 0;
 		}
@@ -419,9 +414,7 @@ namespace DOL.AI.Brain
 						if (player.IsAlive && player.Client.Account.PrivLevel == 1)
 						{
 							if (!Enemys_To_DD.Contains(player))
-							{
 								Enemys_To_DD.Add(player);
-							}
 						}
 					}
 				}
@@ -431,9 +424,7 @@ namespace DOL.AI.Brain
 					{
 						GamePlayer Target = (GamePlayer)Enemys_To_DD[Util.Random(0, Enemys_To_DD.Count - 1)];//pick random target from list
 						RandomTarget = Target;//set random target to static RandomTarget
-						int _castDotTime = 5000;
-						ECSGameTimer _CastDD = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastDD), _castDotTime);
-						_CastDD.Start(_castDotTime);
+						new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastDD), 5000);
 						BroadcastMessage(String.Format(Body.Name + " taking a big flame breath at " + RandomTarget.Name + "."));
 						CanCast = true;
 					}
@@ -453,9 +444,7 @@ namespace DOL.AI.Brain
 					Body.CastSpell(Hydra_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
 				}
 				if (oldTarget != null) Body.TargetObject = oldTarget;//return to old target
-				int _resetDDTime = 5000;
-				ECSGameTimer _ResetDD = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDD), 5000);
-				_ResetDD.Start(_resetDDTime);
+				new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDD), 5000);
 			}
 			return 0;
 		}
@@ -471,9 +460,7 @@ namespace DOL.AI.Brain
 		public int HydraStun(ECSGameTimer timer)
         {
 			if(HasAggro && Body.IsAlive)
-            {
 				Body.CastSpell(Hydra_Stun, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-			}
 			return 0;
         }
 		#endregion
@@ -481,9 +468,7 @@ namespace DOL.AI.Brain
 		public int HydraPBAOE(ECSGameTimer timer)
 		{
 			if (HasAggro && Body.IsAlive)
-			{
 				Body.CastSpell(Hydra_PBAOE, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-			}
 			return 0;
 		}
 		#endregion
@@ -569,16 +554,12 @@ namespace DOL.AI.Brain
 			{
 				if(StartCastDD==false)
                 {
-					int _pickRandomTargetTime = Util.Random(35000, 45000);
-					ECSGameTimer _PickRandomTarget = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget), _pickRandomTargetTime);
-					_PickRandomTarget.Start(_pickRandomTargetTime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget), Util.Random(35000, 45000));
 					StartCastDD = true;
 				}
 				if (StartCastDOT == false)
 				{
-					int _pickRandomTargetTime2 = Util.Random(35000, 45000);
-					ECSGameTimer _PickRandomTarget2 = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget2), _pickRandomTargetTime2);
-					_PickRandomTarget2.Start(_pickRandomTargetTime2);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget2), Util.Random(35000, 45000));
 					StartCastDOT = true;
 				}
 				if (IsPulled == false)
@@ -633,33 +614,25 @@ namespace DOL.AI.Brain
 				#region Hydra Stun
 				if (Body.HealthPercent <= 80 && CanCastStun1==false)
                 {
-					int _hydraStunTime = 5000;
-					ECSGameTimer _HydraStun = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), _hydraStunTime);
-					_HydraStun.Start(_hydraStunTime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), 5000);
 					BroadcastMessage(String.Format(Body.Name + " prepares stunning breath."));
 					CanCastStun1 = true;
                 }
 				else if (Body.HealthPercent <= 60 && CanCastStun2 == false)
 				{
-					int _hydraStunTime = 5000;
-					ECSGameTimer _HydraStun = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), _hydraStunTime);
-					_HydraStun.Start(_hydraStunTime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), 5000);
 					BroadcastMessage(String.Format(Body.Name + " prepares stunning breath."));
 					CanCastStun2 = true;
 				}
 				else if (Body.HealthPercent <= 40 && CanCastStun3 == false)
 				{
-					int _hydraStunTime = 5000;
-					ECSGameTimer _HydraStun = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), _hydraStunTime);
-					_HydraStun.Start(_hydraStunTime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), 5000);
 					BroadcastMessage(String.Format(Body.Name + " prepares stunning breath."));
 					CanCastStun3 = true;
 				}
 				else if (Body.HealthPercent <= 20 && CanCastStun4 == false)
 				{
-					int _hydraStunTime = 5000;
-					ECSGameTimer _HydraStun = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), _hydraStunTime);
-					_HydraStun.Start(_hydraStunTime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraStun), 5000);
 					BroadcastMessage(String.Format(Body.Name + " prepares stunning breath."));
 					CanCastStun4 = true;
 				}
@@ -667,25 +640,19 @@ namespace DOL.AI.Brain
 				#region Hydra PBAOE
 				if (Body.HealthPercent <= 75 && CanCastPBAOE1 == false)
 				{
-					int _hydraPBAOETime = 7000;
-					ECSGameTimer _HydraPBAOE = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraPBAOE), _hydraPBAOETime);
-					_HydraPBAOE.Start(_hydraPBAOETime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraPBAOE), 6000);
 					BroadcastMessage(String.Format(Body.Name + " taking a massive breath of flames to annihilate enemys."));
 					CanCastPBAOE1 = true;
 				}
 				else if (Body.HealthPercent <= 50 && CanCastPBAOE2 == false)
 				{
-					int _hydraPBAOETime = 7000;
-					ECSGameTimer _HydraPBAOE = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraPBAOE), _hydraPBAOETime);
-					_HydraPBAOE.Start(_hydraPBAOETime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraPBAOE), 6000);
 					BroadcastMessage(String.Format(Body.Name + " taking a massive breath of flames to annihilate enemys."));
 					CanCastPBAOE2 = true;
 				}
 				else if (Body.HealthPercent <= 25 && CanCastPBAOE3 == false)
 				{
-					int _hydraPBAOETime = 7000;
-					ECSGameTimer _HydraPBAOE = new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraPBAOE), _hydraPBAOETime);
-					_HydraPBAOE.Start(_hydraPBAOETime);
+					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(HydraPBAOE), 6000);
 					BroadcastMessage(String.Format(Body.Name + " taking a massive breath of flames to annihilate enemys."));
 					CanCastPBAOE3 = true;
 				}
@@ -868,10 +835,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 60;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 60;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 60;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
+				default: return 70;// dmg reduction for rest resists
 			}
 		}
 		public override int AttackRange
@@ -888,12 +855,12 @@ namespace DOL.GS
 		}
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 800;
+			return 300;
 		}
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
 			// 85% ABS is cap.
-			return 0.55;
+			return 0.25;
 		}
 		public override int MaxHealth
 		{
@@ -943,7 +910,7 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			Level = Convert.ToByte(npcTemplate.Level);
+
 			RespawnInterval = -1;
 			MaxSpeedBase = 0;
 			++SecondHeadCount;
@@ -1084,10 +1051,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 60;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 60;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 60;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
+				default: return 70;// dmg reduction for rest resists
 			}
 		}
 		public override int AttackRange
@@ -1104,12 +1071,12 @@ namespace DOL.GS
 		}
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 800;
+			return 300;
 		}
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
 			// 85% ABS is cap.
-			return 0.55;
+			return 0.25;
 		}
 		public override int MaxHealth
 		{
@@ -1159,7 +1126,7 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			Level = Convert.ToByte(npcTemplate.Level);
+
 			RespawnInterval = -1;
 			MaxSpeedBase = 0;
 			++ThirdHeadCount;
@@ -1301,10 +1268,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 60;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 60;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 60;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
+				default: return 70;// dmg reduction for rest resists
 			}
 		}
 		public override int AttackRange
@@ -1321,12 +1288,12 @@ namespace DOL.GS
 		}
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 800;
+			return 300;
 		}
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
 			// 85% ABS is cap.
-			return 0.55;
+			return 0.25;
 		}
 		public override int MaxHealth
 		{
@@ -1376,7 +1343,7 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			Level = Convert.ToByte(npcTemplate.Level);
+
 			RespawnInterval = -1;
 			MaxSpeedBase = 0;
 			++FourthHeadCount;
@@ -1518,10 +1485,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 60;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 60;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 60;// dmg reduction for melee dmg
-				default: return 80;// dmg reduction for rest resists
+				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
+				default: return 70;// dmg reduction for rest resists
 			}
 		}
 		public override int AttackRange
@@ -1538,12 +1505,12 @@ namespace DOL.GS
 		}
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 800;
+			return 300;
 		}
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
 			// 85% ABS is cap.
-			return 0.55;
+			return 0.25;
 		}
 		public override int MaxHealth
 		{
@@ -1593,7 +1560,6 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			Level = Convert.ToByte(npcTemplate.Level);
 			RespawnInterval = -1;
 			MaxSpeedBase = 0;
 			++FifthHeadCount;

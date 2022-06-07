@@ -79,6 +79,26 @@ namespace DOL.GS.Spells
 
                 return false;
 			}
+			
+			if (Caster is GamePlayer && ((GamePlayer) Caster).ControlledBrain != null &&
+			    ((GamePlayer) Caster).ControlledBrain.Body.ControlledNpcList != null)
+			{
+				int cumulativeLevel = 0;
+				foreach (var petBrain in ((GamePlayer) Caster).ControlledBrain.Body.ControlledNpcList)
+				{
+					cumulativeLevel += petBrain != null && petBrain.Body != null ? petBrain.Body.Level : 0;
+				}
+
+				byte newpetlevel = (byte)(Caster.Level * m_spell.Damage * -0.01);
+				if (newpetlevel > m_spell.Value)
+					newpetlevel = (byte)m_spell.Value;
+
+				if (cumulativeLevel + newpetlevel > 75)
+				{
+					MessageToCaster("Your commander is not powerful enough to control a subpet of this level.", eChatType.CT_SpellResisted);
+					return false;
+				}
+			}
 			return base.CheckBeginCast(selectedTarget);
 		}
 

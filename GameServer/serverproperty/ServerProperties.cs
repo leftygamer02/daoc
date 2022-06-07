@@ -2619,6 +2619,12 @@ namespace DOL.GS.ServerProperties
 		public static bool ATLAS_API;
 		
 		/// <summary>
+		/// Maximum number of charges allowed
+		/// </summary>
+		[ServerProperty("atlas", "max_charge_items", "Maximum number of charges allowed", 2)]
+		public static int MAX_CHARGE_ITEMS;
+		
+		/// <summary>
 		/// Maximum numbers of entities allowed
 		/// </summary>
 		[ServerProperty("server", "max_entities", "Maximum numbers of entities allowed", 150000)]
@@ -2703,6 +2709,18 @@ namespace DOL.GS.ServerProperties
 		public static double PREDATOR_REWARD_MULTIPLIER;
 		
 		/// <summary>
+		/// Enforces the check on the link between game account and Discord
+		/// </summary>
+		[ServerProperty("atlas", "force_discord_link", "Enforces the check on the link between game account and Discord", false)]
+		public static bool FORCE_DISCORD_LINK;
+		
+		/// <summary>
+		/// Set the password to access certain API commands as shutdown
+		/// </summary>
+		[ServerProperty("atlas", "api_password", "Set the password to access certain API commands as shutdown", "")]
+		public static string API_PASSWORD;
+		
+		/// <summary>
 		/// Bounty expire check interval in seconds
 		/// </summary>
 		[ServerProperty("predator", "queued_player_insert_interval", "How long to wait between trying to insert new players into system, in seconds", 10)]
@@ -2713,6 +2731,9 @@ namespace DOL.GS.ServerProperties
 		
 		[ServerProperty("predator", "out_of_bounds_timeout", "Time a player is allowed to leave a valid hunting zone before disqualification, in seconds", 180)]
 		public static long OUT_OF_BOUNDS_TIMEOUT;
+		
+		[ServerProperty("beta", "orbs_fire_sale", "All items at the orbs merchant will be free if set to true", false)]
+		public static bool ORBS_FIRE_SALE;
 		
 		#endregion
 		public static IDictionary<string, object> AllCurrentProperties

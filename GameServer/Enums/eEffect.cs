@@ -109,6 +109,7 @@ namespace DOL.GS
         FacilitatePainworking,
         MesmerizeDurationBuff,
         FatigueConsumptionBuff,
+        FatigueConsumptionDebuff,
         SavageBuff,
         Pet,
         OffensiveProc,
@@ -153,5 +154,6 @@ namespace DOL.GS
         MasteryOfConcentration,
         Juggernaut,
         ForestheartAmbusher,
+        Volley,
     }
 }

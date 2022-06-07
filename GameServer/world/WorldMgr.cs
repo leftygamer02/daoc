@@ -1507,7 +1507,32 @@ namespace DOL.GS
 
 			return targetClients;
 		}
+		/// <summary>
+		/// Returns a list of playing clients inside a zone
+		/// </summary>
+		/// <param name="zoneID">The ID of the Zone</param>
+		/// <returns>Array of GameClients from that Zone</returns>
+		public static IList<GameClient> GetClientsOfZone(ushort zoneID)
+		{
+			var targetClients = new List<GameClient>();
 
+			lock (m_clients.SyncRoot)
+			{
+				foreach (GameClient client in m_clients)
+				{
+					if (client != null)
+					{
+						if (client.IsPlaying
+							&& client.Player != null
+							&& client.Player.ObjectState == GameObject.eObjectState.Active
+							&& client.Player.CurrentZone.ID == zoneID)
+							targetClients.Add(client);
+					}
+				}
+			}
+
+			return targetClients;
+		}
 		/// <summary>
 		/// Find a GameClient by the Player's ID
 		/// Case-insensitive, make sure you use returned Player.Name instead of what player typed.
@@ -1564,7 +1589,7 @@ namespace DOL.GS
 		{
 			if (exactMatch)
 			{
-				return GetClientByPlayerNameAndRealm(playerName, 0, activeRequired);
+				return GetClientByPlayerNameAndRealm(playerName, 0, activeRequired).FirstOrDefault();
 			}
 			else
 			{
@@ -1581,8 +1606,9 @@ namespace DOL.GS
 		/// <param name="realmID">search in: 0=all realms or player.Realm</param>
 		/// <param name="activeRequired"></param>
 		/// <returns>The found GameClient or null</returns>
-		public static GameClient GetClientByPlayerNameAndRealm(string playerName, eRealm realm, bool activeRequired)
+		public static List<GameClient> GetClientByPlayerNameAndRealm(string playerName, eRealm realm, bool activeRequired)
 		{
+			List<GameClient> potentialMatches = new List<GameClient>();
 			lock (m_clients.SyncRoot)
 			{
 				foreach (GameClient client in m_clients)
@@ -1591,12 +1617,18 @@ namespace DOL.GS
 					{
 						if (activeRequired && (!client.IsPlaying || client.Player.ObjectState != GameObject.eObjectState.Active))
 							continue;
+						
 						if (0 == string.Compare(client.Player.Name, playerName, true)) // case insensitive comapre
 						{
-							return client;
+							potentialMatches.Add(client);
+							return potentialMatches;
 						}
+						if(client.Player.Name.ToLower().StartsWith(playerName.ToLower())) potentialMatches.Add(client);
 					}
 				}
+
+				return potentialMatches;
+
 			}
 			return null;
 		}
@@ -1614,7 +1646,7 @@ namespace DOL.GS
 		{
 			// first try exact match in case player with "abcde" name is
 			// before "abc" in list and user typed "abc"
-			GameClient guessedClient = GetClientByPlayerNameAndRealm(playerName, realm, activeRequired);
+			GameClient guessedClient = GetClientByPlayerNameAndRealm(playerName, realm, activeRequired).FirstOrDefault();
 			if (guessedClient != null)
 			{
 				result = 3; // exact match

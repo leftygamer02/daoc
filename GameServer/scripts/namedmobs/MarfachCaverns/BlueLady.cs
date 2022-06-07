@@ -18,17 +18,15 @@ namespace DOL.GS
             if (log.IsInfoEnabled)
                 log.Info("Blue Lady initialized..");
         }
-
         public BlueLady()
             : base()
         {
         }
-
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
             {
-                if (this.IsOutOfTetherRange)
+                if (IsOutOfTetherRange)
                 {
                     if (damageType == eDamageType.Body || damageType == eDamageType.Cold ||
                         damageType == eDamageType.Energy || damageType == eDamageType.Heat
@@ -58,18 +56,11 @@ namespace DOL.GS
         {
             return base.AttackDamage(weapon) * Strength / 100;
         }
-
-        public override int MaxHealth
-        {
-            get { return 20000; }
-        }
-
         public override int AttackRange
         {
             get { return 450; }
             set { }
         }
-
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -77,26 +68,28 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
-
-        public override double GetArmorAF(eArmorSlot slot)
-        {
-            return 800;
-        }
-
-        public override double GetArmorAbsorb(eArmorSlot slot)
-        {
-            // 85% ABS is cap.
-            return 0.55;
-        }
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 70;
-                case eDamageType.Crush: return 70;
-                case eDamageType.Thrust: return 70;
-                default: return 55;
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
+        }
+        public override double GetArmorAF(eArmorSlot slot)
+        {
+            return 350;
+        }
+        public override double GetArmorAbsorb(eArmorSlot slot)
+        {
+            // 85% ABS is cap.
+            return 0.20;
+        }
+        public override int MaxHealth
+        {
+            get { return 30000; }
         }
         public override bool AddToWorld()
         {
@@ -133,7 +126,6 @@ namespace DOL.GS
             base.AddToWorld();
             return true;
         }
-
         public override void Die(GameObject killer)
         {
             foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(this.CurrentRegionID))
@@ -142,7 +134,7 @@ namespace DOL.GS
                 {
                     npc.RemoveFromWorld();
                 }
-            }            
+            }
             base.Die(killer);
         }
     }
@@ -161,12 +153,13 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 500;
         }
-
+        private bool CanSpawnAdds = false;
         public override void Think()
         {
             if (!HasAggressionTable())
             {
                 Body.Health = Body.MaxHealth;
+                CanSpawnAdds = false;
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                 {
@@ -179,19 +172,19 @@ namespace DOL.AI.Brain
             if (Body.InCombat && HasAggro && Body.TargetObject != null)
             {
                 Body.CastSpell(BlueLady_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                if(BlueLadySwordAdd.SwordCount <15 || BlueLadyAxeAdd.AxeCount <15)
+                if ((BlueLadySwordAdd.SwordCount < 10 || BlueLadyAxeAdd.AxeCount < 10) && CanSpawnAdds == false)
                 {
-                    SpawnAdds();
+                    new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnAdds), Util.Random(25000, 45000));
+                    CanSpawnAdds = true;
                 }
-            }         
+            }
             base.Think();
         }
-
-        public void SpawnAdds()
+        private int SpawnAdds(ECSGameTimer timer)
         {
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 10; i++)
             {
-                if (BlueLadySwordAdd.SwordCount < 15)
+                if (BlueLadySwordAdd.SwordCount < 10)
                 {
                     BlueLadySwordAdd add = new BlueLadySwordAdd();
                     add.X = Body.X + Util.Random(-100, 100);
@@ -202,9 +195,9 @@ namespace DOL.AI.Brain
                     add.AddToWorld();
                 }
             }
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 10; i++)
             {
-                if (BlueLadyAxeAdd.AxeCount < 15)
+                if (BlueLadyAxeAdd.AxeCount < 10)
                 {
                     BlueLadyAxeAdd add2 = new BlueLadyAxeAdd();
                     add2.X = Body.X + Util.Random(-100, 100);
@@ -214,7 +207,9 @@ namespace DOL.AI.Brain
                     add2.Heading = Body.Heading;
                     add2.AddToWorld();
                 }
-            }         
+            }
+            CanSpawnAdds = false;
+            return 0;
         }
         public Spell m_BlueLady_DD;
         public Spell BlueLady_DD
@@ -249,7 +244,6 @@ namespace DOL.AI.Brain
         }
     }
 }
-
 namespace DOL.GS
 {
     public class BlueLadySwordAdd : GameNPC
@@ -261,32 +255,27 @@ namespace DOL.GS
             : base()
         {
         }
-
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 200;
         }
-
         public override int MaxHealth
         {
-            get { return 700; }
+            get { return 500; }
         }
-
         public override int AttackRange
         {
             get { return 450; }
             set { }
         }
-
         public override double GetArmorAF(eArmorSlot slot)
         {
-            return 400;
+            return 200;
         }
-
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
-            return 0.25;
+            return 0.15;
         }
         public static int SwordCount = 0;
         public override void Die(GameObject killer)
@@ -294,25 +283,22 @@ namespace DOL.GS
             --SwordCount;
             base.Die(killer);
         }
+        public override long ExperienceValue => 0;
         public override void DropLoot(GameObject killer) //no loot
         {
         }
+        public override short Quickness { get => base.Quickness; set => base.Quickness = 125; }
+        public override short Strength { get => base.Strength; set => base.Strength = 50; }
         public override bool AddToWorld()
         {
             BlueLadySwordAdd blueLady = new BlueLadySwordAdd();
             Model = 665;
             Name = "summoned sword";
             Size = 60;
-            Level = (byte)Util.Random(50,55);
+            Level = (byte)Util.Random(50, 55);
             Realm = 0;
 
             ++SwordCount;
-            Strength = 50;
-            Intelligence = 150;
-            Piety = 150;
-            Dexterity = 200;
-            Constitution = 200;
-            Quickness = 125;
             RespawnInterval = -1;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
@@ -323,7 +309,7 @@ namespace DOL.GS
             GameNpcInventoryTemplate templateHib = new GameNpcInventoryTemplate();
             templateHib.AddNPCEquipment(eInventorySlot.RightHandWeapon, 5);
             Inventory = templateHib.CloseTemplate();
-            VisibleActiveWeaponSlots = (byte) eActiveWeaponSlot.Standard;
+            VisibleActiveWeaponSlots = (byte)eActiveWeaponSlot.Standard;
 
             BodyType = 6;
             BlueLadyAddBrain sBrain = new BlueLadyAddBrain();
@@ -334,7 +320,6 @@ namespace DOL.GS
             return true;
         }
     }
-
     public class BlueLadyAxeAdd : GameNPC
     {
         private static readonly log4net.ILog log =
@@ -344,32 +329,27 @@ namespace DOL.GS
             : base()
         {
         }
-
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 200;
         }
-
         public override int MaxHealth
         {
-            get { return 700; }
+            get { return 500; }
         }
-
         public override int AttackRange
         {
             get { return 450; }
             set { }
         }
-
         public override double GetArmorAF(eArmorSlot slot)
         {
-            return 700;
+            return 200;
         }
-
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
-            return 0.45;
+            return 0.15;
         }
         public static int AxeCount = 0;
         public override void Die(GameObject killer)
@@ -377,10 +357,12 @@ namespace DOL.GS
             --AxeCount;
             base.Die(killer);
         }
+        public override long ExperienceValue => 0;
         public override void DropLoot(GameObject killer) //no loot
         {
         }
-
+        public override short Quickness { get => base.Quickness; set => base.Quickness = 125; }
+        public override short Strength { get => base.Strength; set => base.Strength = 50; }
         public override bool AddToWorld()
         {
             BlueLadyAxeAdd blueLady = new BlueLadyAxeAdd();
@@ -393,15 +375,9 @@ namespace DOL.GS
             GameNpcInventoryTemplate templateHib = new GameNpcInventoryTemplate();
             templateHib.AddNPCEquipment(eInventorySlot.RightHandWeapon, 316);
             Inventory = templateHib.CloseTemplate();
-            VisibleActiveWeaponSlots = (byte) eActiveWeaponSlot.Standard;
+            VisibleActiveWeaponSlots = (byte)eActiveWeaponSlot.Standard;
 
             ++AxeCount;
-            Strength = 50;
-            Intelligence = 150;
-            Piety = 150;
-            Dexterity = 200;
-            Constitution = 200;
-            Quickness = 125;
             RespawnInterval = -1;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
@@ -419,7 +395,6 @@ namespace DOL.GS
         }
     }
 }
-
 namespace DOL.AI.Brain
 {
     public class BlueLadyAddBrain : StandardMobBrain

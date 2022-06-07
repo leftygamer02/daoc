@@ -46,7 +46,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles player world init requests
 		/// </summary>
-		protected class WorldInitAction : RegionAction
+		protected class WorldInitAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new WorldInitAction
@@ -60,10 +60,10 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GamePlayer player = (GamePlayer)m_actionSource;
-				if (player == null) return;
+				if (player == null) return 0;
 				//check emblems at world load before any updates
 				if (player.Inventory != null) 
 				{
@@ -133,12 +133,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (!player.AddToWorld())
 				{
 					log.ErrorFormat("Failed to add player to the region! {0}", player.ToString());
-					player.Client.Out.SendPlayerQuit(true);
-					player.Client.Player.SaveIntoDatabase();
-					player.Client.Player.Quit(true);
-					player.Client.Disconnect();
+					player.Client?.Out.SendPlayerQuit(true);
+					player.Client?.Player.SaveIntoDatabase();
+					player.Client?.Player.Quit(true);
+					player.Client?.Disconnect();
 
-					return;
+					return 0;
 				}
 
 				// this is bind stuff
@@ -191,6 +191,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				//check item at world load
 				if (log.IsDebugEnabled)
 					log.DebugFormat("Client {0}({1} PID:{2} OID:{3}) entering Region {4}(ID:{5})", player.Client.Account.Name, player.Name, player.Client.SessionID, player.ObjectID, player.CurrentRegion.Description, player.CurrentRegionID);
+				return 0;
 			}
 		}
 	}

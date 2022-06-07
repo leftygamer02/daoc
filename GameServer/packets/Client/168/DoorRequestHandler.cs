@@ -41,7 +41,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			var doorState = (byte) packet.ReadByte();
 			int doorType = doorID / 100000000;
 
-			int radius = Properties.WORLD_PICKUP_DISTANCE * 2;
+			int radius = Properties.WORLD_PICKUP_DISTANCE * 4;
 			int zoneDoor = doorID / 1000000;
 
 			string debugText = "";
@@ -94,7 +94,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				}
 			}
 
-			if (client.Player.TargetObject is GameDoor target && !client.Player.IsWithinRadius(target, radius))
+			if (client.Player.TargetObject is GameDoor && !client.Player.IsWithinRadius(client.Player.TargetObject, radius))
 			{
 				client.Player.Out.SendMessage("You are too far to open this door", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 				return;
@@ -140,7 +140,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 				}
                 else if (client.Account.PrivLevel > 1)
 				{
-					client.Out.SendDebugMessage("GM: Forcing locked door open.");
+					client.Out.SendDebugMessage("GM: Forcing locked door open. ");
+					client.Out.SendDebugMessage($"PosternDoor: {door.IsPostern}");
+
 					new ChangeDoorAction(client.Player, doorID, doorState, radius).Start(1);
 					return;
 				}
@@ -198,6 +200,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 				player.Out.SendMessage("Added door " + m_handlerDoorID + " to the database!", eChatType.CT_Important,
 				                       eChatLoc.CL_SystemWindow);
+				GameServer.Database.SaveObject(door);
 				DoorMgr.Init();
 			}
 		}
@@ -205,7 +208,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles the door state change actions
 		/// </summary>
-		protected class ChangeDoorAction : RegionAction
+		protected class ChangeDoorAction : RegionECSAction
 		{
 			/// <summary>
 			/// The target door Id
@@ -239,7 +242,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				var player = (GamePlayer) m_actionSource;
 				List<IDoor> doorList = DoorMgr.getDoorByID(m_doorId);
@@ -281,7 +284,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 					//new frontiers we don't want this, i.e. relic gates etc
 					if (player.CurrentRegionID == 163 && player.Client.Account.PrivLevel == 1)
-						return;
+						return 0;
 					/*
 					//create a bug report
 					BugReport report = new BugReport();
@@ -302,8 +305,20 @@ namespace DOL.GS.PacketHandler.Client.v168
 					door.Z = player.Z;
 					door.Realm = eRealm.Door;
 					door.CurrentRegion = player.CurrentRegion;
-					door.Open(player);
+					
+					if (player.IsWithinRadius(door, m_radius))
+					{
+						door.Open(player);
+					}
+					else
+					{
+						player.Out.SendMessage(
+							LanguageMgr.GetTranslation(player.Client.Account.Language, "DoorRequestHandler.OnTick.TooFarAway", doorList[0].Name),
+							eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					}
 				}
+
+				return 0;
 			}
 		}
 	}

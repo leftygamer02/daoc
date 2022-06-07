@@ -26,3 +26,9 @@ Effects.BannerOfFreedomEffect.Name				Banner of Freedom
 Effects.BannerOfFreedomEffect.Description:		Reduces all Crowd Controls by 6%.
 Effects.BannerOfBesiegingEffect.Name:			Banner of Besieging
 Effects.BannerOfBesiegingEffect.Description:	Reduces the fireing speed of siegeweapons by 6%.
+
+## Volley
+Effects.VolleyEffect.MBHitsExtraDamage:   You shoot {0} with your bow and hit for {1} damage!
+Effects.VolleyEffect.MBHitsExtraDamageCrit:   You critical hit {0} for an additional {1} damage! 
+Effects.VolleyEffect.XMBExtraDamageToYou:  {0} hits your {1} for {2} damage!
+Effects.VolleyEffect.XMBExtraDamageToYouCrit:  {0} critical hits you for an additional {1} damage!
