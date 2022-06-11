@@ -105,91 +105,230 @@ namespace DOL.GS
                 }
             }
         }
-        
+
+        private GameLiving m_caster;
         /// <summary>
-        /// Used for 'OnEffectStartMsg' and 'OnEffectExpiresMsg'. Identifies the entity triggering the effect (sometimes the caster and effect owner are the same entity).
+        /// Used for 'OnEffectStartMsg' and 'OnEffectExpiresMsg'. Identifies the entity triggering the effect.
         /// </summary>
-        public GameLiving Caster { get; }
-        
+        public GameLiving Caster => m_caster;
+
+        #region Effect Messages
+
         #region Effect Start Messages
         /// <summary>
-		/// Sends Spell messages to all nearby/associated players when an ability/spell/style effect becomes active on a target.
+		/// Sends effect messages to all nearby/associated players when an ability/spell/style effect becomes active on a target
 		/// </summary>
 		/// <param name="target">The owner of the effect.</param>
         /// <param name="msgTarget">If 'true', the system sends a first-person spell message to the target/owner of the effect.</param>
-		/// <param name="msgSelf">If 'true', the system sends a third-person spell message to the caster triggering the effect, regardless of their proximity to the target.</param>
+		/// <param name="msgCaster">If 'true', the system sends a third-person spell message to the caster triggering the effect, regardless of their proximity to the target.</param>
 		/// <param name="msgArea">If 'true', the system sends a third-person message to all players within range of the target.</param>
 		/// <returns>'Message1' and 'Message2' values from the 'spell' table.</returns>
-		public void OnEffectStartsMsg(GameLiving target, bool msgTarget, bool msgSelf, bool msgArea)
+		public void OnEffectStartsMsg(GameLiving target, bool msgTarget, bool msgCaster, bool msgArea)
 		{
 			// If the target variable is at the start of the string, capitalize their name or article
 			var upperCase = SpellHandler.Spell.Message2.StartsWith("{0}");
 
-			// Sends no messages
-			if (msgTarget == false && msgSelf == false && msgArea == false) return;
+	        if (target == null)
+		        return;
 
-			// Sends a first-person message directly to the caster's target, if they are a player
-			if (msgTarget && target is GamePlayer playerTarget)
-				// "You feel more dexterous!"
-				((SpellHandler)SpellHandler).MessageToLiving(playerTarget, SpellHandler.Spell.Message1, eChatType.CT_Spell);
+	        Owner = target;
+	        m_caster = SpellHandler.Caster;
 
-			// Sends a third-person message directly to the caster to indicate the spell has ended
-			if (msgSelf && Caster is GamePlayer selfCaster)
-				// "{0} looks more agile!"
-				((SpellHandler)SpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, target.GetName(0, true)), eChatType.CT_Spell);
+	        // Sends a first-person message directly to the caster's target, if they are a player
+	        // "You feel more dexterous!"
+	        if (msgTarget)
+	        {
+		        if (Owner is GamePlayer targetOwner)
+			        ((SpellHandler) SpellHandler).MessageToLiving(targetOwner, Util.MakeSentence(SpellHandler.Spell.Message1), eChatType.CT_Spell);
+	        }
 
-			// Sends a third-person message to all players surrounding the target
-			if (msgArea)
-			{
-				if (Caster is GamePlayer areaTarget && areaTarget == target)
-					// "{0} looks more agile!"
-					Message.SystemToArea(target, Util.MakeSentence(SpellHandler.Spell.Message2, target.GetName(0, upperCase)), eChatType.CT_Spell, target, Caster);
-				else if (Caster is GamePet || target is GamePet or GamePlayer)
-					// "{0} looks more agile!"
-					Message.SystemToArea(target, Util.MakeSentence(SpellHandler.Spell.Message2, target.GetName(0, upperCase)), eChatType.CT_Spell, target);
-			}
+	        // Sends a third-person message directly to the caster about the effect and target
+	        // "{0} looks more agile!"
+	        if (msgCaster)
+	        {
+		        if (Caster is GamePlayer pCaster && Owner != pCaster)
+			        ((SpellHandler) SpellHandler).MessageToLiving(pCaster, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        else if (Caster is GameNPC casterPet && casterPet.ControlledBrain != null && casterPet.ControlledBrain.GetPlayerOwner() != null)
+		        {
+			        var petCaster = casterPet.ControlledBrain.GetPlayerOwner().Client.Player;
+			        if (petCaster != null)
+						((SpellHandler) SpellHandler).MessageToLiving(petCaster, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        }
+	        }
+
+	        // Sends a third-person message to certain players around the target
+	        // "{0} looks more agile!"
+	        if (msgArea)
+	        {
+		        if ((Owner is GameNPC npcOwner && npcOwner.Realm == 0) && (Caster is GameNPC npcCaster && npcCaster.Realm == 0))
+		        {
+			        foreach (GamePlayer p in Owner.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
+				        if (p != null)
+					        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message2, npcOwner.GetName(0, upperCase)), eChatType.CT_Spell);
+		        }
+		        else
+		        {
+			        foreach (GamePlayer p in Owner.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
+			        {
+				        if (p == null)
+					        return;
+				        if (Owner is GamePlayer pOwner && p == pOwner)
+					        continue;
+				        if (p == Caster)
+					        continue;
+
+				        // X-realm coordination dissuading among soloers
+				        // If you are not a member of the caster or target's group or realm, you cannot see spell messages
+				        // If you are solo player, you will only see effects on other solo players
+
+				        // Group player logic
+				        if (p.Group != null)
+				        {
+					        // If the group contains the target player, all members of the group can see the message
+					        if (Owner is GamePlayer aePlayer && p.Group.GetPlayersInTheGroup().Contains(aePlayer))
+						        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message2, aePlayer.GetName(0, upperCase)), eChatType.CT_Spell);
+					        // If the group contains the caster, all members of the group can see the message
+					        else if (Caster is GamePlayer gpCaster && p.Group.GetPlayersInTheGroup().Contains(gpCaster))
+						        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, upperCase)), eChatType.CT_Spell);
+				        }
+				        // Solo player logic
+				        else if (p.Group == null)
+				        {
+					        // Solo players can only see other player spell messages if the caster is friendly and the target is from an enemy realm
+					        if (p.Realm == Caster.Realm && p.Realm != Owner.Realm)
+					        {
+						        // If the target is a player and solo, then show messages
+						        if (Owner is GamePlayer pSolo && pSolo.Group == null)
+							        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message2, pSolo.GetName(0, upperCase)), eChatType.CT_Spell);
+					        }
+					        // If the player's realm isn't the same as the caster, but is the same as the target and the target is a player running solo, then see messages
+					        else if (p.Realm != Caster.Realm && p.Realm == Owner.Realm)
+					        {
+						        // If the target is a player and solo, then show messages
+						        if (Owner is GamePlayer pSolo2 && pSolo2.Group == null)
+							        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message2, pSolo2.GetName(0, upperCase)), eChatType.CT_Spell);
+					        }
+					        else if (p.Realm == Caster.Realm && Caster == Owner)
+					        {
+						        // If the target is a player and solo, then show messages
+						        if (Owner is GamePlayer pSolo2 && pSolo2 != null && pSolo2.Group == null)
+							        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message2, pSolo2.GetName(0, upperCase)), eChatType.CT_Spell);
+					        }
+				        }
+			        }
+		        }
+	        }
 	    }
         #endregion Effect Start Messages
-        
+
         #region Effect End Messages
-		/// <summary>
-		/// Sends Spell messages to all nearby/associated players when an ability/spell/style effect ends on a target.
-		/// </summary>
-		/// <param name="target">The owner of the effect.</param>
-		/// <param name="msgTarget">If 'true', the system sends a first-person spell message to the target/owner of the effect.</param>
-		/// <param name="msgSelf">If 'true', the system sends a third-person spell message to the caster triggering the effect, regardless of their proximity to the target.</param>
-		/// <param name="msgArea">If 'true', the system sends a third-person message to all players within range of the target.</param>
-		/// <returns>'Message3' and 'Message4' values from the 'spell' table.</returns>
-		public void OnEffectExpiresMsg(GameLiving target, bool msgTarget, bool msgSelf, bool msgArea)
-		{
-			// If the target variable is at the start of the string, capitalize their name or article
-			var upperCase = SpellHandler.Spell.Message4.StartsWith("{0}");
-			
-			// Sends no messages
-			if (msgTarget == false && msgSelf == false && msgArea == false) return;
+        /// <summary>
+        /// Sends effect messages to all nearby/associated players when an ability/spell/style effect ends on a target
+        /// </summary>
+        /// <param name="target">The owner of the effect.</param>
+        /// <param name="msgTarget">If 'true', the system sends a first-person spell message to the target/owner of the effect.</param>
+        /// <param name="msgCaster">If 'true', the system sends a third-person spell message to the caster triggering the effect, regardless of their proximity to the target.</param>
+        /// <param name="msgArea">If 'true', the system sends a third-person message to all players within range of the target.</param>
+        /// <returns>'Message3' and 'Message4' values from the 'spell' table.</returns>
+        public void OnEffectExpiresMsg(GameLiving target, bool msgTarget, bool msgCaster, bool msgArea)
+        {
+	        // If the target variable is at the start of the string, capitalize their name or article
+	        var upperCase = SpellHandler.Spell.Message4.StartsWith("{0}");
 
-			// Sends a first-person message directly to the caster's target, if they are a player
-			if (msgTarget && target is GamePlayer playerTarget)
-				// "Your agility returns to normal."
-				((SpellHandler)SpellHandler).MessageToLiving(playerTarget, SpellHandler.Spell.Message3, eChatType.CT_Spell);
+	        if (target == null)
+		        return;
 
-			// Sends a third-person message directly to the caster to indicate the spell has ended
-			if (msgSelf && Caster is GamePlayer selfCaster)
-				// "{0}'s enhanced agility fades."
-				((SpellHandler)SpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message4, target.GetName(0, true)), eChatType.CT_Spell);
+	        Owner = target;
+	        m_caster = SpellHandler.Caster;
 
-			// Sends a third-person message to all players surrounding the target
-			if (msgArea)
-			{
-				if (Caster is GamePlayer areaTarget && areaTarget == target)
-					// "{0}'s enhanced agility fades."
-					Message.SystemToArea(target, Util.MakeSentence(SpellHandler.Spell.Message4, target.GetName(0, upperCase)), eChatType.CT_Spell, target, Caster);
-				else if (Caster is GamePet || target is GamePet or GamePlayer)
-					// "{0}'s enhanced agility fades."
-					Message.SystemToArea(target, Util.MakeSentence(SpellHandler.Spell.Message4, target.GetName(0, upperCase)), eChatType.CT_Spell, target);
-			}
-		}
-		#endregion Effect End Messages
+	        // Sends a first-person message directly to the caster's target, if they are a player
+	        // "Your agility returns to normal."
+	        if (msgTarget)
+	        {
+		        if (Owner is GamePlayer targetOwner)
+			        ((SpellHandler) SpellHandler).MessageToLiving(targetOwner, Util.MakeSentence(SpellHandler.Spell.Message3), eChatType.CT_Spell);
+	        }
+
+	        // Sends a third-person message directly to the caster about the effect and target
+	        // "{0}'s enhanced agility fades."
+	        if (msgCaster)
+	        {
+		        if (Caster is GamePlayer pCaster && Owner != pCaster)
+			        ((SpellHandler) SpellHandler).MessageToLiving(pCaster, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        else if (Caster is GameNPC casterPet && casterPet.ControlledBrain != null && casterPet.ControlledBrain.GetPlayerOwner() != null)
+		        {
+			        var petCaster = casterPet.ControlledBrain.GetPlayerOwner().Client.Player;
+			        if (petCaster != null)
+						((SpellHandler) SpellHandler).MessageToLiving(petCaster, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        }
+	        }
+
+	        // Sends a third-person message to certain players around the target
+	        // "{0}'s enhanced agility fades."
+	        if (msgArea)
+	        {
+		        if ((Owner is GameNPC npcOwner && npcOwner.Realm == 0) && (Caster is GameNPC npcCaster && npcCaster.Realm == 0))
+		        {
+			        foreach (GamePlayer p in Owner.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
+				        if (p != null)
+					        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message4, npcOwner.GetName(0, upperCase)), eChatType.CT_Spell);
+		        }
+		        else
+		        {
+			        foreach (GamePlayer p in Owner.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
+			        {
+				        if (p == null)
+					        return;
+				        if (Owner is GamePlayer pOwner && p == pOwner)
+					        continue;
+				        if (p == Caster)
+					        continue;
+
+				        // X-realm coordination dissuading among soloers
+				        // If you are not a member of the caster or target's group or realm, you cannot see spell messages
+				        // If you are solo player, you will only see effects on other solo players
+
+				        // Group player logic
+				        if (p.Group != null)
+				        {
+					        // If the group contains the target player, all members of the group can see the message
+					        if (Owner is GamePlayer aePlayer && p.Group.GetPlayersInTheGroup().Contains(aePlayer))
+						        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message4, aePlayer.GetName(0, upperCase)), eChatType.CT_Spell);
+					        // If the group contains the caster, all members of the group can see the message
+					        else if (Caster is GamePlayer gpCaster && p.Group.GetPlayersInTheGroup().Contains(gpCaster))
+						        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, upperCase)), eChatType.CT_Spell);
+				        }
+				        // Solo player logic
+				        else if (p.Group == null)
+				        {
+					        // Solo players can only see other player spell messages if the caster is friendly and the target is from an enemy realm
+					        if (p.Realm == Caster.Realm && p.Realm != Owner.Realm)
+					        {
+						        // If the target is a player and solo, then show messages
+						        if (Owner is GamePlayer pSolo && pSolo.Group == null)
+							        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message4, pSolo.GetName(0, upperCase)), eChatType.CT_Spell);
+					        }
+					        // If the player's realm isn't the same as the caster, but is the same as the target and the target is a player running solo, then see messages
+					        else if (p.Realm != Caster.Realm && p.Realm == Owner.Realm)
+					        {
+						        // If the target is a player and solo, then show messages
+						        if (Owner is GamePlayer pSolo2 && pSolo2.Group == null)
+							        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message4, pSolo2.GetName(0, upperCase)), eChatType.CT_Spell);
+					        }
+					        else if (p.Realm == Caster.Realm && Caster == Owner)
+					        {
+						        // If the target is a player and solo, then show messages
+						        if (Owner is GamePlayer pSolo2 && pSolo2 != null && pSolo2.Group == null)
+							        ((SpellHandler) SpellHandler).MessageToLiving(p, Util.MakeSentence(SpellHandler.Spell.Message4, pSolo2.GetName(0, upperCase)), eChatType.CT_Spell);
+					        }
+				        }
+			        }
+		        }
+	        }
+        }
+        #endregion Effect End Messages
+
+        #endregion Effect Messages
 
 		public override PlayerXEffect getSavedEffect()
 		{

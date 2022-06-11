@@ -33,7 +33,7 @@ namespace DOL.GS
                     
                     // "You can't focus your knight viking badger helmet... meow!"
                     // "{0} is confused!"
-                    OnEffectStartsMsg(Owner, true, false, true);
+                    OnEffectStartsMsg(Owner, true, true, true);
 
                 }
                 EffectService.RequestImmediateCancelEffect(this);
@@ -54,7 +54,7 @@ namespace DOL.GS
                 npc.IsConfused = true;
                 
                 // "{0} is confused!"
-                OnEffectStartsMsg(Owner, false, false, true);
+                OnEffectStartsMsg(Owner, true, true, true);
 
 
                 //if (log.IsDebugEnabled)

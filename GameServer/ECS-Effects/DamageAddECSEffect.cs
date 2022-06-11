@@ -22,7 +22,7 @@ namespace DOL.GS
         {
             // "Your energy field dissipates."
             // "{0}'s energy field dissipates."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
         }
     }
 }

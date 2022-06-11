@@ -20,7 +20,7 @@ namespace DOL.GS
 
             // "A crystal shield covers you."
             // "A crystal shield covers {0}'s skin."
-            OnEffectStartsMsg(Owner, true, false, true);
+            OnEffectStartsMsg(Owner, true, true, true);
         }
 
         public override void OnStopEffect()
