@@ -32,7 +32,7 @@ namespace DOL.GS
         {
             // "Your crystal shield fades."
             // "{0}'s crystal shield fades."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
 
         }
     }

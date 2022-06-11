@@ -41,6 +41,10 @@ namespace DOL.GS
                     //Console.WriteLine($"Debuffing {prop.ToString()}");
                     ApplyBonus(Owner, eBuffBonusCategory.Debuff, prop, SpellHandler.Spell.Value, Effectiveness, true);
                 }
+
+                // "Your agility is suppressed!"
+                // "{0} seems uncoordinated!"
+                OnEffectStartsMsg(Owner, true, true, true);
             }
             else
             {
@@ -55,6 +59,11 @@ namespace DOL.GS
 
                     //Console.WriteLine("Debuffing Speed for " + e.Owner.Name);
                     //e.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, e.SpellHandler.Spell.ID, 1.0 - e.SpellHandler.Spell.Value * 0.01);
+
+                    // "Your agility is suppressed!"
+                    // "{0} seems uncoordinated!"
+                    OnEffectStartsMsg(Owner, true, true, true);
+
                     Owner.BuffBonusMultCategory1.Set((int) eProperty.MaxSpeed, EffectType,
                         1.0 - SpellHandler.Spell.Value * 0.01);
                     UnbreakableSpeedDecreaseSpellHandler.SendUpdates(Owner);
@@ -73,13 +82,13 @@ namespace DOL.GS
                             ApplyBonus(Owner, eBuffBonusCategory.Debuff, prop, SpellHandler.Spell.Value, Effectiveness,
                                 true);
                     }
+
+                    // "Your agility is suppressed!"
+                    // "{0} seems uncoordinated!"
+                    OnEffectStartsMsg(Owner, true, true, true);
                 }
             }
 
-            // "Your agility is suppressed!"
-            // "{0} seems uncoordinated!"
-            OnEffectStartsMsg(Owner, true, true, true);
-            
             //IsBuffActive = true;
         }
 
@@ -92,6 +101,10 @@ namespace DOL.GS
                     //Console.WriteLine($"Canceling {prop.ToString()} on {e.Owner}.");
                     ApplyBonus(Owner, eBuffBonusCategory.Debuff, prop, SpellHandler.Spell.Value, Effectiveness, false);
                 }
+
+                // "Your coordination returns."
+                // "{0}'s coordination returns."
+                OnEffectExpiresMsg(Owner, true, true, true);
             }
             else
             {
@@ -103,6 +116,11 @@ namespace DOL.GS
                     //}
 
                     //e.Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, e.SpellHandler.Spell.ID);
+
+                    // "Your coordination returns."
+                    // "{0}'s coordination returns."
+                    OnEffectExpiresMsg(Owner, true, true, true);
+
                     Owner.BuffBonusMultCategory1.Remove((int) eProperty.MaxSpeed, EffectType);
                     UnbreakableSpeedDecreaseSpellHandler.SendUpdates(Owner);
                 }
@@ -119,6 +137,10 @@ namespace DOL.GS
                             ApplyBonus(Owner, eBuffBonusCategory.Debuff, prop, SpellHandler.Spell.Value, Effectiveness,
                                 false);
                     }
+
+                    // "Your coordination returns."
+                    // "{0}'s coordination returns."
+                    OnEffectExpiresMsg(Owner, true, true, true);
                 }
             }
 
@@ -126,11 +148,13 @@ namespace DOL.GS
                 EffectType == eEffect.WsConDebuff)
             {
                 Owner.StartHealthRegeneration();
+
+                // "Your coordination returns."
+                // "{0}'s coordination returns."
+                OnEffectExpiresMsg(Owner, true, true, true);
             }
             
-            // "Your coordination returns."
-            // "{0}'s coordination returns."
-            OnEffectExpiresMsg(Owner, true, false, true);
+
 
             IsBuffActive = false;
         }

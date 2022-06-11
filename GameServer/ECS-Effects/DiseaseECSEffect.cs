@@ -57,7 +57,7 @@ namespace DOL.GS
 
             // "You look healthy."
             // "{0} looks healthy again."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
 
 
             (SpellHandler as DiseaseSpellHandler).SendUpdates(this);

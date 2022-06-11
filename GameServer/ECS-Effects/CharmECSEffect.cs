@@ -41,19 +41,11 @@ namespace DOL.GS
 
                 if (casterPlayer.ControlledBrain != ((CharmSpellHandler)SpellHandler).m_controlledBrain)
                 {
-
-                    if (!string.IsNullOrEmpty(SpellHandler.Spell.Message1))
-                        // Message: "{0}The slough serpent} is now enthralled!"
-                        Message.SystemToArea(charmMob, Util.MakeSentence(SpellHandler.Spell.Message1, charmMob.GetName(0, true)), eChatType.CT_System, charmMob, casterPlayer);
-
-                    if (!string.IsNullOrEmpty(SpellHandler.Spell.Message2))
-                        // Message: {0} is now under your control.
-                        ((CharmSpellHandler)SpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, charmMob.GetName(0, true)), eChatType.CT_Spell);
-                    else
-                        // Message: {0} is now under your control.
-                        ((CharmSpellHandler)SpellHandler).MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "GamePlayer.GamePet.StartSpell.UnderControl", charmMob.GetName(0, true)), eChatType.CT_Spell);
                     
                     casterPlayer.SetControlledBrain(((CharmSpellHandler)SpellHandler).m_controlledBrain);
+                    // Message: {0} is now under your control.
+                    // Message: {0} is now charmed!
+                    OnEffectStartsMsg(Owner, true, true, true);
 
                     foreach (GamePlayer player in charmMob.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
                     {
@@ -80,7 +72,8 @@ namespace DOL.GS
                 casterPlayer.SetControlledBrain(null);
                 
                 // Message: You lose control of {0}!
-                //((CharmSpellHandler) SpellHandler).MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "GamePlayer.GamePet.SpellEnd.YouLoseControl", charmMob.GetName(0, false)), eChatType.CT_SpellExpires);
+                // Message: {0} is no longer charmed!
+                OnEffectExpiresMsg(Owner, true, true, true);
 
                 lock (charmMob.BrainSync)
                 {

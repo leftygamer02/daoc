@@ -24,7 +24,7 @@ namespace DOL.GS
         public override void OnStopEffect()
         {
              //Owner.Effectiveness -= (SpellHandler.Spell.Value / 100);
-             OnEffectExpiresMsg(Owner, true, false, true);
+             OnEffectExpiresMsg(Owner, true, true, true);
         }
     }
 }

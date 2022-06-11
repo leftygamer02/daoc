@@ -91,7 +91,7 @@ namespace DOL.GS
             
             // "You recover from the stun.."
             // "{0} recovers from the stun."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
 
         }
     }
@@ -126,7 +126,7 @@ namespace DOL.GS
             
             // "You are no longer entranced."
             // "You recover from the mesmerize."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
         }
     }
 }

@@ -24,14 +24,26 @@ namespace DOL.GS
                     //Console.WriteLine($"Buffing {prop.ToString()}");
                     ApplyBonus(Owner, eBuffBonusCategory.SpecBuff, prop, SpellHandler.Spell.Value, Effectiveness, false);
                 }
+
+                // "You feel more dexterous!"
+                // "{0} looks more agile!"
+                OnEffectStartsMsg(Owner, true, true, true);
             }
             else if (SpellHandler.Spell.SpellType == (byte)eSpellType.ArmorFactorBuff)
             {
-                ApplyBonus(Owner, (SpellHandler as ArmorFactorBuff).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, false);
+                ApplyBonus(Owner, ((ArmorFactorBuff) SpellHandler).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, false);
+
+                // "You feel more dexterous!"
+                // "{0} looks more agile!"
+                OnEffectStartsMsg(Owner, true, true, true);
             }
             else if (SpellHandler.Spell.SpellType == (byte)eSpellType.PaladinArmorFactorBuff)
             {
-                ApplyBonus(Owner, (SpellHandler as PaladinArmorFactorBuff).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, false);
+                ApplyBonus(Owner, ((PaladinArmorFactorBuff) SpellHandler).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, false);
+
+                // "You feel more dexterous!"
+                // "{0} looks more agile!"
+                OnEffectStartsMsg(Owner, true, true, true);
             }
             else if (SpellHandler.Spell.SpellType == (byte) eSpellType.AllMagicResistBuff)
             {
@@ -39,6 +51,10 @@ namespace DOL.GS
                 {
                     ApplyBonus(Owner, eBuffBonusCategory.SpecBuff, prop, SpellHandler.Spell.Value, Effectiveness, false);
                 }
+
+                // "You feel more dexterous!"
+                // "{0} looks more agile!"
+                OnEffectStartsMsg(Owner, true, true, true);
             }
             else
             {
@@ -56,7 +72,7 @@ namespace DOL.GS
                             //e.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, e.SpellHandler, e.SpellHandler.Spell.Value / 100.0);
                             Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, EffectType, SpellHandler.Spell.Value / 100.0);
                             //Console.WriteLine($"Value after: {Owner.BuffBonusMultCategory1.Get((int)eProperty.MaxSpeed)}");
-                            (SpellHandler as SpeedEnhancementSpellHandler).SendUpdates(Owner);
+                            ((SpeedEnhancementSpellHandler) SpellHandler).SendUpdates(Owner);
                         }
                         if (Owner.IsStealthed)
                         {
@@ -67,13 +83,12 @@ namespace DOL.GS
                     else
                         ApplyBonus(Owner, eBuffBonusCategory.BaseBuff, prop, SpellHandler.Spell.Value, Effectiveness, false);
                 }
-            }
-            
-            // "You feel more dexterous!"
-            // "{0} looks more agile!"
-            OnEffectStartsMsg(Owner, true, true, true);
 
-            
+                // "You feel more dexterous!"
+                // "{0} looks more agile!"
+                OnEffectStartsMsg(Owner, true, true, true);
+            }
+
             //IsBuffActive = true;
         }
 
@@ -89,14 +104,24 @@ namespace DOL.GS
                     //Console.WriteLine($"Canceling {prop.ToString()}");
                     ApplyBonus(Owner, eBuffBonusCategory.SpecBuff, prop, SpellHandler.Spell.Value, Effectiveness, true);
                 }
+
+                // "Your agility returns to normal."
+                // "{0} loses their graceful edge.""
+                OnEffectExpiresMsg(Owner, true, true, true);
             }
             else if (SpellHandler.Spell.SpellType == (byte)eSpellType.ArmorFactorBuff)
             {
-                ApplyBonus(Owner, (SpellHandler as ArmorFactorBuff).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, true);
+                ApplyBonus(Owner, ((ArmorFactorBuff) SpellHandler).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, true);
+                // "Your agility returns to normal."
+                // "{0} loses their graceful edge.""
+                OnEffectExpiresMsg(Owner, true, true, true);
             }
             else if (SpellHandler.Spell.SpellType == (byte)eSpellType.PaladinArmorFactorBuff)
             {
-                ApplyBonus(Owner, (SpellHandler as PaladinArmorFactorBuff).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, true);
+                ApplyBonus(Owner, ((PaladinArmorFactorBuff) SpellHandler).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, true);
+                // "Your agility returns to normal."
+                // "{0} loses their graceful edge.""
+                OnEffectExpiresMsg(Owner, true, true, true);
             }
             else if (SpellHandler.Spell.SpellType == (byte) eSpellType.AllMagicResistBuff)
             {
@@ -104,6 +129,10 @@ namespace DOL.GS
                 {
                     ApplyBonus(Owner, eBuffBonusCategory.SpecBuff, prop, SpellHandler.Spell.Value, Effectiveness, true);
                 }
+
+                // "Your agility returns to normal."
+                // "{0} loses their graceful edge.""
+                OnEffectExpiresMsg(Owner, true, true, true);
             }
             else
             {
@@ -114,7 +143,6 @@ namespace DOL.GS
                 {
                     //Console.WriteLine($"Canceling {prop.ToString()}");
 
-
                     if (EffectType == eEffect.MovementSpeedBuff)
                     {
                         //if (Owner.BuffBonusMultCategory1.Get((int)eProperty.MaxSpeed) == SpellHandler.Spell.Value / 100 || Owner.InCombat)
@@ -123,7 +151,7 @@ namespace DOL.GS
                             //e.Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, e.SpellHandler);
                             Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, EffectType);
                             //Console.WriteLine($"Value after: {Owner.BuffBonusMultCategory1.Get((int)eProperty.MaxSpeed)}");
-                            (SpellHandler as SpeedEnhancementSpellHandler).SendUpdates(Owner);
+                            ((SpeedEnhancementSpellHandler) SpellHandler).SendUpdates(Owner);
                         //}
                     }
                     
@@ -131,12 +159,11 @@ namespace DOL.GS
                         ApplyBonus(Owner, eBuffBonusCategory.BaseBuff, prop, SpellHandler.Spell.Value, Effectiveness, true);
 
                 }
-            }
-            
-            // "Your agility returns to normal."
-            // "{0} loses their graceful edge.""
-            OnEffectExpiresMsg(Owner, true, false, true);
 
+                // "Your agility returns to normal."
+                // "{0} loses their graceful edge.""
+                OnEffectExpiresMsg(Owner, true, true, true);
+            }
 
             IsBuffActive = false;
         }

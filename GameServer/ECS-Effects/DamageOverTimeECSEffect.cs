@@ -18,14 +18,14 @@ namespace DOL.GS
 
         public override void OnStartEffect()
         {
+            // "Searing pain fills your mind!"
+            // "{0} is wracked with pain!"
+            OnEffectStartsMsg(Owner, true, true, true);
+
             // Remove stealth on first application since the code that normally handles removing stealth on
             // attack ignores DoT damage, since only the first tick of a DoT should remove stealth.            
             if (OwnerPlayer != null && !OwnerPlayer.effectListComponent.ContainsEffectForEffectType(eEffect.Vanish))
                 OwnerPlayer.Stealth(false);
-            
-            // "Searing pain fills your mind!"
-            // "{0} is wracked with pain!"
-            //OnEffectStartsMsg(Owner, true, false, true);
         }
 
         public override void OnStopEffect()
@@ -35,14 +35,19 @@ namespace DOL.GS
             
             // "Your mental agony fades."
             // "{0}'s mental agony fades."
-            OnEffectExpiresMsg(Owner, true, false, true);
-
+            OnEffectExpiresMsg(Owner, true, true, true);
         }
 
         public override void OnEffectPulse()
         {
+            if (OwnerPlayer != null)
+                return;
+
             if (Owner.IsAlive == false)
             {
+                // "Your mental agony fades."
+                // "{0}'s mental agony fades."
+                OnEffectExpiresMsg(Owner, true, true, true);
                 EffectService.RequestImmediateCancelEffect(this);
             }
 
@@ -50,12 +55,9 @@ namespace DOL.GS
             {
                 if (SpellHandler is DoTSpellHandler handler)
                 {
-                    if (OwnerPlayer != null)
-                    {
-                        // "Searing pain fills your mind!"
-                        // "{0} is wracked with pain!"
-                        OnEffectStartsMsg(Owner, true, false, true);
-                    }
+                    // "Searing pain fills your mind!"
+                    // "{0} is wracked with pain!"
+                    OnEffectStartsMsg(Owner, true, false, true);
 
                     double postRAEffectiveness = Effectiveness;
                     if (handler.Caster.effectListComponent.ContainsEffectForEffectType(eEffect.Viper) && SpellHandler.Spell.IsPoison)
@@ -80,12 +82,6 @@ namespace DOL.GS
                         Owner.TempProperties.setProperty(StyleBleeding.BLEED_VALUE_PROPERTY, (int)bleedHandler.Spell.Damage); 
                     }
 
-                    if (OwnerPlayer != null)
-                    {
-                        bleedHandler.MessageToLiving(Owner, bleedHandler.Spell.Message1, eChatType.CT_YouWereHit);
-                        Message.SystemToArea(Owner, Util.MakeSentence(bleedHandler.Spell.Message2, Owner.GetName(0, false)), eChatType.CT_YouHit, Owner);
-                    }
-
                     int bleedValue = Owner.TempProperties.getProperty<int>(StyleBleeding.BLEED_VALUE_PROPERTY);
 
                     AttackData ad = bleedHandler.CalculateDamageToTarget(Owner, 1.0);
@@ -96,6 +92,11 @@ namespace DOL.GS
                     {
                         player.Out.SendCombatAnimation(null, ad.Target, 0, 0, 0, 0, 0x0A, ad.Target.HealthPercent);
                     }
+
+                    // "Searing pain fills your mind!"
+                    // "{0} is wracked with pain!"
+                    OnEffectStartsMsg(Owner, true, false, true);
+
                     // send animation before dealing damage else dead livings show no animation
                     ad.Target.OnAttackedByEnemy(ad);
                     ad.Attacker.DealDamage(ad);
@@ -105,6 +106,9 @@ namespace DOL.GS
 
                     if (!Owner.IsAlive)
                     {
+                        // "Your mental agony fades."
+                        // "{0}'s mental agony fades."
+                        OnEffectExpiresMsg(Owner, true, true, true);
                         EffectService.RequestImmediateCancelEffect(this);
                     }
                     else Owner.TempProperties.setProperty(StyleBleeding.BLEED_VALUE_PROPERTY, bleedValue);

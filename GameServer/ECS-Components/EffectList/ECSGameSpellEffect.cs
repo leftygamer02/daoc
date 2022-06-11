@@ -125,6 +125,9 @@ namespace DOL.GS
 		/// <returns>'Message1' and 'Message2' values from the 'spell' table.</returns>
 		public void OnEffectStartsMsg(GameLiving target, bool msgTarget, bool msgCaster, bool msgArea)
 		{
+			if (SpellHandler == null || SpellHandler.Spell == null || SpellHandler.Caster == null)
+				return;
+
 			// If the target variable is at the start of the string, capitalize their name or article
 			var upperCase = SpellHandler.Spell.Message2.StartsWith("{0}");
 
@@ -143,11 +146,18 @@ namespace DOL.GS
 	        }
 
 	        // Sends a third-person message directly to the caster about the effect and target
+	        // Caster has a slight advantage over everyone else by receiving effect messages up to 1000 units away from the target
 	        // "{0} looks more agile!"
 	        if (msgCaster)
 	        {
 		        if (Caster is GamePlayer pCaster && Owner != pCaster)
-			        ((SpellHandler) SpellHandler).MessageToLiving(pCaster, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        {
+			        var range = SpellHandler.Spell.Range;
+			        if (range < 1000)
+				        range = 1000;
+			        if (pCaster.IsWithinRadius(Owner, range))
+				        ((SpellHandler) SpellHandler).MessageToLiving(pCaster, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        }
 		        else if (Caster is GameNPC casterPet && casterPet.ControlledBrain != null && casterPet.ControlledBrain.GetPlayerOwner() != null)
 		        {
 			        var petCaster = casterPet.ControlledBrain.GetPlayerOwner().Client.Player;
@@ -232,6 +242,9 @@ namespace DOL.GS
         /// <returns>'Message3' and 'Message4' values from the 'spell' table.</returns>
         public void OnEffectExpiresMsg(GameLiving target, bool msgTarget, bool msgCaster, bool msgArea)
         {
+	        if (SpellHandler == null || SpellHandler.Spell == null || SpellHandler.Caster == null)
+		        return;
+
 	        // If the target variable is at the start of the string, capitalize their name or article
 	        var upperCase = SpellHandler.Spell.Message4.StartsWith("{0}");
 
@@ -250,11 +263,18 @@ namespace DOL.GS
 	        }
 
 	        // Sends a third-person message directly to the caster about the effect and target
+	        // Caster has a slight advantage over everyone else by receiving effect messages up to 1000 units away from the target
 	        // "{0}'s enhanced agility fades."
 	        if (msgCaster)
 	        {
 		        if (Caster is GamePlayer pCaster && Owner != pCaster)
-			        ((SpellHandler) SpellHandler).MessageToLiving(pCaster, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        {
+			        var range = SpellHandler.Spell.Range;
+			        if (range < 500)
+				        range = 500;
+			        if (pCaster.IsWithinRadius(Owner, range))
+						((SpellHandler) SpellHandler).MessageToLiving(pCaster, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_Spell);
+		        }
 		        else if (Caster is GameNPC casterPet && casterPet.ControlledBrain != null && casterPet.ControlledBrain.GetPlayerOwner() != null)
 		        {
 			        var petCaster = casterPet.ControlledBrain.GetPlayerOwner().Client.Player;

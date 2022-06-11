@@ -27,7 +27,7 @@ namespace DOL.GS
         {
             //"Your meditative state fades."
             //"{0}'s meditative state fades."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
         }
 
         public override void OnEffectPulse()

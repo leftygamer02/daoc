@@ -33,7 +33,7 @@ namespace DOL.GS
 
             // "Your vision returns to normal."
             // "The blindness recedes from {0}."
-            OnEffectExpiresMsg(Owner, true, false, true);
+            OnEffectExpiresMsg(Owner, true, true, true);
 
         }
     }
