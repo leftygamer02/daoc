@@ -799,12 +799,17 @@ namespace DOL.GS.Effects
                     if (effect != null)
                         EffectService.RequestImmediateCancelEffect(effect);
                 }
-                if (ad.Target.effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedDebuff))//cancel root
+                if (ad.Target.effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedDebuff) || ad.Target.effectListComponent.Effects.ContainsKey(eEffect.IchorOfTheDeep))//cancel root
                 {
                     var effect = EffectListService.GetEffectOnTarget(ad.Target, eEffect.MovementSpeedDebuff);
 
-                    if (effect != null)
+                    if (effect != null && effect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.SpellType != (byte)eSpellType.UnbreakableSpeedDecrease)
                         EffectService.RequestImmediateCancelEffect(effect);
+
+                    var ichor = EffectListService.GetEffectOnTarget(ad.Target, eEffect.IchorOfTheDeep);
+
+                    if (ichor != null)
+                        EffectService.RequestImmediateCancelEffect(ichor);
                 }
             }
         }

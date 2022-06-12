@@ -4447,7 +4447,10 @@ namespace DOL.GS
 				var effect = EffectListService.GetEffectOnTarget(this, eEffect.Mez);
 
 				if (effect != null)
+				{
 					EffectService.RequestImmediateCancelEffect(effect);
+					return true;
+				}
 			}
 
 			// Remove Snare/Root
@@ -4456,19 +4459,37 @@ namespace DOL.GS
 				var effect = EffectListService.GetEffectOnTarget(this, eEffect.Snare);
 
 				if (effect != null)
+				{
 					EffectService.RequestImmediateCancelEffect(effect);
+					return true;
+				}
 			}
 
-            // Remove MovementSpeedDebuff
-            if (removeMovementSpeedDebuff)
+			// Remove MovementSpeedDebuff
+			if (removeMovementSpeedDebuff && effectListComponent.Effects.ContainsKey(eEffect.IchorOfTheDeep))
+			{
+				var effect = EffectListService.GetEffectOnTarget(this, eEffect.IchorOfTheDeep);
+
+				if (effect != null)
+				{
+					EffectService.RequestImmediateCancelEffect(effect);
+					return true;
+				}
+			}
+
+			// Remove MovementSpeedDebuff
+            if (removeMovementSpeedDebuff && effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedDebuff))
             {
 				var effect = EffectListService.GetEffectOnTarget(this, eEffect.MovementSpeedDebuff);
 
 				if (effect != null && effect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.SpellType != (byte)eSpellType.UnbreakableSpeedDecrease)
+				{
 					EffectService.RequestImmediateCancelEffect(effect);
+					return true;
+				}
             }
 
-            return removeMez || removeSnare || removeMovementSpeedDebuff;
+            return false;
 		}
 
         public virtual bool HandleMovementSpeedEffectsOnAttacked(AttackData ad)

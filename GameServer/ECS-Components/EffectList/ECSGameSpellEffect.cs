@@ -33,7 +33,7 @@ namespace DOL.GS
             {
                 TickInterval = 650;
                 NextTick = 1 + (Duration >> 1) + (int)StartTick;
-                if(!SpellHandler.Spell.Name.Equals("Prevent Flight"))
+                if(!SpellHandler.Spell.Name.Equals("Prevent Flight") && !SpellHandler.Spell.Name.Equals("Ichor of the Deep"))
 					TriggersImmunity = true;
             }
             else if (SpellHandler.Spell.IsConcentration)

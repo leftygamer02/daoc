@@ -183,7 +183,7 @@ namespace DOL.GS
         PetLifedrain = 176,
         Phaseshift = 177,
         Grapple = 178,
-        BrittleGuard = 179,
+        IchorOfTheDeep = 179,
         StyleRange = 180,
         MultiTarget = 181,
         PiercingMagic = 182,

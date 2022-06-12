@@ -137,5 +137,11 @@ namespace DOL.GS.RealmAbilities
 
             return player.CalculateSkillLevel(raLongshot) >= level;
         }
+        public static bool HasPlayerLevel(GamePlayer player, int level)
+        {
+            if (player.Client.Account.PrivLevel == (uint)ePrivLevel.Player)
+                return player.Level > level;
+            return true;
+        }
     }
 }

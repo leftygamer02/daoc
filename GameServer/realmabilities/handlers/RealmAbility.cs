@@ -230,11 +230,11 @@ namespace DOL.GS.RealmAbilities
 				{
 					if (player == caster)
 					{
-						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.SendCasterSpellEffectAndCastMessage.You", m_name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "SpellHandler.CastSpell.Msg.YouCastSpell", m_name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					}
 					else
 					{
-						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.SendCasterSpellEffectAndCastMessage.Caster", caster.Name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "SpellHandler.CastSpell.Msg.LivingCastsSpell", caster.Name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					}
 				}
 			}
@@ -242,9 +242,13 @@ namespace DOL.GS.RealmAbilities
 		
 		public virtual void SendCasterSpellEffect(GameLiving caster, ushort spellEffect, bool success)
 		{
+			if (caster == null)
+				return;
+
 			foreach (GamePlayer player in caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			{
-				player.Out.SendSpellEffectAnimation(caster, caster, spellEffect, 0, false, success ? (byte)1 : (byte)0);
+				if (player != null)
+					player.Out.SendSpellEffectAnimation(caster, caster, spellEffect, 0, false, success ? (byte)1 : (byte)0);
 			}
 		}
 
@@ -254,17 +258,20 @@ namespace DOL.GS.RealmAbilities
 		/// </summary>
 		protected virtual void SendCastMessage(GameLiving caster)
 		{
+			if (caster == null)
+				return;
+
 			foreach (GamePlayer player in caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			{
-				if ( caster.IsWithinRadius( player, WorldMgr.INFO_DISTANCE ) )
+				if (player != null && caster.IsWithinRadius( player, WorldMgr.INFO_DISTANCE ) )
 				{
 					if (player == caster)
 					{
-						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.SendCastMessage.YouCast", m_name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "SpellHandler.CastSpell.Msg.YouCastSpell", m_name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					}
 					else
 					{
-						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "RealmAbility.SendCastMessage.PlayerCasts", player.Name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "SpellHandler.CastSpell.Msg.LivingCastsSpell", player.Name), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 					}
 				}
 			}

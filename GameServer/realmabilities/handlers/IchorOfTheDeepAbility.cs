@@ -226,8 +226,10 @@ namespace DOL.GS.RealmAbilities
 			{
 				case eAttackResult.HitStyle:
 				case eAttackResult.HitUnstyled:
-					living.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, this);
+				{
+					living.BuffBonusMultCategory1.Remove((int) eProperty.MaxSpeed, this);
 					SendUpdates(living);
+				}
 					break;
 			}
 		}

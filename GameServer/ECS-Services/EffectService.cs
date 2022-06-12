@@ -614,6 +614,8 @@ namespace DOL.GS
                         return eEffect.HeatResistDebuff;
                     else
                         return eEffect.Unknown;
+                case (byte)eSpellType.IchorOfTheDeep:
+                    return eEffect.IchorOfTheDeep;
                 case (byte)eSpellType.PiercingMagic:
                     return eEffect.PiercingMagic;
                 case (byte)eSpellType.PveResurrectionIllness:
@@ -806,6 +808,7 @@ namespace DOL.GS
                     return list;
                 case eEffect.MovementSpeedBuff:
                 case eEffect.MovementSpeedDebuff:
+                case eEffect.IchorOfTheDeep:
                     list.Add(eProperty.MaxSpeed);
                     return list;
                 case eEffect.MesmerizeDurationBuff:
@@ -877,6 +880,7 @@ namespace DOL.GS
                 case eEffect.Disease:
                 case eEffect.Nearsight:
                 case eEffect.MeleeDamageDebuff:
+                case eEffect.IchorOfTheDeep:
                     return true;
                 default:
                     //Console.WriteLine($"Unable to detect debuff status for {e}");
