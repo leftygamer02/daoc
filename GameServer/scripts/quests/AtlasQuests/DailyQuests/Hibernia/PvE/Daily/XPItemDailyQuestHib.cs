@@ -16,6 +16,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
 		private const string questTitle = "[Daily] Pest Control";
+		private const string NPCName = "Dean";
 		private const int minimumLevel = 20;
 		private const int maximumLevel = 49;
 
@@ -25,12 +26,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 		private static GameNPC QuestNPC = null; // Start NPC
 
 		private int MobsKilled = 0;
-		
-		private static string mobName = "";
-		private static int mobRegion = 0;
-		private static string mobRegionName = "";
-		private static int minLevel = 0;
-		private static int maxLevel = 0;
+		private static XPItem mobToKill = null;
 
 		// Constructors
 		public XPItemDailyQuestHib() : base()
@@ -39,6 +35,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 
 		public XPItemDailyQuestHib(GamePlayer questingPlayer) : base(questingPlayer)
 		{
+
 		}
 
 		public XPItemDailyQuestHib(GamePlayer questingPlayer, int step) : base(questingPlayer, step)
@@ -59,15 +56,20 @@ namespace DOL.GS.DailyQuest.Hibernia
 		}
 
 		[ScriptLoadedEvent]
-		public void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
+		public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
 		{
 			if (!ServerProperties.Properties.LOAD_QUESTS)
 				return;
 			
+			GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest,  SubscribeQuest);
+			GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, SubscribeQuest);
 
+			GameEventMgr.AddHandler(QuestNPC, GameObjectEvent.Interact, TalkToDean);
+			GameEventMgr.AddHandler(QuestNPC, GameLivingEvent.WhisperReceive, TalkToDean);
+			
 			#region defineNPCs
 
-			GameNPC[] npcs = WorldMgr.GetNPCsByName(QuestNPC.Name, eRealm.Hibernia);
+			GameNPC[] npcs = WorldMgr.GetNPCsByName(NPCName, eRealm.Hibernia);
 
 			if (npcs.Length > 0)
 				foreach (GameNPC npc in npcs)
@@ -80,7 +82,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 			if (QuestNPC == null)
 			{
 				if (log.IsWarnEnabled)
-					log.Warn($"Could not find {QuestNPC.Name} , creating it ...");
+					log.Warn($"Could not find {NPCName} , creating it ...");
 				QuestNPC = new GameNPC();
 				QuestNPC.Model = 355;
 				QuestNPC.Name = "Dean";
@@ -95,25 +97,12 @@ namespace DOL.GS.DailyQuest.Hibernia
 				QuestNPC.Z = 5184;
 				QuestNPC.Heading = 1571;
 				QuestNPC.AddToWorld();
-				if (SAVE_INTO_DATABASE)
-				{
-					QuestNPC.SaveIntoDatabase();
-				}
+				// if (SAVE_INTO_DATABASE)
+				// {
+				// 	QuestNPC.SaveIntoDatabase();
+				// }
 			}
-
 			#endregion
-
-			#region defineItems
-			#endregion
-
-			#region defineObject
-			#endregion
-
-			GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest,  SubscribeQuest);
-			GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, SubscribeQuest);
-
-			GameEventMgr.AddHandler(QuestNPC, GameObjectEvent.Interact, TalkToDean);
-			GameEventMgr.AddHandler(QuestNPC, GameLivingEvent.WhisperReceive, TalkToDean);
 
 			/* Now we bring to QuestNPC the possibility to give this quest to players */
 			QuestNPC.AddQuestToGive(typeof (XPItemDailyQuestHib));
@@ -139,18 +128,13 @@ namespace DOL.GS.DailyQuest.Hibernia
 			QuestNPC.RemoveQuestToGive(typeof (XPItemDailyQuestHib));
 		}
 
-		private static void GetXPItem(GamePlayer player)
+		private static bool GetXPItem(GamePlayer player)
 		{
 			var quest = XPItemUtils.GetRandomForPlayer(player);
 			if (quest == null)
-				return;
-			
-			mobName = quest.MobName;
-			mobRegion = quest.MobRegion;
-			minLevel = quest.MinLevel;
-			maxLevel = quest.MaxLevel;
-			mobRegionName = WorldMgr.GetRegion((ushort)mobRegion).Description;
-			
+				return false;
+			mobToKill = quest;
+			return true;
 		}
 		private static void TalkToDean(DOLEvent e, object sender, EventArgs args)
 		{
@@ -222,13 +206,6 @@ namespace DOL.GS.DailyQuest.Hibernia
 			if (player.IsDoingQuest(typeof (XPItemDailyQuestHib)) != null)
 				return true;
 
-			// This checks below are only performed is player isn't doing quest already
-
-			//if (player.HasFinishedQuest(typeof(Academy_47)) == 0) return false;
-
-			//if (!CheckPartAccessible(player,typeof(CityOfCamelot)))
-			//	return false;
-
 			if (player.Level < minimumLevel || player.Level > maximumLevel)
 				return false;
 
@@ -238,14 +215,16 @@ namespace DOL.GS.DailyQuest.Hibernia
 		public override void LoadQuestParameters()
 		{
 			MobsKilled = GetCustomProperty(QuestPropertyKey) != null ? int.Parse(GetCustomProperty(QuestPropertyKey)) : 0;
+			mobToKill = GetCustomProperty(XPItemKey) != null ? XPItemUtils.GetFromID(GetCustomProperty(XPItemKey)) : null;
 		}
 
 		public override void SaveQuestParameters()
 		{
 			SetCustomProperty(QuestPropertyKey, MobsKilled.ToString());
+			SetCustomProperty(XPItemKey, mobToKill.m_id.ToString());
 		}
 		
-		private static void CheckPlayerAbortQuest(GamePlayer player, byte response)
+		public static void CheckPlayerAbortQuest(GamePlayer player, byte response)
 		{
 			if (player.IsDoingQuest(typeof (XPItemDailyQuestHib)) is not XPItemDailyQuestHib quest)
 				return;
@@ -261,7 +240,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 			}
 		}
 
-		private static void SubscribeQuest(DOLEvent e, object sender, EventArgs args)
+		public static void SubscribeQuest(DOLEvent e, object sender, EventArgs args)
 		{
 			QuestEventArgs qargs = args as QuestEventArgs;
 			if (qargs == null)
@@ -296,7 +275,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 				
 				GetXPItem(player);
 				
-				QuestNPC.SayTo(player, $"Good, now go out there and finish your work! Please kill {MAX_KILLED} {mobName} in {mobRegionName} and come back to me!.");
+				QuestNPC.SayTo(player, $"Good, now go out there and finish your work! Please kill {MAX_KILLED} {mobToKill.MobName} and come back to me!.");
 
 			}
 		}
@@ -315,9 +294,9 @@ namespace DOL.GS.DailyQuest.Hibernia
 				switch (Step)
 				{
 					case 1:
-						return $"Kill {mobName} in {mobRegionName}. \nKilled: {mobName}  ({MobsKilled} | {MAX_KILLED})";
+						return $"{NPCName} asked you to kill {mobToKill} in {WorldMgr.GetRegion((ushort)mobToKill.MobRegion).Description} ({MobsKilled} | {MAX_KILLED})";
 					case 2:
-						return $"Return to {QuestNPC.Name} for your Reward.";
+						return $"Return to {NPCName} for your Reward.";
 				}
 				return base.Description;
 			}
@@ -325,7 +304,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 
 		public override void Notify(DOLEvent e, object sender, EventArgs args)
 		{
-			GamePlayer player = sender as GamePlayer;
+			var player = sender as GamePlayer;
 
 			if (player == null || player.IsDoingQuest(typeof(XPItemDailyQuestHib)) == null)
 				return;
@@ -335,7 +314,8 @@ namespace DOL.GS.DailyQuest.Hibernia
 
 			if (Step != 1 || e != GameLivingEvent.EnemyKilled) return;
 			var gArgs = (EnemyKilledEventArgs) args;
-			if (gArgs.Target.Name.ToLower() != mobName) return;
+
+			if (gArgs.Target.Name.ToLower() != mobToKill.MobName) return;
 			MobsKilled++;
 			player.Out.SendMessage($"{questTitle}: ({MobsKilled} | {MAX_KILLED})", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
 			player.Out.SendQuestUpdate(this);
@@ -353,6 +333,13 @@ namespace DOL.GS.DailyQuest.Hibernia
 			get => "XPItemDailyQuestHib";
 			set { ; }
 		}
+		
+		private string XPItemKey
+		{
+			get => "XPItemID";
+			set { ; }
+		}
+		
 		public override void FinishQuest()
 		{
 			m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel)/10, false);
@@ -361,5 +348,6 @@ namespace DOL.GS.DailyQuest.Hibernia
 			MobsKilled = 0;
 			base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
 		}
+		
 	}
 }
