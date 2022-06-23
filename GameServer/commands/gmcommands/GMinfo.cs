@@ -384,6 +384,8 @@ namespace DOL.GS.Commands
 					info.Add(" ");
 					info.Add("XPBUFF INFORMATION");
 					info.Add("XP Buff bonus: " + target.ItemBonus[eProperty.XpPoints]);
+					info.Add("XP Buff bonus: " + target.GetModified(eProperty.XpPoints));
+
 					info.Add(" ");
 					info.Add("PLAYER INFORMATION (Client # " + target.Client.SessionID + ")");
 					info.Add("  - Name : " + target.Name);
