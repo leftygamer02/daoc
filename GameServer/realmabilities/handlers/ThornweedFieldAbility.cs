@@ -48,6 +48,7 @@ namespace DOL.GS.RealmAbilities
 			}
 			caster.StopCurrentSpellcast();
 
+			/*
 			if(ServerProperties.Properties.USE_NEW_ACTIVES_RAS_SCALING)
 			{
 				switch (Level)
@@ -69,7 +70,10 @@ namespace DOL.GS.RealmAbilities
 					case 3: m_dmgValue = 250; m_duration = 30; break;
 					default: return;
 				}
-			}
+			}*/
+
+			m_dmgValue = caster.Level * 2;
+			m_duration = 30;
 
 			foreach (GamePlayer i_player in caster.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
 			{
@@ -82,7 +86,7 @@ namespace DOL.GS.RealmAbilities
 					i_player.MessageFromArea(caster, caster.Name + " casts a spell!", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 				}
 
-				i_player.Out.SendSpellCastAnimation(caster, 7028, 20);
+				i_player.Out.SendSpellCastAnimation(caster, 7028, 0);
 			}
 
 			if (caster.RealmAbilityCastTimer != null)
@@ -92,17 +96,17 @@ namespace DOL.GS.RealmAbilities
 				caster.Out.SendMessage("You cancel your Spell!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
 			}
 
-			caster.RealmAbilityCastTimer = new RegionTimer(caster);
-			caster.RealmAbilityCastTimer.Callback = new RegionTimerCallback(EndCast);
-			caster.RealmAbilityCastTimer.Start(2000);
+			caster.RealmAbilityCastTimer = new ECSGameTimer(caster);
+			caster.RealmAbilityCastTimer.Callback = new ECSGameTimer.ECSTimerCallback(EndCast);
+			caster.RealmAbilityCastTimer.Start(0);
 		}
 
-		protected virtual int EndCast(RegionTimer timer)
+		protected virtual int EndCast(ECSGameTimer timer)
 		{
 			if (m_player.IsMezzed || m_player.IsStunned || m_player.IsSitting)
 				return 0;
 			Statics.ThornweedFieldBase twf = new Statics.ThornweedFieldBase(m_dmgValue);
-			twf.CreateStatic(m_player, m_player.GroundTarget, m_duration, 3, 500);
+			twf.CreateStatic(m_player, m_player.GroundTarget, m_duration, 5, 500);
 			DisableSkill(m_player);
 			timer.Stop();
 			timer = null;

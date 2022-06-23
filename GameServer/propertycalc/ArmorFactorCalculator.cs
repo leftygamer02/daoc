@@ -19,6 +19,7 @@
 using System;
 
 using DOL.GS.Keeps;
+using log4net.Core;
 
 namespace DOL.GS.PropertyCalc
 {
@@ -41,6 +42,8 @@ namespace DOL.GS.PropertyCalc
 			{
 				int af;
 
+				//base AF buffs are calculated in the item's armor calc since they have the same cap
+				//af = living.BaseBuffBonusCategory[(int) property];
 				// 1.5*1.25 spec line buff cap
 				af = Math.Min((int)(living.Level * 1.875), living.SpecBuffBonusCategory[(int)property]);
 				// debuff
@@ -49,9 +52,10 @@ namespace DOL.GS.PropertyCalc
 				af += Math.Min(living.Level, living.ItemBonus[(int)property]);
 				// uncapped category
 				af += living.BuffBonusCategory4[(int)property];
-
+				
 				// buffs should be spread across each armor piece since the damage calculation is based on piece hit
-				af /= 6;
+				if(living is GamePlayer)
+					af /= 6;
 
 				return af;
 			}
@@ -63,17 +67,64 @@ namespace DOL.GS.PropertyCalc
 				if (living is GameKeepComponent)
 					component = living as GameKeepComponent;
 
-				int amount = component.Keep.BaseLevel;
+				if (component == null) return 1;
+				
+				double keepLevelMod = 1 + component.Keep.Level * .1;
+
+				int amount = (int)(component.Keep.BaseLevel * 4 * keepLevelMod);
 				if (component.Keep is GameKeep)
 					return amount;
 				else return amount / 2;
 			}
+			else if (living is GameEpicNPC epic || living is GameEpicBoss)
+			{
+				GameLiving bossnpc = living;
+				double epicScaleFactor = 8;
+				int petCap = 16;
+				int petCount = 0;
+
+				if(bossnpc is GameEpicBoss)
+                {
+					epicScaleFactor *= 2;
+					petCap = 24;
+                }
+
+                foreach (var attacker in bossnpc.attackComponent.Attackers)
+                {
+					if(attacker is GamePlayer)
+						epicScaleFactor -= 0.4;
+					if (attacker is GamePet && petCount <= petCap)
+                    {
+						epicScaleFactor -= 0.1;
+						petCount++;
+					}
+						
+				}
+
+				if (epicScaleFactor < 4)
+					epicScaleFactor = 4;
+
+				epicScaleFactor *= .1;
+
+				return (int)((1 + (living.Level / 50.0)) * (living.Level << 1) * epicScaleFactor) 
+				+ living.SpecBuffBonusCategory[(int)property]
+				- Math.Abs(living.DebuffCategory[(int)property])/6
+				+ living.BuffBonusCategory4[(int)property];
+			}
 			else
 			{
-				return (int)((1 + (living.Level / 170.0)) * (living.Level << 1) * 3.3)
-				+ living.SpecBuffBonusCategory[(int)property]
-				- Math.Abs(living.DebuffCategory[(int)property])
-				+ living.BuffBonusCategory4[(int)property];
+				int baseVal = (int)((1 + (living.Level / 200.0)) * (living.Level << 1))
+				+ (living.SpecBuffBonusCategory[(int)property] / 6)
+				- Math.Abs(living.DebuffCategory[(int)property])/6
+				+ living.BuffBonusCategory4[(int)property] / 6;
+
+				if (living is NecromancerPet)
+					baseVal += 10;
+
+				if (living is GuardLord)
+					baseVal += 20 * living.Level / 50;
+				
+				return baseVal;
 			}
 		}
 	}

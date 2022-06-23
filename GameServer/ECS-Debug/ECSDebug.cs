@@ -1,16 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using DOL.Database;
 using DOL.Events;
+using DOL.GS;
+using ECS.Debug;
 using log4net;
+using log4net.Core;
 
 namespace ECS.Debug
 {
     public static class Diagnostics
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog log = LogManager.GetLogger("Performance");
+
+        //Create FileStream and append to it as needed
+        private static StreamWriter _perfStreamWriter;
+        private static bool _streamWriterInitialized = false;
+
         private static object _GameEventMgrNotifyLock = new object();
         private static bool PerfCountersEnabled = false;
         private static bool stateMachineDebugEnabled = false;
@@ -28,7 +37,13 @@ namespace ECS.Debug
 
         public static void TogglePerfCounters(bool enabled)
         {
+            if (enabled == false)
+            {
+                _perfStreamWriter.Close();
+                _streamWriterInitialized = false;
+            }
             PerfCountersEnabled = enabled;
+
         }
 
         public static void ToggleStateMachineDebug(bool enabled)
@@ -55,11 +70,24 @@ namespace ECS.Debug
             }
         }
 
+        private static void InitializeStreamWriter()
+        {
+            if (_streamWriterInitialized)
+                return;
+            else
+            {
+                var _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PerfLog" + DateTime.Now.ToFileTime());
+                _perfStreamWriter = new StreamWriter(_filePath, false);
+                _streamWriterInitialized = true;
+            }
+        }
+
         public static void StartPerfCounter(string uniqueID)
         {
             if (!PerfCountersEnabled)
                 return;
 
+            InitializeStreamWriter();
             System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
             PerfCounters.Add(uniqueID, stopwatch);
         }
@@ -95,7 +123,9 @@ namespace ECS.Debug
                     logString += ($"{counterName} {elapsedString}ms | ");
                 }
                 //Console.WriteLine(logString);
-                log.Debug(logString);
+                //log.Logger.Log(typeof(Diagnostics), Level.Info, logString, null);
+                //log.Info(logString);
+                _perfStreamWriter.WriteLine(logString);
                 PerfCounters.Clear();
             }
         }
@@ -205,7 +235,9 @@ namespace DOL.GS.Commands
     ePrivLevel.GM,
     "Toggle server logging of performance diagnostics.",
     "/diag perf <on|off> to toggle performance diagnostics logging on server.",
-    "/diag notify <on|off> <interval> to toggle GameEventMgr Notify profiling, where interval is the period of time in milliseconds during which to accumulate stats.")]
+    "/diag notify <on|off> <interval> to toggle GameEventMgr Notify profiling, where interval is the period of time in milliseconds during which to accumulate stats.",
+    "/diag timer <tickcount> enables debugging of the TimerService for <tickcount> ticks and outputs to the server Console.",
+    "/diag currentservicetick - returns the current service the gameloop tick is on; useful for debugging lagging/frozen server.")]
     public class ECSDiagnosticsCommandHandler : AbstractCommandHandler, ICommandHandler
     {
         public void OnCommand(GameClient client, string[] args)
@@ -223,6 +255,18 @@ namespace DOL.GS.Commands
             // extra check to disallow all but server GM's
             if (client.Account.PrivLevel < 2)
                 return;
+
+            if (args.Length < 2)
+            {
+                DisplaySyntax(client);
+                return;
+            }
+
+            if (args[1].ToLower().Equals("currentservicetick"))
+            {
+                DisplayMessage(client, "Gameloop CurrentService Tick: " + GameLoop.currentServiceTick);
+                return;
+            }
 
             if (args.Length < 3)
             {
@@ -263,6 +307,20 @@ namespace DOL.GS.Commands
                     ECS.Debug.Diagnostics.StopGameEventMgrNotifyTimeReporting();
                     DisplayMessage(client, "GameEventMgr Notify() logging turned off.");
                 }
+            }
+
+            if (args[1].ToLower().Equals("timer"))
+            {
+                int tickcount = Int32.Parse(args[2]);
+                if (tickcount <= 0)
+                {
+                    DisplayMessage(client, "Invalid tickcount argument. Please specify a positive interger value.");
+                    return;
+                }
+
+                TimerService.debugTimer = true;
+                TimerService.debugTimerTickCount = tickcount;
+                DisplayMessage(client, "Debugging next " + tickcount + " TimerService tick(s)");
             }
         }
     }

@@ -73,7 +73,7 @@ namespace DOL.GS.Spells
 		{
 			base.ApplyEffectOnTarget(target, effectiveness);
 
-			if (Spell.SubSpellID > 0 && SkillBase.GetSpellByID(Spell.SubSpellID) != null)
+			if (Spell.SubSpellID > 0 && m_pet.Spells != null && SkillBase.GetSpellByID(Spell.SubSpellID) != null)
 			{
 				m_pet.Spells.Add(SkillBase.GetSpellByID(Spell.SubSpellID));
 			}
@@ -82,8 +82,13 @@ namespace DOL.GS.Spells
 
 			(m_pet.Brain as IOldAggressiveBrain).AddToAggroList(target, 1);
 			(m_pet.Brain as TurretBrain).Think();
-			//[Ganrod] Nidel: Set only one spell.
-			(m_pet as TurretPet).TurretSpell = m_pet.Spells[0] as Spell;
+
+			if (m_pet.Spells.Count > 0)
+			{
+				//[Ganrod] Nidel: Set only one spell.
+				(m_pet as TurretPet).TurretSpell = m_pet.Spells[0] as Spell;
+			}
+
 			Caster.PetCount++;
 		}
 

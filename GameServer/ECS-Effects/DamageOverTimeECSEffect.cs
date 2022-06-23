@@ -20,14 +20,23 @@ namespace DOL.GS
         {
             // Remove stealth on first application since the code that normally handles removing stealth on
             // attack ignores DoT damage, since only the first tick of a DoT should remove stealth.            
-            if (OwnerPlayer != null)
+            if (OwnerPlayer != null && !OwnerPlayer.effectListComponent.ContainsEffectForEffectType(eEffect.Vanish))
                 OwnerPlayer.Stealth(false);
+            
+            // "Searing pain fills your mind!"
+            // "{0} is wracked with pain!"
+            //OnEffectStartsMsg(Owner, true, false, true);
         }
 
         public override void OnStopEffect()
         {
             if (EffectType == eEffect.Bleed && !Owner.effectListComponent.ContainsEffectForEffectType(eEffect.Bleed))
                 Owner.TempProperties.removeProperty(StyleBleeding.BLEED_VALUE_PROPERTY);
+            
+            // "Your mental agony fades."
+            // "{0}'s mental agony fades."
+            OnEffectExpiresMsg(Owner, true, false, true);
+
         }
 
         public override void OnEffectPulse()
@@ -43,12 +52,16 @@ namespace DOL.GS
                 {
                     if (OwnerPlayer != null)
                     {
-                        // An acidic cloud surrounds you!
-                        handler.MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
-                        // {0} is surrounded by an acidic cloud!
-                        Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, false)), eChatType.CT_YouHit, Owner);
+                        // "Searing pain fills your mind!"
+                        // "{0} is wracked with pain!"
+                        OnEffectStartsMsg(Owner, true, false, true);
                     }
-                    handler.OnDirectEffect(Owner, Effectiveness, true);
+
+                    double postRAEffectiveness = Effectiveness;
+                    if (handler.Caster.effectListComponent.ContainsEffectForEffectType(eEffect.Viper) && SpellHandler.Spell.IsPoison)
+                        postRAEffectiveness *= 2;
+                    
+                    handler.OnDirectEffect(Owner, postRAEffectiveness);
                 }
                 else if (SpellHandler is StyleBleeding bleedHandler)
                 {
@@ -96,6 +109,11 @@ namespace DOL.GS
                     }
                     else Owner.TempProperties.setProperty(StyleBleeding.BLEED_VALUE_PROPERTY, bleedValue);
                 }
+
+                if (Owner.Realm == 0 || SpellHandler.Caster.Realm == 0)
+                    Owner.LastAttackTickPvE = GameLoop.GameLoopTime;
+                else
+                    Owner.LastAttackTickPvP = GameLoop.GameLoopTime;
             }
 
             if (LastTick == 0)
@@ -108,6 +126,10 @@ namespace DOL.GS
                 LastTick += PulseFreq;
                 NextTick = LastTick + PulseFreq;
             }
+            
+            if(SpellHandler.Caster is GamePet)
+                Owner.StartInterruptTimer(SpellHandler.Caster.SpellInterruptDuration, AttackData.eAttackType.Spell, SpellHandler.Caster);
+                
         }
     }
 }

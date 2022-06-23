@@ -19,6 +19,7 @@
 //#define OUTPUT_DEBUG_INFO
 using System;
 using System.Collections;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -27,7 +28,9 @@ using DOL.Database;
 using DOL.Events;
 using DOL.Language;
 using DOL.GS;
+using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
+using DOL.GS.Utils;
 using log4net;
 
 namespace DOL.GS.PacketHandler.Client.v168
@@ -79,7 +82,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			if ((speedData & 0x200) != 0)
 				speed = -speed;
 
-			if (client.Player.IsMezzed || client.Player.IsStunned)
+			if ((client.Player.IsMezzed || client.Player.IsStunned) && client.Player.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) == null)
 				// Nidel: updating client.Player.CurrentSpeed instead of speed
 				client.Player.CurrentSpeed = 0;
 			else
@@ -207,12 +210,14 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			if (timediff > 0)
 			{
-				distance = client.Player.LastPositionUpdatePoint.GetDistanceTo(new Point3D(realX, realY, realZ));
+				var newPoint = new Point3D(realX, realY, realZ);
+				distance = newPoint.GetDistanceTo(new Point3D((int)client.Player.LastPositionUpdatePoint.X, (int)client.Player.LastPositionUpdatePoint.Y,
+					(int)client.Player.LastPositionUpdatePoint.Z));
 				coordsPerSec = distance * 1000 / timediff;
 
 				if (distance < 100 && client.Player.LastPositionUpdatePoint.Z > 0)
 				{
-					jumpDetect = realZ - client.Player.LastPositionUpdatePoint.Z;
+					jumpDetect = realZ - (int)client.Player.LastPositionUpdatePoint.Z;
 				}
 			}
 
@@ -366,15 +371,31 @@ namespace DOL.GS.PacketHandler.Client.v168
 				// Check for left areas
 				if (oldAreas != null)
 					foreach (IArea area in oldAreas)
+					{
 						if (!newAreas.Contains(area))
+						{
 							area.OnPlayerLeave(client.Player);
+							
+							//Check if leaving Border Keep areas so we can check RealmTimer
+							AbstractArea checkrvrarea = area as AbstractArea;
+							if (checkrvrarea != null && (checkrvrarea.Description.Equals("Castle Sauvage") || 
+								checkrvrarea.Description.Equals("Snowdonia Fortress") || 
+								checkrvrarea.Description.Equals("Svasud Faste") ||
+								checkrvrarea.Description.Equals("Vindsaul Faste") ||
+								checkrvrarea.Description.Equals("Druim Ligen") ||
+								checkrvrarea.Description.Equals("Druim Cain")))
+							{
+								RealmTimer.CheckRealmTimer(client.Player);
+							}
+						}
+					}
 				// Check for entered areas
 				foreach (IArea area in newAreas)
 					if (oldAreas == null || !oldAreas.Contains(area))
 						area.OnPlayerEnter(client.Player);
 				// set current areas to new one...
 				client.Player.CurrentAreas = newAreas;
-				client.Player.AreaUpdateTick = client.Player.CurrentRegion.Time + 2000; // update every 2 seconds
+				client.Player.AreaUpdateTick = client.Player.CurrentRegion.Time + 750; // update every .75 seconds
 			}
 			// End ---------- New Area System -----------
 
@@ -813,11 +834,21 @@ namespace DOL.GS.PacketHandler.Client.v168
 			//int speed = (newPlayerSpeed & 0x1FF);
 			//Flags1 = (eFlags1)playerState;
 			//Flags2 = (eFlags2)playerAction;                        
-
-			if (client.Player.IsMezzed || client.Player.IsStunned)
+			if ((client.Player.IsMezzed || client.Player.IsStunned) && client.Player.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) == null)
 				client.Player.CurrentSpeed = 0;
 			else
-				client.Player.CurrentSpeed = (short)newPlayerSpeed;
+            {
+				if (client.Player.CurrentSpeed == 0 && (client.Player.LastPositionUpdatePoint.X != newPlayerX 
+					|| client.Player.LastPositionUpdatePoint.Y != newPlayerY))
+				{
+					if(client.Player.IsSitting)
+						client.Player.Sit(false);
+					client.Player.CurrentSpeed = (short)newPlayerSpeed;
+				}
+				else
+					client.Player.CurrentSpeed = (short)newPlayerSpeed;
+			}
+				
 			/*
 			client.Player.IsStrafing = Flags1 == eFlags1.STRAFELEFT || Flags1 == eFlags1.STRAFERIGHT;
 			client.Player.IsDiving = Flags2 == eFlags2.DIVING ? true : false;
@@ -864,7 +895,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					client.Player.MaxLastZ = int.MinValue;
 				}
 				// Update water level and diving flag for the new zone
-				client.Out.SendPlayerPositionAndObjectID();
+				//client.Out.SendPlayerPositionAndObjectID();
 
 				/*
 				 * "You have entered Burial Tomb."
@@ -903,19 +934,21 @@ namespace DOL.GS.PacketHandler.Client.v168
 
 			if (timediff > 0)
 			{
-				distance = client.Player.LastPositionUpdatePoint.GetDistanceTo(new Point3D(newPlayerX, newPlayerY, newPlayerZ));
+				var newPoint = new Point3D(newPlayerX, newPlayerY, newPlayerZ);
+				distance = newPoint.GetDistanceTo(new Point3D((int)client.Player.LastPositionUpdatePoint.X, (int)client.Player.LastPositionUpdatePoint.Y,
+					(int)client.Player.LastPositionUpdatePoint.Z));
 				coordsPerSec = distance * 1000 / timediff;
 
 				if (distance < 100 && client.Player.LastPositionUpdatePoint.Z > 0)
 				{
-					jumpDetect = (int)newPlayerZ - client.Player.LastPositionUpdatePoint.Z;
+					jumpDetect = (int)(newPlayerZ - client.Player.LastPositionUpdatePoint.Z);
 				}
 			}
 
 			client.Player.LastPositionUpdateTick = Environment.TickCount;
-			client.Player.LastPositionUpdatePoint.X = (int)newPlayerX;
-			client.Player.LastPositionUpdatePoint.Y = (int)newPlayerY;
-			client.Player.LastPositionUpdatePoint.Z = (int)newPlayerZ;
+			client.Player.LastPositionUpdatePoint.X = newPlayerX;
+			client.Player.LastPositionUpdatePoint.Y = newPlayerY;
+			client.Player.LastPositionUpdatePoint.Z = newPlayerZ;
 			client.Player.X = (int)newPlayerX;
 			client.Player.Y = (int)newPlayerY;
 			client.Player.Z = (int)newPlayerZ;
@@ -1057,6 +1090,18 @@ namespace DOL.GS.PacketHandler.Client.v168
 						if (!newAreas.Contains(area))
 						{
 							area.OnPlayerLeave(client.Player);
+
+							//Check if leaving Border Keep areas so we can check RealmTimer
+							AbstractArea checkrvrarea = area as AbstractArea;
+							if (checkrvrarea != null && (checkrvrarea.Description.Equals("Castle Sauvage") || 
+								checkrvrarea.Description.Equals("Snowdonia Fortress") || 
+								checkrvrarea.Description.Equals("Svasud Faste") ||
+								checkrvrarea.Description.Equals("Vindsaul Faste") ||
+								checkrvrarea.Description.Equals("Druim Ligen") ||
+								checkrvrarea.Description.Equals("Druim Cain")))
+							{
+								RealmTimer.CheckRealmTimer(client.Player);
+							}
 						}
 					}
 				}
@@ -1188,6 +1233,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			{
 				client.Player.Heading = client.Player.Steed.Heading;
 				newHeading = (ushort)client.Player.Steed.ObjectID;
+				steedSeatPosition = (ushort)client.Player.Steed.RiderSlot(client.Player);
 			}
 			else if ((playerState >> 10) == 4) // patch 0062 fix bug on release preventing players from receiving res sickness
 				client.Player.IsSitting = true;

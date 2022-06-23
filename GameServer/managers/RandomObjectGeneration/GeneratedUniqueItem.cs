@@ -74,7 +74,7 @@ namespace DOL.GS {
         public const ushort ROG_ITEM_RESIST_CHANCE = 48;
 
         //item chance to get skills
-        public const ushort ROG_ITEM_SKILL_CHANCE = 50;
+        public const ushort ROG_ITEM_SKILL_CHANCE = 25;
 
         // Item chance to get All skills stat
         public const ushort ROG_STAT_ALLSKILL_CHANCE = 0;
@@ -175,9 +175,13 @@ namespace DOL.GS {
             //if staff and magic..... focus
             this.GenerateMagicalBonuses(toa);
 
+            this.Color = GetRandomColorForRealm(realm);
+
             this.IsDropable = true;
             this.IsPickable = true;
             this.IsTradable = true;
+            
+            this.CapUtility(this.Level);
 
             if (this.Level > 51)
             {
@@ -226,7 +230,7 @@ namespace DOL.GS {
             this.Quality = Util.Random(minQuality, maxQuality);
 
             this.Price = Money.SetAutoPrice(this.Level, this.Quality);
-            this.Price /= 10;
+            this.Price /= 8;
             if (this.Price <= 0)
                 this.Price = 2; // 2c as sell price is 50%
         }
@@ -351,12 +355,13 @@ namespace DOL.GS {
 
         private void GenerateProc()
         {
+            if (!Util.Chance(1)) return;
             if (this.Object_Type == (int)eObjectType.Magical)
                 return;
 
             this.ProcChance = 10;
 
-            if(((this.Object_Type >= (int)eObjectType._FirstWeapon && this.Object_Type <= (int)eObjectType._LastWeapon) || this.Object_Type == (int)eObjectType.Shield) && Util.Chance(25))
+            if(((this.Object_Type >= (int)eObjectType._FirstWeapon && this.Object_Type <= (int)eObjectType._LastWeapon) || this.Object_Type == (int)eObjectType.Shield))
             {
                 if (Util.Chance(50))
                 {
@@ -447,7 +452,7 @@ namespace DOL.GS {
                     }
                 }
             }
-            else if(this.Object_Type >= (int)eObjectType._FirstArmor && this.Object_Type <= (int)eObjectType._LastArmor && this.Item_Type == Slot.TORSO && Util.Chance(25))
+            else if(this.Object_Type >= (int)eObjectType._FirstArmor && this.Object_Type <= (int)eObjectType._LastArmor && this.Item_Type == Slot.TORSO)
             {
                 if (Util.Chance(50))
                 {
@@ -539,6 +544,149 @@ namespace DOL.GS {
                 }
                 
             }
+        }
+
+        private int GetRandomColorForRealm(eRealm realm)
+        {
+            List<int> validColors = new List<int>();
+            validColors.Add(0); //white
+
+            if (Level > 10)
+            {
+                validColors.Add(6); //grey
+                validColors.Add(4); //old yellow
+            }
+            
+            if (Level > 20)
+            {
+                validColors.Add(17); //iron
+                validColors.Add(16); //bronze
+            }
+            
+            if (Level > 30)
+            {
+                validColors.Add(18); //steel
+                validColors.Add(19); //alloy
+                validColors.Add(72); //grey1
+            }
+            
+            if (Level > 40)
+            {
+                validColors.Add(22); //asterite
+                validColors.Add(20); //fine alloy
+                validColors.Add(73); //gray2
+            }
+            
+            if (Level > 50)
+            {
+                validColors.Add(21); //mithril
+                validColors.Add(25); //vaanum
+                validColors.Add(26); //adamantium
+                validColors.Add(43); //black cloth
+                validColors.Add(74); //grey3
+                validColors.Add(118); //charcoal
+            }
+            
+            switch(realm){
+                case eRealm.Hibernia:
+                    if (Level > 10)
+                    {
+                        validColors.Add(2); //old green
+                    }
+            
+                    if (Level > 20)
+                    {
+                        validColors.Add(10); //leather green
+                        
+                    }
+            
+                    if (Level > 30)
+                    {
+                        validColors.Add(31); //yellow green
+                        validColors.Add(32); //green
+                    }
+            
+                    if (Level > 40)
+                    {
+                        validColors.Add(33); //blue green
+                        validColors.Add(68); //green1
+                    }
+            
+                    if (Level > 50)
+                    {
+                        validColors.Add(70); //green3
+                        validColors.Add(71); //green4
+                        validColors.Add(137); //lime green
+                        validColors.Add(142); //forest green
+                    }
+                    break;
+                case eRealm.Albion:
+                    if (Level > 10)
+                    {
+                        validColors.Add(1); //old red
+                    }
+            
+                    if (Level > 20)
+                    {
+                        validColors.Add(9); //leather red
+                        
+                    }
+            
+                    if (Level > 30)
+                    {
+                        validColors.Add(24); //yellow red
+                        validColors.Add(27); //red
+                    }
+            
+                    if (Level > 40)
+                    {
+                        validColors.Add(64); //red1
+                        validColors.Add(65); //red2
+                    }
+            
+                    if (Level > 50)
+                    {
+                        validColors.Add(66); //red3
+                        validColors.Add(67); //red4
+                        validColors.Add(120); //red crafter
+                        validColors.Add(143); //burgundy
+                    }
+                    break;
+                case eRealm.Midgard:
+                    if (Level > 10)
+                    {
+                        validColors.Add(3); //old red
+                    }
+            
+                    if (Level > 20)
+                    {
+                        validColors.Add(14); //leather red
+                        
+                    }
+            
+                    if (Level > 30)
+                    {
+                        validColors.Add(34); //turqoise cloth
+                        validColors.Add(35); //light blue
+                    }
+            
+                    if (Level > 40)
+                    {
+                        validColors.Add(36); //blue
+                        validColors.Add(51); //blue1
+                    }
+            
+                    if (Level > 50)
+                    {
+                        validColors.Add(52); //blue2
+                        validColors.Add(54); //blue4
+                        validColors.Add(86); //blue4 again?
+                        validColors.Add(141); //navy blue
+                    }
+                    break;
+            }
+
+            return validColors[Util.Random(validColors.Count - 1)];
         }
 
         private void GenerateMagicalBonuses(bool toa)
@@ -711,9 +859,9 @@ namespace DOL.GS {
             return bonTypes[Util.Random(bonTypes.Count - 1)];
             */
 
-            if (rand < 33)
+            if (rand < 15)
                 return eBonusType.Skill;
-            if (rand < 66)
+            if (rand < 45)
                 return eBonusType.Resist;
             return eBonusType.Stat;
 
@@ -905,9 +1053,9 @@ namespace DOL.GS {
             }
             if (prop == eProperty.Skill_Axe || prop == eProperty.Skill_Sword || prop == eProperty.Skill_Hammer)
             {
-                skillsToCheck.Add(eProperty.Skill_Blades);
-                skillsToCheck.Add(eProperty.Skill_Piercing);
-                skillsToCheck.Add(eProperty.Skill_Blunt);
+                skillsToCheck.Add(eProperty.Skill_Axe);
+                skillsToCheck.Add(eProperty.Skill_Sword);
+                skillsToCheck.Add(eProperty.Skill_Hammer);
             }
 
             if (prop == eProperty.Skill_Matter || prop == eProperty.Skill_Body || prop == eProperty.Skill_Spirit || prop == eProperty.Skill_Mind)
@@ -985,7 +1133,7 @@ namespace DOL.GS {
 
         private eProperty GetWeightedStatForClass(eCharacterClass charClass)
         {
-            if (Util.Chance(20))
+            if (Util.Chance(10))
                 return eProperty.MaxHealth;
 
             int rand = Util.Random(100);
@@ -1025,6 +1173,7 @@ namespace DOL.GS {
                 case eCharacterClass.Animist:
                     if (Util.Chance(20))
                         return eProperty.MaxMana;
+                    
                     //weight stats for casters towards dex, acu, con
                     //keep some 10% chance of str or quick since useful for carrying/occasional melee
                     if (rand <= 30)
@@ -1064,18 +1213,30 @@ namespace DOL.GS {
                     else if (rand <= 75)
                         return eProperty.Piety;
                     else return eProperty.Constitution;
-
-                case eCharacterClass.Reaver:
+                
                 case eCharacterClass.Cleric:
-                case eCharacterClass.Thane:
                 case eCharacterClass.Shaman:
+                    if (Util.Chance(20))
+                        return eProperty.MaxMana;
+                    if (rand <= 10)
+                        return eProperty.Strength;
+                    else if (rand <= 40)
+                        return eProperty.Dexterity;
+                    else if (rand <= 50)
+                        return eProperty.Quickness;
+                    else if (rand <= 80)
+                        return eProperty.Piety;
+                    else return eProperty.Constitution;
+                
+                case eCharacterClass.Thane:
+                case eCharacterClass.Reaver:
                     if (Util.Chance(20))
                         return eProperty.MaxMana;
                     if (rand <= 20)
                         return eProperty.Strength;
                     else if (rand <= 40)
                         return eProperty.Dexterity;
-                    else if (rand <= 60)
+                    else if (rand <= 65)
                         return eProperty.Quickness;
                     else if (rand <= 80)
                         return eProperty.Piety;
@@ -1149,13 +1310,13 @@ namespace DOL.GS {
                     else return eProperty.Charisma;
 
                 case eCharacterClass.Healer:
-                    if (Util.Chance(20))
+                    if (Util.Chance(15))
                         return eProperty.MaxMana;
                     if (rand <= 30)
                         return eProperty.Dexterity;
                     else if (rand <= 60)
                         return eProperty.Piety;
-                    else if (rand <= 85)
+                    else if (rand <= 80)
                         return eProperty.Constitution;
                     else return eProperty.Strength;
             }
@@ -3752,7 +3913,7 @@ namespace DOL.GS {
                     }
                 case eProperty.Skill_Crushing:
                     {
-                        if (realm != eRealm.Albion) { return false; }
+                        if (realm != eRealm.Albion || type == eObjectType.Flexible) { return false; }
                         if (type == eObjectType.CrushingWeapon ||
                             ((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.Type_Damage == (int)eDamageType.Crush))
                             return true;
@@ -3981,6 +4142,9 @@ namespace DOL.GS {
                         {
                             return false;
                         }
+
+                        if (type == eObjectType.Flexible)
+                            return false;
                         if (type == eObjectType.SlashingWeapon ||
                             ((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.Type_Damage == (int)eDamageType.Slash))
                             return true;
@@ -4051,6 +4215,8 @@ namespace DOL.GS {
                         {
                             return false;
                         }
+                        if (type == eObjectType.Flexible)
+                            return false;
                         if (type == eObjectType.ThrustWeapon ||
                             ((type == eObjectType.TwoHandedWeapon || type == eObjectType.PolearmWeapon) && this.Type_Damage == (int)eDamageType.Thrust))
                             return true;
@@ -4585,16 +4751,19 @@ namespace DOL.GS {
         }
         #endregion
 
-        public void CapUtility(int mobLevel)
+        private void CapUtility(int mobLevel)
         {
             int cap = 0;
-            if (mobLevel > 80)
-                cap = 80;
+            
+            if (mobLevel > 57)
+                cap = mobLevel + (Util.Random(1, 5));
             else 
-                cap = mobLevel - 10;
+                cap = mobLevel - (Util.Random(1, 10));
 
-            //randomize cap to be 90-105% of normal value
-            double random = (90 + Util.Random(15)) / 100.0;
+            if (cap > 80) cap = 80;
+
+            //randomize cap to be 80-105% of normal value
+            double random = (80 + Util.Random(25)) / 100.0;
             cap = (int)Math.Floor(cap * random);
 
             if (cap < 15)
@@ -4788,7 +4957,7 @@ namespace DOL.GS {
 
             //based off of eProperty
             //1-8 == stats = *.6667
-            //9 == power cap = *2
+            //9 == power cap = *1
             //10 == maxHP =  *.25
             //11-19 == resists = *2
             //20-115 == skill = *5
@@ -4805,7 +4974,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus1Type == 9)
                 {
-                    totalUti += Bonus1 * 2;
+                    totalUti += Bonus1 ;
                 }
                 else if (Bonus1Type == 10)
                 {
@@ -4838,7 +5007,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus2Type == 9)
                 {
-                    totalUti += Bonus2 * 2;
+                    totalUti += Bonus2;
                 }
                 else if (Bonus2Type == 10)
                 {
@@ -4871,7 +5040,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus3Type == 9)
                 {
-                    totalUti += Bonus3 * 2;
+                    totalUti += Bonus3 ;
                 }
                 else if (Bonus3Type == 10)
                 {
@@ -4904,7 +5073,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus4Type == 9)
                 {
-                    totalUti += Bonus4 * 2;
+                    totalUti += Bonus4;
                 }
                 else if (Bonus4Type == 10)
                 {
@@ -4937,7 +5106,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus5Type == 9)
                 {
-                    totalUti += Bonus5 * 2;
+                    totalUti += Bonus5;
                 }
                 else if (Bonus5Type == 10)
                 {
@@ -4970,7 +5139,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus6Type == 9)
                 {
-                    totalUti += Bonus6 * 2;
+                    totalUti += Bonus6 ;
                 }
                 else if (Bonus6Type == 10)
                 {
@@ -5003,7 +5172,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus7Type == 9)
                 {
-                    totalUti += Bonus7 * 2;
+                    totalUti += Bonus7;
                 }
                 else if (Bonus7Type == 10)
                 {
@@ -5035,7 +5204,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus8Type == 9)
                 {
-                    totalUti += Bonus8 * 2;
+                    totalUti += Bonus8;
                 }
                 else if (Bonus8Type == 10)
                 {
@@ -5067,7 +5236,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus9Type == 9)
                 {
-                    totalUti += Bonus9 * 2;
+                    totalUti += Bonus9;
                 }
                 else if (Bonus9Type == 10)
                 {
@@ -5099,7 +5268,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus10Type == 9)
                 {
-                    totalUti += Bonus10 * 2;
+                    totalUti += Bonus10;
                 }
                 else if (Bonus10Type == 10)
                 {
@@ -5131,7 +5300,7 @@ namespace DOL.GS {
                 }
                 else if (ExtraBonusType == 9)
                 {
-                    totalUti += ExtraBonus * 2;
+                    totalUti += ExtraBonus;
                 }
                 else if (ExtraBonusType == 10)
                 {
@@ -5181,7 +5350,7 @@ namespace DOL.GS {
                 }
                 else if (BonusType == 9)
                 {
-                    totalUti += Bonus * 2;
+                    totalUti += Bonus;
                 }
                 else if (BonusType == 10)
                 {
@@ -5291,17 +5460,17 @@ namespace DOL.GS {
             List<eGenerateType> genTypes = new List<eGenerateType>();
 
             //weighted so that early levels get many more weapons/armor
-            if (level < 10)
+            if (level < 5)
             {
-                if (Util.Chance(40))
+                if (Util.Chance(45))
                     return eGenerateType.Weapon;
                 else if (Util.Chance(15))
                     return eGenerateType.Magical;
                 else return eGenerateType.Armor;
             }
-            else if (level < 20)
+            else if (level < 10)
             {
-                if (Util.Chance(ROG_ARMOR_CHANCE * 2)) { genTypes.Add(eGenerateType.Armor); }
+                if (Util.Chance(ROG_ARMOR_CHANCE)) { genTypes.Add(eGenerateType.Armor); }
                 if (Util.Chance(ROG_MAGICAL_CHANCE)) { genTypes.Add(eGenerateType.Magical); }
                 if (Util.Chance(ROG_WEAPON_CHANCE * 2)) { genTypes.Add(eGenerateType.Weapon); }
             }
@@ -5386,6 +5555,7 @@ namespace DOL.GS {
                     weaponTypes.Add(eObjectType.Flexible);
                     weaponTypes.Add(eObjectType.Flexible);
                     weaponTypes.Add(eObjectType.Flexible);
+                    weaponTypes.Add(eObjectType.Flexible);
                     weaponTypes.Add(eObjectType.SlashingWeapon);
                     weaponTypes.Add(eObjectType.CrushingWeapon);
                     weaponTypes.Add(eObjectType.Shield);
@@ -5395,12 +5565,17 @@ namespace DOL.GS {
                     weaponTypes.Add(eObjectType.Instrument);
                     weaponTypes.Add(eObjectType.SlashingWeapon);
                     weaponTypes.Add(eObjectType.ThrustWeapon);
+                    weaponTypes.Add(eObjectType.SlashingWeapon);
+                    weaponTypes.Add(eObjectType.ThrustWeapon);
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.Infiltrator:
                     weaponTypes.Add(eObjectType.SlashingWeapon);
                     weaponTypes.Add(eObjectType.ThrustWeapon);
                     weaponTypes.Add(eObjectType.SlashingWeapon);
+                    weaponTypes.Add(eObjectType.ThrustWeapon);
+                    weaponTypes.Add(eObjectType.SlashingWeapon);
+                    weaponTypes.Add(eObjectType.ThrustWeapon);
                     weaponTypes.Add(eObjectType.ThrustWeapon);
                     weaponTypes.Add(eObjectType.Crossbow);
                     weaponTypes.Add(eObjectType.Shield);
@@ -5576,6 +5751,8 @@ namespace DOL.GS {
                 case eCharacterClass.Shaman:
                     weaponTypes.Add(eObjectType.Staff);
                     weaponTypes.Add(eObjectType.Hammer);
+                    weaponTypes.Add(eObjectType.Hammer);
+                    weaponTypes.Add(eObjectType.Hammer);
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.Hunter:
@@ -5586,6 +5763,8 @@ namespace DOL.GS {
                     weaponTypes.Add(eObjectType.Sword);
                     break;
                 case eCharacterClass.Savage:
+                    weaponTypes.Add(eObjectType.HandToHand);
+                    weaponTypes.Add(eObjectType.HandToHand);
                     weaponTypes.Add(eObjectType.HandToHand);
                     weaponTypes.Add(eObjectType.HandToHand);
                     weaponTypes.Add(eObjectType.HandToHand);
@@ -5602,9 +5781,11 @@ namespace DOL.GS {
                     weaponTypes.Add(eObjectType.LeftAxe);
                     weaponTypes.Add(eObjectType.LeftAxe);
                     weaponTypes.Add(eObjectType.LeftAxe);
+                    weaponTypes.Add(eObjectType.LeftAxe);
                     weaponTypes.Add(eObjectType.Shield);
                     break;
                 case eCharacterClass.Berserker:
+                    weaponTypes.Add(eObjectType.LeftAxe);
                     weaponTypes.Add(eObjectType.LeftAxe);
                     weaponTypes.Add(eObjectType.LeftAxe);
                     weaponTypes.Add(eObjectType.LeftAxe);
@@ -5624,7 +5805,6 @@ namespace DOL.GS {
                     weaponTypes.Add(eObjectType.Sword);
                     weaponTypes.Add(eObjectType.Axe);
                     weaponTypes.Add(eObjectType.Hammer);
-                    weaponTypes.Add(eObjectType.Shield);
                     weaponTypes.Add(eObjectType.Shield);
                     weaponTypes.Add(eObjectType.Shield);
                     break;
@@ -5835,10 +6015,11 @@ namespace DOL.GS {
                 case eCharacterClass.Bard:
                     weaponTypes.Add(eObjectType.Blades);
                     weaponTypes.Add(eObjectType.Blunt);
+                    weaponTypes.Add(eObjectType.Blades);
+                    weaponTypes.Add(eObjectType.Blunt);
                     weaponTypes.Add(eObjectType.Shield);
                     weaponTypes.Add(eObjectType.Instrument);
                     weaponTypes.Add(eObjectType.Instrument);
-                    weaponTypes.Add(eObjectType.Staff);
                     break;
                 default:
                     return eObjectType.Staff;
@@ -7553,7 +7734,7 @@ namespace DOL.GS {
                     if (Level >= 30)
                         validModels.Add(433);
                     if (Level >= 40)
-                        validModels.Add(1256);
+                        validModels.Add(2988);
                     if (Level > 50)
                         validModels.Add(2828);
                     break;
@@ -8851,7 +9032,6 @@ namespace DOL.GS {
                     if (Level > 40)
                     {
                         validModels.Add(957);
-                        validModels.Add(660);
                     }
                     if (Level > 50)
                     {
@@ -8905,6 +9085,7 @@ namespace DOL.GS {
                     }
                     break;
                 case eRealm.Albion:
+                    validModels.Add(1);
                     validModels.Add(3);
                     if (Level > 10)
                     {
@@ -8945,7 +9126,6 @@ namespace DOL.GS {
                     }
                     if (Level > 50)
                     {
-                        validModels.Add(654);
                         validModels.Add(655);
                         validModels.Add(1017);
                         validModels.Add(1015);
@@ -9180,7 +9360,7 @@ namespace DOL.GS {
                     }
                     break;
                 default:
-                    validModels.Add(449);
+                    validModels.Add(846);
                     break;
             }
 
@@ -9244,13 +9424,13 @@ namespace DOL.GS {
                     }
                     break;
                 case eRealm.Albion:
-                    validModels.Add(1);
                     validModels.Add(21);
+                    validModels.Add(71);
                     if (Level > 10)
                     {
                         validModels.Add(876);
                         validModels.Add(22);
-                        validModels.Add(23);
+                        //validModels.Add(23);
                     }
                     if (Level > 20)
                     {
@@ -10185,7 +10365,6 @@ namespace DOL.GS {
             switch (modelId)
             {
                 case 1:
-                case 21:
                 case 23:
                 case 25:
                 case 28:
@@ -10193,10 +10372,8 @@ namespace DOL.GS {
                 case 457:
                 case 472:
                 case 571:
-                case 876:
                 case 885:
                 case 887:
-                case 889:
                 case 895:
                 case 898:
                 case 902:
@@ -10212,6 +10389,10 @@ namespace DOL.GS {
                 case 3838:
                 case 3839:
                     return "Dagger";
+                case 21:
+                case 876:
+                case 889:
+                    return "Dirk";
                 case 30:
                     return "Gladius";
                 case 456:
@@ -10299,6 +10480,7 @@ namespace DOL.GS {
                 case 444:
                     return "Falcata";
                 case 8:
+                case 645:
                     return "Scimitar";
                 case 651:
                     return "Jambiya";
@@ -10403,6 +10585,7 @@ namespace DOL.GS {
                 case 3923:
                 case 3959:
                     return "Greataxe";
+                case 16:
                 case 17:
                 case 462:
                 case 463:
@@ -10412,6 +10595,7 @@ namespace DOL.GS {
                 case 640:
                 case 644:
                 case 659:
+                case 842:
                 case 844:
                 case 904:
                 case 905:
@@ -10437,6 +10621,8 @@ namespace DOL.GS {
                 case 912:
                     return "Shillelagh";
                 case 846:
+                case 2661:
+                case 646:
                     return "War Mattock";
                 case 11:
                 case 13:
@@ -10666,10 +10852,10 @@ namespace DOL.GS {
         private int GetProcFromLevel(byte level)
         {
             int procID = 0;
-            //if (Util.Chance(50))
+            if (Util.Chance(50))
                 procID = GetLifetapProcFromLevel(Level);
-            //else
-                //procID = GetDDProcFromLevel(Level);
+            else
+                procID = GetDDProcFromLevel(Level);
 
             return procID;
         }

@@ -102,7 +102,7 @@ namespace DOL.GS
                 leftHandSwingCount = owner.attackComponent.CalculateLeftHandSwingCount();
             }
             else if (owner.attackComponent.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type != (int)eObjectType.Shield
-                && mainWeapon != null && (mainWeapon.Item_Type == Slot.RIGHTHAND || mainWeapon.Item_Type == Slot.LEFTHAND))
+                && mainWeapon != null && mainWeapon.Hand != 1)
             {
                 leftHandSwingCount = owner.attackComponent.CalculateLeftHandSwingCount();
             }
@@ -112,9 +112,11 @@ namespace DOL.GS
             //- Pets will no longer continue to attack a character after the character has stealthed.
             // 1.88
             //- Monsters, pets and Non-Player Characters (NPCs) will now halt their pursuit when the character being chased stealths.
+            /*
             if (owner is GameNPC
                 && m_target is GamePlayer
-                && ((GamePlayer)m_target).IsStealthed)
+                && ((GamePlayer)m_target).IsStealthed 
+                && !(owner is GamePet))
             {
                 // note due to the 2 lines above all npcs stop attacking
                 GameNPC npc = (GameNPC)owner;
@@ -128,15 +130,17 @@ namespace DOL.GS
                     npc.Inventory.GetItem(eInventorySlot.DistanceWeapon) != null)
                     npc.SwitchWeapon(eActiveWeaponSlot.Distance);
                 return;
-            }
+            }*/
 
             bool usingOH = false;
+            owner.attackComponent.LastAttackWasDualWield = false;
             if (leftHandSwingCount > 0)
             {
                 if (mainWeapon.Object_Type == (int)eObjectType.HandToHand || 
                     leftWeapon?.Object_Type == (int)eObjectType.HandToHand || 
                     mainWeapon.Object_Type == (int)eObjectType.TwoHandedWeapon || 
-                    mainWeapon.Item_Type == (int)Slot.RANGED)
+                    mainWeapon.Object_Type == (int)eObjectType.Thrown ||
+                    mainWeapon.SlotPosition == (int)Slot.RANGED)
                     usingOH = false;
                 else
                     usingOH = true;
@@ -144,6 +148,9 @@ namespace DOL.GS
                 if (owner is GameNPC)
                     usingOH = false;
 
+                if (usingOH)
+                    owner.attackComponent.LastAttackWasDualWield = true;
+                
                 // both hands are used for attack
                 mainHandAD = owner.attackComponent.MakeAttack(m_target, mainWeapon, style, mainHandEffectiveness, m_interruptDuration, usingOH);
                 if (style == null)
@@ -271,7 +278,7 @@ namespace DOL.GS
             owner.TempProperties.removeProperty(LAST_ATTACK_DATA_LH);
 
             //now left hand damage
-            if (leftHandSwingCount > 0)
+            if (leftHandSwingCount > 0 && mainWeapon.SlotPosition != Slot.RANGED)
             {
                 switch (mainHandAD.AttackResult)
                 {
@@ -446,6 +453,18 @@ namespace DOL.GS
                     {
                         playerAttacker?.Out.SendMessage(target.Name + " counter-attacks you for " + ReflexAttackAD.Damage + " damage.", eChatType.CT_Damaged, eChatLoc.CL_SystemWindow);
                     }
+                    break;
+                case eAttackResult.NotAllowed_ServerRules:
+                case eAttackResult.NoTarget:
+                case eAttackResult.TargetDead:
+                case eAttackResult.OutOfRange:
+                case eAttackResult.NoValidTarget:
+                case eAttackResult.TargetNotVisible:
+                case eAttackResult.Fumbled:
+                case eAttackResult.Bodyguarded:
+                case eAttackResult.Phaseshift:
+                case eAttackResult.Grappled:
+                default:
                     break;
             }
         }

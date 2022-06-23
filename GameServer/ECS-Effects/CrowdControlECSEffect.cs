@@ -1,6 +1,8 @@
+using System.Linq;
 using DOL.GS.Spells;
 using DOL.GS.PacketHandler;
 using DOL.AI.Brain;
+using DOL.GS.Effects;
 
 namespace DOL.GS
 {
@@ -16,7 +18,8 @@ namespace DOL.GS
             Owner.DisableTurning(true);
             if (Owner is GameNPC npc)
                 npc.StopMoving();
-            UpdatePlayerStatus();
+            if(Owner.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) == null)
+                UpdatePlayerStatus();
         }
 
         protected void OnHardCCStop()
@@ -31,6 +34,7 @@ namespace DOL.GS
                 if (aggroBrain != null)
                     aggroBrain.AddToAggroList(SpellHandler.Caster, 1);
                 npc.attackComponent.AttackState = true;
+                npc.TurnTo(npc.TargetObject);
             }
             if(SpellHandler.Caster is GamePlayer)
                 Owner.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
@@ -75,7 +79,11 @@ namespace DOL.GS
             Owner.IsStunned = true;
             OnHardCCStart();
             UpdatePlayerStatus();
-            SendMessages();
+            
+            // "You are stunned!"
+            // "{0} is stunned!"
+            OnEffectStartsMsg(Owner, true, true, true);
+
         }
 
         public override void OnStopEffect()
@@ -83,6 +91,11 @@ namespace DOL.GS
             Owner.IsStunned = false;
             OnHardCCStop();
             UpdatePlayerStatus();
+            
+            // "You recover from the stun.."
+            // "{0} recovers from the stun."
+            OnEffectExpiresMsg(Owner, true, false, true);
+
         }
     }
 
@@ -102,7 +115,10 @@ namespace DOL.GS
             Owner.IsMezzed = true;
             OnHardCCStart();
             UpdatePlayerStatus();
-            SendMessages();
+            
+            // "You are entranced!"
+            // "You are mesmerized!"
+            OnEffectStartsMsg(Owner, true, true, true);
         }
 
         public override void OnStopEffect()
@@ -110,6 +126,10 @@ namespace DOL.GS
             Owner.IsMezzed = false;
             OnHardCCStop();
             UpdatePlayerStatus();
+            
+            // "You are no longer entranced."
+            // "You recover from the mesmerize."
+            OnEffectExpiresMsg(Owner, true, false, true);
         }
     }
 }

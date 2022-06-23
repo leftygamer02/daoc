@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
+using System.Linq;
 using DOL.GS.PacketHandler;
 
 namespace DOL.GS.Commands
@@ -54,14 +56,34 @@ namespace DOL.GS.Commands
 					return;
 				}
 				target = (GamePlayer) client.Player.TargetObject;
+				
 				if (!GameServer.ServerRules.IsAllowedToGroup(client.Player, target, false))
 				{
 					return;
 				}
+				
+				if (target.NoHelp)
+				{
+					client.Out.SendMessage(target.Name + "has chosen the solo path and can't join your group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					return;
+				}
+				
 			}
 			else
 			{ // Inviting by name
-				GameClient targetClient = WorldMgr.GetClientByPlayerNameAndRealm(targetName, 0, true);
+				var matchingClients = WorldMgr.GetClientByPlayerNameAndRealm(targetName, 0, true);
+				GameClient targetClient = null;
+
+				if (matchingClients != null)
+				{
+					if (matchingClients.Count == 1) targetClient = matchingClients.First();
+					else
+					{
+						client.Out.SendMessage("More than one online player matches that name.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						return;
+					}
+				}
+
 				if (targetClient == null)
 					target = null;
 				else
@@ -74,6 +96,11 @@ namespace DOL.GS.Commands
 				if (target == client.Player)
 				{
 					client.Out.SendMessage("You can't invite yourself.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					return;
+				}
+				if (target.NoHelp)
+				{
+					client.Out.SendMessage(target.Name + "has chosen the solo path and can't join your group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
 				}
 			}
@@ -102,7 +129,10 @@ namespace DOL.GS.Commands
 					group.AddMember(client.Player);
 					group.AddMember(target);
 				}
-				else
+				else if (target.NoHelp)
+				{
+					client.Out.SendMessage("Grouping this player would void their SOLO challenge", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				} else
 				{
 					client.Player.Group.AddMember(target);
 				}

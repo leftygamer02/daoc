@@ -75,7 +75,7 @@ namespace DOL.GS
 		/// <param name="centerObject">The center object of the message</param>
 		/// <param name="message">The message to send</param>
 		/// <param name="chatType">The type of message to send</param>
-		/// <param name="excludes">An optional list of excluded players</param>
+		/// <param name="excludes">An optional list of players to exclude from receiving the message</param>
 		public static void SystemToArea(GameObject centerObject, string message, eChatType chatType, params GameObject[] excludes)
 		{
 			SystemToArea(centerObject, message, chatType, WorldMgr.INFO_DISTANCE, excludes);
@@ -131,33 +131,39 @@ namespace DOL.GS
 		}
 
 		/// <summary>
-		/// Sends a text message to players within a specific radius of another object
+		/// Sends a message to GamePlayers within a specific radius of another object
 		/// </summary>
-		/// <param name="centerObject">The center object</param>
-		/// <param name="message">The message to send</param>
-		/// <param name="chatType">The chat typ</param>
-		/// <param name="chatLoc">The chat location</param>
-		/// <param name="distance">The distance</param>
-		/// <param name="excludes">A list of GameObjects to exlude from the message</param>
+		/// <param name="centerObject">The entity from which the message originates</param>
+		/// <param name="message">The message string being sent</param>
+		/// <param name="chatType">The chat type (e.g., CT_Say)</param>
+		/// <param name="chatLoc">The UI location to display the message (i.e., chat, combat, popup windows)</param>
+		/// <param name="distance">The maximum distance the message is sent from the centerObject (anyone outside will not receive message)</param>
+		/// <param name="excludes">The entity(ies) that should not receive the message or else 'null'</param>
 		public static void MessageToArea(GameObject centerObject, string message, eChatType chatType, eChatLoc chatLoc, ushort distance, params GameObject[] excludes)
 		{
-			if (message == null || message.Length <= 0) return;
-			bool excluded;
-			foreach(GamePlayer player in centerObject.GetPlayersInRadius(distance))
+			if (string.IsNullOrEmpty(message)) return; // Don't send blank messages
+
+			if (centerObject != null)
 			{
-				excluded = false;
-				if(excludes!=null)
+				foreach (GamePlayer player in centerObject?.GetPlayersInRadius(distance)) // Send message to each GamePlayer within the specified distance of the centerObject
 				{
-					foreach(GameObject obj in excludes)
-						if(obj == player)
+					var excluded = false;
+
+					if (excludes != null) // If entities are specified for exclusion (i.e., != null), then perform following actions
+					{
+						foreach (var obj in excludes) // For each param in excludes, set exclude to true for GamePlayers and don't send message
 						{
-							excluded = true;
-							break;
+							if (obj == player)
+							{
+								excluded = true;
+								break;
+							}
 						}
-				}
-				if (!excluded)
-				{
-					player.MessageFromArea(centerObject, message, chatType, chatLoc);
+					}
+					if (excluded == false)
+					{
+						player?.MessageFromArea(centerObject, message, chatType, chatLoc); // If no excludes are specified (i.e., 'null'), send message to everyone in radius
+					}
 				}
 			}
 		}

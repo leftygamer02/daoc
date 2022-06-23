@@ -45,6 +45,7 @@ namespace DOL.GS.RealmAbilities
             }
             caster.StopCurrentSpellcast();
 
+            /*
             if(ServerProperties.Properties.USE_NEW_ACTIVES_RAS_SCALING)
             {
 	            switch (Level)
@@ -66,7 +67,9 @@ namespace DOL.GS.RealmAbilities
 					case 3: dmgValue = 360; break;
 					default: return;
 				}
-            }
+            }*/
+
+            dmgValue = 240;
             
 			duration = 30;
 			foreach (GamePlayer i_player in caster.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
@@ -89,10 +92,10 @@ namespace DOL.GS.RealmAbilities
             GameEventMgr.AddHandler(caster, GamePlayerEvent.Dying, new DOLEventHandler(CastInterrupted));
             if (caster != null)
             {
-                new RegionTimer(caster, new RegionTimerCallback(EndCast), 2000);
+                new ECSGameTimer(caster, new ECSGameTimer.ECSTimerCallback(EndCast), 2000);
             }
 		}
-		protected virtual int EndCast(RegionTimer timer)
+		protected virtual int EndCast(ECSGameTimer timer)
 		{
             bool castWasSuccess = player.TempProperties.getProperty(NM_CAST_SUCCESS, false);
             player.TempProperties.removeProperty(IS_CASTING);
@@ -104,7 +107,7 @@ namespace DOL.GS.RealmAbilities
             if (!castWasSuccess)
                 return 0;
 			Statics.NegativeMaelstromBase nm = new Statics.NegativeMaelstromBase(dmgValue);
-			nm.CreateStatic(player, player.GroundTarget, duration, 5, 350);
+			nm.CreateStatic(player, player.GroundTarget, duration, 5, 500);
             DisableSkill(player); 
 			timer.Stop();
 			timer = null;

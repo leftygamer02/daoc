@@ -199,13 +199,28 @@ namespace DOL.GS.ServerRules
 
 		public override bool IsAllowedToTrade(GameLiving source, GameLiving target, bool quiet)
 		{
-			if(source == null || target == null) return false;
 
+			if(source == null || target == null) return false;
+			
 			// clients with priv level > 1 are allowed to trade with anyone
 			if(source is GamePlayer && target is GamePlayer)
 			{
-				if ((source as GamePlayer).Client.Account.PrivLevel > 1 ||(target as GamePlayer).Client.Account.PrivLevel > 1)
+				if ((source as GamePlayer).Client.Account.PrivLevel > 1 || (target as GamePlayer).Client.Account.PrivLevel > 1)
 					return true;
+			}
+			
+			if((source as GamePlayer).NoHelp)
+			{
+				if(quiet == false) MessageToLiving(source, "You have renounced to any kind of help!");
+				if(quiet == false) MessageToLiving(target, "This player has chosen to receive no help!");
+				return false;
+			}
+			
+			if((target as GamePlayer).NoHelp)
+			{
+				if(quiet == false) MessageToLiving(target, "You have renounced to any kind of help!");
+				if(quiet == false) MessageToLiving(source, "This player has chosen to receive no help!");
+				return false;
 			}
 
 			//Peace flag NPCs can trade with everyone
@@ -320,7 +335,7 @@ namespace DOL.GS.ServerRules
 				m_compatibleObjectTypes[(int)eObjectType.Hammer]       = new eObjectType[] { eObjectType.Hammer };
 				m_compatibleObjectTypes[(int)eObjectType.Sword]        = new eObjectType[] { eObjectType.Sword };
 				m_compatibleObjectTypes[(int)eObjectType.LeftAxe]      = new eObjectType[] { eObjectType.LeftAxe };
-				m_compatibleObjectTypes[(int)eObjectType.Axe]          = new eObjectType[] { eObjectType.Axe, eObjectType.LeftAxe };
+				m_compatibleObjectTypes[(int)eObjectType.Axe]          = new eObjectType[] { eObjectType.Axe };
 				m_compatibleObjectTypes[(int)eObjectType.HandToHand]   = new eObjectType[] { eObjectType.HandToHand };
 				m_compatibleObjectTypes[(int)eObjectType.Spear]        = new eObjectType[] { eObjectType.Spear };
 				m_compatibleObjectTypes[(int)eObjectType.CompositeBow] = new eObjectType[] { eObjectType.CompositeBow };
@@ -416,6 +431,14 @@ namespace DOL.GS.ServerRules
 		{
 			base.ResetKeep(lord, killer);
 			lord.Component.Keep.Reset((eRealm)killer.Realm);
+			foreach (var objective in ConquestService.ConquestManager.GetActiveObjectives)
+			{
+				if (objective != null && objective.Keep == lord.Component.Keep)
+				{
+					ConquestService.ConquestManager.ConquestCapture(objective.Keep);
+				}	
+			}
+			
 		}
 	}
 }

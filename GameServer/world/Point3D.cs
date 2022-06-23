@@ -109,6 +109,7 @@ namespace DOL.GS
 		/// <returns>Distance to point</returns>
 		public virtual int GetDistanceTo(IPoint3D point)
 		{
+			if (point == null) return Int32.MaxValue;
 			double dx = (double) X - point.X;
 			double dy = (double) Y - point.Y;
 			double dz = (double) Z - point.Z;
@@ -194,6 +195,34 @@ namespace DOL.GS
 			}
 
 			return true;
+		}
+	}
+	public class Point3DFloat
+	{
+		private float z;
+		public float Z
+		{
+			get { return z; }
+			set { z = value; }
+		}
+		private float x;
+		public float X
+		{
+			get { return x; }
+			set { x = value; }
+		}
+		private float y;
+		public float Y
+		{
+			get { return y; }
+			set { y = value; }
+		}
+
+		public Point3DFloat(float x, float y, float z)
+		{
+			this.x = x;
+			this.y = y;
+			this.z = z;
 		}
 	}
 }

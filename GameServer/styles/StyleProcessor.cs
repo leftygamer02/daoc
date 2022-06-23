@@ -146,15 +146,17 @@ namespace DOL.GS.Styles
 							//Back Styles
 							//60 degree since 1.62 patch
 							case Style.eOpeningPosition.Back:
-								if (!(angle > 120 && angle < 240)) return false;
+								if (!(angle > 150 && angle < 210)) return false;
 								break;
 							// Side Styles  
 							//105 degree since 1.62 patch
+							// Atlas change: 90 degrees
 							case Style.eOpeningPosition.Side:
-								if (!(angle >= 60 && angle <= 120) && !(angle >= 240 && angle <= 300)) return false;
+								if (!(angle >= 60 && angle <= 150) && !(angle >= 210 && angle <= 300)) return false;
 								break;
 							// Front Styles
 							// 90 degree
+							// Atlas change: 120 degrees
 							case Style.eOpeningPosition.Front:
 								if (!(angle > 300 || angle < 60)) return false;
 								break;
@@ -530,7 +532,8 @@ namespace DOL.GS.Styles
 									{
 										attackData.StyleEffects.Add(effect);
 										if ((attackData.Style.OpeningRequirementType == Style.eOpening.Offensive && attackData.Style.OpeningRequirementValue > 0) 
-											|| attackData.Style.OpeningRequirementType == Style.eOpening.Defensive)
+											|| attackData.Style.OpeningRequirementType == Style.eOpening.Defensive
+											|| attackData.Style.ClassID == 19) //reaver styles have no variance
 										{
 											effect.UseMinVariance = true;
 										}

@@ -211,8 +211,18 @@ namespace DOL.GS
 			if (player.Guild != null && player.Guild.BonusType == Guild.eBonusType.Experience && xpArgs.XPSource == eXPSource.NPC)
 			{
 				long bonusXP = (long)Math.Ceiling((double)xpArgs.ExpBase * ServerProperties.Properties.GUILD_BUFF_XP / 100);
+
 				player.GainExperience(eXPSource.Other, bonusXP, 0, 0, 0, 0, false);
 				player.Out.SendMessage("You gain an additional " + bonusXP + " experience due to your guild's buff!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				player.Guild.UpdateGuildWindow();
+			}
+			
+			if (player.Guild != null && player.Guild.IsStartingGuild && xpArgs.XPSource == eXPSource.NPC)
+			{
+				long bonusXP = (long)Math.Ceiling((double)xpArgs.ExpBase * ServerProperties.Properties.GUILD_BUFF_XP / 200);
+
+				player.GainExperience(eXPSource.Other, bonusXP, 0, 0, 0, 0, false);
+				player.Out.SendMessage("You gain an additional " + bonusXP + " experience due to your starting guild's buff!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 				player.Guild.UpdateGuildWindow();
 			}
 		}
@@ -297,7 +307,7 @@ namespace DOL.GS
 				{
 					TimeSpan bonusTime = DateTime.Now.Subtract(checkGuild.BonusStartTime);
 
-					if (bonusTime.Days > 0)
+					if (bonusTime.Days > 0 && !checkGuild.IsStartingGuild)
 					{
 						checkGuild.BonusType = Guild.eBonusType.None;
 

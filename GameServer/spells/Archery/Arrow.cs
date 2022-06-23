@@ -116,7 +116,7 @@ namespace DOL.GS.Spells
 		/// <summary>
 		/// Delayed action when arrow reach the target
 		/// </summary>
-		protected class ArrowOnTargetAction : RegionAction
+		protected class ArrowOnTargetAction : RegionECSAction
 		{
 			/// <summary>
 			/// The arrow target
@@ -145,20 +145,11 @@ namespace DOL.GS.Spells
 				m_handler = spellHandler;
 			}
 
-			/// <summary>
-			/// Called on every timer tick
-			/// </summary>
-			public virtual void OnTickBase()
-			{
-				OnTick();
-			}
-
-
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameLiving target = m_arrowTarget;
 				GameLiving caster = (GameLiving)m_actionSource;
-				if (target == null || !target.IsAlive || target.ObjectState != GameObject.eObjectState.Active || target.CurrentRegionID != caster.CurrentRegionID) return;
+				if (target == null || !target.IsAlive || target.ObjectState != GameObject.eObjectState.Active || target.CurrentRegionID != caster.CurrentRegionID) return 0;
 
 				int missrate = 100 - m_handler.CalculateToHitChance(target);
 				// add defence bonus from last executed style if any
@@ -177,7 +168,7 @@ namespace DOL.GS.Spells
 				// check for bladeturn miss
 				if (ad.AttackResult == eAttackResult.Missed)
 				{
-					return;
+					return 0;
 				}
 
 				if (Util.Chance(missrate))
@@ -193,7 +184,7 @@ namespace DOL.GS.Spells
 						if (aggroBrain != null)
 							aggroBrain.AddToAggroList(caster, 1);
 					}
-					return;
+					return 0;
 				}
 
 				ad.Damage = (int)((double)ad.Damage * (1.0 + caster.GetModified(eProperty.SpellDamage) * 0.01));
@@ -223,7 +214,7 @@ namespace DOL.GS.Spells
 								{
 									// Engage raised block change to 85% if attacker is engageTarget and player is in attackstate
 									// You cannot engage a mob that was attacked within the last X seconds...
-									if (engage.EngageTarget.LastAttackedByEnemyTick > engage.EngageTarget.CurrentRegion.Time - EngageAbilityHandler.ENGAGE_ATTACK_DELAY_TICK)
+									if (engage.EngageTarget.LastAttackedByEnemyTick > GameLoop.GameLoopTime - EngageAbilityHandler.ENGAGE_ATTACK_DELAY_TICK)
 									{
 										if (engage.Owner is GamePlayer)
 											(engage.Owner as GamePlayer).Out.SendMessage(engage.EngageTarget.GetName(0, true) + " has been attacked recently and you are unable to engage.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -238,8 +229,8 @@ namespace DOL.GS.Spells
 										if (engage.Owner is GamePlayer)
 											(engage.Owner as GamePlayer).Out.SendMessage("You concentrate on blocking the blow!", eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 
-										if (blockchance < 85)
-											blockchance = 85;
+										if (blockchance < 95)
+											blockchance = 95;
 									}
 								}
 							}
@@ -356,6 +347,8 @@ namespace DOL.GS.Spells
 						caster.CheckWeaponMagicalEffect(ad, m_handler.Caster.AttackWeapon);
 					}
 				}
+
+				return 0;
 			}
 		}
 

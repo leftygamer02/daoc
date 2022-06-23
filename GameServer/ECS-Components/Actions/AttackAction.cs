@@ -145,11 +145,11 @@ namespace DOL.GS
                                 // stat bonuses, I fire that bow at 3.0 seconds. The resulting interrupt on the caster will last 3.0 seconds. If I rapid fire that same bow, I will fire at 1.5 seconds,
                                 // and the resulting interrupt will last 1.5 seconds."
 
-                                long rapidFireMaxDuration = owner.attackComponent.AttackSpeed(attackWeapon) / 2; // half of the total time
+                                long rapidFireMaxDuration = owner.attackComponent.AttackSpeed(attackWeapon);
                                 long elapsedTime = GameLoop.GameLoopTime - owner.TempProperties.getProperty<long>(RangeAttackComponent.RANGE_ATTACK_HOLD_START); // elapsed time before ready to fire
                                 if (elapsedTime < rapidFireMaxDuration)
                                 {
-                                    effectiveness *= 0.5 + (double)elapsedTime * 0.5 / (double)rapidFireMaxDuration;
+                                    effectiveness *= 0.25 + (double)elapsedTime * 0.5 / (double)rapidFireMaxDuration;
                                     interruptDuration = (int)(interruptDuration * effectiveness);
                                 }
                             }
@@ -322,44 +322,34 @@ namespace DOL.GS
                         if (!(owner is GamePlayer) || (owner.rangeAttackComponent.RangedAttackType != eRangedAttackType.Long))
                         {
                             owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.Normal;
-                            lock (owner.effectListComponent.Effects)
-                            {
-                                foreach (ECSGameAbilityEffect effect in owner.effectListComponent.GetAbilityEffects()) // switch to the correct range attack type
-                                {
-                                    if (effect is SureShotECSGameEffect)
-                                    {
-                                        owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.SureShot;
-                                        break;
-                                    }
-                                    else if (effect is RapidFireECSGameEffect)
-                                    {
-                                        owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.RapidFire;
-                                        break;
-                                    }
-                                    else if (effect is TrueShotECSGameEffect)
-                                    {
-                                        owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.Long;
-                                        break;
-                                    }
-                                }
-                            }
+
+                            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.SureShot) != null)
+                                owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.SureShot;
+                            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.RapidFire) != null)
+                                owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.RapidFire;
+                            if (EffectListService.GetAbilityEffectOnTarget(owner, eEffect.TrueShot) != null)
+                                owner.rangeAttackComponent.RangedAttackType = eRangedAttackType.Long;                            
                         }
 
                         owner.rangeAttackComponent.RangedAttackState = eRangedAttackState.Aim;
 
                         if (owner is GamePlayer)
                         {
-                            owner.TempProperties.setProperty(RangeAttackComponent.RANGE_ATTACK_HOLD_START, 0L);
+                            owner.TempProperties.setProperty(RangeAttackComponent.RANGE_ATTACK_HOLD_START, GameLoop.GameLoopTime);
                         }
 
                         int speed = owner.attackComponent.AttackSpeed(attackWeapon);
                         byte attackSpeed = (byte)(speed / 100);
                         int model = (attackWeapon == null ? 0 : attackWeapon.Model);
-                        foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                        if (owner is GamePlayer && owner.effectListComponent.ContainsEffectForEffectType(eEffect.Volley))//volley check
+                        { }
+                        else
                         {
-                            player.Out.SendCombatAnimation(owner, null, (ushort)model, 0x00, player.Out.BowPrepare, attackSpeed, 0x00, 0x00);
+                            foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                            {
+                                player.Out.SendCombatAnimation(owner, null, (ushort)model, 0x00, player.Out.BowPrepare, attackSpeed, 0x00, 0x00);
+                            }
                         }
-
                         if (owner.rangeAttackComponent.RangedAttackType == eRangedAttackType.RapidFire)
                         {
                             speed /= 2; // can start fire at the middle of the normal time
@@ -371,13 +361,20 @@ namespace DOL.GS
                 }
                 else
                 {
-                    if (attackWeapon != null && leftWeapon != null && leftWeapon.Object_Type != (int)eObjectType.Shield/*  leftHandSwingCount > 0*/)
+                    //Console.WriteLine($"ad result {ad.AttackResult} weapon {ad.Weapon}");
+                    if (attackWeapon != null && leftWeapon != null && owner.attackComponent.LastAttackWasDualWield && leftWeapon.Object_Type != (int)eObjectType.Shield/*  leftHandSwingCount > 0*/)
                     {
                         Interval = owner.attackComponent.AttackSpeed(attackWeapon, leftWeapon);
                     }
                     else
                     {
                         Interval = owner.attackComponent.AttackSpeed(attackWeapon);
+                    }
+                    if (owner is GamePlayer weaponskiller && weaponskiller.UseDetailedCombatLog)
+                    {
+                        weaponskiller.Out.SendMessage(
+                                $"Attack Speed: {Interval / 1000.0}s",
+                                eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                     }
                 }
                 StartTime = Interval;// owner.AttackSpeed(attackWeapon);
@@ -392,9 +389,18 @@ namespace DOL.GS
                     var p = owner as GamePlayer;
                     if (p != null && p.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
                     {
-                        if (p != null && p.InterruptTime > GameLoop.GameLoopTime && p.attackComponent.Attackers.Count > 0)
+                        if (p != null && p.InterruptTime > GameLoop.GameLoopTime && p.attackComponent.Attackers.Count > 0 )
                         {
                             var attacker = p.attackComponent.Attackers.Last();
+                            double mod = p.GetConLevel(attacker);
+                            double chance = 65;
+                            chance += mod != null ? mod * 10 : 0;
+                            chance = Math.Max(1, chance);
+                            chance = Math.Min(99, chance);
+                            if (attacker is GamePlayer) chance = 100;
+
+                            if (!Util.Chance((int) chance)) return;
+                            
                             string attackTypeMsg = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Type.Shot");
                             if (p.attackComponent.AttackWeapon != null && p.attackComponent.AttackWeapon.Object_Type == (int)eObjectType.Thrown)
                                 attackTypeMsg = LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.Type.Throw");

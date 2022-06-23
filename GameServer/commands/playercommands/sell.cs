@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
+using System.Linq;
 using DOL.Database;
 using DOL.GS.PacketHandler;
 using DOL.GS.PacketHandler.Client.v168;
@@ -48,10 +50,10 @@ namespace DOL.GS.Commands
 					firstBag = int.TryParse(bags[0], out firstBag) ? firstBag : 0;
 					lastBag = int.TryParse(bags[1], out lastBag) ? lastBag : 0;
 					
-					if (firstBag > lastBag)
-					{
-						(firstBag, lastBag) = (lastBag, firstBag);
-					}
+					// if (firstBag > lastBag)
+					// {
+					// 	(firstBag, lastBag) = (lastBag, firstBag);
+					// }
 
 					switch(firstBag)
 					{
@@ -127,11 +129,18 @@ namespace DOL.GS.Commands
 					firstItem += (int)eInventorySlot.FirstBackpack - 1;
 					lastItem += (int)eInventorySlot.FirstBackpack - 1;
 
+					var skipPotions = args.Contains("nopot");
+
 					for (int i = firstItem; i <= lastItem; i++)
                     {
-						InventoryItem item = player.Inventory.GetItem((eInventorySlot)i);
+						var item = player.Inventory.GetItem((eInventorySlot)i);
+
 						if (item != null)
-							merchant.OnPlayerSell(player, item);
+						{
+							if (item is {PackageID: "AtlasXPItem"}) continue;
+							if (skipPotions && item.Object_Type == 41) continue;
+						}
+						merchant.OnPlayerSell(player, item);
                     }
 				}
 				else

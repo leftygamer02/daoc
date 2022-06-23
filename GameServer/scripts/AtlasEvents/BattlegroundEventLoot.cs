@@ -7,6 +7,8 @@ using System.Reflection;
 using DOL.Database;
 using log4net.Core;
 using System.Collections.Generic;
+using System.Linq;
+using DOL.GS.API;
 
 namespace DOL.GS.Scripts
 {
@@ -18,8 +20,8 @@ namespace DOL.GS.Scripts
         public override bool AddToWorld()
         {
             Model = 2026;
-            Name = "Free Loot";
-            GuildName = "Atlas Quartermaster";
+            Name = "Quartermaster";
+            GuildName = "Atlas";
             Level = 50;
             Size = 60;
             Flags |= GameNPC.eFlags.PEACE;
@@ -28,6 +30,7 @@ namespace DOL.GS.Scripts
 		public override bool Interact(GamePlayer player)
 		{
 			if (!base.Interact(player)) return false;
+			if(player.Level < 50){player.Out.SendMessage("Come back when you're older, kid.", eChatType.CT_Say, eChatLoc.CL_PopupWindow);}
 			string realmName = player.Realm.ToString();
 			if (realmName.Equals("_FirstPlayerRealm")) {
 				realmName = "Albion";
@@ -35,9 +38,17 @@ namespace DOL.GS.Scripts
 				realmName = "Hibernia";
             }
 			TurnTo(player.X, player.Y);
+
+			/*
+			if (!player.Boosted)
+			{
+				player.Out.SendMessage("I'm sorry " + player.Name + ", my services are not available to you.", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+				return false;
+			}*/
+			
 			player.Out.SendMessage("Hello " + player.Name + "! We're happy to see you here, supporting your realm.\n" +
 				"For your efforts, " + realmName + " has procured a [full suit] of equipment and some [gems] to adorn them with. " +
-				"Additionally, I can provide you with some [weapons] or some free [Atlas Orbs]. \n\n" +
+				"Additionally, I can provide you with some [weapons], starting [coin], and an allotment of [Atlas Orbs].\n\n" +
                 "This is the best gear we could provide on short notice. If you want something better, you'll have to take it from your enemies on the battlefield. " + 
 				"Go forth, and do battle!", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
 			return true;
@@ -46,6 +57,7 @@ namespace DOL.GS.Scripts
 			if (!base.WhisperReceive(source, str)) return false;
 			if (!(source is GamePlayer)) return false;
 			GamePlayer player = (GamePlayer)source;
+			if (player.Level < 50) return false;
 			TurnTo(player.X, player.Y);
 			eRealm realm = player.Realm;
 			eCharacterClass charclass = (eCharacterClass)player.CharacterClass.ID;
@@ -95,7 +107,7 @@ namespace DOL.GS.Scripts
 						//player.Out.SendMessage("Generated: " + item.Name, eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					}
 
-				DOLCharactersXCustomParam charFreeEventEquip = new DOLCharactersXCustomParam();
+					DOLCharactersXCustomParam charFreeEventEquip = new DOLCharactersXCustomParam();
 					charFreeEventEquip.DOLCharactersObjectId = player.ObjectId;
 					charFreeEventEquip.KeyName = customKey;
 					charFreeEventEquip.Value = "1";
@@ -130,29 +142,49 @@ namespace DOL.GS.Scripts
 					return false;
 				}
 
-				List<eInventorySlot> gemSlots = new List<eInventorySlot>();
-				gemSlots.Add(eInventorySlot.Cloak);
-				gemSlots.Add(eInventorySlot.Neck);
-				gemSlots.Add(eInventorySlot.Waist);
-				gemSlots.Add(eInventorySlot.Jewellery);
-				gemSlots.Add(eInventorySlot.LeftRing);
-				gemSlots.Add(eInventorySlot.RightRing);
-				gemSlots.Add(eInventorySlot.LeftBracer);
-				gemSlots.Add(eInventorySlot.RightBracer);
-
-				foreach (eInventorySlot islot in gemSlots)
+				if (player.Level < 50)
 				{
-					GeneratedUniqueItem item = null;
-					item = new GeneratedUniqueItem(realm, charclass, (byte)(player.Level + freeLootLevelOffset), eObjectType.Magical, islot);
-					item.AllowAdd = true;
-					item.Color = (int)color;
-					item.IsTradable = false;
-					item.Price = 1;
-					GameServer.Database.AddObject(item);
-					InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(item);
-					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
-					//player.Out.SendMessage("Generated: " + item.Name, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					List<eInventorySlot> gemSlots = new List<eInventorySlot>();
+					gemSlots.Add(eInventorySlot.Cloak);
+					gemSlots.Add(eInventorySlot.Neck);
+					gemSlots.Add(eInventorySlot.Waist);
+					gemSlots.Add(eInventorySlot.Jewellery);
+					gemSlots.Add(eInventorySlot.LeftRing);
+					gemSlots.Add(eInventorySlot.RightRing);
+					gemSlots.Add(eInventorySlot.LeftBracer);
+					gemSlots.Add(eInventorySlot.RightBracer);
+
+					foreach (eInventorySlot islot in gemSlots)
+					{
+						GeneratedUniqueItem item = null;
+						item = new GeneratedUniqueItem(realm, charclass, (byte)(player.Level + freeLootLevelOffset), eObjectType.Magical, islot);
+						item.AllowAdd = true;
+						item.Color = (int)color;
+						item.IsTradable = false;
+						item.Price = 1;
+						GameServer.Database.AddObject(item);
+						InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(item);
+						player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
+						//player.Out.SendMessage("Generated: " + item.Name, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					}
 				}
+				else
+				{
+					List<ItemTemplate> atlasGem = new List<ItemTemplate>(DOLDB<ItemTemplate>.SelectObjects(DB.Column("Id_nb").IsEqualTo("atlas_gem")));
+					InventoryItem invitem = GameInventoryItem.Create<ItemUnique>(atlasGem.FirstOrDefault());
+					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem);
+				
+					List<ItemTemplate> atlasCloak = new List<ItemTemplate>(DOLDB<ItemTemplate>.SelectObjects(DB.Column("Id_nb").IsEqualTo("atlas_cloak")));
+					InventoryItem invitem2 = GameInventoryItem.Create<ItemUnique>(atlasCloak.FirstOrDefault());
+					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem2);
+					
+					List<ItemTemplate> atlasRing = new List<ItemTemplate>(DOLDB<ItemTemplate>.SelectObjects(DB.Column("Id_nb").IsEqualTo("atlas_ring")));
+					InventoryItem invitem3 = GameInventoryItem.Create<ItemUnique>(atlasRing.FirstOrDefault());
+					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, invitem3);
+				}
+				
+				
+				
 
 				DOLCharactersXCustomParam charFreeEventEquip = new DOLCharactersXCustomParam();
 				charFreeEventEquip.DOLCharactersObjectId = player.ObjectId;
@@ -160,11 +192,38 @@ namespace DOL.GS.Scripts
 				charFreeEventEquip.Value = "1";
 				GameServer.Database.AddObject(charFreeEventEquip);
 			}
+			else if (str.Equals("coin"))
+			{
+				const string moneyKey = "free_money";
+				//var hasFreeOrbs = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player.ObjectId).And(DB.Column("KeyName").IsEqualTo(customKey)));
+				string customKey = moneyKey + player.Realm;
+				var hasAccountMoney = DOLDB<AccountXCustomParam>.SelectObject(DB.Column("Name").IsEqualTo(player.Client.Account.Name).And(DB.Column("KeyName").IsEqualTo(customKey)));
+			
+				if (hasAccountMoney != null)
+				{
+					player.Out.SendMessage("Sorry " + player.Name + ", I don't have enough money left to give you more.\n\n Go fight for your Realm to get some!", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+					return false;
+				}
+			
+				AccountXCustomParam charFreeEventMoney = new AccountXCustomParam();
+				charFreeEventMoney.Name = player.Client.Account.Name;
+				charFreeEventMoney.KeyName = customKey;
+				charFreeEventMoney.Value = "1";
+				GameServer.Database.AddObject(charFreeEventMoney);
+
+				//ItemTemplate orbs = GameServer.Database.FindObjectByKey<ItemTemplate>("token_many");
+			
+				//InventoryItem item = GameInventoryItem.Create(orbs);
+				player.AddMoney(5000000);
+			
+				//player.Inventory.AddTemplate(item, 10000, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+			}
 			else if (str.Equals("Atlas Orbs"))
 			{
 
-				const string customKey = "free_orbs";
-				var hasFreeOrbs = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player.ObjectId).And(DB.Column("KeyName").IsEqualTo(customKey)));
+				const string orbKey = "free_orbs";
+				string customKey = orbKey + player.Realm;
+				var hasFreeOrbs = DOLDB<AccountXCustomParam>.SelectObject(DB.Column("Name").IsEqualTo(player.Client.Account.Name).And(DB.Column("KeyName").IsEqualTo(customKey)));
 
 				if (hasFreeOrbs != null)
 				{
@@ -172,17 +231,17 @@ namespace DOL.GS.Scripts
 					return false;
 				}
 
-				DOLCharactersXCustomParam charFreeEventEquip = new DOLCharactersXCustomParam();
-				charFreeEventEquip.DOLCharactersObjectId = player.ObjectId;
-				charFreeEventEquip.KeyName = customKey;
-				charFreeEventEquip.Value = "1";
-				GameServer.Database.AddObject(charFreeEventEquip);
+				AccountXCustomParam charFreeEventMoney = new AccountXCustomParam();
+				charFreeEventMoney.Name = player.Client.Account.Name;
+				charFreeEventMoney.KeyName = customKey;
+				charFreeEventMoney.Value = "15000";
+				GameServer.Database.AddObject(charFreeEventMoney);
 
 				ItemTemplate orbs = GameServer.Database.FindObjectByKey<ItemTemplate>("token_many");
 
 				InventoryItem item = GameInventoryItem.Create(orbs);
 
-				player.Inventory.AddTemplate(item, 10000, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+				player.Inventory.AddTemplate(item, 15000, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 
 				//GeneratedUniqueItem(eRealm realm, eCharacterClass charClass, byte level, eObjectType type, eInventorySlot slot);
 			}
@@ -549,6 +608,7 @@ namespace DOL.GS.Scripts
 					GenerateWeapon(player, charClass, eObjectType.CrushingWeapon, eInventorySlot.LeftHandWeapon);
 					GenerateWeapon(player, charClass, eObjectType.ThrustWeapon, eInventorySlot.LeftHandWeapon);
 					GenerateWeapon(player, charClass, eObjectType.Fired, eInventorySlot.DistanceWeapon);
+					GenerateWeapon(player, charClass, eObjectType.Shield, eInventorySlot.LeftHandWeapon);
 					break;
 
 

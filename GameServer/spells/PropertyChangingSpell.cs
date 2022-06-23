@@ -120,7 +120,20 @@ namespace DOL.GS.Spells
 // 						}
 // 					}
 // 				}
-				
+				if (target is GamePlayer && (target as GamePlayer).NoHelp && Caster is GamePlayer && target != Caster && target.Realm == Caster.Realm)
+				{
+					//player not grouped, anyone else
+					//player grouped, different group
+					if ((target as GamePlayer).Group == null ||
+					    (Caster as GamePlayer).Group == null ||
+					    (Caster as GamePlayer).Group != (target as GamePlayer).Group)
+					{
+						MessageToCaster("That player does not want assistance", eChatType.CT_SpellResisted);
+						return;
+					}
+				}
+
+
 				if (this is HeatColdMatterBuff || this is AllMagicResistsBuff)
 				{
 					if (this.Spell.Frequency <= 0)
@@ -510,18 +523,6 @@ namespace DOL.GS.Spells
 					tblBonusCat[(int)Property] += Value;
 			}
 		}
-		
-		public override PlayerXEffect GetSavedEffect(GameSpellEffect e)
-		{
-			PlayerXEffect eff = new PlayerXEffect();
-			eff.Var1 = Spell.ID;
-			eff.Duration = e.RemainingTime;
-			eff.IsHandler = true;
-			eff.Var2 = (int)(Spell.Value * e.Effectiveness);
-			eff.SpellLine = SpellLine.KeyName;
-			return eff;
-
-		}
 
 		// constructor
 		public PropertyChangingSpell(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
@@ -529,7 +530,7 @@ namespace DOL.GS.Spells
 		}
 	}
 
-	public class BuffCheckAction : RegionAction
+	public class BuffCheckAction : RegionECSAction
 	{
 		public const int BUFFCHECKINTERVAL = 60000;//60 seconds
 
@@ -548,17 +549,19 @@ namespace DOL.GS.Spells
 		/// <summary>
 		/// Called on every timer tick
 		/// </summary>
-		protected override void OnTick()
+		protected override int OnTick(ECSGameTimer timer)
 		{
 			if (m_caster == null ||
 			    m_owner == null ||
 			    m_effect == null)
-				return;
+				return 0;
 
 			if ( !m_caster.IsWithinRadius( m_owner, ServerProperties.Properties.BUFF_RANGE ) )
 				m_effect.Cancel(false);
 			else
-				Start(BUFFCHECKINTERVAL);
+				return BUFFCHECKINTERVAL;
+
+			return 0;
 		}
 	}
 }

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using DOL.AI.Brain;
+using DOL.Database;
 using DOL.Events;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
@@ -13,11 +15,13 @@ using DOL.GS.SpellEffects;
 using DOL.GS.Spells;
 using DOL.Language;
 using ECS.Debug;
+using log4net;
 
 namespace DOL.GS
 {
     public static class EffectService
     {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         static int _segmentsize = 100;
         static List<Task> _tasks = new List<Task>();
 
@@ -35,52 +39,21 @@ namespace DOL.GS
 
             ECSGameEffect[] arr = EntityManager.GetAllEffects();
 
-            lock (arr)
+            Parallel.ForEach(arr, effect =>
             {
-                for (int ctr = 1; ctr <= Math.Ceiling(((double)arr.Count()) / _segmentsize); ctr++)
+                if (effect == null)
+                    return;
+
+                if (effect.CancelEffect || effect.IsDisabled)
                 {
-                    int elements = _segmentsize;
-                    int offset = (ctr - 1) * _segmentsize;
-                    int upper = offset + elements;
-                    if ((upper) > arr.Count())
-                        elements = arr.Count() - offset;
-
-                    ArraySegment<ECSGameEffect> segment = new ArraySegment<ECSGameEffect>(arr, offset, elements);
-
-                    _tasks.Add(Task.Factory.StartNew((Object obj) =>
-                    {
-                        TaskStats data = obj as TaskStats;
-                        if (data == null)
-                            return;
-
-                        data.ThreadNum = Thread.CurrentThread.ManagedThreadId;
-                        IList<ECSGameEffect> effects = (IList<ECSGameEffect>)segment;
-
-                        for (int index = 0; index < effects.Count; index++)
-                        {
-                            if (effects[index] == null)
-                                continue;
-
-                            if (effects[index].CancelEffect || effects[index].IsDisabled)
-                            {
-                                HandleCancelEffect(effects[index]);
-                            }
-                            else
-                            {
-                                HandlePropertyModification(effects[index]);
-                            }
-                        }
-                        data.ThreadNum = Thread.CurrentThread.ManagedThreadId;
-                    },
-                    new TaskStats() { Name = ctr, CreationTime = DateTime.Now.Ticks }));
+                    HandleCancelEffect(effect);
                 }
-                Task.WaitAll(_tasks.ToArray());
-            }
-
-
-            _tasks.Clear();
-
-
+                else
+                {
+                    HandlePropertyModification(effect);
+                }
+            });
+            
             Diagnostics.StopPerfCounter(ServiceName);
         }
     
@@ -105,7 +78,13 @@ namespace DOL.GS
             else if (!effectList.AddEffect(e))
             {
                 if (e is ECSGameSpellEffect spell && !spell.SpellHandler.Spell.IsPulsing)
+                {
                     SendSpellResistAnimation(e as ECSGameSpellEffect);
+                    if (spell.SpellHandler.Caster is GamePet casterPet && casterPet.Owner is GamePlayer casterOwner)
+                        ChatUtil.SendResistMessage(casterOwner, "GamePlayer.Caster.Buff.EffectAlreadyActive", e.Owner.GetName(0, true));
+                    if (spell.SpellHandler.Caster is GamePlayer)
+                        ChatUtil.SendResistMessage(spell.SpellHandler.Caster as GamePlayer, "GamePlayer.Caster.Buff.EffectAlreadyActive", e.Owner.GetName(0, true));
+                }
                 return;
             }
 
@@ -114,9 +93,17 @@ namespace DOL.GS
             // Update the Concentration List if Conc Buff/Song/Chant.
             if (spellEffect != null && spellEffect.ShouldBeAddedToConcentrationList() && !spellEffect.RenewEffect)
             {
-                if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.ConcentrationEffects != null)
+                if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects != null)
                 {
-                    spellEffect.SpellHandler.Caster.ConcentrationEffects.Add(spellEffect);
+                    spellEffect.SpellHandler.Caster.UsedConcentration += spellEffect.SpellHandler.Spell.Concentration;
+
+                    lock (spellEffect.SpellHandler.Caster.effectListComponent._concentrationEffectsLock)
+                    {
+                        spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.Add(spellEffect);
+                    }
+
+                    if (spellEffect.SpellHandler.Caster is GamePlayer p)
+                        p.Out.SendConcentrationList();
                 }
             }
 
@@ -131,6 +118,9 @@ namespace DOL.GS
                 {
                     if (!spellEffect.RenewEffect && !(spellEffect is ECSImmunityEffect))
                         SendSpellAnimation((ECSGameSpellEffect)e);
+
+                    if (e is StatDebuffECSEffect && spellEffect.SpellHandler.Spell.CastTime == 0)
+                        StatDebuffECSEffect.TryDebuffInterrupt(spellEffect.SpellHandler.Spell, e.OwnerPlayer, spellEffect.SpellHandler.Caster);
 
                     if ((spellEffect.SpellHandler.Spell.IsConcentration && !spellEffect.SpellHandler.Spell.IsPulsing) || (!spellEffect.IsBuffActive && !spellEffect.IsDisabled)
                         || spellEffect is SavageBuffECSGameEffect)
@@ -165,10 +155,17 @@ namespace DOL.GS
                 }
                 else
                 {
+                    //fix for Buff Pot Barrel not showing all icons when used
                     if (e is ECSGameSpellEffect spellEffect && AllStatsBarrel.BuffList.Contains(spellEffect.SpellHandler.Spell.ID))
                     {
                         List<ECSGameEffect> playerEffects = e.Owner.effectListComponent.GetAllEffects();
                         ecsList.AddRange(playerEffects.Skip(playerEffects.Count - AllStatsBarrel.BuffList.Count));
+                    }
+                    //fix for Regen Pot not showing all icons when used
+                    else if (e is ECSGameSpellEffect regenEffect && AllRegenBuff.RegenList.Contains(regenEffect.SpellHandler.Spell.ID))
+                    {
+                        List<ECSGameEffect> playerEffects = e.Owner.effectListComponent.GetAllEffects();
+                        ecsList.AddRange(playerEffects.Skip(playerEffects.Count - AllRegenBuff.RegenList.Count));
                     }
                     else
                         ecsList.Add(e);
@@ -176,6 +173,7 @@ namespace DOL.GS
 
                 player.Out.SendUpdateIcons(ecsList, ref e.Owner.effectListComponent._lastUpdateEffectsCount);
                 SendPlayerUpdates(player);
+                player.Out.SendConcentrationList();
             }
             else if (e.Owner is GameNPC)
             {
@@ -222,9 +220,28 @@ namespace DOL.GS
                 // Update the Concentration List if Conc Buff/Song/Chant.
                 if (e.CancelEffect && e.ShouldBeRemovedFromConcentrationList())
                 {
-                    if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.ConcentrationEffects != null)
+                    if (spellEffect.SpellHandler.Caster != null && spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects != null)
                     {
-                        spellEffect.SpellHandler.Caster.ConcentrationEffects.Remove((ECSGameSpellEffect)e);
+                        spellEffect.SpellHandler.Caster.UsedConcentration -= spellEffect.SpellHandler.Spell.Concentration;
+
+                        lock (spellEffect.SpellHandler.Caster.effectListComponent._concentrationEffectsLock)
+                        {
+                            if (spellEffect is ECSPulseEffect)
+                            {                               
+                                for (int i = 0; i < spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.Count; i++)
+                                {
+                                    if (spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects[i] is ECSPulseEffect)
+                                    {
+                                        spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.RemoveAt(i);
+                                    }
+                                }
+                            }
+                            else
+                                spellEffect.SpellHandler.Caster.effectListComponent.ConcentrationEffects.Remove(spellEffect);
+                        }
+
+                        if (spellEffect.SpellHandler.Caster is GamePlayer p)
+                            p.Out.SendConcentrationList();
                     }
                 }
             }
@@ -235,8 +252,9 @@ namespace DOL.GS
 
             if (!e.IsDisabled && e.Owner.effectListComponent.Effects.ContainsKey(e.EffectType))
             {
-                if (e.Owner.effectListComponent.GetSpellEffects(e.EffectType).OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault().IsDisabled)
-                    RequestEnableEffect(e.Owner.effectListComponent.GetSpellEffects(e.EffectType).OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault());
+                var enableEffect = e.Owner.effectListComponent.GetSpellEffects(e.EffectType).OrderByDescending(e => e.SpellHandler.Spell.Value).FirstOrDefault();
+                if (enableEffect != null && enableEffect.IsDisabled)
+                    RequestEnableEffect(enableEffect);
             }
 
             if (e.Owner is GamePlayer player)
@@ -248,6 +266,7 @@ namespace DOL.GS
                 ecsList.AddRange(playerEffects.Skip(playerEffects.IndexOf(e)));
 
                 player.Out.SendUpdateIcons(ecsList, ref e.Owner.effectListComponent._lastUpdateEffectsCount);
+                player.Out.SendConcentrationList();
             }
             else if (e.Owner is GameNPC)
             {
@@ -466,6 +485,8 @@ namespace DOL.GS
                     return eEffect.BodySpiritEnergyBuff;
                 case (byte)eSpellType.HeatColdMatterBuff:
                     return eEffect.HeatColdMatterBuff;
+                case (byte)eSpellType.AllMagicResistBuff:
+                    return eEffect.AllMagicResistsBuff;
 
 
                 //regen
@@ -494,6 +515,7 @@ namespace DOL.GS
                 case (byte)eSpellType.Charm:
                     return eEffect.Charm;
                 case (byte)eSpellType.DamageSpeedDecrease:
+                case (byte)eSpellType.DamageSpeedDecreaseNoVariance:
                 case (byte)eSpellType.StyleSpeedDecrease:
                 case (byte)eSpellType.SpeedDecrease:
                 case (byte)eSpellType.UnbreakableSpeedDecrease:
@@ -581,6 +603,8 @@ namespace DOL.GS
                     return eEffect.FacilitatePainworking;
                 case (byte)eSpellType.FatigueConsumptionBuff:
                     return eEffect.FatigueConsumptionBuff;
+                case (byte)eSpellType.FatigueConsumptionDebuff:
+                    return eEffect.FatigueConsumptionDebuff;
                 case (byte)eSpellType.DirectDamageWithDebuff:
                     if (spell.DamageType == eDamageType.Body)
                         return eEffect.BodyResistDebuff;
@@ -788,8 +812,10 @@ namespace DOL.GS
                     list.Add(eProperty.MesmerizeDurationReduction);
                     return list;
                 case eEffect.FatigueConsumptionBuff:
+                case eEffect.FatigueConsumptionDebuff:
                     list.Add(eProperty.FatigueConsumption);
                     return list;
+                
                 default:
                     //Console.WriteLine($"Unable to find property mapping for: {e}");
                     return list;
@@ -859,8 +885,109 @@ namespace DOL.GS
 
 
         }
-
         
+        public static void RestoreAllEffects(GamePlayer p)
+        {
+            GamePlayer player = p;
+			
+            if (player == null || player.DBCharacter == null || GameServer.Database == null)
+                return;
+
+            var effs = DOLDB<PlayerXEffect>.SelectObjects(DB.Column("ChardID").IsEqualTo(player.ObjectId));
+            if (effs == null)
+                return;
+
+            foreach (PlayerXEffect eff in effs)
+                GameServer.Database.DeleteObject(eff);
+
+            foreach (PlayerXEffect eff in effs.GroupBy(e => e.Var1).Select(e => e.First()))
+            {
+                if (eff.SpellLine == GlobalSpellsLines.Reserved_Spells)
+                    continue;
+
+                bool good = true;
+                Spell spell = SkillBase.GetSpellByID(eff.Var1);
+
+                if (spell == null)
+                    good = false;
+
+                SpellLine line = null;
+
+                if (!Util.IsEmpty(eff.SpellLine))
+                {
+                    line = SkillBase.GetSpellLine(eff.SpellLine, false);
+                    if (line == null)
+                    {
+                        good = false;
+                    }
+                }
+                else
+                {
+                    good = false;
+                }
+
+                if (good)
+                {
+                    ISpellHandler handler = ScriptMgr.CreateSpellHandler(player, spell, line);
+                    //Console.WriteLine($"Spell {spell} handler {handler}");
+                    handler.Spell.Duration = eff.Duration;
+                    handler.Spell.CastTime = 1;
+                    handler.StartSpell(player);
+                    //ECSGameEffect e = new ECSGameSpellEffect(new ECSGameEffectInitParams(p, eff.Duration, eff.Var2, handler));
+                    //Console.WriteLine($"Created ECS effect: {e} effectiveness {e.Effectiveness} type {e.EffectType} ownerplayer {e.OwnerPlayer} spellVal {handler.Spell.Value}");
+                    player.Out.SendStatusUpdate();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Save All Effect to PlayerXEffect Data Table
+        /// </summary>
+        public static void SaveAllEffects(GamePlayer p)
+        {
+            GamePlayer player = p;
+			
+            if (player == null || player.effectListComponent.GetAllEffects().Count == 0)
+                return;
+            
+            var effs = DOLDB<PlayerXEffect>.SelectObjects(DB.Column("ChardID").IsEqualTo(player.ObjectId));
+            if (effs != null)
+                GameServer.Database.DeleteObject(effs);
+
+            lock (player.effectListComponent._effectsLock)
+            {
+                foreach (var eff in player.effectListComponent.GetAllEffects())
+                {
+                    try
+                    {
+                        var gse = eff as ECSGameSpellEffect;
+                        if (gse != null)
+                        {
+                            // No concentration Effect from Other Caster
+                            if (gse.SpellHandler?.Spell?.Concentration > 0 && gse.SpellHandler.Caster != player)
+                                continue;
+                        }
+						
+                        PlayerXEffect effx = eff.getSavedEffect();
+						
+                        if (effx == null)
+                            continue;
+	
+                        if (effx.SpellLine == GlobalSpellsLines.Reserved_Spells)
+                            continue;
+	
+                        effx.ChardID = player.ObjectId;
+						
+                        GameServer.Database.AddObject(effx);
+                    }
+                    catch (Exception e)
+                    {
+                        if (log.IsWarnEnabled)
+                            log.WarnFormat("Could not save effect ({0}) on player: {1}, {2}", eff, player, e);
+                    }
+                }
+            }
+        }
 
         /// <summary>
 		/// Method used to apply bonuses

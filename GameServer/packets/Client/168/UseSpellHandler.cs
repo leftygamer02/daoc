@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using log4net;
+using DOL.GS.Commands;
 
 namespace DOL.GS.PacketHandler.Client.v168
 {
@@ -28,7 +29,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 	/// Handles spell cast requests from client
 	/// </summary>
 	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.UseSpell, "Handles Player Use Spell Request.", eClientStatus.PlayerInGame)]
-	public class UseSpellHandler : IPacketHandler
+	public class UseSpellHandler : AbstractCommandHandler, IPacketHandler
 	{
 		/// <summary>
 		/// Defines a logger for this class.
@@ -120,9 +121,14 @@ namespace DOL.GS.PacketHandler.Client.v168
 			
 			if (sk is Spell && sl != null)
 			{
-				//todo How to attach a spell to a player? Casting Service should in theory create spellHandler and add to the player -- not the component
-				//player.CastSpell((Spell)sk, sl);
-				player.castingComponent.StartCastSpell((Spell) sk, sl);
+				if (GameLoop.GameLoopTime > player.TempProperties.getProperty<long>(sk.Name) + GameLoop.TickRate)
+				{
+					//todo How to attach a spell to a player? Casting Service should in theory create spellHandler and add to the player -- not the component
+					//player.CastSpell((Spell)sk, sl);
+					player.castingComponent.StartCastSpell((Spell)sk, sl);
+				}
+
+				player.TempProperties.setProperty(sk.Name, 75);
 			}
 			else if (sk is Styles.Style)
 			{
@@ -155,7 +161,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles player use spell actions
 		/// </summary>
-		protected class UseSpellAction : RegionAction
+		protected class UseSpellAction : RegionECSAction
 		{
 			/// <summary>
 			/// Defines a logger for this class.
@@ -195,7 +201,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GamePlayer player = (GamePlayer)m_actionSource;
 
@@ -259,7 +265,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 					
 					player.Out.SendMessage(string.Format("Error : Spell (Line {0}, Level {1}) can't be resolved...", m_spellLineIndex, m_spellLevel), eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
 				}
-				
+
+				return 0;
 			}
 		}
 	}

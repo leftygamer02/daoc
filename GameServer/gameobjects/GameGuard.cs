@@ -14,6 +14,20 @@ namespace DOL.GS
             m_ownBrain.Body = this;
         }
 
+        public GameGuard(INpcTemplate template) : base(template)
+        {
+            m_ownBrain = new GuardBrain();
+            m_ownBrain.Body = this;
+        }
+
+        public override bool IsStealthed
+        {
+            get
+            {
+                return (Flags & eFlags.STEALTH) != 0;
+            }
+        }
+
         public override void DropLoot(GameObject killer)
         {
             //Guards dont drop loot when they die

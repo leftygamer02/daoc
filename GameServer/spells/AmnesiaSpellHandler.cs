@@ -31,6 +31,11 @@ namespace DOL.GS.Spells
 	[SpellHandlerAttribute("Amnesia")]
 	public class AmnesiaSpellHandler : SpellHandler
 	{
+		public override void CreateECSEffect(ECSGameEffectInitParams initParams)
+		{
+			new AmnesiaECSEffect(initParams);
+		}
+		
 		/// <summary>
 		/// Execute direct damage spell
 		/// </summary>
@@ -57,9 +62,9 @@ namespace DOL.GS.Spells
  			//	return;
 
 			//have to do it here because OnAttackedByEnemy is not called to not get aggro
-			if (target.Realm == 0 || Caster.Realm == 0)
-				target.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
-			else target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
+			//if (target.Realm == 0 || Caster.Realm == 0)
+			  //target.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+			//else target.LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
 			SendEffectAnimation(target, 0, false, 1);
 
 			if (target is GamePlayer)
@@ -67,18 +72,75 @@ namespace DOL.GS.Spells
 				((GamePlayer)target).styleComponent.NextCombatStyle = null;
 				((GamePlayer)target).styleComponent.NextCombatBackupStyle = null;
 			}
-			target.StopCurrentSpellcast(); //stop even if MoC or QC
+			
+			target.CurrentSpellHandler?.AmnesiaInterruptCasting(); //stop even if MoC or QC
+			target.rangeAttackComponent.RangeAttackTarget = null;
+			//if(target is GamePlayer)
+				//target.TargetObject = null;
 
             if (target is GamePlayer)
                 MessageToLiving(target, LanguageMgr.GetTranslation((target as GamePlayer).Client, "Amnesia.MessageToTarget"), eChatType.CT_Spell);
 
+            /*
             GameSpellEffect effect;
             effect = SpellHandler.FindEffectOnTarget(target, "Mesmerize");
             if (effect != null)
             {
                 effect.Cancel(false);
                 return;
-            }
+            }*/
+			
+			//Targets next tick for pulsing speed enhancement spell will be skipped.
+            // if (target.effectListComponent.ContainsEffectForEffectType(eEffect.Pulse))
+            // {
+	        //     //EffectListService.TryCancelFirstEffectOfTypeOnTarget(target, eEffect.Pulse);
+			// 	foreach(ECSGameEffect e in target.effectListComponent.GetAllPulseEffects())
+			// 	{
+					
+			// 		if(e is ECSGameSpellEffect effect && effect.SpellHandler.Spell.SpellType == (byte)eSpellType.SpeedEnhancement)
+			// 		{
+			// 			Console.WriteLine($"effect: {effect} SpellType: {effect.SpellHandler.Spell.SpellType} PulseFreq: {effect.PulseFreq} ");
+			// 			if(effect.ExpireTick > GameLoop.GameLoopTime && effect.ExpireTick < (GameLoop.GameLoopTime + 10000))
+			// 			{
+			// 				effect.ExpireTick += effect.PulseFreq;
+			// 				if(effect.ExpireTick < (GameLoop.GameLoopTime + 10000))
+			// 					effect.ExpireTick += effect.PulseFreq;
+
+			// 			}
+			// 		}
+			// 	}
+            // }
+
+			// //Casters next tick for pulsing speed enhancement spell will be skipped
+			// if (Caster.effectListComponent.ContainsEffectForEffectType(eEffect.Pulse))
+            // {
+	        //     //EffectListService.TryCancelFirstEffectOfTypeOnTarget(target, eEffect.Pulse);
+			// 	foreach(ECSGameEffect e in Caster.effectListComponent.GetAllPulseEffects())
+			// 	{
+					
+			// 		if(e is ECSGameSpellEffect effect && effect.SpellHandler.Spell.SpellType == (byte)eSpellType.SpeedEnhancement)
+			// 		{
+			// 			Console.WriteLine($"effect: {effect} SpellType: {effect.SpellHandler.Spell.SpellType} PulseFreq: {effect.PulseFreq} Duration: {effect.Duration} ");
+						
+			// 			if(effect.ExpireTick > GameLoop.GameLoopTime && effect.ExpireTick < (GameLoop.GameLoopTime + 10000))
+			// 			{
+			// 				effect.ExpireTick += effect.PulseFreq;
+			// 				if(effect.ExpireTick < (GameLoop.GameLoopTime + 10000))
+			// 					effect.ExpireTick += effect.PulseFreq;
+
+			// 			}
+			// 		}
+			// 	}
+            // }
+
+			// //Cancel Mez on target if Amnesia hits.
+			// if (target.effectListComponent.ContainsEffectForEffectType(eEffect.Mez))
+			// {
+			// 	var effect = EffectListService.GetEffectOnTarget(target, eEffect.Mez);
+
+			// 	if (effect != null)
+			// 		EffectService.RequestImmediateCancelEffect(effect);
+			// }
 
 			if (target is GameNPC)
 			{
@@ -86,8 +148,12 @@ namespace DOL.GS.Spells
 				IOldAggressiveBrain aggroBrain = npc.Brain as IOldAggressiveBrain;
 				if (aggroBrain != null)
 				{
-					if (Util.Chance(Spell.AmnesiaChance))
+					if (Util.Chance(Spell.AmnesiaChance) && npc.TargetObject != null && npc.TargetObject is GameLiving living)
+					{
 						aggroBrain.ClearAggroList();
+						aggroBrain.AddToAggroList(living, 1);
+					}
+						
 				}
 			}
 		}

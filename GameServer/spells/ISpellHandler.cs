@@ -29,7 +29,7 @@ namespace DOL.GS.Spells
 	public interface ISpellHandler
 	{
 		GameLiving GetTarget();
-		
+		eCastState castState { get; }
 		void CreateECSEffect(ECSGameEffectInitParams initParams);
 		/// <summary>
 		/// Called when a spell is casted
@@ -61,6 +61,12 @@ namespace DOL.GS.Spells
 		/// this callback is called
 		/// </summary>
 		void InterruptCasting();
+
+		/// <summary>
+		/// Special Use case when Amnesia is casted against caster.
+		/// </summary>
+		void AmnesiaInterruptCasting();
+
 
 		/// <summary>
 		/// Has to be called when the caster moves

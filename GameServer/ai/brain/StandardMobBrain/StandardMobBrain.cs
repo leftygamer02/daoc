@@ -328,6 +328,17 @@ namespace DOL.AI.Brain
                 if (npc is GameTaxi || npc is GameTrainingDummy)
                     continue; //do not attack horses
 
+                if (Body.Faction != null)
+                {
+                    int aggrolevel = 0;
+                    if (Body.Faction != null)
+                    {
+                        aggrolevel = CalculateAggroLevelToTarget(npc);
+                        if (aggrolevel < 75)
+                            return;
+                    }
+                }
+
                 if (CalculateAggroLevelToTarget(npc) > 0)
                 {
                     if (npc.Brain is ControlledNpcBrain) // This is a pet or charmed creature, checkLOS
@@ -355,12 +366,12 @@ namespace DOL.AI.Brain
             if (Body.attackComponent.AttackState)
                 return;
 
-            if (!CheckForProximityAggro)
+            if (!CheckForProximityAggro || (Body == null || Body.CurrentZone == null))
             {
                 return;
             }
 
-            foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, Body.CurrentZone.IsDungeon ? false : true))
+            foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, !Body.CurrentZone.IsDungeon))
             {
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, player, true)) continue;
                 // Don't aggro on immune players.
@@ -383,8 +394,8 @@ namespace DOL.AI.Brain
                 if (Body.Faction != null)
                 {
                     aggrolevel = Body.Faction.GetAggroToFaction(player);
-                    if (aggrolevel < 0)
-                        aggrolevel = 0;
+                    if (aggrolevel < 75)
+                        return;
                 }
 
                 if (aggrolevel <= 0 && AggroLevel <= 0)
@@ -551,7 +562,7 @@ namespace DOL.AI.Brain
 
             // Check LOS (walls, pits, etc...) before  attacking, player + pet
             // Be sure the aggrocheck is triggered by the brain on Think() method
-            if (DOL.GS.ServerProperties.Properties.ALWAYS_CHECK_LOS && CheckLOS || (Body is GameKeepGuard guard && !guard.IsPortalKeepGuard))
+            if (DOL.GS.ServerProperties.Properties.ALWAYS_CHECK_LOS && CheckLOS || ((Body is GameKeepGuard guard && !guard.IsPortalKeepGuard) && CheckLOS))
             {
                 GamePlayer thisLiving = null;
                 if (living is GamePlayer)
@@ -766,6 +777,8 @@ namespace DOL.AI.Brain
                 while (aggros.MoveNext())
                 {
                     GameLiving living = aggros.Current.Key;
+                    if(living == null)
+                        continue;
 
                     // check to make sure this target is still valid
                     if (living.IsAlive == false ||
@@ -809,12 +822,14 @@ namespace DOL.AI.Brain
                     RemoveFromAggroList(l);
                     Body.attackComponent.RemoveAttacker(l);
                 }
+
+                if (maxAggroObject == null)
+                {
+                    m_aggroTable.Clear();
+                }
             }
 
-            if (maxAggroObject == null)
-            {
-                m_aggroTable.Clear();
-            }
+            
 
             return maxAggroObject;
         }
@@ -830,16 +845,14 @@ namespace DOL.AI.Brain
             if (GameServer.ServerRules.IsAllowedToAttack(Body, target, true) == false)
                 return 0;
 
-            // Get owner if target is pet
+            // Get owner if target is pet or subpet
             GameLiving realTarget = target;
-            if (target is GameNPC)
+            if (target is GamePet pet && (pet.Owner is GamePlayer || pet.Owner is GamePet))
             {
-                if (((GameNPC)target).Brain is IControlledBrain)
-                {
-                    GameLiving owner = (((GameNPC)target).Brain as IControlledBrain).GetLivingOwner();
-                    if (owner != null)
-                        realTarget = owner;
-                }
+                if (pet.Owner is GamePet mainpet && mainpet.Owner is GamePlayer)
+                    realTarget = mainpet.Owner;
+                else
+                    realTarget = pet.Owner;
             }
 
             // only attack if green+ to target
@@ -989,12 +1002,8 @@ namespace DOL.AI.Brain
         public virtual void OnAttackedByEnemy(AttackData ad)
         {
             if (FSM.GetCurrentState() == FSM.GetState(eFSMStateType.PASSIVE)) { return; }
-
-            if (Body.castingComponent.IsCasting)
-            {
-                Body.StopCurrentSpellcast();
-            }
-
+    
+           
             if (!Body.attackComponent.AttackState
                 && Body.IsAlive
                 && Body.ObjectState == GameObject.eObjectState.Active)
@@ -1010,6 +1019,10 @@ namespace DOL.AI.Brain
 
                 if (FSM.GetCurrentState() != FSM.GetState(eFSMStateType.AGGRO))
                 {
+                    if (this is CommanderBrain cBrain)
+                    {
+                        cBrain.Attack(ad.Attacker);
+                    }
                     FSM.SetCurrentState(eFSMStateType.AGGRO);
                     FSM.Think();
                 }
@@ -1530,7 +1543,7 @@ namespace DOL.AI.Brain
 
             bool casted = false;
 
-            if (Body.TargetObject is GameLiving living && (spell.Duration == 0 || (!LivingHasEffect(living,spell) || spell.SpellType == (byte)eSpellType.DirectDamageWithDebuff)))
+            if (Body.TargetObject is GameLiving living && (spell.Duration == 0 || (!LivingHasEffect(living,spell) || spell.SpellType == (byte)eSpellType.DirectDamageWithDebuff || spell.SpellType == (byte)eSpellType.DamageSpeedDecrease)))
             {
                 // Offensive spells require the caster to be facing the target
                 if (Body.TargetObject != Body)
@@ -1538,8 +1551,15 @@ namespace DOL.AI.Brain
 
                 casted = Body.CastSpell(spell, m_mobSpellLine);
 
-                if (casted && spell.CastTime > 0 && Body.IsMoving)
+                // if (casted && spell.CastTime > 0 && Body.IsMoving)
+                //Stopfollowing if spell casted and the cast time > 0 (non-instant spells)
+                if (casted && spell.CastTime > 0)
                     Body.StopFollowing();
+                //If instant cast and spell casted, and current follow target is not the target object, then switch follow target to current TargetObject
+                else if(casted && (spell.CastTime == 0 && Body.CurrentFollowTarget != Body.TargetObject))
+                {
+                    Body.Follow(Body.TargetObject, GameNPC.STICKMINIMUMRANGE, GameNPC.STICKMAXIMUMRANGE);
+                }
             }
             return casted;
         }
@@ -1635,12 +1655,12 @@ namespace DOL.AI.Brain
                 }
             }*/
 
-            lock (target.effectListComponent)
+            spell.IsSpec = true;
+            if (EffectListService.GetEffectOnTarget(target, EffectService.GetEffectFromSpell(spell)) != null)
+            //if (target.effectListComponent.ContainsEffectForEffectType(EffectService.GetEffectFromSpell(spell)))
             {
-                spell.IsSpec = true;
-                if (target.effectListComponent.ContainsEffectForEffectType(EffectService.GetEffectFromSpell(spell))){
-                    return true;
-                }
+                return true;
+            }
                 /*
                 //Check through each effect in the target's effect list
                 foreach (IGameEffect effect in target.EffectList)
@@ -1655,7 +1675,7 @@ namespace DOL.AI.Brain
                     if (speffect.Spell.EffectGroup == spell.EffectGroup)
                         return true;
                 }*/
-            }
+
 
             //the answer is no, the effect has not been found
             return false;

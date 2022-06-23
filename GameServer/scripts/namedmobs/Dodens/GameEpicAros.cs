@@ -9,13 +9,12 @@ using DOL.GS.PacketHandler;
 using System;
 using System.Reflection;
 
-
 namespace DOL.GS.Scripts
 {
-
-    public abstract class GameEpicAros : GameNPC
+    public abstract class GameEpicAros : GameEpicBoss
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// Set Aros the Spiritmaster difficulty in percent of its max abilities
@@ -25,98 +24,76 @@ namespace DOL.GS.Scripts
         {
             get { return ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS; }
         }
-
         /// <summary>
         /// Announcements for Bomb, BigBomb, Debuff and Death.
         /// </summary>
         protected String[] m_BombAnnounce;
+
         protected String m_BigBombAnnounce;
         protected String m_DebuffAnnounce;
         protected String m_SummonAnnounce;
         protected String[] m_DeathAnnounce;
-        protected GameNPC summonedGuard = new GameNPC();
+
+        //check if he is doing spells
+        private bool isBombing = true;
+        private bool isBigBombing = true;
+        private bool isSummoning = true;
+        private bool isDebuffing = true;
+
         /// <summary>
         /// Creates a new instance of GameEpicAros.
         /// </summary>
         public GameEpicAros()
             : base()
         {
-            m_BombAnnounce = new String[] { "{0} begins to perform a ritual!",
+            m_BombAnnounce = new String[]
+            {
+                "{0} begins to perform a ritual!",
                 "{0} is powerful and begins a threatening attack!",
                 "Feeling strong and powerful, {0} prepares a deadly spell.",
-                "{0} begins a magic of mental destruction!" };
+                "{0} begins a magic of mental destruction!"
+            };
             m_BigBombAnnounce = "{0} withdraws all souls around him in order to cast a powerful spell.";
             m_DebuffAnnounce = "{0} weakens {1} and everyone around!";
             m_SummonAnnounce = "{0} uses his power to summon a protective spirit!";
-            m_DeathAnnounce = new String[] { "{0} trips and falls on the hard stone floor.",
-                "'You will remember my name! {0}!'" };
-            MaxDistance = 2000;
-            TetherRange = 2000;
+            m_DeathAnnounce = new String[]
+            {
+                "{0} trips and falls on the hard stone floor.",
+                "'You will remember my name! {0}!'"
+            };
+            MaxDistance = 2500;
+            TetherRange = 3500;
             SetOwnBrain(new ArosBrain());
         }
-
-
         public override double GetArmorAF(eArmorSlot slot)
         {
-            return 1000 * ArosDifficulty / 100;
+            return 350;
         }
-
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
-            return 0.85 * ArosDifficulty / 100;
-        }
-
-        public override short MaxSpeedBase
-        {
-            get { return (short)(191 + (Level * 2)); }
-            set { m_maxSpeedBase = value; }
+            return 0.20;
         }
         public override int MaxHealth
         {
-            get
-            {
-                return 20000 * ArosDifficulty / 100;
-            }
+            get { return 40000; }
         }
-
-        public override short Strength
-        {
-            get
-            {
-                return (short)(base.Strength * ArosDifficulty / 100);
-            }
-        }
-
         public override int AttackRange
         {
-            get { return 180; }
+            get { return 350; }
             set { }
         }
-
         public override bool HasAbility(string keyName)
         {
-            if (IsReturningHome && keyName == DOL.GS.Abilities.CCImmunity)
+            if (IsReturningHome && keyName == GS.Abilities.CCImmunity)
                 return true;
 
             return base.HasAbility(keyName);
         }
-
-        public double AttackDamage(InventoryItem weapon)
+        public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * 2.0 * ArosDifficulty / 100;
+            return base.AttackDamage(weapon) * Strength / 100;
         }
-
-        public override int RespawnInterval
-        {
-            get
-            {
-                //25min Respawn
-                int result = (25 * 600) * 100;
-                return result;
-            }
-        }
-
         /// <summary>
         /// Invoked when Aros the Spiritmaster dies.
         /// </summary>
@@ -138,8 +115,9 @@ namespace DOL.GS.Scripts
             {
                 if (npc.Name.Contains("Guardian of Aros"))
                 {
-                    npc.RemoveFromWorld();
+                    npc.Die(killer);
                 }
+
                 if (npc.Name.Contains("Summoned Guardian"))
                 {
                     npc.Die(killer);
@@ -171,7 +149,8 @@ namespace DOL.GS.Scripts
         /// <param name="healSource">The source of the heal.</param>
         /// <param name="changeType">The way the living was healed.</param>
         /// <param name="healAmount">The amount that was healed.</param>
-        public override void EnemyHealed(GameLiving enemy, GameObject healSource, eHealthChangeType changeType, int healAmount)
+        public override void EnemyHealed(GameLiving enemy, GameObject healSource, eHealthChangeType changeType,
+            int healAmount)
         {
             base.EnemyHealed(enemy, healSource, changeType, healAmount);
             Brain.Notify(GameLivingEvent.EnemyHealed, this,
@@ -179,7 +158,6 @@ namespace DOL.GS.Scripts
         }
 
         #endregion
-
 
         /// <summary>
         /// Return to spawn point, Aros the Spiritmaster can't be attacked while it's
@@ -190,7 +168,6 @@ namespace DOL.GS.Scripts
             EvadeChance = 100;
             WalkToSpawn(MaxSpeed);
         }
-
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (EvadeChance == 100)
@@ -198,8 +175,6 @@ namespace DOL.GS.Scripts
 
             base.OnAttackedByEnemy(ad);
         }
-
-
         /// <summary>
         /// Handle event notifications.
         /// </summary>
@@ -243,108 +218,158 @@ namespace DOL.GS.Scripts
             }
         }
 
+        public override void Notify(DOLEvent e, object sender, EventArgs args)
+        {
+            base.Notify(e, sender, args);
+            if (sender == this)
+            {
+                GameLiving source = sender as GameLiving;
+                if (e == GameObjectEvent.TakeDamage)
+                {
+                    foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
+                    {
+                        CheckDebuff(player);
+                        CheckChanceBomb(player);
+                    }
+                }
+            }
+        }
+
         #endregion
 
-        public void SpawnGuardian(GameObject enemy)
+        public void SpawnGuardian(GamePlayer enemy)
         {
-            GamePlayer player = enemy as GamePlayer;
-            summonedGuard.Health = summonedGuard.MaxHealth;
+            GameNPC summonedGuard = new GameNPC();
             SetVariables(summonedGuard);
             summonedGuard.AddToWorld();
-            summonedGuard.StartAttack(player);
-
+            summonedGuard.StartAttack(enemy);
         }
-        public void SetVariables(GameNPC summonedGuard)
+        public void SetVariables(GameNPC summonedGuardian)
         {
-            //summonedGuard.EquipmentTemplateID = "Summoned_Guardian";
-            summonedGuard.LoadEquipmentTemplateFromDatabase("Summoned_Guardian");
-            summonedGuard.X = this.X + 50;
-            summonedGuard.Y = this.Y + 50;
-            summonedGuard.Z = this.Z + 50;
-            summonedGuard.CurrentRegion = this.CurrentRegion;
-            summonedGuard.Heading = this.Heading;
-            summonedGuard.Level = this.Level;
-            summonedGuard.Realm = this.Realm;
-            summonedGuard.Faction = FactionMgr.GetFactionByID(779);
-            summonedGuard.Name = "Guardian of Aros";
-            summonedGuard.GuildName = "Summoned Ghost";
-            summonedGuard.Model = 140;
-            summonedGuard.Size = 65;
-            summonedGuard.AttackRange = 200;
-            summonedGuard.Flags |= eFlags.GHOST;
-            summonedGuard.MeleeDamageType = eDamageType.Spirit;
-            summonedGuard.RespawnInterval = -1; // dont respawn
-            summonedGuard.RoamingRange = this.RoamingRange;
-            summonedGuard.MaxDistance = 2000;
-            summonedGuard.MaxSpeedBase = this.MaxSpeedBase;
+            summonedGuardian.LoadEquipmentTemplateFromDatabase("Summoned_Guardian");
+            summonedGuardian.Health = summonedGuardian.MaxHealth;
+            summonedGuardian.X = this.X + 200;
+            summonedGuardian.Y = this.Y;
+            summonedGuardian.Z = this.Z;
+            summonedGuardian.CurrentRegion = this.CurrentRegion;
+            summonedGuardian.Heading = this.Heading;
+            summonedGuardian.Level = 65;
+            summonedGuardian.Realm = this.Realm;
+            summonedGuardian.Faction = FactionMgr.GetFactionByID(779);
+            summonedGuardian.Name = "Guardian of Aros";
+            summonedGuardian.GuildName = "Summoned Ghost";
+            summonedGuardian.Model = 140;
+            summonedGuardian.Size = 65;
+            summonedGuardian.AttackRange = 200;
+            summonedGuardian.Flags |= eFlags.GHOST;
+            summonedGuardian.MeleeDamageType = eDamageType.Spirit;
+            summonedGuardian.RespawnInterval = -1; // dont respawn
+            summonedGuardian.RoamingRange = this.RoamingRange;
+            summonedGuardian.MaxDistance = 2000;
+            summonedGuardian.MaxSpeedBase = this.MaxSpeedBase;
 
             // also copies the stats
+            summonedGuardian.CurrentSpeed = 200;
 
-            summonedGuard.Strength = this.Strength;
-            summonedGuard.Constitution = this.Constitution;
-            summonedGuard.Dexterity = this.Dexterity;
-            summonedGuard.Quickness = this.Quickness;
-            summonedGuard.Intelligence = this.Intelligence;
-            summonedGuard.Empathy = this.Empathy;
-            summonedGuard.Piety = this.Piety;
-            summonedGuard.Charisma = this.Charisma;
+            summonedGuardian.Strength = this.Strength;
+            summonedGuardian.Constitution = this.Constitution;
+            summonedGuardian.Dexterity = this.Dexterity;
+            summonedGuardian.Quickness = this.Quickness;
+            summonedGuardian.Intelligence = this.Intelligence;
+            summonedGuardian.Empathy = this.Empathy;
+            summonedGuardian.Piety = this.Piety;
+            summonedGuardian.Charisma = this.Charisma;
 
-            if (summonedGuard.Inventory != null)
-                summonedGuard.SwitchWeapon(this.ActiveWeaponSlot);
+            if (summonedGuardian.Inventory != null)
+                summonedGuardian.SwitchWeapon(this.ActiveWeaponSlot);
 
             ABrain mobBrain = null;
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                mobBrain = (ABrain)assembly.CreateInstance(this.Brain.GetType().FullName, true);
+                mobBrain = (ABrain) assembly.CreateInstance(this.Brain.GetType().FullName, true);
                 if (mobBrain != null)
                     break;
             }
+
             if (mobBrain == null)
             {
-                summonedGuard.SetOwnBrain(new StandardMobBrain());
+                summonedGuardian.SetOwnBrain(new StandardMobBrain());
             }
             else if (mobBrain is StandardMobBrain)
             {
-                StandardMobBrain sbrain = (StandardMobBrain)mobBrain;
-                StandardMobBrain tbrain = (StandardMobBrain)this.Brain;
+                StandardMobBrain sbrain = (StandardMobBrain) mobBrain;
+                StandardMobBrain tbrain = (StandardMobBrain) Brain;
                 sbrain.AggroLevel = tbrain.AggroLevel;
                 sbrain.AggroRange = tbrain.AggroRange;
-                summonedGuard.SetOwnBrain(sbrain);
+                summonedGuardian.SetOwnBrain(sbrain);
             }
         }
 
         #region Bomb & Resist Debuff
-
         protected Spell m_BombSpell;
         protected Spell m_BigBombSpell;
-
         /// <summary>
         /// The Bomb spell. Override this property in your Aros Epic summonedGuard implementation
         /// and assign the spell to m_breathSpell.
         /// </summary>
-        protected abstract Spell Bomb
-        {
-            get;
-        }
-
+        protected abstract Spell Bomb { get; }
         /// <summary>
         /// The Bomb spell. Override this property in your Aros Epic summonedGuard implementation
         /// and assign the spell to m_breathSpell.
         /// </summary>
-        protected abstract Spell BigBomb
+        protected abstract Spell BigBomb { get; }
+        private const int m_BombChance = 3;
+        private GameLiving m_BombTarget;
+        /// <summary>
+        /// Chance to cast Summon when a potential target has been detected.
+        /// </summary>
+        protected int BombChance
         {
-            get;
+            get { return m_BombChance; }
         }
-
+        /// <summary>
+        /// The target for the next Summon attack.
+        /// </summary>
+        private GameLiving BombTarget
+        {
+            get { return m_BombTarget; }
+            set
+            {
+                m_BombTarget = value;
+                PrepareToBombChance();
+            }
+        }
+        /// <summary>
+        /// Check whether or not to cast Bomb.
+        /// </summary>
+        public bool CheckChanceBomb(GameLiving target)
+        {
+            if (target == null || BombTarget != null) return false;
+            bool success = Util.Chance(BombChance);
+            if (success)
+                BombTarget = target;
+            return success; // Has a 3% chance to cast.
+        }
+        /// <summary>
+        /// Announce the Debuff and start the 1 second timer.
+        /// </summary>
+        private void PrepareToBombChance()
+        {
+            if (BombTarget == null) return;
+            TurnTo(BombTarget);
+            WalkTo(BombTarget, 250);
+            int messageNo = Util.Random(1, m_BombAnnounce.Length) - 1;
+            BroadcastMessage(String.Format(m_BombAnnounce[messageNo], Name));
+            new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastBomb), 5000);
+        }
         /// <summary>
         /// Check whether or not to cast Bomb.
         /// </summary>
         public bool CheckBomb()
         {
-            PrepareToBomb();    // Has a 100% chance to cast.
+            PrepareToBomb(); // Has a 100% chance to cast.
             return true;
         }
-
         /// <summary>
         /// Check whether or not to cast the Big Bomb.
         /// </summary>
@@ -353,7 +378,6 @@ namespace DOL.GS.Scripts
             PrepareToBigBomb();
             return false;
         }
-
         /// <summary>
         /// Announce the Bomb attack and start the 4 second timer.
         /// </summary>
@@ -361,69 +385,49 @@ namespace DOL.GS.Scripts
         {
             // Prevent brain from casting this over and over.
             HealthPercentOld = HealthPercent;
-            if (this.AttackState)
-                this.StopAttack();
-            if (this.IsMoving)
-                this.StopFollowing();
             int messageNo = Util.Random(1, m_BombAnnounce.Length) - 1;
             BroadcastMessage(String.Format(m_BombAnnounce[messageNo], Name));
-            new RegionTimer(this, new RegionTimerCallback(CastBomb), 5000);
+            new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastBomb), 5000);
         }
-
-
         /// <summary>
         /// Announce the Big Bomb and start the 5 second timer.
         /// </summary>
         private void PrepareToBigBomb()
         {
             HealthPercentOld = HealthPercent;
-            if (this.AttackState)
-                this.StopAttack();
-            if (this.IsMoving)
-                this.StopFollowing();
             BroadcastMessage(String.Format(m_BigBombAnnounce, Name));
-            new RegionTimer(this, new RegionTimerCallback(CastBigBomb), 5000);
+            new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastBigBomb), 5000);
         }
-
         /// <summary>
         /// Cast Breath on the raid (AoE damage and AoE resist debuff).
         /// </summary>
         /// <param name="timer">The timer that started this cast.</param>
         /// <returns></returns>
-        private int CastBomb(RegionTimer timer)
+        private int CastBomb(ECSGameTimer timer)
         {
             CastSpell(Bomb, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             return 0;
         }
-
         /// <summary>
         /// Cast Bomb on the raid (AoE damage and AoE resist debuff).
         /// </summary>
         /// <param name="timer">The timer that started this cast.</param>
         /// <returns></returns>
-        private int CastBigBomb(RegionTimer timer)
+        private int CastBigBomb(ECSGameTimer timer)
         {
             CastSpell(BigBomb, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             return 0;
         }
-
         #endregion
 
         #region Debuff
-
         protected Spell m_DebuffSpell;
-
         /// <summary>
         /// The Debuff spell. Override this property in your Aros the Spiritmaster implementation
         /// and assign the spell to m_DebuffSpell.
         /// </summary>
-        protected abstract Spell Debuff
-        {
-            get;
-        }
-
-        private const int m_DebuffChance = 15;
-
+        protected abstract Spell Debuff { get; }
+        private const int m_DebuffChance = 3;
         /// <summary>
         /// Chance to cast Debuff when a potential target has been detected.
         /// </summary>
@@ -431,18 +435,19 @@ namespace DOL.GS.Scripts
         {
             get { return m_DebuffChance; }
         }
-
         private GameLiving m_DebuffTarget;
-
         /// <summary>
         /// The target for the next Debuff attack.
         /// </summary>
         private GameLiving DebuffTarget
         {
             get { return m_DebuffTarget; }
-            set { m_DebuffTarget = value; PrepareToDebuff(); }
+            set
+            {
+                m_DebuffTarget = value;
+                PrepareToDebuff();
+            }
         }
-
         /// <summary>
         /// Check whether or not to Debuff at this target.
         /// </summary>
@@ -456,7 +461,6 @@ namespace DOL.GS.Scripts
                 DebuffTarget = target;
             return success;
         }
-
         /// <summary>
         /// Announce the Debuff and start the 1 second timer.
         /// </summary>
@@ -465,19 +469,17 @@ namespace DOL.GS.Scripts
             if (DebuffTarget == null) return;
             TurnTo(DebuffTarget);
             BroadcastMessage(String.Format(m_DebuffAnnounce, Name, DebuffTarget.Name));
-            new RegionTimer(this, new RegionTimerCallback(CastDebuff), 1000);
+            new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastDebuff), 1000);
         }
-
         /// <summary>
         /// Cast Debuff on the target.
         /// </summary>
         /// <param name="timer">The timer that started this cast.</param>
         /// <returns></returns>
-        private int CastDebuff(RegionTimer timer)
+        private int CastDebuff(ECSGameTimer timer)
         {
             // Turn around to the target and cast Debuff, then go back to the original
             // target, if one exists.
-
             GameObject oldTarget = TargetObject;
             TargetObject = DebuffTarget;
             Z = SpawnPoint.Z; // this is a fix to correct Z errors that sometimes happen during Aros fights
@@ -487,24 +489,16 @@ namespace DOL.GS.Scripts
             if (oldTarget != null) TargetObject = oldTarget;
             return 0;
         }
-
         #endregion
 
         #region Pet
-
         protected Spell m_SummonSpell;
-
         /// <summary>
         /// The Debuff spell. Override this property in your Aros the Spiritmaster implementation
         /// and assign the spell to m_SummonSpell.
         /// </summary>
-        protected abstract Spell Summon
-        {
-            get;
-        }
-
+        protected abstract Spell Summon { get; }
         private const int m_SummonChance = 100;
-
         /// <summary>
         /// Chance to cast Summon when a potential target has been detected.
         /// </summary>
@@ -512,18 +506,19 @@ namespace DOL.GS.Scripts
         {
             get { return m_SummonChance; }
         }
-
         private GameLiving m_SummonTarget;
-
         /// <summary>
         /// The target for the next Summon attack.
         /// </summary>
         private GameLiving SummonTarget
         {
             get { return m_SummonTarget; }
-            set { m_SummonTarget = value; PrepareToSummon(); }
+            set
+            {
+                m_SummonTarget = value;
+                PrepareToSummon();
+            }
         }
-
         /// <summary>
         /// Check whether or not to Summon the Pet.
         /// </summary>
@@ -534,7 +529,6 @@ namespace DOL.GS.Scripts
             PrepareToSummon();
             return true;
         }
-
         /// <summary>
         /// Announce the Summon and start the 2 second timer.
         /// </summary>
@@ -542,15 +536,14 @@ namespace DOL.GS.Scripts
         {
             HealthPercentOld = HealthPercent;
             BroadcastMessage(String.Format(m_SummonAnnounce, Name));
-            new RegionTimer(this, new RegionTimerCallback(CastSummon), 1000);
+            new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastSummon), 2000);
         }
-
         /// <summary>
         /// Cast Summon.
         /// </summary>
         /// <param name="timer">The timer that started this cast.</param>
         /// <returns></returns>
-        private int CastSummon(RegionTimer timer)
+        private int CastSummon(ECSGameTimer timer)
         {
             CastSpell(Summon, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             GameLiving target = null;
@@ -560,26 +553,26 @@ namespace DOL.GS.Scripts
 
                 if (player != null)
                 {
-                    if (GameServer.ServerRules.IsAllowedToAttack(this, player, false))
+                    if (IsCasting)
                     {
-                        SpawnGuardian(player);
-                        target = player;
-                        break;
+                        if (GameServer.ServerRules.IsAllowedToAttack(this, player, false) && isSummoning)
+                        {
+                            SpawnGuardian(player);
+                            target = player;
+                            break;
+                        }
+                        isSummoning = false;
                     }
-
-                }
-                else
-                {
-                    SpawnGuardian(this);
+                    else
+                    {
+                        isSummoning = true;
+                    }
                 }
                 if (target == null || Summon == null)
                     return 1;
             }
-
             return 0;
         }
         #endregion
     }
 }
-
-

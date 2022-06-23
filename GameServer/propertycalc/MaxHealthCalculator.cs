@@ -1,6 +1,9 @@
 using System;
+using DOL.Database;
 using DOL.GS.Keeps;
 using DOL.GS.RealmAbilities;
+using DOL.GS.ServerProperties;
+using log4net.Core;
 
 namespace DOL.GS.PropertyCalc
 {
@@ -69,6 +72,10 @@ namespace DOL.GS.PropertyCalc
 
 				if (keepdoor.Component != null && keepdoor.Component.Keep != null)
 				{
+					if (keepdoor.IsRelic)
+					{
+						return Properties.RELIC_DOORS_HEALTH;
+					}
 					return (keepdoor.Component.Keep.EffectiveLevel(keepdoor.Component.Keep.Level) + 1) * keepdoor.Component.Keep.BaseLevel * 200;
 				}
 
@@ -78,16 +85,46 @@ namespace DOL.GS.PropertyCalc
 			}
 			else if (living is TheurgistPet theu)
 			{
+				/*
 				int hp = 1;
-				if (theu.Level < 10)
+				if (theu.Level < 2)
 				{
-					hp += theu.Constitution + theu.Level * 2;
+					hp += theu.Constitution * (theu.Level + 1);
 				} else
 				{
 					hp = theu.Constitution * theu.Level * 10 / 44;
 				}
-				return hp;
 
+				if (theu.Name.Contains("air"))
+				{
+					//normal HP
+				}
+				else if (theu.Name.Contains("ice"))
+				{
+					hp = (int) Math.Ceiling(hp * 1.25);
+				} else if (theu.Name.Contains("earth"))
+				{
+					hp = (int) Math.Ceiling(hp * 1.5);
+				}
+				return hp;
+				*/
+
+				int hp = 1;
+				if (theu.Name.Contains("air"))
+				{
+					hp = 800;
+				}
+				else if (theu.Name.Contains("ice"))
+				{
+					hp = 500;
+				} else if (theu.Name.Contains("earth"))
+				{
+					hp = 350;
+				}
+				
+				hp = (int)((theu.Level / 44.0) * hp);
+				if (hp < 10) hp = 10;
+				return hp;
 			}
 			else if (living is TurretPet ani)
 			{
@@ -171,18 +208,24 @@ namespace DOL.GS.PropertyCalc
 					//14 hp per level
 					//30 base
 					//con * level HP, scaled by level
-					hp = (int)((living.Level * 14) + 30 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
+					hp = (int)((living.Level * 11) + 20 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
 				}
 				else
 				{
+					double levelScalar = .5;
+					if (living.Level > 40)
+					{
+						//Console.WriteLine($"Scalar before {levelScalar} adding {(living.Level - 40) * .01} after {levelScalar + ((living.Level - 40) * .01)}");
+						levelScalar += (living.Level - 40) * .005;
+					}
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11*living.Level + 0.448331 * living.Level * (living.Level)) + (living as GameNPC).Constitution;
+					hp = (int)(50 + 13*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
 					if (living.Level < 25)
 						hp += 20;
 				}
 
 				int basecon = (living as GameNPC).Constitution;
-				int conmod = 20; // at level 50 +75 con ~= +300 hit points
+				int conmod = 25; // at level 50 +75 con ~= +300 hit points
 
 				// first adjust hitpoints based on base CON
 
@@ -205,6 +248,11 @@ namespace DOL.GS.PropertyCalc
 					else if (conhp < hp / 2)
 						conhp = hp / 2;
 				}
+
+				if(living is GameEpicBoss)
+					hp = (int)(hp * 3); //epic bosses get 100% extra hp
+				else if (living is GameEpicNPC)
+					hp = (int)( hp * 2); //epic NPCs get 50% extra hp
 
 				return hp;
 				//return conhp;

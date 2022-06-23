@@ -50,6 +50,8 @@ namespace DOL.GS
 		/// The item being salvaged
 		/// </summary>
 		protected const string SALVAGED_ITEM = "SALVAGED_ITEM";
+		
+		protected const string SALVAGE_QUEUE = "SALVAGE_QUEUE";
 
 		#endregion
 
@@ -146,9 +148,9 @@ namespace DOL.GS
 			}
 
 			player.Out.SendTimerWindow(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.BeginWork.Salvaging", item.Name), yield.Count);
-            player.CraftTimer = new RegionTimer(player)
+            player.CraftTimer = new ECSGameTimer(player)
             {
-                Callback = new RegionTimerCallback(Proceed)
+                Callback = new ECSGameTimer.ECSTimerCallback(Proceed)
             };
             player.CraftTimer.Properties.setProperty(AbstractCraftingSkill.PLAYER_CRAFTER, player);
 			player.CraftTimer.Properties.setProperty(SALVAGED_ITEM, item);
@@ -156,6 +158,15 @@ namespace DOL.GS
 
 			player.CraftTimer.Start(yield.Count * 1000);
 			return 1;
+		}
+		
+		public static int BeginWorkList(GamePlayer player, IList<InventoryItem> itemList)
+		{
+			player.TempProperties.setProperty(SALVAGE_QUEUE,itemList);
+			player.CraftTimer?.Stop();
+			player.Out.SendCloseTimerWindow();
+			if (itemList == null || itemList.Count == 0) return 0;
+			return BeginWork(player, itemList[0]);
 		}
 
 		/// <summary>
@@ -229,11 +240,12 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="timer"></param>
 		/// <returns></returns>
-		protected static int Proceed(RegionTimer timer)
+		protected static int Proceed(ECSGameTimer timer)
 		{
 			GamePlayer player = timer.Properties.getProperty<GamePlayer>(AbstractCraftingSkill.PLAYER_CRAFTER, null);
 			InventoryItem itemToSalvage = timer.Properties.getProperty<InventoryItem>(SALVAGED_ITEM, null);
 			SalvageYield yield = timer.Properties.getProperty<SalvageYield>(SALVAGE_YIELD, null);
+			IList<InventoryItem> itemList = player.TempProperties.getProperty<IList<InventoryItem>>(SALVAGE_QUEUE, null);
 			int materialCount = yield.Count;
 
 			if (player == null || itemToSalvage == null || yield == null || materialCount == 0)
@@ -257,7 +269,7 @@ namespace DOL.GS
 				return 0;
 			}
 
-			player.CraftTimer.Stop();
+			player.CraftTimer?.Stop();
 			player.Out.SendCloseTimerWindow();
 
 			if (!player.Inventory.RemoveItem(itemToSalvage)) // clean the free of the item to salvage
@@ -325,8 +337,17 @@ namespace DOL.GS
 
 			player.Inventory.CommitChanges();
 			player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.Proceed.GetBackMaterial", materialCount, rawMaterial.Name, itemToSalvage.Name), eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-			
-			return 0;
+
+			if (itemList == null) return 0;
+			player.CraftTimer?.Stop();
+			player.CraftTimer = null;
+			if (itemList.Count > 0)
+			{
+				itemList.RemoveAt(0);
+				BeginWorkList(player, itemList);
+			}
+
+			return 1;
 		}
 		
 		#endregion
@@ -339,7 +360,63 @@ namespace DOL.GS
 		/// <param name="player"></param>
 		/// <param name="item"></param>
 		/// <returns></returns>
-		public static bool IsAllowedToBeginWork(GamePlayer player, InventoryItem item)
+		public static bool IsAllowedToBeginWork(GamePlayer player, InventoryItem item, bool mute = false)
+		{
+			if (player.InCombat && !player.IsSitting)
+			{
+				if (!mute)
+					player.Out.SendMessage("You can't salvage while in combat.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+
+			if (item.IsNotLosingDur || item.IsIndestructible)
+			{
+				if (!mute)
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.BeginWork.NoSalvage", item.Name + ".  This item is indestructible"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+
+			// using negative numbers to indicate item cannot be salvaged
+			if (item.SalvageYieldID < 0)
+			{
+				if (!mute)
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client, "Salvage.BeginWork.NoSalvage", item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+			
+			if(item.SlotPosition < (int)eInventorySlot.FirstBackpack || item.SlotPosition > (int)eInventorySlot.LastBackpack)
+			{
+				if (!mute)
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.IsAllowedToBeginWork.BackpackItems"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+
+			eCraftingSkill skill = CraftingMgr.GetSecondaryCraftingSkillToWorkOnItem(item);
+			if(skill == eCraftingSkill.NoCrafting)
+			{
+				if (!mute)
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.BeginWork.NoSalvage", item.Name + ".  You do not have the required secondary skill"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+
+			if (player.IsCrafting)
+			{
+				if (!mute)
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.IsAllowedToBeginWork.EndCurrentAction"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+
+			if (player.GetCraftingSkillValue(skill) < (0.75 * CraftingMgr.GetItemCraftLevel(item)))
+			{
+				if (!mute)
+					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Salvage.IsAllowedToBeginWork.NotEnoughSkill", item.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+
+			return true;
+		}
+		
+		public static bool IsAllowedToBeginWorkSilent(GamePlayer player, InventoryItem item)
 		{
 			if (player.InCombat)
 			{
@@ -562,6 +639,9 @@ namespace DOL.GS
                 long usureoverall = (maxCount * ((item.Condition / 5) / 1000)) / 100; // assume that all items have 50000 base con
                 maxCount = usureoverall;
             }
+
+            if (item.Description.Contains("Atlas ROG"))
+	            maxCount = 2;
 
             if (maxCount < 1)
                 maxCount = 1;

@@ -40,6 +40,14 @@ namespace DOL.Database
 		private string m_language;
 		private string m_lastClientVersion;
 		private bool m_isMuted;
+		private String m_notes;
+		private bool m_isWarned;
+		private bool m_isTester;
+		private int m_charactersTraded;
+		private int m_soloCharactersTraded;
+		private string m_discordID;
+		private int m_realm_timer_realm;
+		private DateTime m_realm_timer_last_combat;
 		
 		/// <summary>
 		/// Create account row in DB
@@ -52,6 +60,7 @@ namespace DOL.Database
 			m_plvl = 1;
 			m_realm = 0;
 			m_isMuted = false;
+			m_isTester = false;
 		}
 
 		/// <summary>
@@ -212,6 +221,99 @@ namespace DOL.Database
 		{
 			get { return m_isMuted; }
 			set { Dirty = true; m_isMuted = value; }
+		}
+		
+		/// <summary>
+		/// Is this account warned
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public bool IsWarned
+		{
+			get { return m_isWarned; }
+			set { Dirty = true; m_isWarned = value; }
+		}
+		
+		/// <summary>
+		/// Account notes
+		/// </summary>
+		[DataElement(AllowDbNull = true)]
+		public string Notes {
+			get { return m_notes; }
+			set { Dirty = true; m_notes = value; }
+		}
+		
+		/// <summary>
+		/// Is this account allowed to connect to PTR
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public bool IsTester
+		{
+			get { return m_isTester; }
+			set { Dirty = true; m_isTester = value; }
+		}
+
+		/// <summary>
+		/// Number of characters turned in for the challenge titles
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public int CharactersTraded
+		{
+			get { return m_charactersTraded; }
+			set { Dirty = true; m_charactersTraded = value; }
+		}
+		
+		/// <summary>
+		/// Number of characters turned in for the challenge titles
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public int SoloCharactersTraded
+		{
+			get { return m_soloCharactersTraded; }
+			set { Dirty = true; m_soloCharactersTraded = value; }
+		}
+		
+		/// <summary>
+		/// Gets the account DiscordID
+		/// </summary>
+		[DataElement(AllowDbNull = true)]
+		public string DiscordID
+		{
+			get { return m_discordID; }
+			set { m_discordID = value; }
+		}
+
+		/// <summary>
+		/// The realm timer current realm of this account
+		/// </summary>
+		[DataElement(AllowDbNull=false)]
+		public int Realm_Timer_Realm
+		{
+			get
+			{
+				return m_realm_timer_realm;
+			}
+			set
+			{
+				Dirty = true;
+				m_realm_timer_realm = value;
+			}
+		}
+
+		/// <summary>
+		/// The date time of the last pvp combat of this account
+		/// </summary>
+		[DataElement(AllowDbNull=true)]
+		public DateTime Realm_Timer_Last_Combat
+		{
+			get
+			{
+				return m_realm_timer_last_combat;
+			}
+			set
+			{
+				Dirty = true;
+				m_realm_timer_last_combat = value;
+			}
 		}
 
 		/// <summary>

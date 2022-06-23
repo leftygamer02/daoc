@@ -49,6 +49,7 @@ using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using System.Collections.Generic;
 using DOL.Language;
+using JNogueira.Discord.Webhook.Client;
 
 namespace DOL.GS.Commands
 {
@@ -153,7 +154,189 @@ namespace DOL.GS.Commands
 				         " | Current hour = " + DateTime.Now.Hour.ToString() + ", restart hour = " + AUTOMATEDSHUTDOWN_HOURTOSHUTDOWN.ToString() );
 			}
 		}
+		
+		public static void CountDown(int seconds)
+		{
+			// Subtract the current callback time
+			m_counter = seconds;
+			
+			// Change flage to true
+			m_shuttingDown = true;
+			if (m_counter <= 0)
+			{
+				m_timer.Dispose();
+				new Thread(new ThreadStart(ShutDownServer)).Start();
+			}
+			else
+			{
+				if (m_counter > 120)
+					log.Warn("Server restart in " + (int)(m_counter / 60) + " minutes!");
+				else
+					log.Warn("Server restart in " + m_counter + " seconds!");
 
+				long secs = m_counter;
+				long mins = secs / 60;
+				long hours = mins / 60;
+
+				string translationID = "";
+				long args1 = 0;
+				long args2 = 0;
+
+				// If more than 3 hours, check hourly
+				if (mins > 180)
+				{
+					if (mins % 60 < 15)
+					{
+						// Message: "A server reboot is scheduled to occur in {0} hours!"
+						translationID = "AdminCommands.Shutdown.Msg.CountdownHours";
+						args1 = hours;
+						args2 = -1;
+					}
+					
+					// 60 minutes between checks
+					m_currentCallbackTime = 60 * 60 * 1000;
+				}
+				// If more than 1 hour, check every 30 minutes
+				else if (mins > 60)
+				{
+					if (mins % 30 < 6)
+					{
+						// Message: "A server reboot is scheduled to occur in {0} hours and {1} minutes!"
+						translationID = "AdminCommands.Shutdown.Msg.CountdownHrMn";
+						
+						args1 = hours;
+						args2 = mins - (hours * 60);
+					}
+					
+					// 30 minutes between checks
+					m_currentCallbackTime = 30 * 60 * 1000;
+				} 
+				else if (mins > 15)
+				{
+					if (mins % 15 < 4) //every 15 mins..
+					{
+						// Message: "A server reboot will occur in {0} minutes!"
+						translationID = "AdminCommands.Shutdown.Msg.CountdownMins";
+						args1 = mins;
+						args2 = -1;
+					}
+
+					// 15 minutes between checks
+					m_currentCallbackTime = 15 * 60 * 1000;
+				}
+				else if (mins > 5)
+				{
+					// Message: "A server reboot will occur in {0} minutes!"
+					translationID = "AdminCommands.Shutdown.Msg.CountdownMins";
+					args1 = mins;
+					args2 = -1;
+
+					// 5 minutes between checks
+					m_currentCallbackTime = 5 * 60 * 1000;
+				}
+				else if (secs > 120)
+				{
+					// Message: "A server reboot will occur in {0} minutes!"
+					translationID = "AdminCommands.Shutdown.Msg.CountdownMins";
+					args1 = mins;
+					args2 = -1;
+
+					// 1 minute between checks
+					m_currentCallbackTime = 60 * 1000;
+				}
+				else if (secs > 60)
+				{
+					// Message: "A server reboot will occur in {0} minutes and {1} seconds!"
+					translationID = "AdminCommands.Shutdown.Msg.CountdownMnSc";
+					args1 = mins;
+					args2 = secs - (mins * 60);
+
+					// 15 seconds between checks
+					m_currentCallbackTime = 15 * 1000;
+				}
+				else if (secs > 30)
+				{
+					// Message: "A server reboot will occur in {0} seconds!"
+					translationID = "AdminCommands.Shutdown.Msg.CountdownSecs";
+					args1 = secs;
+					args2 = -1;
+					
+					// 10 secs between checks
+					m_currentCallbackTime = 10 * 1000;
+				}
+				// Alert every 5 seconds below 30 seconds to reboot
+				else if (secs > 10)
+				{
+					// Message: "Server reboot in {0} seconds! Log out now to avoid any loss of progress!"
+					translationID = "AdminCommands.Shutdown.Msg.CountdownLogoutSecs";
+					args1 = secs;
+					args2 = -1;
+					
+					// 5 seconds between checks
+					m_currentCallbackTime = 5 * 1000;
+				}
+				else if (secs > 0)
+				{
+					// Message: "Server reboot in {0} seconds! Log out now to avoid any loss of progress!"
+					translationID = "AdminCommands.Shutdown.Msg.CountdownLogoutSecs";
+					args1 = secs;
+					args2 = -1;
+					
+					//5 secs between checks
+					m_currentCallbackTime = 1000;
+				}
+
+				//Change the timer to the new callback time
+				m_timer.Change(m_currentCallbackTime, m_currentCallbackTime);
+
+				if (translationID != "")
+				{
+					foreach (GameClient client in WorldMgr.GetAllPlayingClients())
+					{
+						if (args2 == -1)
+							ChatUtil.SendServerMessage(client, translationID, args1);
+						else
+							ChatUtil.SendServerMessage(client, translationID, args1, args2);
+					}
+				}
+
+				if (secs <= 120 && GameServer.Instance.ServerStatus != eGameServerStatus.GSS_Closed) // 2 mins remaining
+				{
+					GameServer.Instance.Close();
+
+					foreach (GameClient client in WorldMgr.GetAllPlayingClients())
+					{
+						// Send twice for good measure
+						// Message: "The Atlas server is now closed to all incoming connections! The server will shut down in {0} seconds!"
+						ChatUtil.SendDebugMessage(client, "AdminCommands.Account.Msg.ServerClosed", secs);
+						ChatUtil.SendDebugMessage(client, "AdminCommands.Account.Msg.ServerClosed", secs);
+					}
+				}
+				
+				if (secs == 119 && GameServer.Instance.ServerStatus != eGameServerStatus.GSS_Closed && Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID))) // 2 mins remaining
+				{
+						var discordClient = new DiscordWebhookClient(Properties.DISCORD_WEBHOOK_ID);
+						// var discordClient = new DiscordWebhookClient("https://discord.com/api/webhooks/928723074898075708/cyZbVefc0gc__9c2wq3DwVxOBFIT45VyK-1-z7tT_uXDd--WcHrY1lw1y9H6wPg6SEyM");
+					
+						var message = new DiscordMessage(
+							"",
+							username: "Atlas GameServer",
+							avatarUrl: "https://cdn.discordapp.com/avatars/924819091028586546/656e2b335e60cb1bfaf3316d7754a8fd.webp",
+							tts: false,
+							embeds: new[]
+							{
+								new DiscordMessageEmbed(
+									color: 15158332,
+									description: "The server will reboot in **2 minutes** and is temporarily not accepting new incoming connections!\n Stay tuned for the patch notes.",
+									thumbnail: new DiscordMessageEmbedThumbnail("https://cdn.discordapp.com/emojis/893545614942564412.webp")
+								)
+							}
+						);
+
+						discordClient.SendToDiscord(message);
+				}
+			}
+		}
 		public static void CountDown(object param)
 		{
 			// Subtract the current callback time
@@ -311,6 +494,29 @@ namespace DOL.GS.Commands
 						ChatUtil.SendDebugMessage(client, "AdminCommands.Account.Msg.ServerClosed", secs);
 					}
 				}
+				
+				if (secs == 119 && GameServer.Instance.ServerStatus != eGameServerStatus.GSS_Closed && Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID))) // 2 mins remaining
+				{
+						var discordClient = new DiscordWebhookClient(Properties.DISCORD_WEBHOOK_ID);
+						// var discordClient = new DiscordWebhookClient("https://discord.com/api/webhooks/928723074898075708/cyZbVefc0gc__9c2wq3DwVxOBFIT45VyK-1-z7tT_uXDd--WcHrY1lw1y9H6wPg6SEyM");
+					
+						var message = new DiscordMessage(
+							"",
+							username: "Atlas GameServer",
+							avatarUrl: "https://cdn.discordapp.com/avatars/924819091028586546/656e2b335e60cb1bfaf3316d7754a8fd.webp",
+							tts: false,
+							embeds: new[]
+							{
+								new DiscordMessageEmbed(
+									color: 15158332,
+									description: "The server will reboot in **2 minutes** and is temporarily not accepting new incoming connections!\n Stay tuned for the patch notes.",
+									thumbnail: new DiscordMessageEmbedThumbnail("https://cdn.discordapp.com/emojis/893545614942564412.webp")
+								)
+							}
+						);
+
+						discordClient.SendToDiscord(message);
+				}
 			}
 		}
 		
@@ -416,6 +622,31 @@ namespace DOL.GS.Commands
 						{
 							log.Info("Shutdown aborted. Server still accepting incoming connections!");
 						}
+						
+						if (Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID)))
+						{
+
+							var discordClient = new DiscordWebhookClient(Properties.DISCORD_WEBHOOK_ID);
+							// var discordClient = new DiscordWebhookClient("https://discord.com/api/webhooks/928723074898075708/cyZbVefc0gc__9c2wq3DwVxOBFIT45VyK-1-z7tT_uXDd--WcHrY1lw1y9H6wPg6SEyM");
+					
+							var message = new DiscordMessage(
+								"",
+								username: "Atlas GameServer",
+								avatarUrl: "https://cdn.discordapp.com/avatars/924819091028586546/656e2b335e60cb1bfaf3316d7754a8fd.webp",
+								tts: false,
+								embeds: new[]
+								{
+									new DiscordMessageEmbed(
+										color: 3066993,
+										description: "The server restart has been cancelled.\nPlease stand by for additional information from Atlas team.",
+										thumbnail: new DiscordMessageEmbedThumbnail("https://cdn.discordapp.com/emojis/865577034087923742.png")
+									)
+								}
+							);
+
+							discordClient.SendToDiscord(message);
+						}
+						
 					}
 					// If no countdown is detected
 					else
@@ -470,7 +701,7 @@ namespace DOL.GS.Commands
 							date = new DateTime(date.Year, date.Month, date.Day, date.Hour + 1, 0, 0);
 
 						date = date.AddHours(hour - date.Hour);
-						date = date.AddMinutes(min - date.Minute + 2);
+						date = date.AddMinutes(min - date.Minute + 1);
 						date = date.AddSeconds(- date.Second);
 
 						m_counter = (date.ToFileTime() - DateTime.Now.ToFileTime()) / TimeSpan.TicksPerSecond;
@@ -575,6 +806,30 @@ namespace DOL.GS.Commands
 
 				// Message: "ATTENTION: A server shutdown will take place in {0} minutes! The shutdown is scheduled at {1}."
 				ChatUtil.SendServerMessage(m_client, "AdminCommands.Shutdown.Msg.AttentionShutdown", m_counter / 60, date.ToString("HH:mm \"GMT\" zzz"));
+			}
+
+			if (Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID)))
+			{
+
+				var discordClient = new DiscordWebhookClient(Properties.DISCORD_WEBHOOK_ID);
+				// var discordClient = new DiscordWebhookClient("https://discord.com/api/webhooks/928723074898075708/cyZbVefc0gc__9c2wq3DwVxOBFIT45VyK-1-z7tT_uXDd--WcHrY1lw1y9H6wPg6SEyM");
+					
+				var message = new DiscordMessage(
+					"",
+					username: "Atlas GameServer",
+					avatarUrl: "https://cdn.discordapp.com/avatars/924819091028586546/656e2b335e60cb1bfaf3316d7754a8fd.webp",
+					tts: false,
+					embeds: new[]
+					{
+						new DiscordMessageEmbed(
+							color: 15844367,
+							description: $"A server restart has been scheduled for {date:HH:mm \"GMT\" zzz}",
+							thumbnail: new DiscordMessageEmbedThumbnail("https://cdn.discordapp.com/attachments/879754382231613451/959414859932532756/unknown.png")
+						)
+					}
+				);
+
+				discordClient.SendToDiscord(message);
 			}
 
 			log.Warn(msg);

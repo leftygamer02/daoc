@@ -214,7 +214,16 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual string Description
 		{
-			get { return "QUEST DESCRIPTION UNDEFINED!"; }
+			get
+			{
+				switch (Step)
+				{
+					case -2: return "You have completed the quest!";
+					case -1: return "You have failed the quest!";
+					default: return "QUEST DESCRIPTION UNDEFINED!";
+				}
+				
+			}
 		}
 
 		/// <summary>
@@ -270,7 +279,7 @@ namespace DOL.GS.Quests
 		/// </summary>
 		public virtual void FinishQuest()
 		{
-			Step = -1; // -1 indicates finished or aborted quests etc, they won't show up in the list
+			Step = -2; // -2 indicates quest finished, -1 indicates aborted quests etc, they won't show up in the list
 			m_questPlayer.Out.SendMessage(String.Format(LanguageMgr.GetTranslation(m_questPlayer.Client, "AbstractQuest.FinishQuest.Completed", Name)), eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
 
 			// move quest from active list to finished list...
@@ -280,6 +289,7 @@ namespace DOL.GS.Quests
 				m_questPlayer.QuestListFinished.Add(this);
 
 			m_questPlayer.Out.SendQuestListUpdate();
+			m_questPlayer.SaveIntoDatabase();
 		}
 
 		/// <summary>
@@ -384,8 +394,8 @@ namespace DOL.GS.Quests
                 }
 
 				player.Out.SendTimerWindow(label, seconds);
-				player.QuestActionTimer = new RegionTimer(player);
-				player.QuestActionTimer.Callback = new RegionTimerCallback(QuestActionCallback);
+				player.QuestActionTimer = new ECSGameTimer(player);
+				player.QuestActionTimer.Callback = new ECSGameTimer.ECSTimerCallback(QuestActionCallback);
 				player.QuestActionTimer.Start(seconds * 1000);
 			}
 			else
@@ -394,9 +404,9 @@ namespace DOL.GS.Quests
 			}
 		}
 
-		protected virtual int QuestActionCallback(RegionTimer timer)
+		protected virtual int QuestActionCallback(ECSGameTimer timer)
 		{
-            GamePlayer player = timer.Owner as GamePlayer;
+            GamePlayer player = timer.TimerOwner as GamePlayer;
 
             if (player != null)
             {
@@ -603,7 +613,7 @@ namespace DOL.GS.Quests
 		public static Queue m_sayChatTypeQueue = new Queue();
 		public static Queue m_sayChatLocQueue = new Queue();
 
-		protected static int MakeSaySequence(RegionTimer callingTimer)
+		protected static int MakeSaySequence(ECSGameTimer callingTimer)
 		{
 			m_sayTimerQueue.Dequeue();
 			GamePlayer player = (GamePlayer)m_sayObjectQueue.Dequeue();
@@ -674,7 +684,7 @@ namespace DOL.GS.Quests
                 m_sayObjectQueue.Enqueue(player);
                 m_sayChatLocQueue.Enqueue(chatLoc);
                 m_sayChatTypeQueue.Enqueue(chatType);
-                m_sayTimerQueue.Enqueue(new RegionTimer(player, new RegionTimerCallback(MakeSaySequence), (int)delay * 100));
+                m_sayTimerQueue.Enqueue(new ECSGameTimer(player, new ECSGameTimer.ECSTimerCallback(MakeSaySequence), (int)delay * 100));
             }
 		}
 

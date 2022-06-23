@@ -24,6 +24,7 @@ using System.Reflection;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
+using DOL.GS.API;
 using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
@@ -175,6 +176,32 @@ namespace DOL.GS.ServerRules
 					client.IsConnected = false;
 					client.Out.SendLoginDenied(eLoginError.GameCurrentlyClosed);
 					log.Debug("IsAllowedToConnect deny access; staff only login");
+					return false;
+				}
+			}
+			
+			if (Properties.TESTER_LOGIN)
+			{
+				if (account == null || !account.IsTester && account.PrivLevel == 1)
+				{
+					// Admins and Testers are still allowed to enter server
+					// Normal Players will not be allowed to Log in
+					client.IsConnected = false;
+					client.Out.SendLoginDenied(eLoginError.GameCurrentlyClosed);
+					log.Debug("IsAllowedToConnect deny access; tester and staff only login");
+					return false;
+				}
+			}
+			
+			if (Properties.FORCE_DISCORD_LINK)
+			{
+				if (account == null || account.PrivLevel == 1 && account.DiscordID is (null or ""))
+				{
+					// GMs are still allowed to enter server
+					// Normal Players will not be allowed to Log in unless they have linked their Discord
+					client.IsConnected = false;
+					client.Out.SendLoginDenied(eLoginError.AccountNoAccessThisGame);
+					log.Debug("Denied access, account is not linked to Discord");
 					return false;
 				}
 			}
@@ -437,7 +464,7 @@ namespace DOL.GS.ServerRules
 		{
 			//we only allow certain spell targets to be cast when targeting a keep component
 			//tolakram - live allows most damage spells to be cast on doors. This should be handled in spell handlers
-			if (target is GameKeepComponent || target is GameKeepDoor)
+			if (target is GameKeepComponent || target is GameKeepDoor || target is GameSiegeWeapon)
 			{
 				bool isAllowed = false;
 
@@ -1012,7 +1039,7 @@ namespace DOL.GS.ServerRules
 				m_compatibleObjectTypes[(int)eObjectType.Hammer] = new eObjectType[] { eObjectType.Hammer, eObjectType.CrushingWeapon, eObjectType.Blunt };
 				m_compatibleObjectTypes[(int)eObjectType.Sword] = new eObjectType[] { eObjectType.Sword, eObjectType.SlashingWeapon, eObjectType.Blades };
 				m_compatibleObjectTypes[(int)eObjectType.LeftAxe] = new eObjectType[] { eObjectType.LeftAxe };
-				m_compatibleObjectTypes[(int)eObjectType.Axe] = new eObjectType[] { eObjectType.Axe, eObjectType.SlashingWeapon, eObjectType.Blades, eObjectType.LeftAxe };
+				m_compatibleObjectTypes[(int)eObjectType.Axe] = new eObjectType[] { eObjectType.Axe, eObjectType.SlashingWeapon, eObjectType.Blades }; //eObjectType.LeftAxe removed
 				m_compatibleObjectTypes[(int)eObjectType.HandToHand] = new eObjectType[] { eObjectType.HandToHand };
 				m_compatibleObjectTypes[(int)eObjectType.Spear] = new eObjectType[] { eObjectType.Spear, eObjectType.CelticSpear, eObjectType.PolearmWeapon };
 				m_compatibleObjectTypes[(int)eObjectType.CompositeBow] = new eObjectType[] { eObjectType.CompositeBow };
@@ -1054,7 +1081,7 @@ namespace DOL.GS.ServerRules
 				#region Worth no experience
 				//"This monster has been charmed recently and is worth no experience."
 				string message = "You gain no experience from this kill!";
-				if (killedNPC.CurrentRegion.Time - GameNPC.CHARMED_NOEXP_TIMEOUT < killedNPC.TempProperties.getProperty<long>(GameNPC.CHARMED_TICK_PROP))
+				if (killedNPC.CurrentRegion?.Time - GameNPC.CHARMED_NOEXP_TIMEOUT < killedNPC.TempProperties.getProperty<long>(GameNPC.CHARMED_TICK_PROP))
 				{
 					message = "This monster has been charmed recently and is worth no experience.";
 				}
@@ -1076,31 +1103,34 @@ namespace DOL.GS.ServerRules
 				Dictionary<Group, int> plrGrpExp = new Dictionary<Group, int>();
 				GamePlayer highestPlayer = null;
 				bool isGroupInRange = false;
-				//Collect the total damage
-				foreach (DictionaryEntry de in killedNPC.XPGainers)
+				lock (killedNPC.XPGainers.SyncRoot)
 				{
-					totalDamage += (float)de.Value;
-					GamePlayer player = de.Key as GamePlayer;
-
-					//Check stipulations (this will ignore all pet damage)
-					if (player == null || player.ObjectState != GameObject.eObjectState.Active || !player.IsWithinRadius(killedNPC, WorldMgr.MAX_EXPFORKILL_DISTANCE))
-						continue;
-
-					if (player.Group != null)
+					//Collect the total damage
+					foreach (DictionaryEntry de in killedNPC.XPGainers)
 					{
-						// checking to see if any group members are in range of the killer
-						if (player != (killer as GamePlayer))
-							isGroupInRange = true;
+						totalDamage += (float)de.Value;
+						GamePlayer player = de.Key as GamePlayer;
 
-						if (plrGrpExp.ContainsKey(player.Group))
-							plrGrpExp[player.Group] += 1;
-						else
-							plrGrpExp[player.Group] = 1;
+						//Check stipulations (this will ignore all pet damage)
+						if (player == null || player.ObjectState != GameObject.eObjectState.Active || !player.IsWithinRadius(killedNPC, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+							continue;
+
+						if (player.Group != null)
+						{
+							// checking to see if any group members are in range of the killer
+							if (player != (killer as GamePlayer))
+								isGroupInRange = true;
+
+							if (plrGrpExp.ContainsKey(player.Group))
+								plrGrpExp[player.Group] += 1;
+							else
+								plrGrpExp[player.Group] = 1;
+						}
+
+						// tolakram: only prepare for xp challenge code if player is in a group
+						if (highestPlayer == null || (player.Level > highestPlayer.Level))
+							highestPlayer = player;
 					}
-
-					// tolakram: only prepare for xp challenge code if player is in a group
-					if (highestPlayer == null || (player.Level > highestPlayer.Level))
-						highestPlayer = player;
 				}
 				#endregion
 
@@ -1114,307 +1144,315 @@ namespace DOL.GS.ServerRules
 				if (highestPlayer != null)
 					highestConValue = highestPlayer.GetConLevel(killedNPC);
 
-				//Now deal the XP to all livings
-				foreach (DictionaryEntry de in killedNPC.XPGainers)
+				lock (killedNPC.XPGainers.SyncRoot)
 				{
-					GameLiving living = de.Key as GameLiving;
-					GamePlayer player = living as GamePlayer;
-
-					if (living is NecromancerPet)
+					//Now deal the XP to all livings
+					foreach (DictionaryEntry de in killedNPC.XPGainers)
 					{
-						NecromancerPet necroPet = living as NecromancerPet;
-						player = ((necroPet.Brain as IControlledBrain).Owner) as GamePlayer;
-					}
+						GameLiving living = de.Key as GameLiving;
+						GamePlayer player = living as GamePlayer;
 
-					//Check stipulations
-					if (living == null || living.ObjectState != GameObject.eObjectState.Active || !living.IsWithinRadius(killedNPC, WorldMgr.MAX_EXPFORKILL_DISTANCE))
-						continue;
-
-					//Changed: people were getting penalized for their pets doing damage
-					double damagePercent = (float)de.Value / totalDamage;
-
-					#region Realm Points
-
-					// realm points
-					int rpCap = living.RealmPointsValue * 2;
-					int realmPoints = 0;
-
-					// Keep and Tower captures reward full RP and BP value to each player
-					if (killedNPC is GuardLord)
-					{
-						realmPoints = npcRPValue;
-					}
-					else
-					{
-						realmPoints = (int)(npcRPValue * damagePercent);
-						//rp bonuses from RR and Group
-						//100% if full group,scales down according to player count in group and their range to target
-						if (player != null && player.Group != null && plrGrpExp.ContainsKey(player.Group))
+						if (living is NecromancerPet)
 						{
-							realmPoints = (int)(realmPoints * (1.0 + plrGrpExp[player.Group] * 0.5));
-						}
-					}
-
-					if (realmPoints > rpCap && !(killedNPC is Doppelganger))
-						realmPoints = rpCap;
-
-					if (realmPoints > 0)
-						living.GainRealmPoints(realmPoints);
-
-					#endregion
-
-					#region Bounty Points
-
-					// bounty points
-
-					int bpCap = living.BountyPointsValue * 2;
-					int bountyPoints = 0;
-
-					// Keep and Tower captures reward full RP and BP value to each player
-					if (killedNPC is GuardLord)
-					{
-						bountyPoints = npcBPValue;
-					}
-					else
-					{
-						bountyPoints = (int)(npcBPValue * damagePercent);
-					}
-
-					if (bountyPoints > bpCap && !(killedNPC is Doppelganger))
-						bountyPoints = bpCap;
-					if (bountyPoints > 0)
-						living.GainBountyPoints(bountyPoints);
-
-					#endregion
-
-					// experience points
-					long xpReward = 0;
-					long campBonus = 0;
-					long groupExp = 0;
-					long outpostXP = 0;
-
-					if (player != null && (player.Group == null || !plrGrpExp.ContainsKey(player.Group)))
-						xpReward = (long)(npcExpValue * damagePercent); // exp for damage percent
-					else
-						xpReward = npcExpValue;
-
-					//xp should divided across all members in the group, per this article: https://camelot.allakhazam.com/story.html?story=491
-					if (player != null && player.Group != null && player.Group.MemberCount > 1)
-					{
-						int scalingFactor = (int)Math.Ceiling((decimal)player.Group.MemberCount);
-						long tmpxp = (long)(xpReward * (1 + 0.125 * GetUniqueClassCount(player.Group)));
-						xpReward = tmpxp / scalingFactor;
-						//xpReward /= scalingFactor;
-					}
-
-					// exp cap
-					/*
-					
-					http://support.darkageofcamelot.com/kb/article.php?id=438
-					 
-					Experience clamps have been raised from 1.1x a same level kill to 1.25x a same level kill.
-					This change has two effects: it will allow lower level players in a group to gain more experience faster (15% faster),
-					and it will also let higher level players (the 35-50s who tend to hit this clamp more often) to gain experience faster.
-					 */
-					long expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(living.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100);
-
-					if (player != null)
-					{
-						expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(player.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100);
-
-						if (player.Group != null && isGroupInRange)
-						{
-							// Optional group cap can be set different from standard player cap
-							expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(player.Level) * ServerProperties.Properties.XP_GROUP_CAP_PERCENT / 100);
-						}
-					}
-
-					#region Challenge Code
-					//let's check the con, for example if a level 50 kills a green, we want our level 1 to get green xp too
-					/*
-					 * http://www.camelotherald.com/more/110.shtml
-					 * All group experience is divided evenly amongst group members, if they are in the same level range. What's a level range? One color range.
-					 * If everyone in the group cons yellow to each other (or high blue, or low orange), experience will be shared out exactly evenly, with no leftover points.
-					 * How can you determine a color range? Simple - Level divided by ten plus one. So, to a level 40 player (40/10 + 1), 36-40 is yellow, 31-35 is blue,
-					 * 26-30 is green, and 25-less is gray. But for everyone in the group to get the maximum amount of experience possible, the encounter must be a challenge to
-					 * the group. If the group has two people, the monster must at least be (con) yellow to the highest level member. If the group has four people, the monster
-					 * must at least be orange. If the group has eight, the monster must at least be red.
-					 *
-					 * If "challenge code" has been activated, then the experience is divided roughly like so in a group of two (adjust the colors up if the group is bigger): If
-					 * the monster was blue to the highest level player, each lower level group member will ROUGHLY receive experience as if they soloed a blue monster.
-					 * Ditto for green. As everyone knows, a monster that cons gray to the highest level player will result in no exp for anyone. If the monster was high blue,
-					 * challenge code may not kick in. It could also kick in if the monster is low yellow to the high level player, depending on the group strength of the pair.
-					 */
-					//xp challenge
-					if (player != null && highestPlayer != null && highestConValue < 0)
-					{
-						//challenge success, the xp needs to be reduced to the proper con
-						expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(GameObject.GetLevelFromCon(player.Level, highestConValue)));
-					}
-
-
-					#endregion
-
-					expCap = (long)(expCap * npcExceedXPCapAmount);
-
-					if (xpReward > expCap)
-						xpReward = expCap;
-
-					if(player != null && player.Group != null && (player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose))
-                    {
-						player.Out.SendMessage($"XP Award: {xpReward.ToString("N0", format)} | Group XP Cap: {expCap.ToString("N0", format)}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						double expPercent = ((double)(xpReward) / (double)(expCap)) * 100;
-						player.Out.SendMessage($"% of Cap: {expPercent.ToString(".##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						player.Out.SendMessage($"---------------------------------------------------", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					}
-
-					#region Camp Bonus
-					// average max camp bonus is somewhere between 50 and 60%
-					double fullCampBonus = ServerProperties.Properties.MAX_CAMP_BONUS;
-					double campBonusPerc = 0;
-
-					if (GameLoop.GameLoopTime - killedNPC.SpawnTick > 1800000) // spawn of this NPC was more than 30 minutes ago -> full camp bonus
-					{
-						campBonusPerc = fullCampBonus;
-						killedNPC.CampBonus = 0.95;
-					}
-					else
-					{
-						campBonusPerc = fullCampBonus * killedNPC.CampBonus;
-						if (killedNPC.CampBonus >= 0.03) killedNPC.CampBonus -= 0.03; // decrease camp bonus by 2% per kill
-					}
-
-					//1.49 http://news-daoc.goa.com/view_patchnote_archive.php?id_article=2478
-					//"Camp bonuses" have been substantially upped in dungeons. Now camp bonuses in dungeons are, on average, 20% higher than outside camp bonuses.
-					if (killer.CurrentZone.IsDungeon)
-						campBonusPerc *= 1.50;
-
-					if (campBonusPerc < 0.01)
-						campBonusPerc = 0;
-					else if (campBonusPerc > fullCampBonus)
-						campBonusPerc = fullCampBonus;
-
-					campBonus = (long)(xpReward * campBonusPerc);
-					#endregion
-
-					#region Atlas Bonus
-					//up to 100% more exp while solo, scaled lower as group size grows
-					long atlasBonus = 0;
-					if (player != null && player.Group != null)
-					{
-						atlasBonus = (xpReward) / player.Group.GetPlayersInTheGroup().Count;
-					}
-					else
-						atlasBonus = (xpReward);
-
-					#endregion
-
-					#region Outpost Bonus
-					//outpost XP
-					//1.54 http://www.camelotherald.com/more/567.shtml
-					//- Players now receive an exp bonus when fighting within 16,000
-					//units of a keep controlled by your realm or your guild.
-					//You get 20% bonus if your guild owns the keep or a 10% bonus
-					//if your realm owns the keep.
-
-					if (player != null)
-					{
-						AbstractGameKeep keep = GameServer.KeepManager.GetKeepCloseToSpot(living.CurrentRegionID, living, 16000);
-						if (keep != null)
-						{
-							byte bonus = 0;
-							if (keep.Guild != null && keep.Guild == player.Guild)
-								bonus = 20;
-							else if (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_Normal &&
-									 keep.Realm == living.Realm)
-								bonus = 10;
-
-							outpostXP = (xpReward / 100) * bonus;
+							NecromancerPet necroPet = living as NecromancerPet;
+							player = ((necroPet.Brain as IControlledBrain).Owner) as GamePlayer;
 						}
 
-						//FIXME: [WARN] this is a guess, I do not know the real way this is applied
-						//apply the keep bonus for experience
-						if (Keeps.KeepBonusMgr.RealmHasBonus(eKeepBonusType.Experience_5, living.Realm))
-							outpostXP += (xpReward / 100) * 5;
-						else if (Keeps.KeepBonusMgr.RealmHasBonus(eKeepBonusType.Experience_3, living.Realm))
-							outpostXP += (xpReward / 100) * 3;
-					}
-					#endregion
+						//Check stipulations
+						if (living == null || living.ObjectState != GameObject.eObjectState.Active || !living.IsWithinRadius(killedNPC, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+							continue;
 
-					if (xpReward > 0)
-					{
+						//Changed: people were getting penalized for their pets doing damage
+						double damagePercent = (float)de.Value / totalDamage;
+
+						#region Realm Points
+
+						// realm points
+						int rpCap = living.RealmPointsValue * 2;
+						int realmPoints = 0;
+
+						// Keep and Tower captures reward full RP and BP value to each player
+						if (killedNPC is GuardLord)
+						{
+							realmPoints = npcRPValue;
+						}
+						else
+						{
+							realmPoints = (int)(npcRPValue * damagePercent);
+							//rp bonuses from RR and Group
+							//100% if full group,scales down according to player count in group and their range to target
+							if (player != null && player.Group != null && plrGrpExp.ContainsKey(player.Group))
+							{
+								realmPoints = (int)(realmPoints * (1.0 + plrGrpExp[player.Group] * 0.5));
+							}
+						}
+
+						if (realmPoints > rpCap && !(killedNPC is Doppelganger))
+							realmPoints = rpCap;
+
+						if (realmPoints > 0)
+							living.GainRealmPoints(realmPoints);
+
+						#endregion
+
+						#region Bounty Points
+
+						// bounty points
+
+						int bpCap = living.BountyPointsValue * 2;
+						int bountyPoints = 0;
+
+						// Keep and Tower captures reward full RP and BP value to each player
+						if (killedNPC is GuardLord)
+						{
+							bountyPoints = npcBPValue;
+						}
+						else
+						{
+							bountyPoints = (int)(npcBPValue * damagePercent);
+						}
+
+						if (bountyPoints > bpCap && !(killedNPC is Doppelganger))
+							bountyPoints = bpCap;
+						if (bountyPoints > 0)
+							living.GainBountyPoints(bountyPoints);
+
+						#endregion
+
+						// experience points
+						long xpReward = 0;
+						long campBonus = 0;
+						long groupExp = 0;
+						long outpostXP = 0;
+
+						if (player != null && (player.Group == null || !plrGrpExp.ContainsKey(player.Group)))
+							xpReward = (long)(npcExpValue * damagePercent); // exp for damage percent
+						else
+							xpReward = npcExpValue;
+
+						//xp should divided across all members in the group, per this article: https://camelot.allakhazam.com/story.html?story=491
+						if (player != null && player.Group != null && player.Group.MemberCount > 1)
+						{
+							int scalingFactor = (int)Math.Ceiling((decimal)player.Group.MemberCount);
+							long tmpxp = (long)(xpReward * (1 + 0.125 * GetUniqueClassCount(player.Group)));
+							xpReward = tmpxp / scalingFactor;
+							//xpReward /= scalingFactor;
+						}
+
+						// exp cap
+						/*
+
+						http://support.darkageofcamelot.com/kb/article.php?id=438
+
+						Experience clamps have been raised from 1.1x a same level kill to 1.25x a same level kill.
+						This change has two effects: it will allow lower level players in a group to gain more experience faster (15% faster),
+						and it will also let higher level players (the 35-50s who tend to hit this clamp more often) to gain experience faster.
+						 */
+						long expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(living.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100);
+
 						if (player != null)
 						{
-							if (player.XPLogState == eXPLogState.Verbose)
+							expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(player.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100);
+
+							if (player.Group != null && isGroupInRange)
 							{
-								player.Out.SendMessage($"% of Camp remaining: {(campBonusPerc * 100 / fullCampBonus).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
+								// Optional group cap can be set different from standard player cap
+								expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(player.Level) * ServerProperties.Properties.XP_GROUP_CAP_PERCENT / 100);
 							}
-							
-							if (player.Group != null && plrGrpExp.ContainsKey(player.Group))
-								groupExp += (long)(0.125 * xpReward * GetUniqueClassCount(player.Group)/*(int)plrGrpExp[player.Group]*/);
-
-							// tolakram - remove this for now.  Correct calculation should be reduced XP based on damage pet did, not a flat reduction
-							//if (player.ControlledNpc != null)
-							//    xpReward = (long)(xpReward * 0.75);
 						}
 
-						//Ok we've calculated all the base experience.  Now let's add them all together.
-						xpReward += (long)campBonus + groupExp + outpostXP + atlasBonus;
-
-						if (!living.IsAlive)//Dead living gets 25% exp only
-							xpReward = (long)(xpReward * 0.25);
-
-						//scale xp reward based off of # of groups who participated in the kill
-						if(plrGrpExp.Count > 0)
-							xpReward /= plrGrpExp.Count;
-
-						if (player != null && (player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose))
+						#region Challenge Code
+						//let's check the con, for example if a level 50 kills a green, we want our level 1 to get green xp too
+						/*
+						 * http://www.camelotherald.com/more/110.shtml
+						 * All group experience is divided evenly amongst group members, if they are in the same level range. What's a level range? One color range.
+						 * If everyone in the group cons yellow to each other (or high blue, or low orange), experience will be shared out exactly evenly, with no leftover points.
+						 * How can you determine a color range? Simple - Level divided by ten plus one. So, to a level 40 player (40/10 + 1), 36-40 is yellow, 31-35 is blue,
+						 * 26-30 is green, and 25-less is gray. But for everyone in the group to get the maximum amount of experience possible, the encounter must be a challenge to
+						 * the group. If the group has two people, the monster must at least be (con) yellow to the highest level member. If the group has four people, the monster
+						 * must at least be orange. If the group has eight, the monster must at least be red.
+						 *
+						 * If "challenge code" has been activated, then the experience is divided roughly like so in a group of two (adjust the colors up if the group is bigger): If
+						 * the monster was blue to the highest level player, each lower level group member will ROUGHLY receive experience as if they soloed a blue monster.
+						 * Ditto for green. As everyone knows, a monster that cons gray to the highest level player will result in no exp for anyone. If the monster was high blue,
+						 * challenge code may not kick in. It could also kick in if the monster is low yellow to the high level player, depending on the group strength of the pair.
+						 */
+						//xp challenge
+						if (player != null && highestPlayer != null && highestConValue < 0)
 						{
-							double baseXP = xpReward - atlasBonus - campBonus - groupExp - outpostXP;
-							/*int scaleFactor = 1;
-							if (player.Group?.MemberCount > 1)
-								scaleFactor = player.Group.MemberCount;
-							double softXPCap = (long)((GameServer.ServerRules.GetExperienceForLiving(highestPlayer.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100) / scaleFactor);
-							if (player.CurrentRegion.IsRvR)
-								softXPCap = (long)(softXPCap * ServerProperties.Properties.RvR_XP_RATE);
-							else
-								softXPCap = (long)(softXPCap * ServerProperties.Properties.XP_RATE);
-							*/
-							//Console.WriteLine($"Soft xp cap: {softXPCap} getexp: {GameServer.ServerRules.GetExperienceForLiving(Level)}");
-							long softXPCap = (long)(GameServer.ServerRules.GetExperienceForLiving(living.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100);
-							player.Out.SendMessage($"Mob Base XP: {baseXP.ToString("N0", format)} | Solo Cap for Level: {softXPCap.ToString("N0", format)}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-							player.Out.SendMessage($"% of Cap: {((double)((baseXP) / (softXPCap)) * 100).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-							if (player.XPLogState == eXPLogState.Verbose)
-							{
-								double soloPercent = ((double)atlasBonus / (baseXP)) * 100.0;
-								double campPercent = ((double)campBonus / (baseXP)) * 100.0;
-								double groupPercent = ((double)groupExp / (baseXP)) * 100.0;
-								double outpostPercent = ((double)outpostXP / (baseXP)) * 100.0;
-								double levelPercent = ((double)(player.Experience + xpReward - player.ExperienceForCurrentLevel) / (player.ExperienceForNextLevel - player.ExperienceForCurrentLevel)) * 100;
-
-								if (atlasBonus > 0)
-									player.Out.SendMessage($"Atlas: {atlasBonus.ToString("N0", format)} | {soloPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-								if (campBonus > 0)
-									player.Out.SendMessage($"Camp: {campBonus.ToString("N0", format)} | {campPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-								if (player.Group != null)
-									player.Out.SendMessage($"Group: {groupExp.ToString("N0", format)} | {groupPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-								if (outpostXP > 0)
-									player.Out.SendMessage($"Outpost: {outpostXP.ToString("N0", format)} | {outpostPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-								//player.Out.SendMessage($"Total Bonus: {((double)((atlasBonus + campBonus + groupExp + outpostXP) / xpReward) * 100).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-								player.Out.SendMessage($"XP needed: {player.ExperienceForNextLevel.ToString("N0", format)} | {levelPercent.ToString("0.##")}% done with current level", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-								player.Out.SendMessage($"# of kills needed to level at this rate: {(player.ExperienceForNextLevel - player.Experience) / xpReward}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-							}
+							//challenge success, the xp needs to be reduced to the proper con
+							expCap = (long)(GameServer.ServerRules.GetExperienceForLiving(GameObject.GetLevelFromCon(player.Level, highestConValue)));
 						}
 
-						//XP Rate is handled in GainExperience
-						living.GainExperience(eXPSource.NPC, xpReward, campBonus, groupExp, outpostXP, atlasBonus, true, true, true);
+
+						#endregion
+
+						expCap = (long)(expCap * npcExceedXPCapAmount);
+
+						if (xpReward > expCap)
+							xpReward = expCap;
+
+						if (player != null && player.Group != null && (player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose))
+						{
+							player.Out.SendMessage($"XP Award: {xpReward.ToString("N0", format)} | Group XP Cap: {expCap.ToString("N0", format)}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							double expPercent = ((double)(xpReward) / (double)(expCap)) * 100;
+							player.Out.SendMessage($"% of Cap: {expPercent.ToString(".##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							player.Out.SendMessage($"---------------------------------------------------", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						}
+
+						#region Camp Bonus
+						// average max camp bonus is somewhere between 50 and 60%
+						double fullCampBonus = ServerProperties.Properties.MAX_CAMP_BONUS;
+						if (killer.CurrentZone.IsDungeon)
+							fullCampBonus = 1; //dungeon gives +100% camp xp
+
+						double campBonusPerc = 0;
+
+						if (GameLoop.GameLoopTime - killedNPC.SpawnTick > 1800000) // spawn of this NPC was more than 30 minutes ago -> full camp bonus
+						{
+							campBonusPerc = fullCampBonus;
+							killedNPC.CampBonus = 0.98;
+						}
+						else
+						{
+							campBonusPerc = fullCampBonus * killedNPC.CampBonus;
+							if (killedNPC.CampBonus >= 0.02) killedNPC.CampBonus -= 0.02; // decrease camp bonus by 2% per kill
+						}
+
+						//1.49 http://news-daoc.goa.com/view_patchnote_archive.php?id_article=2478
+						//"Camp bonuses" have been substantially upped in dungeons. Now camp bonuses in dungeons are, on average, 20% higher than outside camp bonuses.
+						if (killer.CurrentZone.IsDungeon)
+							campBonusPerc *= 1.50;
+
+
+						if (campBonusPerc < 0.01)
+							campBonusPerc = 0;
+						else if (campBonusPerc > fullCampBonus)
+							campBonusPerc = fullCampBonus;
+
+						campBonus = (long)(xpReward * campBonusPerc);
+						#endregion
+
+						#region Atlas Bonus
+						//up to 100% more exp while solo, scaled lower as group size grows
+						long atlasBonus = 0;
+						if (player != null && player.Group != null)
+						{
+							atlasBonus = (xpReward) / player.Group.GetPlayersInTheGroup().Count;
+						}
+						else
+							atlasBonus = (xpReward);
+
+						#endregion
+
+						#region Outpost Bonus
+						//outpost XP
+						//1.54 http://www.camelotherald.com/more/567.shtml
+						//- Players now receive an exp bonus when fighting within 16,000
+						//units of a keep controlled by your realm or your guild.
+						//You get 20% bonus if your guild owns the keep or a 10% bonus
+						//if your realm owns the keep.
+
+						if (player != null)
+						{
+							AbstractGameKeep keep = GameServer.KeepManager.GetKeepCloseToSpot(living.CurrentRegionID, living, 16000);
+							if (keep != null)
+							{
+								byte bonus = 0;
+								if (keep.Guild != null && keep.Guild == player.Guild)
+									bonus = 20;
+								else if (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_Normal &&
+										 keep.Realm == living.Realm)
+									bonus = 10;
+
+								outpostXP = (xpReward / 100) * bonus;
+							}
+
+							//FIXME: [WARN] this is a guess, I do not know the real way this is applied
+							//apply the keep bonus for experience
+							if (Keeps.KeepBonusMgr.RealmHasBonus(eKeepBonusType.Experience_5, living.Realm))
+								outpostXP += (xpReward / 100) * 5;
+							else if (Keeps.KeepBonusMgr.RealmHasBonus(eKeepBonusType.Experience_3, living.Realm))
+								outpostXP += (xpReward / 100) * 3;
+						}
+						#endregion
+
+						if (xpReward > 0)
+						{
+							if (player != null)
+							{
+								if (player.XPLogState == eXPLogState.Verbose)
+								{
+									player.Out.SendMessage($"% of Camp remaining: {(campBonusPerc * 100 / fullCampBonus).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+								}
+
+								if (player.Group != null && plrGrpExp.ContainsKey(player.Group))
+									groupExp += (long)(0.125 * xpReward * GetUniqueClassCount(player.Group)/*(int)plrGrpExp[player.Group]*/);
+
+								// tolakram - remove this for now.  Correct calculation should be reduced XP based on damage pet did, not a flat reduction
+								//if (player.ControlledNpc != null)
+								//    xpReward = (long)(xpReward * 0.75);
+							}
+
+							//Ok we've calculated all the base experience.  Now let's add them all together.
+							xpReward += (long)campBonus + groupExp + outpostXP + atlasBonus;
+
+							if (!living.IsAlive)//Dead living gets 25% exp only
+								xpReward = (long)(xpReward * 0.25);
+
+							//scale xp reward based off of # of groups who participated in the kill
+							if (plrGrpExp.Count > 0)
+								xpReward /= plrGrpExp.Count;
+
+							if (player != null && (player.XPLogState == eXPLogState.On || player.XPLogState == eXPLogState.Verbose))
+							{
+								double baseXP = xpReward - atlasBonus - campBonus - groupExp - outpostXP;
+								/*int scaleFactor = 1;
+								if (player.Group?.MemberCount > 1)
+									scaleFactor = player.Group.MemberCount;
+								double softXPCap = (long)((GameServer.ServerRules.GetExperienceForLiving(highestPlayer.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100) / scaleFactor);
+								if (player.CurrentRegion.IsRvR)
+									softXPCap = (long)(softXPCap * ServerProperties.Properties.RvR_XP_RATE);
+								else
+									softXPCap = (long)(softXPCap * ServerProperties.Properties.XP_RATE);
+								*/
+								//Console.WriteLine($"Soft xp cap: {softXPCap} getexp: {GameServer.ServerRules.GetExperienceForLiving(Level)}");
+								long softXPCap = (long)(GameServer.ServerRules.GetExperienceForLiving(living.Level) * ServerProperties.Properties.XP_CAP_PERCENT / 100);
+								player.Out.SendMessage($"Base XP: {baseXP.ToString("N0", format)} | Solo Cap : {softXPCap.ToString("N0", format)} | %Cap: {((double)((baseXP) / (softXPCap)) * 100).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+								if (player.XPLogState == eXPLogState.Verbose)
+								{
+									double soloPercent = ((double)atlasBonus / (baseXP)) * 100.0;
+									double campPercent = ((double)campBonus / (baseXP)) * 100.0;
+									double groupPercent = ((double)groupExp / (baseXP)) * 100.0;
+									double outpostPercent = ((double)outpostXP / (baseXP)) * 100.0;
+									double levelPercent = ((double)(player.Experience + xpReward - player.ExperienceForCurrentLevel) / (player.ExperienceForNextLevel - player.ExperienceForCurrentLevel)) * 100;
+
+									player.Out.SendMessage($"XP needed: {player.ExperienceForNextLevel.ToString("N0", format)} | {levelPercent.ToString("0.##")}% done with current level", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									player.Out.SendMessage($"# of kills needed to level at this rate: {(player.ExperienceForNextLevel - player.Experience) / xpReward}", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+									if (atlasBonus > 0)
+										player.Out.SendMessage($"Atlas: {atlasBonus.ToString("N0", format)} | {soloPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+									if (campBonus > 0)
+										player.Out.SendMessage($"Camp: {campBonus.ToString("N0", format)} | {campPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+									if (player.Group != null)
+										player.Out.SendMessage($"Group: {groupExp.ToString("N0", format)} | {groupPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+									if (outpostXP > 0)
+										player.Out.SendMessage($"Outpost: {outpostXP.ToString("N0", format)} | {outpostPercent.ToString("0.##")}% bonus", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+									//player.Out.SendMessage($"Total Bonus: {((double)((atlasBonus + campBonus + groupExp + outpostXP) / xpReward) * 100).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+
+								}
+							}
+
+							//XP Rate is handled in GainExperience
+							living.GainExperience(eXPSource.NPC, xpReward, campBonus, groupExp, outpostXP, atlasBonus, true, true, true);
+						}
 					}
 				}
 			}
@@ -1668,7 +1706,7 @@ namespace DOL.GS.ServerRules
 
 					// realm points
 					int rpCap = living.RealmPointsValue * 2;
-					int realmPoints = (int)(playerRPValue * damagePercent * 0.5);
+					int realmPoints = (int)(playerRPValue * damagePercent);
 
                     switch (expGainPlayer?.GetConLevel(killedPlayer))
                     {
@@ -1848,37 +1886,56 @@ namespace DOL.GS.ServerRules
 						{
 							case eRealm.Albion:
 								expGainPlayer.KillsAlbionPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Players_Killed);
 								if (expGainPlayer == killer)
 								{
 									expGainPlayer.KillsAlbionDeathBlows++;
-									if ((float)de.Value == totalDamage)
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
 										expGainPlayer.KillsAlbionSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Solo_Kills);
+									}
+										
 								}
 								break;
 
 							case eRealm.Hibernia:
 								expGainPlayer.KillsHiberniaPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Players_Killed);
 								if (expGainPlayer == killer)
 								{
 									expGainPlayer.KillsHiberniaDeathBlows++;
-									if ((float)de.Value == totalDamage)
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
 										expGainPlayer.KillsHiberniaSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Solo_Kills);
+									}
 								}
 								break;
 
 							case eRealm.Midgard:
 								expGainPlayer.KillsMidgardPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Players_Killed);
 								if (expGainPlayer == killer)
 								{
 									expGainPlayer.KillsMidgardDeathBlows++;
-									if ((float)de.Value == totalDamage)
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
 										expGainPlayer.KillsMidgardSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Solo_Kills);
+									}
+										
 								}
 								break;
 						}
-						killedPlayer.DeathsPvP++;
+						
 					}
 				}
+                
+                killedPlayer.DeathsPvP++;
 
 				//for each group member, a 50% chance to get a ROG
                 foreach (var grp in groupsToAward)
@@ -1886,7 +1943,7 @@ namespace DOL.GS.ServerRules
 					List<GamePlayer> players = new List<GamePlayer>();
 					foreach (GamePlayer pla in grp.GetPlayersInTheGroup())
                     {
-                        if (Util.Chance(50) && !playersToAward.Contains(pla))
+                        if (!playersToAward.Contains(pla))
                         {
 							playersToAward.Add(pla);
 						}
@@ -2067,6 +2124,7 @@ namespace DOL.GS.ServerRules
 			List<string> stat = new List<string>();
 
 			int total = 0;
+			
 			#region Players Killed
 			//only show if there is a kill [by Suncheck]
 			if ((player.KillsAlbionPlayers + player.KillsMidgardPlayers + player.KillsHiberniaPlayers) > 0)
@@ -2090,10 +2148,16 @@ namespace DOL.GS.ServerRules
 						total = player.KillsMidgardPlayers + player.KillsAlbionPlayers;
 						break;
 				}
-				stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Kill.TotalPlayers") + ": " + total.ToString("N0"));
+				if (total > 0)
+				{
+					stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Kill.TotalPlayers") + ": " + total.ToString("N0"));
+					stat.Add(" ");
+				}
+				
+				
 			}
 			#endregion
-			stat.Add(" ");
+			
 			#region Players Deathblows
 			//only show if there is a kill [by Suncheck]
 			if ((player.KillsAlbionDeathBlows + player.KillsMidgardDeathBlows + player.KillsHiberniaDeathBlows) > 0)
@@ -2117,7 +2181,11 @@ namespace DOL.GS.ServerRules
 						total = player.KillsMidgardDeathBlows + player.KillsAlbionDeathBlows;
 						break;
 				}
-				stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Deathblows.TotalPlayers") + ": " + total.ToString("N0"));
+				if (total > 0)
+				{
+					stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
+						"PlayerStatistic.Deathblows.TotalPlayers") + ": " + total.ToString("N0"));
+				}
 			}
 			#endregion
 			stat.Add(" ");
@@ -2144,13 +2212,18 @@ namespace DOL.GS.ServerRules
 						total = player.KillsMidgardSolo + player.KillsAlbionSolo;
 						break;
 				}
-				stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Solo.TotalPlayers") + ": " + total.ToString("N0"));
+
+				if (total > 0)
+				{
+					stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language,
+						"PlayerStatistic.Solo.TotalPlayers") + ": " + total.ToString("N0"));
+				}
 			}
 			#endregion
 			stat.Add(" ");
 			#region Keeps
 			//only show if there is a capture [by Suncheck]
-			if ((player.CapturedKeeps + player.CapturedTowers) > 0)
+			if ((player.CapturedKeeps + player.CapturedRelics) > 0)
 			{
 				stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Capture.Title"));
 				//stat.Add("Relics Taken: " + player.RelicsTaken.ToString("N0"));
@@ -2162,7 +2235,10 @@ namespace DOL.GS.ServerRules
 				//stat.Add("Albion Towers Captured: " + player.CapturedAlbionTowers.ToString("N0"));
 				//stat.Add("Midgard Towers Captured: " + player.CapturedMidgardTowers.ToString("N0"));
 				//stat.Add("Hibernia Towers Captured: " + player.CapturedHiberniaTowers.ToString("N0"));
-				if (player.CapturedTowers > 0) stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Capture.Towers") + ": " + player.CapturedTowers.ToString("N0"));
+				if(player.CapturedRelics > 0) stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Capture.Relics") + ": " + player.CapturedRelics.ToString("N0"));
+				//
+				//if (player.CapturedTowers > 0) stat.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "PlayerStatistic.Capture.Towers") + ": " + player.CapturedTowers.ToString("N0"));
+				//
 				//stat.Add("Tower Captains Slain: " + player.TowerCaptainsSlain.ToString("N0"));
 				//stat.Add("Realm Guard Kills Albion: " + player.RealmGuardTotalKills.ToString("N0"));
 				//stat.Add("Realm Guard Kills Midgard: " + player.RealmGuardTotalKills.ToString("N0"));
@@ -2335,7 +2411,21 @@ namespace DOL.GS.ServerRules
 					player.Out.SendMerchantWindow(HouseTemplateMgr.OutdoorShopItems, merchantType);
 					break;
 				case eMerchantWindowType.HousingBindstoneHookpoint:
-					player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItems, merchantType);
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItemsAlb, merchantType);
+							break;
+						case eRealm.Midgard:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItemsMid, merchantType);
+							break;
+						case eRealm.Hibernia:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItemsHib, merchantType);
+							break;
+						default:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorBindstoneShopItems, merchantType);
+							break;
+					}
 					break;
 				case eMerchantWindowType.HousingCraftingHookpoint:
 					player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorCraftShopItems, merchantType);
@@ -2344,7 +2434,21 @@ namespace DOL.GS.ServerRules
 					player.Out.SendMerchantWindow(HouseTemplateMgr.GetNpcShopItems(player), merchantType);
 					break;
 				case eMerchantWindowType.HousingVaultHookpoint:
-					player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItems, merchantType);
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItemsAlb, merchantType);
+							break;
+						case eRealm.Midgard:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItemsMid, merchantType);
+							break;
+						case eRealm.Hibernia:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItemsHib, merchantType);
+							break;
+						default:
+							player.Out.SendMerchantWindow(HouseTemplateMgr.IndoorVaultShopItems, merchantType);
+							break;
+					}
 					break;
 				case eMerchantWindowType.HousingDeedMenu:
 					player.Out.SendMerchantWindow(/* TODO */HouseTemplateMgr.OutdoorMenuItems, eMerchantWindowType.HousingDeedMenu);
@@ -2378,7 +2482,21 @@ namespace DOL.GS.ServerRules
 					items = HouseTemplateMgr.OutdoorShopItems;
 					break;
 				case eMerchantWindowType.HousingBindstoneHookpoint:
-					items = HouseTemplateMgr.IndoorBindstoneShopItems;
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							items = HouseTemplateMgr.IndoorBindstoneShopItemsAlb;
+							break;
+						case eRealm.Hibernia:
+							items = HouseTemplateMgr.IndoorBindstoneShopItemsHib;
+							break;
+						case eRealm.Midgard:
+							items = HouseTemplateMgr.IndoorBindstoneShopItemsMid;
+							break;
+						default:
+							items = HouseTemplateMgr.IndoorBindstoneShopItems;
+							break;
+					}
 					break;
 				case eMerchantWindowType.HousingCraftingHookpoint:
 					items = HouseTemplateMgr.IndoorCraftShopItems;
@@ -2387,7 +2505,21 @@ namespace DOL.GS.ServerRules
 					items = HouseTemplateMgr.GetNpcShopItems(player);
 					break;
 				case eMerchantWindowType.HousingVaultHookpoint:
-					items = HouseTemplateMgr.IndoorVaultShopItems;
+					switch (player.Realm)
+					{
+						case eRealm.Albion:
+							items = HouseTemplateMgr.IndoorVaultShopItemsAlb;
+							break;
+						case eRealm.Hibernia:
+							items = HouseTemplateMgr.IndoorVaultShopItemsHib;
+							break;
+						case eRealm.Midgard:
+							items = HouseTemplateMgr.IndoorVaultShopItemsMid;
+							break;
+						default:
+							items = HouseTemplateMgr.IndoorVaultShopItems;
+							break;
+					}
 					break;
 			}
 

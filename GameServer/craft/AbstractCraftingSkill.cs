@@ -35,6 +35,7 @@ namespace DOL.GS
 	{
 		protected static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+		private bool finishedCraft = false; 
 		#region Declaration
 		/// <summary>
 		/// the maximum possible range within a player has to be to a forge , lathe ect to craft an item
@@ -142,8 +143,8 @@ namespace DOL.GS
 
 		protected virtual void StartCraftingTimerAndSetCallBackMethod(GamePlayer player, Recipe recipe, int craftingTime)
         {
-			player.CraftTimer = new RegionTimer(player);
-			player.CraftTimer.Callback = new RegionTimerCallback(MakeItem);
+			player.CraftTimer = new ECSGameTimer(player);
+			player.CraftTimer.Callback = new ECSGameTimer.ECSTimerCallback(MakeItem);
 			player.CraftTimer.Properties.setProperty(PLAYER_CRAFTER, player);
 			player.CraftTimer.Properties.setProperty(RECIPE_BEING_CRAFTED, recipe);
 			player.CraftTimer.Start(craftingTime * 1000);
@@ -158,6 +159,9 @@ namespace DOL.GS
 
 		protected virtual bool CanPlayerStartToCraftItem(GamePlayer player, Recipe recipe)
 		{
+			
+			player.TempProperties.setProperty("RecipeToCraft", recipe);
+			
 			if (!GameServer.ServerRules.IsAllowedToCraft(player, recipe.Product))
 			{
 				return false;
@@ -193,10 +197,12 @@ namespace DOL.GS
 			return true;
 		}
 
-		protected virtual int MakeItem(RegionTimer timer)
+		protected virtual int MakeItem(ECSGameTimer timer)
 		{
 			GamePlayer player = timer.Properties.getProperty<GamePlayer>(PLAYER_CRAFTER);
 			Recipe recipe = timer.Properties.getProperty<Recipe>(RECIPE_BEING_CRAFTED);
+			var queue = player.TempProperties.getProperty<int>("CraftQueueLength");
+			var remainingToCraft = player.TempProperties.getProperty<int>("CraftQueueRemaining");
 
 			if (player == null || recipe == null)
 			{
@@ -205,7 +211,12 @@ namespace DOL.GS
 				return 0;
 			}
 
-			player.CraftTimer.Stop();
+			if (queue > 0 && remainingToCraft == 0 && finishedCraft)
+			{
+				remainingToCraft = queue - 1;
+			}
+
+			player.CraftTimer?.Stop();
 			player.Out.SendCloseTimerWindow();
 
 			if (Util.Chance(CalculateChanceToMakeItem(player, recipe.Level)))
@@ -217,7 +228,6 @@ namespace DOL.GS
 					if (player.Client.Account.PrivLevel == 1)
 						return 0;
 				}
-
 				BuildCraftedItem(player, recipe);
 				GainCraftingSkillPoints(player, recipe);
 			}
@@ -226,6 +236,26 @@ namespace DOL.GS
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.MakeItem.LoseNoMaterials", recipe.Product.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				player.Out.SendPlaySound(eSoundType.Craft, 0x02);
 			}
+
+			if (remainingToCraft >= 1)
+			{
+				if (CheckRawMaterials(player, recipe))
+				{
+					player.TempProperties.setProperty("CraftQueueRemaining", --remainingToCraft);
+					StartCraftingTimerAndSetCallBackMethod(player, recipe, GetCraftingTime(player, recipe));
+					player.Out.SendTimerWindow(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.CraftItem.CurrentlyMaking", recipe.Product.Name), GetCraftingTime(player, recipe));
+					finishedCraft = false;
+				}
+				else
+				{ 
+					finishedCraft = true;
+				}
+			}
+			else
+			{
+				finishedCraft = true;
+			}
+
 			return 0;
 		}
 
@@ -653,7 +683,7 @@ namespace DOL.GS
 					chance = 55;
 					break;
 				case 2:
-					chance = 45;
+					chance = 65;
 					break;
 				case 3:
 					return 0;

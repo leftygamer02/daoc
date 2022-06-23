@@ -275,7 +275,9 @@ namespace DOL.GS
 
                     if (target == null || !(target is GameLiving))
                     {
-                        p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "System.MustSelectTarget"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        ECSGameEffect volley = EffectListService.GetEffectOnTarget(p, eEffect.Volley);//volley check to avoid spam
+                        if(volley == null)
+                            p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "System.MustSelectTarget"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     }
                     else if (!p.IsWithinRadius(target, p.attackComponent.AttackRange))
                     {
@@ -341,9 +343,13 @@ namespace DOL.GS
                 //Player is aiming
                 if (RangedAttackState == eRangedAttackState.Aim)
                 {
-                    p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.ReadyToFire"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                    RangedAttackState = eRangedAttackState.ReadyToFire;
-                    return eCheckRangeAttackStateResult.Hold;
+                    ECSGameEffect volley = EffectListService.GetEffectOnTarget(p, eEffect.Volley);//volley check to avoid spam
+                    if (volley == null)
+                    {
+                        p.Out.SendMessage(LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.ReadyToFire"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        RangedAttackState = eRangedAttackState.ReadyToFire;
+                        return eCheckRangeAttackStateResult.Hold;
+                    }
                 }
                 else if (RangedAttackState == eRangedAttackState.ReadyToFire)
                 {
@@ -377,7 +383,13 @@ namespace DOL.GS
                 case eAttackResult.Fumbled:
                     // remove an arrow and endurance
                     InventoryItem ammo = RangeAttackAmmo;
-                    owner.Inventory.RemoveCountFromStack(ammo, 1);
+                    if (owner.GetModified(eProperty.ArrowRecovery) > 0 &&
+                        Util.Chance(100 - owner.GetModified(eProperty.ArrowRecovery)))
+                    {
+                        //do not remove an arrow
+                    }
+                    else
+                        owner.Inventory.RemoveCountFromStack(ammo, 1); //remove arrow
 
                     if (RangedAttackType == eRangedAttackType.Critical)
                         owner.Endurance -= CRITICAL_SHOT_ENDURANCE;

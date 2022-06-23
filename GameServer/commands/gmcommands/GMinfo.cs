@@ -20,13 +20,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Net;
+using System.Net.Sockets;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.GS.Effects;
 using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler.Client.v168;
+using DOL.GS.RealmAbilities;
 using DOL.Language;
 
 namespace DOL.GS.Commands
@@ -40,7 +42,11 @@ namespace DOL.GS.Commands
 			uint hour = WorldMgr.GetCurrentGameTime() / 1000 / 60 / 60;
 			uint minute = WorldMgr.GetCurrentGameTime() / 1000 / 60 % 60;
 			uint seconde = WorldMgr.GetCurrentGameTime() / 1000 % 60;
-				
+			IPHostEntry ip = Dns.GetHostByName(Dns.GetHostName());
+			string myNIC = ip.AddressList[0].ToString();
+
+			string myInternetIP = ip.AddressList[0].ToString();
+
 			string name = "(NoName)";
 			var info = new List<string>();
 			info.Add("        Current Region : " + client.Player.CurrentRegionID );
@@ -79,12 +85,21 @@ namespace DOL.GS.Commands
 							info.Add(" + Sell List:  Not Present !\n");
 						info.Add(" ");
 					}
+
+					if (target.Faction != null)
+					{
+						info.Add("Faction: " + target.Faction.Name);
+						info.Add("ID:   " + target.Faction.ID);
+						info.Add("Enemies: " + target.Faction.EnemyFactions.Count);
+						info.Add("Friends: " + target.Faction.FriendFactions.Count);
+					}
 					if (client.Player.TargetObject is GamePet)
 					{
 						var targetP = client.Player.TargetObject as GamePet;
                         info.Add(" + Is Pet ");
 						info.Add(" + Pet Owner:   " + targetP.Owner);
 						info.Add(" ");
+						info.Add(" + Pet target:   " + targetP.TargetObject?.Name);
 					}
 					
 					if (client.Player.TargetObject is GameMovingObject)
@@ -108,6 +123,8 @@ namespace DOL.GS.Commands
 					
 					info.Add(" + Speed(current/max): " + target.CurrentSpeed + "/" + target.MaxSpeedBase);
 					info.Add(" + Health: " + target.Health + "/" + target.MaxHealth);
+					info.Add(" + Attacker Count: " + target.attackComponent.Attackers.Count);
+					info.Add(" + AF: " + GetTotalAFHelper(target));
 					
 					IOldAggressiveBrain aggroBrain = target.Brain as IOldAggressiveBrain;
 					if (aggroBrain != null)
@@ -332,25 +349,38 @@ namespace DOL.GS.Commands
 				if (client.Player.TargetObject is GamePlayer)
 				{
 					var target = client.Player.TargetObject as GamePlayer;
-
-					info.Add("ENDURANCE INFORMATION");
-					info.Add("EnduRegerationTimer.IsAlive: " + target.EnduRegenTimer.IsAlive);
-					info.Add("Time since last timer tick (ms): " + (GameLoop.GameLoopTime - target.LastEnduTick));
-					info.Add("Last Regen amount: " + target.Regen);
-					info.Add("Last EndChant amount (FatigueConsumption): " + target.Endchant + "%");
-					info.Add("Last Regen at change: " + target.RegenRateAtChange);
-					info.Add(" ");
-					info.Add("REGEN INFORMATION");
-					info.Add("Last EnduDebuff:" + target.EnduDebuff);
-					info.Add("Last RegenBuff: " + target.RegenBuff);
-					info.Add("Player has Tireless: " + target.HasAbility(Abilities.Tireless));
-					info.Add("Last Regen after Tireless: " + target.RegenAfterTireless);
-					info.Add("Last Non-Combat Non-SprintRegen: " + target.NonCombatNonSprintRegen);
-					info.Add("Combat flag: " + target.InCombat);
-					info.Add("Last Combat Regen: " + target.CombatRegen);
-					info.Add(" ");
-					info.Add("DETERMINATION INFORMATION");
-					info.Add("CC reduction: " + target.AbilityBonus[(int)eProperty.MesmerizeDurationReduction]);
+					
+					// info.Add("TEMP PROPERTIES:");
+					// foreach (var property in target.TempProperties.getAllProperties())
+					// {
+					// 	info.Add(property + ": " + target.TempProperties.getProperty(property, false));
+					// }
+					// info.Add("");
+					
+					// info.Add("ENDURANCE INFORMATION");
+					// info.Add("EnduRegerationTimer.IsAlive: " + target.EnduRegenTimer.IsAlive);
+					// info.Add("Time since last timer tick (ms): " + (GameLoop.GameLoopTime - target.LastEnduTick));
+					// info.Add("Last Regen amount: " + target.Regen);
+					// info.Add("Last EndChant amount (FatigueConsumption): " + target.Endchant + "%");
+					// info.Add("Last Regen at change: " + target.RegenRateAtChange);
+					// info.Add(" ");
+					// info.Add("REGEN INFORMATION");
+					// info.Add("Last EnduDebuff:" + target.EnduDebuff + " | " + "Last RegenBuff: " + target.RegenBuff);
+					// info.Add("HP Regen: " + target.GetModified(eProperty.HealthRegenerationRate)+ " | End Regen: " + target.GetModified(eProperty.EnduranceRegenerationRate) + " | Pow Regen: " + target.GetModified(eProperty.PowerRegenerationRate));
+					// info.Add("HP: " + target.Health + "/" + target.GetModified(eProperty.MaxHealth)+ " " + Math.Round(((double)target.Health/(double)target.MaxHealth)*100, 2) + "%"
+					//          + " | Power: " + target.Mana + "/" + target.GetModified(eProperty.MaxMana)+ " " +  Math.Round(((double)target.Mana/(double)target.MaxMana)*100, 2) + "%");
+					// info.Add("End Regen Rate: " + target.GetModified(eProperty.EnduranceRegenerationRate));
+					// info.Add("Last Regen after Tireless: " + target.RegenAfterTireless);
+					// info.Add("Last Non-Combat Non-SprintRegen: " + target.NonCombatNonSprintRegen);
+					// info.Add("Combat flag: " + target.InCombat);
+					// info.Add("Last Combat Regen: " + target.CombatRegen);
+					// info.Add(" ");
+					// info.Add("DETERMINATION INFORMATION");
+					// info.Add("CC reduction: " + target.AbilityBonus[(int)eProperty.MesmerizeDurationReduction]);
+					// info.Add(" ");
+					
+					info.Add("MELEE SPEED INFORMATION");
+					info.Add("MeleeSpeed: " + target.attackComponent.AttackSpeed(target.AttackWeapon));
 					info.Add(" ");
 					info.Add("XPBUFF INFORMATION");
 					info.Add("XP Buff bonus: " + target.ItemBonus[eProperty.XpPoints]);
@@ -365,6 +395,8 @@ namespace DOL.GS.Commands
 					info.Add(" ");
 					info.Add("  - Account Name : " + target.AccountName);
 					info.Add("  - IP : " + target.Client.Account.LastLoginIP);
+					info.Add("  - Local: " + target.Client.Socket.LocalEndPoint);
+					info.Add("  - Remote: " + target.Client.Socket.RemoteEndPoint);
 					info.Add("  - Priv. Level : " + target.Client.Account.PrivLevel);
 					info.Add("  - Client Version: " + target.Client.Account.LastClientVersion);
 					info.Add(" ");
@@ -373,7 +405,7 @@ namespace DOL.GS.Commands
 					info.Add("  - AFK Message: " + target.TempProperties.getProperty<string>(GamePlayer.AFK_MESSAGE) + "");
 					info.Add(" ");
                     info.Add("  - Money : " + Money.GetString(target.GetCurrentMoney()) + "\n");
-					info.Add("  - Speed : " + target.MaxSpeedBase);
+					info.Add("  - Speed(current/max): " + target.CurrentSpeed + "/" + target.MaxSpeed);
 					info.Add("  - XPs : " + target.Experience);
 					info.Add("  - RPs : " + target.RealmPoints);
 					info.Add("  - BPs : " + target.BountyPoints);
@@ -653,6 +685,24 @@ namespace DOL.GS.Commands
 
 				#endregion Keep
 
+				#region Ram
+				if(client.Player.TargetObject is GameSiegeRam)
+				{
+					var target = client.Player.TargetObject as GameSiegeRam;
+
+						
+					info.Add( "  ------- SIEGE RAM ------\n");
+					info.Add( " + Max # Riders: " + target.Riders.Length);
+					foreach (GamePlayer rider in target.Riders)
+					{
+						if(rider != null)
+							info.Add( " + Rider slot: " + target.RiderSlot(rider) + " Player Name: " + rider.Name);
+					}
+					
+				}
+
+				#endregion Ram
+
 				client.Out.SendCustomTextWindow("[ " + name + " ]", info);
 				return;
 			}
@@ -791,6 +841,7 @@ namespace DOL.GS.Commands
 					info.Add(" Region IsRvR: "+ client.Player.CurrentRegion.IsRvR);
 					info.Add(" Region IsFrontier: " + client.Player.CurrentRegion.IsFrontier);
 					info.Add(" Region IsDungeon: " + client.Player.CurrentRegion.IsDungeon);
+					info.Add(" Region IsNight: "+ client.Player.CurrentRegion.IsNightTime);
 					info.Add(" Zone in Region: " + client.Player.CurrentRegion.Zones.Count);
                     info.Add(" Region WaterLevel: " + client.Player.CurrentRegion.WaterLevel);
                     info.Add(" Region HousingEnabled: " + client.Player.CurrentRegion.HousingEnabled);
@@ -863,6 +914,38 @@ namespace DOL.GS.Commands
 			if (material == 9) return " Onyx";
 			
 			return null;
+		}
+
+		public string GetComputerName(string clientIP)
+		{                        
+			try
+			{                
+				var hostEntry = Dns.GetHostEntry(clientIP);
+				return hostEntry.HostName;
+			}
+			catch (Exception ex)
+			{
+				return string.Empty;
+			}            
+		}
+		private double GetTotalAFHelper(GameLiving living)
+		{
+			List<eArmorSlot> armorSlots = new List<eArmorSlot>();
+			armorSlots.Add(eArmorSlot.HEAD);
+			armorSlots.Add(eArmorSlot.TORSO);
+			armorSlots.Add(eArmorSlot.LEGS);
+			armorSlots.Add(eArmorSlot.HAND);
+			armorSlots.Add(eArmorSlot.ARMS);
+			armorSlots.Add(eArmorSlot.FEET);
+
+			double totalArmor = 0;
+			
+			foreach (var slot in armorSlots)
+			{
+				totalArmor += living.GetArmorAF(slot);
+			}
+
+			return totalArmor;
 		}
 	}
 }

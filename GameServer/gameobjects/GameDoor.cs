@@ -49,16 +49,15 @@ namespace DOL.GS
 		private readonly object m_LockObject = new object();
 		private uint m_flags = 0;
 
-
 		/// <summary>
 		/// The time interval after which door will be closed, in milliseconds
 		/// On live this is usually 5 seconds
 		/// </summary>
-		protected const int CLOSE_DOOR_TIME = 8000;
+		protected const int CLOSE_DOOR_TIME = 5000;
 		/// <summary>
 		/// The timed action that will close the door
 		/// </summary>
-		protected GameTimer m_closeDoorAction;
+		protected ECSGameTimer m_closeDoorAction;
 
 		/// <summary>
 		/// Creates a new GameDoor object
@@ -97,6 +96,7 @@ namespace DOL.GS
 			m_maxHealth = m_dbdoor.MaxHealth;
 			m_locked = m_dbdoor.Locked;
 			m_flags = m_dbdoor.Flags;
+			m_isPostern = m_dbdoor.IsPostern;
 
 			// Open mile gates on PVE and PVP server types
 			if (CurrentRegion.IsFrontier && (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_PvE
@@ -105,6 +105,7 @@ namespace DOL.GS
 
 			this.AddToWorld();
 		}
+		
 		/// <summary>
 		/// save this door to a door table slot
 		/// </summary>
@@ -159,6 +160,14 @@ namespace DOL.GS
 			get { return m_doorID; }
 			set { m_doorID = value; }
 		}
+
+		private bool m_isPostern;
+		public bool IsPostern
+		{
+			get { return m_isPostern; }
+			set { m_isPostern = value; }
+		}
+
 
 		/// <summary>
 		/// Get the ZoneID of this door
@@ -253,6 +262,7 @@ namespace DOL.GS
 		{
 			if (!m_openDead)
 				this.State = eDoorState.Closed;
+			m_closeDoorAction?.Stop();
 			m_closeDoorAction = null;
 		}
 
@@ -419,7 +429,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The action that closes the door after specified duration
 		/// </summary>
-		protected class CloseDoorAction : RegionAction
+		protected class CloseDoorAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new close door action
@@ -433,10 +443,11 @@ namespace DOL.GS
 			/// <summary>
 			/// This function is called to close the door 10 seconds after it was opened
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameDoor door = (GameDoor)m_actionSource;
 				door.Close();
+				return 0;
 			}
 		}
 	}

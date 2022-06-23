@@ -171,7 +171,6 @@ namespace DOL.Database
 		private int m_lastfreeLevel;
 		private DateTime m_lastfreeleveled;
 		private bool m_showXFireInfo;
-		private bool m_noHelp;
 		private bool m_showGuildLogins;
 
 		private string m_guildNote = string.Empty;
@@ -192,6 +191,9 @@ namespace DOL.Database
 		
 		// What should the Herald display of this character?
 		private byte m_notDisplayedInHerald = 0;
+		
+		// Should we hide the detailed specialization of this player in the APIs?
+		private bool m_hideSpecializationAPI;
 
 		private byte m_activeSaddleBags = 0;
 
@@ -199,7 +201,12 @@ namespace DOL.Database
 
         private long m_playedTimeSinceLevel;
 
-        private bool m_receiveROG;
+        // Atlas
+        private bool m_noHelp; // set to true if player is doing the solo challenge
+        private bool m_hardcore; // set to true if player is doing the hardcore challenge
+        private bool m_hardcoreCompleted; // set to true if player has reached level 50 as hardcore
+        private bool m_receiveROG; // toggle receiving ROGs for the player
+        private bool m_boosted; // set to true if player has used a free level/rr NPC
 
         /// <summary>
         /// Create the character row in table
@@ -237,6 +244,9 @@ namespace DOL.Database
             m_lastLevelUp = DateTime.Now;
             m_playedTimeSinceLevel = 0;
             m_receiveROG = true;
+            m_hardcore = false;
+            m_hardcoreCompleted = false;
+            m_boosted = false;
 		}
 
 		/// <summary>
@@ -2216,6 +2226,48 @@ namespace DOL.Database
 				m_roleplay = value;
 			}
 		}
+		
+		/// <summary>
+		/// is the player flagged hardcore
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public bool HCFlag
+		{
+			get { return m_hardcore; }
+			set
+			{
+				Dirty = true;
+				m_hardcore = value;
+			}
+		}
+		
+		/// <summary>
+		/// has the player reached 50 in hardcore mode
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public bool HCCompleted
+		{
+			get { return m_hardcoreCompleted; }
+			set
+			{
+				Dirty = true;
+				m_hardcoreCompleted = value;
+			}
+		}
+		
+		/// <summary>
+		/// has the player used any free level/rr npc?
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public bool isBoosted
+		{
+			get { return m_boosted; }
+			set
+			{
+				Dirty = true;
+				m_boosted = value;
+			}
+		}
 
 		/// <summary>
 		/// Do we ignore all statistics for this player?
@@ -2242,6 +2294,20 @@ namespace DOL.Database
 			{
 				Dirty = true;
 				m_notDisplayedInHerald = value;
+			}
+		}
+
+		/// <summary>
+		/// Should we hide the detailed specialization of this player in the APIs?
+		/// </summary>
+		[DataElement(AllowDbNull = false)]
+		public bool HideSpecializationAPI 
+		{
+			get { return m_hideSpecializationAPI; }
+			set 
+			{
+				Dirty = true;
+				m_hideSpecializationAPI = value;
 			}
 		}
 
@@ -2306,6 +2372,12 @@ namespace DOL.Database
         /// </summary>
         [Relation(LocalField = "DOLCharacters_ID", RemoteField = "DOLCharactersObjectId", AutoLoad = true, AutoDelete = true)]
 		public DOLCharactersXCustomParam[] CustomParams;
+        
+        /// <summary>
+        /// List of Random Number Decks for this Character
+        /// </summary>
+        [Relation(LocalField = "DOLCharacters_ID", RemoteField = "DOLCharactersObjectId", AutoLoad = true, AutoDelete = true)]
+        public DOLCharactersXDeck[] RandomNumberDecks;
 	}
 	
 	/// <summary>

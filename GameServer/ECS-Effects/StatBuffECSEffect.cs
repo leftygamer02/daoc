@@ -14,6 +14,8 @@ namespace DOL.GS
 
         public override void OnStartEffect()
         {
+            if (this.OwnerPlayer != null && OwnerPlayer.SelfBuffChargeIDs.Contains(this.SpellHandler.Spell.ID))
+                OwnerPlayer.ActiveBuffCharges++;
             
             if (EffectType == eEffect.StrengthConBuff || EffectType == eEffect.DexQuickBuff)
             {
@@ -30,6 +32,13 @@ namespace DOL.GS
             else if (SpellHandler.Spell.SpellType == (byte)eSpellType.PaladinArmorFactorBuff)
             {
                 ApplyBonus(Owner, (SpellHandler as PaladinArmorFactorBuff).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, false);
+            }
+            else if (SpellHandler.Spell.SpellType == (byte) eSpellType.AllMagicResistBuff)
+            {
+                foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
+                {
+                    ApplyBonus(Owner, eBuffBonusCategory.SpecBuff, prop, SpellHandler.Spell.Value, Effectiveness, false);
+                }
             }
             else
             {
@@ -60,11 +69,19 @@ namespace DOL.GS
                 }
             }
             
+            // "You feel more dexterous!"
+            // "{0} looks more agile!"
+            OnEffectStartsMsg(Owner, true, true, true);
+
+            
             //IsBuffActive = true;
         }
 
         public override void OnStopEffect()
         {
+            if (this.OwnerPlayer != null && OwnerPlayer.SelfBuffChargeIDs.Contains(this.SpellHandler.Spell.ID))
+                OwnerPlayer.ActiveBuffCharges--;
+            
             if (EffectType == eEffect.StrengthConBuff || EffectType == eEffect.DexQuickBuff)
             {
                 foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
@@ -80,6 +97,13 @@ namespace DOL.GS
             else if (SpellHandler.Spell.SpellType == (byte)eSpellType.PaladinArmorFactorBuff)
             {
                 ApplyBonus(Owner, (SpellHandler as PaladinArmorFactorBuff).BonusCategory1, eProperty.ArmorFactor, SpellHandler.Spell.Value, Effectiveness, true);
+            }
+            else if (SpellHandler.Spell.SpellType == (byte) eSpellType.AllMagicResistBuff)
+            {
+                foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
+                {
+                    ApplyBonus(Owner, eBuffBonusCategory.SpecBuff, prop, SpellHandler.Spell.Value, Effectiveness, true);
+                }
             }
             else
             {
@@ -108,6 +132,11 @@ namespace DOL.GS
 
                 }
             }
+            
+            // "Your agility returns to normal."
+            // "{0} loses their graceful edge.""
+            OnEffectExpiresMsg(Owner, true, false, true);
+
 
             IsBuffActive = false;
         }
@@ -120,6 +149,7 @@ namespace DOL.GS
             if (Property != eProperty.Undefined)
             {
                 tblBonusCat = GetBonusCategory(owner, BonusCat);
+                //Console.WriteLine($"Applying bonus for property {Property} at value {Value} for owner {owner.Name} at effectiveness {Effectiveness} for {effectiveValue} change");
                 //Console.WriteLine($"Value before: {tblBonusCat[(int)Property]}");
                 if (IsSubstracted)
                 {

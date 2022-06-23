@@ -36,10 +36,14 @@ namespace DOL.GS.RealmAbilities
 			GamePlayer player = living as GamePlayer;
 			if (player != null)
 			{
-				if (healed > 0) player.Out.SendMessage("You heal yourself for " + healed + " hit points.", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
-				if (heal > healed)
+				if (healed > 0)
 				{
-					player.Out.SendMessage("You are fully healed.", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage("You heal yourself for " + healed + " hit points.", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+				}
+				else
+				{
+					player.Out.SendMessage("You are already fully healed.", eChatType.CT_Spell,
+						eChatLoc.CL_SystemWindow);
 				}
 			}
 			if (healed > 0) DisableSkill(living);
@@ -56,6 +60,19 @@ namespace DOL.GS.RealmAbilities
 				list.Add("Pre-Requisit : First Aid lvl 2");
 			}
 		}
+	}
+	
+	public class AtlasOF_IgnorePainTank : AtlasOF_IgnorePain
+	{
+		public AtlasOF_IgnorePainTank(DBAbility dba, int level) : base(dba, level) { }
+		public override int CostForUpgrade(int level)
+		{
+			return 8;
+		}
 
-    }
+		public override string Name
+		{
+			get {return "Ignore Pain";}
+		}
+	}
 }

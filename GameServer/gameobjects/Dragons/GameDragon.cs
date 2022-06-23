@@ -58,6 +58,8 @@ namespace DOL.GS
 		protected String[] m_breathAnnounce;
 		protected String m_glareAnnounce;
 		protected String[] m_deathAnnounce;
+		
+		private int OrbsReward = Properties.EPICBOSS_ORBS;
 
 		/// <summary>
 		/// Creates a new instance of GameDragon.
@@ -114,7 +116,15 @@ namespace DOL.GS
 
 		public override double GetArmorAF(eArmorSlot slot)
 		{
-			return 1000 * DragonDifficulty / 100;
+			int AF = 400;
+			if (this.attackComponent.Attackers.Count > 1)
+			{
+				AF -= 5 * this.attackComponent.Attackers.Count;
+			}
+
+			if (AF <= 200)
+				AF = 200;
+			return AF * DragonDifficulty / 100;
 		}
 
 		public override double GetArmorAbsorb(eArmorSlot slot)
@@ -137,7 +147,16 @@ namespace DOL.GS
 				case eDamageType.Slash : 
 				case eDamageType.Crush :
 				case eDamageType.Thrust: return 65 * DragonDifficulty / 100;
-				default: return 99 * DragonDifficulty / 100;
+				default:
+					int resistPercent = 99;
+					if (this.attackComponent.Attackers.Count > 1)
+					{
+						resistPercent -= this.attackComponent.Attackers.Count;
+					}
+
+					if (resistPercent <= 60)
+						resistPercent = 60;
+					return resistPercent * DragonDifficulty / 100;
 			}
 		}
 
@@ -145,7 +164,7 @@ namespace DOL.GS
 		{
 			get
 			{
-				return 30000 * DragonDifficulty / 100;
+				return 40000 * DragonDifficulty / 100;
 			}
 		}
 
@@ -190,6 +209,20 @@ namespace DOL.GS
 				log.Error("Dragon Killed: killer is null!");
 			else
 				log.Debug("Dragon Killed: killer is " + killer.Name + ", attackers:");
+			
+			GamePlayer playerKiller = killer as GamePlayer;
+			
+			if (playerKiller?.Group != null)
+			{
+				foreach (GamePlayer groupPlayer in playerKiller.Group.GetPlayersInTheGroup())
+				{
+					AtlasROGManager.GenerateOrbAmount(groupPlayer,OrbsReward);
+				}
+			}
+			else
+			{
+				AtlasROGManager.GenerateOrbAmount(playerKiller,OrbsReward);
+			}
 
 			bool canReportNews = true;
 
@@ -314,7 +347,7 @@ namespace DOL.GS
 		{
 			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
 			{
-				player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
+				player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_ChatWindow);
 			}
 		}
 
@@ -351,6 +384,7 @@ namespace DOL.GS
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
                 player.KillsDragon++;
+                player.Achieve(AchievementUtils.AchievementNames.Dragon_Kills);
                 count++;
             }
 			return count;
@@ -530,7 +564,7 @@ namespace DOL.GS
 			HealthPercentOld = HealthPercent;	
 			int messageNo = Util.Random(1, m_breathAnnounce.Length) - 1;
 			BroadcastMessage(String.Format(m_breathAnnounce[messageNo], Name));
-			new RegionTimer(this, new RegionTimerCallback(CastBreath), 5000);
+			new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastBreath), 5000);
 		}
 
 		/// <summary>
@@ -538,7 +572,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="timer">The timer that started this cast.</param>
 		/// <returns></returns>
-		private int CastBreath(RegionTimer timer)
+		private int CastBreath(ECSGameTimer timer)
 		{
 			CastSpell(Breath, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
 			CastSpell(ResistDebuff, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
@@ -589,7 +623,7 @@ namespace DOL.GS
 		public bool CheckGlare(GameLiving target)
 		{
 			if (target == null || GlareTarget != null) return false;
-			bool success = Util.Chance(GlareChance);
+			bool success = Util.Chance(GlareChance) && (Brain is DragonBrain {GlareAvailable: true});
 			if (success)
 				GlareTarget = target;
 			return success;
@@ -603,7 +637,7 @@ namespace DOL.GS
 			if (GlareTarget == null) return;
 			TurnTo(GlareTarget);
 			BroadcastMessage(String.Format(m_glareAnnounce, Name, GlareTarget.Name));
-			new RegionTimer(this, new RegionTimerCallback(CastGlare), 5000);
+			new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastGlare), 5000);
 		}
 
 		/// <summary>
@@ -611,7 +645,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="timer">The timer that started this cast.</param>
 		/// <returns></returns>
-		private int CastGlare(RegionTimer timer)
+		private int CastGlare(ECSGameTimer timer)
 		{
 			// Turn around to the target and cast glare, then go back to the original
 			// target, if one exists.
@@ -870,13 +904,13 @@ namespace DOL.GS
 		public void PrepareToStun()
 		{
 			// No announcement for this seemingly.
-			new RegionTimer(this, new RegionTimerCallback(CastStun), 5000);
+			new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(CastStun), 5000);
 		}
 
 		/// <summary>
 		/// Start the 5 second timer for the stun.
 		/// </summary>
-		private int CastStun(RegionTimer timer)
+		private int CastStun(ECSGameTimer timer)
 		{
 			CastSpell(Stun, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
 			return 0;

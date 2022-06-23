@@ -87,7 +87,7 @@ public class StandardMobState_IDLE : StandardMobState
         //setStatus = aggro
         if (_brain.HasAggressionTable())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
         }
@@ -135,7 +135,7 @@ public class StandardMobState_WAKING_UP : StandardMobState
         //setStatus = aggro
         if (_brain.HasAggressionTable())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             //_brain.AttackMostWanted();
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
@@ -188,7 +188,7 @@ public class StandardMobState_AGGRO : StandardMobState
     public override void Think()
     {
         // check for returning to home if to far away
-        if (!(_brain is KeepGuardBrain) && _brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(15000))
+        if (!(_brain is KeepGuardBrain) && _brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(25000))
         {
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
@@ -200,8 +200,12 @@ public class StandardMobState_AGGRO : StandardMobState
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
         }
+        
+        if (_brain.Body.Flags.HasFlag(GameNPC.eFlags.STEALTH))
+            _brain.Body.Flags ^= GameNPC.eFlags.STEALTH;
 
         _brain.AttackMostWanted();
+        _brain.Body.TurnTo(_brain.Body.TargetObject);
 
         base.Think();
     }
@@ -209,7 +213,7 @@ public class StandardMobState_AGGRO : StandardMobState
 
 public class StandardMobState_ROAMING : StandardMobState
 {
-    private int _roamCooldown = 20 * 1000;
+    private int _roamCooldown = 45 * 1000;
     private long _lastRoamTick = 0;
 
     public StandardMobState_ROAMING(FSM fsm, StandardMobBrain brain) : base(fsm, brain)
@@ -239,7 +243,7 @@ public class StandardMobState_ROAMING : StandardMobState
         //setStatus = aggro
         if (_brain.HasAggressionTable())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             //_brain.AttackMostWanted();
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
@@ -262,7 +266,7 @@ public class StandardMobState_ROAMING : StandardMobState
                     _brain.Body.WalkTo(target, 50);
                 }
 
-                _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.roaming);
+                _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.roaming, _brain.Body);
             }
             _lastRoamTick = GameLoop.GameLoopTime;
         }
@@ -288,7 +292,8 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
         {
             Console.WriteLine($"{_brain.Body} is entering RETURN_TO_SPAWN");
         }
-
+        if (_brain.Body.WasStealthed)
+            _brain.Body.Flags |= GameNPC.eFlags.STEALTH;
         _brain.ClearAggroList();
         _brain.CheckForProximityAggro = false;
         _brain.Body.WalkToSpawn();
@@ -349,7 +354,7 @@ public class StandardMobState_PATROLLING : StandardMobState
         //setStatus = aggro
         if (_brain.HasAggressionTable())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
         }

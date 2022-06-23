@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Collections;
+using System.Linq;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
@@ -20,6 +21,8 @@ namespace DOL.GS.RealmAbilities
 		public override int GetReUseDelay(int level) { return 1800; } // 1800 = 30 min
 		public override int CostForUpgrade(int level) { return 10; }
 
+		public override ushort Icon { get { return 3020; } }
+
 		public override void Execute(GameLiving living)
 		{
 			if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
@@ -31,7 +34,7 @@ namespace DOL.GS.RealmAbilities
 			 }*/
 
 			if (player.TempProperties.getProperty("Charging", false)
-				|| player.EffectList.CountOfType(typeof(SpeedOfSoundEffect), typeof(ArmsLengthEffect), typeof(ChargeEffect)) > 0)
+				|| player.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) != null)
 			{
 				player.Out.SendMessage("You already an effect of that type!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
 				return;
@@ -56,19 +59,9 @@ namespace DOL.GS.RealmAbilities
 			foreach (GamePlayer target in targets)
 			{
 				//send spelleffect
-				success = target.EffectList.CountOfType<SpeedOfSoundEffect>() == 0;
 				foreach (GamePlayer visPlayer in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-					visPlayer.Out.SendSpellEffectAnimation(player, target, 7021, 0, false, CastSuccess(success));
-				if (success)
-				{
-					GameSpellEffect speed = Spells.SpellHandler.FindEffectOnTarget(target, "SpeedEnhancement");
-					if (speed != null)
-                    {
-						speed.Cancel(false);
-					}
-					//log.InfoFormat("Starting speed for player {0} with duration {1}", target, m_duration);
-					new SpeedOfSoundEffect(m_duration).Start(target);
-				}
+					visPlayer.Out.SendSpellEffectAnimation(player, target, 7021, 0, false, CastSuccess(true));
+				new SpeedOfSoundECSEffect(new ECSGameEffectInitParams(target, m_duration, 1));
 			}
 
 		}

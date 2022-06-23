@@ -34,6 +34,11 @@ namespace DOL.GS.Spells
 	[SpellHandlerAttribute("FocusShell")]
 	public class FocusShellHandler : SpellHandler
 	{
+		public override void CreateECSEffect(ECSGameEffectInitParams initParams)
+		{
+			new FocusECSEffect(initParams);
+		}
+		
 		private GamePlayer FSTarget = null;
 		private FSTimer timer = null;
 
@@ -88,17 +93,10 @@ namespace DOL.GS.Spells
 				GameEventMgr.AddHandler(FSTarget, GameLivingEvent.AttackFinished, new DOLEventHandler(CancelSpell));
 				GameEventMgr.AddHandler(FSTarget, GameLivingEvent.CastStarting, new DOLEventHandler(CancelSpell));
 			}
-
-			//Send the spell messages
-			MessageToLiving(FSTarget, Spell.Message1, eChatType.CT_Spell);
-			foreach (GamePlayer player in FSTarget.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
-			{
-				if (player != FSTarget)
-					MessageToLiving(player, string.Format(Spell.Message3, FSTarget.Name), eChatType.CT_Spell);
-			}
+			
 
 			timer = new FSTimer(Caster, this);
-			timer.Start(1);
+			timer.Start(1000);
 
  			base.OnEffectStart(effect);
 		}
@@ -115,15 +113,7 @@ namespace DOL.GS.Spells
 			}
 
 			timer.Stop();
-
-			//Send the spell messages
-			MessageToLiving(FSTarget, Spell.Message2, eChatType.CT_SpellExpires);
-			foreach (GamePlayer player in FSTarget.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
-			{
-				if (player != FSTarget)
-					MessageToLiving(player, string.Format(Spell.Message4, FSTarget.Name), eChatType.CT_System);
-			}
-
+			
 			return base.OnEffectExpires(effect, noMessages);
 		}
 
@@ -165,7 +155,7 @@ namespace DOL.GS.Spells
 		/// <summary>
 		/// Since the focus spell isn't a pulsing spell we need our own mini-timer
 		/// </summary>
-		private class FSTimer : RegionAction
+		private class FSTimer : RegionECSAction
 		{
 			//The handler for this timer
 			FocusShellHandler m_handler;
@@ -176,7 +166,7 @@ namespace DOL.GS.Spells
 				Interval = handler.Spell.Frequency;
 			}
 
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer ecsGameTimer)
 			{
 				//If the target is still in range
 				if (m_handler.Caster.Mana >= m_handler.Spell.PulsePower && m_handler.Caster.IsWithinRadius(m_handler.FSTarget, m_handler.Spell.Range))
@@ -190,7 +180,10 @@ namespace DOL.GS.Spells
 					//Cancel spell
 					m_handler.CancelSpell(null, m_handler.Caster, null);
 					Stop();
+					return 0;
 				}
+
+				return Interval;
 			}
 		}
 	}

@@ -109,6 +109,7 @@ namespace DOL.GS
         FacilitatePainworking,
         MesmerizeDurationBuff,
         FatigueConsumptionBuff,
+        FatigueConsumptionDebuff,
         SavageBuff,
         Pet,
         OffensiveProc,
@@ -142,6 +143,19 @@ namespace DOL.GS
         AmelioratingMelodies,
         SoldiersBarricade,
         ReflexAttack,
+        WhirlingDervish,
+        Viper,
+        MajesticWill,
+        TrueSight,
+        ShadowRun,
+        Vanish,
+        BatteryOfLife,
+        RuneOfDecimation,
         MasteryOfConcentration,
+        Juggernaut,
+        ForestheartAmbusher,
+        Volley,
+        StrikingTheSoul,
+        SpeedOfSound
     }
 }

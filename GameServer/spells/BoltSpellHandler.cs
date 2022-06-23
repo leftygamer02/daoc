@@ -22,6 +22,7 @@ using DOL.Database;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using DOL.GS.Keeps;
+using DOL.GS.RealmAbilities;
 using DOL.GS.SkillHandler;
 
 namespace DOL.GS.Spells
@@ -42,7 +43,7 @@ namespace DOL.GS.Spells
         public override void FinishSpellCast(GameLiving target)
 		{
 			m_caster.Mana -= PowerCost(target);
-			if ((target is Keeps.GameKeepDoor || target is Keeps.GameKeepComponent) && Spell.SpellType != (byte)eSpellType.SiegeArrow)
+			if ((target is Keeps.GameKeepDoor || target is Keeps.GameKeepComponent) && Spell.SpellType != (byte)eSpellType.SiegeArrow && Spell.SpellType != (byte)eSpellType.SiegeDirectDamage)
 			{
 				MessageToCaster(String.Format("Your spell has no effect on the {0}!", target.Name), eChatType.CT_SpellResisted);
 				return;
@@ -108,7 +109,7 @@ namespace DOL.GS.Spells
 		/// <summary>
 		/// Delayed action when bolt reach the target
 		/// </summary>
-		protected class BoltOnTargetAction : RegionAction
+		protected class BoltOnTargetAction : RegionECSAction
 		{
 			/// <summary>
 			/// The bolt target
@@ -139,14 +140,14 @@ namespace DOL.GS.Spells
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameLiving target = m_boltTarget;
 				GameLiving caster = (GameLiving)m_actionSource;
-				if (target == null) return;
-				if (target.CurrentRegionID != caster.CurrentRegionID) return;
-				if (target.ObjectState != GameObject.eObjectState.Active) return;
-				if (!target.IsAlive) return;
+				if (target == null) return 0;
+				if (target.CurrentRegionID != caster.CurrentRegionID) return 0;
+				if (target.ObjectState != GameObject.eObjectState.Active) return 0;
+				if (!target.IsAlive) return 0;
 
 				// Related to PvP hitchance
 				// http://www.camelotherald.com/news/news_article.php?storyid=2444
@@ -154,18 +155,23 @@ namespace DOL.GS.Spells
 				// Bolts are treated as physical attacks for the purpose of ABS only
 				// Based on this I am normalizing the miss rate for npc's to be that of a standard spell
 
-				int missrate = 0;
+				int missrate = m_handler.CalculateSpellResistChance(target);
+				bool combatMiss = false;
 
 				if (caster is GamePlayer && target is GamePlayer)
 				{
 					if (target.InCombat)
 					{
 						foreach (GameLiving attacker in target.attackComponent.Attackers)
+						         //200 unit range restriction added in 1.84 - reverted for Atlas 1.65 target
+						         //re-implementing the 200 unit restriction to make bolts a little friendlier 6/6/2022
 						{
 							if (attacker != caster && target.GetDistanceTo(attacker) <= 200)
 							{
-								// each attacker within 200 units adds a 20% chance to miss
+								// each attacker adds a 20% chance to miss
+								
 								missrate += 20;
+								combatMiss = true;
 							}
 						}
 					}
@@ -183,14 +189,27 @@ namespace DOL.GS.Spells
 					&& targetAD.Style != null)
 				{
 					missrate += targetAD.Style.BonusToDefense;
+					combatMiss = true;
 				}
 
-				AttackData ad = m_handler.CalculateDamageToTarget(target, 0.5 - (caster.GetModified(eProperty.SpellDamage) * 0.01));
+				AttackData ad = m_handler.CalculateDamageToTarget(target, 0.65);
 
-				if (Util.Chance(missrate)) 
+				int rand = 0;
+				if (caster is GamePlayer p)
+					rand = p.RandomNumberDeck.GetInt();
+				else
+					rand = Util.Random(100);
+
+				if (target is GameKeepDoor)
+					missrate = 0;
+
+				if (missrate > rand) 
 				{
 					ad.AttackResult = eAttackResult.Missed;
-					m_handler.MessageToCaster("You miss!", eChatType.CT_YouHit);
+					if(combatMiss)
+						m_handler.MessageToCaster($"{target.Name} is in combat and your bolt misses!", eChatType.CT_YouHit);
+					else
+						m_handler.MessageToCaster($"You miss!", eChatType.CT_YouHit);
 					m_handler.MessageToLiving(target, caster.GetName(0, false) + " missed!", eChatType.CT_Missed);
 					target.OnAttackedByEnemy(ad);
 					target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, caster);
@@ -200,10 +219,13 @@ namespace DOL.GS.Spells
 						if (aggroBrain != null)
 							aggroBrain.AddToAggroList(caster, 1);
 					}
-					return;
+					return 0;
 				}
 
-				ad.Damage = (int)((double)ad.Damage * (1.0 + caster.GetModified(eProperty.SpellDamage) * 0.01));
+				ad.Damage = (int)((double)(ad.Damage) * (1.0 + caster.GetModified(eProperty.SpellDamage) * 0.01));
+				ad.Modifier = (int)(ad.Damage * (ad.Target.GetResist(ad.DamageType)) / -100.0);
+				ad.Damage += ad.Modifier;
+
 
 				// Block
 				bool blocked = false;
@@ -229,7 +251,7 @@ namespace DOL.GS.Spells
 								{
 									// Engage raised block change to 85% if attacker is engageTarget and player is in attackstate							
 									// You cannot engage a mob that was attacked within the last X seconds...
-									if (engage.EngageTarget.LastAttackedByEnemyTick > engage.EngageTarget.CurrentRegion.Time - EngageAbilityHandler.ENGAGE_ATTACK_DELAY_TICK)
+									if (engage.EngageTarget.LastAttackedByEnemyTick > GameLoop.GameLoopTime - EngageAbilityHandler.ENGAGE_ATTACK_DELAY_TICK)
 									{
 										if (engage.Owner is GamePlayer)
 											(engage.Owner as GamePlayer).Out.SendMessage(engage.EngageTarget.GetName(0, true) + " has been attacked recently and you are unable to engage.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -244,8 +266,8 @@ namespace DOL.GS.Spells
 										if (engage.Owner is GamePlayer)
 											(engage.Owner as GamePlayer).Out.SendMessage("You concentrate on blocking the blow!", eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 
-										if (blockchance < 85)
-											blockchance = 85;
+										if (blockchance < 95)
+											blockchance = 95;
 									}
 								}
 							}
@@ -287,12 +309,17 @@ namespace DOL.GS.Spells
 					if (target.Inventory != null)
 						armor = target.Inventory.GetItem((eInventorySlot)ad.ArmorHitLocation);
 
-					double ws = (caster.Level * 8 * (1.0 + (caster.GetModified(eProperty.Dexterity) - 50)/200.0));
+					double ws = (caster.Level * 2.85 * (1.0 + (caster.GetModified(eProperty.Dexterity) - 50)/200.0));
+					double playerBaseAF = ad.Target is GamePlayer ? ad.Target.Level * 45 / 50d : 45;
 
-					damage *= ((ws + 90.68) / (target.GetArmorAF(ad.ArmorHitLocation) + 20*4.67));
-					damage *= 1.0 - Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
-					ad.Modifier = (int)(damage * (ad.Target.GetResist(ad.DamageType) + SkillBase.GetArmorResist(armor, ad.DamageType)) / -100.0);
-					damage += ad.Modifier;
+					double armorMod = (playerBaseAF + ad.Target.GetArmorAF(ad.ArmorHitLocation))/
+					                  (1 - ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
+					damage *= ws / armorMod;
+					//damage *= ((ws + 90.68) / (target.GetArmorAF(ad.ArmorHitLocation) + 20*4.67));
+					//damage *= 1.0 - Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
+					int physMod = (int)(damage * (ad.Target.GetResist(ad.DamageType)) / -100.0);
+					ad.Modifier += physMod;
+					damage += physMod;
 
 					damage = damage * effectiveness;
 					damage *= (1.0 + RelicMgr.GetRelicBonusModifier(caster.Realm, eRelicType.Magic));
@@ -320,11 +347,20 @@ namespace DOL.GS.Spells
 				caster.OnAttackEnemy(ad);
 				if (ad.Damage > 0)
 				{
+					// "A bolt of runic energy hits you!"
+					m_handler.MessageToLiving(target, m_handler.Spell.Message1, eChatType.CT_Spell);
+					// "{0} is hit by a bolt of runic energy!"
+					m_handler.MessageToCaster(eChatType.CT_Spell, m_handler.Spell.Message2, target.GetName(0, true));
+					// "{0} is hit by a bolt of runic energy!"
+					Message.SystemToArea(target, Util.MakeSentence(m_handler.Spell.Message2, target.GetName(0, true)), eChatType.CT_System, target, caster);
+					
 					m_handler.SendDamageMessages(ad);
 				}
 				m_handler.DamageTarget(ad, false, (blocked ? 0x02 : 0x14));
 
                 target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, caster);
+
+                return 0;
 			}
 		}
     }

@@ -1,6 +1,8 @@
+using System;
 using DOL.GS.Spells;
 using DOL.GS.PacketHandler;
 using DOL.AI.Brain;
+using DOL.GS.RealmAbilities;
 
 namespace DOL.GS
 {
@@ -12,13 +14,32 @@ namespace DOL.GS
         public override void OnStartEffect()
         {
             Owner.Disease(true);
-            Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, EffectType, 1.0 - 0.15);
-            Owner.BuffBonusMultCategory1.Set((int)eProperty.Strength, EffectType, 1.0 - 0.075);
+
+            double baseSpeedDebuff = 0.15;
+            double baseStrDebuff = 0.075;
+            
+            /*
+            if (SpellHandler.Caster.HasAbilityType(typeof(AtlasOF_WildArcanaAbility)))
+            {
+                if (Util.Chance(SpellHandler.Caster.SpellCriticalChance))
+                {
+                    double modSpeed = baseSpeedDebuff * 2;
+                    double modStr = baseStrDebuff * (1 + Util.Random(1, 10) * .1);
+                    if(Caster is GamePlayer c) c.Out.SendMessage($"Your {SpellHandler.Spell.Name} critically debuffs the enemy for {Math.Round(modStr - baseStrDebuff) * 100}% additional effect!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+                    baseSpeedDebuff = modSpeed;
+                    baseStrDebuff = modStr;
+                }
+            }*/
+
+            Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, EffectType, 1.0 - baseSpeedDebuff);
+            Owner.BuffBonusMultCategory1.Set((int)eProperty.Strength, EffectType, 1.0 - baseStrDebuff);
 
             (SpellHandler as DiseaseSpellHandler).SendUpdates(this);
 
-            (SpellHandler as DiseaseSpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1, eChatType.CT_Spell);
-            Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)), eChatType.CT_System, Owner);
+            // "You are diseased!"
+            // "{0} is diseased!"
+            OnEffectStartsMsg(Owner, true, true, true);
+
 
             //Owner.StartInterruptTimer(Owner.SpellInterruptDuration, AttackData.eAttackType.Spell, SpellHandler.Caster);
             if (Owner is GameNPC)
@@ -34,8 +55,10 @@ namespace DOL.GS
             Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, EffectType);
             Owner.BuffBonusMultCategory1.Remove((int)eProperty.Strength, EffectType);
 
-            (SpellHandler as DiseaseSpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message3, eChatType.CT_SpellExpires);
-            Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message4, Owner.GetName(0, true)), eChatType.CT_SpellExpires, Owner);
+            // "You look healthy."
+            // "{0} looks healthy again."
+            OnEffectExpiresMsg(Owner, true, true, true);
+
 
             (SpellHandler as DiseaseSpellHandler).SendUpdates(this);
         }

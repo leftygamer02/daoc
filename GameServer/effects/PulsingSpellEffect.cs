@@ -78,7 +78,7 @@ namespace DOL.GS.Effects
 				m_spellPulseAction = new SpellPulseAction(m_spellHandler.Caster, this);
 				m_spellPulseAction.Interval = m_spellHandler.Spell.Frequency;
 				m_spellPulseAction.Start(m_spellHandler.Spell.Frequency);
-				m_spellHandler.Caster.ConcentrationEffects.Add(this);
+				//m_spellHandler.Caster.ConcentrationEffects.Add(this);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace DOL.GS.Effects
 					m_spellPulseAction.Stop();
 					m_spellPulseAction = null;
 				}
-				m_spellHandler.Caster.ConcentrationEffects.Remove(this);
+				//m_spellHandler.Caster.ConcentrationEffects.Remove(this);
 			}
 		}
 
@@ -142,7 +142,7 @@ namespace DOL.GS.Effects
 		/// <summary>
 		/// The pulsing effect action
 		/// </summary>
-		private sealed class SpellPulseAction : RegionAction
+		private sealed class SpellPulseAction : RegionECSAction
 		{
 			/// <summary>
 			/// The pulsing effect
@@ -164,10 +164,11 @@ namespace DOL.GS.Effects
 			/// <summary>
 			/// Callback for spell pulses
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				PulsingSpellEffect effect = m_effect;
 				effect.m_spellHandler.OnSpellPulse(effect);
+				return 0;
 			}
 		}
 	}
