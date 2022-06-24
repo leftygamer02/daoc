@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using DOL.Database;
 using DOL.Events;
@@ -26,7 +27,9 @@ namespace DOL.GS.DailyQuest.Hibernia
 		private static GameNPC QuestNPC = null; // Start NPC
 
 		private int MobsKilled = 0;
-		private static XPItem mobToKill = null;
+		private XPItem mobToKill = null;
+		private string m_mobName;
+		private string m_mobRegion;
 
 		// Constructors
 		public XPItemDailyQuestHib() : base()
@@ -60,13 +63,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 		{
 			if (!ServerProperties.Properties.LOAD_QUESTS)
 				return;
-			
-			GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest,  SubscribeQuest);
-			GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, SubscribeQuest);
 
-			GameEventMgr.AddHandler(QuestNPC, GameObjectEvent.Interact, TalkToDean);
-			GameEventMgr.AddHandler(QuestNPC, GameLivingEvent.WhisperReceive, TalkToDean);
-			
 			#region defineNPCs
 
 			GameNPC[] npcs = WorldMgr.GetNPCsByName(NPCName, eRealm.Hibernia);
@@ -103,6 +100,12 @@ namespace DOL.GS.DailyQuest.Hibernia
 				// }
 			}
 			#endregion
+			
+			GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest,  SubscribeQuest);
+			GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, SubscribeQuest);
+
+			GameEventMgr.AddHandler(QuestNPC, GameObjectEvent.Interact, TalkToDean);
+			GameEventMgr.AddHandler(QuestNPC, GameLivingEvent.WhisperReceive, TalkToDean);
 
 			/* Now we bring to QuestNPC the possibility to give this quest to players */
 			QuestNPC.AddQuestToGive(typeof (XPItemDailyQuestHib));
@@ -128,13 +131,22 @@ namespace DOL.GS.DailyQuest.Hibernia
 			QuestNPC.RemoveQuestToGive(typeof (XPItemDailyQuestHib));
 		}
 
-		private static bool GetXPItem(GamePlayer player)
+		private static string GetXPItem(GamePlayer player)
 		{
 			var quest = XPItemUtils.GetRandomForPlayer(player);
 			if (quest == null)
-				return false;
-			mobToKill = quest;
-			return true;
+				return "";
+			foreach (var abstractQuest in player.QuestList)
+			{
+				if (abstractQuest is XPItemDailyQuestHib hibQ)
+				{
+					hibQ.mobToKill = quest;
+					hibQ.m_mobName = quest.m_mobName;
+					hibQ.m_mobRegion = WorldMgr.GetRegion((ushort) quest.MobRegion).Description;
+					hibQ.SaveQuestParameters();
+				}
+			}
+			return quest.MobName;
 		}
 		private static void TalkToDean(DOLEvent e, object sender, EventArgs args)
 		{
@@ -216,10 +228,13 @@ namespace DOL.GS.DailyQuest.Hibernia
 		{
 			MobsKilled = GetCustomProperty(QuestPropertyKey) != null ? int.Parse(GetCustomProperty(QuestPropertyKey)) : 0;
 			mobToKill = GetCustomProperty(XPItemKey) != null ? XPItemUtils.GetFromID(GetCustomProperty(XPItemKey)) : null;
+			if (mobToKill != null) mobToKill.m_mobName = mobToKill.MobName;
+			if (mobToKill != null) mobToKill.m_mobRegion = mobToKill.MobRegion;
 		}
 
 		public override void SaveQuestParameters()
 		{
+			if (mobToKill == null) return;
 			SetCustomProperty(QuestPropertyKey, MobsKilled.ToString());
 			SetCustomProperty(XPItemKey, mobToKill.m_id.ToString());
 		}
@@ -270,13 +285,22 @@ namespace DOL.GS.DailyQuest.Hibernia
 			else
 			{
 				//Check if we can add the quest!
-				if (!QuestNPC.GiveQuest(typeof (XPItemDailyQuestHib), player, 1))
+				if (!QuestNPC.GiveQuest(typeof(XPItemDailyQuestHib), player, 1))
 					return;
-				
-				GetXPItem(player);
-				
-				QuestNPC.SayTo(player, $"Good, now go out there and finish your work! Please kill {MAX_KILLED} {mobToKill.MobName} and come back to me!.");
+						
+				string mobName = GetXPItem(player);
+				QuestNPC.SayTo(player, $"Good, now go out there and finish your work! Please kill {MAX_KILLED} {mobName} and come back to me!.");
 
+				if (mobName == null || mobName == "")
+				{
+					foreach (var quest in player.QuestList)
+					{
+						if (quest is XPItemDailyQuestHib)
+						{
+							quest.AbortQuest();
+						}
+					}
+				}
 			}
 		}
 
@@ -294,7 +318,18 @@ namespace DOL.GS.DailyQuest.Hibernia
 				switch (Step)
 				{
 					case 1:
-						return $"{NPCName} asked you to kill {mobToKill} in {WorldMgr.GetRegion((ushort)mobToKill.MobRegion).Description} ({MobsKilled} | {MAX_KILLED})";
+						XPItemDailyQuestHib quest = m_questPlayer.QuestList.FirstOrDefault(x => x is XPItemDailyQuestHib) as XPItemDailyQuestHib;
+						string region;
+						try
+						{
+							region = WorldMgr.GetRegion((ushort) quest.mobToKill.MobRegion).Description;
+						}
+						catch (Exception e)
+						{
+							region = null;
+						}
+						if (region == null || quest == null) return "Error encountered when loading quest text. Try relogging to fix.";
+						return $"{NPCName} asked you to kill {quest.mobToKill.m_mobName} in {region} ({MobsKilled} | {MAX_KILLED})";
 					case 2:
 						return $"Return to {NPCName} for your Reward.";
 				}
