@@ -189,8 +189,10 @@ namespace DOL.GS
 		{
 			lock (m_items) // Mannen 10:56 PM 10/30/2006 - Fixing every lock(this)
 			{
+				int saveCount = 0;
 				try
 				{
+					
 					foreach (var item in m_items)
 					{
 						try
@@ -270,12 +272,15 @@ namespace DOL.GS
 						}
 					}
 
+					_cachedItemsToUpdate.Clear();
+					_cachedItemsToRemove.Clear();
+					_cachedItemsToAdd.Clear();
 					return true;
 				}
 				catch (Exception e)
 				{
 					if (Log.IsErrorEnabled)
-						Log.Error("Saving player inventory (" + m_player.Name + ")", e);
+						Log.Error("Saving player inventory (" + m_player.Name + ") - Save Count: " + saveCount, e);
 
 					return false;
 				}
@@ -302,6 +307,10 @@ namespace DOL.GS
 			return AddItem(slot, item, false);
 		}
 
+		private List<GameInventoryItem> _cachedItemsToAdd = new List<GameInventoryItem>();
+		private List<GameInventoryItem> _cachedItemsToUpdate = new List<GameInventoryItem>();
+		private List<GameInventoryItem> _cachedItemsToRemove = new List<GameInventoryItem>();
+
 		protected bool AddItem(eInventorySlot slot, InventoryItem item, bool addObject)
 		{
 			int savePosition = item.SlotPosition;
@@ -318,32 +327,38 @@ namespace DOL.GS
 			{
 				canPersist = gameItem.CanPersist;
 			}
-
+			
 			if (canPersist)
 			{
 				if (addObject)
 				{
-					if (GameServer.Database.AddObject(item) == false)
-					{
-						m_player.Out.SendMessage("Error adding item to the database, item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						Log.ErrorFormat("Error adding item {0}:{1} for player {2} into the database during AddItem!", item.Id_nb, item.Name, m_player.Name);
-						m_items.Remove(slot);
-						item.SlotPosition = savePosition;
-						item.OwnerID = saveOwnerID;
-						return false;
+					lock (_cachedItemsToAdd) {
+						_cachedItemsToAdd.Add(gameItem);
 					}
+					//if (GameServer.Database.AddObject(item) == false)
+					//{
+					//	m_player.Out.SendMessage("Error adding item to the database, item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					//	Log.ErrorFormat("Error adding item {0}:{1} for player {2} into the database during AddItem!", item.Id_nb, item.Name, m_player.Name);
+					//	m_items.Remove(slot);
+					//	item.SlotPosition = savePosition;
+					//	item.OwnerID = saveOwnerID;
+					//	return false;
+					//}
 				}
 				else
 				{
-					if (GameServer.Database.SaveObject(item) == false)
-					{
-						m_player.Out.SendMessage("Error saving item to the database, this item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						Log.ErrorFormat("Error saving item {0}:{1} for player {2} into the database during AddItem!", item.Id_nb, item.Name, m_player.Name);
-						m_items.Remove(slot);
-						item.SlotPosition = savePosition;
-						item.OwnerID = saveOwnerID;
-						return false;
+					lock (_cachedItemsToUpdate) {
+						_cachedItemsToUpdate.Add(gameItem);
 					}
+					//if (GameServer.Database.SaveObject(item) == false)
+					//{
+					//	m_player.Out.SendMessage("Error saving item to the database, this item may be lost!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					//	Log.ErrorFormat("Error saving item {0}:{1} for player {2} into the database during AddItem!", item.Id_nb, item.Name, m_player.Name);
+					//	m_items.Remove(slot);
+					//	item.SlotPosition = savePosition;
+					//	item.OwnerID = saveOwnerID;
+					//	return false;
+					//}
 				}
 			}
 
@@ -354,6 +369,9 @@ namespace DOL.GS
 			{
 				(item as IGameInventoryItem).OnReceive(m_player);
 			}
+			Log.Debug($"_cachedItemsToAdd: {_cachedItemsToAdd.Count}");
+			Log.Debug($"_cachedItemsToRemove: {_cachedItemsToRemove.Count}");
+			Log.Debug($"_cachedItemsToUpdate: {_cachedItemsToUpdate.Count}");
 
 			return true;
 		}
@@ -406,27 +424,33 @@ namespace DOL.GS
 			{
 				if (deleteObject)
 				{
-					if (GameServer.Database.DeleteObject(item) == false)
-					{
-						m_player.Out.SendMessage("Error deleting item from the database, operation aborted!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						Log.ErrorFormat("Error deleting item {0}:{1} for player {2} from the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);
-						m_items.Add(oldSlot, item);
-						item.SlotPosition = savePosition;
-						item.OwnerID = saveOwnerID;
-						return false;
+					lock (_cachedItemsToAdd) {
+						_cachedItemsToRemove.Add(gameItem);
 					}
+					//if (GameServer.Database.DeleteObject(item) == false)
+					//{
+					//	m_player.Out.SendMessage("Error deleting item from the database, operation aborted!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					//	Log.ErrorFormat("Error deleting item {0}:{1} for player {2} from the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);
+					//	m_items.Add(oldSlot, item);
+					//	item.SlotPosition = savePosition;
+					//	item.OwnerID = saveOwnerID;
+					//	return false;
+					//}
 				}
 				else
 				{
-					if (GameServer.Database.SaveObject(item) == false)
-					{
-						m_player.Out.SendMessage("Error saving item to the database, operation aborted!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-						Log.ErrorFormat("Error saving item {0}:{1} for player {2} to the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);
-						m_items.Add(oldSlot, item);
-						item.SlotPosition = savePosition;
-						item.OwnerID = saveOwnerID;
-						return false;
+					lock (_cachedItemsToUpdate) {
+						_cachedItemsToUpdate.Add(gameItem);
 					}
+					//if (GameServer.Database.SaveObject(item) == false)
+					//{
+					//	m_player.Out.SendMessage("Error saving item to the database, operation aborted!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					//	Log.ErrorFormat("Error saving item {0}:{1} for player {2} to the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);
+					//	m_items.Add(oldSlot, item);
+					//	item.SlotPosition = savePosition;
+					//	item.OwnerID = saveOwnerID;
+					//	return false;
+					//}
 				}
 			}
 

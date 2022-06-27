@@ -723,7 +723,9 @@ namespace DOL.GS
 					m_timer.Change(Timeout.Infinite, Timeout.Infinite);
 					m_timer.Dispose();
 				}
-				m_timer = new Timer(SaveTimerProc, null, SaveInterval * MINUTE_CONV, Timeout.Infinite);
+				//Search here to change frequency
+				//m_timer = new Timer(SaveTimerProc, null, SaveInterval * MINUTE_CONV, Timeout.Infinite);
+				m_timer = new Timer(SaveTimerProc, null, MINUTE_CONV, Timeout.Infinite);
 				if (log.IsInfoEnabled)
 					log.Info("World save timer: true");
 
@@ -1564,7 +1566,8 @@ namespace DOL.GS
 			finally
 			{
 				if (m_timer != null)
-					m_timer.Change(SaveInterval * MINUTE_CONV, Timeout.Infinite);
+					m_timer.Change(MINUTE_CONV, Timeout.Infinite);
+				//m_timer.Change(SaveInterval * MINUTE_CONV, Timeout.Infinite);
 				GameEventMgr.Notify(GameServerEvent.WorldSave);
 			}
 		}
