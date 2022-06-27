@@ -1318,11 +1318,19 @@ namespace DOL.GS.Quests.Hibernia
 			{
 				if (quest != null)
 				{
-					Ainrebh.SayTo(player, "Check your Journal for instructions!");
+					switch (quest.Step)
+					{
+						case 1:
+							Ainrebh.SayTo(player, "Check your Journal for instructions!");
+							break;
+						case 2:
+							Ainrebh.SayTo(player, "You have [earned] this Epic Armor!");
+							break;
+					}
 				}
 				else
 				{
-					Ainrebh.SayTo(player, "Hibernia needs your [services]");
+					Ainrebh.SayTo(player, "Hibernia needs your [services]!");
 				}
 
 			}
@@ -1344,9 +1352,26 @@ namespace DOL.GS.Quests.Hibernia
 				{
 					switch (wArgs.Text)
 					{
+						case "earned":
+							if (quest.Step == 2)
+							{
+								quest.FinishQuest();
+							}
+							break;
 						case "abort":
 							player.Out.SendCustomDialog("Do you really want to abort this quest, \nall items gained during quest will be lost?", new CustomDialogResponse(CheckPlayerAbortQuest));
 							break;
+					}
+				}
+			}
+			else if (e == GameLivingEvent.ReceiveItem)
+			{
+				ReceiveItemEventArgs rArgs = (ReceiveItemEventArgs) args;
+				if (quest != null)
+				{
+					if (rArgs.Item.Id_nb == GreenMaw_key.Id_nb)
+					{
+						Ainrebh.SayTo(player, "Thank you "+ player.Name +", you have [earned] your Epic Armor.");
 					}
 				}
 			}
@@ -1486,17 +1511,6 @@ namespace DOL.GS.Quests.Hibernia
 					Step = 2;
 				}
 
-			}
-
-			if (Step == 2 && e == GamePlayerEvent.GiveItem)
-            {
-				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
-				if (gArgs.Target.Name == Ainrebh.Name && gArgs.Item.Id_nb == GreenMaw_key.Id_nb)
-				{
-					Ainrebh.SayTo(player, "You have earned this Epic Armour!");
-					FinishQuest();
-					return;
-				}
 			}
 		}
 
