@@ -50,9 +50,11 @@ namespace DOL.GS.Quests.Hibernia
 		protected const string questTitle = "Unnatural Powers";
 		protected const int minimumLevel = 50;
 		protected const int maximumLevel = 50;
-
+		private int _GreenMawAddKilled = 0;
+		
 		private static GameNPC Ainrebh = null; // Start NPC
 		private static GreenMaw GreenMaw = null; // Mob to kill
+		private static GreenMawAdd3 GreenMawAdd = null; // Mob for Step continue
 
 		private static ItemTemplate GreenMaw_key = null; //ball of flame
 		private static ItemTemplate RangerEpicBoots = null; //Mist Shrouded Boots 
@@ -1450,7 +1452,7 @@ namespace DOL.GS.Quests.Hibernia
 				switch (Step)
 				{
 					case 1:
-						return "[Step #1] Seek out GreenMaw in Cursed Forest Loc 37k,38k kill it!";
+						return "[Step #1] Seek out Green Maw in Cursed Forest Loc 37k,38k kill it!";
 					case 2:
 						return "[Step #2] Return to Ainrebh and give her Green Maw's Key!";
 				}
@@ -1461,20 +1463,27 @@ namespace DOL.GS.Quests.Hibernia
 		public override void Notify(DOLEvent e, object sender, EventArgs args)
 		{
 			GamePlayer player = sender as GamePlayer;
-
+			
 			if (player==null || player.IsDoingQuest(typeof (Focus_50)) == null)
 				return;
 
+			if (sender != m_questPlayer)
+				return;
+			
 			if (Step == 1 && e == GameLivingEvent.EnemyKilled)
 			{
 				EnemyKilledEventArgs gArgs = (EnemyKilledEventArgs) args;
 
-				if (gArgs.Target.Name == GreenMaw.Name)
+				if (gArgs.Target.Name == GreenMawAdd.Name)
+				{
+					_GreenMawAddKilled++;
+				}
+
+				if (_GreenMawAddKilled >= 2)
 				{
 					m_questPlayer.Out.SendMessage("You collect Green Maw's Key", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					GiveItem(m_questPlayer, GreenMaw_key);
 					Step = 2;
-					return;
 				}
 
 			}
