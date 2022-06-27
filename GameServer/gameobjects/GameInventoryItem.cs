@@ -64,6 +64,9 @@ namespace DOL.GS {
             get { return LanguageDataObject.eTranslationIdentifier.eItem; }
         }
 
+        public bool AddToInventory = false;
+        public bool RemoveFromInventory = false;
+
         /// <summary>
         /// Holds the translation id.
         /// </summary>
