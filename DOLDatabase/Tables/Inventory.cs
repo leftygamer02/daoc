@@ -48,7 +48,7 @@ namespace DOL.Database
 		public string OwnerID
 		{
 			get	{return m_ownerID;}
-			set	{Dirty = true;m_ownerID = value;}
+			set	{Dirty = m_ownerID != value; m_ownerID = value;}
 		}
 		
 		protected ushort m_ownerLot; 		// house lot owner id
@@ -56,7 +56,7 @@ namespace DOL.Database
 		public ushort OwnerLot
 		{
 			get{return m_ownerLot;}
-			set{Dirty = true;m_ownerLot = value;}
+			set{Dirty = m_ownerLot != value; m_ownerLot = value;}
 		}
 		
 		protected string m_itemplate_id;		// id for ItemTemplate
@@ -64,28 +64,28 @@ namespace DOL.Database
 		public string ITemplate_Id
 		{
 			get{return m_itemplate_id;}
-			set{Dirty = true;m_itemplate_id = value;}
+			set{Dirty = m_itemplate_id != value; m_itemplate_id = value;}
 		}
 		protected string m_utemplate_id;		// id for ItemUnique
 		[DataElement(AllowDbNull = true, Index = true)]
 		public string UTemplate_Id
 		{
 			get{return m_utemplate_id;}
-			set{Dirty = true;m_utemplate_id = value;}
+			set{Dirty = m_utemplate_id != value; m_utemplate_id = value;}
 		}
 		
 		protected bool m_iscrafted;			// iscrafted or looted ?
 		[DataElement(AllowDbNull = false)]
 		public virtual bool IsCrafted {
 			get { return m_iscrafted; }
-			set { Dirty = true; m_iscrafted = value; }
+			set { Dirty = m_iscrafted != value; m_iscrafted = value; }
 		}
 		
 		protected bool m_isROG;			// iscrafted or looted ?
 		[DataElement(AllowDbNull = false)]
 		public virtual bool IsROG {
 			get { return m_isROG; }
-			set { Dirty = true; m_isROG = value; }
+			set { Dirty = m_isROG != value; m_isROG = value; }
 		}
 		
 		protected string m_creator;			// crafter or mob dropping it, but also quest, etc...
@@ -93,7 +93,7 @@ namespace DOL.Database
 		public virtual string Creator
 		{
 			get { return m_creator; }
-			set { Dirty = true; m_creator = value; }
+			set { Dirty = m_creator != value; m_creator = value; }
 		}
 		
 		protected int m_slot_pos;			// slot in inventory
@@ -101,7 +101,7 @@ namespace DOL.Database
 		public virtual int SlotPosition
 		{
 			get{return m_slot_pos;}
-			set{Dirty = true;m_slot_pos = value;}
+			set{Dirty = m_slot_pos != value; m_slot_pos = value;}
 		}
 		
 		protected int m_count; 				// count of items, for stack
@@ -109,7 +109,7 @@ namespace DOL.Database
 		public virtual int Count
 		{
 			get{return m_count;}
-			set{Dirty = true;m_count = value;}
+			set{Dirty = m_count != value; m_count = value;}
 		}
 		
 		protected int m_sellPrice;			// sell price in CM
@@ -117,7 +117,7 @@ namespace DOL.Database
 		public virtual int SellPrice
 		{
 			get{return m_sellPrice;}
-			set{Dirty = true;m_sellPrice = value;}
+			set{Dirty = m_sellPrice != value; m_sellPrice = value;}
 		}
 		
 		protected long m_experience;			// artefact experience
@@ -125,7 +125,7 @@ namespace DOL.Database
 		public virtual long Experience
 		{
 			get { return m_experience; }
-			set{Dirty = true;m_experience = value;}
+			set{Dirty = m_experience != value; m_experience = value;}
 		}
 		
 		// Itemtemplate fields
@@ -135,21 +135,21 @@ namespace DOL.Database
 		public virtual int Color
 		{
 			get { return m_color; }
-			set {Dirty = true; m_color = value; }
+			set {Dirty = m_color != value; m_color = value; }
 		}
 		protected int m_emblem;
 		[DataElement(AllowDbNull = false)]
 		public virtual int Emblem
 		{
 			get { return m_emblem; }
-			set { Dirty = true;m_emblem = value; }
+			set { Dirty = m_emblem != value; m_emblem = value; }
 		}
 		protected byte m_extension;
 		[DataElement(AllowDbNull = false)]
 		public virtual byte Extension
 		{
 			get { return m_extension; }
-			set { Dirty = true;m_extension = value; }
+			set { Dirty = m_extension != value; m_extension = value; }
 		}
 		
 		// item health
@@ -158,14 +158,14 @@ namespace DOL.Database
 		public virtual int Condition
 		{
 			get { return m_condition; }
-			set { Dirty = true;m_condition = value; }
+			set { Dirty = m_condition != value; m_condition = value; }
 		}
 		protected int m_durability;
 		[DataElement(AllowDbNull = false)]
 		public virtual int Durability
 		{
 			get { return m_durability; }
-			set { Dirty = true;m_durability = value; }
+			set { Dirty = m_durability != value; m_durability = value; }
 		}
 		
 		// poison & current charges
@@ -174,35 +174,35 @@ namespace DOL.Database
 		public virtual int PoisonSpellID
 		{
 			get { return m_poisonSpellID; }
-			set { Dirty = true;m_poisonSpellID = value; }
+			set { Dirty = m_poisonSpellID != value; m_poisonSpellID = value; }
 		}
 		protected int m_poisonMaxCharges;
 		[DataElement(AllowDbNull = false)]
 		public virtual int PoisonMaxCharges
 		{
 			get { return m_poisonMaxCharges; }
-			set { Dirty = true;m_poisonMaxCharges = value; }
+			set { Dirty = m_poisonMaxCharges != value; m_poisonMaxCharges = value; }
 		}
 		protected int m_poisonCharges;
 		[DataElement(AllowDbNull = false)]
 		public virtual int PoisonCharges
 		{
 			get { return m_poisonCharges; }
-			set { Dirty = true;m_poisonCharges = value; }
+			set { Dirty = m_poisonCharges != value; m_poisonCharges = value; }
 		}
 		protected int m_charges;
 		[DataElement(AllowDbNull = false)]
 		public virtual int Charges
 		{
 			get { return m_charges; }
-			set { Dirty = true;m_charges = value; }
+			set { Dirty = m_charges != value; m_charges = value; }
 		}
 		protected int m_charges1;
 		[DataElement(AllowDbNull = false)]
 		public virtual int Charges1
 		{
 			get { return m_charges1; }
-			set { Dirty = true;m_charges1 = value; }
+			set { Dirty = m_charges1 != value; m_charges1 = value; }
 		}
 		
 		private DateTime m_lastUsedDateTime;	// last used DT
@@ -235,7 +235,7 @@ namespace DOL.Database
 		public virtual int Cooldown
 		{
 			get { return CanUseAgainIn; }
-			set { Dirty =true;m_cooldown = value; }
+			set { Dirty = m_cooldown != value; m_cooldown = value; }
 		}
 
 		[Relation(LocalField = "ITemplate_Id", RemoteField = "Id_nb", AutoLoad = true, AutoDelete=false)]
@@ -272,7 +272,7 @@ namespace DOL.Database
 			}
 			set
 			{
-				Dirty = true;
+				Dirty = m_item != value;
 				m_item = value;
 			}
 		}

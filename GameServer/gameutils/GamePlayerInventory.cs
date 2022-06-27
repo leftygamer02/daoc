@@ -261,6 +261,7 @@ namespace DOL.GS
 								}
 
 								GameServer.Database.SaveObject(currentItem);
+								currentItem.Dirty = false;
 							}
 						}
 						catch (Exception e)
