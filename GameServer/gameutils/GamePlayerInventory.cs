@@ -239,23 +239,10 @@ namespace DOL.GS
                                         return false;
                                     }
                                     gameItem.AddToInventory = false;
-									Log.Debug($"Added: {gameItem.Name} to {m_player.Name} succesfully in the DB");
+									//Log.Debug($"Added: {gameItem.Name} to {m_player.Name} succesfully in the DB");
 									recordsProcessed++;
 									continue;
 								}
-								//else if(gameItem.RemoveFromInventory) {
-        //                            if (GameServer.Database.DeleteObject(gameItem) == false) {                                        
-        //                                Log.ErrorFormat("Error deleting item {0}:{1} for player {2} from the database during RemoveItem!", gameItem.Id_nb, gameItem.Name, m_player.Name);
-								//		recordsProcessed++;
-								//		return false;
-        //                            }
-        //                            gameItem.RemoveFromInventory = false;
-								//	Log.Debug($"Removed: {gameItem.Name} From {m_player.Name} succesfully in the DB");
-								//	continue;
-        //                        } else if (gameItem.RemoveFromInventory && gameItem.AddToInventory) {
-								//	//It was added to inventory and removed between save calls. We don't need to do anything
-								//	continue;
-        //                        }
                             }
 
 							if (currentItem.Dirty)
@@ -269,25 +256,6 @@ namespace DOL.GS
 										          " real slot=" + realSlot + " item ID=" + currentItem.ObjectId);
 									currentItem.SlotPosition = realSlot; // just to be sure
 								}
-
-								// Check database to make sure player still owns this item before saving
-
-								InventoryItem checkItem = GameServer.Database.FindObjectByKey<InventoryItem>(currentItem.ObjectId);
-
-								if (checkItem == null || checkItem.OwnerID != m_player.InternalID)
-								{
-									if (checkItem != null)
-									{
-										Log.ErrorFormat("Item '{0}' : '{1}' does not have same owner id on save inventory.  Game Owner = '{2}' : '{3}', DB Owner = '{4}'", currentItem.Name, currentItem.ObjectId, m_player.Name, m_player.InternalID, checkItem.OwnerID);
-									}
-									else
-									{
-										Log.ErrorFormat("Item '{0}' : '{1}' not found in DBInventory for player '{2}'", currentItem.Name, currentItem.Id_nb, m_player.Name);
-									}
-
-									continue;
-								}
-
 								GameServer.Database.SaveObject(currentItem);
 								recordsProcessed++;
 								currentItem.Dirty = false;
@@ -299,8 +267,8 @@ namespace DOL.GS
 								Log.Error("Error saving inventory item: player=" + m_player.Name, e);
 						}
 					}
-					lock(_cachedItemsToRemove) {
-						foreach(var item in _cachedItemsToRemove) {
+					lock(_cachedItemsToAddToDB) {
+						foreach(var item in _cachedItemsToAddToDB) {
                             if (GameServer.Database.DeleteObject(item) == false) {
                                 Log.ErrorFormat("Error deleting item {0}:{1} for player {2} from the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);
                                 recordsProcessed++;
@@ -309,7 +277,7 @@ namespace DOL.GS
                             Log.Debug($"Removed: {item.Name} From {m_player.Name} succesfully in the DB");
                         }
 					}
-					_cachedItemsToRemove.Clear();
+					_cachedItemsToAddToDB.Clear();
 					Log.Debug($"Inventory Records Processed: {recordsProcessed}");
 					return true;
 				}
@@ -412,7 +380,7 @@ namespace DOL.GS
 			return RemoveItem(item, false);
 		}
 
-		private List<GameInventoryItem> _cachedItemsToRemove = new List<GameInventoryItem>();
+		private List<GameInventoryItem> _cachedItemsToAddToDB = new List<GameInventoryItem>();
 
 		/// <summary>
 		/// Removes an item from the inventory and DB
@@ -453,7 +421,7 @@ namespace DOL.GS
 				if (deleteObject)
 				{
 					gameItem.RemoveFromInventory = true;
-					_cachedItemsToRemove.Add(gameItem);
+					_cachedItemsToAddToDB.Add(gameItem);
 					//if (GameServer.Database.DeleteObject(item) == false)
 					//{
 					//	m_player.Out.SendMessage("Error deleting item from the database, operation aborted!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
