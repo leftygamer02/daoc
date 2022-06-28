@@ -19,6 +19,7 @@
 //#define OUTPUT_DEBUG_INFO
 using System;
 using System.Collections;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -27,7 +28,9 @@ using DOL.Database;
 using DOL.Events;
 using DOL.Language;
 using DOL.GS;
+using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
+using DOL.GS.Utils;
 using log4net;
 
 namespace DOL.GS.PacketHandler.Client.v168
@@ -79,7 +82,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			if ((speedData & 0x200) != 0)
 				speed = -speed;
 
-			if (client.Player.IsMezzed || client.Player.IsStunned)
+			if ((client.Player.IsMezzed || client.Player.IsStunned) && client.Player.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) == null)
 				// Nidel: updating client.Player.CurrentSpeed instead of speed
 				client.Player.CurrentSpeed = 0;
 			else
@@ -368,8 +371,24 @@ namespace DOL.GS.PacketHandler.Client.v168
 				// Check for left areas
 				if (oldAreas != null)
 					foreach (IArea area in oldAreas)
+					{
 						if (!newAreas.Contains(area))
+						{
 							area.OnPlayerLeave(client.Player);
+							
+							//Check if leaving Border Keep areas so we can check RealmTimer
+							AbstractArea checkrvrarea = area as AbstractArea;
+							if (checkrvrarea != null && (checkrvrarea.Description.Equals("Castle Sauvage") || 
+								checkrvrarea.Description.Equals("Snowdonia Fortress") || 
+								checkrvrarea.Description.Equals("Svasud Faste") ||
+								checkrvrarea.Description.Equals("Vindsaul Faste") ||
+								checkrvrarea.Description.Equals("Druim Ligen") ||
+								checkrvrarea.Description.Equals("Druim Cain")))
+							{
+								RealmTimer.CheckRealmTimer(client.Player);
+							}
+						}
+					}
 				// Check for entered areas
 				foreach (IArea area in newAreas)
 					if (oldAreas == null || !oldAreas.Contains(area))
@@ -815,7 +834,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			//int speed = (newPlayerSpeed & 0x1FF);
 			//Flags1 = (eFlags1)playerState;
 			//Flags2 = (eFlags2)playerAction;                        
-			if (client.Player.IsMezzed || client.Player.IsStunned)
+			if ((client.Player.IsMezzed || client.Player.IsStunned) && client.Player.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) == null)
 				client.Player.CurrentSpeed = 0;
 			else
             {
@@ -1071,6 +1090,18 @@ namespace DOL.GS.PacketHandler.Client.v168
 						if (!newAreas.Contains(area))
 						{
 							area.OnPlayerLeave(client.Player);
+
+							//Check if leaving Border Keep areas so we can check RealmTimer
+							AbstractArea checkrvrarea = area as AbstractArea;
+							if (checkrvrarea != null && (checkrvrarea.Description.Equals("Castle Sauvage") || 
+								checkrvrarea.Description.Equals("Snowdonia Fortress") || 
+								checkrvrarea.Description.Equals("Svasud Faste") ||
+								checkrvrarea.Description.Equals("Vindsaul Faste") ||
+								checkrvrarea.Description.Equals("Druim Ligen") ||
+								checkrvrarea.Description.Equals("Druim Cain")))
+							{
+								RealmTimer.CheckRealmTimer(client.Player);
+							}
 						}
 					}
 				}

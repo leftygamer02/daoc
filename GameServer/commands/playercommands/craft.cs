@@ -33,7 +33,7 @@ namespace DOL.GS.Commands
                             DisplayMessage(client, "Use: /craft set <#>");
                             return;
                         }
-
+                
                         client.Player.TempProperties.setProperty(CraftQueueLength, count);
                         DisplayMessage(client, $"Crafting queue set to {count} items");
                     }
@@ -49,10 +49,9 @@ namespace DOL.GS.Commands
 
                 if (args[1] == "clear")
                 {
-                    if (client.Player.TempProperties.getProperty<int>(CraftQueueLength) != 0)
-                    {
-                        client.Player.TempProperties.removeProperty(CraftQueueLength);
-                    }
+
+                    client.Player.TempProperties.removeProperty(CraftQueueLength);
+                    
 
                     var recipe = client.Player.TempProperties.getProperty<Recipe>(RecipeToCraft);
                     if (recipe != null)

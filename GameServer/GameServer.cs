@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
@@ -66,6 +67,8 @@ namespace DOL.GS
 		/// Maximum UDP buffer size
 		/// </summary>
 		protected const int MAX_UDPBUF = 4096;
+
+		public DateTime StartupTime;
 
 		/// <summary>
 		/// Minute conversion from milliseconds
@@ -144,6 +147,8 @@ namespace DOL.GS
 		{
 			get { return log; }
 		}
+
+		public List<String> PatchNotes;
 
 		#endregion
 
@@ -588,7 +593,6 @@ namespace DOL.GS
 				Thread.CurrentThread.Priority = ThreadPriority.Normal;
 
 				AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-
 				//---------------------------------------------------------------
 				//Try to compile the Scripts
 				if (!InitComponent(CompileScripts(), "Script compilation"))
@@ -676,10 +680,6 @@ namespace DOL.GS
 				//Load all faction managers
 				if (!InitComponent(FactionMgr.Init(), "Faction Managers"))
 					return false;
-
-				//---------------------------------------------------------------
-				//Load artifact manager
-				InitComponent(ArtifactMgr.Init(), "Artifact Manager");
 
 				//---------------------------------------------------------------
 				//Load all calculators
@@ -812,6 +812,7 @@ namespace DOL.GS
 				//---------------------------------------------------------------
 				//Open the server, players can now connect if webhook, inform Discord!
 				m_status = eGameServerStatus.GSS_Open;
+				StartupTime = DateTime.Now;
 
 				if (Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID)))
 				{
@@ -844,7 +845,8 @@ namespace DOL.GS
 					var webserver = new DOL.GS.API.ApiHost();
 					log.Info("Game WebAPI open for connections.");
 				}
-
+				
+				GetPatchNotes();
 
 				//INIT WAS FINE!
 				return true;
@@ -856,6 +858,28 @@ namespace DOL.GS
 
 				return false;
 			}
+		}
+
+		public async void GetPatchNotes()
+		{
+			var news = new List<string>();
+
+			try
+			{
+				using var newsClient = new HttpClient();
+				const string url = "https://admin.atlasfreeshard.com/storage/servernews.txt";
+				var newsResult = await newsClient.GetStringAsync(url);
+				news.Add(newsResult);
+				log.Debug("Patch notes updated.");
+				newsClient.Dispose();
+			}
+			catch (Exception)
+			{
+				news.Add("No patch notes available.");
+				log.Debug("Cannot retrieve patch notes.");
+
+			}
+			PatchNotes = news;
 		}
 
 		/// <summary>
@@ -1502,6 +1526,7 @@ namespace DOL.GS
 				if (log.IsDebugEnabled)
 					log.Debug("Save ThreadId=" + Thread.CurrentThread.ManagedThreadId);
 				int saveCount = 0;
+				int craftingSaveCount = 0;
 				if (m_database != null)
 				{
 					ThreadPriority oldprio = Thread.CurrentThread.Priority;
@@ -1518,6 +1543,7 @@ namespace DOL.GS
 					BoatMgr.SaveAllBoats();
 
 					FactionMgr.SaveAllAggroToFaction();
+					craftingSaveCount = CraftingProgressMgr.Save();
 
 					// 2008-01-29 Kakuri - Obsolete
 					//m_database.WriteDatabaseTables();
@@ -1526,8 +1552,9 @@ namespace DOL.GS
 				if (log.IsInfoEnabled)
 					log.Info("Saving database complete!");
 				startTick = Environment.TickCount - startTick;
-				if (log.IsInfoEnabled)
-					log.Info("Saved all databases and " + saveCount + " players in " + startTick + "ms");
+				if (log.IsInfoEnabled) 
+					log.Info("Saved all databases and " + saveCount + " players in " + startTick + "ms" + Environment.NewLine 
+						+ "Crafting Progress Saved for: " + craftingSaveCount);
 			}
 			catch (Exception e1)
 			{

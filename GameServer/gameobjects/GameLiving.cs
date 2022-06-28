@@ -293,7 +293,10 @@ namespace DOL.GS
 		/// </summary>
 		public bool IsMezzed
 		{
-			get { return m_mezzed; }
+			get
+			{
+				return m_mezzed;
+			}
 			set { m_mezzed = value; }
 		}
 
@@ -389,7 +392,12 @@ namespace DOL.GS
 		/// </summary>
 		public bool IsTurningDisabled
 		{
-			get { return m_turningDisabledCount > 0; }
+			get
+			{
+				if (this.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) != null)
+					return false;
+				return m_turningDisabledCount > 0;
+			}
 		}
 		/// <summary>
 		/// Disables the turning for this living
@@ -965,19 +973,28 @@ namespace DOL.GS
 			get { return GetModified(eProperty.CriticalSpellHitChance); }
 			set { }
 		}
-        ///// <summary>
-        ///// Returns the damage type of the current attack
-        ///// </summary>
-        ///// <param name="weapon">attack weapon</param>
-        //public virtual eDamageType AttackDamageType(InventoryItem weapon)
-        //{
-        //	return eDamageType.Natural;
-        //}
 
-        /// <summary>
-        /// Gets the attack-state of this living
-        /// </summary>
-        public virtual bool AttackState { get; set; }
+		/// <summary>
+		/// Returns the chance for a critical hit with a spell
+		/// </summary>
+		public virtual int DotCriticalChance
+		{
+			get { return GetModified(eProperty.CriticalDotHitChance); }
+			set { }
+		}
+		///// <summary>
+		///// Returns the damage type of the current attack
+		///// </summary>
+		///// <param name="weapon">attack weapon</param>
+		//public virtual eDamageType AttackDamageType(InventoryItem weapon)
+		//{
+		//	return eDamageType.Natural;
+		//}
+
+		/// <summary>
+		/// Gets the attack-state of this living
+		/// </summary>
+		public virtual bool AttackState { get; set; }
 
         /// <summary>
         /// Whether or not the living can be attacked.
@@ -1090,17 +1107,17 @@ namespace DOL.GS
 		{
 			get
 			{
-				if ((InCombatPvE || InCombatPvP) == false)
+				if ((InCombatPvE || InCombatPvP))
 				{
-					if (attackComponent.Attackers.Count > 0)
-					{
-						attackComponent.Attackers.Clear();
-					}
-
-					return false;
+					return true;
+				}
+				
+				if (attackComponent.Attackers.Count > 0)
+				{
+					attackComponent.Attackers.Clear();
 				}
 
-				return true;
+				return false;
 			}
 		}
 
@@ -4161,9 +4178,6 @@ namespace DOL.GS
 			{
 				if (wasAlive)
 					Die(source);
-
-				lock (m_xpGainers.SyncRoot)
-					m_xpGainers.Clear();
 			}
 			else
 			{
@@ -4188,7 +4202,8 @@ namespace DOL.GS
 			if (this is GamePlayer player)
 				player.Stealth(false);
 
-			TryCancelMovementSpeedBuffs(true);
+			if(ad != null && ad.Damage > 0)
+				TryCancelMovementSpeedBuffs(true);
 
 			var oProcEffects = effectListComponent.GetSpellEffects(eEffect.OffensiveProc);
             //OffensiveProcs
@@ -4432,7 +4447,8 @@ namespace DOL.GS
                 }
 				// Non-Damaging, non-resisted spells that break mez.
 				else if (ad.SpellHandler is NearsightSpellHandler || ad.SpellHandler is AmnesiaSpellHandler || ad.SpellHandler is DiseaseSpellHandler
-						 || ad.SpellHandler is SpeedDecreaseSpellHandler || ad.SpellHandler is StunSpellHandler || ad.SpellHandler is ConfusionSpellHandler) 
+						 || ad.SpellHandler is SpeedDecreaseSpellHandler || ad.SpellHandler is StunSpellHandler || ad.SpellHandler is ConfusionSpellHandler
+						 || ad.SpellHandler is AbstractResistDebuff) 
 				{
 					removeMez = true;
 				}
@@ -4476,8 +4492,10 @@ namespace DOL.GS
             if (effectListComponent == null || ad == null)
                 return false;
 
-            // Cancel movement speed buffs when attacked
-			bool effectRemoved = TryCancelMovementSpeedBuffs(false);
+			bool effectRemoved = false;
+            // Cancel movement speed buffs when attacked only if damaged
+			if(ad != null & ad.Damage > 0)
+				effectRemoved = TryCancelMovementSpeedBuffs(false);
 
 			
 
@@ -4491,7 +4509,7 @@ namespace DOL.GS
 
             bool effectRemoved = false;
 
-			if (effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
+            if (effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
 			{
 				var effects = effectListComponent.GetSpellEffects(eEffect.MovementSpeedBuff);
 
@@ -4766,6 +4784,11 @@ namespace DOL.GS
 		/// Called when this living dies
 		/// </summary>
 		public virtual void Die(GameObject killer)
+		{
+			ReaperService.KillLiving(this, killer);
+		}
+
+		public virtual void ProcessDeath(GameObject killer)
 		{
 			if (this is GameNPC == false && this is GamePlayer == false)
 			{

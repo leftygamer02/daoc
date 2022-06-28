@@ -27,6 +27,7 @@ using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.Language;
 using log4net;
+using DOL.GS.Utils;
 
 namespace DOL.GS.PacketHandler.Client.v168
 {
@@ -84,7 +85,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					updateTempProperties = true;
 					player.EnteredGame = true;
 					player.Notify(GamePlayerEvent.GameEntered, player);
-					// ShowPatchNotes(player);
+					ShowPatchNotes(player);
 					//player.EffectList.RestoreAllEffects();
 					EffectService.RestoreAllEffects(player);
 					checkInstanceLogin = true;
@@ -155,6 +156,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 					CheckBGLevelCapForPlayerAndMoveIfNecessary(player);
 				}
 
+				//Check realmtimer and move player to bind if realm timer is not for this realm.
+				RealmTimer.CheckRealmTimer(player);
+
 				if (checkInstanceLogin)
 				{
 					if (WorldMgr.Regions[player.CurrentRegionID] == null || player.CurrentRegion == null || player.CurrentRegion.IsInstance)
@@ -205,17 +209,11 @@ namespace DOL.GS.PacketHandler.Client.v168
 				return 0;
 			}
 			
-			public void ShowPatchNotes(GamePlayer player)
+			private void ShowPatchNotes(GamePlayer player)
 			{
 				var today = DateTime.Today;
 
-				using var newsClient = new HttpClient();
-				string newsTxt;
-				var news = new List<string>();
-				const string url = "https://admin.atlasfreeshard.com/storage/servernews.txt";
-				newsTxt = newsClient.GetStringAsync(url).Result;
-				news.Add(newsTxt);
-				player.Out.SendCustomTextWindow("Server News " + today.ToString("d"), news);
+				player.Out.SendCustomTextWindow("Server News " + today.ToString("d"), GameServer.Instance.PatchNotes);
 			}
 
 			private static void CheckBGLevelCapForPlayerAndMoveIfNecessary(GamePlayer player)

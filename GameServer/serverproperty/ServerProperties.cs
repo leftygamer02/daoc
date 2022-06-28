@@ -464,6 +464,30 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("atlas", "tester_login", "Allow only testers and staff to login", false)]
 		public static bool TESTER_LOGIN;
+		
+		/// <summary>
+		/// The toughness of the boss for the SI necklace quest
+		/// </summary>
+		[ServerProperty("atlas", "neck_boss_scaling", "The toughness of the boss for the SI necklace quest", 80)]
+		public static int NECK_BOSS_SCALING;
+		
+		/// <summary>
+		/// The toughness of GameNPCs
+		/// </summary>
+		[ServerProperty("atlas", "gamenpc_scaling", "The toughness of GameNPCs", 15)]
+		public static int GAMENPC_SCALING;
+		
+		/// <summary>
+		/// The first factor in the PVE mob damage equation. Lower hits harder.
+		/// </summary>
+		[ServerProperty("atlas", "pve_mob_damage_f1", "The first factor in the PVE mob damage equation. Lower hits harder.", 3.2)]
+		public static double PVE_MOB_DAMAGE_F1;
+		
+		/// <summary>
+		/// The second factor in the PVE mob damage equation. Lower hits harder.
+		/// </summary>
+		[ServerProperty("atlas", "pve_mob_damage_f2", "The second factor in the PVE mob damage equation. Lower hits harder.", 150.0)]
+		public static double PVE_MOB_DAMAGE_F2;
 
 		/// <summary>
 		/// Enable integrated serverlistupdate script?
@@ -1530,6 +1554,13 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("pvp", "pvp_death_con_loss", "Loose con on pvp death on PvP servertype", true)]
 		public static bool PVP_DEATH_CON_LOSS;
+
+		/// <summary>
+		/// PvP Realm Timer. # of minutes an account must wait to change realms after pvp combat. 0 disables the timer
+		/// </summary>
+		[ServerProperty("pvp", "pvp_realm_timer_minutes", "# of minutes an account must wait to change realms after PvP combat. 0 disables the timer", 0)]
+		public static int PVP_REALM_TIMER_MINUTES; 
+
 		#endregion
 
 		#region KEEPS
@@ -1909,6 +1940,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("keeps", "guard_respawn_variance", "Respawn variance for keep guards in minutes.", 10)]
 		public static int GUARD_RESPAWN_VARIANCE;
+		
+		/// <summary>
+		/// Relic gates health value.
+		/// </summary>
+		[ServerProperty("keeps", "relic_doors_health", "Relic gates health value", 180000)]
+		public static int RELIC_DOORS_HEALTH;
 		#endregion
 
 		#region PVE / TOA
@@ -2484,6 +2521,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("craft", "crafting_max_skills", "Set character crafting skills to max level.", false)]
 		public static bool CRAFTING_MAX_SKILLS;
+		
+		/// <summary>
+		/// Max character crafting skill?
+		/// </summary>
+		[ServerProperty("craft", "crafting_max_skills_amount", "The amount to which set the crafting skills when using crafting_max_skills", 1)]
+		public static int CRAFTING_MAX_SKILLS_AMOUNT;
 
 		/// <summary>
 		/// Use salvage per realm and get back material to use in chars realm

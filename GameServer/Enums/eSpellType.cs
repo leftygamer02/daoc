@@ -210,7 +210,8 @@ namespace DOL.GS
         SummonSiegeTrebuchet = 204,
         SummonJuggernaut = 205,
         SummonAnimistAmbusher = 206,
-        SeveringTheTether = 207,
-        Null = 208
+        StrikingTheSoul = 207,
+        SeveringTheTether = 208,
+        Null = 209
     }
 }

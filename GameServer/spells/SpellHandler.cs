@@ -880,7 +880,12 @@ namespace DOL.GS.Spells
 			{
                 if (Caster.InterruptAction > 0 && Caster.InterruptTime > GameLoop.GameLoopTime)
 				{
-					return false;
+					if(m_caster is NecromancerPet necropet && necropet.effectListComponent.ContainsEffectForEffectType(eEffect.FacilitatePainworking))
+					{
+						//Necro pet has Facilitate Painworking effect and isn't interrupted.
+					}
+					else
+						return false;
 				}
 			}
 
@@ -1111,12 +1116,12 @@ namespace DOL.GS.Spells
 		/// <param name="player">The player</param>
 		/// <param name="response">The result</param>
 		/// <param name="targetOID">The target OID</param>
-		public virtual void CheckLOSPlayerToTarget(GamePlayer player, ushort response, ushort targetOID)
+		public virtual void CheckLOSPlayerToTarget(GamePlayer player, GameObject source, GameObject target, bool losOk, EventArgs args, PropertyCollection tempProperties)
 		{
 			if (player == null) // Hmm
 				return;
 
-			if ((response & 0x100) == 0x100) // In view?
+			if (losOk) // In view?
 				return;
 
 			if (ServerProperties.Properties.ENABLE_DEBUG)
@@ -1143,12 +1148,12 @@ namespace DOL.GS.Spells
 		/// <param name="player">The player</param>
 		/// <param name="response">The result</param>
 		/// <param name="targetOID">The target OID</param>
-		public virtual void CheckLOSNPCToTarget(GamePlayer player, ushort response, ushort targetOID)
+		public virtual void CheckLOSNPCToTarget(GamePlayer player, GameObject source, GameObject target, bool losOk, EventArgs args, PropertyCollection tempProperties)
 		{
 			if (player == null) // Hmm
 				return;
 
-			if ((response & 0x100) == 0x100) // In view?
+			if (losOk) // In view?
 				return;
 
 			if (ServerProperties.Properties.ENABLE_DEBUG)
@@ -1407,7 +1412,7 @@ namespace DOL.GS.Spells
 				{
 					case "enemy":
 						//enemys have to be in front and in view for targeted spells
-						if (Caster is GamePlayer && !m_caster.IsObjectInFront(target, 180) && !Caster.IsWithinRadius(target, 50) &&
+						if (Caster is GamePlayer && !m_caster.TargetInView && !Caster.IsWithinRadius(target, 64) &&
 							m_spell.SpellType != (byte)eSpellType.PetSpell && (!m_spell.IsPulsing && m_spell.SpellType != (byte)eSpellType.Mesmerize))
 						{
 							if (!quiet) MessageToCaster("Your target is not in view. The spell fails.", eChatType.CT_SpellResisted);
@@ -1439,11 +1444,15 @@ namespace DOL.GS.Spells
 
 								if (Caster is GamePlayer)
 								{
-									playerChecker.Out.SendCheckLOS(Caster, target, new CheckLOSResponse(CheckLOSPlayerToTarget));
+									//playerChecker.Out.SendCheckLOS(Caster, target, new CheckLOSMgrResponse(CheckLOSPlayerToTarget));
+									LosCheckMgr chk = new LosCheckMgr();
+									chk.LosCheck(playerChecker, Caster, target, new LosMgrResponse(CheckLOSPlayerToTarget), false, Spell.CastTime);
 								}
 								else if (target is GamePlayer || MustCheckLOS(Caster))
 								{
-									playerChecker.Out.SendCheckLOS(Caster, target, new CheckLOSResponse(CheckLOSNPCToTarget));
+									//playerChecker.Out.SendCheckLOS(Caster, target, new CheckLOSMgrResponse(CheckLOSNPCToTarget));
+									LosCheckMgr chk = new LosCheckMgr();
+									chk.LosCheck(playerChecker, Caster, target, new LosMgrResponse(CheckLOSNPCToTarget), false, Spell.CastTime);
 								}
 							}
 						}
@@ -2050,6 +2059,36 @@ namespace DOL.GS.Spells
 		}
 
 		/// <summary>
+		/// Special use case for when Amnesia isued used against the caster
+		/// </summary>
+		public virtual void AmnesiaInterruptCasting()
+		{
+			//castState = eCastState.Interrupted;
+			if (m_interrupted || !IsCasting)
+				return;
+			
+			if(m_caster is GamePlayer p && p.castingComponent != null)
+            {
+				p.castingComponent.spellHandler = null;
+				//p.castingComponent.queuedSpellHandler = null;
+            }
+
+			if (m_castTimer != null)
+			{
+				m_castTimer.Stop();
+				m_castTimer = null;
+
+				// if (m_caster is GamePlayer)
+				// {
+				// 	((GamePlayer)m_caster).ClearSpellQueue();
+				// }
+			}
+			//castState = eCastState.Interrupted;
+			m_startReuseTimer = false;
+			OnAfterSpellCastSequence();
+		}
+
+		/// <summary>
 		/// Casts a spell after the CastTime delay
 		/// </summary>
 		protected class DelayedCastTimer : GameTimer
@@ -2540,7 +2579,7 @@ namespace DOL.GS.Spells
 							break;
 						}
 
-						GameNPC petBody = target as GameNPC;
+						var petBody = target as GameNPC;
 						// check target
 						if (petBody != null && Caster.IsWithinRadius(petBody, Spell.Range))
 						{
@@ -2552,10 +2591,28 @@ namespace DOL.GS.Spells
 						//check controllednpc if target isn't pet (our pet)
 						if (list.Count < 1 && Caster.ControlledBrain != null)
 						{
-							petBody = Caster.ControlledBrain.Body;
-							if (petBody != null && Caster.IsWithinRadius(petBody, Spell.Range))
+							if (Caster is GamePlayer player && player.CharacterClass.Name.ToLower() == "bonedancer")
 							{
-								list.Add(petBody);
+								foreach (var pet in player.GetNPCsInRadius((ushort) Spell.Range))
+								{
+									if (pet is CommanderPet commander && commander.Owner == player)
+									{
+										list.Add(commander);
+									}
+									else if (pet is BDSubPet {Brain: IControlledBrain brain} subpet && brain.GetPlayerOwner() == player)
+									{
+										if (!Spell.IsHealing)
+											list.Add(subpet);
+									}
+								}
+							}
+							else
+							{
+								petBody = Caster.ControlledBrain.Body;
+								if (petBody != null && Caster.IsWithinRadius(petBody, Spell.Range))
+								{
+									list.Add(petBody);
+								}
 							}
 						}
 
@@ -2579,6 +2636,28 @@ namespace DOL.GS.Spells
 						}
 					}
 					//End-- [Ganrod] Nidel: Can cast Pet spell on our Minion/Turret pet without ControlledNpc
+					break;
+				case "bdsubpet":
+					{ 
+						var player = Caster as GamePlayer;
+						if (player == null) return null;
+						var petBody = player.ControlledBrain?.Body;
+						if (petBody != null)
+						{
+							foreach (var pet in petBody.GetNPCsInRadius(modifiedRadius))
+							{
+								if (pet is not BDSubPet {Brain: IControlledBrain brain} subpet ||
+								    brain.GetPlayerOwner() != player) continue;
+								if (!Spell.IsHealing)
+									list.Add(subpet);
+							}
+
+							if (list.Count < 1)
+							{
+								player.Out.SendMessage("You don't have any subpet to cast this spell on!", eChatType.CT_SpellResisted, eChatLoc.CL_SystemWindow);
+							}
+						}
+					}
 					break;
 					#endregion
 					#region Enemy
@@ -3240,7 +3319,7 @@ namespace DOL.GS.Spells
 			if (!HasPositiveEffect)
 			{
 				SendEffectAnimation(target, 0, false, 1);
-				if(Spell.SpellType == (byte)eSpellType.Amnesia) return;
+				// if(Spell.SpellType == (byte)eSpellType.Amnesia) return;
 				AttackData ad = new AttackData();
 				ad.Attacker = Caster;
 				ad.Target = target;
@@ -4123,8 +4202,8 @@ namespace DOL.GS.Spells
 		{
 			if (m_spellLine.KeyName == GlobalSpellsLines.Item_Effects)
 			{
-				min = 1.0;
-				max = 1.25;
+				min = .75;
+				max = 1.0;
 				return;
 			}
 
@@ -4132,14 +4211,14 @@ namespace DOL.GS.Spells
 			{
 				if (UseMinVariance)
 				{
-					min = 1.50;
+					min = 1.0;
 				}
 				else
 				{
-					min = 1.00;
+					min = .75;
 				}
 
-				max = 1.50;
+				max = 1.0;
 
 				return;
 			}
@@ -4147,6 +4226,13 @@ namespace DOL.GS.Spells
 			if (m_spellLine.KeyName == GlobalSpellsLines.Reserved_Spells)
 			{
 				min = max = 1.0;
+				return;
+			}
+
+			if (m_spellLine.KeyName == GlobalSpellsLines.Mob_Spells)
+			{
+				min = .75;
+				max = 1.0;
 				return;
 			}
 
@@ -4161,21 +4247,33 @@ namespace DOL.GS.Spells
 			{
 				speclevel = ((GamePlayer)m_caster).GetModifiedSpecLevel(m_spellLine.Spec);
 			}
-			min = 1.25;
-			max = 1.25;
-
+			
+			/*
+			 * June 21st 2022 - Fen: Removing a lot of DoL code that should not be here for 1.65 calculations.
+			 *
+			 * Vanesyra lays out variance calculations here: https://www.ignboards.com/threads/melee-speed-melee-and-style-damage-or-why-pure-grothrates-are-wrong.452406879/page-3
+			 * Most importantly, variance should be .25 at its lowest, 1.0 at its max, and never exceed 1.0.
+			 *
+			 * Base DoL calculations were adding an extra 10-30% damage above 1.0, which has now been removed.
+			 */
+			min = .25;
+			max = 1;
+			
 			if (target.Level > 0)
 			{
-				min = 0.25 + (speclevel - 1) / (double)target.Level;
+				var varianceMod = (speclevel - 1) / (double) target.Level;
+				if (varianceMod > 1) varianceMod = 1;
+				min = varianceMod;
 			}
-
+			/*
 			if (speclevel - 1 > target.Level)
 			{
 				double overspecBonus = (speclevel - 1 - target.Level) * 0.005;
 				min += overspecBonus;
 				max += overspecBonus;
-			}
-
+				Console.WriteLine($"overspec bonus {overspecBonus}");
+			}*/
+			
 			// add level mod
 			if (m_caster is GamePlayer)
 			{
@@ -4272,10 +4370,23 @@ namespace DOL.GS.Spells
 						spellDamage = CapPetSpellDamage(spellDamage, player);
 
 					if (pet is NecromancerPet nPet)
-						spellDamage *= ((nPet.GetModified(eProperty.Intelligence) + 200) / 275.0);
+					{
+						int ownerIntMod = 125;
+						if (pet.Owner is GamePlayer own) ownerIntMod += own.Intelligence;
+						spellDamage *= ((nPet.GetModified(eProperty.Intelligence) + ownerIntMod) / 275.0);
+						if (spellDamage < Spell.Damage) spellDamage = Spell.Damage;
+					}
 					else
-						spellDamage *= ((pet.Intelligence + 200) / 275.0);
-
+					{
+						int ownerIntMod = 125;
+						if (pet.Owner is GamePlayer own) ownerIntMod += own.Intelligence / 2;
+						spellDamage *= ((pet.Intelligence + ownerIntMod ) / 275.0);
+					}
+						
+					
+					int modSkill = pet.Owner.GetModifiedSpecLevel(m_spellLine.Spec) -
+					               pet.Owner.GetBaseSpecLevel(m_spellLine.Spec);
+					spellDamage *= 1 + (modSkill * .005);
 				}
 				else if (SpellLine.KeyName == GlobalSpellsLines.Combat_Styles_Effect)
 				{
@@ -4292,8 +4403,14 @@ namespace DOL.GS.Spells
 				    && player.CharacterClass.ID != (int)eCharacterClass.MaulerHib
 				    && player.CharacterClass.ID != (int)eCharacterClass.Vampiir)
 				{
+					//Delve * (acu/200+1) * (plusskillsfromitems/200+1) * (Relicbonus+1) * (mom+1) * (1 - enemyresist) 
 					int manaStatValue = player.GetModified((eProperty)player.CharacterClass.ManaStat);
-					spellDamage *= (manaStatValue + 200) / 250.0;
+					//spellDamage *= ((manaStatValue - 50) / 275.0) + 1;
+					spellDamage *= ((manaStatValue) * 0.005) + 1;
+					int modSkill = player.GetModifiedSpecLevel(m_spellLine.Spec) -
+					               player.GetBaseSpecLevel(m_spellLine.Spec);
+					spellDamage *= 1 + (modSkill * .005);
+					if (spellDamage < Spell.Damage) spellDamage = Spell.Damage;
 				}
 			}
 			else if (Caster is GameNPC)
@@ -4344,7 +4461,8 @@ namespace DOL.GS.Spells
 
 			if (playerCaster != null && (m_spellLine.KeyName == GlobalSpellsLines.Combat_Styles_Effect || m_spellLine.KeyName.StartsWith(GlobalSpellsLines.Champion_Lines_StartWith)))
 			{
-				spellLevel = Math.Min(playerCaster.MaxLevel, target.Level);
+				AttackData lastAD = playerCaster.TempProperties.getProperty<AttackData>("LastAttackData", null);
+				spellLevel = (lastAD != null && lastAD.Style != null) ? lastAD.Style.Level : Math.Min(playerCaster.MaxLevel, target.Level);
 			}
 			//Console.WriteLine($"Spell level {spellLevel}");
 
@@ -4468,12 +4586,13 @@ namespace DOL.GS.Spells
 				// Relic bonus applied to damage, does not alter effectiveness or increase cap
 				spellDamage *= (1.0 + RelicMgr.GetRelicBonusModifier(m_caster.Realm, eRelicType.Magic));
 
+				/*
 				eProperty skillProp = SkillBase.SpecToSkill(m_spellLine.Spec);
 				if (skillProp != eProperty.Undefined)
 				{
 					var level = m_caster.GetModifiedFromItems(skillProp);
 					spellDamage *= (1 + level / 200.0);
-				}
+				}*/
 			}
 
 			// Apply casters effectiveness
@@ -4558,7 +4677,17 @@ namespace DOL.GS.Spells
 			if (finalDamage < 0)
 				finalDamage = 0;
 
-			int criticalchance = (this as DoTSpellHandler) != null ? m_caster.SpellCriticalChance - 10 :(m_caster.SpellCriticalChance);
+			int criticalchance;
+
+			if (this is DoTSpellHandler dot)
+            {
+				criticalchance = 0; //atlas - DoTs can only crit with Wild Arcana. This is handled by the DoTSpellHandler directly
+				cdamage = 0;
+            }
+            else
+            {
+				criticalchance = m_caster.SpellCriticalChance;
+            }			
 
 			int randNum = Util.CryptoNextInt(1, 100); //grab our random number
 			int critCap = Math.Min(50, criticalchance); //crit chance can be at most  50%

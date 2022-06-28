@@ -193,6 +193,13 @@ namespace DOL.GS
 				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.CraftItem.CantCraftInCombat"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
 			}
+			
+			if (player.IsCasting)
+			{
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.CraftItem.CantCraftCasting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return false;
+			}
+			
 
 			return true;
 		}
@@ -211,7 +218,7 @@ namespace DOL.GS
 				return 0;
 			}
 
-			if (queue > 0 && remainingToCraft == 0 && finishedCraft)
+			if (queue > 1 && remainingToCraft == 0 && finishedCraft)
 			{
 				remainingToCraft = queue - 1;
 			}
@@ -228,7 +235,6 @@ namespace DOL.GS
 					if (player.Client.Account.PrivLevel == 1)
 						return 0;
 				}
-
 				BuildCraftedItem(player, recipe);
 				GainCraftingSkillPoints(player, recipe);
 			}
@@ -240,10 +246,17 @@ namespace DOL.GS
 
 			if (remainingToCraft >= 1)
 			{
-				player.TempProperties.setProperty("CraftQueueRemaining", --remainingToCraft);
-				StartCraftingTimerAndSetCallBackMethod(player, recipe, GetCraftingTime(player, recipe));
-				player.Out.SendTimerWindow(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.CraftItem.CurrentlyMaking", recipe.Product.Name), GetCraftingTime(player, recipe));
-				finishedCraft = false;
+				if (CheckRawMaterials(player, recipe))
+				{
+					player.TempProperties.setProperty("CraftQueueRemaining", --remainingToCraft);
+					StartCraftingTimerAndSetCallBackMethod(player, recipe, GetCraftingTime(player, recipe));
+					player.Out.SendTimerWindow(LanguageMgr.GetTranslation(player.Client.Account.Language, "AbstractCraftingSkill.CraftItem.CurrentlyMaking", recipe.Product.Name), GetCraftingTime(player, recipe));
+					finishedCraft = false;
+				}
+				else
+				{ 
+					finishedCraft = true;
+				}
 			}
 			else
 			{

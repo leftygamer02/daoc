@@ -45,13 +45,13 @@ namespace DOL.GS.RealmAbilities
         {
             m_dbspell = new DBSpell();
             m_dbspell.Name = "Hail Of Blows";
-            m_dbspell.Icon = 4240;
-            m_dbspell.ClientEffect = 1692;
+            m_dbspell.Icon = 7130;
+            m_dbspell.ClientEffect = 7130;
             m_dbspell.Damage = 0;
             m_dbspell.DamageType = 0;
             m_dbspell.Target = "Self";
             m_dbspell.Radius = 0;
-            m_dbspell.Type = eSpellType.CelerityBuff.ToString();
+            m_dbspell.Type = eSpellType.CombatSpeedBuff.ToString();
             m_dbspell.Value = m_hasteValue;
             m_dbspell.Duration = 60;
             m_dbspell.Pulse = 0;
@@ -70,7 +70,7 @@ namespace DOL.GS.RealmAbilities
             if (living is GamePlayer p)
                 m_hasteValue = GetHasteValue();
 
-            Console.WriteLine($"haste buff of {m_hasteValue} applied");
+            // Console.WriteLine($"haste buff of {m_hasteValue} applied");
             CreateSpell(m_hasteValue);
             CastSpell(living);
             DisableSkill(living);
