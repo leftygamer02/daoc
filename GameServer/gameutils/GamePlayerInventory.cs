@@ -233,7 +233,7 @@ namespace DOL.GS
 							}
 
 							if(gameItem != null) {
-								if(gameItem.AddToInventory) {									
+								if(gameItem.AddToInventory) {
 									if (GameServer.Database.AddObject(gameItem) == false) {
                                         Log.ErrorFormat("Error adding item {0}:{1} for player {2} into the database during AddItem!", gameItem.Id_nb, gameItem.Name, m_player.Name);
                                         return false;
@@ -1323,15 +1323,17 @@ namespace DOL.GS
 
 			if (fromItem != null && fromItem.Id_nb != InventoryItem.BLANK_ITEM)
 			{
-				if (GameServer.Database.SaveObject(fromItem) == false)
-				{
-				}
+				fromItem.Dirty = true;
+				//if (GameServer.Database.SaveObject(fromItem) == false)
+				//{
+				//}
 			}
 			if (toItem != null && toItem != fromItem && toItem.Id_nb != InventoryItem.BLANK_ITEM)
 			{
-				if (GameServer.Database.SaveObject(toItem) == false)
-				{
-				}
+				toItem.Dirty = true;
+				//if (GameServer.Database.SaveObject(toItem) == false)
+				//{
+				//}
 			}
 
 			// notify handlers if items changing state
