@@ -1021,6 +1021,8 @@ namespace DOL.GS
                 CraftTimer.Stop();
                 CraftTimer = null;
             }
+            
+            craftComponent?.StopCraft();
 
             if (QuestActionTimer != null)
             {
@@ -7407,7 +7409,8 @@ namespace DOL.GS
             if (IsCrafting)
             {
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.InterruptedCrafting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                CraftTimer.Stop();
+                //CraftTimer.Stop();
+                craftComponent.StopCraft();
                 CraftTimer = null;
                 Out.SendCloseTimerWindow();
             }
@@ -8878,7 +8881,8 @@ namespace DOL.GS
             if (IsCrafting)
             {
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.InterruptedCrafting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                CraftTimer.Stop();
+                //CraftTimer.Stop();
+                craftComponent.StopCraft();
                 CraftTimer = null;
                 Out.SendCloseTimerWindow();
             }
@@ -9183,7 +9187,8 @@ namespace DOL.GS
             if (IsCrafting)
             {
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Attack.InterruptedCrafting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                CraftTimer.Stop();
+                //CraftTimer.Stop();
+                craftComponent.StopCraft();
                 CraftTimer = null;
                 Out.SendCloseTimerWindow();
             }
@@ -10897,6 +10902,7 @@ namespace DOL.GS
             m_healthRegenerationTimer = new ECSGameTimer(this);
             m_powerRegenerationTimer = new ECSGameTimer(this);
             m_enduRegenerationTimer = new ECSGameTimer(this);
+            craftComponent = new CraftComponent(this);
             m_healthRegenerationTimer.Callback = new ECSGameTimer.ECSTimerCallback(HealthRegenerationTimerCallback);
             m_powerRegenerationTimer.Callback = new ECSGameTimer.ECSTimerCallback(PowerRegenerationTimerCallback);
             m_enduRegenerationTimer.Callback = new ECSGameTimer.ECSTimerCallback(EnduranceRegenerationTimerCallback);
@@ -11945,8 +11951,9 @@ namespace DOL.GS
             if (IsCrafting)
             {
                 Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.OnPlayerMove.InterruptCrafting"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                CraftTimer.Stop();
-                CraftTimer = null;
+                //CraftTimer.Stop();
+                //CraftTimer = null;
+                this.craftComponent.StopCraft();
                 Out.SendCloseTimerWindow();
             }
             if (IsSummoningMount)
@@ -12126,24 +12133,7 @@ namespace DOL.GS
                 RAPropertyEnhancer ab = GetAbility<AtlasOF_LifterAbility>();
                 if (ab != null)
                     enc *= 1 + ((double)ab.Amount / 100);
-
-                // Apply Sojourner ability
-                if (this.GetSpellLine("Sojourner") != null)
-                {
-                    enc *= 1.25;
-                }
-
-                // Apply Walord effect
-                GameSpellEffect iBaneLordEffect = SpellHandler.FindEffectOnTarget(this, "Oppression");
-                if (iBaneLordEffect != null)
-                    enc *= 1.00 - (iBaneLordEffect.Spell.Value * 0.01);
-
-                // Apply Mythirian Bonus
-                if (GetModified(eProperty.MythicalDiscumbering) > 0)
-                {
-                    enc += GetModified(eProperty.MythicalDiscumbering);
-                }
-
+                
                 return (int)enc;
             }
         }
@@ -12190,16 +12180,12 @@ namespace DOL.GS
         {
             if (Inventory.InventoryWeight > MaxEncumberance)
             {
-                if (IsOverencumbered == false)
-                {
-                    IsOverencumbered = true;
-                    Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UpdateEncumberance.EncumberedMoveSlowly"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                }
-                else
-                {
-                    Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UpdateEncumberance.Encumbered"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                }
+                IsOverencumbered = true;
                 Out.SendUpdateMaxSpeed();
+                if (MaxSpeed == 0)
+                    Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "PropertyCalc.MaxSpeed.YouAreEncumbered"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                else
+                    Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.UpdateEncumberance.EncumberedMoveSlowly"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
             }
             else if (IsOverencumbered)
             {
@@ -15060,13 +15046,17 @@ namespace DOL.GS
             set { m_crafttimer = value; }
         }
 
+        private CraftAction m_craftaction;
+        public CraftAction CraftAction
+        {
+            get { return m_craftaction; }
+            set { m_craftaction = value; }
+        }
+
         /// <summary>
         /// Does the player is crafting
         /// </summary>
-        public bool IsCrafting
-        {
-            get { return (m_crafttimer != null && m_crafttimer.IsAlive); }
-        }
+        public bool IsCrafting => (craftComponent != null && craftComponent.CraftState);
 
         protected bool m_isDead = false;
         /// <summary>
@@ -17036,7 +17026,6 @@ namespace DOL.GS
             m_isWireframe = false;
             m_characterClass = new DefaultCharacterClass();
             m_groupIndex = 0xFF;
-
             m_saveInDB = true;
             LoadFromDatabase(dbChar);
 			
@@ -17054,6 +17043,7 @@ namespace DOL.GS
 			
             //Add to EntityManager
             EntityManager.AddPlayer((this));
+            EntityManager.RemoveNpc(this);
             EntityManager.RemoveNpc(this);
         }
 
