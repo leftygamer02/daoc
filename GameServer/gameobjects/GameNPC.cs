@@ -767,7 +767,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual bool IsVisibleToPlayers
 		{
-			get { return (uint)Environment.TickCount - m_lastVisibleToPlayerTick < 60000; }
+			get { return (uint)GameLoop.GameLoopTime - m_lastVisibleToPlayerTick < 60000; }
 		}
 
 		/// <summary>
@@ -1348,7 +1348,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets the last this this NPC was actually update to at least one player.
 		/// </summary>
-		public uint LastVisibleToPlayersTickCount
+		public long LastVisibleToPlayersTickCount
 		{
 			get { return m_lastVisibleToPlayerTick; }
 		}
@@ -1379,10 +1379,25 @@ namespace DOL.GS
 				bool arriveAtSpawnPoint = npc.IsReturningToSpawnPoint;
 
 				npc.StopMoving();
-				npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
+				//npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
 
 				if (arriveAtSpawnPoint)
-					npc.Notify(GameNPCEvent.ArriveAtSpawnPoint, npc);
+				{
+					npc.TurnTo(npc.SpawnHeading);
+					return;
+				}
+
+				if (!npc.IsMovingOnPath)
+					return;
+
+				if (npc.CurrentWayPoint != null)
+				{
+					WaypointDelayAction waitTimer = new WaypointDelayAction(npc);
+					waitTimer.Start(Math.Max(1, npc.CurrentWayPoint.WaitTime * 100));
+				}
+				else
+					npc.StopMovingOnPath();
+
 			}
 		}
 
@@ -1423,7 +1438,7 @@ namespace DOL.GS
 			Y = target.Y;
 			Z = target.Z;
 
-			MovementStartTick = Environment.TickCount;
+			MovementStartTick = GameLoop.GameLoopTime;
 		}
 
 		/// <summary>
@@ -1478,7 +1493,7 @@ namespace DOL.GS
 
 			m_Heading = GetHeading(TargetPosition);
 			m_currentSpeed = speed;
-			MovementStartTick = Environment.TickCount; //Adding this to prevent pets from warping when using GoTo and Here on the same target twice.
+			MovementStartTick = GameLoop.GameLoopTime; //Adding this to prevent pets from warping when using GoTo and Here on the same target twice.
 			UpdateTickSpeed();
 			
 			// Notify(GameNPCEvent.WalkTo, this, new WalkToEventArgs(TargetPosition, speed));
@@ -1555,7 +1570,7 @@ namespace DOL.GS
 
 			m_currentSpeed = speed;
 
-			MovementStartTick = Environment.TickCount;
+			MovementStartTick = GameLoop.GameLoopTime;
 			UpdateTickSpeed();
 			BroadcastUpdate();
 		}
@@ -1919,10 +1934,10 @@ namespace DOL.GS
 
 			if (CurrentWayPoint != null)
 			{
-				GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+				//GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
 				WalkTo(CurrentWayPoint, Math.Min(speed, (short)CurrentWayPoint.MaxSpeed));
 				m_IsMovingOnPath = true;
-				Notify(GameNPCEvent.PathMoveStarts, this);
+				//Notify(GameNPCEvent.PathMoveStarts, this);
 			}
 			else
 			{
@@ -1938,9 +1953,17 @@ namespace DOL.GS
 			if (!IsMovingOnPath)
 				return;
 
-			GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
-			Notify(GameNPCEvent.PathMoveEnds, this);
 			m_IsMovingOnPath = false;
+			
+			//GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+			//Notify(GameNPCEvent.PathMoveEnds, this);
+			if (this is GameTaxi || this is GameTaxiBoat)
+			{
+				StopMoving();
+				RemoveFromWorld();
+			}
+			
+			
 		}
 
 		/// <summary>
@@ -1966,7 +1989,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Delays movement to the next waypoint
 		/// </summary>
-		protected class WaypointDelayAction : RegionAction
+		protected class WaypointDelayAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new WaypointDelayAction
@@ -1980,11 +2003,11 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 				if (!npc.IsMovingOnPath)
-					return;
+					return 0;
 				PathPoint oldPathPoint = npc.CurrentWayPoint;
 				PathPoint nextPathPoint = npc.CurrentWayPoint.Next;
 				if ((npc.CurrentWayPoint.Type == ePathType.Path_Reverse) && (npc.CurrentWayPoint.FiredFlag))
@@ -1997,7 +2020,7 @@ namespace DOL.GS
 						case ePathType.Loop:
 							{
 								npc.CurrentWayPoint = MovementMgr.FindFirstPathPoint(npc.CurrentWayPoint);
-								npc.Notify(GameNPCEvent.PathMoveStarts, npc);
+								//npc.Notify(GameNPCEvent.PathMoveStarts, npc);
 								break;
 							}
 						case ePathType.Once:
@@ -2028,6 +2051,8 @@ namespace DOL.GS
 				{
 					npc.StopMovingOnPath();
 				}
+
+				return 0;
 			}
 		}
 		#endregion
@@ -3058,7 +3083,7 @@ namespace DOL.GS
 		{
 			base.BroadcastUpdate();
 
-			m_lastUpdateTickCount = (uint)Environment.TickCount;
+			m_lastUpdateTickCount = (uint)GameLoop.GameLoopTime;
 		}
 
 		/// <summary>
@@ -3067,7 +3092,7 @@ namespace DOL.GS
 		/// </summary>
 		public void NPCUpdatedCallback()
 		{
-			m_lastVisibleToPlayerTick = (uint)Environment.TickCount;
+			m_lastVisibleToPlayerTick = (uint)GameLoop.GameLoopTime;
 			lock (BrainSync)
 			{
 				ABrain brain = Brain;
@@ -3099,7 +3124,7 @@ namespace DOL.GS
 			}
 
 			if (anyPlayer)
-				m_lastVisibleToPlayerTick = (uint)Environment.TickCount;
+				m_lastVisibleToPlayerTick = (uint)GameLoop.GameLoopTime;
 
 			m_spawnPoint.X = X;
 			m_spawnPoint.Y = Y;
