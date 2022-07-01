@@ -383,7 +383,7 @@ namespace DOL.AI.Brain
                     useLOS = true;
                 }
 
-                if (useLOS && player != null)
+                if (useLOS && !AggroLOS)
                 {
                     player.Out.SendCheckLOS(Body, player, new CheckLOSResponse(CheckAggroLOS));
                 }
@@ -407,10 +407,11 @@ namespace DOL.AI.Brain
                 if (player.Steed != null)
                     continue; //do not attack players on steed
 
-                if (CalculateAggroLevelToTarget(player) > 0)
+                var aggroleveltotarget = CalculateAggroLevelToTarget(player);
+                if (aggroleveltotarget > 0)
                 {
                     if (useLOS && !AggroLOS) return;
-                    AddToAggroList(player, 1, true);
+                    AddToAggroList(player, 1, useLOS);
                 }
             }
         }
@@ -526,10 +527,18 @@ namespace DOL.AI.Brain
         }
         protected void CheckAggroLOS(GamePlayer player, ushort response, ushort targetOID)
         {
-            if ((response & 0x100) == 0x100)
+            var realResponse = response & 0x100;
+            if (realResponse == 0x100)
+            {
+                // Console.WriteLine($"{targetOID} LOS check for {player.Name} success");
                 AggroLOS = true;
+            }
             else
+            {
+                // Console.WriteLine($"{targetOID} LOS check for {player.Name} failed");
                 AggroLOS = false;
+            }
+                
         }
 
         /// <summary>
