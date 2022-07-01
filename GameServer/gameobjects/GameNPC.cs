@@ -1294,7 +1294,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Restores the NPC heading after some time
 		/// </summary>
-		protected class RestoreHeadingAction : RegionAction
+		protected class RestoreHeadingAction : RegionECSAction
 		{
 			/// <summary>
 			/// The NPCs old heading
@@ -1320,20 +1320,22 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 
 				npc.TempProperties.removeProperty(RESTORE_HEADING_ACTION_PROP);
 
-				if (npc.ObjectState != eObjectState.Active) return;
-				if (!npc.IsAlive) return;
-				if (npc.attackComponent.AttackState) return;
-				if (npc.IsMoving) return;
-				if (npc.Equals(m_oldPosition)) return;
-				if (npc.Heading == m_oldHeading) return; // already set? oO
+				if (npc.ObjectState != eObjectState.Active) return 0;
+				if (!npc.IsAlive) return 0;
+				if (npc.attackComponent.AttackState) return 0;
+				if (npc.IsMoving) return 0;
+				if (npc.Equals(m_oldPosition)) return 0;
+				if (npc.Heading == m_oldHeading) return 0; // already set? oO
 
 				npc.TurnTo(m_oldHeading);
+
+				return 0;
 			}
 		}
 
@@ -1356,7 +1358,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Delayed action that fires an event when an NPC arrives at its target
 		/// </summary>
-		protected class ArriveAtTargetAction : RegionAction
+		protected class ArriveAtTargetAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new ArriveAtTargetAction
@@ -1372,17 +1374,33 @@ namespace DOL.GS
 			/// This time was estimated using walking speed and distance.
 			/// It fires the ArriveAtTarget event
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 
 				bool arriveAtSpawnPoint = npc.IsReturningToSpawnPoint;
 
 				npc.StopMoving();
-				npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
+				//npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
 
 				if (arriveAtSpawnPoint)
-					npc.Notify(GameNPCEvent.ArriveAtSpawnPoint, npc);
+				{
+					npc.TurnTo(npc.SpawnHeading);
+					return 0;
+				}
+
+				if (!npc.IsMovingOnPath)
+					return 0;
+
+				if (npc.CurrentWayPoint != null)
+				{
+					WaypointDelayAction waitTimer = new WaypointDelayAction(npc);
+					waitTimer.Start(Math.Max(1, npc.CurrentWayPoint.WaitTime * 100));
+				}
+				else
+					npc.StopMovingOnPath();
+
+				return 0;
 			}
 		}
 
@@ -1611,7 +1629,7 @@ namespace DOL.GS
 				if (target == null || target.ObjectState != eObjectState.Active)
 					return;
 			
-				if (m_followTimer.IsAlive && m_followTarget.Target == target && m_followMinDist == minDistance && m_followMaxDist == maxDistance)
+				if (m_followTimer.IsAlive && m_followTarget?.Target == target && m_followMinDist == minDistance && m_followMaxDist == maxDistance)
 					return;
 				else
 				{
@@ -1919,10 +1937,10 @@ namespace DOL.GS
 
 			if (CurrentWayPoint != null)
 			{
-				GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+				//GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
 				WalkTo(CurrentWayPoint, Math.Min(speed, (short)CurrentWayPoint.MaxSpeed));
 				m_IsMovingOnPath = true;
-				Notify(GameNPCEvent.PathMoveStarts, this);
+				//Notify(GameNPCEvent.PathMoveStarts, this);
 			}
 			else
 			{
@@ -1938,9 +1956,17 @@ namespace DOL.GS
 			if (!IsMovingOnPath)
 				return;
 
-			GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
-			Notify(GameNPCEvent.PathMoveEnds, this);
 			m_IsMovingOnPath = false;
+			
+			//GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+			//Notify(GameNPCEvent.PathMoveEnds, this);
+			if (this is GameTaxi || this is GameTaxiBoat)
+			{
+				StopMoving();
+				RemoveFromWorld();
+			}
+			
+			
 		}
 
 		/// <summary>
@@ -1966,7 +1992,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Delays movement to the next waypoint
 		/// </summary>
-		protected class WaypointDelayAction : RegionAction
+		protected class WaypointDelayAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new WaypointDelayAction
@@ -1980,11 +2006,11 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 				if (!npc.IsMovingOnPath)
-					return;
+					return 0;
 				PathPoint oldPathPoint = npc.CurrentWayPoint;
 				PathPoint nextPathPoint = npc.CurrentWayPoint.Next;
 				if ((npc.CurrentWayPoint.Type == ePathType.Path_Reverse) && (npc.CurrentWayPoint.FiredFlag))
@@ -1997,7 +2023,7 @@ namespace DOL.GS
 						case ePathType.Loop:
 							{
 								npc.CurrentWayPoint = MovementMgr.FindFirstPathPoint(npc.CurrentWayPoint);
-								npc.Notify(GameNPCEvent.PathMoveStarts, npc);
+								//npc.Notify(GameNPCEvent.PathMoveStarts, npc);
 								break;
 							}
 						case ePathType.Once:
@@ -2028,6 +2054,8 @@ namespace DOL.GS
 				{
 					npc.StopMovingOnPath();
 				}
+
+				return 0;
 			}
 		}
 		#endregion
@@ -5533,7 +5561,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The spell action of this living
 		/// </summary>
-		public class SpellAction : RegionAction
+		public class SpellAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new attack action
@@ -5547,7 +5575,7 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC owner = null;
 				if (m_actionSource != null && m_actionSource is GameNPC)
@@ -5555,13 +5583,13 @@ namespace DOL.GS
 				else
 				{
 					Stop();
-					return;
+					return 0;
 				}
 
 				if (owner.TargetObject == null || !owner.attackComponent.AttackState)
 				{
 					Stop();
-					return;
+					return 0;
 				}
 
 				//If we started casting a spell, stop the timer and wait for
@@ -5569,7 +5597,7 @@ namespace DOL.GS
 				if (owner.Brain is StandardMobBrain && ((StandardMobBrain)owner.Brain).CheckSpells(StandardMobBrain.eCheckSpellType.Offensive))
 				{
 					Stop();
-					return;
+					return 0;
 				}
 				else
 				{
@@ -5586,6 +5614,8 @@ namespace DOL.GS
 				{
 					Interval = 1500;
 				}
+
+				return Interval;
 			}
 		}
 
