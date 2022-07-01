@@ -267,17 +267,17 @@ namespace DOL.GS
 								Log.Error("Error saving inventory item: player=" + m_player.Name, e);
 						}
 					}
-					lock(_cachedItemsToAddToDB) {
-						foreach(var item in _cachedItemsToAddToDB) {
+					lock(_cachedInventoryToRemove) {
+						foreach(var item in _cachedInventoryToRemove) {
                             if (GameServer.Database.DeleteObject(item) == false) {
-                                Log.ErrorFormat("Error deleting item {0}:{1} for player {2} from the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);
-                                recordsProcessed++;
+                                Log.ErrorFormat("Error deleting item {0}:{1} for player {2} from the database during RemoveItem!", item.Id_nb, item.Name, m_player.Name);                                
                                 return false;
                             }
-                            Log.Debug($"Removed: {item.Name} From {m_player.Name} succesfully in the DB");
+							recordsProcessed++;
+							Log.Debug($"Removed: {item.Name} From {m_player.Name} succesfully in the DB");
                         }
 					}
-					_cachedItemsToAddToDB.Clear();
+					_cachedInventoryToRemove.Clear();
 					Log.Debug($"Inventory Records Processed: {recordsProcessed}");
 					return true;
 				}
@@ -380,7 +380,7 @@ namespace DOL.GS
 			return RemoveItem(item, false);
 		}
 
-		private List<GameInventoryItem> _cachedItemsToAddToDB = new List<GameInventoryItem>();
+		private List<GameInventoryItem> _cachedInventoryToRemove = new List<GameInventoryItem>();
 
 		/// <summary>
 		/// Removes an item from the inventory and DB
@@ -400,8 +400,8 @@ namespace DOL.GS
 				return false;
 			}
 
-			int savePosition = item.SlotPosition;
-			string saveOwnerID = item.OwnerID;
+			//int savePosition = item.SlotPosition;
+			//string saveOwnerID = item.OwnerID;
 
 
 			var oldSlot = (eInventorySlot) item.SlotPosition;
@@ -420,8 +420,8 @@ namespace DOL.GS
 			{
 				if (deleteObject)
 				{
-					gameItem.RemoveFromInventory = true;
-					_cachedItemsToAddToDB.Add(gameItem);
+					_cachedInventoryToRemove.Add(gameItem);
+					m_items.Remove((eInventorySlot)item.SlotPosition);
 					//if (GameServer.Database.DeleteObject(item) == false)
 					//{
 					//	m_player.Out.SendMessage("Error deleting item from the database, operation aborted!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);

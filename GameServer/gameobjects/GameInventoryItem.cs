@@ -65,7 +65,6 @@ namespace DOL.GS {
         }
 
         public bool AddToInventory = false;
-        public bool RemoveFromInventory = false;
 
         /// <summary>
         /// Holds the translation id.
