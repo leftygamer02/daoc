@@ -149,7 +149,7 @@ namespace DOL.GS.Spells
 			if (player == null || Caster.ObjectState != GameObject.eObjectState.Active)
 				return;
 
-			if ((response & 0x100) == 0x100)
+			if (response >= 0)
 			{
 				try
 				{
