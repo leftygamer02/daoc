@@ -246,8 +246,7 @@ namespace DOL.GS
                 if (fromSlot < (ushort)eInventorySlot.HousingInventory_First || fromSlot > (ushort) eInventorySlot.HousingInventory_Last) return false;
             }
 
-            GameVault gameVault = player.ActiveInventoryObject as GameVault;
-            if (gameVault == null)
+            if (player.ActiveInventoryObject is not AccountVault gameVault)
             {
                 player.Out.SendMessage("You are not actively viewing a vault!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 player.Out.SendInventoryItemsUpdate(null);
@@ -286,15 +285,6 @@ namespace DOL.GS
             {
                 player.Out.SendMessage("You cannot swap with an untradable item!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 //log.DebugFormat("GameVault: {0} attempted to swap untradable item {2} with {1}", player.Name, itemInFromSlot.Name, itemInToSlot.Name);
-                player.Out.SendInventoryItemsUpdate(null);
-                return false;
-            }
-
-            // Allow people to get untradables out of their house vaults (old bug) but 
-            // block placing untradables into housing vaults from any source - Tolakram
-            if (toAccountVault && itemInFromSlot != null && itemInFromSlot.IsTradable == false)
-            {
-                player.Out.SendMessage("You can not put this item into an Account Vault!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 player.Out.SendInventoryItemsUpdate(null);
                 return false;
             }
