@@ -83,8 +83,6 @@ namespace DOL.GS
 
 			DraargusMightyBrain sbrain = new DraargusMightyBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

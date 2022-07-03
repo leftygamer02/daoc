@@ -283,12 +283,9 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Apoc Initializator", 60, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Apoc Initializator not found, creating it...");
 
-                log.Warn("Initializing Apoc Initializator...");
+
+                log.Info("Initializing Apoc Initializator...");
                 ApocInitializator CO = new ApocInitializator();
                 CO.Name = "Apoc Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
@@ -310,11 +307,7 @@ namespace DOL.GS
                 ApocIniBrain ubrain = new ApocIniBrain();
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
-                CO.SaveIntoDatabase();
                 CO.Brain.Start();
-            }
-            else
-                log.Warn("Apoc Initializator exist ingame, remove it and restart server if you want to add by script code.");
         }
         #endregion
 

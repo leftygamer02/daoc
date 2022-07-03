@@ -81,8 +81,6 @@ namespace DOL.GS
 
 			SarcondinaBrain sbrain = new SarcondinaBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

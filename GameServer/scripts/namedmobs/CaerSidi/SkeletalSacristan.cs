@@ -66,8 +66,7 @@ namespace DOL.GS.Scripts
 			SkeletalSacristanBrain sBrain = new SkeletalSacristanBrain();
 			SetOwnBrain(sBrain);
 			base.AddToWorld();
-            SaveIntoDatabase();
-            LoadedFromScript = false;
+
 			return true;
 		}
 	    [ScriptLoadedEvent]

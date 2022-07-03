@@ -57,7 +57,7 @@ namespace DOL.GS
             FallingIceBrain adds = new FallingIceBrain();
             SetOwnBrain(adds);
             LoadedFromScript = false;//load from database
-            SaveIntoDatabase();
+            
             base.AddToWorld();
             return true;
         }

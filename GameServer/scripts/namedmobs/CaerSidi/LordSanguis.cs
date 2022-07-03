@@ -136,12 +136,8 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lord Sanguis", 60, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Lord Sanguis  not found, creating it...");
-
-                log.Warn("Initializing Lord Sanguis...");
+            
+                log.Info("Initializing Lord Sanguis...");
                 LordSanguis CO = new LordSanguis();
                 CO.Name = "Lord Sanguis";
                 CO.Model = 952;
@@ -169,10 +165,6 @@ namespace DOL.GS
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
                 CO.Brain.Start();
-                CO.SaveIntoDatabase();
-            }
-            else
-                log.Warn("Lord Sanguis exist ingame, remove it and restart server if you want to add by script code.");
         }
     }
 }

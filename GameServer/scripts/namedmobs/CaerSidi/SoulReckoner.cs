@@ -94,8 +94,7 @@ namespace DOL.GS
                     spawn_souls = true;
                 }
             }
-            SaveIntoDatabase();
-            LoadedFromScript = false;
+
             base.AddToWorld();
             return true;
         }

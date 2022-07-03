@@ -71,8 +71,7 @@ namespace DOL.GS
 
 			UlfketillBrain sbrain = new UlfketillBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

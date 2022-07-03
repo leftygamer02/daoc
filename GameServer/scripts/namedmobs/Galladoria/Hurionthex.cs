@@ -112,7 +112,7 @@ namespace DOL.GS
 
             HurionthexBrain sbrain = new HurionthexBrain();
             SetOwnBrain(sbrain);
-            SaveIntoDatabase();
+            
             LoadedFromScript = false;
             base.AddToWorld();
             return true;
@@ -121,14 +121,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
 
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Hurionthex", 191, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Hurionthex not found, creating it...");
-
-                log.Warn("Initializing Hurionthex...");
+                log.Info("Initializing Hurionthex...");
                 Hurionthex Hurion = new Hurionthex();
                 Hurion.Name = "Hurionthex";
                 Hurion.Model = 889;
@@ -165,11 +159,7 @@ namespace DOL.GS
                 //Hurion.LoadTemplate(npcTemplate);
                 Hurion.AddToWorld();
                 Hurion.Brain.Start();
-                Hurion.SaveIntoDatabase();
-            }
-            else
-                log.Warn(
-                    "Hurionthex already exists in-game! Remove it and restart the server if you want to add any scripts.");
+
         }
     }
 }

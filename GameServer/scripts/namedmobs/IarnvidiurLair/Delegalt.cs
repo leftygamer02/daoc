@@ -86,7 +86,6 @@ namespace DOL.GS
 			DelegaltBrain sbrain = new DelegaltBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

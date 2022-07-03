@@ -77,7 +77,7 @@ namespace DOL.GS
 			MahattavaBrain sbrain = new MahattavaBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

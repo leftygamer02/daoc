@@ -84,8 +84,7 @@ namespace DOL.GS
 
 			OrylleBrain sbrain = new OrylleBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -263,8 +262,7 @@ namespace DOL.GS
 
 			OrshomBrain sbrain = new OrshomBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

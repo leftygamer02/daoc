@@ -72,8 +72,8 @@ namespace DOL.GS
 
             JailerBrain sbrain = new JailerBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -81,13 +81,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Jailer Vifil", 160, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Jailer Vifil not found, creating it...");
-
-                log.Warn("Initializing Jailer Vifil...");
+                log.Info("Initializing Jailer Vifil...");
                 Jailer TG = new Jailer();
                 TG.Name = "Jailer Vifil";
                 TG.Model = 918;
@@ -109,11 +103,8 @@ namespace DOL.GS
                 JailerBrain ubrain = new JailerBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
-                TG.SaveIntoDatabase();
                 TG.Brain.Start();
-            }
-            else
-                log.Warn("Jailer Vifil exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

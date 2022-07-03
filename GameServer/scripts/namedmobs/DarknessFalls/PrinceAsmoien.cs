@@ -73,7 +73,7 @@ namespace DOL.GS
 
             AsmoienBrain sBrain = new AsmoienBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

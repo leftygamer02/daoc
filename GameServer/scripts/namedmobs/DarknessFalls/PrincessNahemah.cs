@@ -70,7 +70,7 @@ namespace DOL.GS
 
             Faction = FactionMgr.GetFactionByID(191);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(191));
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

@@ -97,8 +97,7 @@ namespace DOL.GS.Scripts
 			SpectralProvisionerBrain.point8check = false;
 			SpectralProvisionerBrain sBrain = new SpectralProvisionerBrain();
 			SetOwnBrain(sBrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

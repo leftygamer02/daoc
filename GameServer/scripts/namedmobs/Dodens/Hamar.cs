@@ -49,8 +49,8 @@ namespace DOL.GS.Scripts
 			
 			ScalingFactor = 40;
 			base.SetOwnBrain(new HamarBrain());
-			LoadedFromScript = false; //load from database
-			SaveIntoDatabase();
+			
+
 			base.AddToWorld();
 			
 			return true;

@@ -70,7 +70,7 @@ namespace DOL.GS
 
             AbdinBrain sBrain = new AbdinBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+            
             base.AddToWorld();
             return true;
         }

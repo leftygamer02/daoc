@@ -183,7 +183,7 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             LieutenantElvaBrain sbrain = new LieutenantElvaBrain();
             SetOwnBrain(sbrain);
-            SaveIntoDatabase();
+            
             base.AddToWorld();
             return true;
         }
@@ -191,13 +191,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Elva", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Lieutenant Elva not found, creating it...");
 
-                log.Warn("Initializing Lieutenant Elva...");
+
+                log.Info("Initializing Lieutenant Elva...");
                 LieutenantElva HOC = new LieutenantElva();
                 HOC.Name = "Lieutenant Elva";
                 HOC.Model = 5;
@@ -220,11 +216,9 @@ namespace DOL.GS
                 LieutenantElvaBrain ubrain = new LieutenantElvaBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Lieutenant Elva exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         private Spell m_Poison;
 

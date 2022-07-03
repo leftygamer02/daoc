@@ -152,8 +152,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             SergeantDarrynBrain sbrain = new SergeantDarrynBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -161,13 +161,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Sergeant Darryn", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Sergeant Darryn not found, creating it...");
 
-                log.Warn("Initializing Sergeant Darryn...");
+                log.Info("Initializing Sergeant Darryn...");
                 SergeantDarryn HOC = new SergeantDarryn();
                 HOC.Name = "Sergeant Darryn";
                 HOC.Model = 40;
@@ -185,11 +180,8 @@ namespace DOL.GS
                 SergeantDarrynBrain ubrain = new SergeantDarrynBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Sergeant Darryn exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

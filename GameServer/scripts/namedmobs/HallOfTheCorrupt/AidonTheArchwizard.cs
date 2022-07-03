@@ -115,8 +115,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Crush;
             AidonTheArchwizardBrain sbrain = new AidonTheArchwizardBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -124,13 +124,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Aidon the Archwizard", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Aidon the Archwizard found, creating it...");
 
-                log.Warn("Initializing Aidon the Archwizard...");
+
+                log.Info("Initializing Aidon the Archwizard...");
                 AidonTheArchwizard HOC = new AidonTheArchwizard();
                 HOC.Name = "Aidon the Archwizard";
                 HOC.Model = 61;
@@ -150,11 +146,9 @@ namespace DOL.GS
                 AidonTheArchwizardBrain ubrain = new AidonTheArchwizardBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Aidon the Archwizard exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

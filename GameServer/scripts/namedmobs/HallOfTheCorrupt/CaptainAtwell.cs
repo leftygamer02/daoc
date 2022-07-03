@@ -127,8 +127,8 @@ namespace DOL.GS
             VisibleActiveWeaponSlots = 34;
             CaptainAtwellBrain sbrain = new CaptainAtwellBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -136,13 +136,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Captain Atwell", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Captain Atwell not found, creating it...");
 
-                log.Warn("Initializing Captain Atwell...");
+                log.Info("Initializing Captain Atwell...");
                 CaptainAtwell HOC = new CaptainAtwell();
                 HOC.Name = "Captain Atwell";
                 HOC.Model = 723;
@@ -161,11 +156,9 @@ namespace DOL.GS
                 CaptainAtwellBrain ubrain = new CaptainAtwellBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Captain Atwell exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         private Spell m_Bleed;
 

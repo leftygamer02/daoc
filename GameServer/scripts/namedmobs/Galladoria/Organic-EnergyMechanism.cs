@@ -90,7 +90,7 @@ namespace DOL.GS
             {
                 new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 500);
             }
-            SaveIntoDatabase();
+            
             LoadedFromScript = false;
             return success;
         }

@@ -138,7 +138,7 @@ namespace DOL.GS
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
             XagaBrain sBrain = new XagaBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+            
             LoadedFromScript = false;
             spawn_lights = false;
             bool success = base.AddToWorld();
@@ -155,14 +155,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Xaga", 191, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Xaga not found, creating it...");
-
-                log.Warn("Initializing Xaga...");
+            
+                log.Info("Initializing Xaga...");
                 Xaga SB = new Xaga();
                 SB.Name = "Xaga";
                 SB.Model = 917;
@@ -200,10 +194,7 @@ namespace DOL.GS
 
                 SB.AddToWorld();
                 SB.Brain.Start();
-                SB.SaveIntoDatabase();
-            }
-            else
-                log.Warn("Xaga exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

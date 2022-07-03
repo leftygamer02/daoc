@@ -74,8 +74,6 @@ namespace DOL.GS
 
 			AmphiptereBrain sbrain = new AmphiptereBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

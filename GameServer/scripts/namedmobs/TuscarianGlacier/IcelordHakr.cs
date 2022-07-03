@@ -83,21 +83,15 @@ namespace DOL.GS
             }
             HakrBrain sbrain = new HakrBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Hakr", 160, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Icelord Hakr not found, creating it...");
-
-                log.Warn("Initializing Icelord Hakr ...");
+                log.Info("Initializing Icelord Hakr ...");
                 Hakr TG = new Hakr();
                 TG.Name = "Icelord Hakr";
                 TG.Model = 918;
@@ -117,11 +111,8 @@ namespace DOL.GS
                 HakrBrain ubrain = new HakrBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
-                TG.SaveIntoDatabase();
                 TG.Brain.Start();
-            }
-            else
-                log.Warn("Icelord Hakr exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         public void SpawnSnakes()
         {

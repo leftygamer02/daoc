@@ -26,13 +26,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Eyes Watching You Initializator", 191, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Eyes Watching You Initializator not found, creating it...");
 
-                log.Warn("Initializing Eyes Watching You Initializator...");
+                log.Info("Initializing Eyes Watching You Initializator...");
                 EyesWatchingYouInit CO = new EyesWatchingYouInit();
                 CO.Name = "Eyes Watching You Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
@@ -54,11 +49,8 @@ namespace DOL.GS
                 EyesWatchingYouInitBrain ubrain = new EyesWatchingYouInitBrain();
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
-                CO.SaveIntoDatabase();
                 CO.Brain.Start();
-            }
-            else
-                log.Warn("Eyes Watching You Initializator exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

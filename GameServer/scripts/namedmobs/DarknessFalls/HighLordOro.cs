@@ -72,7 +72,7 @@ namespace DOL.GS
 
             OroBrain sBrain = new OroBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

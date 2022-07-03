@@ -109,8 +109,6 @@ namespace DOL.GS
 
 			DuraekEmpoweredBrain sbrain = new DuraekEmpoweredBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

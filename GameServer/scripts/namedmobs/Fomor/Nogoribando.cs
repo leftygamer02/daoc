@@ -69,8 +69,7 @@ namespace DOL.GS
 
 			NogoribandoBrain sbrain = new NogoribandoBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

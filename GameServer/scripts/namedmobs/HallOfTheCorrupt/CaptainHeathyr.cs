@@ -137,8 +137,8 @@ namespace DOL.GS
             VisibleActiveWeaponSlots = 16;
             CaptainHeathyrBrain sbrain = new CaptainHeathyrBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -146,13 +146,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Captain Heathyr", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Captain Heathyr not found, creating it...");
-
-                log.Warn("Initializing Captain Heathyr...");
+                log.Info("Initializing Captain Heathyr...");
                 CaptainHeathyr HOC = new CaptainHeathyr();
                 HOC.Name = "Captain Heathyr";
                 HOC.Model = 5;
@@ -171,11 +165,8 @@ namespace DOL.GS
                 CaptainHeathyrBrain ubrain = new CaptainHeathyrBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Captain Heathyr exist ingame, remove it and restart server if you want to add by script code.");
         }
         private Spell m_Bleed;
 

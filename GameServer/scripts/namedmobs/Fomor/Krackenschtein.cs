@@ -99,8 +99,7 @@ namespace DOL.GS
 
 			KrackenschteinBrain sbrain = new KrackenschteinBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

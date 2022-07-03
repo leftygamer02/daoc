@@ -85,7 +85,7 @@ namespace DOL.GS
 			LydsygBrain sbrain = new LydsygBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

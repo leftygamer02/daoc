@@ -73,7 +73,7 @@ namespace DOL.GS
 			DroomBrain sbrain = new DroomBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

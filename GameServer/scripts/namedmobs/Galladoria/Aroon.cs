@@ -369,12 +369,8 @@ namespace DOL.GS
         {
             GameNPC[] npcs;
 
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Aroon the Urlamhai", 191, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Aroon not found, creating it...");
 
-                log.Warn("Initializing Aroon the Urlamhai...");
+                log.Info("Initializing Aroon the Urlamhai...");
                 Aroon CO = new Aroon();
                 CO.Name = "Aroon the Urlamhai";
                 CO.Model = 767;
@@ -408,11 +404,7 @@ namespace DOL.GS
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
                 CO.Brain.Start();
-                CO.SaveIntoDatabase();
-            }
-            else
-                log.Warn(
-                    "Aroon the Urlamhai exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

@@ -67,22 +67,16 @@ namespace DOL.GS
 
 			GlacierGiantBrain sbrain = new GlacierGiantBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
 		[ScriptLoadedEvent]
 		public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
 		{
-			GameNPC[] npcs;
 
-			npcs = WorldMgr.GetNPCsByNameFromRegion("Glacier Giant", 100, (eRealm)0);
-			if (npcs.Length == 0)
-			{
-				log.Warn("Glacier Giant not found, creating it...");
 
-				log.Warn("Initializing Glacier Giant...");
+				log.Info("Initializing Glacier Giant...");
 				GlacierGiant OF = new GlacierGiant();
 				OF.Name = "Glacier Giant";
 				OF.Model = 1384;
@@ -115,10 +109,7 @@ namespace DOL.GS
 				OF.SetOwnBrain(ubrain);
 				OF.AddToWorld();
 				OF.Brain.Start();
-				OF.SaveIntoDatabase();
-			}
-			else
-				log.Warn("Glacier Giant exist ingame, remove it and restart server if you want to add by script code.");
+
 		}
 	}
 }

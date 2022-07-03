@@ -85,7 +85,7 @@ namespace DOL.GS
 			HurjavelenBrain sbrain = new HurjavelenBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

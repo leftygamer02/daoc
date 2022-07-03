@@ -73,8 +73,6 @@ namespace DOL.GS
 
 			MouthBrain sbrain = new MouthBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

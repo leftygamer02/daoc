@@ -93,7 +93,7 @@ namespace DOL.GS
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
             SpindlerBroodmotherBrain sBrain = new SpindlerBroodmotherBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+            
             LoadedFromScript = false;
             base.AddToWorld();
             return true;
@@ -116,14 +116,10 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
 
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Spindler Broodmother", 191, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Spindler Broodmother not found, creating it...");
+                log.Info("Spindler Broodmother not found, creating it...");
 
-                log.Warn("Initializing Spindler Broodmother...");
+                log.Info("Initializing Spindler Broodmother...");
                 SpindlerBroodmother SB = new SpindlerBroodmother();
                 SB.Name = "Spindler Broodmother";
                 SB.Model = 904;
@@ -159,11 +155,7 @@ namespace DOL.GS
                 SB.LoadTemplate(npcTemplate);
                 SB.AddToWorld();
                 SB.Brain.Start();
-                SB.SaveIntoDatabase();
-            }
-            else
-                log.Warn(
-                    "Spindler Broodmother exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

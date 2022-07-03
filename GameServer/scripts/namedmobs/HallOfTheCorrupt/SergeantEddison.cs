@@ -188,21 +188,17 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Thrust;
             SergeantEddisonBrain sbrain = new SergeantEddisonBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Sergeant Eddison", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Sergeant Eddison not found, creating it...");
 
-                log.Warn("Initializing Sergeant Eddison...");
+
+                log.Info("Initializing Sergeant Eddison...");
                 SergeantEddison HOC = new SergeantEddison();
                 HOC.Name = "Sergeant Eddison";
                 HOC.Model = 270;
@@ -220,11 +216,9 @@ namespace DOL.GS
                 SergeantEddisonBrain ubrain = new SergeantEddisonBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Sergeant Eddison exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

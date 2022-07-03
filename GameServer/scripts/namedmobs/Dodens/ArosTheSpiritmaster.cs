@@ -37,8 +37,7 @@ namespace DOL.GS.Scripts
 
             ScalingFactor = 40;
             Faction = FactionMgr.GetFactionByID(779);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
             base.AddToWorld();
             BroadcastLivingEquipmentUpdate();
             base.SetOwnBrain(new ArosBrain());

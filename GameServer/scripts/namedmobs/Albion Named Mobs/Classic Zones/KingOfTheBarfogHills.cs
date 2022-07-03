@@ -72,8 +72,6 @@ namespace DOL.GS
 
 			KingBarfogBrain sbrain = new KingBarfogBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

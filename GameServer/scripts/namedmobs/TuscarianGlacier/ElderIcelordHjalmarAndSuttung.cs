@@ -780,13 +780,13 @@ namespace DOL.AI.Brain
             {
                 if (Suttung.SuttungCount == 1 || Hjalmar.HjalmarCount == 1)//one of them is up
                 {
-                    //log.Warn("Suttung or Hjalmar is around");
+                    //log.Info("Suttung or Hjalmar is around");
                 }
                 if(Suttung.SuttungCount == 0 && Hjalmar.HjalmarCount == 0)//noone of them is up
                 {
                     if (!Spawn_Boss)
                     {
-                        //log.Warn("Trying to respawn Suttung or Hjalmar");
+                        //log.Info("Trying to respawn Suttung or Hjalmar");
                         new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnBoss), respawn);
                         Spawn_Boss = true;
                     }

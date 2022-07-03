@@ -144,7 +144,7 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             LieutenantMeadeBrain sbrain = new LieutenantMeadeBrain();
             SetOwnBrain(sbrain);
-            SaveIntoDatabase();
+            
             base.AddToWorld();
             return true;
         }
@@ -152,13 +152,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Meade", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Lieutenant Meade not found, creating it...");
 
-                log.Warn("Initializing Lieutenant Meade...");
+
+                log.Info("Initializing Lieutenant Meade...");
                 LieutenantMeade HOC = new LieutenantMeade();
                 HOC.Name = "Lieutenant Meade";
                 HOC.Model = 48;
@@ -176,11 +172,9 @@ namespace DOL.GS
                 LieutenantMeadeBrain ubrain = new LieutenantMeadeBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Lieutenant Meade exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

@@ -66,8 +66,7 @@ namespace DOL.GS
 
             BaelerdothBrain sBrain = new BaelerdothBrain();
             SetOwnBrain(sBrain);
-            LoadedFromScript = false;
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

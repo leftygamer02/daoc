@@ -87,8 +87,7 @@ namespace DOL.GS
 
 			UlorBysenBrain sbrain = new UlorBysenBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -357,8 +356,7 @@ namespace DOL.GS
 
 			JehrogBysenBrain sbrain = new JehrogBysenBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

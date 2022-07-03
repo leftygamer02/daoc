@@ -263,8 +263,7 @@ namespace DOL.GS
 			AlbGolestandtBrain sbrain = new AlbGolestandtBrain();
 			SetOwnBrain(sbrain);
 			sbrain.Start();
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

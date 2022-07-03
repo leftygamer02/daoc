@@ -161,8 +161,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             ChieftainCaimheulBrain sbrain = new ChieftainCaimheulBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -170,13 +170,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Chieftain Caimheul", 276, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Chieftain Caimheul not found, creating it...");
-
-                log.Warn("Initializing Chieftain Caimheul...");
+                log.Info("Initializing Chieftain Caimheul...");
                 ChieftainCaimheul HOC = new ChieftainCaimheul();
                 HOC.Name = "Chieftain Caimheul";
                 HOC.Model = 354;
@@ -195,11 +189,9 @@ namespace DOL.GS
                 ChieftainCaimheulBrain ubrain = new ChieftainCaimheulBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Chieftain Caimheul exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

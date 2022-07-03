@@ -112,8 +112,7 @@ namespace DOL.GS
 
 			ScurceolHyrdeBrain sbrain = new ScurceolHyrdeBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

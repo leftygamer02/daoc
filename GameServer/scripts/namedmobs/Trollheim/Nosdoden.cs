@@ -154,8 +154,7 @@ namespace DOL.GS
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(150));
 			NosdodenBrain sbrain = new NosdodenBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

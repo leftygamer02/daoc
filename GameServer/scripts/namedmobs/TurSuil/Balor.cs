@@ -102,8 +102,7 @@ namespace DOL.GS
 			VisibleActiveWeaponSlots = 34;
 			BalorBrain sbrain = new BalorBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

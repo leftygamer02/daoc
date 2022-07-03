@@ -81,8 +81,7 @@ namespace DOL.GS
 
 			DebenSeGecyndeBrain sbrain = new DebenSeGecyndeBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

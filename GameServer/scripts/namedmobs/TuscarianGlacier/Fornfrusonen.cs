@@ -87,8 +87,8 @@ namespace DOL.GS
 
             FornfrusenenBrain sbrain = new FornfrusenenBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             bool success = base.AddToWorld();
             if (success)
             {

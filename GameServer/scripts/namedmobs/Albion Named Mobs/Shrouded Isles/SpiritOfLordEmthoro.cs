@@ -108,8 +108,7 @@ namespace DOL.GS
 
 			SpiritOfLordEmthoroBrain sbrain = new SpiritOfLordEmthoroBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

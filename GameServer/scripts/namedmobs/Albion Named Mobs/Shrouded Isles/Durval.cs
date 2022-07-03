@@ -73,8 +73,6 @@ namespace DOL.GS
 
 			DurvalBrain sbrain = new DurvalBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

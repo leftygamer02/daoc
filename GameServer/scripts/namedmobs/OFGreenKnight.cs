@@ -119,21 +119,16 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             OFGreenKnightBrain sbrain = new OFGreenKnightBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Green Knight", 1, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Green Knight not found, creating it...");
 
-                log.Warn("Initializing Green Knight ...");
+                log.Info("Initializing Green Knight ...");
                 OFGreenKnight OF = new OFGreenKnight();
                 OF.Name = "Green Knight";
                 OF.Model = 334;
@@ -155,11 +150,8 @@ namespace DOL.GS
                 OFGreenKnightBrain ubrain = new OFGreenKnightBrain();
                 OF.SetOwnBrain(ubrain);
                 OF.AddToWorld();
-                OF.SaveIntoDatabase();
                 OF.Brain.Start();
-            }
-            else
-                log.Warn("Green Knight exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         //This function is the callback function that is called when
         //a player right clicks on the npc

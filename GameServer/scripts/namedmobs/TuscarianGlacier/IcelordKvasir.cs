@@ -103,8 +103,8 @@ namespace DOL.GS
 
             KvasirBrain sbrain = new KvasirBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }

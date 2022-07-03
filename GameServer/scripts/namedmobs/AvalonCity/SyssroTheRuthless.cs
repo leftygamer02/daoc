@@ -93,8 +93,6 @@ namespace DOL.GS
             }
 			SyssroRuthlessBrain sbrain = new SyssroRuthlessBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

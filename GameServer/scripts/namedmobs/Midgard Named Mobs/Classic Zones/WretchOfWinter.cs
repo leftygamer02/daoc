@@ -63,8 +63,7 @@ namespace DOL.GS
 			MeleeDamageType = eDamageType.Thrust;
 			WrethOfWinterScorpBrain sbrain = new WrethOfWinterScorpBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -202,8 +201,7 @@ namespace DOL.GS
 			MeleeDamageType = eDamageType.Thrust;
 			WrethOfWinterSpiderBrain sbrain = new WrethOfWinterSpiderBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -341,8 +339,7 @@ namespace DOL.GS
 			MeleeDamageType = eDamageType.Thrust;
 			WrethOfWinterCrabBrain sbrain = new WrethOfWinterCrabBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -479,8 +476,7 @@ namespace DOL.GS
 			Flags = eFlags.GHOST;
 			WrethOfWinterJotunBrain sbrain = new WrethOfWinterJotunBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -610,8 +606,7 @@ namespace DOL.GS
 			Flags = eFlags.GHOST;
 			WrethOfWinterOgreBrain sbrain = new WrethOfWinterOgreBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -741,8 +736,7 @@ namespace DOL.GS
 			Flags = eFlags.GHOST;
 			WrethOfWinterIceBrain sbrain = new WrethOfWinterIceBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -872,8 +866,7 @@ namespace DOL.GS
 			Flags = eFlags.GHOST;
 			WrethOfWinterRaumarikBrain sbrain = new WrethOfWinterRaumarikBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -1003,8 +996,7 @@ namespace DOL.GS
 			Flags = eFlags.GHOST;
 			WrethOfWinterLichBrain sbrain = new WrethOfWinterLichBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -1134,8 +1126,7 @@ namespace DOL.GS
 			Flags = eFlags.GHOST;
 			WrethOfWinterArachiteBrain sbrain = new WrethOfWinterArachiteBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

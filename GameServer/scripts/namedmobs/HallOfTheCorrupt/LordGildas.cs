@@ -159,8 +159,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             LordGildasBrain sbrain = new LordGildasBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -168,13 +168,10 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lord Gildas", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Lord Gildas found, creating it...");
 
-                log.Warn("Initializing Lord Gildas...");
+                log.Info("Lord Gildas found, creating it...");
+
+                log.Info("Initializing Lord Gildas...");
                 LordGildas HOC = new LordGildas();
                 HOC.Name = "Lord Gildas";
                 HOC.Model = 40;
@@ -194,11 +191,9 @@ namespace DOL.GS
                 LordGildasBrain ubrain = new LordGildasBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Lord Gildas exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

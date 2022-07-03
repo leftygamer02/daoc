@@ -131,8 +131,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Crush;
             AvartackBrain sbrain = new AvartackBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -140,13 +140,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Avartack the Champion", 276, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Avartack the Champion not found, creating it...");
-
-                log.Warn("Initializing Avartack the Champion...");
+                log.Info("Initializing Avartack the Champion...");
                 Avartack HOC = new Avartack();
                 HOC.Name = "Avartack the Champion";
                 HOC.Model = 320;
@@ -165,11 +159,9 @@ namespace DOL.GS
                 AvartackBrain ubrain = new AvartackBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Avartack the Champion exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

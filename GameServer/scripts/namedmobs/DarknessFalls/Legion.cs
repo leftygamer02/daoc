@@ -92,7 +92,7 @@ namespace DOL.GS.Scripts
 
             LegionBrain sBrain = new LegionBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

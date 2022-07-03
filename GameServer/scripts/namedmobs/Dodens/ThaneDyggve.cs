@@ -36,8 +36,8 @@ namespace DOL.GS.Scripts
 			
 			ScalingFactor = 60;
 			base.SetOwnBrain(new ThaneDyggveBrain());
-			LoadedFromScript = false; //load from database
-			SaveIntoDatabase();
+			
+			
 			base.AddToWorld();			
 			return true;
 		}	

@@ -85,7 +85,7 @@ namespace DOL.GS
 			AncientSyverBrain sbrain = new AncientSyverBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

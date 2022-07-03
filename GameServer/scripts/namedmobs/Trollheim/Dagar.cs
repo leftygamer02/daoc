@@ -71,8 +71,7 @@ namespace DOL.GS
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(150));
 			DagarBrain sbrain = new DagarBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

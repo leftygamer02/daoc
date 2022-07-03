@@ -25,13 +25,12 @@ namespace DOL.GS
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
 			KillsRequireToSpawn = Util.Random(20, 40);
-			//log.Warn("KillsRequireToSpawn = " + KillsRequireToSpawn);
+			//log.Info("KillsRequireToSpawn = " + KillsRequireToSpawn);
 
 			DevelinAdd.DevelinAddCount = 0;
 			DevelinBrain sbrain = new DevelinBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
@@ -115,8 +114,7 @@ namespace DOL.GS
 
 			DevelinAddBrain sbrain = new DevelinAddBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

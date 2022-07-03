@@ -80,8 +80,8 @@ namespace DOL.GS
             AgmundrBrain.IsPulled = false;
             AgmundrBrain sbrain = new AgmundrBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }

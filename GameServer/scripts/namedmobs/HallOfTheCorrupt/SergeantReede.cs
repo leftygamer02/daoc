@@ -153,8 +153,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Thrust;
             SergeantReedeBrain sbrain = new SergeantReedeBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -162,13 +162,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Sergeant Reede", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Sergeant Reede not found, creating it...");
-
-                log.Warn("Initializing Sergeant Reede...");
+                log.Info("Initializing Sergeant Reede...");
                 SergeantReede HOC = new SergeantReede();
                 HOC.Name = "Sergeant Reede";
                 HOC.Model = 7;
@@ -186,11 +180,9 @@ namespace DOL.GS
                 SergeantReedeBrain ubrain = new SergeantReedeBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Sergeant Reede exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

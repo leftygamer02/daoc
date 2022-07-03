@@ -81,8 +81,7 @@ namespace DOL.GS
 
 			KrevoRicikBrain sbrain = new KrevoRicikBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

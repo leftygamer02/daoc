@@ -157,7 +157,7 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Crush;
             LieutenantSaxeBrain sbrain = new LieutenantSaxeBrain();
             SetOwnBrain(sbrain);
-            SaveIntoDatabase();
+            
             base.AddToWorld();
             return true;
         }
@@ -165,13 +165,10 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Saxe", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Lieutenant Saxe not found, creating it...");
 
-                log.Warn("Initializing Lieutenant Saxe...");
+                log.Info("Lieutenant Saxe not found, creating it...");
+
+                log.Info("Initializing Lieutenant Saxe...");
                 LieutenantSaxe HOC = new LieutenantSaxe();
                 HOC.Name = "Lieutenant Saxe";
                 HOC.Model = 8;
@@ -194,11 +191,9 @@ namespace DOL.GS
                 LieutenantSaxeBrain ubrain = new LieutenantSaxeBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Lieutenant Saxe exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

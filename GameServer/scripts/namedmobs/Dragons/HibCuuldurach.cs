@@ -262,8 +262,7 @@ namespace DOL.GS
 			HibCuuldurachBrain sbrain = new HibCuuldurachBrain();
 			SetOwnBrain(sbrain);
 			sbrain.Start();
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

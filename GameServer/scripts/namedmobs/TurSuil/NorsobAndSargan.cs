@@ -115,8 +115,7 @@ namespace DOL.GS
 
 			NorsobAnnihilatorBrain sbrain = new NorsobAnnihilatorBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -262,8 +261,7 @@ namespace DOL.GS
 
 			SarganConquerorBrain sbrain = new SarganConquerorBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

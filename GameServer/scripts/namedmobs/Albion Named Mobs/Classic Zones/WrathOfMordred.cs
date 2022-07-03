@@ -89,8 +89,6 @@ namespace DOL.GS
 
 			WrathOfMordredBrain sbrain = new WrathOfMordredBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

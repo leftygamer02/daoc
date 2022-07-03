@@ -134,8 +134,7 @@ namespace DOL.GS
 
 			DrihtenElredenBrain sbrain = new DrihtenElredenBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

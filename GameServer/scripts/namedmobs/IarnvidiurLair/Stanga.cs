@@ -74,7 +74,7 @@ namespace DOL.GS
 			StangaBrain sbrain = new StangaBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

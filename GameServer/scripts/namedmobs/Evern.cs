@@ -102,8 +102,8 @@ namespace DOL.GS
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(81));
             EvernBrain sbrain = new EvernBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -111,13 +111,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Evern", 200, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Evern not found, creating it...");
 
-                log.Warn("Initializing Evern...");
+                log.Info("Initializing Evern...");
                 Evern CO = new Evern();
                 CO.Name = "Evern";
                 CO.Model = 400;
@@ -150,10 +145,7 @@ namespace DOL.GS
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
                 CO.Brain.Start();
-                CO.SaveIntoDatabase();
-            }
-            else
-                log.Warn("Evern exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         public override void Die(GameObject killer)
         {

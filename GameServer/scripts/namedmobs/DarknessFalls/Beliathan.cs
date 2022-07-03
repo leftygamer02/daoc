@@ -27,13 +27,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Beliathan Initializator", 249, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Beliathan Initializator not found, creating it...");
-
-                log.Warn("Initializing Beliathan Initializator...");
+            log.Info("Initializing Beliathan Initializator...");
                 BeliathanInit CO = new BeliathanInit();
                 CO.Name = "Beliathan Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
@@ -55,12 +49,7 @@ namespace DOL.GS
                 BeliathanInitBrain ubrain = new BeliathanInitBrain();
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
-                CO.SaveIntoDatabase();
                 CO.Brain.Start();
-            }
-            else
-                log.Warn(
-                    "Beliathan Initializator exists in game, remove it and restart server if you want to add by script code.");
         }
     }
 }

@@ -99,8 +99,8 @@ namespace DOL.GS
 
             SteinvorBrain sbrain = new SteinvorBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -108,13 +108,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Steinvor", 160, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Icelord Steinvor not found, creating it...");
-
-                log.Warn("Initializing Icelord Steinvor ...");
+                log.Info("Initializing Icelord Steinvor ...");
                 Steinvor TG = new Steinvor();
                 TG.Name = "Icelord Steinvor";
                 TG.Model = 918;
@@ -137,11 +131,8 @@ namespace DOL.GS
                 SteinvorBrain ubrain = new SteinvorBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
-                TG.SaveIntoDatabase();
                 TG.Brain.Start();
-            }
-            else
-                log.Warn("Icelord Steinvor exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }
@@ -415,8 +406,8 @@ namespace DOL.GS
 
             SkufBrain sbrain = new SkufBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -424,13 +415,7 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Skuf", 160, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Icelord Skuf not found, creating it...");
-
-                log.Warn("Initializing Icelord Skuf ...");
+                log.Info("Initializing Icelord Skuf ...");
                 Skuf TG = new Skuf();
                 TG.Name = "Icelord Skuf";
                 TG.Model = 918;
@@ -453,11 +438,8 @@ namespace DOL.GS
                 SkufBrain ubrain = new SkufBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
-                TG.SaveIntoDatabase();
                 TG.Brain.Start();
-            }
-            else
-                log.Warn("Icelord Skuf exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }

@@ -94,8 +94,7 @@ namespace DOL.GS
 
 			RiftBrain sbrain = new RiftBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}

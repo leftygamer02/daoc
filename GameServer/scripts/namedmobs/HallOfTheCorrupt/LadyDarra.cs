@@ -152,8 +152,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             LadyDarraBrain sbrain = new LadyDarraBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             bool success = base.AddToWorld();
             if (success)
             {
@@ -165,13 +165,10 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lady Darra", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Lady Darra found, creating it...");
 
-                log.Warn("Initializing Lady Darra...");
+                log.Info("Lady Darra found, creating it...");
+
+                log.Info("Initializing Lady Darra...");
                 LadyDarra HOC = new LadyDarra();
                 HOC.Name = "Lady Darra";
                 HOC.Model = 35;
@@ -191,11 +188,9 @@ namespace DOL.GS
                 LadyDarraBrain ubrain = new LadyDarraBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Lady Darra exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         public static bool spawn_palas = false;
         public void SpawnPaladins()

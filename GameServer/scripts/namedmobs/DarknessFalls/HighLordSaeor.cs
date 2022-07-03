@@ -74,7 +74,7 @@ namespace DOL.GS
 
             SaeorBrain sBrain = new SaeorBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

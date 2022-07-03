@@ -81,8 +81,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Crush;
             BirghirBrain sbrain = new BirghirBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -473,8 +473,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Crush;
             GuthlacBrain sbrain = new GuthlacBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }

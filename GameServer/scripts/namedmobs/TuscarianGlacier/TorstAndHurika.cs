@@ -85,8 +85,8 @@ namespace DOL.GS
 
             TorstBrain sbrain = new TorstBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -505,8 +505,8 @@ namespace DOL.GS
 
             HurikaBrain sbrain = new HurikaBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }

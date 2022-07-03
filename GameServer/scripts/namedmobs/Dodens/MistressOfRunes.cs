@@ -39,8 +39,7 @@ namespace DOL.GS.Scripts
 
 			Faction = FactionMgr.GetFactionByID(779);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(778));
-			LoadedFromScript = false; //load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			BroadcastLivingEquipmentUpdate();
 			base.SetOwnBrain(new MistressOfRunesBrain());			

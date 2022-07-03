@@ -61,7 +61,7 @@ namespace DOL.GS.Scripts
             Piety = npcTemplate.Piety;
             Intelligence = npcTemplate.Intelligence;
             Empathy = npcTemplate.Empathy;
-            SaveIntoDatabase();
+            
             LoadedFromScript = false;
             base.AddToWorld();
             base.SetOwnBrain(new UaimhLairmasterBrain());

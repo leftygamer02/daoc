@@ -102,22 +102,15 @@ namespace DOL.GS
 
 			SummonerLossrenBrain sbrain = new SummonerLossrenBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
 		[ScriptLoadedEvent]
 		public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
 		{
-			GameNPC[] npcs;
 
-			npcs = WorldMgr.GetNPCsByNameFromRegion("Summoner Lossren", 248, (eRealm)0);
-			if (npcs.Length == 0)
-			{
-				log.Warn("Summoner Lossren not found, creating it...");
-
-				log.Warn("Initializing Summoner Lossren...");
+			log.Info("Initializing Summoner Lossren...");
 				SummonerLossren OF = new SummonerLossren();
 				OF.Name = "Summoner Lossren";
 				OF.Model = 343;
@@ -153,10 +146,7 @@ namespace DOL.GS
 				OF.SetOwnBrain(ubrain);
 				OF.AddToWorld();
 				OF.Brain.Start();
-				OF.SaveIntoDatabase();
-			}
-			else
-				log.Warn("Summoner Lossren exist ingame, remove it and restart server if you want to add by script code.");
+
 		}
 	}
 }

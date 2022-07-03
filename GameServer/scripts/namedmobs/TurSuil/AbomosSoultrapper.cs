@@ -120,7 +120,7 @@ namespace DOL.GS
 			AbomosSoultrapperBrain sbrain = new AbomosSoultrapperBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

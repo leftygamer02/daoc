@@ -73,7 +73,7 @@ namespace DOL.GS
 
             BaalorienBrain sBrain = new BaalorienBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

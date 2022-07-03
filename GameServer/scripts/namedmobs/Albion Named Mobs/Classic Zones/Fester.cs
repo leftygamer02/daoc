@@ -73,8 +73,6 @@ namespace DOL.GS
 
 			FesterBrain sbrain = new FesterBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

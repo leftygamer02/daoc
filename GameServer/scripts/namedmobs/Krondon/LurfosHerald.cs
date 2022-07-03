@@ -87,8 +87,7 @@ namespace DOL.GS
 
 			LurfosHeraldBrain sbrain = new LurfosHeraldBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

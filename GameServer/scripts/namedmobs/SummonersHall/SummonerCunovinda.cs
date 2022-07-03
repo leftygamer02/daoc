@@ -109,8 +109,7 @@ namespace DOL.GS
 
 			SummonerCunovindaBrain sbrain = new SummonerCunovindaBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
@@ -119,12 +118,7 @@ namespace DOL.GS
 		{
 			GameNPC[] npcs;
 
-			npcs = WorldMgr.GetNPCsByNameFromRegion("Summoner Cunovinda", 248, (eRealm)0);
-			if (npcs.Length == 0)
-			{
-				log.Warn("Summoner Cunovinda not found, creating it...");
-
-				log.Warn("Initializing Summoner Cunovinda...");
+				log.Info("Initializing Summoner Cunovinda...");
 				SummonerCunovinda OF = new SummonerCunovinda();
 				OF.Name = "Summoner Cunovinda";
 				OF.Model = 162;
@@ -160,10 +154,7 @@ namespace DOL.GS
 				OF.SetOwnBrain(ubrain);
 				OF.AddToWorld();
 				OF.Brain.Start();
-				OF.SaveIntoDatabase();
-			}
-			else
-				log.Warn("Summoner Cunovinda exist ingame, remove it and restart server if you want to add by script code.");
+
 		}
 	}
 }

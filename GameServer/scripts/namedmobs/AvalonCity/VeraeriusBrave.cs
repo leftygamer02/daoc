@@ -99,8 +99,6 @@ namespace DOL.GS
 
 			VeraeriusBraveBrain sbrain = new VeraeriusBraveBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

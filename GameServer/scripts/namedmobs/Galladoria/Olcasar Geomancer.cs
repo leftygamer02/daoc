@@ -104,7 +104,7 @@ namespace DOL.GS
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
             OlcasarGeomancerBrain sBrain = new OlcasarGeomancerBrain();
             SetOwnBrain(sBrain);
-            SaveIntoDatabase();
+            
             LoadedFromScript = false;
             base.AddToWorld();
             return true;
@@ -113,14 +113,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
 
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Olcasar Geomancer", 191, (eRealm) 0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Olcasar Geomancer not found, creating it...");
 
-                log.Warn("Initializing Olcasar Geomancer...");
+                log.Info("Initializing Olcasar Geomancer...");
                 OlcasarGeomancer OG = new OlcasarGeomancer();
                 OG.Name = "Olcasar Geomancer";
                 OG.Model = 925;
@@ -155,11 +150,7 @@ namespace DOL.GS
                 OG.LoadTemplate(npcTemplate);
                 OG.AddToWorld();
                 OG.Brain.Start();
-                OG.SaveIntoDatabase();
-            }
-            else
-                log.Warn(
-                    "Olcasar Geomancer exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         private Spell m_OGDD;
         private Spell OGDD

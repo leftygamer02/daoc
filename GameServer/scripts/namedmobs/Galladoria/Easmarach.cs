@@ -124,8 +124,8 @@ namespace DOL.GS
 
             EasmarachBrain sBrain = new EasmarachBrain();
             SetOwnBrain(sBrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }     

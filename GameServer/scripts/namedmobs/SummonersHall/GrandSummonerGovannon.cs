@@ -131,8 +131,7 @@ namespace DOL.GS
 
 			GrandSummonerGovannonBrain sbrain = new GrandSummonerGovannonBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
@@ -141,12 +140,7 @@ namespace DOL.GS
 		{
 			GameNPC[] npcs;
 
-			npcs = WorldMgr.GetNPCsByNameFromRegion("Grand Summoner Govannon", 248, (eRealm)0);
-			if (npcs.Length == 0)
-			{
-				log.Warn("Grand Summoner Govannon not found, creating it...");
-
-				log.Warn("Initializing Grand Summoner Govannon...");
+				log.Info("Initializing Grand Summoner Govannon...");
 				GrandSummonerGovannon OF = new GrandSummonerGovannon();
 				OF.Name = "Grand Summoner Govannon";
 				OF.Model = 61;
@@ -182,10 +176,7 @@ namespace DOL.GS
 				OF.SetOwnBrain(ubrain);
 				OF.AddToWorld();
 				OF.Brain.Start();
-				OF.SaveIntoDatabase();
-			}
-			else
-				log.Warn("Grand Summoner Govannon exist ingame, remove it and restart server if you want to add by script code.");
+
 		}
 		private Spell m_Bleed;
 		private Spell Bleed

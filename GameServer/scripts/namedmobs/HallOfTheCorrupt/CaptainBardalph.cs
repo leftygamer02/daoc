@@ -136,8 +136,8 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Thrust;
             CaptainBardalphBrain sbrain = new CaptainBardalphBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }
@@ -145,13 +145,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Captain Bardalph", 277, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Captain Heathyr not found, creating it...");
 
-                log.Warn("Initializing Captain Bardalph...");
+
+                log.Info("Initializing Captain Bardalph...");
                 CaptainBardalph HOC = new CaptainBardalph();
                 HOC.Name = "Captain Bardalph";
                 HOC.Model = 55;
@@ -176,11 +172,9 @@ namespace DOL.GS
                 CaptainBardalphBrain ubrain = new CaptainBardalphBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
-                HOC.SaveIntoDatabase();
+                
                 HOC.Brain.Start();
-            }
-            else
-                log.Warn("Captain Bardalph exist ingame, remove it and restart server if you want to add by script code.");
+
         }
         private Spell m_Bleed;
 

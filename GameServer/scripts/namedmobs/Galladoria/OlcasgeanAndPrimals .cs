@@ -34,13 +34,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Olcasgean Initializator", 191, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Olcasgean Initializator not found, creating it...");
 
-                log.Warn("Initializing Olcasgean Initializator...");
+
+                log.Info("Initializing Olcasgean Initializator...");
                 OlcasgeanInitializator CO = new OlcasgeanInitializator();
                 CO.Name = "Olcasgean Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
@@ -61,10 +57,7 @@ namespace DOL.GS
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
                 CO.Brain.Start();
-                CO.SaveIntoDatabase();
-            }
-            else
-                log.Warn("Conservator exist ingame, remove it and restart server if you want to add by script code.");
+
         }
     }
 }
@@ -537,14 +530,8 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            OlcasgeanBrain ob = new OlcasgeanBrain();
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Olcasgean", 191, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Olcasgean not found, creating it...");
 
-                log.Warn("Initializing Olcasgean nr1...");
+                log.Info("Initializing Olcasgean nr1...");
                 Olcasgean OLC = new Olcasgean();
                 OLC.Name = "Olcasgean";
                 OLC.PackageID = "Olcasgean1";
@@ -576,10 +563,6 @@ namespace DOL.GS
                 OLC.SetOwnBrain(ubrain);
                 OLC.AddToWorld();
                 OLC.Brain.Start();
-                OLC.SaveIntoDatabase();
-            }
-            else
-                log.Warn("Olcasgean exist ingame, remove it and restart server if you want to add by script code.");
         }
     }
 }

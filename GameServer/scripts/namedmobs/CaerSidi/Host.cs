@@ -157,13 +157,9 @@ namespace DOL.GS
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Host Initializator", 60, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Host Initializator not found, creating it...");
 
-                log.Warn("Initializing Host Initializator...");
+
+                log.Info("Initializing Host Initializator...");
                 HostInitializator CO = new HostInitializator();
                 CO.Name = "Host Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
@@ -185,12 +181,8 @@ namespace DOL.GS
                 HIBrain ubrain = new HIBrain();
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
-                CO.SaveIntoDatabase();
                 CO.Brain.Start();
-            }
-            else
-                log.Warn(
-                    "Host Initializator exist ingame, remove it and restart server if you want to add by script code.");
+
         }
 
         #endregion

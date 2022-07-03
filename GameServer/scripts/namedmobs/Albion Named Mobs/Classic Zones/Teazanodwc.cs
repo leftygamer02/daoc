@@ -73,8 +73,6 @@ namespace DOL.GS
 
 			TeazanodwcBrain sbrain = new TeazanodwcBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

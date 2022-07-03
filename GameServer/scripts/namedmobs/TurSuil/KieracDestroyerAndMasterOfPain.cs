@@ -117,8 +117,7 @@ namespace DOL.GS
 
 			KieracDestroyerBrain sbrain = new KieracDestroyerBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+			
 			bool success = base.AddToWorld();
 			if (success)
             {

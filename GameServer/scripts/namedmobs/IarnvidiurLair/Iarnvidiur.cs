@@ -80,7 +80,7 @@ namespace DOL.GS
 			IarnvidiurBrain sbrain = new IarnvidiurBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

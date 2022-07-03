@@ -86,7 +86,7 @@ namespace DOL.GS
 			SkollBrain sbrain = new SkollBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

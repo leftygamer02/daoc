@@ -85,7 +85,7 @@ namespace DOL.GS
 			DyranapurBrain sbrain = new DyranapurBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

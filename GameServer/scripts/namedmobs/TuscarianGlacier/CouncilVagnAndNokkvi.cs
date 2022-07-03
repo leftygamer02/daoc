@@ -67,8 +67,8 @@ namespace DOL.GS
 
             VagnBrain sbrain = new VagnBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }  
@@ -223,8 +223,8 @@ namespace DOL.GS
 
             NokkviBrain sbrain = new NokkviBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }

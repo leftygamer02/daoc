@@ -35,7 +35,6 @@ namespace DOL.GS.Scripts
 			GudlaugrBrain sbrain = new GudlaugrBrain();
 			SetOwnBrain(sbrain);
 			base.AddToWorld();
-			SaveIntoDatabase();
 			return true;
 		}
 

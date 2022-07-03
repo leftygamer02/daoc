@@ -200,8 +200,7 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Slash;
             QueenKulaBrain sbrain = new QueenKulaBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false;//load from database
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }    
@@ -679,8 +678,7 @@ namespace DOL.GS
             MeleeDamageType = eDamageType.Crush;
             KingTuscarBrain sbrain = new KingTuscarBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false;//load from database
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }       

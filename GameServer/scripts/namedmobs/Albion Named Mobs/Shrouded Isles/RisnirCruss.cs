@@ -74,8 +74,6 @@ namespace DOL.GS
 
 			RisnirCrussBrain sbrain = new RisnirCrussBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

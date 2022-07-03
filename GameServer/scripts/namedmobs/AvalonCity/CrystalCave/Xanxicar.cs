@@ -80,8 +80,6 @@ namespace DOL.GS
 
 			XanxicarBrain sbrain = new XanxicarBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
 			base.AddToWorld();
 			return true;
 		}

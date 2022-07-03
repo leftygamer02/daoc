@@ -194,7 +194,7 @@ namespace DOL.GS
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
 			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}
@@ -286,7 +286,7 @@ namespace DOL.GS
 			CaithorDorochaBrain sbrain = new CaithorDorochaBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;
-			SaveIntoDatabase();
+			
 			base.AddToWorld();
 			return true;
 		}

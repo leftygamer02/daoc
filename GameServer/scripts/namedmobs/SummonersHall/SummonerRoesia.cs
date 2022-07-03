@@ -106,22 +106,14 @@ namespace DOL.GS
 
 			SummonerRoesiaBrain sbrain = new SummonerRoesiaBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;//load from database
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
 		[ScriptLoadedEvent]
 		public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
 		{
-			GameNPC[] npcs;
-
-			npcs = WorldMgr.GetNPCsByNameFromRegion("Summoner Roesia", 248, (eRealm)0);
-			if (npcs.Length == 0)
-			{
-				log.Warn("Summoner Roesia not found, creating it...");
-
-				log.Warn("Initializing Summoner Roesia...");
+				log.Info("Initializing Summoner Roesia...");
 				SummonerRoesia OF = new SummonerRoesia();
 				OF.Name = "Summoner Roesia";
 				OF.Model = 6;
@@ -157,10 +149,6 @@ namespace DOL.GS
 				OF.SetOwnBrain(ubrain);
 				OF.AddToWorld();
 				OF.Brain.Start();
-				OF.SaveIntoDatabase();
-			}
-			else
-				log.Warn("Summoner Roesia exist ingame, remove it and restart server if you want to add by script code.");
 		}
 	}
 }

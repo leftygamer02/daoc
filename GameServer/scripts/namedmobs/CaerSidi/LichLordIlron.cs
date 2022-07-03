@@ -77,8 +77,7 @@ namespace DOL.GS.Scripts
             sBrain.AggroRange = 500;
 
             LichLordIlronBrain.spawnimages = true;
-            LoadedFromScript = false;//load from database
-            SaveIntoDatabase();
+
             base.AddToWorld();
             return true;
         }

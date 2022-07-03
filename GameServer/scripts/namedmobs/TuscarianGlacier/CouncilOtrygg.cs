@@ -81,8 +81,8 @@ namespace DOL.GS
             OtryggAdd.PetsCount = 0;
             OtryggBrain sbrain = new OtryggBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false; //load from database
-            SaveIntoDatabase();
+            
+            
             base.AddToWorld();
             return true;
         }

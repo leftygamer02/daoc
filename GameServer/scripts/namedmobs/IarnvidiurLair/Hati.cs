@@ -84,8 +84,7 @@ namespace DOL.GS
 
 			HatiBrain sbrain = new HatiBrain();
 			SetOwnBrain(sbrain);
-			LoadedFromScript = false;
-			SaveIntoDatabase();
+
 			base.AddToWorld();
 			return true;
 		}
