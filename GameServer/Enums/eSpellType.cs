@@ -197,7 +197,7 @@ namespace DOL.GS
         NaturesShield = 191,
         AllStatsBarrel = 192,
         DexterityConstitutionDebuff = 193,
-        ComfortingFlames = 194,
+        Campfire = 194,
         AllRegenBuff = 195,
         SummonMerchant = 196,
         BeadRegen = 197,
