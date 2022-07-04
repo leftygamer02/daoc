@@ -20,9 +20,11 @@ using System;
 using System.Collections;
 using DOL.Database;
 using System.Collections.Generic;
+using log4net;
+using System.Reflection;
 
 // Tolakram - January 7, 2012
- 
+
 namespace DOL.GS
 {
 	/// <summary>
@@ -57,6 +59,7 @@ namespace DOL.GS
 	/// </summary>
 	public static class GameInventoryObjectExtensions
 	{
+		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		public const string ITEM_BEING_ADDED = "ItemBeingAddedToObject";
 		public const string TEMP_SEARCH_KEY = "TempSearchKey";
 
@@ -102,6 +105,7 @@ namespace DOL.GS
 		/// </summary>
 		public static IDictionary<int, InventoryItem> MoveItemFromObject(this IGameInventoryObject thisObject, GamePlayer player, eInventorySlot fromClientSlot, eInventorySlot toClientSlot)
 		{
+			//log.Debug($"MoveItemFromObject - FromSlot: {fromClientSlot}, ToSlot: {toClientSlot}");
 			// We will only allow moving to the backpack.
 
 			if (toClientSlot < eInventorySlot.FirstBackpack || toClientSlot > eInventorySlot.LastBackpack)
@@ -131,6 +135,8 @@ namespace DOL.GS
 				}
 
 				thisObject.OnRemoveItem(player, fromItem);
+				fromItem.SlotPosition = (int)toClientSlot;
+				GameServer.Database.SaveObject(fromItem);
 
 				// Create the GameInventoryItem from this InventoryItem.  This simply wraps the InventoryItem, 
 				// which is still updated when this item is moved around
@@ -150,6 +156,7 @@ namespace DOL.GS
 		/// </summary>
 		public static IDictionary<int, InventoryItem> MoveItemToObject(this IGameInventoryObject thisObject, GamePlayer player, eInventorySlot fromClientSlot, eInventorySlot toClientSlot)
 		{
+			//log.Debug($"MoveItemToObject - FromSlot: {fromClientSlot}, ToSlot: {toClientSlot}");
 			// We will only allow moving from the backpack.
 
 			if (fromClientSlot < eInventorySlot.FirstBackpack || fromClientSlot > eInventorySlot.LastBackpack)
@@ -194,6 +201,7 @@ namespace DOL.GS
 		/// </summary>
 		public static IDictionary<int, InventoryItem> MoveItemInsideObject(this IGameInventoryObject thisObject, GamePlayer player, eInventorySlot fromSlot, eInventorySlot toSlot)
 		{
+			//log.Debug($"MoveItemInsideObject - FromSlot: {fromSlot}, ToSlot: {toSlot}");
 			lock (thisObject.LockObject())
 			{
 				IDictionary<int, InventoryItem> inventory = thisObject.GetClientInventory(player);
