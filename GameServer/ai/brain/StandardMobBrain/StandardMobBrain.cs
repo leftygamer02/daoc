@@ -360,8 +360,21 @@ public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
 
             if (npc.Brain is IControlledBrain && (npc.Brain as IControlledBrain).GetPlayerOwner() != null)
             {
-                var factionChecker = (npc.Brain as IControlledBrain).GetPlayerOwner();
                 var aggrolevel = 0;
+
+                //if being attacked by the player controlled pet, set aggrolevel high enough to register pet & player in aggro table
+                if (npc.IsAttacking && npc.TargetObject is GameNPC)
+                {
+                    GameNPC npcAttackTarget = (GameNPC) npc.TargetObject;
+
+                    if (npcAttackTarget.ObjectID == this.Body.ObjectID)
+                    {
+                        aggrolevel = 52;
+                        return;
+                    }                    
+                }                
+
+                var factionChecker = (npc.Brain as IControlledBrain).GetPlayerOwner();
 
                 if (Body.Faction == null)
                     aggrolevel = AggroLevel;
@@ -678,7 +691,7 @@ public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
     /// <summary>
     ///     List of livings that this npc has aggro on, living => aggroamount
     /// </summary>
-    protected readonly Dictionary<GameLiving, long> m_aggroTable = new();
+    protected internal readonly Dictionary<GameLiving, long> m_aggroTable = new();
 
     /// <summary>
     ///     The aggression table for this mob
@@ -812,6 +825,7 @@ public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
             var player = (GamePlayer) living;
 
             if (player.Group != null)
+            { 
                 // player is in group, add whole group to aggro list
                 lock ((m_aggroTable as ICollection).SyncRoot)
                 {
@@ -820,7 +834,7 @@ public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
                             if (!m_aggroTable.ContainsKey(p))
                                 m_aggroTable[p] = 1; //1L // add the missing group member on aggro table
                 }
-
+            }
             //ProtectEffect protect = (ProtectEffect) player.EffectList.GetOfType(typeof(ProtectEffect));
             foreach (ProtectECSGameEffect protect in player.effectListComponent.GetAbilityEffects()
                          .Where(e => e.EffectType == eEffect.Protect))
@@ -883,7 +897,30 @@ public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
             else
             {
                 if (aggroamount > 0)
+                {
                     m_aggroTable[living] = aggroamount;
+
+                    if (living is GameNPC)
+                    {
+                        if ((living as GameNPC).Brain is IControlledBrain && ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null)
+                        {
+                            GamePlayer petOwner = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+                            m_aggroTable[petOwner] = 1;
+
+                            if (petOwner.Group != null)
+                            {
+                                // player is in group, add whole group to aggro list
+                                lock ((m_aggroTable as ICollection).SyncRoot)
+                                {
+                                    foreach (var p in petOwner.Group.GetPlayersInTheGroup())
+                                        if (!p.IsStealthed)
+                                            if (!m_aggroTable.ContainsKey(p))
+                                                m_aggroTable[p] = 1; //1L // add the missing group member on aggro table
+                                }
+                            }
+                        }
+                    }
+                }
                 else
                     m_aggroTable[living] = 1; //1L;
             }
@@ -1136,61 +1173,62 @@ public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
     public override void Notify(DOLEvent e, object sender, EventArgs args)
     {
         base.Notify(e, sender, args);
-
-        // if (!IsActive) return;
-        //
-        // if (sender == Body)
-        // {
-        //     if (e == GameObjectEvent.TakeDamage)
-        //     {
-        //         TakeDamageEventArgs eArgs = args as TakeDamageEventArgs;
-        //         if (eArgs == null || eArgs.DamageSource is GameLiving == false) return;
-        //
-        //         int aggro = eArgs.DamageAmount + eArgs.CriticalAmount;
-        //         if (eArgs.DamageSource is GameNPC)
-        //         {
-        //             // owner gets 25% of aggro
-        //             IControlledBrain brain = ((GameNPC)eArgs.DamageSource).Brain as IControlledBrain;
-        //             if (brain != null)
-        //             {
-        //                 AddToAggroList(brain.Owner, (int)Math.Max(1, aggro * 0.25));
-        //                 aggro = (int)Math.Max(1, aggro * 0.75);
-        //             }
-        //         }
-        //         AddToAggroList((GameLiving)eArgs.DamageSource, aggro);
-        //         return;
-        //     }
-        //     else if (e == GameLivingEvent.AttackedByEnemy)
-        //     {
-        //         //AttackedByEnemyEventArgs eArgs = args as AttackedByEnemyEventArgs;
-        //        // if (eArgs == null) return;
-        //         //OnAttackedByEnemy(eArgs.AttackData);
-        //         return;
-        //     }
-        //     /*
-        //     else if (e == GameLivingEvent.Dying)
-        //     {
-        //         // clean aggro table
-        //         ClearAggroList();
-        //         return;
-        //     }
-        //     */
-        //     else if (e == GameNPCEvent.FollowLostTarget) // this means we lost the target
-        //     {
-        //         FollowLostTargetEventArgs eArgs = args as FollowLostTargetEventArgs;
-        //         if (eArgs == null) return;
-        //         OnFollowLostTarget(eArgs.LostTarget);
-        //         return;
-        //     }
-        //     else if (e == GameLivingEvent.CastFailed)
-        //     {
-        //         CastFailedEventArgs realArgs = args as CastFailedEventArgs;
-        //         if (realArgs == null || realArgs.Reason == CastFailedEventArgs.Reasons.AlreadyCasting || realArgs.Reason == CastFailedEventArgs.Reasons.CrowdControlled)
-        //             return;
-        //         Body.StartAttack(Body.TargetObject);
-        //     }
-        // }
-        //
+    
+        if (!IsActive) return;
+        
+        if (sender == Body)
+        {
+            // if (e == GameObjectEvent.TakeDamage)
+            // {
+            //     TakeDamageEventArgs eArgs = args as TakeDamageEventArgs;
+            //     if (eArgs == null || eArgs.DamageSource is GameLiving == false) return;
+            //
+            //     int aggro = eArgs.DamageAmount + eArgs.CriticalAmount;
+            //     if (eArgs.DamageSource is GameNPC)
+            //     {
+            //         // owner gets 25% of aggro
+            //         IControlledBrain brain = ((GameNPC)eArgs.DamageSource).Brain as IControlledBrain;
+            //         if (brain != null)
+            //         {
+            //             AddToAggroList(brain.Owner, (int)Math.Max(1, aggro * 0.25));
+            //             aggro = (int)Math.Max(1, aggro * 0.75);
+            //         }
+            //     }
+            //     AddToAggroList((GameLiving)eArgs.DamageSource, aggro);
+            //     return;
+            // }
+            // else 
+            // if (e == GameLivingEvent.AttackedByEnemy)
+            // {
+            //     AttackedByEnemyEventArgs eArgs = args as AttackedByEnemyEventArgs;
+            //     if (eArgs == null) return;
+            //     OnAttackedByEnemy(eArgs.AttackData);
+            //     return;
+            // }
+            /*
+            else if (e == GameLivingEvent.Dying)
+            {
+                // clean aggro table
+                ClearAggroList();
+                return;
+            }
+            */
+            if (e == GameNPCEvent.FollowLostTarget) // this means we lost the target
+            {
+                var eArgs = args as FollowLostTargetEventArgs;
+                if (eArgs == null) return;
+                OnFollowLostTarget(eArgs.LostTarget);
+                return;
+            }
+            if (e == GameLivingEvent.CastFailed)
+            {
+                var realArgs = args as CastFailedEventArgs;
+                if (realArgs == null || realArgs.Reason == CastFailedEventArgs.Reasons.AlreadyCasting || realArgs.Reason == CastFailedEventArgs.Reasons.CrowdControlled)
+                    return;
+                Body.StartAttack(Body.TargetObject);
+            }
+        }
+        
         // if (e == GameLivingEvent.EnemyHealed)
         // {
         //     EnemyHealedEventArgs eArgs = args as EnemyHealedEventArgs;
