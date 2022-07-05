@@ -275,9 +275,18 @@ namespace DOL.GS.Commands
 					info.Add("AttackState: " + target.attackComponent.AttackState);
 					info.Add("LastCombatPVE: " + target.LastAttackedByEnemyTickPvE);
 					info.Add("LastCombatPVP: " + target.LastAttackedByEnemyTickPvP);
+					info.Add("AttackAction: " + target.attackComponent.attackAction);
+					info.Add("WeaponAction: " + target.attackComponent.weaponAction);
 
 					if (target.InCombat || target.attackComponent.AttackState)
+					{
 						info.Add("RegionTick: " + GameLoop.GameLoopTime);
+						if(target.attackComponent.attackAction != null)
+						{
+							info.Add("AttackAction StartTime " + target.attackComponent.attackAction.StartTime);
+							info.Add("AttackAction TimeUntilStart " + target.attackComponent.attackAction.TimeUntilStart);
+						}
+					}
 
 					info.Add("");
 
