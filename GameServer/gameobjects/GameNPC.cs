@@ -63,6 +63,8 @@ namespace DOL.GS
 		public const int CONST_WALKTOTOLERANCE = 25;
 
 		private int m_databaseLevel;
+		
+		public bool NeedsBroadcastUpdate { get; set; }
 
 		
 		#region Formations/Spacing
@@ -194,7 +196,8 @@ namespace DOL.GS
 				ushort oldHeading = base.Heading;
 				base.Heading = value;
 				if (base.Heading != oldHeading)
-					BroadcastUpdate();
+					NeedsBroadcastUpdate = true;
+				//BroadcastUpdate();
 			}
 		}
 
@@ -828,7 +831,8 @@ namespace DOL.GS
 				if (base.CurrentSpeed != value)
 				{
 					base.CurrentSpeed = value;
-					BroadcastUpdate();
+					NeedsBroadcastUpdate = true;
+					//BroadcastUpdate();
 				}
 			}
 		}
@@ -1502,7 +1506,8 @@ namespace DOL.GS
 			// Notify(GameNPCEvent.WalkTo, this, new WalkToEventArgs(TargetPosition, speed));
 			
 			StartArriveAtTargetAction(GetTicksToArriveAt(TargetPosition, speed));
-			BroadcastUpdate();
+			NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		private void StartArriveAtTargetAction(int requiredTicks)
@@ -1575,7 +1580,8 @@ namespace DOL.GS
 
 			MovementStartTick = GameLoop.GameLoopTime;
 			UpdateTickSpeed();
-			BroadcastUpdate();
+			NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		/// <summary>
@@ -1612,7 +1618,8 @@ namespace DOL.GS
 			}
 
 			SavePosition(target);
-			BroadcastUpdate();
+			NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		public const int STICKMINIMUMRANGE = 75;
@@ -1722,7 +1729,7 @@ namespace DOL.GS
 			if (followLiving != null && !followLiving.IsAlive)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				return 0;
 			}
 
@@ -1730,7 +1737,7 @@ namespace DOL.GS
 			if (followTarget == null || followTarget.ObjectState != eObjectState.Active || CurrentRegionID != followTarget.CurrentRegionID)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				return 0;
 			}
 
@@ -1747,7 +1754,7 @@ namespace DOL.GS
 			if ((int)distance > m_followMaxDist)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				this.WalkToSpawn();
 				return 0;
 			}
@@ -1762,14 +1769,14 @@ namespace DOL.GS
 				{
 					if (attackComponent.AttackState && brain != null && followLiving != null)
 					{
-						long seconds = 20 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
+						long seconds = 25 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
 						long lastattacked = LastAttackTick;
 						long lasthit = LastAttackedByEnemyTick;
 						if ((GameLoop.GameLoopTime - lastattacked > seconds * 1000 && GameLoop.GameLoopTime - lasthit > seconds * 1000)
 							&& lasthit != 0)
 						{
 							//StopFollow();
-							Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+							//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 							//brain.ClearAggroList();
 							//this.WalkToSpawn();
 							LastAttackedByEnemyTickPvE = 0;
@@ -1860,7 +1867,8 @@ namespace DOL.GS
 			bool old = IsTurningDisabled;
 			base.DisableTurning(add);
 			if (old != IsTurningDisabled)
-				BroadcastUpdate();
+				NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		#endregion
@@ -4567,7 +4575,7 @@ namespace DOL.GS
 
 				BroadcastUpdate();
 
-                attackComponent.AttackState = false;
+				attackComponent.AttackState = false;
 			}
 		}
 
@@ -4788,7 +4796,8 @@ namespace DOL.GS
 			{
 				int oldPercent = HealthPercent;
 				if (oldPercent != HealthPercent)
-					BroadcastUpdate();
+					NeedsBroadcastUpdate = true;
+				//BroadcastUpdate();
 			}
 			return (Health < MaxHealth) ? period : 0;
 		}

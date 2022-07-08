@@ -13,7 +13,7 @@ namespace DOL.GS {
     public class ROGMobGenerator : LootGeneratorBase {
 
         //base chance in %
-        public static ushort BASE_ROG_CHANCE = 12;
+        public static ushort BASE_ROG_CHANCE = 16;
 
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace DOL.GS {
                 }
 
                 // chance to get a RoG Item
-                int chance = BASE_ROG_CHANCE + ((killedcon < 0 ? killedcon + 1 : killedcon) * 2);
+                int chance = BASE_ROG_CHANCE + ((killedcon < 0 ? killedcon + 1 : killedcon) * 3);
 
                 //chance = 100;
 
@@ -73,11 +73,21 @@ namespace DOL.GS {
 
                     if (mob.Level > 40)
                         chance -= 3;
+                    
+                    if (mob.Level < 5)
+                    {
+                        chance += 75;
+                    }
+                    else if (mob.Level < 10)
+                        chance += (100 - mob.Level * 10);
 
                     int numDrops = 0;
                     //roll for an item for each player in the group
                     foreach (var groupPlayer in player.Group.GetPlayersInTheGroup().ToArray())
                     {
+                        if(groupPlayer.GetDistance(player) > WorldMgr.VISIBILITY_DISTANCE)
+                            continue;
+                        
                         if (Util.Chance(chance) && numDrops < MaxDropCap)
                         {
                             classForLoot = GetRandomClassFromGroup(player.Group);
@@ -111,13 +121,13 @@ namespace DOL.GS {
                         classForLoot = GetRandomClassFromRealm(player.Realm);
                     }
 
-                    chance += 5; //solo drop bonus
+                    chance += 9; //solo drop bonus
                     
                     ItemTemplate item = null;
 
                     if (mob.Level < 5)
                     {
-                        chance += 50;
+                        chance += 75;
                     }
                     else if (mob.Level < 10)
                         chance += (100 - mob.Level * 10);
