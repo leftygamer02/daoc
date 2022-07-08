@@ -155,7 +155,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((player.Client.GameObjectUpdateArray).OfType<KeyValuePair<Tuple<ushort, ushort>, long>>(), objEntry =>
+				// Clean Cache
+				foreach (var objEntry in player.Client.GameObjectUpdateArray)
 				{
 					var objKey = objEntry.Key;
 					GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
@@ -171,26 +172,7 @@ namespace DOL.GS
 
 						player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
 					}
-				});
-
-				//// Clean Cache
-				//foreach (var objEntry in player.Client.GameObjectUpdateArray)
-				//{
-				//	var objKey = objEntry.Key;
-				//	GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
-				//	// We have a Player in cache that is not in vincinity
-				//	// For updating "out of view" we allow a halved refresh time. 
-				//	if (obj is GamePlayer && !players.Contains((GamePlayer)obj) && (nowTicks - objEntry.Value) >= GetPlayertoPlayerUpdateInterval)
-				//	{
-				//		long dummy;
-
-				//		// Update him out of View and delete from cache
-				//		if (obj.IsVisibleTo(player) && (((GamePlayer)obj).IsStealthed == false || player.CanDetect((GamePlayer)obj)))
-				//			player.Client.Out.SendPlayerForgedPosition((GamePlayer)obj);
-
-				//		player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -244,14 +226,14 @@ namespace DOL.GS
 			try
 			{
 				// Clean Cache
-				Parallel.ForEach((player.Client.GameObjectUpdateArray).OfType<KeyValuePair<Tuple<ushort, ushort>, long>> (), objEntry =>
+				foreach (var objEntry in player.Client.GameObjectUpdateArray)
 				{
 					var objKey = objEntry.Key;
 					GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
 
 					// Brain is updating to its master, no need to handle it.
 					if (obj is GameNPC && ((GameNPC)obj).Brain is IControlledBrain && ((IControlledBrain)((GameNPC)obj).Brain).GetPlayerOwner() == player)
-						return;
+						continue;
 
 					// We have a NPC in cache that is not in vincinity
 					if (obj is GameNPC && !npcs.Contains((GameNPC)obj) && (nowTicks - objEntry.Value) >= GetPlayerNPCUpdateInterval)
@@ -264,28 +246,7 @@ namespace DOL.GS
 						// this will add the object to the cache again, remove it after sending...
 						player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
 					}
-				});
-				//foreach (var objEntry in player.Client.GameObjectUpdateArray)
-				//{
-				//	var objKey = objEntry.Key;
-				//	GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
-
-				//	// Brain is updating to its master, no need to handle it.
-				//	if (obj is GameNPC && ((GameNPC)obj).Brain is IControlledBrain && ((IControlledBrain)((GameNPC)obj).Brain).GetPlayerOwner() == player)
-				//		continue;
-
-				//	// We have a NPC in cache that is not in vincinity
-				//	if (obj is GameNPC && !npcs.Contains((GameNPC)obj) && (nowTicks - objEntry.Value) >= GetPlayerNPCUpdateInterval)
-				//	{
-				//		// Update him out of View
-				//		if (obj.IsVisibleTo(player))
-				//			player.Client.Out.SendObjectUpdate(obj);
-
-				//		long dummy;
-				//		// this will add the object to the cache again, remove it after sending...
-				//		player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -295,7 +256,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((npcs).OfType<GameNPC>(), lnpc =>
+				// Now Send remaining npcs
+				foreach (GameNPC lnpc in npcs)
 				{
 					GameNPC npc = lnpc;
 
@@ -314,29 +276,7 @@ namespace DOL.GS
 						// Not in cache, Object entering in range, sending update will add it to cache.
 						player.Client.Out.SendObjectUpdate(npc);
 					}
-				});
-
-				//// Now Send remaining npcs
-				//foreach (GameNPC lnpc in npcs)
-				//{
-				//	GameNPC npc = lnpc;
-
-				//	// Get last update time
-				//	long lastUpdate;
-				//	if (player.Client.GameObjectUpdateArray.TryGetValue(new Tuple<ushort, ushort>(npc.CurrentRegionID, (ushort)npc.ObjectID), out lastUpdate))
-				//	{
-				//		// This NPC Needs Update
-				//		if ((nowTicks - lastUpdate) >= GetPlayerNPCUpdateInterval)
-				//		{
-				//			player.Client.Out.SendObjectUpdate(npc);
-				//		}
-				//	}
-				//	else
-				//	{
-				//		// Not in cache, Object entering in range, sending update will add it to cache.
-				//		player.Client.Out.SendObjectUpdate(npc);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -357,7 +297,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((player.Client.GameObjectUpdateArray).OfType<KeyValuePair<Tuple<ushort, ushort>, long>>(), objEntry =>
+				// Clean Cache
+				foreach (var objEntry in player.Client.GameObjectUpdateArray)
 				{
 					var objKey = objEntry.Key;
 					GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
@@ -367,20 +308,7 @@ namespace DOL.GS
 						long dummy;
 						player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
 					}
-				});
-
-				// Clean Cache
-				//foreach (var objEntry in player.Client.GameObjectUpdateArray)
-				//{
-				//	var objKey = objEntry.Key;
-				//	GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
-				//	// We have a Static Item in cache that is not in vincinity
-				//	if (obj is GameStaticItem && !objs.Contains((GameStaticItem)obj) && (nowTicks - objEntry.Value) >= GetPlayerItemUpdateInterval)
-				//	{
-				//		long dummy;
-				//		player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -390,7 +318,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((objs).OfType<GameStaticItem>(), lobj =>
+				// Now Send remaining objects
+				foreach (GameStaticItem lobj in objs)
 				{
 					GameStaticItem staticObj = lobj;
 					// Get last update time
@@ -408,28 +337,7 @@ namespace DOL.GS
 						// Not in cache, Object entering in range, sending update will add it to cache
 						player.Client.Out.SendObjectCreate(staticObj);
 					}
-				});
-
-				//// Now Send remaining objects
-				//foreach (GameStaticItem lobj in objs)
-				//{
-				//	GameStaticItem staticObj = lobj;
-				//	// Get last update time
-				//	long lastUpdate;
-				//	if (player.Client.GameObjectUpdateArray.TryGetValue(new Tuple<ushort, ushort>(staticObj.CurrentRegionID, (ushort)staticObj.ObjectID), out lastUpdate))
-				//	{
-				//		// This Static Object Needs Update
-				//		if ((nowTicks - lastUpdate) >= GetPlayerItemUpdateInterval)
-				//		{
-				//			player.Client.Out.SendObjectCreate(staticObj);
-				//		}
-				//	}
-				//	else
-				//	{
-				//		// Not in cache, Object entering in range, sending update will add it to cache
-				//		player.Client.Out.SendObjectCreate(staticObj);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -450,7 +358,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((player.Client.GameObjectUpdateArray).OfType<KeyValuePair<Tuple<ushort, ushort>, long>>(), objEntry =>
+				// Clean Cache
+				foreach (var objEntry in player.Client.GameObjectUpdateArray)
 				{
 					var objKey = objEntry.Key;
 					GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
@@ -460,20 +369,7 @@ namespace DOL.GS
 						long dummy;
 						player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
 					}
-				});
-
-				// Clean Cache
-				//foreach (var objEntry in player.Client.GameObjectUpdateArray)
-				//{
-				//	var objKey = objEntry.Key;
-				//	GameObject obj = WorldMgr.GetRegion(objKey.Item1).GetObject(objKey.Item2);
-				//	// We have a Door in cache that is not in vincinity
-				//	if (obj is IDoor && !doors.Contains(obj) && (nowTicks - objEntry.Value) >= GetPlayerItemUpdateInterval)
-				//	{
-				//		long dummy;
-				//		player.Client.GameObjectUpdateArray.TryRemove(objKey, out dummy);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -483,7 +379,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((doors).OfType<IDoor>(), ldoor =>
+				// Now Send remaining doors
+				foreach (IDoor ldoor in doors)
 				{
 					IDoor door = ldoor;
 
@@ -502,29 +399,7 @@ namespace DOL.GS
 						// Not in cache, Door entering in range, sending update will add it to cache.
 						player.SendDoorUpdate(door);
 					}
-				});
-
-				// Now Send remaining doors
-				//foreach (IDoor ldoor in doors)
-				//{
-				//	IDoor door = ldoor;
-
-				//	// Get last update time
-				//	long lastUpdate;
-				//	if (player.Client.GameObjectUpdateArray.TryGetValue(new Tuple<ushort, ushort>(((GameObject)door).CurrentRegionID, (ushort)door.ObjectID), out lastUpdate))
-				//	{
-				//		// This Door Needs Update
-				//		if ((nowTicks - lastUpdate) >= GetPlayerItemUpdateInterval)
-				//		{
-				//			player.SendDoorUpdate(door);
-				//		}
-				//	}
-				//	else
-				//	{
-				//		// Not in cache, Door entering in range, sending update will add it to cache.
-				//		player.SendDoorUpdate(door);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -551,7 +426,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((player.Client.HouseUpdateArray).OfType<KeyValuePair<Tuple<ushort, ushort>, long>> (), houseEntry =>
+				// Clean Cache
+				foreach (var houseEntry in player.Client.HouseUpdateArray)
 				{
 					var houseKey = houseEntry.Key;
 					House house = HouseMgr.GetHouse(houseKey.Item1, houseKey.Item2);
@@ -562,21 +438,7 @@ namespace DOL.GS
 						long dummy;
 						player.Client.HouseUpdateArray.TryRemove(houseKey, out dummy);
 					}
-				});
-
-				//	// Clean Cache
-				//	foreach (var houseEntry in player.Client.HouseUpdateArray)
-				//{
-				//	var houseKey = houseEntry.Key;
-				//	House house = HouseMgr.GetHouse(houseKey.Item1, houseKey.Item2);
-
-				//	// We have a House in cache that is not in vincinity
-				//	if (!houses.Contains(house) && (nowTicks - houseEntry.Value) >= (GetPlayerHousingUpdateInterval >> 2))
-				//	{
-				//		long dummy;
-				//		player.Client.HouseUpdateArray.TryRemove(houseKey, out dummy);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -586,7 +448,8 @@ namespace DOL.GS
 
 			try
 			{
-				Parallel.ForEach((houses).OfType<House>(), lhouse =>
+				// Now Send remaining houses
+				foreach (House lhouse in houses)
 				{
 					House house = lhouse;
 
@@ -607,31 +470,7 @@ namespace DOL.GS
 						player.Client.Out.SendGarden(house);
 						player.Client.Out.SendHouseOccupied(house, house.IsOccupied);
 					}
-				});
-
-				//// Now Send remaining houses
-				//foreach (House lhouse in houses)
-				//{
-				//	House house = lhouse;
-
-				//	// Get last update time
-				//	long lastUpdate;
-				//	if (player.Client.HouseUpdateArray.TryGetValue(new Tuple<ushort, ushort>(house.RegionID, (ushort)house.HouseNumber), out lastUpdate))
-				//	{
-				//		// This House Needs Update
-				//		if ((nowTicks - lastUpdate) >= GetPlayerHousingUpdateInterval)
-				//		{
-				//			player.Client.Out.SendHouseOccupied(house, house.IsOccupied);
-				//		}
-				//	}
-				//	else
-				//	{
-				//		// Not in cache, House entering in range !
-				//		player.Client.Out.SendHouse(house);
-				//		player.Client.Out.SendGarden(house);
-				//		player.Client.Out.SendHouseOccupied(house, house.IsOccupied);
-				//	}
-				//}
+				}
 			}
 			catch (Exception e)
 			{
@@ -763,10 +602,10 @@ namespace DOL.GS
 					var clients = WorldMgr.GetAllClients();
 
 					// Clean Tasks Dict on Client Exiting.
-					Parallel.ForEach((clientsUpdateTasks.Keys.ToArray()).OfType<GameClient>(), cli =>
+					foreach (GameClient cli in clientsUpdateTasks.Keys.ToArray())
 					{
 						if (cli == null)
-							return;
+							continue;
 
 						GamePlayer player = cli.Player;
 
@@ -779,32 +618,16 @@ namespace DOL.GS
 							cli.GameObjectUpdateArray.Clear();
 							cli.HouseUpdateArray.Clear();
 						}
-					});
-
-					//foreach (GameClient cli in clientsUpdateTasks.Keys.ToArray())
-					//{
-					//	if (cli == null)
-					//		continue;
-
-					//	GamePlayer player = cli.Player;
-
-					//	bool notActive = cli.ClientState != GameClient.eClientState.Playing || player == null || player.ObjectState != GameObject.eObjectState.Active;
-					//	bool notConnected = !clients.Contains(cli);
-
-					//	if (notConnected || (notActive && IsTaskCompleted(cli, clientsUpdateTasks)))
-					//	{
-					//		clientsUpdateTasks.Remove(cli);
-					//		cli.GameObjectUpdateArray.Clear();
-					//		cli.HouseUpdateArray.Clear();
-					//	}
-					//}
+					}
 
 					// Browse all clients to check if they can be updated.
-					Parallel.ForEach((clients).OfType<GameClient>(), client =>
+					for (int cl = 0; cl < clients.Count; cl++)
 					{
+						GameClient client = clients[cl];
+
 						// Check that client is healthy
 						if (client == null)
-							return;
+							continue;
 
 						GamePlayer player = client.Player;
 
@@ -815,44 +638,16 @@ namespace DOL.GS
 
 							// Disconnect buggy Client
 							GameServer.Instance.Disconnect(client);
-							return;
+							continue;
 						}
 
 						// Check that player is active.
 						if (client.ClientState != GameClient.eClientState.Playing || player == null || player.ObjectState != GameObject.eObjectState.Active)
-							return;
+							continue;
 
 						// Start Update Task
 						StartPlayerUpdateTask(client, clientsUpdateTasks, begin);
-					});
-
-					//for (int cl = 0; cl < clients.Count; cl++)
-					//{
-					//	GameClient client = clients[cl];
-
-					//	// Check that client is healthy
-					//	if (client == null)
-					//		continue;
-
-					//	GamePlayer player = client.Player;
-
-					//	if (client.ClientState == GameClient.eClientState.Playing && player == null)
-					//	{
-					//		if (log.IsErrorEnabled)
-					//			log.Error("account has no active player but is playing, disconnecting! => " + client.Account.Name);
-
-					//		// Disconnect buggy Client
-					//		GameServer.Instance.Disconnect(client);
-					//		continue;
-					//	}
-
-					//	// Check that player is active.
-					//	if (client.ClientState != GameClient.eClientState.Playing || player == null || player.ObjectState != GameObject.eObjectState.Active)
-					//		continue;
-
-					//	// Start Update Task
-					//	StartPlayerUpdateTask(client, clientsUpdateTasks, begin);
-					//}
+					}
 
 					long took = GameLoop.GameLoopTime - begin;
 
