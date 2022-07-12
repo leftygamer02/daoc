@@ -18,7 +18,6 @@ namespace DOL.GS.API
             var builder = WebApplication.CreateBuilder();
 
             var contentRoot = Directory.GetCurrentDirectory();
-            var startupTime = DateTime.Now;
 
             // builder.WebHost.ConfigureKestrel(options => options.ListenLocalhost(9874));
 
@@ -34,6 +33,7 @@ namespace DOL.GS.API
             var _realm = new Realm();
             var _shutdown = new Shutdown();
             var _news = new News();
+            var _passwordVerification = new PasswordVerification();
 
             #endregion
 
@@ -70,7 +70,7 @@ namespace DOL.GS.API
                 return TopRpPlayers == null ? Results.NotFound() : Results.Ok(TopRpPlayers);
             });
             api.MapGet("/stats/uptime", async c =>
-                await c.Response.WriteAsJsonAsync(_utils.GetUptime(startupTime)));
+                await c.Response.WriteAsJsonAsync(_utils.GetUptime(GameServer.Instance.StartupTime)));
 
             #endregion
 
@@ -83,6 +83,10 @@ namespace DOL.GS.API
 
                 return playerInfo == null ? Results.NotFound("Not found") : Results.Ok(playerInfo);
             });
+            api.MapGet("/player/{playerName}/specs", async c  => await c.Response.WriteAsJsonAsync(_player.GetPlayerSpec(c.Request.RouteValues["playerName"].ToString())));
+            
+            api.MapGet("/player/{playerName}/tradeskills", async c  => await c.Response.WriteAsJsonAsync(_player.GetPlayerTradeSkills(c.Request.RouteValues["playerName"].ToString())));
+            
             api.MapGet("/player/getAll", async c => await c.Response.WriteAsJsonAsync(_player.GetAllPlayers()));
 
             #endregion
@@ -178,13 +182,27 @@ namespace DOL.GS.API
             
             api.MapGet("/utils/discordstatus/{accountName}", (string accountName) =>
             {
-                var discordStatus = _player.GetDiscord(accountName);
+                var discordStatus = Player.GetDiscord(accountName);
                 return Results.Ok(discordStatus);
             });
-            
+
+            api.MapGet("/utils/query_clients/{password}", (string password) =>
+            {
+                if (!_passwordVerification.VerifyAPIPassword(password))
+                {
+                    return Results.Problem("No bread for you!", null, 401);
+                }
+                var activePlayers = _utils.GetAllClientStatuses();
+                return Results.Ok(activePlayers);
+            });
+
             api.MapGet("/utils/shutdown/{password}", (string password) =>
             {
-                var shutdownStatus = _shutdown.ShutdownServer(password);
+                if (!_passwordVerification.VerifyAPIPassword(password))
+                {
+                    return Results.Problem("No bread for you!", null, 401);
+                }
+                var shutdownStatus = _shutdown.ShutdownServer();
                 return Results.Ok(shutdownStatus);
             });
             

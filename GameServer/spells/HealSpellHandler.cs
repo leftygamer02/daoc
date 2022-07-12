@@ -17,6 +17,8 @@
  *
  */
 using System;
+using System.Collections.Specialized;
+using System.Linq;
 using DOL.GS.PacketHandler;
 using DOL.GS.RealmAbilities;
 using DOL.AI.Brain;
@@ -271,44 +273,46 @@ namespace DOL.GS.Spells
                 return false;
             }
 
-            if (m_caster is GamePlayer && target is NecromancerPet &&
-                ((target as NecromancerPet).Brain as IControlledBrain).GetPlayerOwner() != null
-                || target is GamePlayer && healedrp > 0)
-            {
-                int POURCENTAGE_SOIN_RP = ServerProperties.Properties.HEAL_PVP_DAMAGE_VALUE_RP; // ...% de bonus RP pour les soins effectués
-                if(m_caster.Group != null && m_caster.Group.IsInTheGroup(target))
-                {
-                    //do nothing
-                }
-                else if(m_spell.Pulse == 0 && m_caster.CurrentRegionID != 242 && // On Exclu zone COOP
-                    m_spell.SpellType != (byte)eSpellType.SpreadHeal && target != m_caster &&
-                    m_spellLine.KeyName != GlobalSpellsLines.Item_Spells &&
-                    m_spellLine.KeyName != GlobalSpellsLines.Potions_Effects &&
-                    m_spellLine.KeyName != GlobalSpellsLines.Combat_Styles_Effect &&
-                    m_spellLine.KeyName != GlobalSpellsLines.Reserved_Spells)
-                {
-                    GamePlayer player = m_caster as GamePlayer;
-
-                    if (player != null)
-                    {
-                        long Bonus_RP_Soin = Convert.ToInt64((double)healedrp * POURCENTAGE_SOIN_RP / 100.0);
-
-                        if (Bonus_RP_Soin >= 1)
-                        {
-                            PlayerStatistics stats = player.Statistics as PlayerStatistics;
-
-                            if (stats != null)
-                            {
-                                stats.RPEarnedFromHitPointsHealed += (uint)Bonus_RP_Soin;
-                                stats.HitPointsHealed += (uint)healedrp;
-                            }
-
-                            player.GainRealmPoints(Bonus_RP_Soin, false);
-                            player.Out.SendMessage("You gain " + Bonus_RP_Soin.ToString() + " realmpoints for healing a member of your Realm", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                        }
-                    }
-                }
-            }
+            // RP for healing
+            
+            // if (m_caster is GamePlayer && target is NecromancerPet &&
+            //     ((target as NecromancerPet).Brain as IControlledBrain).GetPlayerOwner() != null
+            //     || target is GamePlayer && healedrp > 0)
+            // {
+            //     int POURCENTAGE_SOIN_RP = ServerProperties.Properties.HEAL_PVP_DAMAGE_VALUE_RP; // ...% de bonus RP pour les soins effectués
+            //     if(m_caster.Group != null && m_caster.Group.IsInTheGroup(target))
+            //     {
+            //         //do nothing
+            //     }
+            //     else if(m_spell.Pulse == 0 && m_caster.CurrentRegionID != 242 && // On Exclu zone COOP
+            //         m_spell.SpellType != (byte)eSpellType.SpreadHeal && target != m_caster &&
+            //         m_spellLine.KeyName != GlobalSpellsLines.Item_Spells &&
+            //         m_spellLine.KeyName != GlobalSpellsLines.Potions_Effects &&
+            //         m_spellLine.KeyName != GlobalSpellsLines.Combat_Styles_Effect &&
+            //         m_spellLine.KeyName != GlobalSpellsLines.Reserved_Spells)
+            //     {
+            //         GamePlayer player = m_caster as GamePlayer;
+            //
+            //         if (player != null)
+            //         {
+            //             long Bonus_RP_Soin = Convert.ToInt64((double)healedrp * POURCENTAGE_SOIN_RP / 100.0);
+            //
+            //             if (Bonus_RP_Soin >= 1)
+            //             {
+            //                 PlayerStatistics stats = player.Statistics as PlayerStatistics;
+            //
+            //                 if (stats != null)
+            //                 {
+            //                     stats.RPEarnedFromHitPointsHealed += (uint)Bonus_RP_Soin;
+            //                     stats.HitPointsHealed += (uint)healedrp;
+            //                 }
+            //
+            //                 player.GainRealmPoints(Bonus_RP_Soin, false);
+            //                 player.Out.SendMessage("You gain " + Bonus_RP_Soin.ToString() + " realmpoints for healing a member of your Realm", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            //             }
+            //         }
+            //     }
+            // }
 
             #endregion PVP DAMAGE
 
@@ -354,6 +358,28 @@ namespace DOL.GS.Spells
                 if (heal > 0 && criticalvalue > 0)
                     MessageToCaster("Your heal criticals for an extra " + criticalvalue + " hit points!", eChatType.CT_Spell);
             }
+
+            var attackers = target.attackComponent.Attackers;
+
+            foreach (var gain in attackers.ToList())
+            {
+                if (gain is GameNPC npc)
+                {
+                    AttackData ad = new AttackData();
+                    ad.Attacker = Caster;
+                    ad.Target = target;
+                    ad.AttackType = AttackData.eAttackType.Spell;
+                    ad.SpellHandler = this;
+                    ad.AttackResult = eAttackResult.HitUnstyled;
+                    ad.IsSpellResisted = false;
+                    ad.Damage = (int)Spell.Value;
+                    ad.DamageType = Spell.DamageType;
+                    npc.OnAttackedByEnemy(ad);
+                    npc.AddXPGainer(Caster, ad.Damage);
+                }
+            }
+            
+            
 
             return true;
         }

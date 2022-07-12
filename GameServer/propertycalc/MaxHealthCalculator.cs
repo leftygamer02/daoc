@@ -2,6 +2,7 @@ using System;
 using DOL.Database;
 using DOL.GS.Keeps;
 using DOL.GS.RealmAbilities;
+using DOL.GS.ServerProperties;
 using log4net.Core;
 
 namespace DOL.GS.PropertyCalc
@@ -71,6 +72,10 @@ namespace DOL.GS.PropertyCalc
 
 				if (keepdoor.Component != null && keepdoor.Component.Keep != null)
 				{
+					if (keepdoor.IsRelic)
+					{
+						return Properties.RELIC_DOORS_HEALTH;
+					}
 					return (keepdoor.Component.Keep.EffectiveLevel(keepdoor.Component.Keep.Level) + 1) * keepdoor.Component.Keep.BaseLevel * 200;
 				}
 
@@ -80,6 +85,7 @@ namespace DOL.GS.PropertyCalc
 			}
 			else if (living is TheurgistPet theu)
 			{
+				/*
 				int hp = 1;
 				if (theu.Level < 2)
 				{
@@ -101,7 +107,24 @@ namespace DOL.GS.PropertyCalc
 					hp = (int) Math.Ceiling(hp * 1.5);
 				}
 				return hp;
+				*/
 
+				int hp = 1;
+				if (theu.Name.Contains("air"))
+				{
+					hp = 800;
+				}
+				else if (theu.Name.Contains("ice"))
+				{
+					hp = 500;
+				} else if (theu.Name.Contains("earth"))
+				{
+					hp = 350;
+				}
+				
+				hp = (int)((theu.Level / 44.0) * hp);
+				if (hp < 10) hp = 10;
+				return hp;
 			}
 			else if (living is TurretPet ani)
 			{
@@ -119,12 +142,12 @@ namespace DOL.GS.PropertyCalc
 
 				if (living.Level < 10)
 				{
-					hp = living.Level * 20 + 20 + ani.Constitution;  // default
+					hp = living.Level * 20 + 20 + ani.Constitution + living.BaseBuffBonusCategory[(int)property];  // default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level) + ani.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					hp = (int)(50 + 14 * living.Level + 0.548331 * living.Level) + ani.Constitution + living.BaseBuffBonusCategory[(int)property];
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -140,12 +163,12 @@ namespace DOL.GS.PropertyCalc
 
 				if (living.Level < 10)
 				{
-					hp = living.Level * 20 + 20 + pet.Constitution/*living.BaseBuffBonusCategory[(int)property]*/;  // default
+					hp = living.Level * 20 + 20 + pet.Constitution + living.BaseBuffBonusCategory[(int)property];  // default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level * living.Level) + pet.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					hp = (int)(50 + 15 * living.Level + 0.548331 * living.Level * living.Level) + pet.Constitution + living.BaseBuffBonusCategory[(int)property];
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -185,7 +208,7 @@ namespace DOL.GS.PropertyCalc
 					//14 hp per level
 					//30 base
 					//con * level HP, scaled by level
-					hp = (int)((living.Level * 14) + 30 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
+					hp = (int)((living.Level * 11) + 20 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
 				}
 				else
 				{

@@ -464,6 +464,49 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("atlas", "tester_login", "Allow only testers and staff to login", false)]
 		public static bool TESTER_LOGIN;
+		
+		/// <summary>
+		/// The toughness of the boss for the SI necklace quest
+		/// </summary>
+		[ServerProperty("atlas", "neck_boss_scaling", "The toughness of the boss for the SI necklace quest", 80)]
+		public static int NECK_BOSS_SCALING;
+		
+		/// <summary>
+		/// The slowmode duration for /advice in seconds
+		/// </summary>
+		[ServerProperty("atlas", "advice_slowmode_length", "The slowmode duration for /advice in seconds", 60)]
+		public static int ADVICE_SLOWMODE_LENGTH;
+		
+		/// <summary>
+		/// The slowmode duration for /trade in seconds
+		/// </summary>
+		[ServerProperty("atlas", "trade_slowmode_length", "The slowmode duration for /trade in seconds", 60)]
+		public static int TRADE_SLOWMODE_LENGTH;
+		
+				
+		/// <summary>
+		/// The slowmode duration for /lfg in seconds
+		/// </summary>
+		[ServerProperty("atlas", "lfg_slowmode_length", "The slowmode duration for /lfg in seconds", 60)]
+		public static int LFG_SLOWMODE_LENGTH;
+		
+		/// <summary>
+		/// The toughness of GameNPCs
+		/// </summary>
+		[ServerProperty("atlas", "gamenpc_scaling", "The toughness of GameNPCs", 15)]
+		public static int GAMENPC_SCALING;
+
+		/// <summary>
+		/// The first factor in the PVE mob damage equation. Lower hits harder.
+		/// </summary>
+		[ServerProperty("atlas", "pve_mob_damage_f1", "The first factor in the PVE mob damage equation. Lower hits harder.", 3.2)]
+		public static double PVE_MOB_DAMAGE_F1;
+		
+		/// <summary>
+		/// The second factor in the PVE mob damage equation. Lower hits harder.
+		/// </summary>
+		[ServerProperty("atlas", "pve_mob_damage_f2", "The second factor in the PVE mob damage equation. Lower hits harder.", 150.0)]
+		public static double PVE_MOB_DAMAGE_F2;
 
 		/// <summary>
 		/// Enable integrated serverlistupdate script?
@@ -1566,6 +1609,13 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("pvp", "pvp_death_con_loss", "Loose con on pvp death on PvP servertype", true)]
 		public static bool PVP_DEATH_CON_LOSS;
+
+		/// <summary>
+		/// PvP Realm Timer. # of minutes an account must wait to change realms after pvp combat. 0 disables the timer
+		/// </summary>
+		[ServerProperty("pvp", "pvp_realm_timer_minutes", "# of minutes an account must wait to change realms after PvP combat. 0 disables the timer", 0)]
+		public static int PVP_REALM_TIMER_MINUTES; 
+
 		#endregion
 
 		#region KEEPS
@@ -1945,6 +1995,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("keeps", "guard_respawn_variance", "Respawn variance for keep guards in minutes.", 10)]
 		public static int GUARD_RESPAWN_VARIANCE;
+		
+		/// <summary>
+		/// Relic gates health value.
+		/// </summary>
+		[ServerProperty("keeps", "relic_doors_health", "Relic gates health value", 180000)]
+		public static int RELIC_DOORS_HEALTH;
 		#endregion
 
 		#region PVE / TOA
@@ -2417,6 +2473,13 @@ namespace DOL.GS.ServerProperties
 		public static int GUILDS_CLAIM_LIMIT;
 
 		/// <summary>
+		/// Do we allow invite players to guild in rvr zone?
+		/// </summary>
+		[ServerProperty("guild", "allow_guild_invite_in_rvr", "Do we allow invite players to guild in rvr zone?", false)]
+		public static bool ALLOW_GUILD_INVITE_IN_RVR;
+		
+		
+		/// <summary>
 		/// Guild Crafting Buff bonus amount
 		/// </summary>
 		[ServerProperty("guild", "guild_buff_crafting", "Percent speed gain for the guild crafting buff?", (ushort)5)]
@@ -2508,6 +2571,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("craft", "capital_city_crafting_speed_bonus", "Crafting speed bonus in capital cities; 2 = 2x, 3 = 3x, ..., 1 = standard", 1.0)]
 		public static double CAPITAL_CITY_CRAFTING_SPEED_BONUS;
+		
+		/// <summary>
+		/// Crafting speed bonus in capital cities
+		/// </summary>
+		[ServerProperty("craft", "keep_crafting_speed_bonus", "Crafting speed bonus in the keeps; 2 = 2x, 3 = 3x, ..., 1 = standard", 1.0)]
+		public static double KEEP_CRAFTING_SPEED_BONUS;
 
 		/// <summary>
 		/// Allow any realm to craft items with a realm of 0 (no realm)
@@ -2520,6 +2589,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("craft", "crafting_max_skills", "Set character crafting skills to max level.", false)]
 		public static bool CRAFTING_MAX_SKILLS;
+		
+		/// <summary>
+		/// Max character crafting skill?
+		/// </summary>
+		[ServerProperty("craft", "crafting_max_skills_amount", "The amount to which set the crafting skills when using crafting_max_skills", 1)]
+		public static int CRAFTING_MAX_SKILLS_AMOUNT;
 
 		/// <summary>
 		/// Use salvage per realm and get back material to use in chars realm
@@ -2770,6 +2845,18 @@ namespace DOL.GS.ServerProperties
 		
 		[ServerProperty("beta", "orbs_fire_sale", "All items at the orbs merchant will be free if set to true", false)]
 		public static bool ORBS_FIRE_SALE;
+		
+		[ServerProperty("atlas", "enable_corpsesummoner", "Whether or not to enable the corpse summoner command", true)]
+		public static bool ENABLE_CORPSESUMONNER;
+		
+		[ServerProperty("atlas", "carapace_dropchance", "The base Beetle Carapace drop chance in %", 0.01)]
+		public static double CARAPACE_DROPCHANCE;
+		
+		[ServerProperty("atlas", "salvage_yield_multiplier", "The salvage yield multiplier", 0.5)]
+		public static double SALVAGE_YIELD_MULTIPLIER;
+		
+		[ServerProperty("atlas", "max_craft_time", "The maximum craft time allowed in seconds. All timers above this value will be normalised to the input value", 0)]
+		public static int MAX_CRAFT_TIME;
 		
 		#endregion
 		public static IDictionary<string, object> AllCurrentProperties

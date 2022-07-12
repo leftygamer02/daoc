@@ -436,18 +436,23 @@ namespace DOL.GS
                 }
                 else
                 {
-                    switch (weapons[0].Object_Type)
+                    if (weapons[0] == null) { }
+                    else
                     {
-                        case (int) eObjectType.Fired:
-                        case (int) eObjectType.Longbow:
-                        case (int) eObjectType.Crossbow:
-                        case (int) eObjectType.RecurvedBow:
-                        case (int) eObjectType.CompositeBow:
-                            bowWeapon = true;
-                            break;
+                        switch (weapons[0].Object_Type)
+                        {
+                            case (int) eObjectType.Fired:
+                            case (int) eObjectType.Longbow:
+                            case (int) eObjectType.Crossbow:
+                            case (int) eObjectType.RecurvedBow:
+                            case (int) eObjectType.CompositeBow:
+                                bowWeapon = true;
+                                break;
+                        }
+                        speed += weapons[0].SPD_ABS;
+                        count++;
                     }
-                    speed += weapons[0].SPD_ABS;
-                    count++;
+                    
                 }
                
                 //Console.WriteLine($"DW? {LastAttackWasDualWield} speed {speed} count {count} bow {bowWeapon}");
@@ -588,7 +593,7 @@ namespace DOL.GS
             {
                 double effectiveness = 1.00;
                 //double effectiveness = Effectiveness;
-                double damage = (1.0 + owner.Level / 3.7 + owner.Level * owner.Level / 175.0) * AttackSpeed(weapon) *
+                double damage = (1.0 + owner.Level / Properties.PVE_MOB_DAMAGE_F1 + owner.Level * owner.Level / Properties.PVE_MOB_DAMAGE_F2) * AttackSpeed(weapon) *
                                 0.001;
                 if (weapon == null || weapon.Item_Type == Slot.RIGHTHAND || weapon.Item_Type == Slot.LEFTHAND ||
                     weapon.Item_Type == Slot.TWOHAND)
@@ -936,7 +941,7 @@ namespace DOL.GS
                         else
                         {
                             foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                                player.Out.SendCombatAnimation(owner, null,
+                                player?.Out.SendCombatAnimation(owner, null,
                                     (ushort)(AttackWeapon == null ? 0 : AttackWeapon.Model),
                                     0x00, player.Out.BowPrepare, (byte)(speed / 100), 0x00, 0x00);
                         }
@@ -952,7 +957,7 @@ namespace DOL.GS
                 {
                     //if (m_attackAction.TimeUntilElapsed < 500)
                     //	m_attackAction.Start(500);
-                    if (attackAction.TimeUntilStart < 100)
+                    if (0 < attackAction.TimeUntilStart && attackAction.TimeUntilStart < 100)
                         attackAction.StartTime = 100;
                 }
             }
@@ -1174,8 +1179,8 @@ namespace DOL.GS
                     p.Out.SendMessage(
                         LanguageMgr.GetTranslation(p.Client.Account.Language, "GamePlayer.Attack.InterruptedCrafting"),
                         eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                    // TODO: look into timer
-                    p.CraftTimer.Stop();
+                    //p.CraftTimer.Stop();
+                    p.craftComponent.StopCraft();
                     p.CraftTimer = null;
                     p.Out.SendCloseTimerWindow();
                 }
@@ -1645,7 +1650,7 @@ namespace DOL.GS
                        // 0.9 + (0.1 * Math.Max(1.0, RelicMgr.GetRelicBonusModifier(owner.Realm, eRelicType.Strength)));
                     double specModifier = lowerLimit + Util.Random(varianceRange) * 0.01;
 
-                    double playerBaseAF = ad.Target is GamePlayer ? ad.Target.Level * 30 / 50d : 1;
+                    double playerBaseAF = ad.Target is GamePlayer ? ad.Target.Level * 32 / 50d : 2;
                     if (playerBaseAF < 1)
                         playerBaseAF = 1;
 
@@ -1672,8 +1677,17 @@ namespace DOL.GS
                     }
 
                     if (ad.Target is GamePlayer attackee && attackee.UseDetailedCombatLog)
+                    {
+                        attackee.Out.SendMessage(
+                            $"Base WS: {weaponskillCalc.ToString("0.00")} | Calc WS: {(weaponskillCalc * specModifier * strengthRelicCount).ToString("0.00")} | SpecMod: {specModifier.ToString("0.00")}",
+                            eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+                        attackee.Out.SendMessage(
+                            $"Base AF: {(ad.Target.GetArmorAF(ad.ArmorHitLocation) + playerBaseAF).ToString("0.00")} | ABS: {(ad.Target.GetArmorAbsorb(ad.ArmorHitLocation)*100).ToString("0.00")} | AF/ABS: {armorMod.ToString("0.00")}",
+                            eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
                         attackee.Out.SendMessage($"Damage Modifier: {(int) (DamageMod * 1000)}", eChatType.CT_DamageAdd,
                             eChatLoc.CL_SystemWindow);
+                    }
+                        
                     /*
                         // Badge Of Valor Calculation 1+ absorb or 1- absorb
                         if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
@@ -1714,11 +1728,15 @@ namespace DOL.GS
                     //Console.WriteLine($"spec: {spec} stylespec: {styleSpec} specMod: {specModifier}");
                     int range = upperboundary - lowerboundary;
                     damage *= (lowerboundary + Util.Random(range)) * 0.01;
-                    double weaponskillCalc = (owner.GetWeaponSkill(weapon) + ad.Attacker.Level * 45/50d);
-                    double armorCalc = (ad.Target.GetArmorAF(ad.ArmorHitLocation) + ad.Target.Level * 45/50d) * (1 +
+                    int AFLevelScalar = 30;
+                    if (ad.Target.Level < 21) AFLevelScalar += (20 - ad.Target.Level);
+                    double weaponskillCalc = (owner.GetWeaponSkill(weapon) + ad.Attacker.Level * 65/50d);
+                    if (owner.Level < 10) weaponskillCalc *= 1 - (.05 * (10 - owner.Level));
+                    double armorCalc = (ad.Target.GetArmorAF(ad.ArmorHitLocation) + ad.Target.Level * AFLevelScalar/50d) * (1 +
                         ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
                     if (armorCalc <= 0) armorCalc = 0.1;
                     double DamageMod = weaponskillCalc / armorCalc;
+                    //Console.WriteLine($"wscalc {weaponskillCalc} af {armorCalc} npc mod {DamageMod} aftop {ad.Target.GetArmorAF(ad.ArmorHitLocation) + ad.Target.Level * 30/50d} absbot {1 + ad.Target.GetArmorAbsorb(ad.ArmorHitLocation)}");
                     if (DamageMod > 3.0) DamageMod = 3.0;
                     if (owner is GameEpicBoss)
                         damage *= DamageMod + (boss.Strength / 200);//only if it's EpicBoss
@@ -2726,8 +2744,9 @@ namespace DOL.GS
             }
 
             // Missrate
-            int missrate = (ad.Attacker is GamePlayer) ? 18 : 25; //player vs player tests show 20% miss on any level
+            int missrate = (ad.Attacker is GamePlayer) ? 18 : 25; 
             missrate -= ad.Attacker.GetModified(eProperty.ToHitBonus);
+            //Console.WriteLine($"ToHitBonus { ad.Attacker.GetModified(eProperty.ToHitBonus)} ");
             // PVE group missrate
             if (owner is GameNPC && ad.Attacker is GamePlayer &&
                 ((GamePlayer) ad.Attacker).Group != null &&
@@ -2735,10 +2754,12 @@ namespace DOL.GS
                 ad.Attacker.IsWithinRadius(((GamePlayer) ad.Attacker).Group.Leader, 3000))
             {
                 missrate -= (int) (5 * ((GamePlayer) ad.Attacker).Group.Leader.GetConLevel(owner));
+                //Console.WriteLine($"group leader miss bonus {(int) (5 * ((GamePlayer) ad.Attacker).Group.Leader.GetConLevel(owner))}");
             }
             else if (owner is GameNPC || ad.Attacker is GameNPC) // if target is not player use level mod
             {
                 missrate += (int) (5 * ad.Attacker.GetConLevel(owner));
+                //Console.WriteLine($"NPC missrate {(int) (5 * ad.Attacker.GetConLevel(owner))} owner {owner.Name} lvl {owner.Level} attacker {ad.Attacker.Name} lvl {ad.Attacker.Level} condiff {ad.Attacker.GetConLevel(owner)}");
             }
 
             // experimental missrate adjustment for number of attackers
@@ -2746,6 +2767,7 @@ namespace DOL.GS
             {
                 missrate -= (Math.Max(0, Attackers.Count - 1) *
                              ServerProperties.Properties.MISSRATE_REDUCTION_PER_ATTACKERS);
+                //Console.WriteLine($"Num Attacker missrate {(int) (5 * ad.Attacker.GetConLevel(owner))}");
             }
 
             // weapon/armor bonus
@@ -2759,35 +2781,42 @@ namespace DOL.GS
                 if (armor != null)
                     armorBonus = armor.Bonus;
             }
+            //Console.WriteLine($"Armor Bonus Start {armorBonus}");
 
             if (weapon != null)
             {
                 armorBonus -= weapon.Bonus;
+                //Console.WriteLine($"weapon bonus reduction of {weapon.Bonus}");
             }
 
             if (ad.Target is GamePlayer && ad.Attacker is GamePlayer)
             {
                 missrate += armorBonus;
+                //Console.WriteLine($"pvp missrate mod of armorbonus {armorBonus}");
             }
             else
             {
                 missrate += missrate * armorBonus / 100;
+                //Console.WriteLine($"pve missrate mod of armorbonus {missrate * armorBonus / 100}");
             }
 
             if (ad.Style != null)
             {
                 missrate -= ad.Style.BonusToHit; // add style bonus
+               // Console.WriteLine($"style bonus to hit {ad.Style.BonusToHit}");
             }
 
             if (lastAD != null && lastAD.AttackResult == eAttackResult.HitStyle && lastAD.Style != null)
             {
                 // add defence bonus from last executed style if any
                 missrate += lastAD.Style.BonusToDefense;
+                //Console.WriteLine($"style def bonus on target{ad.Style.BonusToDefense}");
             }
 
             if (owner is GamePlayer && ad.Attacker is GamePlayer && weapon != null)
             {
                 missrate -= (int) ((ad.Attacker.WeaponSpecLevel(weapon) - 1) * 0.1);
+                //Console.WriteLine($"spec-based missrate reduction { (int) ((ad.Attacker.WeaponSpecLevel(weapon) - 1) * 0.1)}");
             }
 
             if (ad.Attacker.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
@@ -2810,10 +2839,11 @@ namespace DOL.GS
                     }
             }
 
-            // if (owner is GamePlayer && ((GamePlayer) owner).IsSitting)
-            // {
-            //     missrate >>= 1; //halved
-            // }
+            
+             if (owner is GamePlayer && ((GamePlayer) owner).IsSitting)
+             {
+                 missrate = 0; //no missing a sitting target
+             }
             
             //check for dirty trick fumbles before misses
             DirtyTricksDetrimentalECSGameEffect dt = (DirtyTricksDetrimentalECSGameEffect)EffectListService.GetAbilityEffectOnTarget(ad.Attacker, eEffect.DirtyTricksDetrimental);
@@ -2821,6 +2851,7 @@ namespace DOL.GS
                 return eAttackResult.Fumbled;
 
             ad.MissRate = missrate;
+            //Console.WriteLine($"Final missrate {missrate}");
             double rando = 0;
             bool skipDeckUsage = ServerProperties.Properties.OVERRIDE_DECK_RNG;
             if (missrate > 0)
@@ -2958,7 +2989,9 @@ namespace DOL.GS
                     break;
             }
 
-            if (showAnim && ad.Target != null)
+            var target = ad.Target;
+
+            if (showAnim && target != null)
             {
                 //http://dolserver.sourceforge.net/forum/showthread.php?s=&threadid=836
                 byte resultByte = 0;
@@ -2985,18 +3018,18 @@ namespace DOL.GS
 
                     case eAttackResult.Parried:
                         resultByte = 1;
-                        if (ad.Target != null && ad.Target.attackComponent.AttackWeapon != null)
+                        if (target != null && target.attackComponent.AttackWeapon != null)
                         {
-                            defendersWeapon = ad.Target.attackComponent.AttackWeapon.Model;
+                            defendersWeapon = target.attackComponent.AttackWeapon.Model;
                         }
 
                         break;
 
                     case eAttackResult.Blocked:
                         resultByte = 2;
-                        if (ad.Target != null && ad.Target.Inventory != null)
+                        if (target != null && target.Inventory != null)
                         {
-                            InventoryItem lefthand = ad.Target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
+                            InventoryItem lefthand = target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
                             if (lefthand != null && lefthand.Object_Type == (int) eObjectType.Shield)
                             {
                                 defendersWeapon = lefthand.Model;
@@ -3006,7 +3039,7 @@ namespace DOL.GS
                         break;
                 }
 
-                foreach (GamePlayer player in ad.Target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                foreach (GamePlayer player in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
                 {
                     if (player == null) continue;
                     int animationId;

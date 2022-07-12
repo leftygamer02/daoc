@@ -66,7 +66,6 @@ namespace DOL.GS.Commands
 		"/player startml - Start this players Master Level training.",
 		"/player setml <level> - Set this players current Master Level.",
 		"/player setmlstep <level> <step> [false] - Sets a step for an ML level to finished. 0 to set as unfinished.",
-		"/player articredit <artifact>",
         "/player allchars <PlayerName>", 
         "/player class <list|classID> - view a list of classes, or change the targets class.",
         "/player areas - list all the areas the player is currently inside of "
@@ -85,26 +84,6 @@ namespace DOL.GS.Commands
 
             switch (args[1])
             {
-                #region articredit
-
-                case "articredit":
-                    {
-                        if (args.Length != 3)
-                        {
-                            DisplaySyntax(client);
-                            return;
-                        }
-
-                        var player = client.Player.TargetObject as GamePlayer;
-                        if (player == null)
-                            player = client.Player;
-
-                        ArtifactMgr.GrantArtifactCredit(player, args[2]);
-                        break;
-                    }
-
-                #endregion
-
                 #region name
 
                 case "name":
@@ -2075,12 +2054,65 @@ namespace DOL.GS.Commands
                             return;
                         }
 
-                        var text = new List<string>();
-                        foreach (IGameEffect effect in player.EffectList)
+                        var effects = new List<string>();
+                        ArrayList positiveEffects = new ArrayList();
+                        ArrayList negativeEffects = new ArrayList();
+
+                        if (positiveEffects.Count > 0)
+                            positiveEffects.Clear();
+                        if (negativeEffects.Count > 0)
+                            negativeEffects.Clear();
+
+                        if (player.effectListComponent != null)
                         {
-                            text.Add(effect.Name + " remaining " + effect.RemainingTime);
+
+                            foreach (ECSGameSpellEffect e in player.effectListComponent.GetSpellEffects())
+                            {
+                                if (e.HasPositiveEffect)
+                                    positiveEffects.Add(e);
+                                if (!e.HasPositiveEffect)
+                                    negativeEffects.Add(e);
+                            }
+
+                            effects.Add(" ");
+                            effects.Add(" - Positive Spell Effects");
+                            if (positiveEffects.Count > 0)
+                            {
+                                // List active spell effects
+                                foreach (ECSGameSpellEffect e in positiveEffects)
+                                {
+                                    var caster = "NONE";
+                                    if (e.SpellHandler.Caster.Name != null)
+                                    {
+                                        caster = e.SpellHandler.Caster.Name;
+                                        if (e.SpellHandler.Caster.Name == player.Name)
+                                            caster = "SELF";
+                                    }
+
+                                    effects.Add(" -- " + e.SpellHandler.Spell.Name + " (" + e.EffectType + ", level " + e.SpellHandler.Spell.Level + "): " + caster + " (Caster), " + (e.GetRemainingTimeForClient() / 1000) + " seconds remaining");
+                                }
+                            }
+
+                            effects.Add(" ");
+                            effects.Add(" - Negative Spell Effects");
+                            if (negativeEffects.Count > 0)
+                            {
+                                // List active spell effects
+                                foreach (ECSGameSpellEffect e in negativeEffects)
+                                {
+                                    var caster = "NONE";
+                                    if (e.SpellHandler.Caster.Name != null)
+                                    {
+                                        caster = e.SpellHandler.Caster.Name;
+                                        if (e.SpellHandler.Caster.Name == player.Name)
+                                            caster = "SELF";
+                                    }
+
+                                    effects.Add(" -- " + e.SpellHandler.Spell.Name + " (" + e.EffectType + ", level " + e.SpellHandler.Spell.Level + "): " + caster + " (Caster), " + (e.GetRemainingTimeForClient() / 1000) + " seconds remaining");
+                                }
+                            }
                         }
-                        client.Out.SendCustomTextWindow("Player Effects ", text);
+                        client.Out.SendCustomTextWindow("Player Effects", effects);
                         break;
                     }
 

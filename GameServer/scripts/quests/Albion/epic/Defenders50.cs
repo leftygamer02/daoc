@@ -35,7 +35,7 @@ namespace DOL.GS.Quests.Albion
 		protected const int maximumLevel = 50;
 
 		private static GameNPC Lidmann = null; // Start NPC
-		private static GameNPC Uragaig = null; // Mob to kill
+		private static CailleachUragaig Uragaig = null; // Mob to kill
 
 		private static ItemTemplate sealed_pouch = null; //sealed pouch
 		private static ItemTemplate ScoutEpicBoots = null; //Brigandine of Vigilant Defense  Boots 
@@ -139,7 +139,7 @@ namespace DOL.GS.Quests.Albion
 				foreach (GameNPC npc in npcs)
 					if (npc.CurrentRegionID == 1 && npc.X == 316218 && npc.Y == 664484)
 					{
-						Uragaig = npc;
+						Uragaig = npc as CailleachUragaig;
 						break;
 					}
 
@@ -147,7 +147,7 @@ namespace DOL.GS.Quests.Albion
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Uragaig , creating it ...");
-				Uragaig = new GameNPC();
+				Uragaig = new CailleachUragaig();
 				Uragaig.Model = 349;
 				Uragaig.Name = "Cailleach Uragaig";
 				Uragaig.GuildName = "";
@@ -1431,6 +1431,9 @@ namespace DOL.GS.Quests.Albion
 			GamePlayer player = sender as GamePlayer;
 
 			if (player==null || player.IsDoingQuest(typeof (Defenders_50)) == null)
+				return;
+
+			if (sender != m_questPlayer)
 				return;
 
 			if (Step == 1 && e == GameLivingEvent.EnemyKilled)

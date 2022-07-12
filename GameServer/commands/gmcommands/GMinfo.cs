@@ -28,6 +28,7 @@ using DOL.GS.Effects;
 using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler.Client.v168;
+using DOL.GS.RealmAbilities;
 using DOL.Language;
 
 namespace DOL.GS.Commands
@@ -56,6 +57,17 @@ namespace DOL.GS.Commands
 			
 			if (client.Player.TargetObject != null)
 			{
+
+				if (client.Player.TargetObject is GuardLord gl)
+				{
+					info.Add("--KEEP LORD--");
+					info.Add(" ");
+					info.Add("Name : " + client.Player.TargetObject.Name);
+					info.Add($"RP Reward: {gl.RealmPointsValue}");
+					info.Add($"BP Reward: {gl.BountyPointsValue}");
+					info.Add($"XP Reward: {gl.ExperienceValue}");
+				}
+				
 				#region Mob
 				/********************* MOB ************************/
 				if (client.Player.TargetObject is GameNPC)
@@ -130,6 +142,8 @@ namespace DOL.GS.Commands
 					{
 						info.Add(" + Aggro level: " + aggroBrain.AggroLevel);
 						info.Add(" + Aggro range: " + aggroBrain.AggroRange);
+						if(aggroBrain is StandardMobBrain mobBrain)
+							info.Add(" + ThinkInterval: " + mobBrain.ThinkInterval +"ms");
 
 						if (target.MaxDistance < 0)
 							info.Add(" + MaxDistance: " + -target.MaxDistance * aggroBrain.AggroRange / 100);
@@ -274,9 +288,18 @@ namespace DOL.GS.Commands
 					info.Add("AttackState: " + target.attackComponent.AttackState);
 					info.Add("LastCombatPVE: " + target.LastAttackedByEnemyTickPvE);
 					info.Add("LastCombatPVP: " + target.LastAttackedByEnemyTickPvP);
+					info.Add("AttackAction: " + target.attackComponent.attackAction);
+					info.Add("WeaponAction: " + target.attackComponent.weaponAction);
 
 					if (target.InCombat || target.attackComponent.AttackState)
+					{
 						info.Add("RegionTick: " + GameLoop.GameLoopTime);
+						if(target.attackComponent.attackAction != null)
+						{
+							info.Add("AttackAction StartTime " + target.attackComponent.attackAction.StartTime);
+							info.Add("AttackAction TimeUntilStart " + target.attackComponent.attackAction.TimeUntilStart);
+						}
+					}
 
 					info.Add("");
 
@@ -356,26 +379,30 @@ namespace DOL.GS.Commands
 					// }
 					// info.Add("");
 					
-					info.Add("ENDURANCE INFORMATION");
-					info.Add("EnduRegerationTimer.IsAlive: " + target.EnduRegenTimer.IsAlive);
-					info.Add("Time since last timer tick (ms): " + (GameLoop.GameLoopTime - target.LastEnduTick));
-					info.Add("Last Regen amount: " + target.Regen);
-					info.Add("Last EndChant amount (FatigueConsumption): " + target.Endchant + "%");
-					info.Add("Last Regen at change: " + target.RegenRateAtChange);
-					info.Add(" ");
-					info.Add("REGEN INFORMATION");
-					info.Add("Last EnduDebuff:" + target.EnduDebuff + " | " + "Last RegenBuff: " + target.RegenBuff);
-					info.Add("HP Regen: " + target.GetModified(eProperty.HealthRegenerationRate)+ " | End Regen: " + target.GetModified(eProperty.EnduranceRegenerationRate) + " | Pow Regen: " + target.GetModified(eProperty.PowerRegenerationRate));
-					info.Add("HP: " + target.Health + "/" + target.GetModified(eProperty.MaxHealth)+ " " + Math.Round(((double)target.Health/(double)target.MaxHealth)*100, 2) + "%"
-					         + " | Power: " + target.Mana + "/" + target.GetModified(eProperty.MaxMana)+ " " +  Math.Round(((double)target.Mana/(double)target.MaxMana)*100, 2) + "%");
-					info.Add("Player has Tireless: " + target.HasAbility(Abilities.Tireless));
-					info.Add("Last Regen after Tireless: " + target.RegenAfterTireless);
-					info.Add("Last Non-Combat Non-SprintRegen: " + target.NonCombatNonSprintRegen);
-					info.Add("Combat flag: " + target.InCombat);
-					info.Add("Last Combat Regen: " + target.CombatRegen);
-					info.Add(" ");
-					info.Add("DETERMINATION INFORMATION");
-					info.Add("CC reduction: " + target.AbilityBonus[(int)eProperty.MesmerizeDurationReduction]);
+					// info.Add("ENDURANCE INFORMATION");
+					// info.Add("EnduRegerationTimer.IsAlive: " + target.EnduRegenTimer.IsAlive);
+					// info.Add("Time since last timer tick (ms): " + (GameLoop.GameLoopTime - target.LastEnduTick));
+					// info.Add("Last Regen amount: " + target.Regen);
+					// info.Add("Last EndChant amount (FatigueConsumption): " + target.Endchant + "%");
+					// info.Add("Last Regen at change: " + target.RegenRateAtChange);
+					// info.Add(" ");
+					// info.Add("REGEN INFORMATION");
+					// info.Add("Last EnduDebuff:" + target.EnduDebuff + " | " + "Last RegenBuff: " + target.RegenBuff);
+					// info.Add("HP Regen: " + target.GetModified(eProperty.HealthRegenerationRate)+ " | End Regen: " + target.GetModified(eProperty.EnduranceRegenerationRate) + " | Pow Regen: " + target.GetModified(eProperty.PowerRegenerationRate));
+					// info.Add("HP: " + target.Health + "/" + target.GetModified(eProperty.MaxHealth)+ " " + Math.Round(((double)target.Health/(double)target.MaxHealth)*100, 2) + "%"
+					//          + " | Power: " + target.Mana + "/" + target.GetModified(eProperty.MaxMana)+ " " +  Math.Round(((double)target.Mana/(double)target.MaxMana)*100, 2) + "%");
+					// info.Add("End Regen Rate: " + target.GetModified(eProperty.EnduranceRegenerationRate));
+					// info.Add("Last Regen after Tireless: " + target.RegenAfterTireless);
+					// info.Add("Last Non-Combat Non-SprintRegen: " + target.NonCombatNonSprintRegen);
+					// info.Add("Combat flag: " + target.InCombat);
+					// info.Add("Last Combat Regen: " + target.CombatRegen);
+					// info.Add(" ");
+					// info.Add("DETERMINATION INFORMATION");
+					// info.Add("CC reduction: " + target.AbilityBonus[(int)eProperty.MesmerizeDurationReduction]);
+					// info.Add(" ");
+					
+					info.Add("MELEE SPEED INFORMATION");
+					info.Add("MeleeSpeed: " + target.attackComponent.AttackSpeed(target.AttackWeapon));
 					info.Add(" ");
 					info.Add("PLAYER INFORMATION (Client # " + target.Client.SessionID + ")");
 					info.Add("  - Name : " + target.Name);

@@ -251,37 +251,38 @@ namespace DOL.GS.Scripts
                                     break;
                                 case BattlegroundsID:
                                 {
-                                    if (player.Level is >= 15 and <= 19)
+                                    // if (player.Level is >= 15 and <= 19)
+                                    // {
+                                    //     if (player.RealmPoints >= 125)
+                                    //     {
+                                    //         break;
+                                    //     }
+                                    //
+                                    //     PortLocation = new GameLocation("Abermenai Alb", 253, 38113, 53507, 4160, 3268);
+                                    // }
+                                    // else 
+                                    if (player.Level is >= 20 and <= 24)
                                     {
-                                        if (player.RealmPoints >= 125)
-                                        {
-                                            break;
-                                        }
-
-                                        PortLocation = new GameLocation("Abermenai Alb", 253, 38113, 53507, 4160, 3268);
-                                    }
-                                    else if (player.Level is >= 20 and <= 24)
-                                    {
-                                        if (player.RealmPoints >= 350)
+                                        if (player.RealmPoints >= 7125)
                                         {
                                             break;
                                         }
 
                                         PortLocation = new GameLocation("Thidranki Alb", 252, 38113, 53507, 4160, 3268);
                                     }
-                                    else if (player.Level is >= 25 and <= 29)
+                                    // else if (player.Level is >= 25 and <= 29)
+                                    // {
+                                    //     if (player.RealmPoints >= 1375)
+                                    //     {
+                                    //         break;
+                                    //     }
+                                    //
+                                    //     PortLocation = new GameLocation("Murdaigean Alb", 251, 38113, 53507, 4160,
+                                    //         3268);
+                                    // }
+                                    else if (player.Level is >= 34 and <= 39)
                                     {
-                                        if (player.RealmPoints >= 1375)
-                                        {
-                                            break;
-                                        }
-
-                                        PortLocation = new GameLocation("Murdaigean Alb", 251, 38113, 53507, 4160,
-                                            3268);
-                                    }
-                                    else if (player.Level is >= 30 and <= 34)
-                                    {
-                                        if (player.RealmPoints >= 7125)
+                                        if (player.RealmPoints >= 122500)
                                         {
                                             break;
                                         }
@@ -409,36 +410,37 @@ namespace DOL.GS.Scripts
                                     break;
                                 case BattlegroundsID:
                                 {
-                                    if (player.Level >= 15 && player.Level <= 19)
+                                    // if (player.Level >= 15 && player.Level <= 19)
+                                    // {
+                                    //     if (player.RealmPoints >= 125)
+                                    //     {
+                                    //         break;
+                                    //     }
+                                    //
+                                    //     PortLocation = new GameLocation("Abermenai Mid", 253, 53568, 23643, 4530);
+                                    // }
+                                    // else 
+                                    if (player.Level >= 20 && player.Level <= 24)
                                     {
-                                        if (player.RealmPoints >= 125)
-                                        {
-                                            break;
-                                        }
-
-                                        PortLocation = new GameLocation("Abermenai Mid", 253, 53568, 23643, 4530);
-                                    }
-                                    else if (player.Level >= 20 && player.Level <= 24)
-                                    {
-                                        if (player.RealmPoints >= 350)
+                                        if (player.RealmPoints >= 7125)
                                         {
                                             break;
                                         }
 
                                         PortLocation = new GameLocation("Thidranki Mid", 252, 53568, 23643, 4530);
                                     }
-                                    else if (player.Level >= 25 && player.Level <= 29)
+                                    // else if (player.Level >= 25 && player.Level <= 29)
+                                    // {
+                                    //     if (player.RealmPoints >= 1375)
+                                    //     {
+                                    //         break;
+                                    //     }
+                                    //
+                                    //     PortLocation = new GameLocation("Murdaigean Mid", 251, 53568, 23643, 4530);
+                                    // }
+                                    else if (player.Level is >= 34 and <= 39)
                                     {
-                                        if (player.RealmPoints >= 1375)
-                                        {
-                                            break;
-                                        }
-
-                                        PortLocation = new GameLocation("Murdaigean Mid", 251, 53568, 23643, 4530);
-                                    }
-                                    else if (player.Level >= 30 && player.Level <= 34)
-                                    {
-                                        if (player.RealmPoints >= 7125)
+                                        if (player.RealmPoints >= 122500)
                                         {
                                             break;
                                         }
@@ -565,36 +567,37 @@ namespace DOL.GS.Scripts
                                     break;
                                 case BattlegroundsID:
                                 {
-                                    if (player.Level >= 15 && player.Level <= 19)
+                                    // if (player.Level >= 15 && player.Level <= 19)
+                                    // {
+                                    //     if (player.RealmPoints >= 125)
+                                    //     {
+                                    //         break;
+                                    //     }
+                                    //
+                                    //     PortLocation = new GameLocation("Abermenai Hib", 253, 17367, 18248, 4320);
+                                    // }
+                                    // else 
+                                    if (player.Level >= 20 && player.Level <= 24)
                                     {
-                                        if (player.RealmPoints >= 125)
-                                        {
-                                            break;
-                                        }
-
-                                        PortLocation = new GameLocation("Abermenai Hib", 253, 17367, 18248, 4320);
-                                    }
-                                    else if (player.Level >= 20 && player.Level <= 24)
-                                    {
-                                        if (player.RealmPoints >= 350)
+                                        if (player.RealmPoints >= 7125)
                                         {
                                             break;
                                         }
 
                                         PortLocation = new GameLocation("Thidranki Hib", 252, 17367, 18248, 4320);
                                     }
-                                    else if (player.Level >= 25 && player.Level <= 29)
+                                    // else if (player.Level >= 25 && player.Level <= 29)
+                                    // {
+                                    //     if (player.RealmPoints >= 1375)
+                                    //     {
+                                    //         break;
+                                    //     }
+                                    //
+                                    //     PortLocation = new GameLocation("Murdaigean Hib", 251, 17367, 18248, 4320);
+                                    // }
+                                    else if (player.Level is >= 34 and <= 39)
                                     {
-                                        if (player.RealmPoints >= 1375)
-                                        {
-                                            break;
-                                        }
-
-                                        PortLocation = new GameLocation("Murdaigean Hib", 251, 17367, 18248, 4320);
-                                    }
-                                    else if (player.Level >= 30 && player.Level <= 34)
-                                    {
-                                        if (player.RealmPoints >= 7125)
+                                        if (player.RealmPoints >= 122500)
                                         {
                                             break;
                                         }
