@@ -894,7 +894,7 @@ namespace DOL.GS {
             }
         }
 
-        private double GetTotalUtility()
+        public double GetTotalUtility()
         {
             double totalUti = 0;
 

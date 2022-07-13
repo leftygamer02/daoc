@@ -23,6 +23,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using DOL.Database;
 using DOL.Events;
+using DOL.GS.API;
 using DOL.GS.ServerProperties;
 using log4net;
 
@@ -788,13 +789,14 @@ namespace DOL.GS.PacketHandler.Client.v168
                                 // Hacking attemp ?
                                 if (points > MaxStartingBonusPoints)
                                 {
-                                    if ((ePrivLevel)client.Account.PrivLevel == ePrivLevel.Player)
+                                    log.InfoFormat("Stats above MaxStartingBonusPoints for {0}", character.Name);
+                                    if ((ePrivLevel)client.Account.PrivLevel == ePrivLevel.Player && character.Level == 1)
                                     {
                                         if (Properties.BAN_HACKERS)
                                         {
                                             client.BanAccount(string.Format("Autoban Hack char update : Wrong allowed points:{0}", points));
                                         }
-
+                                        log.InfoFormat("Disconnecting {0} because the stats  are above expected", character.Name);
                                         client.Disconnect();
                                         return false;
                                     }
@@ -1059,7 +1061,7 @@ namespace DOL.GS.PacketHandler.Client.v168
                     int above = stats[stat] - raceAmount - classAmount;
 
                     // Miss Some points...
-                    if (above < 0)
+                    if (above < 0 && character.Level == 1)
                     {
                         return false;
                     }
@@ -1069,7 +1071,12 @@ namespace DOL.GS.PacketHandler.Client.v168
                     points += Math.Max(0, above - 15); // three points used
                 }
 
-                return points == MaxStartingBonusPoints;
+                var validPoints = points == MaxStartingBonusPoints;
+
+                if (character.Level > 1)
+                    return true;
+
+                return validPoints;
             }
 
             points = -1;

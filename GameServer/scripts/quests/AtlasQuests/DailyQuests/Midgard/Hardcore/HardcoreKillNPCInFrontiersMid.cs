@@ -296,7 +296,7 @@ namespace DOL.GS.DailyQuest
 					case 1:
 						return "Kill 25 mobs in a frontier zone. \n Creatures Killed: ("+ FrontierMobsKilled +" | "+MAX_KillGoal+")";
 					case 2:
-						return "Return to Succi in Druim Ligen for your grim reward.";
+						return "Return to Succi in Svasud Faste for your grim reward.";
 				}
 				return base.Description;
 			}
@@ -371,7 +371,7 @@ namespace DOL.GS.DailyQuest
 			m_questPlayer.Out.SendMessage(questTitle + " failed.", eChatType.CT_ScreenCenter_And_CT_System, eChatLoc.CL_SystemWindow);
 
 			FrontierMobsKilled = 0;
-			Step = -1;
+			Step = -2;
 			// move quest from active list to finished list...
 			m_questPlayer.QuestList.Remove(this);
 

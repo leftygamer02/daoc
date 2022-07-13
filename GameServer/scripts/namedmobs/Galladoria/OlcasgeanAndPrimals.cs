@@ -30,41 +30,25 @@ namespace DOL.GS
         {
             base.Die(null); // null to not gain experience
         }
-
-        [ScriptLoadedEvent]
-        public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
+        public override bool AddToWorld()
         {
-            GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Olcasgean Initializator", 191, (eRealm)0);
-            if (npcs.Length == 0)
-            {
-                log.Warn("Olcasgean Initializator not found, creating it...");
-
-                log.Warn("Initializing Olcasgean Initializator...");
-                OlcasgeanInitializator CO = new OlcasgeanInitializator();
-                CO.Name = "Olcasgean Initializator";
-                CO.GuildName = "DO NOT REMOVE!";
-                CO.Model = 665;
-                CO.Realm = 0;
-                CO.Level = 50;
-                CO.Size = 50;
-                CO.CurrentRegionID = 191;//galladoria
-                CO.Flags ^= eFlags.CANTTARGET;
-                CO.Flags ^= eFlags.FLYING;
-                CO.Flags ^= eFlags.DONTSHOWNAME;
-                CO.Faction = FactionMgr.GetFactionByID(96);
-                CO.Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
-                CO.X = 41116;
-                CO.Y = 64419;
-                CO.Z = 12746;
-                OIBrain ubrain = new OIBrain();
-                CO.SetOwnBrain(ubrain);
-                CO.AddToWorld();
-                CO.Brain.Start();
-                CO.SaveIntoDatabase();
-            }
-            else
-                log.Warn("Conservator exist ingame, remove it and restart server if you want to add by script code.");
+            Name = "Olcasgean Initializator";
+            GuildName = "DO NOT REMOVE!";
+            Model = 665;
+            Realm = 0;
+            Level = 50;
+            Size = 50;
+            CurrentRegionID = 191;//galladoria
+            Flags = (GameNPC.eFlags)60;
+            Faction = FactionMgr.GetFactionByID(96);
+            Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
+            X = 41116;
+            Y = 64419;
+            Z = 12746;
+            OIBrain ubrain = new OIBrain();
+            SetOwnBrain(ubrain);
+            base.AddToWorld();
+            return true;
         }
     }
 }
@@ -80,10 +64,11 @@ namespace DOL.AI.Brain
         public OIBrain()
             : base()
         {
-            ThinkInterval = 2000;
+            ThinkInterval = 1500;
         }
 
-        public static bool startevent = true;
+        public static bool startevent = false;
+        public static int DeadPrimalsCount = 0;
 
         public void BroadcastMessage(String message)
         {
@@ -99,14 +84,14 @@ namespace DOL.AI.Brain
             point1.X = 39652; point1.Y = 60831; point1.Z = 11893;//loc of waterfall bridge to start event and pop elementars
             if (Body.IsAlive)
             {
-                foreach (GamePlayer player in Body.GetPlayersInRadius(10000))
+                foreach (GamePlayer player in Body.GetPlayersInRadius(7000))
                 {
-                    if (player.IsAlive)
+                    if (player.IsAlive && player != null && player.Client.Account.PrivLevel == 1)
                     {
-                        if (player.IsWithinRadius(point1, 120) && startevent == true && player.Client.Account.PrivLevel == 1)
-                        {                          
+                        if (player.IsWithinRadius(point1, 200) && !startevent && DeadPrimalsCount == 0)
+                        {
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Message1), 5000);//5s to start
-                            startevent = false;
+                            startevent = true;
                         }
                     }
                 }
@@ -137,7 +122,8 @@ namespace DOL.AI.Brain
             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnPrimals), 5000);
             return 0;
         }
-        protected virtual int SpawnPrimals(ECSGameTimer timer)//real timer to cast spell and reset check
+        #region Spawn primals and other mobs
+        private int SpawnPrimals(ECSGameTimer timer)//real timer to cast spell and reset check
         {
             SpawnAir();
             SpawnWater();
@@ -321,6 +307,7 @@ namespace DOL.AI.Brain
             Add11.Heading = 3804;
             Add11.AddToWorld();
         }
+        #endregion
     }
 }
 #endregion Olcasgean Initializator
@@ -358,12 +345,12 @@ namespace DOL.GS
         }
         public override int MaxHealth
         {
-            get{return 300000;}
+            get { return 300000; }
         }
         public override int AttackRange
         {
-            get{return 1500;}
-            set{}
+            get { return 1500; }
+            set { }
         }
         public override bool HasAbility(string keyName)
         {
@@ -442,14 +429,14 @@ namespace DOL.GS
                 count++;
             }
             return count;
-        }      
+        }
         public override void Die(GameObject killer)
         {
             if (!(killer is Olcasgean) && !Master && Master_NPC != null)
             {
                 Master_NPC.Die(killer);
-                OlcasgeanBrain.spawn3 = true;
-                AirPrimal.DeadPrimalsCount = 0;
+                OlcasgeanBrain.spawn3 = false;
+                //OIBrain.DeadPrimalsCount = 0;
             }
             else
             {
@@ -461,9 +448,9 @@ namespace DOL.GS
                         {
                             if (npc.IsAlive)
                                 npc.Die(this);//if one die all others aswell
-                            OlcasgeanBrain.spawn3 = true;
+                            OlcasgeanBrain.spawn3 = false;
                             --OlcasgeanBrain.OlcasgeanCount;
-                            AirPrimal.DeadPrimalsCount = 0;
+                            //OIBrain.DeadPrimalsCount = 0;
                         }
                     }
                 }
@@ -482,8 +469,8 @@ namespace DOL.GS
                     }
                 }
                 CopyNPC = new List<GameNPC>();
-                OlcasgeanBrain.spawn3 = true;
-                AirPrimal.DeadPrimalsCount = 0;
+                OlcasgeanBrain.spawn3 = false;
+                OIBrain.DeadPrimalsCount = 0;
 
                 bool canReportNews = true;
                 // due to issues with attackers the following code will send a notify to all in area in order to force quest credit
@@ -513,19 +500,35 @@ namespace DOL.GS
         #endregion
         public override bool AddToWorld()
         {
-            OIBrain.startevent = true;
-            OlcasgeanBrain.setbossflags = false;
-            OlcasgeanBrain.wake_up_boss = false;
-            Flags ^= GameNPC.eFlags.DONTSHOWNAME;
-            Flags ^= GameNPC.eFlags.PEACE;
-            Flags ^= GameNPC.eFlags.STATUE;
-            Flags ^= GameNPC.eFlags.CANTTARGET;
             if (PackageID == "Olcasgean1")
+            {
+                Flags = (GameNPC.eFlags)156;
                 RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+                OIBrain.startevent = false;
+                OIBrain.DeadPrimalsCount = 0;
+                OlcasgeanBrain.setbossflags = false;
+                OlcasgeanBrain.wake_up_boss = false;
+                foreach (GameNPC npc in GetNPCsInRadius(3500))
+                {
+                    if (npc != null && npc.IsAlive)
+                    {
+                        if (npc.Brain is WaterPrimalBrain || npc.Brain is AirPrimalBrain || npc.Brain is FirePrimalBrain || npc.Brain is EarthPrimalBrain
+                            || npc.Brain is GuardianEarthmenderBrain || npc.Brain is MagicalEarthmenderBrain || npc.Brain is NaturalEarthmenderBrain || npc.Brain is ShadowyEarthmenderBrain)
+                        {
+                            npc.RemoveFromWorld();
+                        }
+                    }
+                }
+            }
             else
+            {
                 RespawnInterval = -1;
-            return base.AddToWorld();
+                Flags = (GameNPC.eFlags)156;
+            }
+            base.AddToWorld();
+            return true;
         }
+        #region Olcasgean Stats
         public override short Dexterity { get => base.Dexterity; set => base.Dexterity = 200; }
         public override short Constitution { get => base.Constitution; set => base.Constitution = 100; }
         public override short Empathy { get => base.Empathy; set => base.Empathy = 400; }
@@ -534,6 +537,7 @@ namespace DOL.GS
         public override short Intelligence { get => base.Intelligence; set => base.Intelligence = 200; }
         public override short Quickness { get => base.Quickness; set => base.Quickness = 20; }
         public override short Strength { get => base.Strength; set => base.Strength = 350; }
+        #endregion
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
@@ -559,7 +563,7 @@ namespace DOL.GS
                 OLC.Z = 11681;
                 OLC.Heading = 2491;
 
-                OLC.RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+                OLC.RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
                 OLC.MeleeDamageType = eDamageType.Slash;
                 OLC.Faction = FactionMgr.GetFactionByID(96);
                 OLC.Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
@@ -581,6 +585,48 @@ namespace DOL.GS
             else
                 log.Warn("Olcasgean exist ingame, remove it and restart server if you want to add by script code.");
         }
+        public override void OnAttackedByEnemy(AttackData ad)// on Boss being attacked
+        {
+            if (ad != null && ad.Damage > 0 && ad.Attacker != null && ad.Attacker.IsAlive && ad.Attacker is GamePlayer)
+            {
+                if (HealthPercent <= 50)
+                {
+                    if (Util.Chance(50))
+                        CastSpell(OlcasgeanDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
+                }
+                if (HealthPercent > 50)
+                    if (Util.Chance(15))
+                        CastSpell(OlcasgeanDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
+            }
+            base.OnAttackedByEnemy(ad);
+        }
+        public Spell m_OlcasgeanDD;
+        public Spell OlcasgeanDD
+        {
+            get
+            {
+                if (m_OlcasgeanDD == null)
+                {
+                    DBSpell spell = new DBSpell();
+                    spell.AllowAdd = false;
+                    spell.CastTime = 0;
+                    spell.RecastDelay = 2;
+                    spell.ClientEffect = 11027;
+                    spell.Icon = 11027;
+                    spell.TooltipId = 11027;
+                    spell.Name = "Olcasgean's Root";
+                    spell.Damage = 450;
+                    spell.Range = 1800;
+                    spell.SpellID = 11901;
+                    spell.Target = "Enemy";
+                    spell.Type = eSpellType.DirectDamageNoVariance.ToString();
+                    spell.DamageType = (int)eDamageType.Matter;
+                    m_OlcasgeanDD = new Spell(spell, 70);
+                    SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OlcasgeanDD);
+                }
+                return m_OlcasgeanDD;
+            }
+        }
     }
 }
 #endregion Olcasgean
@@ -599,10 +645,15 @@ namespace DOL.AI.Brain
             ThinkInterval = 3000;
         }
         public static int OlcasgeanCount = 0;
-        public static bool spawn3 = true;
+        public static bool spawn3 = false;
         public static bool cast1 = true;
         public void SpawnOlcasgean2()
         {
+            foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
+            {
+                if (npc.Brain is OlcasgeanBrain && npc.PackageID == "Olcasgean2")
+                    return;
+            }
             GameLiving ptarget = CalculateNextAttackTarget();
             Olcasgean Add = new Olcasgean();
             Add.Name = "Olcasgean";
@@ -665,13 +716,9 @@ namespace DOL.AI.Brain
                 }
             }
         }
-        public int PopBoss(ECSGameTimer timer)
+        private int PopBoss(ECSGameTimer timer)
         {
-            if (spawn3 == true)
-            {
-                SpawnOlcasgean2();
-                spawn3 = false;
-            }
+            SpawnOlcasgean2();
             return 0;
         }
         private GamePlayer teleporttarget = null;
@@ -742,7 +789,7 @@ namespace DOL.AI.Brain
                 {
                     if (Body.PackageID == "Olcasgean1" && boss.PackageID == "Olcasgean2")
                     {
-                        if (setbossflags == false)
+                        if (!setbossflags)
                         {
                             Body.Flags = 0;
                             boss.Flags = 0;
@@ -774,9 +821,7 @@ namespace DOL.AI.Brain
                     foreach (GameNPC npc in Body.GetNPCsInRadius(4000))
                     {
                         if (npc.Brain is WaterfallAntipassBrain)
-                        {
                             npc.RemoveFromWorld();
-                        }
                     }
                     RemoveAdds = true;
                 }
@@ -801,13 +846,16 @@ namespace DOL.AI.Brain
                         {
                             if (npc.Name == "Olcasgean" && npc.Brain is OlcasgeanBrain && npc.PackageID != "Olcasgean2")
                             {
-                                if (OlcasgeanCount < 1)
+                                if (OlcasgeanCount < 1 && !spawn3 && Body.PackageID == "Olcasgean1")
+                                {
                                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PopBoss), 1000);//create copy of himself
+                                    spawn3 = true;
+                                }
                             }
                         }
                     }
                 }
-                if (AirPrimal.DeadPrimalsCount == 4 && wake_up_boss==false)
+                if (OIBrain.DeadPrimalsCount >= 4 && wake_up_boss == false && Body.PackageID == "Olcasgean1")
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(WakeUpBoss), 25000);
                     wake_up_boss = true;
@@ -821,7 +869,7 @@ namespace DOL.AI.Brain
                 if (HasAggro && Body.TargetObject != null)//Boss in combat
                 {
                     RemoveAdds = false;
-                    if(spawn_effect ==false)
+                    if (spawn_effect == false)
                     {
                         new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnEffects), 2000);
                         spawn_effect = true;
@@ -895,7 +943,7 @@ namespace DOL.AI.Brain
 
                         if (teleport_player == false && Body.PackageID == "Olcasgean1" && Body.HealthPercent <= 50 && TeleportTarget.IsAlive && TeleportTarget != null)
                         {
-                            new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(DoPort), 20000);//do teleport every 20s
+                            new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(DoPort), Util.Random(12000,20000));//do teleport every 12-20s
                             teleport_player = true;
                         }
                     }
@@ -971,7 +1019,8 @@ namespace DOL.AI.Brain
                     spell.Icon = 11027;
                     spell.TooltipId = 11027;
                     spell.Name = "Olcasgean's Root";
-                    spell.Damage = 600;
+                    spell.Damage = 500;
+                    spell.Radius = 350;
                     spell.Range = 1800;
                     spell.SpellID = 11717;
                     spell.Target = "Enemy";
@@ -1020,7 +1069,7 @@ namespace DOL.GS
             else//take dmg
             {
                 base.TakeDamage(source, damageType, damageAmount, criticalAmount);
-            }         
+            }
         }
         public override void StartAttack(GameObject target)
         {
@@ -1044,13 +1093,15 @@ namespace DOL.GS
         }
         public override int MaxHealth
         {
-            get {return 900;//low health, as source says 1 volcanic pillar 5 could one shot it
+            get
+            {
+                return 900;//low health, as source says 1 volcanic pillar 5 could one shot it
             }
         }
         public override int AttackRange
         {
-            get{return 350;}
-            set{}
+            get { return 350; }
+            set { }
         }
         public override void WalkToSpawn(short speed)
         {
@@ -1063,12 +1114,10 @@ namespace DOL.GS
         }
         public override void StopFollowing()
         {
-        }
-
-        public static int DeadPrimalsCount = 0;
+        }      
         public override void Die(GameObject killer)
         {
-            ++DeadPrimalsCount;
+            ++OIBrain.DeadPrimalsCount;
             base.Die(killer);
         }
         public override bool AddToWorld()
@@ -1389,7 +1438,7 @@ namespace DOL.AI.Brain
                     spell.ClientEffect = 479;
                     spell.Icon = 479;
                     spell.TooltipId = 479;
-                    spell.Damage = 550;
+                    spell.Damage = 600;
                     spell.Range = 1200;
                     spell.SpellID = 11718;
                     spell.Target = "Enemy";
@@ -1463,7 +1512,7 @@ namespace DOL.GS
         }
         public override void Die(GameObject killer)
         {
-            ++AirPrimal.DeadPrimalsCount;
+            ++OIBrain.DeadPrimalsCount;
             base.Die(killer);
         }
         public override double AttackDamage(InventoryItem weapon)
@@ -1586,7 +1635,7 @@ namespace DOL.AI.Brain
         public static bool message = false;
         public override void Notify(DOLEvent e, object sender, EventArgs args)
         {
-            if(e == GameNPCEvent.AddToWorld)
+            if (e == GameNPCEvent.AddToWorld)
             {
                 Point3D point1 = new Point3D();
                 point1.X = 39652; point1.Y = 60831; point1.Z = 11893;
@@ -1651,7 +1700,7 @@ namespace DOL.AI.Brain
         }
         public override void Think()
         {
-            if(HasAggro && Body.TargetObject != null)
+            if (HasAggro && Body.TargetObject != null)
             {
                 if (Util.Chance(10))
                 {
@@ -1728,11 +1777,11 @@ namespace DOL.AI.Brain
         {
             if (TeleportTarget.IsAlive && TeleportTarget != null && HasAggro)
             {
-                switch(Util.Random(1,2))
+                switch (Util.Random(1, 2))
                 {
                     case 1: TeleportTarget.MoveTo(Body.CurrentRegionID, 38626, 60891, 11771, 2881); break;
                     case 2: TeleportTarget.MoveTo(Body.CurrentRegionID, 40606, 60868, 11721, 1095); break;
-                }              
+                }
                 Port_Enemys.Remove(TeleportTarget);
                 TeleportTarget = null;//reset random target to null
                 IsTargetTeleported = false;
@@ -1807,7 +1856,7 @@ namespace DOL.GS
         }
         public override void Die(GameObject killer)
         {
-            ++AirPrimal.DeadPrimalsCount;
+            ++OIBrain.DeadPrimalsCount;
             base.Die(killer);
         }
         public override double AttackDamage(InventoryItem weapon)
@@ -1839,8 +1888,8 @@ namespace DOL.GS
         }
         public override int AttackRange
         {
-            get{return 350;}
-            set{}
+            get { return 350; }
+            set { }
         }
 
         public override bool AddToWorld()
@@ -1919,7 +1968,7 @@ namespace DOL.AI.Brain
                         }
                     }
                 }
-                if(CanSpawnFire==false)
+                if (CanSpawnFire == false)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnFire), 1000);
                     CanSpawnFire = true;
@@ -2072,6 +2121,10 @@ namespace DOL.GS
                     if (player != null)
                         player.Out.SendSpellEffectAnimation(this, this, 5906, 0, false, 0x01);
                 }
+                SetGroundTarget(X, Y, Z);
+                if (!IsCasting)
+                    CastSpell(FireGroundDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
+
                 new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1000);
             }
             return 0;
@@ -2114,10 +2167,10 @@ namespace DOL.GS
             if (success)
             {
                 SetGroundTarget(X, Y, Z);
-                if(!IsCasting)
-                    CastSpell(FireGroundDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells),false);
+                if (!IsCasting)
+                    CastSpell(FireGroundDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
                 new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 500);
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(RemoveFire), 8000);
+                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(RemoveFire), 6000);
             }
             return success;
         }
@@ -2165,52 +2218,7 @@ namespace DOL.AI.Brain
         }
         public override void Think()
         {
-            if (Body.IsAlive)
-            {
-                foreach (GamePlayer player in Body.GetPlayersInRadius(2500))
-                {
-                    if (player != null)
-                    {
-                        if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
-                            if (!AggroTable.ContainsKey(player))
-                                AggroTable.Add(player, 100);
-                        }
-                    }
-                }
-                Body.SetGroundTarget(Body.X,Body.Y,Body.Z);
-                Body.CastSpell(FireGroundDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells),false);
-            }
             base.Think();
-        }
-        private Spell m_FireGroundDD;
-        private Spell FireGroundDD
-        {
-            get
-            {
-                if (m_FireGroundDD == null)
-                {
-                    DBSpell spell = new DBSpell();
-                    spell.AllowAdd = false;
-                    spell.CastTime = 0;
-                    spell.RecastDelay = 2;
-                    spell.ClientEffect = 368;
-                    spell.Icon = 368;
-                    spell.TooltipId = 368;
-                    spell.Damage = 220;
-                    spell.Range = 1200;
-                    spell.Radius = 450;
-                    spell.SpellID = 11720;
-                    spell.Target = "Area";
-                    spell.Type = eSpellType.DirectDamageNoVariance.ToString();
-                    spell.Uninterruptible = true;
-                    spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Heat;
-                    m_FireGroundDD = new Spell(spell, 70);
-                    SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_FireGroundDD);
-                }
-                return m_FireGroundDD;
-            }
         }
     }
 }
@@ -2243,7 +2251,7 @@ namespace DOL.GS
         }
         public override void Die(GameObject killer)
         {
-            ++AirPrimal.DeadPrimalsCount;
+            ++OIBrain.DeadPrimalsCount;
             foreach (GameNPC npc in GetNPCsInRadius(8000))
             {
                 if (npc != null)
@@ -2279,12 +2287,12 @@ namespace DOL.GS
         }
         public override int MaxHealth
         {
-            get{ return 200000;}
+            get { return 200000; }
         }
         public override int AttackRange
         {
-            get{return 350;}
-            set{}
+            get { return 350; }
+            set { }
         }
         public override bool AddToWorld()
         {
@@ -2347,7 +2355,7 @@ namespace DOL.AI.Brain
         public static bool CanSwitchTarget = false;
         public override void Think()
         {
-            if(!HasAggressionTable())
+            if (!HasAggressionTable())
             {
                 Body.Health = Body.MaxHealth;
                 CanSwitchTarget = false;
@@ -2370,7 +2378,7 @@ namespace DOL.AI.Brain
                     if (!target.IsWithinRadius(spawn, 900))
                     {
                         Body.MaxSpeedBase = 0;
-                        if(CanSwitchTarget==false)
+                        if (CanSwitchTarget == false)
                         {
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(TargetIsOut), 5000);
                             CanSwitchTarget = true;
@@ -2380,7 +2388,7 @@ namespace DOL.AI.Brain
                         Body.MaxSpeedBase = npcTemplate.MaxSpeed;
                 }
             }
-            if(Body.IsOutOfTetherRange && !HasAggro)
+            if (Body.IsOutOfTetherRange && !HasAggro)
             {
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             }
@@ -2396,7 +2404,7 @@ namespace DOL.AI.Brain
                     DBSpell spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
-                    spell.RecastDelay = Util.Random(15,25);
+                    spell.RecastDelay = Util.Random(15, 25);
                     spell.ClientEffect = 277;
                     spell.Icon = 277;
                     spell.TooltipId = 277;
@@ -3272,8 +3280,8 @@ namespace DOL.GS
         }
         public override int AttackRange
         {
-            get{return 200;}
-            set{}
+            get { return 200; }
+            set { }
         }
         public override void DropLoot(GameObject killer)//no loot
         {
@@ -3455,7 +3463,7 @@ namespace DOL.GS
             bool success = base.AddToWorld();
             if (success)
             {
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 500);               
+                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 500);
             }
             return success;
         }
@@ -3474,7 +3482,7 @@ namespace DOL.GS
         }
         public int RemoveMob(ECSGameTimer timer)
         {
-            if(IsAlive)
+            if (IsAlive)
                 RemoveFromWorld();
             return 0;
         }

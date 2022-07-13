@@ -153,6 +153,13 @@ namespace DOL.GS
 				default: return 70;// dmg reduction for rest resists
 			}
 		}
+		public override bool HasAbility(string keyName)
+		{
+			if (IsAlive && keyName == GS.Abilities.CCImmunity)
+				return true;
+
+			return base.HasAbility(keyName);
+		}
 		public override double AttackDamage(InventoryItem weapon)
 		{
 			return base.AttackDamage(weapon) * Strength / 100;
@@ -278,7 +285,7 @@ namespace DOL.GS
 					if (client.Player == null) continue;
 					if (client.IsPlaying)
 					{
-						client.Out.SendMessage(Name + " laughs at the " + player.CharacterClass.Name + " who has fallen beneath his crushing blow." + Name, eChatType.CT_Say, eChatLoc.CL_ChatWindow);
+						client.Out.SendMessage(Name + " laughs at the " + player.CharacterClass.Name + " who has fallen beneath his crushing blow.", eChatType.CT_Say, eChatLoc.CL_ChatWindow);
 					}
 				}
 			}

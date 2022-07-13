@@ -1729,7 +1729,7 @@ namespace DOL.GS
 			if (followLiving != null && !followLiving.IsAlive)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				return 0;
 			}
 
@@ -1737,7 +1737,7 @@ namespace DOL.GS
 			if (followTarget == null || followTarget.ObjectState != eObjectState.Active || CurrentRegionID != followTarget.CurrentRegionID)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				return 0;
 			}
 
@@ -1754,7 +1754,7 @@ namespace DOL.GS
 			if ((int)distance > m_followMaxDist)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				this.WalkToSpawn();
 				return 0;
 			}
@@ -1769,14 +1769,14 @@ namespace DOL.GS
 				{
 					if (attackComponent.AttackState && brain != null && followLiving != null)
 					{
-						long seconds = 20 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
+						long seconds = 25 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
 						long lastattacked = LastAttackTick;
 						long lasthit = LastAttackedByEnemyTick;
 						if ((GameLoop.GameLoopTime - lastattacked > seconds * 1000 && GameLoop.GameLoopTime - lasthit > seconds * 1000)
 							&& lasthit != 0)
 						{
 							//StopFollow();
-							Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+							//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 							//brain.ClearAggroList();
 							//this.WalkToSpawn();
 							LastAttackedByEnemyTickPvE = 0;
@@ -4622,7 +4622,7 @@ namespace DOL.GS
 		/// <summary>
 		/// A timer that will respawn this mob
 		/// </summary>
-		protected ECSGameTimer m_respawnTimer;
+		protected AuxECSGameTimer m_respawnTimer;
 		/// <summary>
 		/// The sync object for respawn timer modifications
 		/// </summary>
@@ -4718,8 +4718,8 @@ namespace DOL.GS
 				{
 					if (m_respawnTimer == null)
 					{
-						m_respawnTimer = new ECSGameTimer(this);
-						m_respawnTimer.Callback = new ECSGameTimer.ECSTimerCallback(RespawnTimerCallback);
+						m_respawnTimer = new AuxECSGameTimer(this);
+						m_respawnTimer.Callback = new AuxECSGameTimer.AuxECSTimerCallback(RespawnTimerCallback);
 					}
 					else if (m_respawnTimer.IsAlive)
 					{
@@ -4737,7 +4737,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="respawnTimer">the timer calling this callback</param>
 		/// <returns>the new interval</returns>
-		protected virtual int RespawnTimerCallback(ECSGameTimer respawnTimer)
+		protected virtual int RespawnTimerCallback(AuxECSGameTimer respawnTimer)
 		{
 			int dummy;
 			// remove Mob from "respawning"

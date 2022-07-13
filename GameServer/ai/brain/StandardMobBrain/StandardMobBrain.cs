@@ -310,19 +310,28 @@ namespace DOL.AI.Brain
             } else { return false; }
         }
 
+
+        public long LastNPCAggroCheckTick = 0;
+        public int NPC_AGGRO_DELAY => ThinkInterval * 10;
+        
         /// <summary>
         /// Check for aggro against close NPCs
         /// </summary>
         public virtual void CheckNPCAggro()
         {
+            if (GameLoop.GameLoopTime - LastNPCAggroCheckTick < NPC_AGGRO_DELAY) return;
+            
             if (Body.attackComponent.AttackState)
                 return;
 
             if (Body.CurrentRegion == null)
                 return;
+
+            LastNPCAggroCheckTick = GameLoop.GameLoopTime + Util.Random((int)(NPC_AGGRO_DELAY/10));
             
             foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange, Body.CurrentRegion.IsDungeon ? false : true))
             {
+                if (npc == null || Body == null) continue;
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, npc, true)) continue;
                 if (m_aggroTable.ContainsKey(npc))
                     continue; // add only new NPCs
@@ -370,7 +379,13 @@ namespace DOL.AI.Brain
                 return;
             }
 
-            foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, !Body.CurrentZone.IsDungeon))
+            List<GameNPC> pets = new List<GameNPC>();
+
+            var players = Body?.GetPlayersInRadius((ushort) AggroRange, !Body.CurrentZone.IsDungeon);
+
+            if (players == null) return;
+
+            foreach (GamePlayer player in players)
             {
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, player, true)) continue;
                 // Don't aggro on immune players.
@@ -390,6 +405,9 @@ namespace DOL.AI.Brain
 
                 int aggrolevel = 0;
 
+                if(player.ControlledBrain != null)
+                    pets.Add(player.ControlledBrain.Body);
+                
                 if (Body.Faction != null)
                 {
                     aggrolevel = Body.Faction.GetAggroToFaction(player);
@@ -411,6 +429,55 @@ namespace DOL.AI.Brain
                 {
                     if (useLOS && !AggroLOS) return;
                     AddToAggroList(player, 1, true);
+                }
+            }
+            
+            CheckPetAggro(useLOS);
+        }
+
+        private void CheckPetAggro(bool useLOS)
+        {
+            var pets = Body?.GetPetsInRadius((ushort) AggroRange, !Body.CurrentZone.IsDungeon);
+            if (pets == null) return;
+            foreach (var petNPC in pets)
+            {
+                if (petNPC is not GamePet pet) continue;
+                if (pet.Owner is not GamePlayer owner) continue;
+                
+                if (!GameServer.ServerRules.IsAllowedToAttack(Body, pet, true)) continue;
+                // Don't aggro on immune players.
+                
+                if (Body.CurrentZone.IsDungeon)
+                {
+                    useLOS = true;
+                }
+
+                if (useLOS && pet != null && !AggroLOS && pet is GamePet p)
+                {
+                    owner.Out.SendCheckLOS(Body, pet, new CheckLOSResponse(CheckAggroLOS));
+                }
+
+                int aggrolevel = 0;
+
+                if (Body.Faction != null)
+                {
+                    aggrolevel = Body.Faction.GetAggroToFaction(owner);
+                    if (aggrolevel < 75)
+                        return;
+                }
+
+                if (aggrolevel <= 0 && AggroLevel <= 0)
+                    return;
+
+                if (m_aggroTable.ContainsKey(pet))
+                    continue; // add only new players
+                if (!pet.IsAlive || pet.ObjectState != GameObject.eObjectState.Active || pet.IsStealthed)
+                    continue;
+
+                if (CalculateAggroLevelToTarget(pet) > 0)
+                {
+                    if (useLOS && !AggroLOS) return;
+                    AddToAggroList(pet, 1, true);
                 }
             }
         }
@@ -508,11 +575,15 @@ namespace DOL.AI.Brain
             // do not modify aggro list if dead
             if (!brain.Body.IsAlive) return;
 
+            KeyValuePair<GameLiving, long>[] aggroTable = Array.Empty<KeyValuePair<GameLiving, long>>();
             lock ((m_aggroTable as ICollection).SyncRoot)
             {
-                Dictionary<GameLiving, long>.Enumerator dictEnum = m_aggroTable.GetEnumerator();
-                while (dictEnum.MoveNext())
-                    brain.AddToAggroList(dictEnum.Current.Key, Body.MaxHealth);
+                aggroTable = m_aggroTable.ToArray();
+            }
+
+            foreach (var aggro in aggroTable)
+            {
+                brain.AddToAggroList(aggro.Key, Body.MaxHealth);
             }
         }
 
@@ -1151,7 +1222,7 @@ namespace DOL.AI.Brain
                     // Puller isn't in a group, so we have to create the victims list for the BG
                     victims = new List<GamePlayer>(bg.PlayerCount);
 
-                foreach (GamePlayer player in bg.GetPlayersInTheBattleGroup())
+                foreach (GamePlayer player in bg.Members.Keys)
                     if (player != null && (player.InternalID == puller.InternalID || player.IsWithinRadius(puller, BAFPlayerRange, true)))
                     {
                         if (DOL.GS.ServerProperties.Properties.BAF_MOBS_COUNT_BG_MEMBERS

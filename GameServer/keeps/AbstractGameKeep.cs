@@ -72,7 +72,7 @@ namespace DOL.GS.Keeps
 		/// <summary>
 		/// Timerto upgrade the keep level
 		/// </summary>
-		protected ECSGameTimer m_changeLevelTimer;
+		protected AuxECSGameTimer m_changeLevelTimer;
 
 		protected long m_lastAttackedByEnemyTick = 0;
 		public long LastAttackedByEnemyTick
@@ -715,10 +715,10 @@ namespace DOL.GS.Keeps
 				banner.ChangeGuild();
 			}
 
-			GameKeepDoor door = new GameKeepDoor();
+			// GameKeepDoor door = new GameKeepDoor();
     		this.SaveIntoDatabase();
             LoadFromDatabase(DBKeep);
-            door.BroadcastDoorStatus();
+            // door.BroadcastDoorStatus();
             StartDeductionTimer();
             GameEventMgr.Notify(KeepEvent.KeepClaimed, this, new KeepEventArgs(this));
 		}
@@ -741,8 +741,8 @@ namespace DOL.GS.Keeps
 
 		protected void InitialiseTimers()
 		{
-			m_changeLevelTimer = new ECSGameTimer(new GameNPC());
-			m_changeLevelTimer.Callback = new ECSGameTimer.ECSTimerCallback(ChangeLevelTimerCallback);
+			m_changeLevelTimer = new AuxECSGameTimer(new GameNPC());
+			m_changeLevelTimer.Callback = new AuxECSGameTimer.AuxECSTimerCallback(ChangeLevelTimerCallback);
 			m_claimTimer = new ECSGameTimer(new GameNPC());
 			m_claimTimer.Callback = new ECSGameTimer.ECSTimerCallback(ClaimCallBack);
 			m_claimTimer.Interval = CLAIM_CALLBACK_INTERVAL;
@@ -783,7 +783,7 @@ namespace DOL.GS.Keeps
 
 		public virtual bool CheckForRelease(GamePlayer player)
 		{
-			if (InCombat)
+			if (InCombat && player.Client.Account.PrivLevel == 1)
 			{
 				player.Out.SendMessage(Name + " is under attack and can't be released.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				log.DebugFormat("KEEPWARNING: {0} attempted to release {1} while in combat.", player.Name, Name);
@@ -1005,7 +1005,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		/// <param name="timer"></param>
 		/// <returns></returns>
-		public int ChangeLevelTimerCallback(ECSGameTimer timer)
+		public int ChangeLevelTimerCallback(AuxECSGameTimer timer)
 		{
 			if (this is GameKeepTower)
 			{

@@ -521,7 +521,7 @@ namespace DOL.GS.PacketHandler
 			int[] racial = new int[updateResists.Length];
 			int[] caps = new int[updateResists.Length];
 
-			int cap = (m_gameClient.Player.Level >> 1) + 1;
+			int cap = (int) (m_gameClient?.Player != null ? (m_gameClient.Player.Level >> 1) + 1 : 1);
 			for (int i = 0; i < updateResists.Length; i++)
 			{
 				caps[i] = cap;
@@ -1682,6 +1682,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte(0);
 				foreach (InventoryItem item in items)
 				{
+					if (item.Realm != (int)m_gameClient.Player.Realm) continue;
 					pak.WriteByte((byte)items.IndexOf(item));
 					pak.WriteByte((byte)item.Level);
 					int value1; // some object types use this field to display count
@@ -2878,7 +2879,7 @@ namespace DOL.GS.PacketHandler
 			int questIndex = 1;
 			lock (m_gameClient.Player.QuestList)
 			{
-				foreach (AbstractQuest quest in m_gameClient.Player.QuestList)
+				foreach (AbstractQuest quest in m_gameClient.Player.QuestList.ToList())
 				{
 					SendQuestPacket((quest.Step == 0 || quest.Step == -1 || quest.Step == -2) ? null : quest, questIndex++);
 				}

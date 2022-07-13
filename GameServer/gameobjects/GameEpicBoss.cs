@@ -27,12 +27,13 @@ namespace DOL.GS {
             
             var killerBG = (BattleGroup)playerKiller?.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
             
-            if (killerBG != null && (killerBG.Members.Contains(playerKiller) || (bool)killerBG.Members[playerKiller]!))
+            if (killerBG != null)
             {
-                foreach (var bgPlayer in killerBG.GetPlayersInTheBattleGroup())
+                foreach (GamePlayer bgPlayer in killerBG.Members.Keys)
                 {
                     if (bgPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
                     {
+                        if (bgPlayer.Level < 45) continue;
                         AtlasROGManager.GenerateOrbAmount(bgPlayer,OrbsReward);
                         AtlasROGManager.GenerateBeetleCarapace(bgPlayer);
                         bgPlayer.Achieve($"{achievementMob}-Credit");
@@ -45,6 +46,7 @@ namespace DOL.GS {
                 {
                     if (groupPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
                     {
+                        if (groupPlayer.Level < 45) continue;
                         AtlasROGManager.GenerateOrbAmount(groupPlayer,OrbsReward);
                         AtlasROGManager.GenerateBeetleCarapace(groupPlayer);
                         groupPlayer.Achieve($"{achievementMob}-Credit");
@@ -53,9 +55,12 @@ namespace DOL.GS {
             }
             else if (playerKiller != null)
             {
-                AtlasROGManager.GenerateOrbAmount(playerKiller,OrbsReward);
-                AtlasROGManager.GenerateBeetleCarapace(playerKiller);
-                playerKiller.Achieve($"{achievementMob}-Credit");
+                if (playerKiller.Level >= 45)
+                {
+                    AtlasROGManager.GenerateOrbAmount(playerKiller,OrbsReward);
+                    AtlasROGManager.GenerateBeetleCarapace(playerKiller);
+                    playerKiller.Achieve($"{achievementMob}-Credit");;
+                }
             }
 
             base.ProcessDeath(killer);
