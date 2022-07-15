@@ -13011,23 +13011,37 @@ namespace DOL.GS
 
                     Group group = Group;
                     BattleGroup mybattlegroup = (BattleGroup)TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
-                    if (mybattlegroup != null && mybattlegroup.GetBGLootType() == true && mybattlegroup.GetBGTreasurer() != null)
+                    // if (mybattlegroup != null && mybattlegroup.GetBGLootType() == true && mybattlegroup.GetBGTreasurer() != null)
+                    if (mybattlegroup != null && mybattlegroup.GetBGLootType() == true)
                     {
-                        GamePlayer theTreasurer = mybattlegroup.GetBGTreasurer();
-                        if (theTreasurer.CanSeeObject(floorObject) || this.CanSeeObject((floorObject)))
+                        // GamePlayer theTreasurer = mybattlegroup.GetBGTreasurer();
+                        var theLeader = mybattlegroup.Leader as GamePlayer;
+                        var BGVault = mybattlegroup.bgVault;
+                        if (BGVault == null) return false;
+                        log.Info($"BG Leader {mybattlegroup.Leader.Name} is looting {floorItem.Name} to {BGVault.Name} into {BGVault.OwnerID} because treasurer is {mybattlegroup.GetBGLootType()}");
+                        log.Info($"{BGVault.FirstDBSlot} {BGVault.LastDBSlot} {BGVault.OwnerID} {BGVault.Name} {BGVault.X} {BGVault.Y} {BGVault.Z} {BGVault.Heading} {BGVault.CurrentRegionID} {BGVault.VaultSize}");
+                        if (theLeader.CanSeeObject(floorObject) || this.CanSeeObject((floorObject)))
                         {
-                            bool good = false;
-                            if (floorItem.Item.IsStackable)
-                                good = theTreasurer.Inventory.AddTemplate(floorItem.Item, floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
-                            else
-                                good = theTreasurer.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, floorItem.Item);
+                            // bool good = false;
+                            // if (floorItem.Item.IsStackable)
+                            //     good = BGVault.ReceiveItem(this,floorItem.Item);
+                            // else
+                            //     good = BGVault.ReceiveItem(this,floorItem.Item);
+                            //
+                            // if (!good)
+                            // {
+                            //     theLeader.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.BackpackFull"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                            //     return false;
+                            // }
+                            
+                            
+                            // BGVault.ReceiveItem(this,floorItem.Item);
+                            
+                            var added = BGVault.OnAddItem(theLeader, floorItem.Item);
+                            
+                            log.Info((added));
 
-                            if (!good)
-                            {
-                                theTreasurer.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.BackpackFull"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                                return false;
-                            }
-                            theTreasurer.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.YouGet", floorItem.Item.GetName(1, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                            theLeader.Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.YouGet", floorItem.Item.GetName(1, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                             Message.SystemToOthers(this, LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.GroupMemberPicksUp", Name, floorItem.Item.GetName(1, false)), eChatType.CT_System);
                             InventoryLogging.LogInventoryAction("(ground)", this, eInventoryActionType.Loot, floorItem.Item.Template, floorItem.Item.IsStackable ? floorItem.Item.Count : 1);
                         }
@@ -13112,10 +13126,20 @@ namespace DOL.GS
                     if (Group != null && Group.AutosplitCoins)
                     {
                         //Spread the money in the group
-                        var eligibleMembers = from p in Group.GetPlayersInTheGroup()
-                            where p.IsAlive && p.CanSeeObject(floorObject) && p.ObjectState == eObjectState.Active
-                            select p;
-                        var gamePlayers = eligibleMembers as GamePlayer[] ?? eligibleMembers.ToArray();
+
+                        var groupMembers = Group.GetPlayersInTheGroup();
+                        var gamePlayers = new List<GamePlayer>();
+                        foreach (var gM in groupMembers)
+                        {
+                            if (gM.IsAlive && gM.CanSeeObject(floorObject) && gM.ObjectState == eObjectState.Active)
+                            {
+                                gamePlayers.Add(gM);
+                            }
+                        }
+                        // var eligibleMembers = from p in Group.GetPlayersInTheGroup()
+                        //     where p.IsAlive && p.CanSeeObject(floorObject) && p.ObjectState == eObjectState.Active
+                        //     select p;
+                        // var gamePlayers = eligibleMembers as GamePlayer[] ?? eligibleMembers.ToArray();
                         if (!gamePlayers.Any())
                         {
                             Out.SendMessage(LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.PickupObject.NoOneGroupWantsMoney"), eChatType.CT_System, eChatLoc.CL_SystemWindow);

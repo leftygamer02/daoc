@@ -298,7 +298,6 @@ namespace DOL.GS.Commands
                         }
                     }
                     break;
-                
                 case "solo":
                     {
                         if (client.Player == null)
@@ -355,7 +354,6 @@ namespace DOL.GS.Commands
                         }
                     }
                     break;
-
                 case "who":
                     {
                         if (client.Player == null)
@@ -737,6 +735,7 @@ namespace DOL.GS.Commands
                         }
                         else if (args[2] == "treasurer" || args[2] == "treasure" || args[2] == "t" || args[2] == "T" || args[2] == "Treasurer" || args[2] == "Treasure")
                         {
+                            // mybattlegroup.SetBGTreasurer(mybattlegroup.Leader);
                             mybattlegroup.SetBGLootType(true);
                             client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattleGroupLootTreasurer"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                         }
@@ -774,65 +773,105 @@ namespace DOL.GS.Commands
                         }
                     }
                     break;
+                case "summontreasurer":
+                {
+                    if (client.Player == null)
+                        return;
+                    
+                    BattleGroup mybattlegroup = client.Player.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
+                    if (mybattlegroup == null)
+                    {
+                        client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.InBattleGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        return;
+                    }
+                    if (mybattlegroup.IsBGLeader(client.Player) == false)
+                    {
+                        client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.LeaderCommand"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        return;
+                    }
+
+                    if (mybattlegroup.GetBGLootType() == false)
+                    {
+                        client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattleGroupLootNormal"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    }
+
+                    var treasurer = new BGTreasurer();
+                    treasurer.Name = "Battlegroup Treasurer";
+                    treasurer.GuildName = $"{mybattlegroup.Leader.Name}'s Battlegroup";
+                    treasurer.Model = client.Player.Model;
+                    treasurer.Realm = client.Player.Realm;
+                    treasurer.X = client.Player.X;
+                    treasurer.Y = client.Player.Y;
+                    treasurer.Z = client.Player.Z;
+                    treasurer.Heading = client.Player.Heading;
+                    treasurer.CurrentRegion = client.Player.CurrentRegion;
+                    treasurer.Level = client.Player.Level;
+                    treasurer.AddToWorld();
+
+                    break;
+                }
                 case "treasurer":
                     {
-                        if (client.Player == null)
-                            return;
+                        // if (client.Player == null)
+                        //     return;
+                        //
+                        // BattleGroup mybattlegroup = client.Player.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
+                        // if (mybattlegroup == null)
+                        // {
+                        //     client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.InBattleGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //     return;
+                        // }
+                        // if (mybattlegroup.IsBGLeader(client.Player) == false)
+                        // {
+                        //     client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.LeaderCommand"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //     return;
+                        // }
+                        // if (args.Length < 3)
+                        // {
+                        //     PrintHelp(client);
+                        // }
 
-                        BattleGroup mybattlegroup = client.Player.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
-                        if (mybattlegroup == null)
-                        {
-                            client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.InBattleGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            return;
-                        }
-                        if (mybattlegroup.IsBGLeader(client.Player) == false)
-                        {
-                            client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.LeaderCommand"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            return;
-                        }
-                        if (args.Length < 3)
-                        {
-                            PrintHelp(client);
-                        }
-
-                        string treasname = String.Join(" ", args, 2, args.Length - 2);
-                        if (treasname == null || treasname == "")
-                        {
-                            client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.NoPlayer", treasname), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            return;
-                        }
-                        //log.Debug("treasname= (" + treasname + ")");
-                        GameClient treasclient = WorldMgr.GetClientByPlayerName(treasname, true, true);
-                        if (treasclient == null || treasclient.Player == null)
-                        {
-                            client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.NoPlayer", treasname), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            return;
-                        }
-                        if (treasclient.Player.Realm != client.Player.Realm)
-                        {
-                            client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.NoPlayer", treasname), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            return;
-                        }
-                        if (!mybattlegroup.IsInTheBattleGroup(treasclient.Player))
-                        {
-                            client.Out.SendMessage("This player is not in your battleground.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-
-                            return;
-                        }
-                        mybattlegroup.SetBGTreasurer(treasclient.Player);
-                        client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerOn", treasclient.Player.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        treasclient.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerIsYou"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        foreach (GamePlayer ply in mybattlegroup.Members.Keys)
-                        {
-                            ply.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerIs", treasclient.Player.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        }
-                        if (mybattlegroup.GetBGTreasurer() == null)
-                        {
-                            foreach (GamePlayer ply in mybattlegroup.Members.Keys)
-                            {
-                                ply.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerOff"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            }
-                        }
+                        // string treasname = String.Join(" ", args, 2, args.Length - 2);
+                        // if (treasname == null || treasname == "")
+                        // {
+                        //     client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.NoPlayer", treasname), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //     return;
+                        // }
+                        // //log.Debug("treasname= (" + treasname + ")");
+                        // GameClient treasclient = WorldMgr.GetClientByPlayerName(treasname, true, true);
+                        // if (treasclient == null || treasclient.Player == null)
+                        // {
+                        //     client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.NoPlayer", treasname), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //     return;
+                        // }
+                        // if (treasclient.Player.Realm != client.Player.Realm)
+                        // {
+                        //     client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.NoPlayer", treasname), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //     return;
+                        // }
+                        // if (!mybattlegroup.IsInTheBattleGroup(treasclient.Player))
+                        // {
+                        //     client.Out.SendMessage("This player is not in your battleground.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //
+                        //     return;
+                        // }
+                        
+                        
+                        // mybattlegroup.SetBGTreasurer(treasclient.Player);
+                        
+                        // client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerOn", treasclient.Player.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        // treasclient.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerIsYou"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        // foreach (GamePlayer ply in mybattlegroup.Members.Keys)
+                        // {
+                        //     ply.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerIs", treasclient.Player.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        // }
+                        // if (mybattlegroup.GetBGTreasurer() == null)
+                        // {
+                        //     foreach (GamePlayer ply in mybattlegroup.Members.Keys)
+                        //     {
+                        //         ply.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Battlegroup.BattlegroupTreasurerOff"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        //     }
+                        // }
                     }
                     break;
 
