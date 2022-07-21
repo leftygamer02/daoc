@@ -46,7 +46,7 @@ namespace DOL.GS
 	{
 		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public int id;
+		public int id = -1;
 		public AttackComponent attackComponent;
 		public CraftComponent craftComponent;
         public RangeAttackComponent rangeAttackComponent;
@@ -7499,7 +7499,6 @@ namespace DOL.GS
 
             healthComponent = new HealthComponent(this);
 			// damageComponent = new DamageComponent(this);
-			id = EntityManager.AddNpc(this);
 		}
 	}
 }
