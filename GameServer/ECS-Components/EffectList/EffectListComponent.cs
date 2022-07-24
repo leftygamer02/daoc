@@ -146,8 +146,10 @@ namespace DOL.GS
                         {                           
                             bool addEffect = false;
                             // Check to see if we can add new Effect
+                            Console.WriteLine($"New Effect: Name: {spellEffect.SpellHandler.Spell.Name} Value: {spellEffect.SpellHandler.Spell.Value} Damage: {spellEffect.SpellHandler.Spell.Damage} EffectGroup: {spellEffect.SpellHandler.Spell.EffectGroup}");
                             for (int i = 0; i < existingEffects.Count; i++)
                             {
+                                Console.WriteLine($"Existing Effects: Name: {existingEffects[i].SpellHandler.Spell.Name} Value: {existingEffects[i].SpellHandler.Spell.Value} Damage: {existingEffects[i].SpellHandler.Spell.Damage} EffectGroup: {existingEffects[i].SpellHandler.Spell.EffectGroup}");
                                 if (existingEffects[i].SpellHandler.IsOverwritable(spellEffect) || spellEffect.EffectType == eEffect.MovementSpeedDebuff)
                                 {
                                     if (effect.EffectType != eEffect.Bladeturn)
@@ -156,9 +158,10 @@ namespace DOL.GS
                                         {
                                             addEffect = true;
                                         }
-                                        // Better Effect so disable the current Effect
-                                        else if (spellEffect.SpellHandler.Spell.Value > existingEffects[i].SpellHandler.Spell.Value ||
-                                            spellEffect.SpellHandler.Spell.Damage > existingEffects[i].SpellHandler.Spell.Damage)
+                                        // Better Effect than an enabled effect so disable the current Effect
+                                        else if ((spellEffect.SpellHandler.Spell.Value > existingEffects[i].SpellHandler.Spell.Value ||
+                                            spellEffect.SpellHandler.Spell.Damage > existingEffects[i].SpellHandler.Spell.Damage) &&
+                                            !existingEffects[i].IsDisabled)
                                         {
                                             if (spellEffect.SpellHandler.Spell.IsHelpful && (spellEffect.SpellHandler.Caster != existingEffects[i].SpellHandler.Caster ||
                                                 spellEffect.SpellHandler.SpellLine.KeyName == GlobalSpellsLines.Potions_Effects ||
