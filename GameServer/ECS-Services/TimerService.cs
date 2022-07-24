@@ -110,14 +110,22 @@ public class TimerService
 
         Parallel.ForEach(ActiveTimers, timer =>
         {
-            if (timer != null && timer.NextTick < GameLoop.GameLoopTime)
+            try
             {
-                long startTick = GameTimer.GetTickCount();
-                timer.Tick();
-                long stopTick = GameTimer.GetTickCount();
-                if((stopTick - startTick)  > 25 )
-                    log.Warn($"Long TimerService.Tick for Timer Callback: {timer.Callback?.Method?.DeclaringType}:{timer.Callback?.Method?.Name}  Owner: {timer.TimerOwner?.Name} Time: {stopTick - startTick}ms");
+                if (timer != null && timer.NextTick < GameLoop.GameLoopTime)
+                {
+                    long startTick = GameTimer.GetTickCount();
+                    timer.Tick();
+                    long stopTick = GameTimer.GetTickCount();
+                    if((stopTick - startTick)  > 25 )
+                        log.Warn($"Long TimerService.Tick for Timer Callback: {timer.Callback?.Method?.DeclaringType}:{timer.Callback?.Method?.Name}  Owner: {timer.TimerOwner?.Name} Time: {stopTick - startTick}ms");
+                }
             }
+            catch (Exception e)
+            {
+                log.Error($"Critical error encountered in Timer Service: {e}");
+            }
+            
         });
 
 
@@ -192,7 +200,9 @@ public class TimerService
 
     public static bool HasActiveTimer(ECSGameTimer timer)
     {
-        return ActiveTimers.Contains(timer) || TimerToAdd.Contains(timer);
+        var currentTimers = ActiveTimers.ToList();
+        var timerAdds = TimerToAdd.ToList();
+        return currentTimers.Contains(timer) || timerAdds.Contains(timer);
     }
 }
 
