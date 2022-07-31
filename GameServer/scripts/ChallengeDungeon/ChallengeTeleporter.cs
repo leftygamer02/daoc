@@ -146,15 +146,144 @@ namespace DOL.GS.Scripts
 				{
 					switch (str)
 					{
-						
+						case "Demonic Prison":
+							if (t.Group != null || t.Client.Account.PrivLevel > 1)
+							{
+								// check if grp has 8 ppl to start the challenge
+								if (t.Group?.MemberCount == ServerProperties.Properties.GROUP_MAX_MEMBER || t.Client.Account.PrivLevel > 1)
+								{
+									t.Out.SendMessage($"The prison is a demonic place of torture. " +
+									                  $"Broken souls from all realms who died fighting Legion ended up there. " +
+									                  $"Even I was there and had to turn my back on this place. " +
+									                  $"Are you ready to visit this place to slay the leader of this demonic force?\n\n" +
+									                  $"[Start the Challenge]", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+									Emote(eEmote.Salute);
+								}
+								else
+								{
+									t.Out.SendMessage("The prison is a demonic place of torture. " +
+									                  $"Broken souls from all realms who died fighting Legion ended up there. " +
+									                  $"Even I was there and had to turn my back on this place. " +
+									                  "Are you ready to visit this place to slay the leader of this demonic force?\n\n" +
+									                  $"But I see that you just bring {t.Group?.MemberCount.ToString()} people for this challenge." +
+									                  "Come back when you have willing fighters and mages to go on this mission!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									Emote(eEmote.Induct);
+								}
+							}
+							else
+							{
+								t.Out.SendMessage($"Come back when you have willing fighters and mages to go on this mission!", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+							}
+							break;
+
+						case "Start the Challenge":
+							if (t.Group != null || t.Client.Account.PrivLevel > 1)
+							{
+								if (t.Group?.MemberCount == ServerProperties.Properties.GROUP_MAX_MEMBER ||
+								    t.Client.Account.PrivLevel > 1)
+								{
+									// hib chapter 2 darkness rising dungeon
+									CloneInstance instance =
+										(CloneInstance) WorldMgr.CreateInstance(338, typeof(CloneInstance));
+									instance.LoadFromDatabase("Demonic Prison Hib");
+
+									if (t.Group != null)
+									{
+										foreach (var grpPlayer in t.Group.GetMembersInTheGroup())
+										{
+											grpPlayer.MoveTo(instance.InstanceEntranceLocation);
+										}
+									}
+									else if (t.Client.Account.PrivLevel > 1)
+									{
+										t.MoveTo(instance.InstanceEntranceLocation);
+									}
+								}
+								else
+								{
+									t.Out.SendMessage(
+										$"Come back when you have willing fighters and mages to go on this mission!",
+										eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+								}
+							}
+							else
+							{
+								t.Out.SendMessage($"Come back when you have willing fighters and mages to go on this mission!", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+							}
+							break;
 					}
 				} break;
 				case eRealm.Midgard:
 				{
 					switch (str)
 					{
-						
+						case "Demonic Prison":
+							if (t.Group != null || t.Client.Account.PrivLevel > 1)
+							{
+								// check if grp has 8 ppl to start the challenge
+								if (t.Group?.MemberCount == ServerProperties.Properties.GROUP_MAX_MEMBER || t.Client.Account.PrivLevel > 1)
+								{
+									t.Out.SendMessage($"The prison is a demonic place of torture. " +
+									                  $"Broken souls from all realms who died fighting Legion ended up there. " +
+									                  $"Even I was there and had to turn my back on this place. " +
+									                  $"Are you ready to visit this place to slay the leader of this demonic force?\n\n" +
+									                  $"[Start the Challenge]", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+									Emote(eEmote.Salute);
+								}
+								else
+								{
+									t.Out.SendMessage("The prison is a demonic place of torture. " +
+									                  $"Broken souls from all realms who died fighting Legion ended up there. " +
+									                  $"Even I was there and had to turn my back on this place. " +
+									                  "Are you ready to visit this place to slay the leader of this demonic force?\n\n" +
+									                  $"But I see that you just bring {t.Group?.MemberCount.ToString()} people for this challenge." +
+									                  "Come back when you have willing fighters and mages to go on this mission!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									Emote(eEmote.Induct);
+								}
+							}
+							else
+							{
+								t.Out.SendMessage($"Come back when you have willing fighters and mages to go on this mission!", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+							}
+							break;
+
+						case "Start the Challenge":
+							if (t.Group != null || t.Client.Account.PrivLevel > 1)
+							{
+								if (t.Group?.MemberCount == ServerProperties.Properties.GROUP_MAX_MEMBER ||
+								    t.Client.Account.PrivLevel > 1)
+								{
+									// mid chapter 2 darkness rising dungeon
+									CloneInstance instance =
+										(CloneInstance) WorldMgr.CreateInstance(337, typeof(CloneInstance));
+									instance.LoadFromDatabase("Demonic Prison Mid");
+
+									if (t.Group != null)
+									{
+										foreach (var grpPlayer in t.Group.GetMembersInTheGroup())
+										{
+											grpPlayer.MoveTo(instance.InstanceEntranceLocation);
+										}
+									}
+									else if (t.Client.Account.PrivLevel > 1)
+									{
+										t.MoveTo(instance.InstanceEntranceLocation);
+									}
+								}
+								else
+								{
+									t.Out.SendMessage(
+										$"Come back when you have willing fighters and mages to go on this mission!",
+										eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+								}
+							}
+							else
+							{
+								t.Out.SendMessage($"Come back when you have willing fighters and mages to go on this mission!", eChatType.CT_Say,eChatLoc.CL_PopupWindow);
+							}
+							break;
 					}
+
 				} break;
 			}
 			
