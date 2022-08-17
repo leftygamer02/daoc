@@ -84,6 +84,11 @@ namespace DOL.GS
 		/// The textwrite for log operations
 		/// </summary>
 		protected ILog m_cheatLog;
+		
+		/// <summary>
+		/// The textwrite for log operations
+		/// </summary>
+		protected ILog m_dualIPLog;
 
 		/// <summary>
 		/// Database instance
@@ -586,6 +591,14 @@ namespace DOL.GS
 		{
 			try
 			{
+				//Manually set ThreadPool min thread count.
+				int minWorkerThreads, minIOCThreads, maxWorkerThreads, maxIOCThreads;
+				ThreadPool.GetMinThreads(out minWorkerThreads, out minIOCThreads);
+				ThreadPool.GetMaxThreads(out maxWorkerThreads, out maxIOCThreads);
+				log.Info($"Default ThreadPoool minworkthreads {minWorkerThreads} minIOCThreads {minIOCThreads} maxworkthreads {maxWorkerThreads} maxIOCThreads {maxIOCThreads}");
+				ThreadPool.SetMinThreads(200, 200);
+				
+
 				if (log.IsDebugEnabled)
 					log.DebugFormat("Starting Server, Memory is {0}MB", GC.GetTotalMemory(false) / 1024 / 1024);
 
@@ -711,10 +724,7 @@ namespace DOL.GS
 				if (!InitComponent(WorldMgr.StartRegionMgrs(), "Region Managers"))
 					return false;
 
-				//---------------------------------------------------------------
-				//Load the area manager
-				if (!InitComponent(AreaMgr.LoadAllAreas(), "Areas"))
-					return false;
+				
 
 				//---------------------------------------------------------------
 				//Enable Worldsave timer now
@@ -747,6 +757,11 @@ namespace DOL.GS
 				if (!InitComponent(DoorMgr.Init(), "Door Manager"))
 					return false;
 
+				//---------------------------------------------------------------
+				//Load the area manager
+				if (!InitComponent(AreaMgr.LoadAllAreas(), "Areas"))
+					return false;
+					
 				//---------------------------------------------------------------
 				//Try to initialize the WorldMgr
 				if (!InitComponent(WorldMgr.Init(regionsData), "World Manager Initialization"))
@@ -807,7 +822,15 @@ namespace DOL.GS
 					return false;
 				}
 
+				//Start Aux GameLoop
+				if (!InitComponent(AuxGameLoop.Init(), "AuxGameLoop Init"))
+				{
+					return false;
+				}
+
 				GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+
+				log.Info($"GarbageCollection IsServerGC: {System.Runtime.GCSettings.IsServerGC}" );
 
 				//---------------------------------------------------------------
 				//Open the server, players can now connect if webhook, inform Discord!
@@ -1294,6 +1317,7 @@ namespace DOL.GS
 
 			WorldMgr.Exit();
 			GameLoop.Exit();
+			AuxGameLoop.Exit();
 			//Save the database
 			// 2008-01-29 Kakuri - Obsolete
 			/*if ( m_database != null )
@@ -1448,6 +1472,16 @@ namespace DOL.GS
 			m_cheatLog.Logger.Log(typeof(GameServer), Level.Alert, text, null);
 			log.Debug(text);
 		}
+		
+		/// <summary>
+		/// Writes a line to the cheat log file
+		/// </summary>
+		/// <param name="text">the text to log</param>
+		public void LogDualIPAction(string text)
+		{
+			m_dualIPLog.Logger.Log(typeof(GameServer), Level.Alert, text, null);
+			log.Debug(text);
+		}
 
 		/// <summary>
 		/// Writes a line to the inventory log file
@@ -1590,6 +1624,7 @@ namespace DOL.GS
 		{
 			m_gmLog = LogManager.GetLogger(Configuration.GMActionsLoggerName);
 			m_cheatLog = LogManager.GetLogger(Configuration.CheatLoggerName);
+			m_dualIPLog = LogManager.GetLogger(Configuration.DualIPLoggerName);
 			m_inventoryLog = LogManager.GetLogger(Configuration.InventoryLoggerName);
 
 			if (log.IsDebugEnabled)

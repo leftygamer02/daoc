@@ -72,10 +72,10 @@ namespace DOL.GS
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
-                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
-                default: return 70; // dmg reduction for rest resists
+                case eDamageType.Slash: return 20; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 20; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 20; // dmg reduction for melee dmg
+                default: return 30; // dmg reduction for rest resists
             }
         }
         public override double GetArmorAF(eArmorSlot slot)
@@ -105,7 +105,7 @@ namespace DOL.GS
             Intelligence = npcTemplate.Intelligence;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
 
             GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TorsoArmor, 58, 54, 0, 0);//modelID,color,effect,extension
@@ -154,6 +154,7 @@ namespace DOL.AI.Brain
             AggroRange = 500;
         }
         private bool CanSpawnAdds = false;
+        private bool RemoveAdds = false;
         public override void Think()
         {
             if (!HasAggressionTable())
@@ -161,16 +162,21 @@ namespace DOL.AI.Brain
                 Body.Health = Body.MaxHealth;
                 CanSpawnAdds = false;
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+                if (!RemoveAdds)
                 {
-                    if (npc.Brain is BlueLadyAddBrain)
+                    foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     {
-                        npc.RemoveFromWorld();
+                        if (npc.Brain is BlueLadyAddBrain)
+                        {
+                            npc.RemoveFromWorld();
+                        }
                     }
+                    RemoveAdds = true;
                 }
             }
             if (Body.InCombat && HasAggro && Body.TargetObject != null)
             {
+                RemoveAdds = false;
                 Body.CastSpell(BlueLady_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
                 if ((BlueLadySwordAdd.SwordCount < 10 || BlueLadyAxeAdd.AxeCount < 10) && CanSpawnAdds == false)
                 {

@@ -52,9 +52,9 @@ namespace DOL.GS {
         // TOA Chance in %
         public const ushort ROG_TOA_ITEM_CHANCE = 0;
         // Armor Chance in %
-        public const ushort ROG_ARMOR_CHANCE = 40;
+        public const ushort ROG_ARMOR_CHANCE = 50;
         // Magical Chance in %
-        public const ushort ROG_MAGICAL_CHANCE = 45;
+        public const ushort ROG_MAGICAL_CHANCE = 40;
         // Weapon Chance in %
         public const ushort ROG_WEAPON_CHANCE = 40;
 
@@ -619,7 +619,6 @@ namespace DOL.GS {
                     {
                         validColors.Add(70); //green3
                         validColors.Add(71); //green4
-                        validColors.Add(137); //lime green
                         validColors.Add(142); //forest green
                     }
                     break;
@@ -651,7 +650,6 @@ namespace DOL.GS {
                     {
                         validColors.Add(66); //red3
                         validColors.Add(67); //red4
-                        validColors.Add(120); //red crafter
                         validColors.Add(143); //burgundy
                     }
                     break;
@@ -4757,15 +4755,18 @@ namespace DOL.GS {
         private void CapUtility(int mobLevel)
         {
             int cap = 0;
+
+            cap = mobLevel - 5;
             
-            if (mobLevel > 65)
+            if (mobLevel > 70)
                 cap = mobLevel + (Util.Random(1, 5));
-            else 
-                cap = mobLevel - (Util.Random(1, 10));
-
-            if (mobLevel < 60)
+            
+            if (mobLevel < 65)
                 cap -= (Util.Random(1, 5));
-
+            
+            if (mobLevel > 70 && cap < 60)
+                cap = mobLevel-10;
+            
             if (cap > 80) cap = 80;
 
             //randomize cap to be 80-105% of normal value
@@ -4774,9 +4775,6 @@ namespace DOL.GS {
 
             if (cap < 15)
                 cap = 15; //all items can gen with up to 15 uti
-            
-            if (mobLevel > 70 && cap < 60)
-                cap = 60;
 
             if (this.ProcSpellID != 0 || this.ProcSpellID1 != 0)
                 cap = (int)Math.Floor(cap * .7); //proc items generate with lower utility
@@ -5342,7 +5340,7 @@ namespace DOL.GS {
 
             //based off of eProperty
             //1-8 == stats = *.6667
-            //9 == power cap = *2
+            //9 == power cap = *1
             //10 == maxHP =  *.25
             //11-19 == resists = *2
             //20-115 == skill = *5
@@ -5473,15 +5471,15 @@ namespace DOL.GS {
             {
                 if (Util.Chance(45))
                     return eGenerateType.Weapon;
-                else if (Util.Chance(15))
-                    return eGenerateType.Magical;
+                //else if (Util.Chance(15))
+                  //  return eGenerateType.Magical;
                 else return eGenerateType.Armor;
             }
             else if (level < 10)
             {
                 if (Util.Chance(ROG_ARMOR_CHANCE)) { genTypes.Add(eGenerateType.Armor); }
-                if (Util.Chance(ROG_MAGICAL_CHANCE)) { genTypes.Add(eGenerateType.Magical); }
-                if (Util.Chance(ROG_WEAPON_CHANCE * 2)) { genTypes.Add(eGenerateType.Weapon); }
+                //if (Util.Chance(ROG_MAGICAL_CHANCE)) { genTypes.Add(eGenerateType.Magical); }
+                if (Util.Chance(ROG_WEAPON_CHANCE)) { genTypes.Add(eGenerateType.Weapon); }
             }
             else
             {
@@ -5490,10 +5488,13 @@ namespace DOL.GS {
                 if (Util.Chance(ROG_WEAPON_CHANCE + Util.Random(ROG_WEAPON_CHANCE)/2) ) { genTypes.Add(eGenerateType.Weapon); }
             }
 
-            //if none of the object types were added, default to magical
+            //if none of the object types were added, default to armor
             if (genTypes.Count < 1)
             {
-                genTypes.Add(eGenerateType.Magical);
+                if(Util.Chance(50))
+                    genTypes.Add(eGenerateType.Armor);
+                else
+                    genTypes.Add(eGenerateType.Weapon);
             }
 
             return genTypes[Util.Random(genTypes.Count - 1)];
@@ -6337,7 +6338,7 @@ namespace DOL.GS {
                     }
                 case eObjectType.PolearmWeapon:
                     {
-                        this.SPD_ABS = Util.Random(48, 56);
+                        this.SPD_ABS = Util.Random(53, 56);
                         return;
                     }
                 case eObjectType.Staff:

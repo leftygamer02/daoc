@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 using DOL.Database;
 using DOL.Events;
@@ -383,10 +384,19 @@ namespace DOL.GS
 		{
 			get
 			{
-				if (CurrentZone != null)
-					return CurrentZone.GetAreasOfSpot(this);
-				return new List<IArea>();
+				List<IArea> areas = new List<IArea>();
+				try
+				{
+					if(CurrentZone != null) areas = CurrentZone.GetAreasOfSpot(this) as List<IArea>;
+				}
+				catch (Exception e)
+				{
+					log.Error($"Error encountered when querying current zone of {this.Name}: {e}");
+				}
+
+				return areas;
 			}
+			
 			set { }
 		}
 
@@ -838,7 +848,7 @@ namespace DOL.GS
 			Notify(GameObjectEvent.AddToWorld, this);
 			ObjectState = eObjectState.Active;
 
-			CurrentZone.ObjectEnterZone(this);
+			CurrentZone?.ObjectEnterZone(this);
 			/*********** END OF MODIFICATION ***********/
 
 			m_spawnTick = GameLoop.GameLoopTime;
@@ -1204,6 +1214,16 @@ namespace DOL.GS
 			return GetPlayersInRadius(false, radiusToCheck, false, false);
 		}
 
+		public int GetPlayersInRadiusCount(ushort radiusToCheck)
+		{
+		var enumerable = GetPlayersInRadius(false, radiusToCheck, false, false);
+			var count = 0;
+            foreach (var item in enumerable)
+            {
+				count++;
+            }
+			return count;
+		}
 
 		public IEnumerable GetPlayersInRadius(ushort radiusToCheck, bool ignoreZ)
 		{
@@ -1267,7 +1287,34 @@ namespace DOL.GS
 			}
 			return new Region.EmptyEnumerator();
 		}
+		
+		public IEnumerable GetPetsInRadius(ushort radiusToCheck, bool ignoreZ)
+		{
+			return GetPetsInRadius(false, radiusToCheck, false, ignoreZ);
+		}
 
+		public IEnumerable GetPetsInRadius(bool useCache, ushort radiusToCheck, bool withDistance, bool ignoreZ)
+		{
+			if (CurrentRegion != null)
+			{
+				//Eden - avoid server freeze
+				if (CurrentRegion.GetZone(X, Y) == null)
+				{
+					if (this is GamePlayer && (this as GamePlayer).Client.Account.PrivLevel < 3 && !(this as GamePlayer).TempProperties.getProperty("isbeingbanned", false))
+					{
+						GamePlayer player = this as GamePlayer;
+						player.TempProperties.setProperty("isbeingbanned", true);
+						player.MoveToBind();
+					}
+				}
+				else
+				{
+					return CurrentRegion?.GetPetsInRadius(X, Y, Z, radiusToCheck, withDistance, ignoreZ);
+				}
+			}
+			return new Region.EmptyEnumerator();
+		}
+		
 		/// <summary>
 		/// Gets all npcs close to this object inside a certain radius
 		/// </summary>
@@ -1540,7 +1587,13 @@ namespace DOL.GS
 		{
 			if (ObjectState != eObjectState.Active)
 				return;
-			
+			// Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
+			// {
+			// 	if (player == null)
+			// 		return;
+				
+			// 	player.Out.SendObjectUpdate(this);
+			// });
 			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			{
 				if (player == null)

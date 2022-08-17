@@ -20,10 +20,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40; // dmg reduction for melee dmg
-				case eDamageType.Crush: return 40; // dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
-				default: return 70; // dmg reduction for rest resists
+				case eDamageType.Slash: return 20; // dmg reduction for melee dmg
+				case eDamageType.Crush: return 20; // dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20; // dmg reduction for melee dmg
+				default: return 30; // dmg reduction for rest resists
 			}
 		}
 		public override double GetArmorAF(eArmorSlot slot)
@@ -86,7 +86,7 @@ namespace DOL.GS
 			MaxDistance = 3500;
 			TetherRange = 3500;
 			MeleeDamageType = eDamageType.Crush;
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
 			Faction = FactionMgr.GetFactionByID(150);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(150));
@@ -154,6 +154,7 @@ namespace DOL.AI.Brain
 				IsRift = true;
             }
 		}
+		private bool RemoveAdds = false;
 		public override void Think()
 		{
 			if(Body.IsAlive)
@@ -167,19 +168,24 @@ namespace DOL.AI.Brain
 				IsPulled = false;
 				IsRift = false;
 				SpawnMoreAdds = false;
-				foreach(GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
-					if (npc != null)
-                    {
-						if(npc.IsAlive && npc.Brain is MorkenhetBrain)
-                        {
-							npc.RemoveFromWorld();
-                        }
-                    }
-                }
+				if (!RemoveAdds)
+				{
+					foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+					{
+						if (npc != null)
+						{
+							if (npc.IsAlive && npc.Brain is MorkenhetBrain)
+							{
+								npc.RemoveFromWorld();
+							}
+						}
+					}
+					RemoveAdds = true;
+				}
 			}
-			if (Body.IsAlive && HasAggro)
+			if (Body.IsAlive && HasAggro && Body.TargetObject != null)
 			{
+				RemoveAdds = false;
 				IsValkyn = false;								
 				if(IsRift)
                 {

@@ -22,10 +22,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 30;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -71,7 +71,7 @@ namespace DOL.GS
 			Faction = FactionMgr.GetFactionByID(64);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(64));
 
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 			VortanosBrain sbrain = new VortanosBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;//load from database
@@ -185,6 +185,7 @@ namespace DOL.AI.Brain
 		private bool NotInCombat = false;
 		private bool InCombat1 = false;
 		private bool SpamMess1 = false;
+		private bool RemoveAdds = false;
 		public void BroadcastMessage(String message)
 		{
 			foreach (GamePlayer player in Body.GetPlayersInRadius(2500))
@@ -248,21 +249,26 @@ namespace DOL.AI.Brain
 				Body.Health = Body.MaxHealth;
 				CanSpawnAdds = false;
 				SpamMess1 = false;
-				foreach(GameNPC npc in Body.GetNPCsInRadius(5000))
-                {
-					if (npc != null && npc.IsAlive && npc.Brain is VortanosAddBrain)
+				if (!RemoveAdds)
+				{
+					foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
 					{
-						npc.RemoveFromWorld();
-						if (!NotInCombat)
+						if (npc != null && npc.IsAlive && npc.Brain is VortanosAddBrain)
 						{
-							BroadcastMessage(Body.Name + " says, \"Sleep my unwilling prisoners, you are no longer needed here\"");
-							NotInCombat = true;
+							npc.RemoveFromWorld();
+							if (!NotInCombat)
+							{
+								BroadcastMessage(Body.Name + " says, \"Sleep my unwilling prisoners, you are no longer needed here\"");
+								NotInCombat = true;
+							}
 						}
 					}
-                }
+					RemoveAdds = true;
+				}
 			}
 			if(HasAggro && Body.TargetObject != null)
             {
+				RemoveAdds = false;
 				NotInCombat = false;
 				if(!InCombat1)
                 {

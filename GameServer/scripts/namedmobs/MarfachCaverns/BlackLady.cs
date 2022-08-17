@@ -68,10 +68,10 @@ namespace DOL.GS
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
-                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
-                default: return 70; // dmg reduction for rest resists
+                case eDamageType.Slash: return 30; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 30; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 30; // dmg reduction for melee dmg
+                default: return 30; // dmg reduction for rest resists
             }
         }
         public override double GetArmorAF(eArmorSlot slot)
@@ -85,7 +85,7 @@ namespace DOL.GS
         }
         public override int MaxHealth
         {
-            get { return 30000; }
+            get { return 40000; }
         }
         public override bool AddToWorld()
         {
@@ -102,7 +102,7 @@ namespace DOL.GS
             Gender = eGender.Female;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
 
             GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TorsoArmor, 58, 43, 0, 0);//modelID,color,effect,extension
@@ -176,26 +176,32 @@ namespace DOL.AI.Brain
             AggroRange = 500;
             ThinkInterval = 2000;
         }
+        private bool RemoveAdds = false;
         public override void Think()
         {
             if(!HasAggressionTable())
             {
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+                if (!RemoveAdds)
                 {
-                    if (npc != null)
+                    foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     {
-                        if (npc.IsAlive && npc.Brain is OgressBrain)
+                        if (npc != null)
                         {
-                            npc.RemoveFromWorld();
-                            Ogress.OgressCount = 0;
+                            if (npc.IsAlive && npc.Brain is OgressBrain)
+                            {
+                                npc.RemoveFromWorld();
+                                Ogress.OgressCount = 0;
+                            }
                         }
                     }
+                    RemoveAdds = true;
                 }
             }
-            if(Body.InCombat && HasAggro)
+            if(Body.TargetObject != null && HasAggro)
             {
+                RemoveAdds = false;
                 Body.CastSpell(BlackLady_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
 
                 if(Util.Chance(20))
@@ -248,7 +254,7 @@ namespace DOL.AI.Brain
                     DBSpell spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 3.5;
-                    spell.RecastDelay = Util.Random(10,20);
+                    spell.RecastDelay = Util.Random(6,12);
                     spell.ClientEffect = 4568;
                     spell.Icon = 4568;
                     spell.TooltipId = 4568;

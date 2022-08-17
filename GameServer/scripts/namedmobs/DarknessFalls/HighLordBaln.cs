@@ -4,6 +4,7 @@ using DOL.AI.Brain;
 using DOL.Events;
 using DOL.Database;
 using log4net;
+using DOL.GS;
 
 namespace DOL.GS
 {
@@ -44,7 +45,7 @@ namespace DOL.GS
         }
         public override int MaxHealth
         {
-            get { return 30000; }
+            get { return 100000; }
         }
         public override bool AddToWorld()
         {
@@ -58,13 +59,14 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Piety = npcTemplate.Piety;
             Intelligence = npcTemplate.Intelligence;
+            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
             // demon
             BodyType = 2;
             Faction = FactionMgr.GetFactionByID(191);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(191));
 
-            BaelerdothBrain sBrain = new BaelerdothBrain();
+            BalnBrain sBrain = new BalnBrain();
             SetOwnBrain(sBrain);
             LoadedFromScript = false;
             SaveIntoDatabase();
@@ -88,7 +90,7 @@ namespace DOL.GS
             return base.HasAbility(keyName);
         }
         public override void OnAttackedByEnemy(AttackData ad)
-        {
+        {          
             if (!InCombat)
             {
                 var mobs = GetNPCsInRadius(3000);
@@ -101,24 +103,6 @@ namespace DOL.GS
                 }
             }
             base.OnAttackedByEnemy(ad);
-        }
-        public override void OnAttackEnemy(AttackData ad)
-        {
-            foreach (GamePlayer player in GetPlayersInRadius(2000))
-            {
-                if (GetDistanceTo(player) > 300)
-                {
-                    BalnMinion sMinion = new BalnMinion();
-                    sMinion.X = player.X;
-                    sMinion.Y = player.Y;
-                    sMinion.Z = player.Z;
-                    sMinion.CurrentRegion = player.CurrentRegion;
-                    sMinion.Heading = player.Heading;
-                    sMinion.AddToWorld();
-                    sMinion.StartAttack(player);
-                }
-            }
-            base.OnAttackEnemy(ad);
         }
     }
 }
@@ -134,6 +118,23 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 850;
         }
+        private bool RemoveAdds = false;
+        private bool CanPopMinions = false;
+        private int SpawnMinion(ECSGameTimer timer)
+        {
+            for (int i = 0; i < Util.Random(8, 12); i++)
+            {
+                BalnMinion sMinion = new BalnMinion();
+                sMinion.X = Body.X + Util.Random(-100, 100);
+                sMinion.Y = Body.Y + Util.Random(-100, 100);
+                sMinion.Z = Body.Z;
+                sMinion.CurrentRegion = Body.CurrentRegion;
+                sMinion.Heading = Body.Heading;
+                sMinion.AddToWorld();
+            }
+            CanPopMinions = false;
+            return 0;
+        }
         public override void Think()
         {
             if (!HasAggressionTable())
@@ -141,6 +142,27 @@ namespace DOL.AI.Brain
                 //set state to RETURN TO SPAWN
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
+                if (!RemoveAdds)
+                {
+                    foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+                    {
+                        if (npc != null)
+                        {
+                            if (npc.IsAlive && npc.RespawnInterval == -1 && npc.Brain is BalnMinionBrain)
+                                npc.Die(npc);
+                        }
+                    }
+                    RemoveAdds = true;
+                }
+            }
+            if (HasAggro && Body.TargetObject != null)
+            {
+                RemoveAdds = false;
+                if (!CanPopMinions)
+                {
+                    new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnMinion), Util.Random(20000, 35000));
+                    CanPopMinions = true;
+                }
             }
             base.Think();
         }
@@ -152,7 +174,7 @@ namespace DOL.GS
     {
         public override int MaxHealth
         {
-            get { return 550; }
+            get { return 800; }
         }
         public override bool AddToWorld()
         {
@@ -168,7 +190,7 @@ namespace DOL.GS
             TetherRange = 2000;
             IsWorthReward = false; // worth no reward
             Realm = eRealm.None;
-            BeliathanMinionBrain adds = new BeliathanMinionBrain();
+            BalnMinionBrain adds = new BalnMinionBrain();
             LoadedFromScript = true;
             SetOwnBrain(adds);
 

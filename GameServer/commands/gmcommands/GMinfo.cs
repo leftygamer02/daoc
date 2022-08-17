@@ -57,6 +57,17 @@ namespace DOL.GS.Commands
 			
 			if (client.Player.TargetObject != null)
 			{
+
+				if (client.Player.TargetObject is GuardLord gl)
+				{
+					info.Add("--KEEP LORD--");
+					info.Add(" ");
+					info.Add("Name : " + client.Player.TargetObject.Name);
+					info.Add($"RP Reward: {gl.RealmPointsValue}");
+					info.Add($"BP Reward: {gl.BountyPointsValue}");
+					info.Add($"XP Reward: {gl.ExperienceValue}");
+				}
+				
 				#region Mob
 				/********************* MOB ************************/
 				if (client.Player.TargetObject is GameNPC)
@@ -131,6 +142,8 @@ namespace DOL.GS.Commands
 					{
 						info.Add(" + Aggro level: " + aggroBrain.AggroLevel);
 						info.Add(" + Aggro range: " + aggroBrain.AggroRange);
+						if(aggroBrain is StandardMobBrain mobBrain)
+							info.Add(" + ThinkInterval: " + mobBrain.ThinkInterval +"ms");
 
 						if (target.MaxDistance < 0)
 							info.Add(" + MaxDistance: " + -target.MaxDistance * aggroBrain.AggroRange / 100);
@@ -275,9 +288,18 @@ namespace DOL.GS.Commands
 					info.Add("AttackState: " + target.attackComponent.AttackState);
 					info.Add("LastCombatPVE: " + target.LastAttackedByEnemyTickPvE);
 					info.Add("LastCombatPVP: " + target.LastAttackedByEnemyTickPvP);
+					info.Add("AttackAction: " + target.attackComponent.attackAction);
+					info.Add("WeaponAction: " + target.attackComponent.weaponAction);
 
 					if (target.InCombat || target.attackComponent.AttackState)
+					{
 						info.Add("RegionTick: " + GameLoop.GameLoopTime);
+						if(target.attackComponent.attackAction != null)
+						{
+							info.Add("AttackAction StartTime " + target.attackComponent.attackAction.StartTime);
+							info.Add("AttackAction TimeUntilStart " + target.attackComponent.attackAction.TimeUntilStart);
+						}
+					}
 
 					info.Add("");
 

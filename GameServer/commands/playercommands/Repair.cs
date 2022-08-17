@@ -121,7 +121,7 @@ namespace DOL.GS.Commands
 				}
 			}
 
-			if (player.IsCrafting)
+			if (player.IsCrafting || player.IsSalvagingOrRepairing)
 			{
 				DisplayMessage(player, "You must end your current action before you repair anything!");
 				return false;
@@ -147,6 +147,12 @@ namespace DOL.GS.Commands
 			if (player.InCombat)
 			{
 				DisplayMessage(player, "You can't repair while in combat.");
+				return false;
+			}
+
+			if (obj.InCombat)
+			{
+				DisplayMessage(player, "You can't repair an object under attack.");
 				return false;
 			}
 

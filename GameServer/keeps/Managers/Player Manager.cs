@@ -65,10 +65,10 @@ namespace DOL.GS.Keeps
 					}
 			}*/
 
-			BroadcastMessage(message, eRealm.None);
+			BroadcastKeepTakeMessage(message, keep.Realm);
 			NewsMgr.CreateNews(message, keep.Realm, eNewsType.RvRGlobal, false);
 
-			if (ServerProperties.Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(ServerProperties.Properties.DISCORD_WEBHOOK_ID)))
+			if (ServerProperties.Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(ServerProperties.Properties.DISCORD_RVR_WEBHOOK_ID)))
 			{
 				BroadcastDiscordRvR(message, keep.Realm, keep.Name);
 			}
@@ -142,6 +142,38 @@ namespace DOL.GS.Keeps
 				}
 			}
 		}
+
+		/// <summary>
+		/// Method to broadcast keep take messages and sounds
+		/// else only the right realm can see
+		/// </summary>
+		/// <param name="message">The message</param>
+		/// <param name="capturingrealm">The realm that captured the keep</param>
+		public static void BroadcastKeepTakeMessage(string message, eRealm capturingrealm)
+		{
+			foreach (GameClient client in WorldMgr.GetAllClients())
+			{
+				if (client.Player == null)
+					continue;
+				
+				client.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				client.Out.SendMessage(message, eChatType.CT_ScreenCenter,  eChatLoc.CL_SystemWindow);
+				
+				switch (capturingrealm)
+				{
+					case eRealm.Albion:
+						client.Out.SendSoundEffect(220, 0, 0, 0, 0, 0);
+						break;
+					case eRealm.Midgard:
+						client.Out.SendSoundEffect(218, 0, 0, 0, 0, 0);
+						break;
+					case eRealm.Hibernia:
+						client.Out.SendSoundEffect(219, 0, 0, 0, 0, 0);
+						break;
+				}
+
+			}
+		}
 		
 		/// <summary>
 		/// Method to broadcast RvR messages over Discord
@@ -167,7 +199,7 @@ namespace DOL.GS.Keeps
 					avatarUrl = "https://cdn.discordapp.com/attachments/919610633656369214/928728400523296768/keep_mid.png";
 					break;
 			}
-			var client = new DiscordWebhookClient(ServerProperties.Properties.DISCORD_WEBHOOK_ID);
+			var client = new DiscordWebhookClient(ServerProperties.Properties.DISCORD_RVR_WEBHOOK_ID);
 
 			// Create your DiscordMessage with all parameters of your message.
 			var discordMessage = new DiscordMessage(

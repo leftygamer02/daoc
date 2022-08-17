@@ -35,6 +35,7 @@ using DOL.GS.Spells;
 using DOL.GS.Styles;
 using DOL.Language;
 using DOL.GS.RealmAbilities;
+using System.Threading;
 
 namespace DOL.GS
 {
@@ -48,6 +49,7 @@ namespace DOL.GS
 
 		public int id;
 		public AttackComponent attackComponent;
+		public CraftComponent craftComponent;
         public RangeAttackComponent rangeAttackComponent;
         public StyleComponent styleComponent;
         public Spell LastPulseCast;
@@ -58,6 +60,8 @@ namespace DOL.GS
         /// Holds the AttackData object of last attack
         /// </summary>
         public const string LAST_ATTACK_DATA = "LastAttackData";
+        
+        public bool isDeadOrDying = false;
 
 		protected string m_lastInterruptMessage;
 		public string LastInterruptMessage
@@ -394,7 +398,7 @@ namespace DOL.GS
 		{
 			get
 			{
-				if (this.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) != null)
+				if (this.effectListComponent.ContainsEffectForEffectType(eEffect.SpeedOfSound))
 					return false;
 				return m_turningDisabledCount > 0;
 			}
@@ -2021,10 +2025,10 @@ namespace DOL.GS
 			//modify interrupt chance by mob con
 			double mod = GetConLevel(attacker);
 			double chance = BaseInterruptChance;
-			chance += mod * 10;
+			chance += mod * 33;
 			chance = Math.Max(1, chance);
 			chance = Math.Min(99, chance);
-			if (attacker is GamePlayer) chance = 99;
+			//if (attacker is GamePlayer) chance = 99;
 			
 			if (Util.Chance((int)chance))
             {
@@ -2071,7 +2075,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual int BaseInterruptChance
 		{
-			get { return 65; }
+			get { return 95; }
 		}
 
 		/// <summary>
@@ -4040,8 +4044,8 @@ namespace DOL.GS
 	            double statBasedReduction = living.GetWeaponStat(weapon) * .05;
 				//p.CharacterClass.WeaponSkillBase returns unscaled damage table value
 				//divide by 200 to change to scaling factor. example: warrior's 460 WeaponSkillBase / 200 = 2.3 Damage Table
-				//divide by final 2 to use the 2.0 damage table as our anchor. classes below 2.0 damage table will have slightly reduced penetration, above 2.0 will have increased penetration
-				double tableMod = p.CharacterClass.WeaponSkillBase / 200.0 / 1.8;
+				//divide by final 2.1 to use the 2.1 damage table as our anchor. classes below 2.1 damage table will have slightly reduced penetration, above 2.1 will have increased penetration
+				double tableMod = p.CharacterClass.WeaponSkillBase / 200.0 / 2.1;
 				totalReduction = (skillBasedReduction + statBasedReduction) * tableMod;
             }
 			else
@@ -4149,8 +4153,6 @@ namespace DOL.GS
 				AddXPGainer(source, (float)damageAmount + criticalAmount);
 			}
 
-			bool wasAlive = IsAlive;
-
 			/*
 			//[Freya] Nidel: Use2's Flask
 			if(this is GamePlayer)
@@ -4172,12 +4174,28 @@ namespace DOL.GS
 				}
 			}*/
 
+			bool wasAlive = IsAlive;
+
 			Health -= damageAmount + criticalAmount;
 
-			if (!IsAlive)
-			{
-				if (wasAlive)
-					Die(source);
+			if (!IsAlive && wasAlive && isDeadOrDying == false)
+            {
+					if (Monitor.TryEnter(deadLock))
+					{
+						try
+						{
+						isDeadOrDying = true;
+						Die(source);
+						}
+						finally
+						{
+							Monitor.Exit(deadLock);
+						}
+					}
+					else
+					{
+					return;
+					}
 			}
 			else
 			{
@@ -4185,11 +4203,11 @@ namespace DOL.GS
 					Notify(GameLivingEvent.LowHealth, this, null);
 			}
 		}
-
-        /// <summary>
-        /// Called on the attacker when attacking an enemy.
-        /// </summary>
-        public virtual void OnAttackEnemy(AttackData ad)
+		object deadLock = new object();
+		/// <summary>
+		/// Called on the attacker when attacking an enemy.
+		/// </summary>
+		public virtual void OnAttackEnemy(AttackData ad)
         {
 			//Console.WriteLine(string.Format("OnAttack called on {0}", this.Name));
 
@@ -4227,7 +4245,7 @@ namespace DOL.GS
 				tw.EventHandler(ad);
             }
 
-			if (ad.Target is GamePlayer)
+			if (ad.Target is GamePlayer && ad.Target != this)
 			{
 				LastAttackTickPvP = GameLoop.GameLoopTime;
 			}
@@ -4265,13 +4283,24 @@ namespace DOL.GS
 
         public void CancelFocusSpell(bool moving = false)
         {
-			var focusEffect = effectListComponent.GetSpellEffects(eEffect.Pulse).Where(e => e.SpellHandler.Spell.IsFocus).FirstOrDefault();
-            if (focusEffect != null)
+
+            foreach (var pulseSpell in effectListComponent.GetSpellEffects(eEffect.Pulse))
             {
-                ((SpellHandler)focusEffect.SpellHandler).FocusSpellAction(moving);
-                EffectService.RequestImmediateCancelEffect(focusEffect);
-                if (((SpellHandler)focusEffect.SpellHandler).GetTarget().effectListComponent.Effects.TryGetValue(focusEffect.EffectType, out var petEffect))
-                    EffectService.RequestImmediateCancelEffect(petEffect.FirstOrDefault());
+				if (pulseSpell.SpellHandler.Spell.IsFocus)
+                {
+					((SpellHandler)pulseSpell.SpellHandler).FocusSpellAction(moving);
+					EffectService.RequestImmediateCancelEffect(pulseSpell);
+					if (((SpellHandler)pulseSpell.SpellHandler).GetTarget().effectListComponent.Effects.TryGetValue(eEffect.FocusShield, out var petEffect))
+                    {
+						if (petEffect is not null)
+                        {
+							//verify the effect is a focus shield and not a timer based damage shield
+							if (petEffect.FirstOrDefault().SpellHandler.Spell.IsFocus)
+								EffectService.RequestImmediateCancelEffect(petEffect.FirstOrDefault());
+						}
+							
+					}
+				}
             }
         }
 		/// <summary>
@@ -4309,7 +4338,7 @@ namespace DOL.GS
 						LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
 						ad.Attacker.LastAttackTickPvE = GameLoop.GameLoopTime;
 					}
-					else
+					else if (ad.Attacker != this) //Check if the attacker is not this living (some things like Res Sickness have attacker/target the same)
 					{
 						LastAttackedByEnemyTickPvP = GameLoop.GameLoopTime;
 						ad.Attacker.LastAttackTickPvP = GameLoop.GameLoopTime;
@@ -4482,6 +4511,10 @@ namespace DOL.GS
 
 				if (effect != null && effect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.SpellType != (byte)eSpellType.UnbreakableSpeedDecrease)
 					EffectService.RequestImmediateCancelEffect(effect);
+
+				var ichor_effect = EffectListService.GetEffectOnTarget(this, eEffect.Ichor);
+				if (ichor_effect != null)
+					EffectService.RequestImmediateCancelEffect(ichor_effect);
             }
 
             return removeMez || removeSnare || removeMovementSpeedDebuff;
@@ -4785,11 +4818,16 @@ namespace DOL.GS
 		/// </summary>
 		public virtual void Die(GameObject killer)
 		{
+			isDeadOrDying = true;
+			//Console.WriteLine($"Dead or Dying set to {this.isDeadOrDying} for {this.Name} in living");
 			ReaperService.KillLiving(this, killer);
 		}
 
 		public virtual void ProcessDeath(GameObject killer)
 		{
+            try
+            {
+
 			if (this is GameNPC == false && this is GamePlayer == false)
 			{
 				// deal out exp and realm points based on server rules
@@ -4899,8 +4937,19 @@ namespace DOL.GS
 			
 			LastAttackedByEnemyTickPvE = 0;
 			LastAttackedByEnemyTickPvP = 0;
+			
 			//Let's send the notification at the end
 			Notify(GameLivingEvent.Dying, this, new DyingEventArgs(killer));
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
+			finally
+			{
+				//isDying flag is ALWAYS set to false even if exception happens so it can get remove from the list
+				isDeadOrDying = false;
+			}
 		}
 
 		/// <summary>
@@ -5727,7 +5776,6 @@ namespace DOL.GS
 				double MinMana = MaxMana * 0.15;
 				double OnePercMana = Math.Ceiling(MaxMana * 0.01);
 				log.WarnFormat("current MaxMana is {0} and OnePercMana is {1}", MaxMana, OnePercMana);
-
 				
 
 				if (!InCombat)
@@ -5762,15 +5810,17 @@ namespace DOL.GS
 				}
 			}
 
+			int totalRegenPeriod = PowerRegenerationPeriod;
+
 			//If we were hit before we regenerated, we regenerate slower the next time
 			if (InCombat)
 			{
-				return (int)(PowerRegenerationPeriod * 2);//3.4);
+				totalRegenPeriod = (int)(totalRegenPeriod * 2);//3.4);
 			}
 
 			if (IsSitting)
             {
-				return (int)(PowerRegenerationPeriod / 2);
+	            totalRegenPeriod = (int)(totalRegenPeriod / 2);
             }
 			
 			#region Calculation : AtlasOF_Serenity
@@ -5780,14 +5830,14 @@ namespace DOL.GS
 			{
 				if (raSerenity.Level > 0)
 				{
-					return PowerRegenerationPeriod - (raSerenity.GetAmountForLevel(raSerenity.Level));
+					totalRegenPeriod = totalRegenPeriod - (raSerenity.GetAmountForLevel(raSerenity.Level));
 				}
 			}
 			// --- [START] --- AtlasOF_Serenity -----------------------------------------------------------
 			#endregion
 
 			//regen at standard rate
-			return PowerRegenerationPeriod;
+			return totalRegenPeriod;
 		}
 		/// <summary>
 		/// Callback for the endurance regenerationTimer
@@ -5820,6 +5870,42 @@ namespace DOL.GS
         public EffectListComponent effectListComponent;
         #endregion
 
+        public virtual GamePlayer LosChecker(GameLiving actionSource, GameObject actionTarget)
+        {
+	        if (actionSource == null || actionTarget == null)
+		        return null;
+
+	        if (actionSource is GamePlayer)
+		        return actionSource as GamePlayer;
+	        
+	        {
+		        if (actionSource is GameNPC &&
+		            (actionSource as GameNPC).Brain is IControlledBrain &&
+		            ((actionSource as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null &&
+		            ((actionSource as GameNPC).Brain as IControlledBrain).GetPlayerOwner().ObjectState == GamePlayer.eObjectState.Active)
+			        return ((actionSource as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+
+		        if (actionTarget is GamePlayer)
+			        return actionTarget as GamePlayer;
+		        
+		        {
+			        if (actionSource is GameNPC && ((actionSource as GameNPC).Brain is IControlledBrain == false))
+			        {
+				        if (actionTarget is GameNPC &&
+				            (actionTarget as GameNPC).Brain is IControlledBrain &&
+				            ((actionTarget as GameNPC).Brain as IControlledBrain).GetPlayerOwner() != null &&
+				            ((actionTarget as GameNPC).Brain as IControlledBrain).GetPlayerOwner().ObjectState == GamePlayer.eObjectState.Active)
+					        return ((actionTarget as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+			        }
+		        }
+	        }
+	        foreach (GamePlayer pl in actionSource.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+	        {
+		        if (pl != null && pl.ObjectState == GameLiving.eObjectState.Active)
+			        return pl;
+	        }
+	        return null;
+        }
 
         #region Mana/Health/Endurance/Concentration/Delete
         /// <summary>
@@ -6275,14 +6361,14 @@ namespace DOL.GS
 		/// <summary>
 		/// The tick at which the movement started.
 		/// </summary>
-		public int MovementStartTick { get; set; }
+		public long MovementStartTick { get; set; }
 
 		/// <summary>
 		/// Elapsed ticks since movement started.
 		/// </summary>
-		protected int MovementElapsedTicks
+		protected long MovementElapsedTicks
 		{
-			get { return Environment.TickCount - MovementStartTick; }
+			get { return GameLoop.GameLoopTime - MovementStartTick; }
 		}
 
 		/// <summary>

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.ServerProperties;
-using System.Collections.Generic;
 
 namespace DOL.GS
 {
@@ -109,6 +109,8 @@ namespace DOL.GS
 
 			}
 
+			AwardDragonKillPoint();
+
 			base.Die(killer);
 
 			foreach (String message in m_deathAnnounce)
@@ -136,7 +138,7 @@ namespace DOL.GS
 		/// <param name="killer">The living that got the killing blow.</param>
 		protected void ReportNews(GameObject killer)
 		{
-			int numPlayers = AwardDragonKillPoint();
+			int numPlayers = GetPlayersInRadiusCount(WorldMgr.VISIBILITY_DISTANCE);
 			String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
 			NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
 
@@ -199,8 +201,9 @@ namespace DOL.AI.Brain
 		public static bool Bomb2 = false;
 		public static bool Bomb3 = false;
 		public static bool Bomb4 = false;
-		List<GamePlayer> Port_Enemys = new List<GamePlayer>();
-		List<GamePlayer> DD_Enemys = new List<GamePlayer>();
+		private bool RemoveAdds = false;
+        System.Collections.Generic.List<GamePlayer> Port_Enemys = new System.Collections.Generic.List<GamePlayer>();
+		System.Collections.Generic.List<GamePlayer> DD_Enemys = new System.Collections.Generic.List<GamePlayer>();
 		public void BroadcastMessage(String message)
 		{
 			foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
@@ -323,17 +326,22 @@ namespace DOL.AI.Brain
 				SpawnAddsOnce = false;
 				CheckForSingleAdd = false;
 				XanxicarianChampion.XanxicarianChampionCount = 0;
-				foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
-					if(npc != null)
-                    {
-						if(npc.IsAlive && npc.Brain is XanxicarianChampionBrain)
-							npc.RemoveFromWorld();
-                    }
-                }
+				if (!RemoveAdds)
+				{
+					foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+					{
+						if (npc != null)
+						{
+							if (npc.IsAlive && npc.Brain is XanxicarianChampionBrain)
+								npc.RemoveFromWorld();
+						}
+					}
+					RemoveAdds = true;
+				}
 			}
 			if (Body.InCombat && Body.IsAlive && HasAggro)
 			{
+				RemoveAdds = false;
 				if (IsTargetPicked == false)
 				{
 					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ThrowPlayer), Util.Random(20000, 40000));//timer to port and pick player

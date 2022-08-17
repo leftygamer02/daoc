@@ -25,11 +25,11 @@ using DOL.Language;
 namespace DOL.GS.Commands
 {
     [CmdAttribute(
-        "&classrogs",
+        "&classrog",
         ePrivLevel.Player,
         "change the chance% of getting ROGs outside of your current class at level 50," +
         " or the likelihood of getting items relevant to your spec while under 50",
-        "/classrogs <%chance>")]
+        "/classrog <%chance>")]
     public class ClassRogsCommandHandler : AbstractCommandHandler, ICommandHandler
     {
         public void OnCommand(GameClient client, string[] args)
@@ -68,7 +68,7 @@ namespace DOL.GS.Commands
             client.Player.OutOfClassROGPercent = cachedInput;
             
             if(client.Player.Level == 50)
-                DisplayMessage(client, "You will now receive out of class ROGs " + args[1] + "% of the time.");
+                DisplayMessage(client, "You will now receive out of class ROGs " + client.Player.OutOfClassROGPercent + "% of the time.");
             else
             {
                 //DisplayMessage(client, "You are now " + client.Player.OutOfClassROGPercent + "% more likely to get ROGs relevant to your spec.");

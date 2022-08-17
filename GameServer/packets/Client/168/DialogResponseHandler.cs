@@ -42,7 +42,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles dialog responses from players
 		/// </summary>
-		protected class DialogBoxResponseAction : RegionECSAction
+		protected class DialogBoxResponseAction : AuxRegionECSAction
 		{
 			/// <summary>
 			/// The general data field
@@ -91,7 +91,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override int OnTick(ECSGameTimer timer)
+			protected override int OnTick(AuxECSGameTimer timer)
 			{
 				var player = (GamePlayer) m_actionSource;
 
@@ -139,7 +139,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 									                       eChatType.CT_System, eChatLoc.CL_SystemWindow);
 									return 0;
 								}
-								if (guildLeader.CurrentZone.IsRvR || player.CurrentZone.IsRvR)
+								if (!ServerProperties.Properties.ALLOW_GUILD_INVITE_IN_RVR && (guildLeader.CurrentZone.IsRvR || player.CurrentZone.IsRvR))
 								{
 									player.Out.SendMessage("You can't join a guild while in a RvR zone.",
 										eChatType.CT_System, eChatLoc.CL_SystemWindow);

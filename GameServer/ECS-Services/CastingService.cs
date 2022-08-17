@@ -4,11 +4,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ECS.Debug;
+using log4net;
+using System.Reflection;
 
 namespace DOL.GS
 {
     public static class CastingService
     {
+        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private const string ServiceName = "CastingService";
         static int _segmentsize = 2;
         static List<Task> _tasks = new List<Task>();
@@ -25,7 +28,19 @@ namespace DOL.GS
             
             Parallel.ForEach(arr, p =>
             {
-                HandleTick(p, tick);
+                try
+                {
+                    // long startTick = GameTimer.GetTickCount();
+                    HandleTick(p, tick);
+                    // long stopTick = GameTimer.GetTickCount();
+                    // if ((stopTick - startTick) > 25)
+                    //     log.Warn(
+                    //         $"Long CastingComponent.Tick for: {p.Name}({p.ObjectID}) Spell: {p.castingComponent?.spellHandler?.Spell?.Name} Time: {stopTick - startTick}ms");
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Critical error encountered in CastingService: {e}");
+                }
             });
 
             Diagnostics.StopPerfCounter(ServiceName);
@@ -43,7 +58,12 @@ namespace DOL.GS
 
             var handler = p.castingComponent.spellHandler;
 
+            long startTick = GameTimer.GetTickCount();
             handler?.Tick(tick);
+            long stopTick = GameTimer.GetTickCount();
+            if ((stopTick - startTick) > 25)
+                log.Warn(
+                    $"Long CastingComponent.Tick for: {p.Name}({p.ObjectID}) Spell: {p.castingComponent?.spellHandler?.Spell?.Name} Time: {stopTick - startTick}ms");
         }
     }
 }

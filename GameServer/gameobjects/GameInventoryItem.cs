@@ -892,7 +892,7 @@ namespace DOL.GS {
             }
         }
 
-        private double GetTotalUtility()
+        public double GetTotalUtility()
         {
             double totalUti = 0;
 
@@ -1291,7 +1291,7 @@ namespace DOL.GS {
                 }
                 else if (BonusType == 9)
                 {
-                    totalUti += Bonus * 2;
+                    totalUti += Bonus;
                 }
                 else if (BonusType == 10)
                 {

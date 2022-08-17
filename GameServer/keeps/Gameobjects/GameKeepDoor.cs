@@ -19,11 +19,15 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Linq;
 
 using DOL.Database;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
+
 
 using log4net;
 
@@ -329,10 +333,10 @@ namespace DOL.GS.Keeps
 				if (m_oldHealthPercent != HealthPercent)
 				{
 					m_oldHealthPercent = HealthPercent;
-					foreach (GameClient client in WorldMgr.GetClientsOfRegion(CurrentRegionID))
+					Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
 					{
-						client.Out.SendObjectUpdate(this);
-					}
+						player?.Client.Out.SendObjectUpdate(this);
+					});
 				}
 			}
 
@@ -369,14 +373,22 @@ namespace DOL.GS.Keeps
 		private void BroadcastRelicGateDamage()
 		{
 			var message = $"{Component.Keep.Name} is under attack!";
+			Parallel.ForEach(WorldMgr.GetClientsOfRealm(Realm), cl =>
+			{
+				if (cl.Player.ObjectState != eObjectState.Active) return;
+				cl.Out.SendMessage(message, eChatType.CT_ScreenCenterSmaller, eChatLoc.CL_SystemWindow);
+				cl.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+			});
+			
+			/*
 			foreach (var cl in WorldMgr.GetClientsOfRealm(Realm))
 			{
 				if (cl.Player.ObjectState != eObjectState.Active) continue;
 				cl.Out.SendMessage(message, eChatType.CT_ScreenCenterSmaller, eChatLoc.CL_SystemWindow);
 				cl.Out.SendMessage(message, eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-			}
+			}*/
 			
-			if (Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_WEBHOOK_ID)))
+			if (Properties.DISCORD_ACTIVE && (!string.IsNullOrEmpty(Properties.DISCORD_RVR_WEBHOOK_ID)))
 			{
 				GameRelicPad.BroadcastDiscordRelic(message, Realm, Component.Keep.Name);
 			}
@@ -399,6 +411,11 @@ namespace DOL.GS.Keeps
 			if (Component.Keep is GameKeepTower)
 			{
 				toughness = Properties.SET_TOWER_DOOR_TOUGHNESS;
+			}
+
+			if (Component.Keep.KeepID == 11) //Reduce toughness for Thid CK
+			{
+				toughness = 25; //Our "normal" toughness is 10% for OF keeps, increasing damage on Thid CK doors
 			}
 
 			if (source is GamePlayer)
@@ -618,6 +635,7 @@ namespace DOL.GS.Keeps
 
 		public override void StartHealthRegeneration()
 		{
+			if (!IsAttackableDoor) return; //Doors don't regen health if they are not attackable
 			if (m_repairTimer != null && m_repairTimer.IsAlive) return; 
 			m_repairTimer = new ECSGameTimer(this);
 			m_repairTimer.Callback = new ECSGameTimer.ECSTimerCallback(RepairTimerCallback);
@@ -827,10 +845,15 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public virtual void BroadcastDoorStatus()
 		{
-			foreach (GameClient client in WorldMgr.GetClientsOfRegion(CurrentRegionID))
+			Parallel.ForEach(this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
 			{
-				client.Player.SendDoorUpdate(this);
-			}
+				player.SendDoorUpdate(this);
+			});
+
+			// foreach (GameClient client in WorldMgr.GetClientsOfRegion(CurrentRegionID))
+			// {
+			// 	client.Player.SendDoorUpdate(this);
+			// }
 		}
 
 		protected ECSGameTimer m_repairTimer;

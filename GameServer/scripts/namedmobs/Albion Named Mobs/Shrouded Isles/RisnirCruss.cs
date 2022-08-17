@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
@@ -20,10 +22,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 30;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -66,7 +68,7 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
 			Flags = eFlags.FLYING;
 			Faction = FactionMgr.GetFactionByID(20);
@@ -132,6 +134,7 @@ namespace DOL.AI.Brain
 			ThinkInterval = 1500;
 		}
 		private bool NotInCombat = false;
+		private bool RemoveAdds = false;
 		public override void Think()
 		{
 			if (!HasAggressionTable())
@@ -146,14 +149,19 @@ namespace DOL.AI.Brain
 					new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Show_Effect), 500);
 					NotInCombat = true;
 				}
-				foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+				if (!RemoveAdds)
 				{
-					if (npc != null && npc.IsAlive && npc.RespawnInterval == -1 && npc.PackageID == "RisnirCrussAdd")
-						npc.Die(Body);
+					foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+					{
+						if (npc != null && npc.IsAlive && npc.RespawnInterval == -1 && npc.PackageID == "RisnirCrussAdd")
+							npc.Die(Body);
+					}
+					RemoveAdds = true;
 				}
 			}
 			if (HasAggro && Body.TargetObject != null)
 			{
+				RemoveAdds = false;
 				NotInCombat = false;
 				if (Body.Flags != 0)
 					Body.Flags = 0;
@@ -173,19 +181,13 @@ namespace DOL.AI.Brain
 		{
 			if (Body.IsAlive && !HasAggro)
 			{
-				foreach (GamePlayer player in Body.GetPlayersInRadius(3000))
+				Parallel.ForEach(Body.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
 				{
-					if (player != null)
-						player.Out.SendSpellEffectAnimation(Body, Body, 6085, 0, false, 0x01);
-				}
-				new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(DoCast), 1500);
+					player?.Out.SendSpellEffectAnimation(Body, Body, 6085, 0, false, 0x01);
+				});
+
+				return 3000;
 			}
-			return 0;
-		}
-		protected int DoCast(ECSGameTimer timer)
-		{
-			if (Body.IsAlive && !HasAggro)
-				new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1500);
 			return 0;
 		}
 		private Spell m_Boss_PBAOE;

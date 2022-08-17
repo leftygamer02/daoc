@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
@@ -194,47 +195,7 @@ public class LostStoneofArawn : BaseQuest
         #region defineItems
 
         ancient_copper_necklace = GameServer.Database.FindObjectByKey<ItemTemplate>("ancient_copper_necklace");
-        if (ancient_copper_necklace == null)
-        {
-            if (log.IsWarnEnabled)
-                log.Warn("Could not find Ancient Copper Necklace, creating it ...");
-            ancient_copper_necklace = new ItemTemplate();
-            ancient_copper_necklace.Id_nb = "ancient_copper_necklace";
-            ancient_copper_necklace.Name = "Ancient Copper Necklace";
-            ancient_copper_necklace.Level = 51;
-            ancient_copper_necklace.Durability = 50000;
-            ancient_copper_necklace.MaxDurability = 50000;
-            ancient_copper_necklace.Condition = 50000;
-            ancient_copper_necklace.MaxCondition = 50000;
-            ancient_copper_necklace.Item_Type = 29;
-            ancient_copper_necklace.Object_Type = (int) eObjectType.Magical;
-            ancient_copper_necklace.Model = 101;
-            ancient_copper_necklace.Bonus = 35;
-            ancient_copper_necklace.IsDropable = true;
-            ancient_copper_necklace.IsTradable = true;
-            ancient_copper_necklace.IsIndestructible = false;
-            ancient_copper_necklace.IsPickable = true;
-            ancient_copper_necklace.Bonus1 = 10;
-            ancient_copper_necklace.Bonus2 = 10;
-            ancient_copper_necklace.Bonus3 = 10;
-            ancient_copper_necklace.Bonus4 = 10;
-            ancient_copper_necklace.Bonus1Type = 11;
-            ancient_copper_necklace.Bonus2Type = 19;
-            ancient_copper_necklace.Bonus3Type = 18;
-            ancient_copper_necklace.Bonus4Type = 13;
-            ancient_copper_necklace.Price = 0;
-            ancient_copper_necklace.Realm = (int) eRealm.Albion;
-            ancient_copper_necklace.DPS_AF = 0;
-            ancient_copper_necklace.SPD_ABS = 0;
-            ancient_copper_necklace.Hand = 0;
-            ancient_copper_necklace.Type_Damage = 0;
-            ancient_copper_necklace.Quality = 100;
-            ancient_copper_necklace.Weight = 10;
-            ancient_copper_necklace.LevelRequirement = 50;
-            ancient_copper_necklace.BonusLevel = 30;
-            ancient_copper_necklace.Description = "";
-            if (SAVE_INTO_DATABASE) GameServer.Database.AddObject(ancient_copper_necklace);
-        }
+
 
         scroll_wearyall_loststone = GameServer.Database.FindObjectByKey<ItemTemplate>("scroll_wearyall_loststone");
         if (scroll_wearyall_loststone == null)
@@ -425,21 +386,33 @@ public class LostStoneofArawn : BaseQuest
 
         if (quest is not {Step: 4}) return;
 
-        if (player.Group != null)
-            if (player.Group.Leader != player)
-                return;
-
         var existingCopy = WorldMgr.GetNPCsByName("Nyaegha", eRealm.None);
 
         if (existingCopy.Length > 0) return;
 
-        // player near demon           
-        SendSystemMessage(player,
-            "This is Marw Gwlad. The ground beneath your feet is cracked and burned, and the air holds a faint scent of brimstone.");
-        player.Out.SendMessage("Nyaegha ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-        quest.CreateNyaegha(player);
+        //only try to spawn him once per trigger even if multiple people enter at the same time
+        if (Monitor.TryEnter(spawnLock))
+        {
+            try
+            {
+                // player near demon           
+                SendSystemMessage(player,
+                    "This is Marw Gwlad. The ground beneath your feet is cracked and burned, and the air holds a faint scent of brimstone.");
+                player.Out.SendMessage("Nyaegha ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+                quest.CreateNyaegha(player);
+            }
+            finally
+            {
+                Monitor.Exit(spawnLock);
+            }
+        }
+        else
+        {
+            return;
+        }
     }
 
+    static object spawnLock = new object();
     private static void TalkToHonaytrt(DOLEvent e, object sender, EventArgs args)
     {
         //We get the player from the event arguments and check if he qualifies		

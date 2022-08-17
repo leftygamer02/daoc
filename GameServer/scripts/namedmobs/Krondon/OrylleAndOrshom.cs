@@ -5,6 +5,8 @@ using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL.GS;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DOL.GS
 {
@@ -22,10 +24,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 30;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 30;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 30;// dmg reduction for melee dmg
+				default: return 40;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -77,7 +79,7 @@ namespace DOL.GS
 			MaxSpeedBase = 250;
 			MaxDistance = 3500;
 			TetherRange = 3800;
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
 			Faction = FactionMgr.GetFactionByID(8);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(8));
@@ -157,7 +159,7 @@ namespace DOL.AI.Brain
 				RandomTarget = null;//throw
 				IsTargetPicked = false;//throw
 			}
-			if (HasAggro)
+			if (HasAggro && Body.TargetObject != null)
 			{
 				if (IsTargetPicked == false && OrshomFire.FireCount > 0)
 				{
@@ -201,10 +203,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 30;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -256,7 +258,7 @@ namespace DOL.GS
 			MaxSpeedBase = 250;
 			MaxDistance = 3500;
 			TetherRange = 3800;
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
 			Faction = FactionMgr.GetFactionByID(8);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(8));
@@ -283,6 +285,7 @@ namespace DOL.AI.Brain
 			CanBAF = false;
 		}
 		private bool Spawn_Fire = false;
+		private bool RemoveAdds = false;
 		public override void Think()
 		{
 			if (!HasAggressionTable())
@@ -291,20 +294,25 @@ namespace DOL.AI.Brain
 				FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 				Body.Health = Body.MaxHealth;
 				Spawn_Fire = false;
-				foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+				if (!RemoveAdds)
 				{
-					if (npc != null)
+					foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
 					{
-						if (npc.IsAlive && npc.Brain is OrshomFireBrain)
+						if (npc != null)
 						{
-							npc.RemoveFromWorld();
-							OrshomFire.FireCount = 0;
+							if (npc.IsAlive && npc.Brain is OrshomFireBrain)
+							{
+								npc.RemoveFromWorld();
+								OrshomFire.FireCount = 0;
+							}
 						}
 					}
+					RemoveAdds = true;
 				}
 			}
-			if (HasAggro)
+			if (HasAggro && Body.TargetObject != null)
 			{
+				RemoveAdds = false;
 				if (Spawn_Fire == false)
 				{
 					SpawnFire();
@@ -455,25 +463,18 @@ namespace DOL.GS
 		{
 			if (IsAlive)
 			{
-				foreach (GamePlayer player in this.GetPlayersInRadius(8000))
+				Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
 				{
-					if (player != null)
-						player.Out.SendSpellEffectAnimation(this, this, 7025, 0, false, 0x01);
-				}
+					player?.Out.SendSpellEffectAnimation(this, this, 7025, 0, false, 0x01);
+				});
+				
 				SetGroundTarget(X, Y, Z);
 				CastSpell(Fire_aoe, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-				new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1500);
+				return 3000;
 			}
 			return 0;
 		}
-		protected int DoCast(ECSGameTimer timer)
-		{
-			if (IsAlive)
-			{
-				new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1500);
-			}
-			return 0;
-		}
+		
 		private Spell m_Fire_aoe;
 		private Spell Fire_aoe
 		{

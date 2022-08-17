@@ -270,7 +270,8 @@ namespace DOL.GS
 			m_DBguild.Bank += amount;
 
             InventoryLogging.LogInventoryAction(donating, "(GUILD;" + Name + ")", eInventoryActionType.Other, long.Parse(amount.ToString()));
-            donating.Out.SendUpdatePlayer();
+			//donating.SaveIntoDatabase();
+			donating.Out.SendUpdatePlayer();			
 			return;
 		}
 		public void WithdrawGuildBank(GamePlayer withdraw, double amount)
@@ -623,6 +624,8 @@ namespace DOL.GS
 			
 			if (log.IsDebugEnabled)
 				log.Debug("Adding player to the guild, guild name=\"" + Name + "\"; player name=" + addPlayer.Name);
+
+			if (addPlayer.Realm != this.Realm) return false;
 
 			try
 			{

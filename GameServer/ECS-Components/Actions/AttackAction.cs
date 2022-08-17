@@ -27,6 +27,11 @@ namespace DOL.GS
         public long RangeInterruptTime { get { return rangeInterruptTime; } set { rangeInterruptTime = value + GameLoop.GameLoopTime; } }
         public long TimeUntilStart { get { return StartTime - GameLoop.GameLoopTime; } }
 
+        //Next check for NPCs in the attack range to hit while on the way to main target
+        private long NPCNextNPCVicinityCheck = 0;
+        //Check Delay in ms for when to check for NPCs in area to attack when not in range of main target. Used as upper bound of checks 
+        private int NPC_VICINITY_CHECK_DELAY => 1000;
+
         /// <summary>
         /// Constructs a new attack action
         /// </summary>
@@ -105,11 +110,12 @@ namespace DOL.GS
                     }
 
                     int model = (attackWeapon == null ? 0 : attackWeapon.Model);
-                    foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                    Parallel.ForEach((owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE)).OfType<GamePlayer>(), player =>
                     {
-                        if (player == null) continue;
+                        if (player == null)
+                            return;
                         player.Out.SendCombatAnimation(owner, attackTarget, (ushort)model, 0x00, player.Out.BowShoot, 0x01, 0, ((GameLiving)attackTarget).HealthPercent);
-                    }
+                    });
 
                     interruptDuration = owner.attackComponent.AttackSpeed(attackWeapon);
 
@@ -206,7 +212,9 @@ namespace DOL.GS
                         return; //Don't start the attack if the last one fumbled
                     }
 
-                    combatStyle = owner.styleComponent.GetStyleToUse();
+                    // Figure out which combat style may be (GamePlayer) or is being (GameNPC) used
+                    combatStyle = owner is GamePlayer ? owner.styleComponent.GetStyleToUse() : owner.styleComponent.NPCGetStyleToUse();
+                    
                     if (combatStyle != null && combatStyle.WeaponTypeRequirement == (int)eObjectType.Shield)
                     {
                         attackWeapon = leftWeapon;
@@ -225,8 +233,10 @@ namespace DOL.GS
 
                 int addRange = combatStyle?.Procs?.FirstOrDefault()?.Item1.SpellType == (byte)eSpellType.StyleRange ? (int)combatStyle?.Procs?.FirstOrDefault()?.Item1.Value - owner.attackComponent.AttackRange : 0;
 
+                //Target not in range yet
                 if (attackTarget != null && !owner.IsWithinRadius(attackTarget, owner.attackComponent.AttackRange + addRange) && owner.ActiveWeaponSlot != eActiveWeaponSlot.Distance)
                 {
+                    //This is a NPC and target not in range. Check if another target is in range to attack on the way to main target
                     if (owner is GameNPC && (owner as GameNPC).Brain is StandardMobBrain && ((owner as GameNPC).Brain as StandardMobBrain).AggroTable.Count > 0 && (owner as GameNPC).Brain is IControlledBrain == false)
                     {
                         #region Attack another target in range
@@ -249,16 +259,23 @@ namespace DOL.GS
                                 }
                             }
                         }
-                        foreach (GameNPC target_possibility in owner.GetNPCsInRadius((ushort)owner.attackComponent.AttackRange))
+                        //Check for NPCs in attack range. Only check if the NPCNextNPCVicinityCheck is less than the current GameLoop Time
+                        if (NPCNextNPCVicinityCheck < GameLoop.GameLoopTime)
                         {
-                            if (npc_brain.AggroTable.ContainsKey(target_possibility))
+                            //Set the next check for NPCs. Will be in a range from 100ms -> NPC_VICINITY_CHECK_DELAY
+                            NPCNextNPCVicinityCheck = GameLoop.GameLoopTime + Util.Random(100,NPC_VICINITY_CHECK_DELAY);
+
+                            foreach (GameNPC target_possibility in owner.GetNPCsInRadius((ushort)owner.attackComponent.AttackRange))
                             {
-                                aggro = npc_brain.GetAggroAmountForLiving(target_possibility);
-                                if (aggro <= 0) continue;
-                                if (aggro > maxaggro)
+                                if (npc_brain.AggroTable.ContainsKey(target_possibility))
                                 {
-                                    Possibly_target = target_possibility;
-                                    maxaggro = aggro;
+                                    aggro = npc_brain.GetAggroAmountForLiving(target_possibility);
+                                    if (aggro <= 0) continue;
+                                    if (aggro > maxaggro)
+                                    {
+                                        Possibly_target = target_possibility;
+                                        maxaggro = aggro;
+                                    }
                                 }
                             }
                         }
@@ -345,10 +362,12 @@ namespace DOL.GS
                         { }
                         else
                         {
-                            foreach (GamePlayer player in owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                            Parallel.ForEach((owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE)).OfType<GamePlayer>(), player =>
                             {
+                                if (player == null)
+                                    return;
                                 player.Out.SendCombatAnimation(owner, null, (ushort)model, 0x00, player.Out.BowPrepare, attackSpeed, 0x00, 0x00);
-                            }
+                            });
                         }
                         if (owner.rangeAttackComponent.RangedAttackType == eRangedAttackType.RapidFire)
                         {
@@ -384,7 +403,7 @@ namespace DOL.GS
 
             if (RangeInterruptTime > time)
             {
-                if (owner.rangeAttackComponent?.RangedAttackState == eRangedAttackState.Aim)
+                if (owner.rangeAttackComponent?.RangedAttackState is eRangedAttackState.Aim or eRangedAttackState.AimFire or eRangedAttackState.AimFireReload)
                 {
                     var p = owner as GamePlayer;
                     if (p != null && p.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
@@ -393,7 +412,7 @@ namespace DOL.GS
                         {
                             var attacker = p.attackComponent.Attackers.Last();
                             double mod = p.GetConLevel(attacker);
-                            double chance = 65;
+                            double chance = 90;
                             chance += mod != null ? mod * 10 : 0;
                             chance = Math.Max(1, chance);
                             chance = Math.Min(99, chance);

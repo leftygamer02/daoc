@@ -16,6 +16,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
@@ -210,50 +211,9 @@ namespace DOL.GS.Quests.Hibernia
 			#endregion
 
 			#region defineItems
-			beaded_resisting_stone = GameServer.Database.FindObjectByKey<ItemTemplate>("beaded_resisting_stone");
-	        if (beaded_resisting_stone == null)
-	        {
-	            if (log.IsWarnEnabled)
-	                log.Warn("Could not find Beaded Resisting Stone, creating it ...");
-	            beaded_resisting_stone = new ItemTemplate();
-	            beaded_resisting_stone.Id_nb = "beaded_resisting_stone";
-	            beaded_resisting_stone.Name = "Beaded Resisting Stone";
-	            beaded_resisting_stone.Level = 51;
-	            beaded_resisting_stone.Durability = 50000;
-	            beaded_resisting_stone.MaxDurability = 50000;
-	            beaded_resisting_stone.Condition = 50000;
-	            beaded_resisting_stone.MaxCondition = 50000;
-	            beaded_resisting_stone.Item_Type = 29;
-	            beaded_resisting_stone.Object_Type = (int) eObjectType.Magical;
-	            beaded_resisting_stone.Model = 101;
-	            beaded_resisting_stone.Bonus = 35;
-	            beaded_resisting_stone.IsDropable = true;
-	            beaded_resisting_stone.IsTradable = true;
-	            beaded_resisting_stone.IsIndestructible = false;
-	            beaded_resisting_stone.IsPickable = true;
-	            beaded_resisting_stone.Bonus1 = 10;
-	            beaded_resisting_stone.Bonus2 = 10;
-	            beaded_resisting_stone.Bonus3 = 10;
-	            beaded_resisting_stone.Bonus4 = 10;
-	            beaded_resisting_stone.Bonus1Type = 11;
-	            beaded_resisting_stone.Bonus2Type = 19;
-	            beaded_resisting_stone.Bonus3Type = 18;
-	            beaded_resisting_stone.Bonus4Type = 13;
-	            beaded_resisting_stone.Price = 0;
-	            beaded_resisting_stone.Realm = (int) eRealm.Midgard;
-	            beaded_resisting_stone.DPS_AF = 0;
-	            beaded_resisting_stone.SPD_ABS = 0;
-	            beaded_resisting_stone.Hand = 0;
-	            beaded_resisting_stone.Type_Damage = 0;
-	            beaded_resisting_stone.Quality = 100;
-	            beaded_resisting_stone.Weight = 10;
-	            beaded_resisting_stone.LevelRequirement = 50;
-	            beaded_resisting_stone.BonusLevel = 30;
-	            beaded_resisting_stone.Description = "";
-	            if (SAVE_INTO_DATABASE) GameServer.Database.AddObject(beaded_resisting_stone);
-	        }
-	        
-	        quest_pendant = GameServer.Database.FindObjectByKey<ItemTemplate>("quest_pendant");
+			beaded_resisting_stone = GameServer.Database.FindObjectByKey<ItemTemplate>("Beaded Resisting Stones");
+
+			quest_pendant = GameServer.Database.FindObjectByKey<ItemTemplate>("quest_pendant");
 	        if (quest_pendant == null)
 	        {
 		        if (log.IsWarnEnabled)
@@ -369,7 +329,11 @@ namespace DOL.GS.Quests.Hibernia
 
 		protected virtual void CreateAncestralKeeper(GamePlayer player)
 		{
-		
+			foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(151, 363016, 310849, 3933, 8000))
+			{
+				if (npc.Brain is SINeckBossBrain)
+					return;
+			}
 			AncestralKeeper = new SINeckBoss();
 			AncestralKeeper.Model = 951;
 			AncestralKeeper.Name = "Ancestral Keeper";
@@ -385,7 +349,7 @@ namespace DOL.GS.Quests.Hibernia
 			AncestralKeeper.Y = player.Y;
 			AncestralKeeper.Z = player.Z;
 			AncestralKeeper.MaxSpeedBase = 250;
-			AncestralKeeper.AddToWorld();
+			//AncestralKeeper.AddToWorld();
 
 			var brain = new SINeckBossBrain();
 			brain.AggroLevel = 200;
@@ -403,10 +367,36 @@ namespace DOL.GS.Quests.Hibernia
 			var args = (DyingEventArgs) arguments;
         
 			var player = args.Killer as GamePlayer;
-        
+
+			if (args.Killer is GamePet pet)
+			{
+				if(pet != null && pet.Owner != null)
+                {
+					GamePlayer pet_owner = pet.Owner as GamePlayer;
+					if (pet_owner != null && pet_owner.IsAlive)
+					{
+						if (pet_owner.Group != null)
+						{
+							foreach (var gpl in pet_owner.Group.GetPlayersInTheGroup())//gain credit for every one in petowner grp
+							{
+								AdvanceAfterKill(gpl);
+							}
+						}
+						else//player not in grp
+						{
+							AdvanceAfterKill(pet_owner);
+						}
+					}
+				}
+			}
+
 			if (player == null)
+            {
+				AncestralKeeper.Delete();
+				GameEventMgr.RemoveHandler(AncestralKeeper, GameLivingEvent.Dying, AncestralKeeperDying);
 				return;
-        
+			}
+
 			if (player.Group != null)
 			{
 				foreach (var gpl in player.Group.GetPlayersInTheGroup())
@@ -443,22 +433,36 @@ namespace DOL.GS.Quests.Hibernia
 			var quest = player.IsDoingQuest(typeof(AncestralSecrets)) as AncestralSecrets;
 
 			if (quest is not {Step: 4}) return;
-
-			if (player.Group != null)
-				if (player.Group.Leader != player)
-					return;
 			
 			var existingCopy = WorldMgr.GetNPCsByName("Ancestral Keeper", eRealm.None);
 
 			if (existingCopy.Length > 0) return;
 
-			// player near ancestral keeper           
-			SendSystemMessage(player,
-				"The Crystal Breaks and The Ancestral Keeper comes alive!");
-			player.Out.SendMessage("Ancestral Keeper ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-			quest.CreateAncestralKeeper(player);
+
+			//only try to spawn him once per trigger even if multiple people enter at the same time
+			if (Monitor.TryEnter(spawnLock))
+			{
+				try
+				{
+					// player near ancestral keeper           
+					SendSystemMessage(player,
+						"The Crystal Breaks and The Ancestral Keeper comes alive!");
+					player.Out.SendMessage("Ancestral Keeper ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+					quest.CreateAncestralKeeper(player);
+				}
+				finally
+				{
+					Monitor.Exit(spawnLock);
+				}
+			}
+			else
+			{
+				return;
+			}
 		}
-		
+
+		static object spawnLock = new object();
+
 		protected static void TalkToOtaYrling(DOLEvent e, object sender, EventArgs args)
 		{
 			//We get the player from the event arguments and check if he qualifies		

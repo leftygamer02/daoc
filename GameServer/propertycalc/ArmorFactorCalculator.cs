@@ -17,7 +17,7 @@
  *
  */
 using System;
-
+using System.Linq;
 using DOL.GS.Keeps;
 using log4net.Core;
 
@@ -89,7 +89,9 @@ namespace DOL.GS.PropertyCalc
 					petCap = 24;
                 }
 
-                foreach (var attacker in bossnpc.attackComponent.Attackers)
+				var attackerList = bossnpc.attackComponent.Attackers.ToList();
+
+                foreach (var attacker in attackerList)
                 {
 					if(attacker is GamePlayer)
 						epicScaleFactor -= 0.4;
@@ -111,15 +113,25 @@ namespace DOL.GS.PropertyCalc
 				- Math.Abs(living.DebuffCategory[(int)property])/6
 				+ living.BuffBonusCategory4[(int)property];
 			}
+			else if (living is GamePet)
+			{
+				int baseVal = (int)((1 + (living.Level / 175.0)) * (living.Level << 1))
+				              + (living.BaseBuffBonusCategory[(int)property] / 6)
+				              + (living.SpecBuffBonusCategory[(int)property] / 6)
+				              - Math.Abs(living.DebuffCategory[(int)property])/6
+				              + living.BuffBonusCategory4[(int)property] / 6;
+
+				if (living is NecromancerPet)
+					baseVal += 10;
+
+				return baseVal;
+			}
 			else
 			{
 				int baseVal = (int)((1 + (living.Level / 200.0)) * (living.Level << 1))
 				+ (living.SpecBuffBonusCategory[(int)property] / 6)
 				- Math.Abs(living.DebuffCategory[(int)property])/6
 				+ living.BuffBonusCategory4[(int)property] / 6;
-
-				if (living is NecromancerPet)
-					baseVal += 10;
 
 				if (living is GuardLord)
 					baseVal += 20 * living.Level / 50;

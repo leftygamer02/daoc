@@ -643,7 +643,7 @@ namespace DOL.GS
 		public void LoadPlayer(int accountindex)
 		{
 			LoadPlayer(accountindex, Properties.PLAYER_CLASS);
-		}
+		} 
 		public void LoadPlayer(DOLCharacters dolChar)
 		{
 			LoadPlayer(dolChar, Properties.PLAYER_CLASS);
@@ -853,6 +853,8 @@ namespace DOL.GS
 								log.Info("(" + TcpEndpoint + ") " + Account.Name + " just disconnected!");
 							}
 						}
+						Account.LastDisconnected = DateTime.Now;
+						GameServer.Database.SaveObject(Account);
 
 						// log disconnect
 						AuditMgr.AddAuditEntry(this, AuditType.Account, AuditSubtype.AccountLogout, "", Account.Name);

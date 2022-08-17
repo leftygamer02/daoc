@@ -11,7 +11,7 @@ using DOL.GS.PlayerTitles;
 using DOL.GS.Quests;
 using log4net;
 
-namespace DOL.GS.DailyQuest.Midgard
+namespace DOL.GS.WeeklyQuest.Midgard
 {
 	public class DragonWeeklyQuestMid : Quests.WeeklyQuest
 	{
@@ -136,7 +136,7 @@ namespace DOL.GS.DailyQuest.Midgard
 			GameEventMgr.RemoveHandler(Isaac, GameObjectEvent.Interact, new DOLEventHandler(TalkToIsaac));
 			GameEventMgr.RemoveHandler(Isaac, GameLivingEvent.WhisperReceive, new DOLEventHandler(TalkToIsaac));
 
-			/* Now we remove to Herou the possibility to give this quest to players */
+			/* Now we remove to Isaac the possibility to give this quest to players */
 			Isaac.RemoveQuestToGive(typeof (DragonWeeklyQuestMid));
 		}
 
@@ -183,7 +183,7 @@ namespace DOL.GS.DailyQuest.Midgard
 					switch (wArgs.Text)
 					{
 						case "kill the dragon":
-							player.Out.SendQuestSubscribeCommand(Isaac, QuestMgr.GetIDForQuestType(typeof(DragonWeeklyQuestMid)), "Will you help Herou "+questTitle+"?");
+							player.Out.SendQuestSubscribeCommand(Isaac, QuestMgr.GetIDForQuestType(typeof(DragonWeeklyQuestMid)), "Will you help Isaac "+questTitle+"?");
 							break;
 					}
 				}
@@ -297,7 +297,7 @@ namespace DOL.GS.DailyQuest.Midgard
 					case 1:
 						return "Travel to Malmohus and slay " + DRAGON_NAME + " for Midgard. \nKilled: " + DRAGON_NAME + " ("+ DragonKilled +" | " + MAX_KILLED + ")";
 					case 2:
-						return "Return to Herou for your Reward.";
+						return "Return to Isaac for your Reward.";
 				}
 				return base.Description;
 			}
@@ -323,7 +323,7 @@ namespace DOL.GS.DailyQuest.Midgard
 					
 			if (DragonKilled >= MAX_KILLED)
 			{
-				// FinishQuest or go back to Herou
+				// FinishQuest or go back to Isaac
 				Step = 2;
 			}
 
@@ -345,7 +345,7 @@ namespace DOL.GS.DailyQuest.Midgard
 
 		public override void FinishQuest()
 		{
-			//m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel)/10, true);
+			m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel), false);
 			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 5,32,Util.Random(50)), "You receive {0} as a reward.");
 			AtlasROGManager.GenerateOrbAmount(m_questPlayer, 1500);
 			DragonKilled = 0;

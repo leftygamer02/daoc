@@ -12,9 +12,9 @@ using DOL.GS.PlayerTitles;
 using DOL.GS.Quests;
 using log4net;
 
-namespace DOL.GS.DailyQuest.Hibernia
+namespace DOL.GS.WeeklyQuest.Hibernia
 {
-	public class ForTheRealmQuestHib : WeeklyQuest
+	public class ForTheRealmQuestHib : Quests.WeeklyQuest
 	{
 		/// <summary>
 		/// Defines a logger for this class.
@@ -318,7 +318,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 			if (sender != m_questPlayer)
 				return;
 
-			if (e != GameLivingEvent.EnemyKilled) return;
+			if (e != GameLivingEvent.EnemyKilled || Step != 1) return;
 			EnemyKilledEventArgs gArgs = (EnemyKilledEventArgs) args;
 
 			if (gArgs.Target.Realm == eRealm.Midgard && gArgs.Target.Realm != player.Realm && gArgs.Target is GamePlayer && player.GetConLevel(gArgs.Target) > MIN_PLAYER_CON && _playersKilledMid < MAX_KILLGOAL) 
@@ -368,7 +368,7 @@ namespace DOL.GS.DailyQuest.Hibernia
 		public override void FinishQuest()
 		{
 			m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel), false);
-			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 10,32,Util.Random(50)), "You receive {0} as a reward.");
+			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 5,32,Util.Random(50)), "You receive {0} as a reward.");
 			AtlasROGManager.GenerateOrbAmount(m_questPlayer, 1500);
 			_playersKilledAlb = 0;
 			_playersKilledMid = 0;

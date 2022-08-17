@@ -58,11 +58,13 @@ namespace DOL.GS
 		/// </summary>
 		/// <remarks>
 		/// This helps to reduce the turning of an npc while fighting or returning to a spawn
-		/// Tested - min distance for mob sticking within combat range to player is 25
+		/// Tested - min distance for mob sticking within combat range to player is 25 (Edit Navelator, 25 stops them too early, 20 keeps them in range)
 		/// </remarks>
-		public const int CONST_WALKTOTOLERANCE = 25;
+		public const int CONST_WALKTOTOLERANCE = 20;
 
 		private int m_databaseLevel;
+		
+		public bool NeedsBroadcastUpdate { get; set; }
 
 		
 		#region Formations/Spacing
@@ -194,7 +196,8 @@ namespace DOL.GS
 				ushort oldHeading = base.Heading;
 				base.Heading = value;
 				if (base.Heading != oldHeading)
-					BroadcastUpdate();
+					NeedsBroadcastUpdate = true;
+				//BroadcastUpdate();
 			}
 		}
 
@@ -355,7 +358,7 @@ namespace DOL.GS
 			get
 			{
 				IControlledBrain brain = Brain as IControlledBrain;
-				if (brain != null && brain.Owner != null)
+				if (brain != null)
 					return brain.Owner.Realm; // always realm of the owner
 				return base.Realm;
 			}
@@ -767,7 +770,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual bool IsVisibleToPlayers
 		{
-			get { return (uint)Environment.TickCount - m_lastVisibleToPlayerTick < 60000; }
+			get { return (uint)GameLoop.GameLoopTime - m_lastVisibleToPlayerTick < 60000; }
 		}
 
 		/// <summary>
@@ -828,7 +831,8 @@ namespace DOL.GS
 				if (base.CurrentSpeed != value)
 				{
 					base.CurrentSpeed = value;
-					BroadcastUpdate();
+					NeedsBroadcastUpdate = true;
+					//BroadcastUpdate();
 				}
 			}
 		}
@@ -1294,7 +1298,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Restores the NPC heading after some time
 		/// </summary>
-		protected class RestoreHeadingAction : RegionAction
+		protected class RestoreHeadingAction : RegionECSAction
 		{
 			/// <summary>
 			/// The NPCs old heading
@@ -1320,20 +1324,22 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 
 				npc.TempProperties.removeProperty(RESTORE_HEADING_ACTION_PROP);
 
-				if (npc.ObjectState != eObjectState.Active) return;
-				if (!npc.IsAlive) return;
-				if (npc.attackComponent.AttackState) return;
-				if (npc.IsMoving) return;
-				if (npc.Equals(m_oldPosition)) return;
-				if (npc.Heading == m_oldHeading) return; // already set? oO
+				if (npc.ObjectState != eObjectState.Active) return 0;
+				if (!npc.IsAlive) return 0;
+				if (npc.attackComponent.AttackState) return 0;
+				if (npc.IsMoving) return 0;
+				if (npc.Equals(m_oldPosition)) return 0;
+				if (npc.Heading == m_oldHeading) return 0; // already set? oO
 
 				npc.TurnTo(m_oldHeading);
+
+				return 0;
 			}
 		}
 
@@ -1348,7 +1354,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Gets the last this this NPC was actually update to at least one player.
 		/// </summary>
-		public uint LastVisibleToPlayersTickCount
+		public long LastVisibleToPlayersTickCount
 		{
 			get { return m_lastVisibleToPlayerTick; }
 		}
@@ -1356,7 +1362,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Delayed action that fires an event when an NPC arrives at its target
 		/// </summary>
-		protected class ArriveAtTargetAction : RegionAction
+		protected class ArriveAtTargetAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new ArriveAtTargetAction
@@ -1372,17 +1378,33 @@ namespace DOL.GS
 			/// This time was estimated using walking speed and distance.
 			/// It fires the ArriveAtTarget event
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 
 				bool arriveAtSpawnPoint = npc.IsReturningToSpawnPoint;
 
 				npc.StopMoving();
-				npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
+				//npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
 
 				if (arriveAtSpawnPoint)
-					npc.Notify(GameNPCEvent.ArriveAtSpawnPoint, npc);
+				{
+					npc.TurnTo(npc.SpawnHeading);
+					return 0;
+				}
+
+				if (!npc.IsMovingOnPath)
+					return 0;
+
+				if (npc.CurrentWayPoint != null)
+				{
+					WaypointDelayAction waitTimer = new WaypointDelayAction(npc);
+					waitTimer.Start(Math.Max(1, npc.CurrentWayPoint.WaitTime * 100));
+				}
+				else
+					npc.StopMovingOnPath();
+
+				return 0;
 			}
 		}
 
@@ -1423,7 +1445,7 @@ namespace DOL.GS
 			Y = target.Y;
 			Z = target.Z;
 
-			MovementStartTick = Environment.TickCount;
+			MovementStartTick = GameLoop.GameLoopTime;
 		}
 
 		/// <summary>
@@ -1478,13 +1500,14 @@ namespace DOL.GS
 
 			m_Heading = GetHeading(TargetPosition);
 			m_currentSpeed = speed;
-			MovementStartTick = Environment.TickCount; //Adding this to prevent pets from warping when using GoTo and Here on the same target twice.
+			MovementStartTick = GameLoop.GameLoopTime; //Adding this to prevent pets from warping when using GoTo and Here on the same target twice.
 			UpdateTickSpeed();
 			
 			// Notify(GameNPCEvent.WalkTo, this, new WalkToEventArgs(TargetPosition, speed));
 			
 			StartArriveAtTargetAction(GetTicksToArriveAt(TargetPosition, speed));
-			BroadcastUpdate();
+			NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		private void StartArriveAtTargetAction(int requiredTicks)
@@ -1555,9 +1578,10 @@ namespace DOL.GS
 
 			m_currentSpeed = speed;
 
-			MovementStartTick = Environment.TickCount;
+			MovementStartTick = GameLoop.GameLoopTime;
 			UpdateTickSpeed();
-			BroadcastUpdate();
+			NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		/// <summary>
@@ -1594,7 +1618,8 @@ namespace DOL.GS
 			}
 
 			SavePosition(target);
-			BroadcastUpdate();
+			NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		public const int STICKMINIMUMRANGE = 75;
@@ -1611,17 +1636,24 @@ namespace DOL.GS
 				if (target == null || target.ObjectState != eObjectState.Active)
 					return;
 			
-				if (m_followTimer.IsAlive && m_followTarget.Target == target && m_followMinDist == minDistance && m_followMaxDist == maxDistance)
+				if (m_followTimer != null && m_followTimer.IsAlive && m_followTarget?.Target == target && m_followMinDist == minDistance && m_followMaxDist == maxDistance)
 					return;
-				else
+				else if (m_followTimer != null)
 				{
 					m_followTimer.Stop();
+				}
+				else if (m_followTimer == null)
+				{
+					m_followTimer = new ECSGameTimer(this);
+					m_followTimer.Callback = new ECSGameTimer.ECSTimerCallback(FollowTimerCallback);
 				}
 			
 				m_followMaxDist = maxDistance;
 				m_followMinDist = minDistance;
 				m_followTarget.Target = target;
 				m_followTimer.StartExistingTimer(100);
+			
+		
 		}
 
 		/// <summary>
@@ -1652,7 +1684,7 @@ namespace DOL.GS
 			{
 				// if in last attack the enemy was out of range, we can attack him now immediately
 				AttackData ad = (AttackData)TempProperties.getProperty<object>(LAST_ATTACK_DATA, null);
-				if (ad != null && ad.AttackResult == eAttackResult.OutOfRange)
+				if (ad != null && ad.AttackResult == eAttackResult.OutOfRange && attackComponent.attackAction != null)
 				{
 					//m_attackAction.Start(1);// schedule for next tick
                     attackComponent.attackAction.StartTime = 1;
@@ -1697,7 +1729,7 @@ namespace DOL.GS
 			if (followLiving != null && !followLiving.IsAlive)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				return 0;
 			}
 
@@ -1705,7 +1737,7 @@ namespace DOL.GS
 			if (followTarget == null || followTarget.ObjectState != eObjectState.Active || CurrentRegionID != followTarget.CurrentRegionID)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				return 0;
 			}
 
@@ -1722,7 +1754,7 @@ namespace DOL.GS
 			if ((int)distance > m_followMaxDist)
 			{
 				StopFollowing();
-				Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+				//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 				this.WalkToSpawn();
 				return 0;
 			}
@@ -1737,14 +1769,14 @@ namespace DOL.GS
 				{
 					if (attackComponent.AttackState && brain != null && followLiving != null)
 					{
-						long seconds = 20 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
+						long seconds = 25 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
 						long lastattacked = LastAttackTick;
 						long lasthit = LastAttackedByEnemyTick;
 						if ((GameLoop.GameLoopTime - lastattacked > seconds * 1000 && GameLoop.GameLoopTime - lasthit > seconds * 1000)
 							&& lasthit != 0)
 						{
 							//StopFollow();
-							Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+							//Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
 							//brain.ClearAggroList();
 							//this.WalkToSpawn();
 							LastAttackedByEnemyTickPvE = 0;
@@ -1835,7 +1867,8 @@ namespace DOL.GS
 			bool old = IsTurningDisabled;
 			base.DisableTurning(add);
 			if (old != IsTurningDisabled)
-				BroadcastUpdate();
+				NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
 		}
 
 		#endregion
@@ -1917,10 +1950,10 @@ namespace DOL.GS
 
 			if (CurrentWayPoint != null)
 			{
-				GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+				//GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
 				WalkTo(CurrentWayPoint, Math.Min(speed, (short)CurrentWayPoint.MaxSpeed));
 				m_IsMovingOnPath = true;
-				Notify(GameNPCEvent.PathMoveStarts, this);
+				//Notify(GameNPCEvent.PathMoveStarts, this);
 			}
 			else
 			{
@@ -1936,9 +1969,17 @@ namespace DOL.GS
 			if (!IsMovingOnPath)
 				return;
 
-			GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
-			Notify(GameNPCEvent.PathMoveEnds, this);
 			m_IsMovingOnPath = false;
+			
+			//GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+			//Notify(GameNPCEvent.PathMoveEnds, this);
+			if (this is GameTaxi || this is GameTaxiBoat)
+			{
+				StopMoving();
+				RemoveFromWorld();
+			}
+			
+			
 		}
 
 		/// <summary>
@@ -1964,7 +2005,7 @@ namespace DOL.GS
 		/// <summary>
 		/// Delays movement to the next waypoint
 		/// </summary>
-		protected class WaypointDelayAction : RegionAction
+		protected class WaypointDelayAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new WaypointDelayAction
@@ -1978,11 +2019,11 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC npc = (GameNPC)m_actionSource;
 				if (!npc.IsMovingOnPath)
-					return;
+					return 0;
 				PathPoint oldPathPoint = npc.CurrentWayPoint;
 				PathPoint nextPathPoint = npc.CurrentWayPoint.Next;
 				if ((npc.CurrentWayPoint.Type == ePathType.Path_Reverse) && (npc.CurrentWayPoint.FiredFlag))
@@ -1995,7 +2036,7 @@ namespace DOL.GS
 						case ePathType.Loop:
 							{
 								npc.CurrentWayPoint = MovementMgr.FindFirstPathPoint(npc.CurrentWayPoint);
-								npc.Notify(GameNPCEvent.PathMoveStarts, npc);
+								//npc.Notify(GameNPCEvent.PathMoveStarts, npc);
 								break;
 							}
 						case ePathType.Once:
@@ -2026,6 +2067,8 @@ namespace DOL.GS
 				{
 					npc.StopMovingOnPath();
 				}
+
+				return 0;
 			}
 		}
 		#endregion
@@ -2572,6 +2615,13 @@ namespace DOL.GS
 				AggroRange = template.AggroRange
 			};
 		}
+		
+		public void UpdateNPCEquipmentAppearance()
+		{
+			if (ObjectState != eObjectState.Active) return;
+			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+				player.Out.SendLivingEquipmentUpdate(this);
+		}
 
 		/// <summary>
 		/// Switches the active weapon to another one
@@ -3049,7 +3099,7 @@ namespace DOL.GS
 		{
 			base.BroadcastUpdate();
 
-			m_lastUpdateTickCount = (uint)Environment.TickCount;
+			m_lastUpdateTickCount = (uint)GameLoop.GameLoopTime;
 		}
 
 		/// <summary>
@@ -3058,7 +3108,7 @@ namespace DOL.GS
 		/// </summary>
 		public void NPCUpdatedCallback()
 		{
-			m_lastVisibleToPlayerTick = (uint)Environment.TickCount;
+			m_lastVisibleToPlayerTick = (uint)GameLoop.GameLoopTime;
 			lock (BrainSync)
 			{
 				ABrain brain = Brain;
@@ -3090,7 +3140,7 @@ namespace DOL.GS
 			}
 
 			if (anyPlayer)
-				m_lastVisibleToPlayerTick = (uint)Environment.TickCount;
+				m_lastVisibleToPlayerTick = (uint)GameLoop.GameLoopTime;
 
 			m_spawnPoint.X = X;
 			m_spawnPoint.Y = Y;
@@ -3892,7 +3942,6 @@ namespace DOL.GS
         /// <param name="target">The object to attack</param>
         public virtual void StartAttack(GameObject target)
         {
-	        Console.WriteLine($"Starting attack on {target}");
             attackComponent.StartAttack(target);
             //if(m_followTimer != null) m_followTimer.Stop();
 			if(CurrentFollowTarget!=target)
@@ -4296,7 +4345,9 @@ namespace DOL.GS
 		/// </summary>
 		public override void ProcessDeath(GameObject killer)
 		{
-			Console.WriteLine($"GameNPC died from {killer}");
+            try
+            {
+
 			Brain?.KillFSM();
 
 			FireAmbientSentence(eAmbientTrigger.dying, killer);
@@ -4329,23 +4380,42 @@ namespace DOL.GS
 				//Handle faction alignement changes // TODO Review
 				if ((Faction != null) && (killer is GamePlayer))
 				{
-					lock (this.XPGainers.SyncRoot)
-					{ 
+					lock (this.attackComponent.Attackers)
+					{
+						List <GamePlayer> additionalPlayerList = new List<GamePlayer>();
 						// Get All Attackers. // TODO check if this shouldn't be set to Attackers instead of XPGainers ?
-						foreach (DictionaryEntry de in this.XPGainers)
+						foreach (GameObject de in this.attackComponent.Attackers)
 						{
-							GameLiving living = de.Key as GameLiving;
+							GameLiving living = de as GameLiving;
 							GamePlayer player = living as GamePlayer;
 							if (player != null && player.IsObjectGreyCon(this)) continue;
 							// Get Pets Owner (// TODO check if they are not already treated as attackers ?)
 							if (living is GameNPC && (living as GameNPC).Brain is IControlledBrain)
-								player = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+                                {
+									player = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+									if (!this.attackComponent.Attackers.Contains(player) && !additionalPlayerList.Contains(player))
+                                    {
+										// Petmaster never attacked the mob but still needs to get the increase / decrease only once
+										// we have to keep a second list because a Pet master could have more than 1 pet in the attackers list (Bds)
+										additionalPlayerList.Add(player);
+									}
+									continue;
+								}
 
 							if (player != null && player.ObjectState == GameObject.eObjectState.Active && player.IsAlive && player.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
 							{
 								Faction.KillMember(player);
 							}
 						}
+
+							//masters of pets who didnt attack the mob themselfs and let pet do all the work
+                            foreach (GamePlayer additionalPlayer in additionalPlayerList)
+                            {
+								if (additionalPlayer != null && additionalPlayer.ObjectState == GameObject.eObjectState.Active && additionalPlayer.IsAlive && additionalPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+								{
+									Faction.KillMember(additionalPlayer);
+								}
+							}
 					}
 				}
 
@@ -4353,10 +4423,10 @@ namespace DOL.GS
 				Diagnostics.StartPerfCounter("ReaperService-NPC-ProcessDeath-OnNPCKIlled-NPC("+this.GetHashCode()+")");
 				GameServer.ServerRules.OnNPCKilled(this, killer);
 				Diagnostics.StopPerfCounter("ReaperService-NPC-ProcessDeath-OnNPCKIlled-NPC("+this.GetHashCode()+")");
-
-				base.ProcessDeath(killer);
 			}
-			
+
+			base.ProcessDeath(killer);
+
 			lock (this.XPGainers.SyncRoot)
 				this.XPGainers.Clear();
 			
@@ -4367,8 +4437,16 @@ namespace DOL.GS
 			// remove temp properties
 			TempProperties.removeAllProperties();
 
-			if (!(this is GamePet))
+			if (!(this is GamePet) && !(this is SINeckBoss))
 				StartRespawn();
+			}
+			finally
+			{
+				if(isDeadOrDying == true)
+                {
+					base.ProcessDeath(killer);
+                }
+			}
 		}
 
 		/// <summary>
@@ -4527,7 +4605,7 @@ namespace DOL.GS
 
 				BroadcastUpdate();
 
-                attackComponent.AttackState = false;
+				attackComponent.AttackState = false;
 			}
 		}
 
@@ -4574,7 +4652,7 @@ namespace DOL.GS
 		/// <summary>
 		/// A timer that will respawn this mob
 		/// </summary>
-		protected ECSGameTimer m_respawnTimer;
+		protected AuxECSGameTimer m_respawnTimer;
 		/// <summary>
 		/// The sync object for respawn timer modifications
 		/// </summary>
@@ -4670,8 +4748,8 @@ namespace DOL.GS
 				{
 					if (m_respawnTimer == null)
 					{
-						m_respawnTimer = new ECSGameTimer(this);
-						m_respawnTimer.Callback = new ECSGameTimer.ECSTimerCallback(RespawnTimerCallback);
+						m_respawnTimer = new AuxECSGameTimer(this);
+						m_respawnTimer.Callback = new AuxECSGameTimer.AuxECSTimerCallback(RespawnTimerCallback);
 					}
 					else if (m_respawnTimer.IsAlive)
 					{
@@ -4689,7 +4767,7 @@ namespace DOL.GS
 		/// </summary>
 		/// <param name="respawnTimer">the timer calling this callback</param>
 		/// <returns>the new interval</returns>
-		protected virtual int RespawnTimerCallback(ECSGameTimer respawnTimer)
+		protected virtual int RespawnTimerCallback(AuxECSGameTimer respawnTimer)
 		{
 			int dummy;
 			// remove Mob from "respawning"
@@ -4748,7 +4826,8 @@ namespace DOL.GS
 			{
 				int oldPercent = HealthPercent;
 				if (oldPercent != HealthPercent)
-					BroadcastUpdate();
+					NeedsBroadcastUpdate = true;
+				//BroadcastUpdate();
 			}
 			return (Health < MaxHealth) ? period : 0;
 		}
@@ -4819,10 +4898,33 @@ namespace DOL.GS
             }
 
 			if ((Flags & eFlags.STEALTH) != 0)
-				Flags ^= GameNPC.eFlags.STEALTH;
-
-
+				Flags ^= eFlags.STEALTH;
+			
 			base.OnAttackedByEnemy(ad);
+        }
+
+        public override void TakeDamage(AttackData ad)
+        {
+	        base.TakeDamage(ad);
+	        
+	        if(Brain is StandardMobBrain standardMobBrain && Brain is not NecromancerPetBrain)
+	        {
+		        // Console.WriteLine($"dmg {ad.Damage} crit {ad.CriticalDamage} mod {Math.Abs(ad.Modifier)}");
+		        var aggro = ad.Damage + ad.CriticalDamage + Math.Abs(ad.Modifier);
+
+		        if (ad.Attacker is GameNPC pet)
+		        {
+			        if (pet.Brain is IControlledBrain petBrain)
+			        {
+				        // owner gets 25% of aggro
+				        standardMobBrain.AddToAggroList(petBrain.Owner,(int)Math.Max(1, aggro * 0.25));
+				        // remaining of aggro is given to pet
+				        aggro = (int)Math.Max(1, aggro * 0.75);
+			        }
+		        }
+		        standardMobBrain.AddToAggroList(ad.Attacker, aggro);
+		        standardMobBrain.OnAttackedByEnemy(ad);
+	        }
         }
 
         /// <summary>
@@ -4946,8 +5048,18 @@ namespace DOL.GS
 				}
 
 				GamePlayer playerAttacker = null;
+				BattleGroup activeBG = null;
+				if (killer is GamePlayer playerKiller &&
+				    playerKiller.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null) != null)
+					activeBG = playerKiller.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
+				
 				foreach (GameObject gainer in XPGainerList.Keys)
 				{
+					//if a battlegroup killed the mob, filter out any non BG players
+					if (activeBG != null && gainer is GamePlayer p &&
+					    p.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null) != activeBG)
+						continue;
+					
 					if (gainer is GamePlayer)
 					{
 						playerAttacker = gainer as GamePlayer;
@@ -5048,8 +5160,44 @@ namespace DOL.GS
 			{
 				this.AddXPGainer(healSource, (float)healAmount);
 			}
+
+			if (Brain is StandardMobBrain mobBrain)
+			{
+				// first check to see if the healer is in our aggrolist so we don't go attacking anyone who heals
+				if (mobBrain.m_aggroTable.ContainsKey(healSource as GameLiving))
+				{
+					if (healSource is GamePlayer || (healSource is GameNPC && (((GameNPC)healSource).Flags & eFlags.PEACE) == 0))
+					{
+						mobBrain.AddToAggroList((GameLiving)healSource, healAmount);
+					}
+				}
+			}
+			
 			//DealDamage needs to be called after addxpgainer!
 		}
+
+		public override void EnemyKilled(GameLiving enemy)
+		{
+			base.EnemyKilled(enemy);
+
+			if (Brain is StandardMobBrain mobBrain)
+			{
+				// transfer all controlled target aggro to the owner
+				if (enemy is GameNPC)
+				{
+					var controlled = ((GameNPC)enemy).Brain as IControlledBrain;
+					if (controlled != null)
+					{
+						var contrAggro = mobBrain.GetAggroAmountForLiving(controlled.Body);
+						mobBrain.AddToAggroList(controlled.Owner, (int)contrAggro);
+					}
+				}
+				attackComponent.Attackers.Remove(enemy);
+				TargetObject = null;
+			}
+		}
+		
+		
 
 		#endregion
 
@@ -5526,7 +5674,7 @@ namespace DOL.GS
 		/// <summary>
 		/// The spell action of this living
 		/// </summary>
-		public class SpellAction : RegionAction
+		public class SpellAction : RegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new attack action
@@ -5540,7 +5688,7 @@ namespace DOL.GS
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameNPC owner = null;
 				if (m_actionSource != null && m_actionSource is GameNPC)
@@ -5548,13 +5696,13 @@ namespace DOL.GS
 				else
 				{
 					Stop();
-					return;
+					return 0;
 				}
 
 				if (owner.TargetObject == null || !owner.attackComponent.AttackState)
 				{
 					Stop();
-					return;
+					return 0;
 				}
 
 				//If we started casting a spell, stop the timer and wait for
@@ -5562,7 +5710,7 @@ namespace DOL.GS
 				if (owner.Brain is StandardMobBrain && ((StandardMobBrain)owner.Brain).CheckSpells(StandardMobBrain.eCheckSpellType.Offensive))
 				{
 					Stop();
-					return;
+					return 0;
 				}
 				else
 				{
@@ -5579,6 +5727,8 @@ namespace DOL.GS
 				{
 					Interval = 1500;
 				}
+
+				return Interval;
 			}
 		}
 

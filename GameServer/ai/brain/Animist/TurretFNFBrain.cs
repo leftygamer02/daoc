@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DOL.GS;
@@ -38,6 +40,10 @@ namespace DOL.AI.Brain
 		{
 			List<GameLiving> newTargets = new List<GameLiving>();
 			List<GameLiving> oldTargets = new List<GameLiving>();
+			base.CalculateNextAttackTarget();
+			TurretPet turretBody = Body as TurretPet;
+			if (turretBody == null) return null;
+			
 			lock((m_aggroTable as ICollection).SyncRoot)
 			{
 				foreach(GameLiving living in m_aggroTable.Keys)
@@ -51,25 +57,38 @@ namespace DOL.AI.Brain
 					if (!Body.IsWithinRadius(living, MAX_AGGRO_DISTANCE, true))
 						continue;
 
-					if (!Body.IsWithinRadius(living, ((TurretPet)Body).TurretSpell.Range, true))
+					if (!Body.IsWithinRadius(living, turretBody.TurretSpell.Range, true))
 						continue;
 
 					//if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && SpellHandler.FindEffectOnTarget(living, "SpeedDecrease") != null)
-					if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null)
+					if (turretBody.TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null)
 						continue;
 
-					if (((TurretPet)Body).TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && living.HasAbility(Abilities.RootImmunity))
+					if (turretBody.TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (living.HasAbility(Abilities.RootImmunity) || EffectListService.GetEffectOnTarget(living, eEffect.SpeedOfSound) != null))
 						continue;
 
-					newTargets.Add(living);
+					if(!newTargets.Contains(living))
+						newTargets.Add(living);
 				}
 			}
 
-			foreach (GameLiving living in Body.GetPlayersInRadius((ushort) ((TurretPet) Body).TurretSpell.Range,
-				         Body.CurrentRegion.IsDungeon ? false : true))
+			IEnumerable PlayerList = null;
+			try
 			{
-				if (!GameServer.ServerRules.IsAllowedToAttack(Body, living, true))
-					continue;
+				PlayerList = Body.GetPlayersInRadius((ushort) turretBody.TurretSpell.Range,
+					!Body.CurrentRegion.IsDungeon);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error encountered in animist FNF turret: {e}");
+				PlayerList = new List<GameLiving>();
+			}
+			
+			
+			foreach (GameLiving living in PlayerList)
+			{
+				// if (!GameServer.ServerRules.IsAllowedToAttack(Body, living, true))
+				// 	continue;
 				
 				if (!GameServer.ServerRules.IsAllowedToAttack(Body, living, true))
 					continue;
@@ -82,25 +101,28 @@ namespace DOL.AI.Brain
 
 				if (living is GameNPC)
 				{
-					if (Body.GetConLevel(living) <= -3)
+					if (Body.GetConLevel(living) < -2)
+						continue;
+
+					if(EffectListService.GetEffectOnTarget(living, eEffect.SpeedOfSound) != null)
 						continue;
 
 					//if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && SpellHandler.FindEffectOnTarget(living, "SpeedDecrease") != null)
-					if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null && living.CurrentSpeed <= (living.MaxSpeed / 10)) //turrets will only not attack enemies that are snared, only rooted
+					if (turretBody.TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null && living.CurrentSpeed <= (living.MaxSpeed / 10)) //turrets will only not attack enemies that are snared, only rooted
 						continue;
 
-					if (((TurretPet)Body).TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (living.HasAbility(Abilities.RootImmunity) || living.HasAbility(Abilities.DamageImmunity)))
+					if (turretBody.TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (living.HasAbility(Abilities.RootImmunity) || living.HasAbility(Abilities.DamageImmunity)))
 						continue;
 				} else if (living is GamePlayer gamelivingPl)
 				{
 					if (gamelivingPl.IsInvulnerableToAttack)
 						continue;
 					//if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && SpellHandler.FindEffectOnTarget(living, "SpeedDecrease") != null)
-					if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null)
+					if (turretBody.TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null)
 						continue;
 				}
 				
-				if (LivingHasEffect(living, ((TurretPet)Body).TurretSpell))
+				if (LivingHasEffect(living, turretBody.TurretSpell))
 				{
 					oldTargets.Add(living);
 				}
@@ -108,8 +130,42 @@ namespace DOL.AI.Brain
 				{
 					newTargets.Add(living);
 				}
+								
+			}
+
+			IEnumerable NPCList = null;
+			try
+			{
+				NPCList = Body.GetNPCsInRadius((ushort) turretBody.TurretSpell.Range, !Body.CurrentRegion.IsDungeon);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine($"Error encountered in animist FNF turret: {e}");
+				NPCList = new List<GameLiving>();
+			}
+			
+			foreach (GameNPC living in NPCList)
+			{
+				if (!GameServer.ServerRules.IsAllowedToAttack(Body, living, true))
+					continue;
+
+				if (!living.IsAlive || living.CurrentRegion != Body.CurrentRegion || living.ObjectState != GameObject.eObjectState.Active)
+					continue;
+
+				if (living.IsMezzed || living.IsStealthed)
+					continue;
 				
-				base.CalculateNextAttackTarget();
+				if (Body.GetConLevel(living) < -2)
+					continue;
+
+				if (LivingHasEffect(living, turretBody.TurretSpell))
+				{
+					oldTargets.Add(living);
+				}
+				else
+				{
+					newTargets.Add(living as GameLiving);
+				}
 			}
 			
 
@@ -124,7 +180,10 @@ namespace DOL.AI.Brain
 				return oldTargets[Util.Random(oldTargets.Count - 1)];
 			}
 
-			m_aggroTable.Clear();
+			lock ((m_aggroTable as ICollection).SyncRoot)
+			{
+				m_aggroTable.Clear();
+			}
 			return null;
 		}
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 using DOL;
 using DOL.GS;
@@ -96,6 +97,26 @@ namespace DOL.GS
 		{
 			get { return (int)eInventorySlot.Consignment_Last; } // not used
 		}
+		
+		public eRealm GetRealmOfLot(ushort houseNumber)
+		{
+			if (houseNumber <= 1382)
+			{
+				return eRealm.Albion;
+			}
+
+			if (houseNumber <= 2573)
+			{
+				return eRealm.Midgard;
+			}
+
+			if (houseNumber <= 4398)
+			{
+				return eRealm.Hibernia;
+			}
+
+			return eRealm.None;
+		}
 
 
 		/// <summary>
@@ -104,23 +125,50 @@ namespace DOL.GS
 		public virtual bool SearchInventory(GamePlayer player, MarketSearch.SearchData searchData)
 		{
 			MarketSearch marketSearch = new MarketSearch(player);
-			List<InventoryItem> items = marketSearch.FindItemsInList(DBItems(), searchData);
 
-			if (items != null)
+			// [
+			//if (marketSearch.FindItemsInList(DBItems(), searchData).Where(
+			//	item => item.OwnerLot != 0 && GetRealmOfLot(item.OwnerLot) == player.Realm) is List<InventoryItem> items)
+			//	{
+			if (marketSearch.FindItemsInList(DBItems(), searchData) is List<InventoryItem> items)
 			{
+				
 				int maxPerPage = 20;
 				byte maxPages = (byte)(Math.Ceiling((double)items.Count / (double)maxPerPage) - 1);
 				int first = (searchData.page) * maxPerPage;
 				int last = first + maxPerPage;
 				List<InventoryItem> list = new List<InventoryItem>();
 				int index = 0;
+				
 				foreach (InventoryItem item in items)
 				{
+					// Petrius custom change for Atlas freeshard
+					// we will control the return conditions within this loop
+					// and remove the where condition from the if above
 					if (index >= first && index <= last)
-						list.Add(item);
+                    {
+						if (GetRealmOfLot(item.OwnerLot) != player.Realm)
+                        {
+							if (ServerProperties.Properties.MARKET_ENABLE_LOG)
+							{
+								log.DebugFormat("Not adding item '{0}' to the return search since its from different realm.", item.Name);
+							}
+							
+						} else
+                        {
+							list.Add(item);
+						}
+						
+					} 
+						
 					index++;
 				}
 
+				if (ServerProperties.Properties.MARKET_ENABLE_LOG)
+				{
+					log.DebugFormat("Current list find size is '{0}'.", list.Count);
+				}
+				
 				if ((int)searchData.page == 0)
 				{
 					player.Out.SendMessage("Items returned: " + items.Count + ".", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
@@ -138,7 +186,13 @@ namespace DOL.GS
 
 				// Save the last search list in case we buy an item from it
 				player.TempProperties.setProperty(EXPLORER_ITEM_LIST, list);
-			}
+			} else
+            {
+				if (ServerProperties.Properties.MARKET_ENABLE_LOG)
+				{
+					log.DebugFormat("There is something wrong with the returned search ...");
+				}
+            }
 
 
 			return true;

@@ -47,7 +47,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles player init requests
 		/// </summary>
-		protected class PlayerInitRequestAction : RegionECSAction
+		protected class PlayerInitRequestAction : AuxRegionECSAction
 		{
 			/// <summary>
 			/// Constructs a new PlayerInitRequestHandler
@@ -60,7 +60,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override int OnTick(ECSGameTimer timer)
+			protected override int OnTick(AuxECSGameTimer timer)
 			{
 				var player = (GamePlayer) m_actionSource;
 
@@ -149,6 +149,9 @@ namespace DOL.GS.PacketHandler.Client.v168
 				if (ServerProperties.Properties.TELEPORT_LOGIN_NEAR_ENEMY_KEEP)
 				{
 					CheckIfPlayerLogsNearEnemyKeepAndMoveIfNecessary(player);
+
+					//Check for logging in near own keep/relic keep if its under attack. Prevents people from logging toons in relic keeps.
+					CheckIfPlayerLogsNearKeepUnderAttackAndMoveIfNecessary(player);
 				}
 
 				if (ServerProperties.Properties.TELEPORT_LOGIN_BG_LEVEL_EXCEEDED)
@@ -259,7 +262,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 					if (WorldMgr.RvRLinkDeadPlayers.ContainsKey(player.InternalID))
 					{
-						if (DateTime.Now.Subtract(new TimeSpan(0, gracePeriodInMinutes, 0)) <= WorldMgr.RvRLinkDeadPlayers[player.InternalID])
+						if (DateTime.Now.Subtract(new TimeSpan(0, gracePeriodInMinutes, 0)) > WorldMgr.RvRLinkDeadPlayers[player.InternalID])
 						{
 							SendMessageAndMoveToSafeLocation(player);
 						}
@@ -268,7 +271,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 					{
 						SendMessageAndMoveToSafeLocation(player);
 					}
-				}
+				}			
 				var linkDeadPlayerIds = new string[WorldMgr.RvRLinkDeadPlayers.Count];
 				WorldMgr.RvRLinkDeadPlayers.Keys.CopyTo(linkDeadPlayerIds, 0);
 				foreach (string playerId in linkDeadPlayerIds)
@@ -279,6 +282,29 @@ namespace DOL.GS.PacketHandler.Client.v168
 						WorldMgr.RvRLinkDeadPlayers.Remove(playerId);
 					}
 				}
+			}
+
+			//Move player to safe spot if they login near keep/relic keep that is under attack
+			private static void CheckIfPlayerLogsNearKeepUnderAttackAndMoveIfNecessary(GamePlayer player)
+			{
+				int gracePeriodInMinutes = 0;
+				Int32.TryParse(ServerProperties.Properties.RVR_LINK_DEATH_RELOG_GRACE_PERIOD, out gracePeriodInMinutes);
+				AbstractGameKeep keep = GameServer.KeepManager.GetKeepCloseToSpot(player.CurrentRegionID, player, WorldMgr.VISIBILITY_DISTANCE);
+				if (keep != null && keep.InCombat && player.Client.Account.PrivLevel == 1 && !GameServer.KeepManager.IsEnemy(keep, player))
+				{
+					if (WorldMgr.RvRLinkDeadPlayers.ContainsKey(player.InternalID))
+					{
+						if (DateTime.Now.Subtract(new TimeSpan(0, gracePeriodInMinutes, 0)) > WorldMgr.RvRLinkDeadPlayers[player.InternalID])
+						{
+							SendMessageAndMoveToSafeLocation(player);
+						}
+					}
+					else
+					{
+						SendMessageAndMoveToSafeLocation(player);
+					}
+				}
+				
 			}
 
 			private static void SendMessageAndMoveToSafeLocation(GamePlayer player)
@@ -298,7 +324,13 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 					TimeSpan due = (house.LastPaid.AddDays(ServerProperties.Properties.RENT_DUE_DAYS).AddHours(1) - DateTime.Now);
 					if ((due.Days <= 0 || due.Days < ServerProperties.Properties.RENT_DUE_DAYS) && house.KeptMoney < HouseMgr.GetRentByModel(house.Model))
-						player.Out.SendRentReminder(house);
+					{
+						//Sending reminder as Text Window as the Help window wasnt properly popping up on the client
+						var message = new List<string>();
+						message.Add("Rent for personal house " + house.HouseNumber + " due in " + due.Days + " days!");
+						player.Out.SendCustomTextWindow("Personal House Rent Reminder", message);
+						//player.Out.SendRentReminder(house);
+					}
 				}
 
 				if (player.Guild != null)
@@ -308,7 +340,13 @@ namespace DOL.GS.PacketHandler.Client.v168
 					{
 						TimeSpan due = (ghouse.LastPaid.AddDays(ServerProperties.Properties.RENT_DUE_DAYS).AddHours(1) - DateTime.Now);
 						if ((due.Days <= 0 || due.Days < ServerProperties.Properties.RENT_DUE_DAYS) && ghouse.KeptMoney < HouseMgr.GetRentByModel(ghouse.Model))
-							player.Out.SendRentReminder(ghouse);
+						{
+							//Sending reminder as Text Window as the Help window wasnt properly popping up on the client
+							var guildmessage = new List<string>();
+							guildmessage.Add("Rent for guild house " + ghouse.HouseNumber + " due in " + due.Days + " days!");
+							player.Out.SendCustomTextWindow("Guild House Rent Reminder", guildmessage);
+							//player.Out.SendRentReminder(ghouse);
+						}
 					}
 				}
 			}

@@ -1,5 +1,6 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using DOL.GS.ServerProperties;
+using DOL.GS.Scripts;
 
 namespace DOL.GS {
     public class GameEpicBoss : GameNPC {
@@ -7,59 +8,104 @@ namespace DOL.GS {
         {
             ScalingFactor = 80;
             OrbsReward = Properties.EPICBOSS_ORBS;
+            
+        }
+        public override bool HasAbility(string keyName)
+        {
+            if (IsAlive && keyName == GS.Abilities.CCImmunity)
+                return true;
+            if (IsAlive && keyName == GS.Abilities.ConfusionImmunity)
+                return true;
+            if (IsAlive && keyName == GS.Abilities.NSImmunity)
+                return true;
+
+            return base.HasAbility(keyName);
         }
         public override void Die(GameObject killer)//current orb reward for epic boss is 1500
         {
-            if (MaxHealth < 60000 && MaxHealth > 30000)// 750 orbs for finalll boss in dungeon, or huge one in classic/SI zone
-                OrbsReward /= 2;
-
-            if (MaxHealth < 40000 && MaxHealth > 30000)// 375 orbs for normal nameds
-                OrbsReward /= 4;
-
-            if (MaxHealth < 30000 && MaxHealth > 10000)// 250 orbs for normal nameds
-                OrbsReward /= 6;
-
-            // debug
-            log.Debug($"{Name} killed by {killer.Name}");
-
-
-            if (killer is GamePet pet) killer = pet.Owner; 
-            
-            var playerKiller = killer as GamePlayer;
-            
-            var achievementMob = Regex.Replace(Name, @"\s+", "");
-            
-            var killerBG = (BattleGroup)playerKiller?.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
-            
-            if (killerBG != null && (killerBG.Members.Contains(playerKiller) || (bool)killerBG.Members[playerKiller]!))
+            try
             {
-                foreach (var bgPlayer in killerBG.GetPlayersInTheBattleGroup())
+                if (this is Legion)//Legion
+                    OrbsReward = 5000;
+
+                if (this is HibCuuldurach)//Hib dragon
+                    OrbsReward = 5000;
+
+                if (this is MidGjalpinulva)//Mid dragon
+                    OrbsReward = 5000;
+
+                if (this is AlbGolestandt)//Alb dragon
+                    OrbsReward = 5000;
+
+                if (this is Xanxicar)//Alb dragon SI, he is weaker than realm dragons
+                    OrbsReward = 3000;
+
+                if (this is Nosdoden)//Mid mutated dragon SI, he is weaker than realm dragons
+                    OrbsReward = 3000;
+
+                if (this is Myrddraxis)//Hib dragon SI, he is weaker than realm dragons
+                    OrbsReward = 3000;
+
+                if (MaxHealth <= 40000 && MaxHealth > 30000)// 750 orbs for normal nameds
+                    OrbsReward = Properties.EPICBOSS_ORBS / 2;
+
+                if (MaxHealth <= 30000 && MaxHealth >= 10000)// 375 orbs for normal nameds
+                    OrbsReward = Properties.EPICBOSS_ORBS / 4;
+
+                // debug
+                log.Debug($"{Name} killed by {killer.Name}");
+
+                if (killer is GamePet pet) killer = pet.Owner; 
+                
+                var playerKiller = killer as GamePlayer;
+                
+                var achievementMob = Regex.Replace(Name, @"\s+", "");
+                
+                var killerBG = (BattleGroup)playerKiller?.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
+                
+                if (killerBG != null)
                 {
-                    if (bgPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+                    lock (killerBG.Members)
                     {
-                        AtlasROGManager.GenerateOrbAmount(bgPlayer,OrbsReward);
-                        bgPlayer.Achieve($"{achievementMob}-Credit");
+                        foreach (GamePlayer bgPlayer in killerBG.Members.Keys)
+                        {
+                            if (bgPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+                            {
+                                if (bgPlayer.Level < 45) continue;
+                                AtlasROGManager.GenerateOrbAmount(bgPlayer,OrbsReward);
+                                AtlasROGManager.GenerateBeetleCarapace(bgPlayer);
+                                bgPlayer.Achieve($"{achievementMob}-Credit");
+                            }
+                        } 
+                    }
+                }
+                else if (playerKiller?.Group != null)
+                {
+                    foreach (var groupPlayer in playerKiller.Group.GetPlayersInTheGroup())
+                    {
+                        if (groupPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+                        {
+                            if (groupPlayer.Level < 45) continue;
+                            AtlasROGManager.GenerateOrbAmount(groupPlayer,OrbsReward);
+                            AtlasROGManager.GenerateBeetleCarapace(groupPlayer);
+                            groupPlayer.Achieve($"{achievementMob}-Credit");
+                        }
+                    }
+                }
+                else if (playerKiller != null)
+                {
+                    if (playerKiller.Level >= 45)
+                    {
+                        AtlasROGManager.GenerateOrbAmount(playerKiller,OrbsReward);
+                        AtlasROGManager.GenerateBeetleCarapace(playerKiller);
+                        playerKiller.Achieve($"{achievementMob}-Credit");;
                     }
                 }
             }
-            else if (playerKiller?.Group != null)
+            finally
             {
-                foreach (var groupPlayer in playerKiller.Group.GetPlayersInTheGroup())
-                {
-                    if (groupPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
-                    {
-                        AtlasROGManager.GenerateOrbAmount(groupPlayer,OrbsReward);
-                        groupPlayer.Achieve($"{achievementMob}-Credit");
-                    }
-                }
+                base.Die(killer);
             }
-            else
-            {
-                AtlasROGManager.GenerateOrbAmount(playerKiller,OrbsReward);
-                playerKiller.Achieve($"{achievementMob}-Credit");
-            }
-
-            base.ProcessDeath(killer);
         }
     }
 }

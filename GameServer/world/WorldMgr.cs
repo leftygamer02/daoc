@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using Timer=System.Threading.Timer;
@@ -33,6 +34,7 @@ using DOL.Config;
 using DOL.GS.Housing;
 
 using log4net;
+using DOLDatabase.Tables;
 
 namespace DOL.GS
 {
@@ -529,7 +531,7 @@ namespace DOL.GS
 				                                	Region reg;
 				                                	if (m_regions.TryGetValue(data.Id, out reg))
 				                                		reg.LoadFromDatabase(data.Mobs, ref mobs, ref merchants, ref items, ref bindpoints);
-				                                });
+				});
 
 				if (log.IsInfoEnabled)
 				{
@@ -546,7 +548,7 @@ namespace DOL.GS
 				m_WorldUpdateThread.Start();
 
 				m_dayIncrement = Math.Max(0, Math.Min(1000, ServerProperties.Properties.WORLD_DAY_INCREMENT)); // increments > 1000 do not render smoothly on clients
-				m_dayStartTick = Environment.TickCount - (int)(DAY / Math.Max(1, m_dayIncrement) / 2); // set start time to 12pm
+				m_dayStartTick = (int)GameTimer.GetTickCount() - (int)(DAY / Math.Max(1, m_dayIncrement) / 2); // set start time to 12pm
 				m_dayResetTimer = new Timer(new TimerCallback(DayReset), null, DAY / Math.Max(1, m_dayIncrement) / 2, DAY / Math.Max(1, m_dayIncrement));
 
 				m_pingCheckTimer = new Timer(new TimerCallback(PingCheck), null, 10 * 1000, 0); // every 10s a check
@@ -649,7 +651,7 @@ namespace DOL.GS
 				try
 				{
 					Thread.Sleep(200); // check every 200ms for needed relocs
-					int start = Environment.TickCount;
+					long start = GameTimer.GetTickCount();
 
 					var regionsClone = m_regions.Values;
 
@@ -660,7 +662,7 @@ namespace DOL.GS
 							region.Relocate();
 						}
 					}
-					int took = Environment.TickCount - start;
+					long took = GameTimer.GetTickCount() - start;
 					if (took > 500)
 					{
 						if (log.IsWarnEnabled)
@@ -686,7 +688,7 @@ namespace DOL.GS
 		/// <param name="sender"></param>
 		private static void DayReset(object sender)
 		{
-			m_dayStartTick = Environment.TickCount;
+			m_dayStartTick = (int)GameTimer.GetTickCount();
 			foreach (GameClient client in GetAllPlayingClients())
 			{
 				if (client.Player != null && client.Player.CurrentRegion != null && client.Player.CurrentRegion.UseTimeManager)
@@ -714,7 +716,7 @@ namespace DOL.GS
 			}
 			else
 			{
-				m_dayStartTick = Environment.TickCount - (int)(dayStart / m_dayIncrement); // set start time to ...
+				m_dayStartTick = (int)GameTimer.GetTickCount() - (int)(dayStart / m_dayIncrement); // set start time to ...
 				m_dayResetTimer.Change((DAY - dayStart) / m_dayIncrement, Timeout.Infinite);
 			}
 
@@ -753,7 +755,7 @@ namespace DOL.GS
 			}
 			else
 			{
-				long diff = Environment.TickCount - m_dayStartTick;
+				long diff = GameTimer.GetTickCount() - m_dayStartTick;
 				long curTime = diff * m_dayIncrement;
 				return (uint)(curTime % DAY);
 			}
@@ -1533,6 +1535,30 @@ namespace DOL.GS
 
 			return targetClients;
 		}
+		
+		/// <summary>
+		/// Returns a list of playing clients from a given IP address
+		/// </summary>
+		/// <param name="ip">The IP address</param>
+		/// <returns>Array of GameClients from that IP</returns>
+		public static IList<GameClient> GetClientsFromIP(string ip)
+		{
+			var targetClients = new List<GameClient>();
+
+			lock (m_clients.SyncRoot)
+			{
+				foreach (GameClient client in m_clients)
+				{
+					if (client != null)
+					{
+						if (((IPEndPoint)client.Socket.RemoteEndPoint)?.Address.ToString() == ip)
+							targetClients.Add(client);
+					}
+				}
+			}
+			return targetClients;
+		}
+		
 		/// <summary>
 		/// Find a GameClient by the Player's ID
 		/// Case-insensitive, make sure you use returned Player.Name instead of what player typed.
@@ -1589,7 +1615,8 @@ namespace DOL.GS
 		{
 			if (exactMatch)
 			{
-				return GetClientByPlayerNameAndRealm(playerName, 0, activeRequired).FirstOrDefault();
+				var client = GetClientByPlayerNameAndRealm(playerName, 0, activeRequired).FirstOrDefault();
+				return client.Player.Name.ToLower() == playerName.ToLower() ? client : null; //only return if it's an exact match
 			}
 			else
 			{
@@ -1622,7 +1649,8 @@ namespace DOL.GS
 						if (0 == String.Compare(client.Player.Name, playerName, StringComparison.OrdinalIgnoreCase)) // case insensitive comapre
 						{
 							potentialMatches.Add(client);
-							return potentialMatches;
+							//return potentialMatches;
+							return new List<GameClient> { client }; //return exact match
 						}
 
 						if (client.Player.Name.ToLower().StartsWith(playerName.ToLower())) potentialMatches.Add(client);
@@ -1650,7 +1678,7 @@ namespace DOL.GS
 			// first try exact match in case player with "abcde" name is
 			// before "abc" in list and user typed "abc"
 			GameClient guessedClient = GetClientByPlayerNameAndRealm(playerName, realm, activeRequired).FirstOrDefault();
-			if (guessedClient != null)
+			if (guessedClient != null && guessedClient.Player.Name.ToLower() == playerName.ToLower())
 			{
 				result = 3; // exact match
 				return guessedClient;

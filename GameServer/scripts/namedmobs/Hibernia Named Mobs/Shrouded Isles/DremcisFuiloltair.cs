@@ -20,10 +20,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 30;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -68,7 +68,7 @@ namespace DOL.GS
 			Empathy = npcTemplate.Empathy;
 			DremcisFuiloltairBrain.CanSpawnStag = false;
 
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 			DremcisFuiloltairBrain sbrain = new DremcisFuiloltairBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;//load from database
@@ -106,6 +106,7 @@ namespace DOL.AI.Brain
 
 		public static bool CanSpawnStag = false;
 		private bool CanSpawnBlobs = false;
+		private bool RemoveAdds = false;
 		public override void Think()
 		{
 			if (!HasAggressionTable())
@@ -114,14 +115,19 @@ namespace DOL.AI.Brain
 				FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 				Body.Health = Body.MaxHealth;
 				CanSpawnBlobs = false;
-				foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+				if (!RemoveAdds)
 				{
-					if (npc != null && npc.IsAlive && npc.Brain is FuilslathachBrain)
-						npc.RemoveFromWorld();
+					foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+					{
+						if (npc != null && npc.IsAlive && npc.Brain is FuilslathachBrain)
+							npc.RemoveFromWorld();
+					}
+					RemoveAdds = true;
 				}
 			}
 			if(HasAggro && Body.TargetObject != null)
             {
+				RemoveAdds = false;
 				if (!CanSpawnBlobs)
 				{
 					SpawnBlobs();

@@ -424,6 +424,12 @@ namespace DOL.GS.ServerProperties
 		public static bool DISABLE_QUIT_TIMER;
 
 		/// <summary>
+		/// Queue Service Host
+		/// </summary>
+		[ServerProperty("server", "queue_api_url", "Provide the URL for the queue service endpoint - blank to disable", "")]
+		public static string QUEUE_API_URI;
+
+		/// <summary>
 		/// Enable Discord Webhook?
 		/// </summary>
 		[ServerProperty("server", "Discord_Webhook_Active", "Enable Discord webhook?", false)]
@@ -472,11 +478,30 @@ namespace DOL.GS.ServerProperties
 		public static int NECK_BOSS_SCALING;
 		
 		/// <summary>
+		/// The slowmode duration for /advice in seconds
+		/// </summary>
+		[ServerProperty("atlas", "advice_slowmode_length", "The slowmode duration for /advice in seconds", 60)]
+		public static int ADVICE_SLOWMODE_LENGTH;
+		
+		/// <summary>
+		/// The slowmode duration for /trade in seconds
+		/// </summary>
+		[ServerProperty("atlas", "trade_slowmode_length", "The slowmode duration for /trade in seconds", 60)]
+		public static int TRADE_SLOWMODE_LENGTH;
+		
+				
+		/// <summary>
+		/// The slowmode duration for /lfg in seconds
+		/// </summary>
+		[ServerProperty("atlas", "lfg_slowmode_length", "The slowmode duration for /lfg in seconds", 60)]
+		public static int LFG_SLOWMODE_LENGTH;
+		
+		/// <summary>
 		/// The toughness of GameNPCs
 		/// </summary>
 		[ServerProperty("atlas", "gamenpc_scaling", "The toughness of GameNPCs", 15)]
 		public static int GAMENPC_SCALING;
-		
+
 		/// <summary>
 		/// The first factor in the PVE mob damage equation. Lower hits harder.
 		/// </summary>
@@ -1392,6 +1417,18 @@ namespace DOL.GS.ServerProperties
 		public static int SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL;
 
 		/// <summary>
+		/// Respawn Interval for Normal Epic Game Boss Encounter
+		/// </summary>
+		[ServerProperty("world", "set_epic_game_encounter_respawninterval", "Respawn Time, in minutes, for Normal Epic Game Encounters", 60)]
+		public static int SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL;
+
+		/// <summary>
+		/// Respawn Interval for Epic Quest Mobs
+		/// </summary>
+		[ServerProperty("world", "set_epic_quest_encounter_respawninterval", "Respawn Time, in minutes, for Epic Quest Encounters", 30)]
+		public static int SET_EPIC_QUEST_ENCOUNTER_RESPAWNINTERVAL;
+
+		/// <summary>
 		/// Weapon damage cap for epic encounters that use melee weapons
 		/// </summary>
 		[ServerProperty("npc", "set_epic_encounter_weapon_damage_cap", "Maximum damage cap multipler for epic encounters that use melee weapons", 1.5)]
@@ -1456,6 +1493,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("npc", "npc_heal_threshold", "NPCs, including pets, heal targets whose health falls below this percentage.", 75)]
 		public static int NPC_HEAL_THRESHOLD;
+		
+		/// <summary>
+		/// Charmed NPC heal when a target is below what percentage of their health?
+		/// </summary>
+		[ServerProperty("npc", "charmed_npc_heal_threshold", "Charmed NPC, heal targets whose health falls below this percentage.", 50)]
+		public static int CHARMED_NPC_HEAL_THRESHOLD;
 		
 		/// <summary>
 		/// Expand the Wild Minion RA to also improve crit chance for ranged and spell attacks?
@@ -1560,6 +1603,18 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("pvp", "pvp_realm_timer_minutes", "# of minutes an account must wait to change realms after PvP combat. 0 disables the timer", 0)]
 		public static int PVP_REALM_TIMER_MINUTES; 
+		
+		[ServerProperty("conquest", "flag_capture_radius", "How far away can players capture an objective?", 750)]
+		public static ushort FLAG_CAPTURE_RADIUS;
+		
+		[ServerProperty("conquest", "flag_capture_time", "How long does it take to capture a flag?", 20)]
+		public static int FLAG_CAPTURE_TIME;
+		
+		[ServerProperty("conquest", "subtick_rp_award", "How many RPs awarded for a participation tick?", 200)]
+		public static int SUBTICK_RP_AWARD;
+		
+		[ServerProperty("conquest", "conquest_capture_award", "How many RPs/orbs awarded for capturing the conquest target?", 1000)]
+		public static int CONQUEST_CAPTURE_AWARD;
 
 		#endregion
 
@@ -2418,6 +2473,13 @@ namespace DOL.GS.ServerProperties
 		public static int GUILDS_CLAIM_LIMIT;
 
 		/// <summary>
+		/// Do we allow invite players to guild in rvr zone?
+		/// </summary>
+		[ServerProperty("guild", "allow_guild_invite_in_rvr", "Do we allow invite players to guild in rvr zone?", false)]
+		public static bool ALLOW_GUILD_INVITE_IN_RVR;
+		
+		
+		/// <summary>
 		/// Guild Crafting Buff bonus amount
 		/// </summary>
 		[ServerProperty("guild", "guild_buff_crafting", "Percent speed gain for the guild crafting buff?", (ushort)5)]
@@ -2509,6 +2571,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("craft", "capital_city_crafting_speed_bonus", "Crafting speed bonus in capital cities; 2 = 2x, 3 = 3x, ..., 1 = standard", 1.0)]
 		public static double CAPITAL_CITY_CRAFTING_SPEED_BONUS;
+		
+		/// <summary>
+		/// Crafting speed bonus in capital cities
+		/// </summary>
+		[ServerProperty("craft", "keep_crafting_speed_bonus", "Crafting speed bonus in the keeps; 2 = 2x, 3 = 3x, ..., 1 = standard", 1.0)]
+		public static double KEEP_CRAFTING_SPEED_BONUS;
 
 		/// <summary>
 		/// Allow any realm to craft items with a realm of 0 (no realm)
@@ -2676,7 +2744,7 @@ namespace DOL.GS.ServerProperties
 		/// <summary>
 		/// Max duration of a Conquest Task in minutes
 		/// </summary>
-		[ServerProperty("conquest", "max_conquest_task_duration", "Max duration of a Conquest Task in minutes", 45)]
+		[ServerProperty("conquest", "max_conquest_task_duration", "Max duration of a Conquest Task in minutes", 90)]
 		public static int MAX_CONQUEST_TASK_DURATION;
 		
 		/// <summary>
@@ -2778,6 +2846,21 @@ namespace DOL.GS.ServerProperties
 		[ServerProperty("beta", "orbs_fire_sale", "All items at the orbs merchant will be free if set to true", false)]
 		public static bool ORBS_FIRE_SALE;
 		
+		[ServerProperty("atlas", "enable_corpsesummoner", "Whether or not to enable the corpse summoner command", true)]
+		public static bool ENABLE_CORPSESUMONNER;
+		
+		[ServerProperty("atlas", "carapace_dropchance", "The base Beetle Carapace drop chance in %", 0.01)]
+		public static double CARAPACE_DROPCHANCE;
+		
+		[ServerProperty("atlas", "salvage_yield_multiplier", "The salvage yield multiplier", 0.5)]
+		public static double SALVAGE_YIELD_MULTIPLIER;
+		
+		[ServerProperty("atlas", "max_craft_time", "The maximum craft time allowed in seconds. All timers above this value will be normalised to the input value", 0)]
+		public static int MAX_CRAFT_TIME;
+		
+		[ServerProperty("atlas", "of_teleport_interval", "The seconds between OF porting ceremonies", 120)]
+		public static int OF_REPORT_INTERVAL;
+
 		#endregion
 		public static IDictionary<string, object> AllCurrentProperties
 		{

@@ -33,6 +33,7 @@ namespace DOL.GS.API
             var _realm = new Realm();
             var _shutdown = new Shutdown();
             var _news = new News();
+            var _passwordVerification = new PasswordVerification();
 
             #endregion
 
@@ -82,10 +83,10 @@ namespace DOL.GS.API
 
                 return playerInfo == null ? Results.NotFound("Not found") : Results.Ok(playerInfo);
             });
-            api.MapGet("/player/{playerName}/specs", async c  => await c.Response.WriteAsJsonAsync(_player.GetPlayerSpec(c.Request.RouteValues["playerName"].ToString())));
-            
-            api.MapGet("/player/{playerName}/tradeskills", async c  => await c.Response.WriteAsJsonAsync(_player.GetPlayerTradeSkills(c.Request.RouteValues["playerName"].ToString())));
-            
+            api.MapGet("/player/{playerName}/specs", async c => await c.Response.WriteAsJsonAsync(_player.GetPlayerSpec(c.Request.RouteValues["playerName"].ToString())));
+
+            api.MapGet("/player/{playerName}/tradeskills", async c => await c.Response.WriteAsJsonAsync(_player.GetPlayerTradeSkills(c.Request.RouteValues["playerName"].ToString())));
+
             api.MapGet("/player/getAll", async c => await c.Response.WriteAsJsonAsync(_player.GetAllPlayers()));
 
             #endregion
@@ -157,16 +158,16 @@ namespace DOL.GS.API
             api.MapGet("/relic", async c =>
                 await c.Response.WriteAsJsonAsync(_realm.GetAllRelics()));
             #endregion
-            
+
             #region News
             api.MapGet("/news/all", async c => await c.Response.WriteAsJsonAsync(_news.GetAllNews()));
-            
+
             api.MapGet("/news/realm/{realm}", (string realm) =>
             {
                 var realmNews = _news.GetRealmNews(realm);
                 return Results.Ok(realmNews);
             });
-            
+
             api.MapGet("/news/type/{type}", (string type) =>
             {
                 var typeNews = _news.GetTypeNews(type);
@@ -178,16 +179,39 @@ namespace DOL.GS.API
             #region Misc
 
             api.MapGet("/bread", () => Properties.BREAD);
-            
+
             api.MapGet("/utils/discordstatus/{accountName}", (string accountName) =>
             {
                 var discordStatus = Player.GetDiscord(accountName);
                 return Results.Ok(discordStatus);
             });
-            
+
+            api.MapGet("/utils/query_max_cap", () =>
+            {
+                var dict = new Dictionary<string, int>()
+                {
+                    { "max_players", Properties.MAX_PLAYERS }
+                };
+                return Results.Ok(dict);
+            });
+
+            api.MapGet("/utils/query_clients/{password}", (string password) =>
+            {
+                if (!_passwordVerification.VerifyAPIPassword(password))
+                {
+                    return Results.Problem("No bread for you!", null, 401);
+                }
+                var activePlayers = _utils.GetAllClientStatuses();
+                return Results.Ok(activePlayers);
+            });
+
             api.MapGet("/utils/shutdown/{password}", (string password) =>
             {
-                var shutdownStatus = _shutdown.ShutdownServer(password);
+                if (!_passwordVerification.VerifyAPIPassword(password))
+                {
+                    return Results.Problem("No bread for you!", null, 401);
+                }
+                var shutdownStatus = _shutdown.ShutdownServer();
                 return Results.Ok(shutdownStatus);
             });
             

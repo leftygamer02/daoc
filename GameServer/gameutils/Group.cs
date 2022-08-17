@@ -23,6 +23,7 @@ using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL.Database;
+using DOL.GS.API;
 
 namespace DOL.GS
 {
@@ -173,6 +174,12 @@ namespace DOL.GS
 		public ICollection<GamePlayer> GetPlayersInTheGroup()
 		{
 			return m_groupMembers.OfType<GamePlayer>().ToArray();
+		}
+
+		public ICollection<GamePlayer> GetNearbyPlayersInTheGroup(GamePlayer source)
+		{
+			return m_groupMembers.OfType<GamePlayer>().Where(groupmate =>
+				source.GetDistance(groupmate) <= WorldMgr.MAX_EXPFORKILL_DISTANCE).ToArray();
 		}
 		
 		/// <summary>
@@ -553,15 +560,7 @@ namespace DOL.GS
 				BattleGroup mybattlegroup = (BattleGroup)player.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
 				foreach (GamePlayer plr in m_groupMembers)
 				{
-					if (mybattlegroup.IsInTheBattleGroup(plr))
-					{
-						if ((bool)mybattlegroup.Members[plr] == true)
-						{
-							text.Append("<Leader> ");
-						}
-					}
-					text.Append("(" + plr.CharacterClass.Name + ")");
-					text.Append(plr.Name + " ");
+					text.Append($"{plr.Name} ({plr.CharacterClass.Name}) ");
 				}
 				return text.ToString();
 			}

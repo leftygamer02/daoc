@@ -20,10 +20,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 30;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -67,7 +67,7 @@ namespace DOL.GS
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
 
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 			ChiefTarekBrain sbrain = new ChiefTarekBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;//load from database
@@ -97,7 +97,7 @@ namespace DOL.AI.Brain
 				FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 				Body.Health = Body.MaxHealth;
 			}
-			if (HasAggro)
+			if (HasAggro && Body.TargetObject != null)
 			{
 				foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
 				{
@@ -105,7 +105,7 @@ namespace DOL.AI.Brain
 						AddAggroListTo(npc.Brain as StandardMobBrain);
 				}
 			}
-			if (Body.HealthPercent <= 50)
+			if (Body.HealthPercent <= 50 && !Body.IsCasting)
 			{
 				Body.CastSpell(ChiefTarekHeal, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
 			}

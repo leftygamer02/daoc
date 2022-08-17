@@ -44,6 +44,7 @@ namespace DOL.GS
                 if (effect == null)
                     return;
 
+                long startTick = GameTimer.GetTickCount();
                 if (effect.CancelEffect || effect.IsDisabled)
                 {
                     HandleCancelEffect(effect);
@@ -52,6 +53,9 @@ namespace DOL.GS
                 {
                     HandlePropertyModification(effect);
                 }
+                long stopTick = GameTimer.GetTickCount();
+                if((stopTick - startTick)  > 25 )
+                    log.Warn($"Long EffectService.Tick for Effect: {effect}  Owner: {effect.OwnerName} Time: {stopTick - startTick}ms");
             });
             
             Diagnostics.StopPerfCounter(ServiceName);
@@ -406,10 +410,11 @@ namespace DOL.GS
                     return;
 
                 //foreach (GamePlayer player in e.SpellHandler.Target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                foreach (GamePlayer player in e.Owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                //foreach (GamePlayer player in e.Owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                Parallel.ForEach(e.Owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
                 {
                         player.Out.SendSpellEffectAnimation(e.SpellHandler.Caster, e.Owner, e.SpellHandler.Spell.ClientEffect, 0, false, 1);
-                }
+                });
             }
         }
 
@@ -589,6 +594,7 @@ namespace DOL.GS
 
                 //misc 
                 case (byte)eSpellType.SavageCombatSpeedBuff:
+                    return eEffect.MeleeHasteBuff;
                 case (byte)eSpellType.SavageCrushResistanceBuff:
                 case (byte)eSpellType.SavageDPSBuff:
                 case (byte)eSpellType.SavageEnduranceHeal:
@@ -650,10 +656,11 @@ namespace DOL.GS
 
             GameLiving target = e.SpellHandler.GetTarget() != null ? e.SpellHandler.GetTarget() : e.SpellHandler.Caster;
             //foreach (GamePlayer player in e.SpellHandler.Target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-            foreach (GamePlayer player in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+            // foreach (GamePlayer player in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+            Parallel.ForEach(e.Owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
             {
                 player.Out.SendSpellEffectAnimation(e.SpellHandler.Caster, e.Owner, e.SpellHandler.Spell.ClientEffect, 0, false, 0);
-            }
+            });
         }
 
         private static void SendPlayerUpdates(GamePlayer player)

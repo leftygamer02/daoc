@@ -16,6 +16,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
@@ -209,48 +210,8 @@ namespace DOL.GS.Quests.Hibernia
 			#endregion
 
 			#region defineItems
-			paidrean_necklace = GameServer.Database.FindObjectByKey<ItemTemplate>("paidrean_necklace");
-	        if (paidrean_necklace == null)
-	        {
-	            if (log.IsWarnEnabled)
-	                log.Warn("Could not find Paidrean Necklace, creating it ...");
-	            paidrean_necklace = new ItemTemplate();
-	            paidrean_necklace.Id_nb = "paidrean_necklace";
-	            paidrean_necklace.Name = "Paidrean Necklace";
-	            paidrean_necklace.Level = 51;
-	            paidrean_necklace.Durability = 50000;
-	            paidrean_necklace.MaxDurability = 50000;
-	            paidrean_necklace.Condition = 50000;
-	            paidrean_necklace.MaxCondition = 50000;
-	            paidrean_necklace.Item_Type = 29;
-	            paidrean_necklace.Object_Type = (int) eObjectType.Magical;
-	            paidrean_necklace.Model = 101;
-	            paidrean_necklace.Bonus = 35;
-	            paidrean_necklace.IsDropable = true;
-	            paidrean_necklace.IsTradable = true;
-	            paidrean_necklace.IsIndestructible = false;
-	            paidrean_necklace.IsPickable = true;
-	            paidrean_necklace.Bonus1 = 10;
-	            paidrean_necklace.Bonus2 = 10;
-	            paidrean_necklace.Bonus3 = 10;
-	            paidrean_necklace.Bonus4 = 10;
-	            paidrean_necklace.Bonus1Type = 11;
-	            paidrean_necklace.Bonus2Type = 19;
-	            paidrean_necklace.Bonus3Type = 18;
-	            paidrean_necklace.Bonus4Type = 13;
-	            paidrean_necklace.Price = 0;
-	            paidrean_necklace.Realm = (int) eRealm.Hibernia;
-	            paidrean_necklace.DPS_AF = 0;
-	            paidrean_necklace.SPD_ABS = 0;
-	            paidrean_necklace.Hand = 0;
-	            paidrean_necklace.Type_Damage = 0;
-	            paidrean_necklace.Quality = 100;
-	            paidrean_necklace.Weight = 10;
-	            paidrean_necklace.LevelRequirement = 50;
-	            paidrean_necklace.BonusLevel = 30;
-	            paidrean_necklace.Description = "";
-	            if (SAVE_INTO_DATABASE) GameServer.Database.AddObject(paidrean_necklace);
-	        }
+			paidrean_necklace = GameServer.Database.FindObjectByKey<ItemTemplate>("Paidrean Necklace");
+
 	        glowing_red_jewel = GameServer.Database.FindObjectByKey<ItemTemplate>("glowing_red_jewel");
 	        if (glowing_red_jewel == null)
 	        {
@@ -341,6 +302,11 @@ namespace DOL.GS.Quests.Hibernia
 
 		protected virtual void CreateFeairnaAthar(GamePlayer player)
 		{
+			foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(181, 288348, 319950, 2328,8000))
+			{
+				if (npc.Brain is SINeckBossBrain)
+					return;
+			}
 			Feairna_Athar = new SINeckBoss();
 			Feairna_Athar.Model = 767;
 			Feairna_Athar.Name = "Feairna-Athar";
@@ -352,16 +318,17 @@ namespace DOL.GS.Quests.Hibernia
 			Feairna_Athar.Size = 100;
 			Feairna_Athar.Level = 65;
 			Feairna_Athar.ScalingFactor = ServerProperties.Properties.NECK_BOSS_SCALING;
-			Feairna_Athar.X = player.X;
-			Feairna_Athar.Y = player.Y;
-			Feairna_Athar.Z = player.Z;
+			Feairna_Athar.X = 288348;
+			Feairna_Athar.Y = 319950;
+			Feairna_Athar.Z = 2328;
 			Feairna_Athar.MaxSpeedBase = 250;
-			Feairna_Athar.AddToWorld();
 
 			var brain = new SINeckBossBrain();
 			brain.AggroLevel = 200;
 			brain.AggroRange = 500;
 			Feairna_Athar.SetOwnBrain(brain);
+			Feairna_Athar.LoadedFromScript = true;
+			Feairna_Athar.RespawnInterval = -1;
 
 			Feairna_Athar.AddToWorld();
 
@@ -416,21 +383,34 @@ namespace DOL.GS.Quests.Hibernia
 
 			if (quest is not {Step: 5}) return;
 
-			if (player.Group != null)
-				if (player.Group.Leader != player)
-					return;
-
 			var existingCopy = WorldMgr.GetNPCsByName("Feairna-Athar", eRealm.None);
 
 			if (existingCopy.Length > 0) return;
 
-			// player near treant           
-			SendSystemMessage(player,
-				"You feel a quiet rustling in the leaves overhead.");
-			player.Out.SendMessage("Feairna-Athar ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-			quest.CreateFeairnaAthar(player);
+			//only try to spawn him once per trigger even if multiple people enter at the same time
+			if (Monitor.TryEnter(spawnLock))
+			{
+				try
+				{
+					// player near demon           
+					SendSystemMessage(player,
+					"You feel a quiet rustling in the leaves overhead.");
+					player.Out.SendMessage("Feairna-Athar ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+					quest.CreateFeairnaAthar(player);
+				}
+				finally
+				{
+					Monitor.Exit(spawnLock);
+				}
+			}
+			else
+			{
+				return;
+			}
 		}
-		
+
+		static object spawnLock = new object();
+
 		protected static void TalkToTerod(DOLEvent e, object sender, EventArgs args)
 		{
 			//We get the player from the event arguments and check if he qualifies		

@@ -16,10 +16,10 @@ namespace DOL.GS
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
-                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
-                default: return 70; // dmg reduction for rest resists
+                case eDamageType.Slash: return 30; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 30; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 30; // dmg reduction for melee dmg
+                default: return 40; // dmg reduction for rest resists
             }
         }
         public override double GetArmorAF(eArmorSlot slot)
@@ -95,7 +95,7 @@ namespace DOL.GS
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
             RespawnInterval =
-                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+                ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             BodyType = (ushort)NpcTemplateMgr.eBodyType.Humanoid;
 
             GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
@@ -216,6 +216,7 @@ namespace DOL.AI.Brain
         }
         public static bool CanCast = false;
         public bool SpawnCopiesAgain = false;
+        private bool RemoveAdds = false;
         public override void Think()
         {
             if (!HasAggressionTable())
@@ -231,13 +232,17 @@ namespace DOL.AI.Brain
                 AidonCopyIce.CopyCountIce = 0;
                 AidonCopyAir.CopyCountAir = 0;
                 AidonCopyEarth.CopyCountEarth = 0;
-                foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
+                if (!RemoveAdds)
                 {
-                    if (npc != null)
+                    foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
                     {
-                        if (npc.IsAlive && (npc.Brain is AidonCopyFireBrain || npc.Brain is AidonCopyAirBrain || npc.Brain is AidonCopyIceBrain || npc.Brain is AidonCopyEarthBrain))
-                            npc.RemoveFromWorld();
+                        if (npc != null)
+                        {
+                            if (npc.IsAlive && (npc.Brain is AidonCopyFireBrain || npc.Brain is AidonCopyAirBrain || npc.Brain is AidonCopyIceBrain || npc.Brain is AidonCopyEarthBrain))
+                                npc.RemoveFromWorld();
+                        }
                     }
+                    RemoveAdds = true;
                 }
             }
             if (Body.IsOutOfTetherRange)
@@ -246,7 +251,7 @@ namespace DOL.AI.Brain
             else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
                 Body.Health = Body.MaxHealth;
 
-            if (Body.InCombat && HasAggro)
+            if (Body.TargetObject != null && HasAggro)
             {
                 if (!Body.effectListComponent.ContainsEffectForEffectType(eEffect.DamageReturn))
                 {

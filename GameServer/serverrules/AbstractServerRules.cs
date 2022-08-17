@@ -30,6 +30,8 @@ using DOL.GS.API;
 using DOL.GS.Housing;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
+using DOL.GS.Quests;
+using DOL.GS.Scripts;
 using DOL.GS.ServerProperties;
 using DOL.Language;
 using log4net;
@@ -152,7 +154,7 @@ namespace DOL.GS.ServerRules
 
 			Account account = GameServer.Database.FindObjectByKey<Account>(username);
 
-			if (Properties.MAX_PLAYERS > 0)
+			if (Properties.MAX_PLAYERS > 0 && string.IsNullOrEmpty(Properties.QUEUE_API_URI))
 			{
 				if (WorldMgr.GetAllClients().Count >= Properties.MAX_PLAYERS)
 				{
@@ -165,7 +167,7 @@ namespace DOL.GS.ServerRules
 						log.Debug("IsAllowedToConnect deny access due to too many players.");
 						return false;
 					}
-
+			
 				}
 			}
 
@@ -402,45 +404,66 @@ namespace DOL.GS.ServerRules
 			if (defender.IsStealthed && attacker is GameNPC)
 				if (((attacker as GameNPC).Brain is IControlledBrain) &&
 					defender is GamePlayer &&
-					playerAttacker.TargetObject != defender)
+					attacker.TargetObject != defender)
 					return false;
 
 			// GMs can't be attacked
 			if (playerDefender != null && playerDefender.Client.Account.PrivLevel > 1)
 				return false;
 
-			// Safe area support for defender
-			foreach (AbstractArea area in defender.CurrentAreas)
-			{
-				if (area is null) continue;
+			//flame - Commenting out Safe Area check as it was causing lots of lock contention in the GetAreasOfSpot() code. We currently dont have safe-areas so this doesnt affect anything
 
-				if (!area.IsSafeArea)
-					continue;
+			// // Safe area support for defender
+			// if (defender.CurrentAreas is not null)
+			// {
+			// 	var defenderAreas = defender.CurrentAreas.ToList();
+			// 	foreach (AbstractArea area in defenderAreas)
+			// 	{
+			// 		if (area is null) continue;
 
-				if (defender is not GamePlayer) continue;
-				if (quiet == false) MessageToLiving(attacker, "You can't attack someone in a safe area!");
-				return false;
-			}
+			// 		if (!area.IsSafeArea)
+			// 			continue;
 
-			//safe area support for attacker
-			foreach (AbstractArea area in attacker.CurrentAreas)
-			{
-				if ((area.IsSafeArea) && (defender is GamePlayer) && (attacker is GamePlayer))
-				{
-					if (quiet == false) MessageToLiving(attacker, "You can't attack someone in a safe area!");
-					return false;
-				}
+			// 		if (defender is not GamePlayer) continue;
+			// 		if (quiet == false) MessageToLiving(attacker, "You can't attack someone in a safe area!");
+			// 		return false;
+			// 	}
+			// }		
 
-				if ((area.IsSafeArea) && (attacker is GamePlayer))
-				{
-					if (quiet == false) MessageToLiving(attacker, "You can't attack someone in a safe area!");
-					return false;
-				}
-			}
+			// //safe area support for attacker
+			// var attackerAreas = attacker.CurrentAreas.ToList();
+			// foreach (AbstractArea area in attackerAreas)
+			// {
+			// 	if ((area.IsSafeArea) && (defender is GamePlayer) && (attacker is GamePlayer))
+			// 	{
+			// 		if (quiet == false) MessageToLiving(attacker, "You can't attack someone in a safe area!");
+			// 		return false;
+			// 	}
+
+			// 	if ((area.IsSafeArea) && (attacker is GamePlayer))
+			// 	{
+			// 		if (quiet == false) MessageToLiving(attacker, "You can't attack someone in a safe area!");
+			// 		return false;
+			// 	}
+			// }
 
 			//I don't want mobs attacking guards
 			if (defender is GameKeepGuard && attacker is GameNPC && attacker.Realm == 0)
 				return false;
+
+			//dont allow attack npcs that have no faction set by other npcs without or with faction, faction vs faction is only allowed to attack
+			if (defender is GameNPC defendnpc && attacker is GameNPC attacknpc)
+			{
+				if (defender is GamePet) return true; //check if defender is GamePet
+				if (defendnpc.Brain is ControlledNpcBrain) return true; //check if defender is controlled npc
+				if (attacknpc is GamePet) return true; //check if attacker is GamePet
+				if (attacknpc.Brain is ControlledNpcBrain) return true; //check if attacker is controlled npc
+
+				if (defendnpc.Faction == null)//dont attack npc without faction
+					return false;
+				if (attacknpc.Faction == null && defendnpc.Faction != null)//npc without faction can't attack npc with faction
+					return false;
+			}
 
 			//Checking for shadowed necromancer, can't be attacked.
 			if (defender.ControlledBrain != null)
@@ -1115,8 +1138,10 @@ namespace DOL.GS.ServerRules
 
 			float totalDamage = 0;
 			Dictionary<Group, int> plrGrpExp = new Dictionary<Group, int>();
+			Dictionary<Group, float> grpToDmgDict = new Dictionary<Group, float>();
 			GamePlayer highestPlayer = null;
 			bool isGroupInRange = false;
+			Group highestDamageDealingGroup = null;
 
 			//Collect the total damage
 			foreach (DictionaryEntry de in XPGainerList)
@@ -1139,23 +1164,55 @@ namespace DOL.GS.ServerRules
 						plrGrpExp[player.Group] += 1;
 					else
 						plrGrpExp[player.Group] = 1;
+
+					if (grpToDmgDict.ContainsKey(player.Group))
+						grpToDmgDict[player.Group] += (float) de.Value;
+					else
+						grpToDmgDict.Add(player.Group, (float)de.Value);					
 				}
 
 				// tolakram: only prepare for xp challenge code if player is in a group
 				if (highestPlayer == null || (player.Level > highestPlayer.Level))
 					highestPlayer = player;
 			}
+			
+			//get the highest damage dealing group
+			if(grpToDmgDict.Count > 0)
+				highestDamageDealingGroup = grpToDmgDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; 
 
 			#endregion
 
-			List<GameObject> livingsToAward = new List<GameObject>();
+			HashSet<GameObject> livingsToAward = new HashSet<GameObject>();
 			//Now deal the XP to all livings
 			Diagnostics.StartPerfCounter("ReaperService-NPC-OnNPCKilled-XP-NPC("+killedNPC.GetHashCode()+")");
 			foreach (DictionaryEntry de in XPGainerList)
 			{
 				if (de.Key is GameLiving living)
 				{
-					livingsToAward.Add(living);
+					var player = living as GamePlayer;
+
+					if (player != null)
+					{
+						BattleGroup clientBattleGroup = player.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
+						if (clientBattleGroup != null)
+						{
+							livingsToAward.Add(living);
+						} 
+						else
+						{
+							if (living.Group != null)
+							{
+								if(highestDamageDealingGroup != null && living.Group == highestDamageDealingGroup )
+									livingsToAward.Add(living);
+								else if(player != null)
+								{
+									player.Out.SendMessage($"Your group did not deal enough damage to claim this kill.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+								}
+							}
+							else
+								livingsToAward.Add(living);
+						}
+					}
 				}
 			}
 
@@ -1191,7 +1248,7 @@ namespace DOL.GS.ServerRules
 						highestPlayer = gamePlayer;
 				}
 			}
-
+			
 			highestConValue = highestPlayer != null ? highestPlayer.GetConLevel(killedNPC) : living.GetConLevel(killedNPC);
 
 			if (living is NecromancerPet)
@@ -1767,6 +1824,17 @@ namespace DOL.GS.ServerRules
 			if (!BG)
 				playerBPValue = killedPlayer.BountyPointsValue;
 			long playerMoneyValue = killedPlayer.MoneyValue;
+			
+			//check for conquest activity
+			if (killer is GamePlayer kp)
+			{
+				if (ConquestService.ConquestManager.IsValidDefender(kp))
+				{
+					ConquestService.ConquestManager.AddDefender(kp); //add to list of active keep defenders
+					playerRPValue = (int)(playerRPValue * 1.10); //10% more RPs while defending the keep
+					ConquestService.ConquestManager.AwardDefenders(playerRPValue, kp);
+				}
+			}
 
 			List<KeyValuePair<GamePlayer, int>> playerKillers = new List<KeyValuePair<GamePlayer, int>>();
             List<Group> groupsToAward = new List<Group>();
@@ -1788,6 +1856,13 @@ namespace DOL.GS.ServerRules
 				 */
 				//if (!living.Alive) continue;
 				if (!living.IsWithinRadius(killedPlayer, WorldMgr.MAX_EXPFORKILL_DISTANCE)) continue;
+				
+				//check for conquest activity
+				if (living is GamePlayer lp)
+				{
+					if(ConquestService.ConquestManager.IsPlayerNearConquest(lp))
+						ConquestService.ConquestManager.AddContributor(lp);
+				}
 
 
 				double damagePercent = (float)de.Value / totalDamage;
@@ -1970,56 +2045,57 @@ namespace DOL.GS.ServerRules
 
 				if (killedPlayer.ReleaseType != eReleaseType.Duel && expGainPlayer != null)
 				{
-					switch ((eRealm)killedPlayer.Realm)
+					if (expGainPlayer.GetConLevel(killedPlayer) > -3)
 					{
-						case eRealm.Albion:
-							expGainPlayer.KillsAlbionPlayers++;
-							expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Players_Killed);
-							if (expGainPlayer == killer)
-							{
-								expGainPlayer.KillsAlbionDeathBlows++;
-								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Deathblows);
-								if ((float) de.Value == totalDamage)
+						switch ((eRealm)killedPlayer.Realm)
+						{
+							case eRealm.Albion:
+								expGainPlayer.KillsAlbionPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Players_Killed);
+								if (expGainPlayer == killer)
 								{
-									expGainPlayer.KillsAlbionSolo++;
-									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Solo_Kills);
-								}
+									expGainPlayer.KillsAlbionDeathBlows++;
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
+										expGainPlayer.KillsAlbionSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Solo_Kills);
+									}
 									
-							}
-							break;
-
-						case eRealm.Hibernia:
-							expGainPlayer.KillsHiberniaPlayers++;
-							expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Players_Killed);
-							if (expGainPlayer == killer)
-							{
-								expGainPlayer.KillsHiberniaDeathBlows++;
-								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Deathblows);
-								if ((float) de.Value == totalDamage)
-								{
-									expGainPlayer.KillsHiberniaSolo++;
-									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Solo_Kills);
 								}
-							}
-							break;
+								break;
 
-						case eRealm.Midgard:
-							expGainPlayer.KillsMidgardPlayers++;
-							expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Players_Killed);
-							if (expGainPlayer == killer)
-							{
-								expGainPlayer.KillsMidgardDeathBlows++;
-								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Deathblows);
-								if ((float) de.Value == totalDamage)
+							case eRealm.Hibernia:
+								expGainPlayer.KillsHiberniaPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Players_Killed);
+								if (expGainPlayer == killer)
 								{
-									expGainPlayer.KillsMidgardSolo++;
-									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Solo_Kills);
+									expGainPlayer.KillsHiberniaDeathBlows++;
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
+										expGainPlayer.KillsHiberniaSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Solo_Kills);
+									}
 								}
-									
-							}
-							break;
+								break;
+
+							case eRealm.Midgard:
+								expGainPlayer.KillsMidgardPlayers++;
+								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Players_Killed);
+								if (expGainPlayer == killer)
+								{
+									expGainPlayer.KillsMidgardDeathBlows++;
+									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Deathblows);
+									if ((float) de.Value == totalDamage)
+									{
+										expGainPlayer.KillsMidgardSolo++;
+										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Solo_Kills);
+									}
+								}
+								break;
+						}
 					}
-					
 				}
 			}
             
@@ -2047,12 +2123,31 @@ namespace DOL.GS.ServerRules
             foreach (var player in playersToAward)
             {
                 if (player.Level < 35 || player.GetDistanceTo(killedPlayer) > WorldMgr.MAX_EXPFORKILL_DISTANCE || player.GetConLevel(killedPlayer) <= -3) continue;
-                AtlasROGManager.GenerateOrbs(player);
-                if (Properties.EVENT_THIDRANKI || Properties.EVENT_TUTORIAL)
+                AtlasROGManager.GenerateOrbAmount(player, Util.Random(20, 50));
+
+                int bonusRegion = 0;
+                switch (ZoneBonusRotator.GetCurrentBonusRealm())
                 {
-                    if (!player.ReceiveROG) continue;
-                    //Console.WriteLine($"Generating ROG for {player}");
-                    AtlasROGManager.GenerateROG(player, true);
+	                case eRealm.Albion:
+		                bonusRegion = 1;
+		                break;
+	                case eRealm.Hibernia:
+		                bonusRegion = 200;
+		                break;
+	                case eRealm.Midgard:
+		                bonusRegion = 100;
+		                break;
+                }
+                
+                if (player.CurrentZone.ZoneRegion.ID == bonusRegion && Util.Chance(10))
+                {
+	                var RRMod = (int)Math.Floor(killedPlayer.RealmLevel / 10d) * 3;
+	                AtlasROGManager.GenerateROG(player, (byte)(player.Level + RRMod));
+                }
+
+                if (player.CurrentZone.ZoneRegion.ID == bonusRegion && Util.Chance(1))
+                {
+	                AtlasROGManager.GenerateBeetleCarapace(player);
                 }
             }
 
@@ -2388,16 +2483,12 @@ namespace DOL.GS.ServerRules
 			}
 			else if (keep is GameKeep)
 			{
-				value = Math.Max(50, ServerProperties.Properties.KEEP_RP_BASE + ((keep.BaseLevel - 50) * ServerProperties.Properties.KEEP_RP_MULTIPLIER));
-			}
-			else
-			{
-				value = Math.Max(5, ServerProperties.Properties.TOWER_RP_BASE + ((keep.BaseLevel - 50) * ServerProperties.Properties.TOWER_RP_MULTIPLIER));
+				value = Properties.KEEP_RP_BASE + (keep.BaseLevel - 50) * Properties.KEEP_RP_MULTIPLIER;
 			}
 
-			value += ((keep.Level - ServerProperties.Properties.STARTING_KEEP_LEVEL) * ServerProperties.Properties.UPGRADE_MULTIPLIER);
+			value += ((keep.Level - Properties.STARTING_KEEP_LEVEL) * Properties.UPGRADE_MULTIPLIER);
 
-			return Math.Max(5, value);
+			return value;
 		}
 
 		/// <summary>

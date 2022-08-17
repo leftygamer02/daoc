@@ -142,12 +142,12 @@ namespace DOL.GS.PropertyCalc
 
 				if (living.Level < 10)
 				{
-					hp = living.Level * 20 + 20 + ani.Constitution;  // default
+					hp = living.Level * 20 + 20 + ani.Constitution + living.BaseBuffBonusCategory[(int)property];  // default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level) + ani.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					hp = (int)(50 + 14 * living.Level + 0.548331 * living.Level) + ani.Constitution + living.BaseBuffBonusCategory[(int)property];
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -163,12 +163,12 @@ namespace DOL.GS.PropertyCalc
 
 				if (living.Level < 10)
 				{
-					hp = living.Level * 20 + 20 + pet.Constitution/*living.BaseBuffBonusCategory[(int)property]*/;  // default
+					hp = living.Level * 20 + 20 + pet.Constitution + living.BaseBuffBonusCategory[(int)property];  // default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level * living.Level) + pet.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					hp = (int)(50 + 15 * living.Level + 0.548331 * living.Level * living.Level) + pet.Constitution + living.BaseBuffBonusCategory[(int)property];
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -216,10 +216,10 @@ namespace DOL.GS.PropertyCalc
 					if (living.Level > 40)
 					{
 						//Console.WriteLine($"Scalar before {levelScalar} adding {(living.Level - 40) * .01} after {levelScalar + ((living.Level - 40) * .01)}");
-						levelScalar += (living.Level - 40) * .005;
+						levelScalar += (living.Level - 40) * .0025;
 					}
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 13*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
+					hp = (int)(50 + 12*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
 					if (living.Level < 25)
 						hp += 20;
 				}

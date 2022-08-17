@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using DOL.AI.Brain;
 using DOL.Events;
 using DOL.Database;
@@ -257,7 +260,7 @@ namespace DOL.AI.Brain
         }
         private int Announce(ECSGameTimer timer)
         {
-            BroadcastMessage("an otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompained by word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier");
+            BroadcastMessage("An otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompanied by a word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier.");
             return 0;
         }
         private Spell m_IcelordHjalmar_aoe;
@@ -458,7 +461,7 @@ namespace DOL.AI.Brain
         public static bool message1 = false;
         public static bool message2 = false;
         public static bool AggroText = false;
-
+        private bool RemoveAdds = false;
         public override void Think()
         {
             Point3D point = new Point3D(31088, 53870, 11886);
@@ -483,16 +486,20 @@ namespace DOL.AI.Brain
                 INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60160394);
                 Body.Strength = npcTemplate.Strength;
                 message2 = false;
-                foreach (GameNPC npc in Body.GetNPCsInRadius(4500))
+                if (!RemoveAdds)
                 {
-                    if (npc != null)
+                    foreach (GameNPC npc in Body.GetNPCsInRadius(4500))
                     {
-                        if (npc.IsAlive)
+                        if (npc != null)
                         {
-                            if (npc.Brain is MorkimmaBrain)
-                                npc.Die(Body);
+                            if (npc.IsAlive)
+                            {
+                                if (npc.Brain is MorkimmaBrain)
+                                    npc.Die(Body);
+                            }
                         }
                     }
+                    RemoveAdds = true;
                 }
             }
 
@@ -506,8 +513,9 @@ namespace DOL.AI.Brain
                 Body.Health = Body.MaxHealth;
             }
 
-            if (HasAggro)
+            if (HasAggro && Body.TargetObject != null)
             {
+                RemoveAdds = false;
                 if (message2 == false)
                 {
                     BroadcastMessage(Body.Name + " bellows 'I am amazed that you have made it this far! I'm afraid that your journey ends here with all of your death, however, I will show you no mercy!'");
@@ -539,7 +547,7 @@ namespace DOL.AI.Brain
         }
         private int Announce(ECSGameTimer timer)
         {
-            BroadcastMessage("an otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompained by word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier");
+            BroadcastMessage("An otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompanied by a word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier.");
             return 0;
         }
     }
@@ -574,22 +582,16 @@ namespace DOL.GS
         {
             if (IsAlive)
             {
-                foreach (GamePlayer player in GetPlayersInRadius(8000))
+                Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
                 {
-                    if (player != null)
-                        player.Out.SendSpellEffectAnimation(this, this, 4323, 0, false, 0x01);
-                }
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1500);
+                    player?.Out.SendSpellEffectAnimation(this, this, 4323, 0, false, 0x01);
+                });
+                return 3000;
             }
 
             return 0;
         }
-        protected int DoCast(ECSGameTimer timer)
-        {
-            if (IsAlive)
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1500);
-            return 0;
-        }
+        
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 200;

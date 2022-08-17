@@ -20,10 +20,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 30;// dmg reduction for rest resists
 			}
 		}
 		public override double AttackDamage(InventoryItem weapon)
@@ -69,7 +69,7 @@ namespace DOL.GS
 			Faction = FactionMgr.GetFactionByID(96);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
 
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 			MolluneroBrain sbrain = new MolluneroBrain();
 			SetOwnBrain(sbrain);
 			LoadedFromScript = false;//load from database
@@ -136,6 +136,7 @@ namespace DOL.AI.Brain
 			ThinkInterval = 1500;
 		}
 		private bool spawnAdds = false;
+		private bool RemoveAdds = false;
 		public override void Think()
 		{
 			if (!HasAggressionTable())
@@ -144,14 +145,19 @@ namespace DOL.AI.Brain
 				FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 				Body.Health = Body.MaxHealth;
 				spawnAdds = false;
-				foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
+				if (!RemoveAdds)
 				{
-					if (npc != null && npc.IsAlive && npc.Brain is MolluneroAddBrain)
-						npc.RemoveFromWorld();
+					foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
+					{
+						if (npc != null && npc.IsAlive && npc.Brain is MolluneroAddBrain)
+							npc.RemoveFromWorld();
+					}
+					RemoveAdds = true;
 				}
 			}
 			if (HasAggro && Body.TargetObject != null)
 			{
+				RemoveAdds = false;
 				if (!spawnAdds)
 				{
 					SpawnAdds();

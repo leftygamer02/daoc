@@ -26,7 +26,7 @@ namespace DOL.GS.WeeklyQuests.Midgard
 
 		private static GameNPC ReyMid = null; // Start NPC
 
-		private static int PlayersKilled = 0;
+		private int PlayersKilled = 0;
 		
 		// Kill Goal
 		private int MAX_KILLING_GOAL = 100;
@@ -277,7 +277,6 @@ namespace DOL.GS.WeeklyQuests.Midgard
 				//Check if we can add the quest!
 				if (!ReyMid.GiveQuest(typeof (PlayerKillWeeklyQuestMid), player, 1))
 					return;
-				PlayersKilled = 0;
 
 				ReyMid.SayTo(player, "You will find suitable players in the frontiers or in battlegrounds.");
 
@@ -316,7 +315,7 @@ namespace DOL.GS.WeeklyQuests.Midgard
 			if (sender != m_questPlayer)
 				return;
 
-			if (e != GameLivingEvent.EnemyKilled) return;
+			if (e != GameLivingEvent.EnemyKilled || Step != 1) return;
 			EnemyKilledEventArgs gArgs = (EnemyKilledEventArgs) args;
 
 			if (gArgs.Target.Realm == 0 || gArgs.Target.Realm == player.Realm || gArgs.Target is not GamePlayer ||
@@ -351,7 +350,7 @@ namespace DOL.GS.WeeklyQuests.Midgard
 		public override void FinishQuest()
 		{
 			m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel)/5, false);
-			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 10,32,Util.Random(50)), "You receive {0} as a reward.");
+			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 5,32,Util.Random(50)), "You receive {0} as a reward.");
 			AtlasROGManager.GenerateOrbAmount(m_questPlayer, 1500);
 			PlayersKilled = 0;
 			base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...

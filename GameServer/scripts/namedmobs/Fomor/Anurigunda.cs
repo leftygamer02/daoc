@@ -21,10 +21,10 @@ namespace DOL.GS
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40; // dmg reduction for melee dmg
-				case eDamageType.Crush: return 40; // dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
-				default: return 70; // dmg reduction for rest resists
+				case eDamageType.Slash: return 20; // dmg reduction for melee dmg
+				case eDamageType.Crush: return 20; // dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20; // dmg reduction for melee dmg
+				default: return 30; // dmg reduction for rest resists
 			}
 		}
 		public override double GetArmorAF(eArmorSlot slot)
@@ -78,7 +78,7 @@ namespace DOL.GS
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
 			Level = Convert.ToByte(npcTemplate.Level);
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
 			Faction = FactionMgr.GetFactionByID(82);
 			Faction.AddFriendFaction(FactionMgr.GetFactionByID(82));
@@ -104,6 +104,7 @@ namespace DOL.AI.Brain
 			ThinkInterval = 1500;
 		}
 		public static bool IsPulled = false;
+		private bool RemoveAdds = false;
 		public void BlockEntrance()
         {
 			Point3D entrance = new Point3D(31234, 33215, 15842);
@@ -129,23 +130,28 @@ namespace DOL.AI.Brain
 				IsPulled = false;
 				Adds1 = false;
 				Adds2 = false;
-				foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+				if (!RemoveAdds)
 				{
-					if (npc != null)
+					foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
 					{
-						if (npc.IsAlive && npc.Brain is AnurigundaAddsBrain)
+						if (npc != null)
 						{
-							npc.RemoveFromWorld();
+							if (npc.IsAlive && npc.Brain is AnurigundaAddsBrain)
+							{
+								npc.RemoveFromWorld();
+							}
 						}
 					}
+					RemoveAdds = true;
 				}
 			}
 			if(Body.IsAlive)
             {
 				BlockEntrance();
             }
-			if (Body.InCombat && Body.IsAlive && HasAggro)
+			if (Body.IsAlive && HasAggro && Body.TargetObject != null)
 			{
+				RemoveAdds = false;
 				if (IsPulled == false)
 				{
 					foreach (GameNPC npc in Body.GetNPCsInRadius(2500))

@@ -106,7 +106,7 @@ namespace DOL.AI.Brain
         public HordBrain()
             : base()
         {
-            m_HealAnnounce = "{0} heals his wounds.";
+            //m_HealAnnounce = "{0} heals his wounds.";
             AggroLevel = 200;
             AggroRange = 1500; //so players cant just pass him without aggroing
         }
@@ -127,6 +127,12 @@ namespace DOL.AI.Brain
                     new RegionTimer(Body, new RegionTimerCallback(CastHeal), 1000);
                 }
             }*/
+            if (!HasAggressionTable())
+            {
+                //set state to RETURN TO SPAWN
+                FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
+                Body.Health = Body.MaxHealth;
+            }
             base.Think();
         }
 
@@ -151,7 +157,7 @@ namespace DOL.AI.Brain
         /// <returns></returns>
         private int CastHeal(ECSGameTimer timer)
         {
-            BroadcastMessage(String.Format(m_HealAnnounce, Body.Name));
+            //BroadcastMessage(String.Format(m_HealAnnounce, Body.Name));
             Body.CastSpell(Heal, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             return 0;
         }

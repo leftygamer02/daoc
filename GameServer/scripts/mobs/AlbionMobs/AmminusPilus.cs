@@ -2,6 +2,8 @@
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DOL.GS
 {
@@ -38,21 +40,16 @@ namespace DOL.GS
 		{
 			if (IsAlive)
 			{
-				foreach (GamePlayer player in GetPlayersInRadius(3000))
+				Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
 				{
-					if (player != null)
-						player.Out.SendSpellEffectAnimation(this, this, 5920, 0, false, 0x01);
-				}
-				new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1000);
+					player?.Out.SendSpellEffectAnimation(this, this, 5920, 0, false, 0x01);
+				});
+
+				return 2000;
 			}
 			return 0;
 		}
-		protected int DoCast(ECSGameTimer timer)
-		{
-			if (IsAlive)
-				new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1000);
-			return 0;
-		}
+		
 		#endregion
 		public override void Die(GameObject killer)
         {
@@ -97,6 +94,7 @@ namespace DOL.AI.Brain
 			ThinkInterval = 1500;
 		}
 		private bool SpawnAdds = false;
+		private bool RemoveAdds = false;
 		public void BroadcastMessage(String message)
 		{
 			foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
@@ -108,15 +106,20 @@ namespace DOL.AI.Brain
 		{
 			if(!HasAggressionTable())
             {
-				foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+				if (!RemoveAdds)
 				{
-					if (npc.IsAlive && npc != null && npc.Brain is PilusAddBrain)
-						npc.RemoveFromWorld();
+					foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+					{
+						if (npc.IsAlive && npc != null && npc.Brain is PilusAddBrain)
+							npc.RemoveFromWorld();
+					}
+					RemoveAdds = true;
 				}
 				SpawnAdds = false;
             }
 			if(HasAggro && Body.TargetObject != null)
             {
+				RemoveAdds = false;
 				if (!SpawnAdds)
 				{
 					BroadcastMessage("The Amminus pilus says, \"I require assistance!\"");

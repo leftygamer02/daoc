@@ -258,20 +258,24 @@ namespace DOL.AI.Brain
         {
             if (AggroRange > 0)
             {
-                var currentPlayersSeen = new List<GamePlayer>();
-                foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, true))
+                if (Body.ambientTexts != null && Body.ambientTexts.Any(item => item.Trigger == "seeing"))
                 {
-                    if (!PlayersSeen.Contains(player))
+                    //Check if we can "see" players and fire off ambient text
+                    var currentPlayersSeen = new List<GamePlayer>();
+                    foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, true))
                     {
-                        Body.FireAmbientSentence(GameNPC.eAmbientTrigger.seeing, player as GameLiving);
-                        PlayersSeen.Add(player);
+                        if (!PlayersSeen.Contains(player))
+                        {
+                            Body.FireAmbientSentence(GameNPC.eAmbientTrigger.seeing, player as GameLiving);
+                            PlayersSeen.Add(player);
+                        }
+                        currentPlayersSeen.Add(player);
                     }
-                    currentPlayersSeen.Add(player);
-                }
 
-                for (int i = 0; i < PlayersSeen.Count; i++)
-                {
-                    if (!currentPlayersSeen.Contains(PlayersSeen[i])) PlayersSeen.RemoveAt(i);
+                    for (int i = 0; i < PlayersSeen.Count; i++)
+                    {
+                        if (!currentPlayersSeen.Contains(PlayersSeen[i])) PlayersSeen.RemoveAt(i);
+                    }
                 }
 
             }
@@ -310,19 +314,28 @@ namespace DOL.AI.Brain
             } else { return false; }
         }
 
+
+        public long LastNPCAggroCheckTick = 0;
+        public int NPC_AGGRO_DELAY => ThinkInterval * 10;
+        
         /// <summary>
         /// Check for aggro against close NPCs
         /// </summary>
         public virtual void CheckNPCAggro()
         {
+            // if (GameLoop.GameLoopTime - LastNPCAggroCheckTick < NPC_AGGRO_DELAY) return;
+            
             if (Body.attackComponent.AttackState)
                 return;
 
             if (Body.CurrentRegion == null)
                 return;
+
+            // LastNPCAggroCheckTick = GameLoop.GameLoopTime + Util.Random((int)(NPC_AGGRO_DELAY/10));
             
             foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange, Body.CurrentRegion.IsDungeon ? false : true))
             {
+                if (npc == null || Body == null) continue;
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, npc, true)) continue;
                 if (m_aggroTable.ContainsKey(npc))
                     continue; // add only new NPCs
@@ -370,7 +383,13 @@ namespace DOL.AI.Brain
                 return;
             }
 
-            foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, !Body.CurrentZone.IsDungeon))
+            List<GameNPC> pets = new List<GameNPC>();
+
+            var players = Body?.GetPlayersInRadius((ushort) AggroRange, !Body.CurrentZone.IsDungeon);
+
+            if (players == null) return;
+
+            foreach (GamePlayer player in players)
             {
                 if (!GameServer.ServerRules.IsAllowedToAttack(Body, player, true)) continue;
                 // Don't aggro on immune players.
@@ -383,13 +402,16 @@ namespace DOL.AI.Brain
                     useLOS = true;
                 }
 
-                if (useLOS && player != null)
+                if (useLOS && player != null && !AggroLOS)
                 {
                     player.Out.SendCheckLOS(Body, player, new CheckLOSResponse(CheckAggroLOS));
                 }
 
                 int aggrolevel = 0;
 
+                if(player.ControlledBrain != null)
+                    pets.Add(player.ControlledBrain.Body);
+                
                 if (Body.Faction != null)
                 {
                     aggrolevel = Body.Faction.GetAggroToFaction(player);
@@ -413,6 +435,55 @@ namespace DOL.AI.Brain
                     AddToAggroList(player, 1, true);
                 }
             }
+            
+            // CheckPetAggro(useLOS);
+        }
+
+        private void CheckPetAggro(bool useLOS)
+        {
+            var pets = Body?.GetPetsInRadius((ushort) AggroRange, !Body.CurrentZone.IsDungeon);
+            if (pets == null) return;
+            foreach (var petNPC in pets)
+            {
+                if (petNPC is not GamePet pet) continue;
+                if (pet.Owner is not GamePlayer owner) continue;
+                
+                if (!GameServer.ServerRules.IsAllowedToAttack(Body, pet, true)) continue;
+                // Don't aggro on immune players.
+                
+                if (Body.CurrentZone.IsDungeon)
+                {
+                    useLOS = true;
+                }
+
+                if (useLOS && pet != null && !AggroLOS && pet is GamePet p)
+                {
+                    owner.Out.SendCheckLOS(Body, pet, new CheckLOSResponse(CheckAggroLOS));
+                }
+
+                int aggrolevel = 0;
+
+                if (Body.Faction != null)
+                {
+                    aggrolevel = Body.Faction.GetAggroToFaction(owner);
+                    if (aggrolevel < 75)
+                        return;
+                }
+
+                if (aggrolevel <= 0 && AggroLevel <= 0)
+                    return;
+
+                if (m_aggroTable.ContainsKey(pet))
+                    continue; // add only new players
+                if (!pet.IsAlive || pet.ObjectState != GameObject.eObjectState.Active || pet.IsStealthed)
+                    continue;
+
+                if (CalculateAggroLevelToTarget(pet) > 0)
+                {
+                    if (useLOS && !AggroLOS) return;
+                    AddToAggroList(pet, 1, true);
+                }
+            }
         }
 
         /// <summary>
@@ -420,7 +491,12 @@ namespace DOL.AI.Brain
         /// 10 seconds for 0 aggro mobs
         /// </summary>
         public override int ThinkInterval {
-            get { return Math.Max(500, 1500 - (AggroLevel/10) * 100); }
+            get { 
+                
+                if(Body is GameMerchant || Body is GameTrainer || Body is GameHastener)
+                    return 5000; //Merchants and other special NPCs don't need to think that often
+
+                return Math.Max(500, 1500 - (AggroLevel/10) * 100); }
         }
 
         /// <summary>
@@ -457,7 +533,7 @@ namespace DOL.AI.Brain
         /// <summary>
         /// List of livings that this npc has aggro on, living => aggroamount
         /// </summary>
-        protected readonly Dictionary<GameLiving, long> m_aggroTable = new Dictionary<GameLiving, long>();
+        protected internal readonly Dictionary<GameLiving, long> m_aggroTable = new Dictionary<GameLiving, long>();
 
         /// <summary>
         /// The aggression table for this mob
@@ -508,11 +584,15 @@ namespace DOL.AI.Brain
             // do not modify aggro list if dead
             if (!brain.Body.IsAlive) return;
 
+            KeyValuePair<GameLiving, long>[] aggroTable = Array.Empty<KeyValuePair<GameLiving, long>>();
             lock ((m_aggroTable as ICollection).SyncRoot)
             {
-                Dictionary<GameLiving, long>.Enumerator dictEnum = m_aggroTable.GetEnumerator();
-                while (dictEnum.MoveNext())
-                    brain.AddToAggroList(dictEnum.Current.Key, Body.MaxHealth);
+                aggroTable = m_aggroTable.ToArray();
+            }
+
+            foreach (var aggro in aggroTable)
+            {
+                brain.AddToAggroList(aggro.Key, Body.MaxHealth);
             }
         }
 
@@ -768,67 +848,71 @@ namespace DOL.AI.Brain
         protected virtual GameLiving CalculateNextAttackTarget()
         {
             GameLiving maxAggroObject = null;
+            List<KeyValuePair<GameLiving, long>> aggroList = new List<KeyValuePair<GameLiving, long>>();
             lock ((m_aggroTable as ICollection).SyncRoot)
             {
-                double maxAggro = 0;
-                Dictionary<GameLiving, long>.Enumerator aggros = m_aggroTable.GetEnumerator();
-                List<GameLiving> removable = new List<GameLiving>();
-                while (aggros.MoveNext())
+                aggroList = m_aggroTable.ToList();
+            }
+
+            double maxAggro = 0;
+            List<GameLiving> removable = new List<GameLiving>();
+            
+            foreach(var currentKey in aggroList)
+            {
+                GameLiving living = currentKey.Key;
+                if(living == null)
+                    continue;
+
+                // check to make sure this target is still valid
+                if (living.IsAlive == false ||
+                    living.ObjectState != GameObject.eObjectState.Active ||
+                    living.IsStealthed ||
+                    Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE ||
+                    GameServer.ServerRules.IsAllowedToAttack(Body, living, true) == false)
                 {
-                    GameLiving living = aggros.Current.Key;
-                    if(living == null)
-                        continue;
+                    removable.Add(living);
+                    continue;
+                }
 
-                    // check to make sure this target is still valid
-                    if (living.IsAlive == false ||
-                        living.ObjectState != GameObject.eObjectState.Active ||
-                        living.IsStealthed ||
-                        Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE ||
-                        GameServer.ServerRules.IsAllowedToAttack(Body, living, true) == false)
+                // Don't bother about necro shade, can't attack it anyway.
+                if (living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+                    continue;
+
+                long amount = currentKey.Value;
+
+                if (living.IsAlive
+                    && amount > maxAggro
+                    && living.CurrentRegion == Body.CurrentRegion
+                    && living.ObjectState == GameObject.eObjectState.Active)
+                {
+                    int distance = Body.GetDistanceTo(living);
+                    int maxAggroDistance = (this is IControlledBrain) ? MAX_PET_AGGRO_DISTANCE : MAX_AGGRO_DISTANCE;
+
+                    if (distance <= maxAggroDistance)
                     {
-                        removable.Add(living);
-                        continue;
-                    }
-
-                    // Don't bother about necro shade, can't attack it anyway.
-                    if (living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
-                        continue;
-
-                    long amount = aggros.Current.Value;
-
-                    if (living.IsAlive
-                        && amount > maxAggro
-                        && living.CurrentRegion == Body.CurrentRegion
-                        && living.ObjectState == GameObject.eObjectState.Active)
-                    {
-                        int distance = Body.GetDistanceTo(living);
-                        int maxAggroDistance = (this is IControlledBrain) ? MAX_PET_AGGRO_DISTANCE : MAX_AGGRO_DISTANCE;
-
-                        if (distance <= maxAggroDistance)
+                        double aggro = amount * Math.Min(500.0 / distance, 1);
+                        if (aggro > maxAggro)
                         {
-                            double aggro = amount * Math.Min(500.0 / distance, 1);
-                            if (aggro > maxAggro)
-                            {
-                                maxAggroObject = living;
-                                maxAggro = aggro;
-                            }
+                            maxAggroObject = living;
+                            maxAggro = aggro;
                         }
                     }
                 }
+            }
 
-                foreach (GameLiving l in removable)
-                {
-                    RemoveFromAggroList(l);
-                    Body.attackComponent.RemoveAttacker(l);
-                }
+            foreach (GameLiving l in removable)
+            {
+                RemoveFromAggroList(l);
+                Body.attackComponent.RemoveAttacker(l);
+            }
 
-                if (maxAggroObject == null)
+            if (maxAggroObject == null)
+            {
+                lock ((m_aggroTable as ICollection).SyncRoot)
                 {
                     m_aggroTable.Clear();
                 }
             }
-
-            
 
             return maxAggroObject;
         }
@@ -1151,7 +1235,7 @@ namespace DOL.AI.Brain
                     // Puller isn't in a group, so we have to create the victims list for the BG
                     victims = new List<GamePlayer>(bg.PlayerCount);
 
-                foreach (GamePlayer player in bg.GetPlayersInTheBattleGroup())
+                foreach (GamePlayer player in bg.Members.Keys)
                     if (player != null && (player.InternalID == puller.InternalID || player.IsWithinRadius(puller, BAFPlayerRange, true)))
                     {
                         if (DOL.GS.ServerProperties.Properties.BAF_MOBS_COUNT_BG_MEMBERS

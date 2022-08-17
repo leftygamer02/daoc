@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using DOL.AI.Brain;
 using DOL.Events;
 using DOL.Database;
@@ -592,7 +594,7 @@ namespace DOL.AI.Brain
             }
             base.OnAttackedByEnemy(ad);
         }
-
+        private bool RemoveAdds = false;
         public override void Think()
         {
             if (!HasAggressionTable())
@@ -608,13 +610,17 @@ namespace DOL.AI.Brain
                 StartCastRoot = false;
                 CanCast = false;
                 RandomTarget2 = null;
-                foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
+                if (!RemoveAdds)
                 {
-                    if (npc != null)
+                    foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
                     {
-                        if (npc.IsAlive && npc.Brain is FrozenBombBrain)
-                            npc.Die(Body);
+                        if (npc != null)
+                        {
+                            if (npc.IsAlive && npc.Brain is FrozenBombBrain)
+                                npc.Die(Body);
+                        }
                     }
+                    RemoveAdds = true;
                 }
             }
 
@@ -628,6 +634,7 @@ namespace DOL.AI.Brain
 
             if (HasAggro && Body.TargetObject != null)
             {
+                RemoveAdds = false;
                 if(!StartCastRoot)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget), Util.Random(35000, 45000));
@@ -834,21 +841,16 @@ namespace DOL.GS
         {
             if (IsAlive)
             {
-                foreach (GamePlayer player in GetPlayersInRadius(8000))
+                Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
                 {
-                    if (player != null)
-                        player.Out.SendSpellEffectAnimation(this, this, 177, 0, false, 0x01);
-                }
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1500);
+                    player?.Out.SendSpellEffectAnimation(this, this, 177, 0, false, 0x01);
+                });
+
+                return 3000;
             }
             return 0;
         }
-        protected int DoCast(ECSGameTimer timer)
-        {
-            if (IsAlive)
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1500);
-            return 0;
-        }
+     
         protected int Explode(ECSGameTimer timer)
         {
             if (IsAlive && TargetObject != null)

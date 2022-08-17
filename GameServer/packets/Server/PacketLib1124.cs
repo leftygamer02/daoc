@@ -521,7 +521,7 @@ namespace DOL.GS.PacketHandler
 			int[] racial = new int[updateResists.Length];
 			int[] caps = new int[updateResists.Length];
 
-			int cap = (m_gameClient.Player.Level >> 1) + 1;
+			int cap = (int) (m_gameClient?.Player != null ? (m_gameClient.Player.Level >> 1) + 1 : 1);
 			for (int i = 0; i < updateResists.Length; i++)
 			{
 				caps[i] = cap;
@@ -1682,6 +1682,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte(0);
 				foreach (InventoryItem item in items)
 				{
+					if (item.Realm != (int)m_gameClient.Player.Realm) continue;
 					pak.WriteByte((byte)items.IndexOf(item));
 					pak.WriteByte((byte)item.Level);
 					int value1; // some object types use this field to display count
@@ -2878,7 +2879,7 @@ namespace DOL.GS.PacketHandler
 			int questIndex = 1;
 			lock (m_gameClient.Player.QuestList)
 			{
-				foreach (AbstractQuest quest in m_gameClient.Player.QuestList)
+				foreach (AbstractQuest quest in m_gameClient.Player.QuestList.ToList())
 				{
 					SendQuestPacket((quest.Step == 0 || quest.Step == -1 || quest.Step == -2) ? null : quest, questIndex++);
 				}
@@ -5489,17 +5490,18 @@ namespace DOL.GS.PacketHandler
 			//Speed is in % not a fixed value!
 			if (m_gameClient.Player == null)
 				return;
+			var player = m_gameClient.Player;
 			using (var pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.MaxSpeed)))
 			{
 				// _gameClient.Player.LastMaxSpeed = _gameClient.Player.MaxSpeed; // patch 0024 experimental hackdetect
-				pak.WriteShort((ushort)(m_gameClient.Player.MaxSpeed * 100 / GamePlayer.PLAYER_BASE_SPEED));
-				pak.WriteByte((byte)(m_gameClient.Player.IsTurningDisabled ? 0x01 : 0x00));
+				pak.WriteShort((ushort)(player.MaxSpeed * 100 / GamePlayer.PLAYER_BASE_SPEED));
+				pak.WriteByte((byte)(player.IsTurningDisabled ? 0x01 : 0x00));
 				// water speed in % of land speed if its over 0 i think
 				pak.WriteByte(
 					(byte)
 					Math.Min(byte.MaxValue,
-							 ((m_gameClient.Player.MaxSpeed * 100 / GamePlayer.PLAYER_BASE_SPEED) *
-							  (m_gameClient.Player.GetModified(eProperty.WaterSpeed) * .01))));
+							 ((player.MaxSpeed * 100 / GamePlayer.PLAYER_BASE_SPEED) *
+							  (player.GetModified(eProperty.WaterSpeed) * .01))));
 				SendTCP(pak);
 			}
 		}
@@ -5741,7 +5743,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)Checker.ObjectID);
 				pak.WriteShort((ushort)TargetOID);
 				pak.WriteShort(0x00); // ?
-				pak.WriteShort(0x00); // ?
+				// pak.WriteShort(0x00); // ?
 				SendTCP(pak);
 			}
 		}
@@ -5770,7 +5772,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteShort((ushort)SourceOID);
 				pak.WriteShort((ushort)TargetOID);
 				pak.WriteShort(0x00); // ?
-				pak.WriteShort(0x00); // ?
+				// pak.WriteShort(0x00); // ?
 				SendTCP(pak);
 			}
 		}
@@ -6064,6 +6066,8 @@ namespace DOL.GS.PacketHandler
 				foreach (KeyValuePair<eCraftingSkill, int> de in m_gameClient.Player.CraftingSkills)
 				{
 					AbstractCraftingSkill curentCraftingSkill = CraftingMgr.getSkillbyEnum((eCraftingSkill)de.Key);
+					var value = de.Value;
+					if (value < 0) value = 0;
 					pak.WriteShort(Convert.ToUInt16(de.Value)); //points
 					pak.WriteByte(curentCraftingSkill.Icon); //icon
 					pak.WriteInt(1);
