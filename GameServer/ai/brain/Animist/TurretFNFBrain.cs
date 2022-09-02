@@ -64,10 +64,16 @@ namespace DOL.AI.Brain
 					if (turretBody.TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null)
 						continue;
 
-					if (turretBody.TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (living.HasAbility(Abilities.RootImmunity) || EffectListService.GetEffectOnTarget(living, eEffect.SpeedOfSound) != null))
-						continue;
+                    if (turretBody.TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (
+                            living.HasAbility(Abilities.RootImmunity) ||
+                            EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null ||
+                            EffectListService.GetImmunityEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null ||
+                            EffectListService.GetImmunityEffectOnTarget(living, eEffect.SnareImmunity) != null ||
+                            EffectListService.GetEffectOnTarget(living, eEffect.SpeedOfSound) != null)
+                        )
+                        continue;
 
-					if(!newTargets.Contains(living))
+                    if (!newTargets.Contains(living))
 						newTargets.Add(living);
 				}
 			}
@@ -120,7 +126,15 @@ namespace DOL.AI.Brain
 					//if (((TurretPet)Body).TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && SpellHandler.FindEffectOnTarget(living, "SpeedDecrease") != null)
 					if (turretBody.TurretSpell.SpellType != (byte)eSpellType.SpeedDecrease && EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null)
 						continue;
-				}
+                    if (turretBody.TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (
+							living.HasAbility(Abilities.RootImmunity) || 
+							EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null || 
+							EffectListService.GetImmunityEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null ||
+                            EffectListService.GetImmunityEffectOnTarget(living, eEffect.SnareImmunity) != null ||
+                            EffectListService.GetEffectOnTarget(living, eEffect.SpeedOfSound) != null)
+						)
+                        continue;
+                }
 				
 				if (LivingHasEffect(living, turretBody.TurretSpell))
 				{
@@ -158,7 +172,16 @@ namespace DOL.AI.Brain
 				if (Body.GetConLevel(living) < -2)
 					continue;
 
-				if (LivingHasEffect(living, turretBody.TurretSpell))
+                if (turretBody.TurretSpell.SpellType == (byte)eSpellType.SpeedDecrease && (
+                            living.HasAbility(Abilities.RootImmunity) ||
+                            EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null ||
+                            EffectListService.GetImmunityEffectOnTarget(living, eEffect.MovementSpeedDebuff) != null ||
+                            EffectListService.GetImmunityEffectOnTarget(living, eEffect.SnareImmunity) != null ||
+                            EffectListService.GetEffectOnTarget(living, eEffect.SpeedOfSound) != null)
+                        )
+                    continue;
+
+                if (LivingHasEffect(living, turretBody.TurretSpell))
 				{
 					oldTargets.Add(living);
 				}
