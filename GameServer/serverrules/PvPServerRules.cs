@@ -252,19 +252,17 @@ namespace DOL.GS.ServerRules
 						return false;
 					}
 					
-					/*
 					if(playerAttacker.PlayerAttackImmunityDict.ContainsKey(playerDefender))
 					{
-						if (playerAttacker.PlayerAttackImmunityDict[playerDefender] + 600000 < GameLoop.GameLoopTime)
+						if (playerAttacker.PlayerAttackImmunityDict[playerDefender] + 600000 > GameLoop.GameLoopTime)
 						{
-							if (quiet == false) MessageToLiving(attacker, "You have recently grouped with this player, and cannot attack them.");
+							var seconds = (playerAttacker.PlayerAttackImmunityDict[playerDefender] + 600000 - GameLoop.GameLoopTime) / 1000;
+							if (quiet == false) MessageToLiving(attacker, $"You have recently grouped with this player and cannot attack them for another {seconds} seconds.");
 							return false;	
 						}
-						else
-						{
-							playerAttacker.PlayerAttackImmunityDict.Remove(playerDefender);
-						}
-					} */
+						
+						playerAttacker.PlayerAttackImmunityDict.Remove(playerDefender);
+					} 
 				}
 			}
 
