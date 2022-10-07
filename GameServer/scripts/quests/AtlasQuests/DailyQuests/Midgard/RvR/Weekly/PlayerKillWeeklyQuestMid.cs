@@ -26,7 +26,7 @@ namespace DOL.GS.WeeklyQuests.Midgard
 
 		private static GameNPC ReyMid = null; // Start NPC
 
-		private static int PlayersKilled = 0;
+		private int PlayersKilled = 0;
 		
 		// Kill Goal
 		private int MAX_KILLING_GOAL = 100;
@@ -277,7 +277,6 @@ namespace DOL.GS.WeeklyQuests.Midgard
 				//Check if we can add the quest!
 				if (!ReyMid.GiveQuest(typeof (PlayerKillWeeklyQuestMid), player, 1))
 					return;
-				PlayersKilled = 0;
 
 				ReyMid.SayTo(player, "You will find suitable players in the frontiers or in battlegrounds.");
 
@@ -350,10 +349,20 @@ namespace DOL.GS.WeeklyQuests.Midgard
 
 		public override void FinishQuest()
 		{
-			m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel)/5, false);
+			int reward = ServerProperties.Properties.WEEKLY_RVR_REWARD;
+			
+			m_questPlayer.ForceGainExperience( (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel)/5);
 			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 5,32,Util.Random(50)), "You receive {0} as a reward.");
 			AtlasROGManager.GenerateOrbAmount(m_questPlayer, 1500);
+			AtlasROGManager.GenerateJewel(m_questPlayer, (byte)(m_questPlayer.Level + 1), m_questPlayer.Level + Util.Random(10, 20));
 			PlayersKilled = 0;
+			
+			if (reward > 0)
+			{
+				m_questPlayer.Out.SendMessage($"You have been rewarded {reward} Realmpoints for finishing Weekly Quest.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				m_questPlayer.GainRealmPoints(reward, false);
+				m_questPlayer.Out.SendUpdatePlayer();
+			}
 			base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
 			
 		}

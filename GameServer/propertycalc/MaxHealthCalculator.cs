@@ -216,10 +216,10 @@ namespace DOL.GS.PropertyCalc
 					if (living.Level > 40)
 					{
 						//Console.WriteLine($"Scalar before {levelScalar} adding {(living.Level - 40) * .01} after {levelScalar + ((living.Level - 40) * .01)}");
-						levelScalar += (living.Level - 40) * .005;
+						levelScalar += (living.Level - 40) * .0025;
 					}
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 13*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
+					hp = (int)(50 + 12*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -250,9 +250,9 @@ namespace DOL.GS.PropertyCalc
 				}
 
 				if(living is GameEpicBoss)
-					hp = (int)(hp * 3); //epic bosses get 100% extra hp
+					hp = (int)(hp * 1.5); //epic bosses get 50% extra hp
 				else if (living is GameEpicNPC)
-					hp = (int)( hp * 2); //epic NPCs get 50% extra hp
+					hp = (int)( hp * 1.25); //epic NPCs get 25% extra hp
 
 				return hp;
 				//return conhp;

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using DOL.AI.Brain;
 using DOL.Events;
 using DOL.Database;
@@ -27,7 +30,7 @@ namespace DOL.GS
 
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         public override int AttackRange
@@ -57,7 +60,7 @@ namespace DOL.GS
 
         public override int MaxHealth
         {
-            get { return 200000; }
+            get { return 100000; }
         }
 
         public override bool AddToWorld()
@@ -257,7 +260,7 @@ namespace DOL.AI.Brain
         }
         private int Announce(ECSGameTimer timer)
         {
-            BroadcastMessage("an otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompained by word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier");
+            BroadcastMessage("An otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompanied by a word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier.");
             return 0;
         }
         private Spell m_IcelordHjalmar_aoe;
@@ -324,7 +327,7 @@ namespace DOL.GS
 
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         public override int AttackRange
@@ -354,7 +357,7 @@ namespace DOL.GS
 
         public override int MaxHealth
         {
-            get { return 200000; }
+            get { return 100000; }
         }
         public static int HjalmarCount = 0;
         public override void Die(GameObject killer) //on kill generate orbs
@@ -544,7 +547,7 @@ namespace DOL.AI.Brain
         }
         private int Announce(ECSGameTimer timer)
         {
-            BroadcastMessage("an otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompained by word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier");
+            BroadcastMessage("An otherworldly howling sound suddenly becomes perceptible. The sound quickly grows louder but it is not accompanied by a word. Moments after it begins, the howling sound is gone, replace by the familiar noises of the slowly shifting glacier.");
             return 0;
         }
     }
@@ -572,29 +575,23 @@ namespace DOL.GS
 
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 50;
+            return base.AttackDamage(weapon) * Strength / 50 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         protected int Show_Effect(ECSGameTimer timer)
         {
             if (IsAlive)
             {
-                foreach (GamePlayer player in GetPlayersInRadius(8000))
+                Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
                 {
-                    if (player != null)
-                        player.Out.SendSpellEffectAnimation(this, this, 4323, 0, false, 0x01);
-                }
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1500);
+                    player?.Out.SendSpellEffectAnimation(this, this, 4323, 0, false, 0x01);
+                });
+                return 3000;
             }
 
             return 0;
         }
-        protected int DoCast(ECSGameTimer timer)
-        {
-            if (IsAlive)
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1500);
-            return 0;
-        }
+        
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 200;

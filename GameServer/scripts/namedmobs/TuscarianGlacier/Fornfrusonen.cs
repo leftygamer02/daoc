@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using DOL.AI.Brain;
 using DOL.Events;
 using DOL.Database;
@@ -24,7 +26,7 @@ namespace DOL.GS
         }
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
         public override int AttackRange
         {
@@ -49,7 +51,7 @@ namespace DOL.GS
         }
         public override int MaxHealth
         {
-            get { return 200000; }
+            get { return 100000; }
         }
         public void BroadcastMessage(String message)
         {
@@ -101,24 +103,18 @@ namespace DOL.GS
         {
             if (IsAlive)
             {
-                foreach (GamePlayer player in GetPlayersInRadius(3000))
+                Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
                 {
-                    if (player != null)
-                    {
-                        player.Out.SendSpellEffectAnimation(this, this, 6160, 0, false, 0x01);//left hand glow
-                        player.Out.SendSpellEffectAnimation(this, this, 6161, 0, false, 0x01);//right hand glow
-                    }
-                }
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 1500);
+                    if (player == null) return;
+                    player.Out.SendSpellEffectAnimation(this, this, 6160, 0, false, 0x01);//left hand glow
+                    player.Out.SendSpellEffectAnimation(this, this, 6161, 0, false, 0x01);//right hand glow
+                });
+
+                return 3000;
             }
             return 0;
         }
-        protected int DoCast(ECSGameTimer timer)
-        {
-            if (IsAlive)
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 1500);
-            return 0;
-        }
+        
         #endregion
 
         //boss does not move so he will not take damage if enemys hit him from far away
@@ -288,7 +284,7 @@ namespace DOL.GS
         }
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 80;
+            return base.AttackDamage(weapon) * Strength / 80 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         public override int AttackRange

@@ -771,6 +771,10 @@ namespace DOL.AI.Brain
 					//underhill ally heals at half the normal threshold 'will heal seriously injured groupmates'
 					int healThreshold = this.Body.Name.Contains("underhill") ? GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD / 2 : GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD;
 
+					if (Body.Name.Contains("empyrean"))
+					{
+						healThreshold = this.Body.Name.Contains("empyrean") ? GS.ServerProperties.Properties.CHARMED_NPC_HEAL_THRESHOLD : GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD;
+					}
 
 					if (spellTarget == "SELF")
 					{
@@ -1153,7 +1157,7 @@ namespace DOL.AI.Brain
 
 			//AttackedByEnemyEventArgs args = arguments as AttackedByEnemyEventArgs;
 			//if (args == null) return;
-			if (ad.Target is GamePlayer && (ad.Target as GamePlayer).ControlledBrain != this)
+			if (ad.Target is GamePlayer && ((ad.Target as GamePlayer).ControlledBrain != this || (ad.Target as GamePlayer).ControlledBrain.Body == Owner))
 				return;
 			// react only on these attack results
 			switch (ad.AttackResult)

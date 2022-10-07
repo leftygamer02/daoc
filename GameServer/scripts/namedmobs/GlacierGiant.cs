@@ -32,7 +32,7 @@ namespace DOL.GS
 		}
 		public override int MaxHealth
 		{
-			get { return 200000; }
+			get { return 100000; }
 		}
 		public override double AttackDamage(InventoryItem weapon)
 		{
@@ -124,7 +124,7 @@ namespace DOL.GS
 }
 namespace DOL.AI.Brain
 {
-	public class GlacierGiantBrain : StandardMobBrain
+	public class GlacierGiantBrain : EpicBossBrain
 	{
 		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		public GlacierGiantBrain() : base()
@@ -151,7 +151,7 @@ namespace DOL.AI.Brain
 			{
 				if (Body.TargetObject != null)
 				{
-					if(Util.Chance(20))
+					if(Util.Chance(20) && Body.HealthPercent > 15)//dont port players if it's low on health
 						TeleportPlayer();
 				}
 			}

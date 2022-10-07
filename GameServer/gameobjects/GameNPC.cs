@@ -58,9 +58,9 @@ namespace DOL.GS
 		/// </summary>
 		/// <remarks>
 		/// This helps to reduce the turning of an npc while fighting or returning to a spawn
-		/// Tested - min distance for mob sticking within combat range to player is 25
+		/// Tested - min distance for mob sticking within combat range to player is 25 (Edit Navelator, 25 stops them too early, 20 keeps them in range)
 		/// </remarks>
-		public const int CONST_WALKTOTOLERANCE = 25;
+		public const int CONST_WALKTOTOLERANCE = 20;
 
 		private int m_databaseLevel;
 		
@@ -3831,29 +3831,29 @@ namespace DOL.GS
 			if (source is GamePlayer == false)
 				return true;
 
-			GamePlayer player = (GamePlayer)source;
-
-			//TODO: Guards in rvr areas doesn't need check
-			if (text == "task")
-			{
-				if (source.TargetObject == null)
-					return false;
-				if (KillTask.CheckAvailability(player, (GameLiving)source.TargetObject))
-				{
-					KillTask.BuildTask(player, (GameLiving)source.TargetObject);
-					return true;
-				}
-				else if (MoneyTask.CheckAvailability(player, (GameLiving)source.TargetObject))
-				{
-					MoneyTask.BuildTask(player, (GameLiving)source.TargetObject);
-					return true;
-				}
-				else if (CraftTask.CheckAvailability(player, (GameLiving)source.TargetObject))
-				{
-					CraftTask.BuildTask(player, (GameLiving)source.TargetObject);
-					return true;
-				}
-			}
+			// GamePlayer player = (GamePlayer)source;
+			//
+			// //TODO: Guards in rvr areas doesn't need check
+			// if (text == "task")
+			// {
+			// 	if (source.TargetObject == null)
+			// 		return false;
+			// 	if (KillTask.CheckAvailability(player, (GameLiving)source.TargetObject))
+			// 	{
+			// 		KillTask.BuildTask(player, (GameLiving)source.TargetObject);
+			// 		return true;
+			// 	}
+			// 	else if (MoneyTask.CheckAvailability(player, (GameLiving)source.TargetObject))
+			// 	{
+			// 		MoneyTask.BuildTask(player, (GameLiving)source.TargetObject);
+			// 		return true;
+			// 	}
+			// 	else if (CraftTask.CheckAvailability(player, (GameLiving)source.TargetObject))
+			// 	{
+			// 		CraftTask.BuildTask(player, (GameLiving)source.TargetObject);
+			// 		return true;
+			// 	}
+			// }
 			return true;
 		}
 
@@ -4345,6 +4345,9 @@ namespace DOL.GS
 		/// </summary>
 		public override void ProcessDeath(GameObject killer)
 		{
+            try
+            {
+
 			Brain?.KillFSM();
 
 			FireAmbientSentence(eAmbientTrigger.dying, killer);
@@ -4377,23 +4380,42 @@ namespace DOL.GS
 				//Handle faction alignement changes // TODO Review
 				if ((Faction != null) && (killer is GamePlayer))
 				{
-					lock (this.XPGainers.SyncRoot)
-					{ 
+					lock (this.attackComponent.Attackers)
+					{
+						List <GamePlayer> additionalPlayerList = new List<GamePlayer>();
 						// Get All Attackers. // TODO check if this shouldn't be set to Attackers instead of XPGainers ?
-						foreach (DictionaryEntry de in this.XPGainers)
+						foreach (GameObject de in this.attackComponent.Attackers)
 						{
-							GameLiving living = de.Key as GameLiving;
+							GameLiving living = de as GameLiving;
 							GamePlayer player = living as GamePlayer;
 							if (player != null && player.IsObjectGreyCon(this)) continue;
 							// Get Pets Owner (// TODO check if they are not already treated as attackers ?)
 							if (living is GameNPC && (living as GameNPC).Brain is IControlledBrain)
-								player = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+                                {
+									player = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+									if (!this.attackComponent.Attackers.Contains(player) && !additionalPlayerList.Contains(player))
+                                    {
+										// Petmaster never attacked the mob but still needs to get the increase / decrease only once
+										// we have to keep a second list because a Pet master could have more than 1 pet in the attackers list (Bds)
+										additionalPlayerList.Add(player);
+									}
+									continue;
+								}
 
 							if (player != null && player.ObjectState == GameObject.eObjectState.Active && player.IsAlive && player.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
 							{
 								Faction.KillMember(player);
 							}
 						}
+
+							//masters of pets who didnt attack the mob themselfs and let pet do all the work
+                            foreach (GamePlayer additionalPlayer in additionalPlayerList)
+                            {
+								if (additionalPlayer != null && additionalPlayer.ObjectState == GameObject.eObjectState.Active && additionalPlayer.IsAlive && additionalPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+								{
+									Faction.KillMember(additionalPlayer);
+								}
+							}
 					}
 				}
 
@@ -4401,10 +4423,10 @@ namespace DOL.GS
 				Diagnostics.StartPerfCounter("ReaperService-NPC-ProcessDeath-OnNPCKIlled-NPC("+this.GetHashCode()+")");
 				GameServer.ServerRules.OnNPCKilled(this, killer);
 				Diagnostics.StopPerfCounter("ReaperService-NPC-ProcessDeath-OnNPCKIlled-NPC("+this.GetHashCode()+")");
-
-				base.ProcessDeath(killer);
 			}
-			
+
+			base.ProcessDeath(killer);
+
 			lock (this.XPGainers.SyncRoot)
 				this.XPGainers.Clear();
 			
@@ -4415,8 +4437,16 @@ namespace DOL.GS
 			// remove temp properties
 			TempProperties.removeAllProperties();
 
-			if (!(this is GamePet))
+			if (!(this is GamePet) && !(this is SINeckBoss))
 				StartRespawn();
+			}
+			finally
+			{
+				if(isDeadOrDying == true)
+                {
+					base.ProcessDeath(killer);
+                }
+			}
 		}
 
 		/// <summary>

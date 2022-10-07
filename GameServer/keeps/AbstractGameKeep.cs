@@ -672,7 +672,8 @@ namespace DOL.GS.Keeps
 				int count = 0;
 				foreach (GamePlayer p in player.Group.GetPlayersInTheGroup())
 				{
-					if (GameServer.KeepManager.GetKeepCloseToSpot(p.CurrentRegionID, p, 1000) == this)
+					// if (GameServer.KeepManager.GetKeepCloseToSpot(p.CurrentRegionID, p, 1000) == this)
+					if (p.CurrentAreas.Contains(this.Area)) //Check if player is in keep area
 						count++;
 				}
 
@@ -728,7 +729,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public void StartDeductionTimer()
 		{
-			m_claimTimer.Start(1);
+			//m_claimTimer.Start(1);
 		}
 
 		/// <summary>
@@ -736,24 +737,26 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public void StopDeductionTimer()
 		{
-			m_claimTimer.Stop();
+			//m_claimTimer.Stop();
 		}
 
 		protected void InitialiseTimers()
 		{
 			m_changeLevelTimer = new AuxECSGameTimer(new GameNPC());
 			m_changeLevelTimer.Callback = new AuxECSGameTimer.AuxECSTimerCallback(ChangeLevelTimerCallback);
-			m_claimTimer = new ECSGameTimer(new GameNPC());
-			m_claimTimer.Callback = new ECSGameTimer.ECSTimerCallback(ClaimCallBack);
-			m_claimTimer.Interval = CLAIM_CALLBACK_INTERVAL;
+
+			//Commenting out claimTimer as we dont give RPs to guilds for holding onto claimed keeps currently.
+			// m_claimTimer = new ECSGameTimer(new GameNPC());
+			// m_claimTimer.Callback = new ECSGameTimer.ECSTimerCallback(ClaimCallBack);
+			// m_claimTimer.Interval = CLAIM_CALLBACK_INTERVAL;
 		}
 
 		protected void UnloadTimers()
 		{
 			m_changeLevelTimer.Stop();
 			m_changeLevelTimer = null;
-			m_claimTimer.Stop();
-			m_claimTimer = null;
+			// m_claimTimer.Stop();
+			// m_claimTimer = null;
 		}
 
 		/// <summary>

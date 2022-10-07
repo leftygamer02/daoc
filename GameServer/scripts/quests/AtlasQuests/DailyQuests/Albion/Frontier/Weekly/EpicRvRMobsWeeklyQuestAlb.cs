@@ -11,7 +11,7 @@ using DOL.GS.PlayerTitles;
 using DOL.GS.Quests;
 using log4net;
 
-namespace DOL.GS.DailyQuest.Albion
+namespace DOL.GS.WeeklyQuest.Albion
 {
 	public class EpicRvRMobsWeeklyQuestAlb : Quests.WeeklyQuest
 	{
@@ -374,6 +374,7 @@ namespace DOL.GS.DailyQuest.Albion
 			//m_questPlayer.GainExperience(eXPSource.Quest, (m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel)/10, true);
 			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 5,32,Util.Random(50)), "You receive {0} as a reward.");
 			AtlasROGManager.GenerateOrbAmount(m_questPlayer, 1500);
+			AtlasROGManager.GenerateJewel(m_questPlayer, (byte)(m_questPlayer.Level + 1), m_questPlayer.Level + Util.Random(10, 11));
 			_evernKilled = 0;
 			_glacierGiantKilled = 0;
 			_greenKnightKilled = 0;

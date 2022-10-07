@@ -16,6 +16,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
@@ -328,7 +329,11 @@ namespace DOL.GS.Quests.Hibernia
 
 		protected virtual void CreateAncestralKeeper(GamePlayer player)
 		{
-		
+			foreach (GameNPC npc in WorldMgr.GetNPCsCloseToSpot(151, 363016, 310849, 3933, 8000))
+			{
+				if (npc.Brain is SINeckBossBrain)
+					return;
+			}
 			AncestralKeeper = new SINeckBoss();
 			AncestralKeeper.Model = 951;
 			AncestralKeeper.Name = "Ancestral Keeper";
@@ -344,7 +349,7 @@ namespace DOL.GS.Quests.Hibernia
 			AncestralKeeper.Y = player.Y;
 			AncestralKeeper.Z = player.Z;
 			AncestralKeeper.MaxSpeedBase = 250;
-			AncestralKeeper.AddToWorld();
+			//AncestralKeeper.AddToWorld();
 
 			var brain = new SINeckBossBrain();
 			brain.AggroLevel = 200;
@@ -362,10 +367,36 @@ namespace DOL.GS.Quests.Hibernia
 			var args = (DyingEventArgs) arguments;
         
 			var player = args.Killer as GamePlayer;
-        
+
+			if (args.Killer is GamePet pet)
+			{
+				if(pet != null && pet.Owner != null)
+                {
+					GamePlayer pet_owner = pet.Owner as GamePlayer;
+					if (pet_owner != null && pet_owner.IsAlive)
+					{
+						if (pet_owner.Group != null)
+						{
+							foreach (var gpl in pet_owner.Group.GetPlayersInTheGroup())//gain credit for every one in petowner grp
+							{
+								AdvanceAfterKill(gpl);
+							}
+						}
+						else//player not in grp
+						{
+							AdvanceAfterKill(pet_owner);
+						}
+					}
+				}
+			}
+
 			if (player == null)
+            {
+				AncestralKeeper.Delete();
+				GameEventMgr.RemoveHandler(AncestralKeeper, GameLivingEvent.Dying, AncestralKeeperDying);
 				return;
-        
+			}
+
 			if (player.Group != null)
 			{
 				foreach (var gpl in player.Group.GetPlayersInTheGroup())
@@ -402,22 +433,36 @@ namespace DOL.GS.Quests.Hibernia
 			var quest = player.IsDoingQuest(typeof(AncestralSecrets)) as AncestralSecrets;
 
 			if (quest is not {Step: 4}) return;
-
-			if (player.Group != null)
-				if (player.Group.Leader != player)
-					return;
 			
 			var existingCopy = WorldMgr.GetNPCsByName("Ancestral Keeper", eRealm.None);
 
 			if (existingCopy.Length > 0) return;
 
-			// player near ancestral keeper           
-			SendSystemMessage(player,
-				"The Crystal Breaks and The Ancestral Keeper comes alive!");
-			player.Out.SendMessage("Ancestral Keeper ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-			quest.CreateAncestralKeeper(player);
+
+			//only try to spawn him once per trigger even if multiple people enter at the same time
+			if (Monitor.TryEnter(spawnLock))
+			{
+				try
+				{
+					// player near ancestral keeper           
+					SendSystemMessage(player,
+						"The Crystal Breaks and The Ancestral Keeper comes alive!");
+					player.Out.SendMessage("Ancestral Keeper ambushes you!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+					quest.CreateAncestralKeeper(player);
+				}
+				finally
+				{
+					Monitor.Exit(spawnLock);
+				}
+			}
+			else
+			{
+				return;
+			}
 		}
-		
+
+		static object spawnLock = new object();
+
 		protected static void TalkToOtaYrling(DOLEvent e, object sender, EventArgs args)
 		{
 			//We get the player from the event arguments and check if he qualifies		

@@ -27,12 +27,12 @@ namespace DOL.GS
         }
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         public override int MaxHealth
         {
-            get { return 200000; }
+            get { return 100000; }
         }
 
         public override int AttackRange
@@ -386,7 +386,7 @@ namespace DOL.GS
 
         public override bool AddToWorld()
         {
-            Model = 1772;
+            Model = 909;
             MeleeDamageType = eDamageType.Spirit;
             Name = "reckoned soul";
             PackageID = "SoulReckonerBaf";
@@ -395,7 +395,7 @@ namespace DOL.GS
             MaxDistance = 2500;
             TetherRange = 3000;
             RoamingRange = 120;
-            Size = 70;
+            Size = 100;
             Level = 75;
             MaxSpeedBase = 230;
             Flags = eFlags.GHOST;           

@@ -35,7 +35,12 @@ namespace DOL.GS.Scripts
             set => m_maxSpeedBase = value;
         }
 
-        public override int MaxHealth => 200000;
+        public override int MaxHealth => 100000;
+        
+        public override double AttackDamage(InventoryItem weapon)
+        {
+            return base.AttackDamage(weapon) * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+        }
 
         public override int AttackRange
         {

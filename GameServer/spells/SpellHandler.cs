@@ -768,8 +768,14 @@ namespace DOL.GS.Spells
 			var quickCast = EffectListService.GetAbilityEffectOnTarget(m_caster, eEffect.QuickCast);
 			if (quickCast != null)
 				quickCast.ExpireTick = GameLoop.GameLoopTime + quickCast.Duration;
+			
+			GamePlayer playercheck = Caster as GamePlayer;
+			playercheck?.Out.SendCheckLOS(playercheck, selectedTarget, LosResponseHandler);
+			
+			GamePet petcheck = m_caster as GamePet;
+			(petcheck?.Owner as GamePlayer)?.Out.SendCheckLOS(petcheck, selectedTarget, PetLosResponseHandler);
 
-            if (m_spell.Pulse != 0 && m_spell.Frequency > 0)
+			if (m_spell.Pulse != 0 && m_spell.Frequency > 0)
             {
                 if (Spell.IsPulsing && Caster.LastPulseCast != null && Caster.LastPulseCast.Equals(Spell))
                 {
@@ -987,14 +993,16 @@ namespace DOL.GS.Spells
 						if (m_spell.SpellType == (byte)eSpellType.Charm && m_spell.CastTime == 0 && m_spell.Pulse != 0)
 							break;
 
-						if (m_spell.SpellType != (byte)eSpellType.PetSpell && m_caster.IsObjectInFront(selectedTarget, 180) == false)
+						if (Caster is TurretPet) return true;
+
+						if (m_spell.SpellType != (byte)eSpellType.PetSpell && !Caster.TargetInView)
 						{
 							if (!quiet) MessageToCaster("Your target is not in view!", eChatType.CT_SpellResisted);
 							Caster.Notify(GameLivingEvent.CastFailed, new CastFailedEventArgs(this, CastFailedEventArgs.Reasons.TargetNotInView));
 							return false;
 						}
 
-						if (m_caster.TargetInView == false)
+						if (!(m_caster.IsObjectInFront(selectedTarget, 180, true)) || !Caster.TargetInView)
 						{
 							if (!quiet) MessageToCaster("Your target is not visible!", eChatType.CT_SpellResisted);
 							Caster.Notify(GameLivingEvent.CastFailed, new CastFailedEventArgs(this, CastFailedEventArgs.Reasons.TargetNotInView));
@@ -1024,9 +1032,9 @@ namespace DOL.GS.Spells
 				}
 
 				//heals/buffs/rez need LOS only to start casting, TargetInView only works if selectedTarget == TargetObject
-				if (selectedTarget == Caster.TargetObject && !m_caster.TargetInView && m_spell.Target.ToLower() != "pet")
+				if (!Caster.TargetInView && m_spell.Target.ToLower() != "pet")
 				{
-					if (!quiet) MessageToCaster("Your target is not in visible!", eChatType.CT_SpellResisted);
+					if (!quiet) MessageToCaster("Your target is not visible!", eChatType.CT_SpellResisted);
 					Caster.Notify(GameLivingEvent.CastFailed, new CastFailedEventArgs(this, CastFailedEventArgs.Reasons.TargetNotInView));
 					return false;
 				}
@@ -1053,7 +1061,16 @@ namespace DOL.GS.Spells
 					return false;
 				}
 
-				if (m_caster.effectListComponent.ConcentrationEffects.Count >= MAX_CONC_SPELLS)
+				var maxConc = MAX_CONC_SPELLS;
+
+				//self buff charge IDs should not count against conc cap
+				if (m_caster is GamePlayer p)
+				{
+					maxConc += p.effectListComponent.ConcentrationEffects.Count(concentrationEffect => concentrationEffect.SpellHandler?.Spell?.ID != null 
+																				&& p.SelfBuffChargeIDs.Contains(concentrationEffect.SpellHandler.Spell.ID));
+				}
+
+				if (m_caster.effectListComponent.ConcentrationEffects.Count >= maxConc)
 				{
 					if (!quiet) MessageToCaster($"You can only cast up to {MAX_CONC_SPELLS} simultaneous concentration spells!", eChatType.CT_SpellResisted);
 					return false;
@@ -1076,6 +1093,24 @@ namespace DOL.GS.Spells
 			}
 
 			return true;
+		}
+
+		private void LosResponseHandler(GamePlayer player, ushort response, ushort sourceOID, ushort targetOID)
+		{
+			if(player == null || sourceOID == 0 || targetOID == 0)
+				return;
+			
+			// Check result
+			player.TargetInView = (response & 0x100) == 0x100;
+		}
+		
+		private void PetLosResponseHandler(GameLiving living, ushort response, ushort sourceOID, ushort targetOID)
+		{
+			if(living == null || sourceOID == 0 || targetOID == 0)
+				return;
+			
+			// Check result
+			m_caster.TargetInView = (response & 0x100) == 0x100;
 		}
 
 		/// <summary>
@@ -1174,6 +1209,12 @@ namespace DOL.GS.Spells
 		/// <returns></returns>
 		public virtual bool CheckEndCast(GameLiving target)
 		{
+			GamePlayer playercheck = Caster as GamePlayer;
+			playercheck?.Out.SendCheckLOS(playercheck, target, LosResponseHandler);
+			
+			GamePet petcheck = Caster as GamePet;
+			(petcheck?.Owner as GamePlayer)?.Out.SendCheckLOS(petcheck, target, PetLosResponseHandler);
+			
 			if (IsSummoningSpell && Caster.CurrentRegion.IsCapitalCity)
 			{
 				// Message: You can't summon here!
@@ -1245,7 +1286,7 @@ namespace DOL.GS.Spells
 						if (m_spell.SpellType == (byte)eSpellType.Charm)
 							break;
 						//enemys have to be in front and in view for targeted spells
-						if (m_spell.SpellType != (byte)eSpellType.PetSpell && !m_caster.IsObjectInFront(target, 180))
+						if (m_spell.SpellType != (byte)eSpellType.PetSpell && (target.IsStealthed || !Caster.TargetInView)) //!m_caster.TargetInView)
 						{
 							MessageToCaster("Your target is not in view. The spell fails.", eChatType.CT_SpellResisted);
 							return false;
@@ -1366,6 +1407,12 @@ namespace DOL.GS.Spells
 				if(!quiet) MessageToCaster("You are dead and can't cast!", eChatType.CT_System);
 				return false;
 			}
+			
+			GamePlayer playerCheck = Caster as GamePlayer;
+			playerCheck?.Out.SendCheckLOS(playerCheck, target, LosResponseHandler);
+			
+			GamePet petcheck = Caster as GamePet;
+			(petcheck?.Owner as GamePlayer)?.Out.SendCheckLOS(petcheck, target, PetLosResponseHandler);
 
 			if (m_spell.InstrumentRequirement != 0)
 			{
@@ -1415,12 +1462,14 @@ namespace DOL.GS.Spells
 				{
 					case "enemy":
 						//enemys have to be in front and in view for targeted spells
+						//Fen - removed 08/18/2022. players only check LoS at start and end of cast, not mid-cast
+						/*
 						if (Caster is GamePlayer && !m_caster.TargetInView && !Caster.IsWithinRadius(target, 64) &&
 							m_spell.SpellType != (byte)eSpellType.PetSpell && (!m_spell.IsPulsing && m_spell.SpellType != (byte)eSpellType.Mesmerize))
 						{
 							if (!quiet) MessageToCaster("Your target is not in view. The spell fails.", eChatType.CT_SpellResisted);
 							return false;
-						}
+						}*/
 
 						if (ServerProperties.Properties.CHECK_LOS_DURING_CAST)
 						{
@@ -1557,6 +1606,12 @@ namespace DOL.GS.Spells
 			{
 				return false;
 			}
+			
+			GamePlayer playerCheck = Caster as GamePlayer;
+			playerCheck?.Out.SendCheckLOS(playerCheck, target, LosResponseHandler);
+			
+			GamePet petcheck = Caster as GamePet;
+			(petcheck?.Owner as GamePlayer)?.Out.SendCheckLOS(petcheck, target, PetLosResponseHandler);
 
 			if (!m_spell.Uninterruptible && m_spell.CastTime > 0 && m_caster is GamePlayer &&
 				!m_caster.effectListComponent.ContainsEffectForEffectType(eEffect.QuickCast) && !m_caster.effectListComponent.ContainsEffectForEffectType(eEffect.MasteryOfConcentration))
@@ -1621,7 +1676,7 @@ namespace DOL.GS.Spells
 					if (target == null || target.ObjectState != GameObject.eObjectState.Active)
 					{
 						if (Caster is GamePlayer && !quiet)
-							MessageToCaster("FYou must select a target for this spell!", eChatType.CT_SpellResisted);
+							MessageToCaster("You must select a target for this spell!", eChatType.CT_SpellResisted);
 						return false;
 					}
 
@@ -1637,7 +1692,8 @@ namespace DOL.GS.Spells
 				{
 					case "Enemy":
 						//enemys have to be in front and in view for targeted spells
-						if (Caster is GamePlayer && m_spell.SpellType != (byte)eSpellType.PetSpell && !m_caster.IsObjectInFront(target, 180) && !Caster.IsWithinRadius(target, 50))
+						//!(owner.IsObjectInFront(ad.Target, 120, true) &&
+						if (m_spell.SpellType != (byte)eSpellType.PetSpell && !m_caster.TargetInView && !Caster.IsWithinRadius(target, 50))
 						{
 							if (!quiet) MessageToCaster("Your target is not in view. The spell fails.", eChatType.CT_SpellResisted);
 							return false;
@@ -4414,10 +4470,21 @@ namespace DOL.GS.Spells
 
 					if (pet is NecromancerPet nPet)
 					{
+						/*
 						int ownerIntMod = 125;
 						if (pet.Owner is GamePlayer own) ownerIntMod += own.Intelligence;
 						spellDamage *= ((nPet.GetModified(eProperty.Intelligence) + ownerIntMod) / 275.0);
 						if (spellDamage < Spell.Damage) spellDamage = Spell.Damage;
+*/
+						
+						if (pet.Owner is GamePlayer own)
+						{
+							//Delve * (acu/200+1) * (plusskillsfromitems/200+1) * (Relicbonus+1) * (mom+1) * (1 - enemyresist) 
+							int manaStatValue = own.GetModified((eProperty)own.CharacterClass.ManaStat);
+							//spellDamage *= ((manaStatValue - 50) / 275.0) + 1;
+							spellDamage *= ((manaStatValue - own.Level) * 0.005) + 1;
+						}
+						
 					}
 					else
 					{
@@ -4446,7 +4513,6 @@ namespace DOL.GS.Spells
 				    && player.CharacterClass.ID != (int)eCharacterClass.MaulerHib
 				    && player.CharacterClass.ID != (int)eCharacterClass.Vampiir)
 				{
-					var baseDmg = spellDamage;
 					//Delve * (acu/200+1) * (plusskillsfromitems/200+1) * (Relicbonus+1) * (mom+1) * (1 - enemyresist) 
 					int manaStatValue = player.GetModified((eProperty)player.CharacterClass.ManaStat);
 					//spellDamage *= ((manaStatValue - 50) / 275.0) + 1;
@@ -4635,12 +4701,14 @@ namespace DOL.GS.Spells
 			CalculateDamageVariance(target, out minVariance, out maxVariance);
 			double spellDamage = CalculateDamageBase(target);
 
-			if (m_caster is GamePlayer)
+			if (m_caster is GamePlayer or GamePet)
 			{
-				effectiveness += m_caster.GetModified(eProperty.SpellDamage) * 0.01;
+				var caster = m_caster;
+				if (m_caster is GamePet p) caster = p.Owner;
+				effectiveness += caster.GetModified(eProperty.SpellDamage) * 0.01;
 
 				// Relic bonus applied to damage, does not alter effectiveness or increase cap
-				spellDamage *= (1.0 + RelicMgr.GetRelicBonusModifier(m_caster.Realm, eRelicType.Magic));
+				spellDamage *= (1.0 + RelicMgr.GetRelicBonusModifier(caster.Realm, eRelicType.Magic));
 
 				/*
 				eProperty skillProp = SkillBase.SpecToSkill(m_spellLine.Spec);

@@ -49,6 +49,11 @@ namespace DOL.GS.Scripts
 	    {
 		    return 350;
 	    }
+		
+		public override double AttackDamage(InventoryItem weapon)
+		{
+			return base.AttackDamage(weapon) * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+		}
 		public override bool HasAbility(string keyName)
 		{
 			if (IsAlive && keyName == "CCImmunity")
@@ -67,7 +72,7 @@ namespace DOL.GS.Scripts
 		    get => (short)(191 + (Level * 2));
 		    set => m_maxSpeedBase = value;
 	    }
-	    public override int MaxHealth => 200000;
+	    public override int MaxHealth => 100000;
 
 	    public override int AttackRange
 	    {
@@ -134,30 +139,34 @@ namespace DOL.AI.Brain
 			AggroRange = 500;
 			ThinkInterval = 2000;
 		}
-		private bool CanAddJunk = false;
-        public override void OnAttackedByEnemy(AttackData ad)
+		//private bool CanAddJunk = false;
+		public override void OnAttackedByEnemy(AttackData ad)
 		{
-			if (Util.Chance(30) && ad != null && !CanAddJunk && ad.Attacker is GamePlayer)
+			if (Util.Chance(40) && ad != null /*&& !CanAddJunk*/ && ad.Attacker is GamePlayer && ad.Attacker != null)
 			{
-				ItemTemplate sackJunk = GameServer.Database.FindObjectByKey<ItemTemplate>("sack_of_decaying_junk");
-				InventoryItem item = GameInventoryItem.Create(sackJunk);
+				//ItemTemplate sackJunk = GameServer.Database.FindObjectByKey<ItemTemplate>("sack_of_decaying_junk");
+				//InventoryItem item = GameInventoryItem.Create(sackJunk);
 
-				foreach (GamePlayer player in Body.GetPlayersInRadius(500))
-				{
-					if (!player.IsAlive) continue;
-					item.OwnerID = player.ObjectId;
-					player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);
-				}
-				new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDecayingJunk), Util.Random(25000,35000));
-				CanAddJunk = true;
+				//foreach (GamePlayer player in Body.GetPlayersInRadius(500))
+				//{
+				//if (!player.IsAlive) continue;
+				//item.OwnerID = player.ObjectId;
+				//item.IsDropable = true;			//Make sure it's droppable
+				//item.IsIndestructible = false;	//make sure it's destructible
+				//player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, item);				
+				//}				
+				//new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetDecayingJunk), Util.Random(25000,35000));
+				//CanAddJunk = true;
+				if(ad.Attacker is not GamePet)
+					Body.CastSpell(SpectralDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
 			}
 			base.OnAttackedByEnemy(ad);
 		}
-		private int ResetDecayingJunk(ECSGameTimer timer)
-        {
-			CanAddJunk = false;
-			return 0;
-        }
+		//private int ResetDecayingJunk(ECSGameTimer timer)
+        //{
+			//CanAddJunk = false;
+			//return 0;
+        //}
 		public static bool point1check = false;
 		public static bool point2check = false;
 		public static bool point3check = false;
@@ -288,7 +297,38 @@ namespace DOL.AI.Brain
 				}
 			}
 			base.Think();
-		}		
+		}
+		private Spell m_SpectralDD;
+		private Spell SpectralDD
+		{
+			get
+			{
+				if (m_SpectralDD == null)
+				{
+					DBSpell spell = new DBSpell();
+					spell.AllowAdd = false;
+					spell.CastTime = 0;
+					spell.Power = 0;
+					spell.RecastDelay = 2;
+					spell.ClientEffect = 9191;
+					spell.Icon = 9191;
+					spell.TooltipId = 9191;
+					spell.Damage = 350;
+					spell.Value = 70;
+					spell.Duration = 30;
+					spell.DamageType = (int)eDamageType.Spirit;
+					spell.Description = "Spectral Provisioner strike back attacker and makes him move 70% slower for the spell duration.";
+					spell.Name = "Spectral Strike";
+					spell.Range = 2500;
+					spell.SpellID = 12018;
+					spell.Target = "Enemy";
+					spell.Type = eSpellType.DamageSpeedDecreaseNoVariance.ToString();
+					m_SpectralDD = new Spell(spell, 60);
+					SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_SpectralDD);
+				}
+				return m_SpectralDD;
+			}
+		}
 	}
 }
 #region Spectral Provisioner Spawner

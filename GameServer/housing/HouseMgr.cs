@@ -607,9 +607,9 @@ namespace DOL.GS.Housing
 			
 			// check every house in every region until we find
 			// a house that belongs to this player
-			foreach (var regs in _houseList)
+			foreach (var regs in _houseList.ToList())
 			{
-				foreach (var entry in regs.Value)
+				foreach (var entry in regs.Value.ToList())
 				{
 					var house = entry.Value;
 
@@ -786,10 +786,10 @@ namespace DOL.GS.Housing
 
 					// get the amount of rent for the given house
 					long rent = GetRentByModel(house.Model);
-					
+
 					// Does this house need to pay rent?
 					if (rent > 0L && diff.Days >= Properties.RENT_DUE_DAYS)
-					{
+					{					
 						long lockboxAmount = house.KeptMoney;
 						long consignmentAmount = 0;
 
@@ -817,10 +817,13 @@ namespace DOL.GS.Housing
 								// we have the difference, phew!
 								house.KeptMoney = 0;
 								consignmentMerchant.TotalMoney -= remainingDifference;
+								house.LastPaid = DateTime.Now;
+								house.SaveIntoDatabase();
 							}
 							else
 							{
 								// house can't afford rent, so we schedule house to be repossessed.
+								log.Warn($"[HOUSING] House {house.HouseNumber} owned by {house.Name} can't afford rent and is being repossesed! rentamount: {rent} lockboxAmount: {lockboxAmount} consignmentAmount: {consignmentAmount}");
 								houseRemovalList.Add(house);
 							}
 						}

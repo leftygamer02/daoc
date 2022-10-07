@@ -404,7 +404,7 @@ namespace DOL.GS.ServerRules
 			if (defender.IsStealthed && attacker is GameNPC)
 				if (((attacker as GameNPC).Brain is IControlledBrain) &&
 					defender is GamePlayer &&
-					playerAttacker.TargetObject != defender)
+					attacker.TargetObject != defender)
 					return false;
 
 			// GMs can't be attacked
@@ -1196,10 +1196,7 @@ namespace DOL.GS.ServerRules
 						BattleGroup clientBattleGroup = player.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
 						if (clientBattleGroup != null)
 						{
-							if (killedNPC is GuardLord or GameKeepGuard)
-								livingsToAward.Add(living);
-							else
-								player.Out.SendMessage($"You may not gain experience while in a battlegroup.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+							livingsToAward.Add(living);
 						} 
 						else
 						{
@@ -1223,6 +1220,26 @@ namespace DOL.GS.ServerRules
 			{
 				var de = new DictionaryEntry(living, XPGainerList[living]);
 				AwardExperience(de, killedNPC, killer, totalDamage, plrGrpExp, isGroupInRange);
+				if (living.Level > 36)
+				{
+					int min = (int) Math.Round(killedNPC.Level / 10d) - 3;
+					if (min < 1) min = 1;
+					int max = (int) Math.Round(killedNPC.Level / 5d);
+					if (killedNPC.Level > 55)
+					{
+						min++;
+						max++;
+					}
+
+					if (killedNPC.CurrentZone is {IsOF: true})
+					{
+						min *= 5;
+						max *= 5;
+					}
+					//Console.WriteLine($"min {min} max {max}");
+					AtlasROGManager.GenerateOrbAmount(living as GameLiving, Util.Random(min, max));
+				}
+					
 			});
 
 			Diagnostics.StopPerfCounter("ReaperService-NPC-OnNPCKilled-XP-NPC("+killedNPC.GetHashCode()+")");
@@ -1557,6 +1574,8 @@ namespace DOL.GS.ServerRules
 						double levelPercent =
 							((double) (player.Experience + xpReward - player.ExperienceForCurrentLevel) /
 							 (player.ExperienceForNextLevel - player.ExperienceForCurrentLevel)) * 100;
+						double relicXp =  (baseXP * (0.05 * RelicMgr.GetRelicCount(player.Realm)));
+						double relicPercent = ((double) relicXp / (baseXP)) * 100.0;
 
 						player.Out.SendMessage(
 							$"XP needed: {player.ExperienceForNextLevel.ToString("N0", format)} | {levelPercent.ToString("0.##")}% done with current level",
@@ -1583,6 +1602,11 @@ namespace DOL.GS.ServerRules
 						if (outpostXP > 0)
 							player.Out.SendMessage(
 								$"Outpost: {outpostXP.ToString("N0", format)} | {outpostPercent.ToString("0.##")}% bonus",
+								eChatType.CT_System, eChatLoc.CL_SystemWindow);
+						
+						if (relicXp > 0)
+							player.Out.SendMessage(
+								$"Relic: {relicXp.ToString("N0", format)} | {relicPercent.ToString("0.##")}% bonus",
 								eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 						//player.Out.SendMessage($"Total Bonus: {((double)((atlasBonus + campBonus + groupExp + outpostXP) / xpReward) * 100).ToString("0.##")}%", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -1827,6 +1851,17 @@ namespace DOL.GS.ServerRules
 			if (!BG)
 				playerBPValue = killedPlayer.BountyPointsValue;
 			long playerMoneyValue = killedPlayer.MoneyValue;
+			
+			//check for conquest activity
+			if (killer is GamePlayer kp)
+			{
+				if (ConquestService.ConquestManager.IsValidDefender(kp))
+				{
+					ConquestService.ConquestManager.AddDefender(kp); //add to list of active keep defenders
+					playerRPValue = (int)(playerRPValue * 1.10); //10% more RPs while defending the keep
+					ConquestService.ConquestManager.AwardDefenders(playerRPValue, kp);
+				}
+			}
 
 			List<KeyValuePair<GamePlayer, int>> playerKillers = new List<KeyValuePair<GamePlayer, int>>();
             List<Group> groupsToAward = new List<Group>();
@@ -1848,7 +1883,23 @@ namespace DOL.GS.ServerRules
 				 */
 				//if (!living.Alive) continue;
 				if (!living.IsWithinRadius(killedPlayer, WorldMgr.MAX_EXPFORKILL_DISTANCE)) continue;
+				
+				//check for conquest activity
+				if (living is GamePlayer lp)
+				{
+					if(ConquestService.ConquestManager.IsPlayerInConquestArea(lp) && lp.Realm != killedPlayer.Realm)
+						ConquestService.ConquestManager.AddContributor(lp);
+				}
 
+				if (PredatorManager.PlayerIsActive(killedPlayer))
+				{
+					var reward = PredatorManager.CheckForPredatorEffort(killedPlayer, expGainPlayer);
+					if (reward > 0)
+					{
+						killedPlayer.Out.SendMessage($"Your hunt fails, but your prey did not escape unharmed.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+						killedPlayer.GainRealmPoints(reward);
+					}
+				}
 
 				double damagePercent = (float)de.Value / totalDamage;
 
@@ -2032,51 +2083,50 @@ namespace DOL.GS.ServerRules
 				{
 					if (expGainPlayer.GetConLevel(killedPlayer) > -3)
 					{
+						var killerCheck = killer;
+						//if main pet killed target, check using owner
+						if (killer is GamePet pet && pet.Owner == expGainPlayer)
+						{
+							killerCheck = expGainPlayer;
+						}
+						//same check for subpets
+						if(killer is GamePet {Owner: GamePet mainpet} && mainpet.Owner == expGainPlayer)
+						{
+							killerCheck = expGainPlayer;
+						}
+						
 						switch ((eRealm)killedPlayer.Realm)
 						{
 							case eRealm.Albion:
 								expGainPlayer.KillsAlbionPlayers++;
 								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Players_Killed);
-								if (expGainPlayer == killer)
+								if (expGainPlayer == killerCheck )
 								{
 									expGainPlayer.KillsAlbionDeathBlows++;
 									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Deathblows);
-									if ((float) de.Value == totalDamage)
-									{
-										expGainPlayer.KillsAlbionSolo++;
-										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Alb_Solo_Kills);
-									}
-									
+									CheckSoloKills(eRealm.Albion, XPGainerList, expGainPlayer, totalDamage);
 								}
 								break;
 
 							case eRealm.Hibernia:
 								expGainPlayer.KillsHiberniaPlayers++;
 								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Players_Killed);
-								if (expGainPlayer == killer)
+								if (expGainPlayer == killerCheck)
 								{
 									expGainPlayer.KillsHiberniaDeathBlows++;
 									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Deathblows);
-									if ((float) de.Value == totalDamage)
-									{
-										expGainPlayer.KillsHiberniaSolo++;
-										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Hib_Solo_Kills);
-									}
+									CheckSoloKills(eRealm.Hibernia, XPGainerList, expGainPlayer, totalDamage);
 								}
 								break;
 
 							case eRealm.Midgard:
 								expGainPlayer.KillsMidgardPlayers++;
 								expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Players_Killed);
-								if (expGainPlayer == killer)
+								if (expGainPlayer == killerCheck)
 								{
 									expGainPlayer.KillsMidgardDeathBlows++;
 									expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Deathblows);
-									if ((float) de.Value == totalDamage)
-									{
-										expGainPlayer.KillsMidgardSolo++;
-										expGainPlayer.Achieve(AchievementUtils.AchievementNames.Mid_Solo_Kills);
-									}
+									CheckSoloKills(eRealm.Midgard, XPGainerList, expGainPlayer, totalDamage);
 								}
 								break;
 						}
@@ -2108,7 +2158,7 @@ namespace DOL.GS.ServerRules
             foreach (var player in playersToAward)
             {
                 if (player.Level < 35 || player.GetDistanceTo(killedPlayer) > WorldMgr.MAX_EXPFORKILL_DISTANCE || player.GetConLevel(killedPlayer) <= -3) continue;
-                AtlasROGManager.GenerateOrbs(player);
+                AtlasROGManager.GenerateOrbAmount(player, Util.Random(50, 150));
 
                 int bonusRegion = 0;
                 switch (ZoneBonusRotator.GetCurrentBonusRealm())
@@ -2163,6 +2213,54 @@ namespace DOL.GS.ServerRules
 				catch (System.Exception ex)
 				{
 					log.Error(ex);
+				}
+			}
+		}
+
+		private void CheckSoloKills(eRealm realm, HybridDictionary XPGainerList, GamePlayer playerToCheck, float totalDamage)
+		{
+			float calcDamage = 0f;
+			
+			//turns out all the pet damage is stored under the owner's key, so this only ever checks playerToCheck's value
+			//but whatever I'm keeping it in case we need it later
+			foreach (DictionaryEntry gainer in XPGainerList)
+			{
+				//check for pets
+				if (gainer.Key is GamePet pet && pet.Owner == playerToCheck && gainer.Value is float)
+				{
+					calcDamage += (float)gainer.Value;
+				}
+				
+				//check for subpets (bonedancer and animist)
+				if (gainer.Key is GamePet subpet && subpet.Owner is GamePet masterpet &&
+				    masterpet.Owner == playerToCheck && gainer.Value is float)
+				{
+					calcDamage += (float)gainer.Value;
+				}
+
+
+				if (gainer.Key == playerToCheck && gainer.Value is float value)
+				{
+					calcDamage += value;
+				}
+			}
+			
+			if (Math.Abs(calcDamage - totalDamage) < 1) //since we compare floats we have to account for weird floating points and do comparison within a tolerance instead
+			{
+				switch (realm)
+				{
+					case eRealm.Albion:
+						playerToCheck.KillsAlbionSolo++;
+						playerToCheck.Achieve(AchievementUtils.AchievementNames.Alb_Solo_Kills);
+						break;
+					case eRealm.Midgard:
+						playerToCheck.KillsMidgardSolo++;
+						playerToCheck.Achieve(AchievementUtils.AchievementNames.Mid_Solo_Kills);
+						break;
+					case eRealm.Hibernia:
+						playerToCheck.KillsHiberniaSolo++;
+						playerToCheck.Achieve(AchievementUtils.AchievementNames.Hib_Solo_Kills);
+						break;
 				}
 			}
 		}

@@ -1417,6 +1417,18 @@ namespace DOL.GS.ServerProperties
 		public static int SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL;
 
 		/// <summary>
+		/// Respawn Interval for Normal Epic Game Boss Encounter
+		/// </summary>
+		[ServerProperty("world", "set_epic_game_encounter_respawninterval", "Respawn Time, in minutes, for Normal Epic Game Encounters", 60)]
+		public static int SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL;
+
+		/// <summary>
+		/// Respawn Interval for Epic Quest Mobs
+		/// </summary>
+		[ServerProperty("world", "set_epic_quest_encounter_respawninterval", "Respawn Time, in minutes, for Epic Quest Encounters", 30)]
+		public static int SET_EPIC_QUEST_ENCOUNTER_RESPAWNINTERVAL;
+
+		/// <summary>
 		/// Weapon damage cap for epic encounters that use melee weapons
 		/// </summary>
 		[ServerProperty("npc", "set_epic_encounter_weapon_damage_cap", "Maximum damage cap multipler for epic encounters that use melee weapons", 1.5)]
@@ -1481,6 +1493,12 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("npc", "npc_heal_threshold", "NPCs, including pets, heal targets whose health falls below this percentage.", 75)]
 		public static int NPC_HEAL_THRESHOLD;
+		
+		/// <summary>
+		/// Charmed NPC heal when a target is below what percentage of their health?
+		/// </summary>
+		[ServerProperty("npc", "charmed_npc_heal_threshold", "Charmed NPC, heal targets whose health falls below this percentage.", 50)]
+		public static int CHARMED_NPC_HEAL_THRESHOLD;
 		
 		/// <summary>
 		/// Expand the Wild Minion RA to also improve crit chance for ranged and spell attacks?
@@ -1585,9 +1603,53 @@ namespace DOL.GS.ServerProperties
 		/// </summary>
 		[ServerProperty("pvp", "pvp_realm_timer_minutes", "# of minutes an account must wait to change realms after PvP combat. 0 disables the timer", 0)]
 		public static int PVP_REALM_TIMER_MINUTES; 
+		
+		[ServerProperty("conquest", "flag_capture_radius", "How far away can players capture an objective?", 750)]
+		public static ushort FLAG_CAPTURE_RADIUS;
+		
+		[ServerProperty("conquest", "flag_capture_time", "How long does it take to capture a flag?", 20)]
+		public static int FLAG_CAPTURE_TIME;
+		
+		[ServerProperty("conquest", "subtick_rp_award", "How many RPs awarded for a participation tick?", 200)]
+		public static int SUBTICK_RP_AWARD;
+		
+		[ServerProperty("conquest", "conquest_capture_award", "How many RPs/orbs awarded for capturing the conquest target?", 1000)]
+		public static int CONQUEST_CAPTURE_AWARD;
 
 		#endregion
 
+		#region Daily / Weekly / Monthly / Beetle Quest
+		/// <summary>
+		/// The value of Daily Quest realmpoints reward
+		/// </summary>
+		[ServerProperty("quest", "daily_rvr_reward", "Daily Quest realmpoints reward", 0)]
+		public static int DAILY_RVR_REWARD;
+		
+		/// <summary>
+		/// The value of Weekly Quest realmpoints reward
+		/// </summary>
+		[ServerProperty("quest", "weekly_rvr_reward", "Weekly Quest realmpoints reward", 0)]
+		public static int WEEKLY_RVR_REWARD;
+		
+		/// <summary>
+		/// The value of Monthly Quest realmpoints reward
+		/// </summary>
+		[ServerProperty("quest", "monthly_rvr_reward", "Monthly Quest realmpoints reward", 0)]
+		public static int MONTHLY_RVR_REWARD;
+		
+		/// <summary>
+		/// The value of Hardcore RvR Quest realmpoints reward
+		/// </summary>
+		[ServerProperty("quest", "hardcore_rvr_reward", "Hardcore Quest realmpoints reward", 0)]
+		public static int HARDCORE_RVR_REWARD;
+		
+		/// <summary>
+		/// The value of Beetle RvR Quest realmpoints reward
+		/// </summary>
+		[ServerProperty("quest", "beetle_rvr_reward", "Beetle Quest realmpoints reward", 0)]
+		public static int BEETLE_RVR_REWARD;
+		#endregion
+		
 		#region KEEPS
 		/// <summary>
 		/// Number of seconds between allowed LOS checks for keep guards
@@ -2714,7 +2776,7 @@ namespace DOL.GS.ServerProperties
 		/// <summary>
 		/// Max duration of a Conquest Task in minutes
 		/// </summary>
-		[ServerProperty("conquest", "max_conquest_task_duration", "Max duration of a Conquest Task in minutes", 45)]
+		[ServerProperty("conquest", "max_conquest_task_duration", "Max duration of a Conquest Task in minutes", 90)]
 		public static int MAX_CONQUEST_TASK_DURATION;
 		
 		/// <summary>
@@ -2830,6 +2892,9 @@ namespace DOL.GS.ServerProperties
 		
 		[ServerProperty("atlas", "of_teleport_interval", "The seconds between OF porting ceremonies", 120)]
 		public static int OF_REPORT_INTERVAL;
+		
+		[ServerProperty("atlas", "epics_dmg_multiplier", "Use this to scale up/down the damage of epic mobs", 1)]
+        public static int EPICS_DMG_MULTIPLIER;
 
 		#endregion
 		public static IDictionary<string, object> AllCurrentProperties

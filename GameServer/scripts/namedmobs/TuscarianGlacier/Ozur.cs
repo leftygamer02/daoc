@@ -25,7 +25,7 @@ namespace DOL.GS.Scripts
 
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         public override bool AddToWorld()
@@ -59,7 +59,7 @@ namespace DOL.GS.Scripts
 
         public override int MaxHealth
         {
-            get { return 200000; }
+            get { return 100000; }
         }
 
         public override int AttackRange

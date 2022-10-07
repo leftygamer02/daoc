@@ -21,6 +21,11 @@ namespace DOL.GS.Scripts
 			return 350;
 		}
 
+		public override double AttackDamage(InventoryItem weapon)
+		{
+			return base.AttackDamage(weapon) * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+		}
+		
 		public override double GetArmorAbsorb(eArmorSlot slot)
 		{
 			// 85% ABS is cap.
@@ -38,7 +43,7 @@ namespace DOL.GS.Scripts
 			get => (short)(191 + (Level * 2));
 			set => m_maxSpeedBase = value;
 		}
-		public override int MaxHealth => 200000;
+		public override int MaxHealth => 100000;
 
 		public override int AttackRange
 		{

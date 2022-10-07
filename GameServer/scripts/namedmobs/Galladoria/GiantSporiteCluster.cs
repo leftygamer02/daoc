@@ -25,7 +25,7 @@ namespace DOL.GS
         }
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
         public override int MaxHealth
         {
@@ -207,7 +207,7 @@ public class GiantSporiteClusterBrain : StandardMobBrain
 }
 namespace DOL.GS
 {
-    public class GSCAdds : GameEpicBoss
+    public class GSCAdds : GameEpicNPC
     {
         public GSCAdds() : base()
         {
@@ -224,7 +224,7 @@ namespace DOL.GS
         }
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
         public override int AttackRange
         {

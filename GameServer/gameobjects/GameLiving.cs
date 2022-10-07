@@ -35,6 +35,7 @@ using DOL.GS.Spells;
 using DOL.GS.Styles;
 using DOL.Language;
 using DOL.GS.RealmAbilities;
+using System.Threading;
 
 namespace DOL.GS
 {
@@ -59,6 +60,8 @@ namespace DOL.GS
         /// Holds the AttackData object of last attack
         /// </summary>
         public const string LAST_ATTACK_DATA = "LastAttackData";
+        
+        public bool isDeadOrDying = false;
 
 		protected string m_lastInterruptMessage;
 		public string LastInterruptMessage
@@ -2022,10 +2025,10 @@ namespace DOL.GS
 			//modify interrupt chance by mob con
 			double mod = GetConLevel(attacker);
 			double chance = BaseInterruptChance;
-			chance += mod * 10;
+			chance += mod * 15;
 			chance = Math.Max(1, chance);
 			chance = Math.Min(99, chance);
-			if (attacker is GamePlayer) chance = 99;
+			//if (attacker is GamePlayer) chance = 99;
 			
 			if (Util.Chance((int)chance))
             {
@@ -2072,7 +2075,7 @@ namespace DOL.GS
 		/// </summary>
 		public virtual int BaseInterruptChance
 		{
-			get { return 65; }
+			get { return 95; }
 		}
 
 		/// <summary>
@@ -4041,8 +4044,8 @@ namespace DOL.GS
 	            double statBasedReduction = living.GetWeaponStat(weapon) * .05;
 				//p.CharacterClass.WeaponSkillBase returns unscaled damage table value
 				//divide by 200 to change to scaling factor. example: warrior's 460 WeaponSkillBase / 200 = 2.3 Damage Table
-				//divide by final 2 to use the 2.0 damage table as our anchor. classes below 2.0 damage table will have slightly reduced penetration, above 2.0 will have increased penetration
-				double tableMod = p.CharacterClass.WeaponSkillBase / 200.0 / 1.8;
+				//divide by final 2.1 to use the 2.1 damage table as our anchor. classes below 2.1 damage table will have slightly reduced penetration, above 2.1 will have increased penetration
+				double tableMod = p.CharacterClass.WeaponSkillBase / 200.0 / 2.1;
 				totalReduction = (skillBasedReduction + statBasedReduction) * tableMod;
             }
 			else
@@ -4150,8 +4153,6 @@ namespace DOL.GS
 				AddXPGainer(source, (float)damageAmount + criticalAmount);
 			}
 
-			bool wasAlive = IsAlive;
-
 			/*
 			//[Freya] Nidel: Use2's Flask
 			if(this is GamePlayer)
@@ -4173,12 +4174,28 @@ namespace DOL.GS
 				}
 			}*/
 
+			bool wasAlive = IsAlive;
+
 			Health -= damageAmount + criticalAmount;
 
-			if (!IsAlive)
-			{
-				if (wasAlive)
-					Die(source);
+			if (!IsAlive && wasAlive && isDeadOrDying == false)
+            {
+					if (Monitor.TryEnter(deadLock))
+					{
+						try
+						{
+						isDeadOrDying = true;
+						Die(source);
+						}
+						finally
+						{
+							Monitor.Exit(deadLock);
+						}
+					}
+					else
+					{
+					return;
+					}
 			}
 			else
 			{
@@ -4186,11 +4203,11 @@ namespace DOL.GS
 					Notify(GameLivingEvent.LowHealth, this, null);
 			}
 		}
-
-        /// <summary>
-        /// Called on the attacker when attacking an enemy.
-        /// </summary>
-        public virtual void OnAttackEnemy(AttackData ad)
+		object deadLock = new object();
+		/// <summary>
+		/// Called on the attacker when attacking an enemy.
+		/// </summary>
+		public virtual void OnAttackEnemy(AttackData ad)
         {
 			//Console.WriteLine(string.Format("OnAttack called on {0}", this.Name));
 
@@ -4202,6 +4219,24 @@ namespace DOL.GS
 
 			if (this is GamePlayer player)
 				player.Stealth(false);
+
+			//Cancel SpeedOfTheRealm (Hastener Speed) 
+			if (effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
+			{
+				var effects = effectListComponent.GetSpellEffects(eEffect.MovementSpeedBuff);
+
+				for (int i = 0; i < effects.Count; i++)
+				{
+					if (effects[i] is null)
+						continue;
+
+					var spellEffect = effects[i] as ECSGameSpellEffect;
+					if (spellEffect != null && spellEffect.Name.ToLower().Equals("speed of the realm"))
+					{
+						EffectService.RequestImmediateCancelEffect(effects[i]);
+					}
+				}
+            }
 
 			if(ad != null && ad.Damage > 0)
 				TryCancelMovementSpeedBuffs(true);
@@ -4494,6 +4529,10 @@ namespace DOL.GS
 
 				if (effect != null && effect is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.SpellType != (byte)eSpellType.UnbreakableSpeedDecrease)
 					EffectService.RequestImmediateCancelEffect(effect);
+
+				var ichor_effect = EffectListService.GetEffectOnTarget(this, eEffect.Ichor);
+				if (ichor_effect != null)
+					EffectService.RequestImmediateCancelEffect(ichor_effect);
             }
 
             return removeMez || removeSnare || removeMovementSpeedDebuff;
@@ -4505,6 +4544,25 @@ namespace DOL.GS
                 return false;
 
 			bool effectRemoved = false;
+
+			//Cancel SpeedOfTheRealm (Hastener Speed) 
+			if (effectListComponent.Effects.ContainsKey(eEffect.MovementSpeedBuff))
+			{
+				var effects = effectListComponent.GetSpellEffects(eEffect.MovementSpeedBuff);
+
+				for (int i = 0; i < effects.Count; i++)
+				{
+					if (effects[i] is null)
+						continue;
+
+					var spellEffect = effects[i] as ECSGameSpellEffect;
+					if (spellEffect != null && spellEffect.Name.ToLower().Equals("speed of the realm"))
+					{
+						EffectService.RequestImmediateCancelEffect(effects[i]);
+					}
+				}
+            }
+
             // Cancel movement speed buffs when attacked only if damaged
 			if(ad != null & ad.Damage > 0)
 				effectRemoved = TryCancelMovementSpeedBuffs(false);
@@ -4794,11 +4852,16 @@ namespace DOL.GS
 		/// </summary>
 		public virtual void Die(GameObject killer)
 		{
+			isDeadOrDying = true;
+			//Console.WriteLine($"Dead or Dying set to {this.isDeadOrDying} for {this.Name} in living");
 			ReaperService.KillLiving(this, killer);
 		}
 
 		public virtual void ProcessDeath(GameObject killer)
 		{
+            try
+            {
+
 			if (this is GameNPC == false && this is GamePlayer == false)
 			{
 				// deal out exp and realm points based on server rules
@@ -4908,8 +4971,19 @@ namespace DOL.GS
 			
 			LastAttackedByEnemyTickPvE = 0;
 			LastAttackedByEnemyTickPvP = 0;
+			
 			//Let's send the notification at the end
 			Notify(GameLivingEvent.Dying, this, new DyingEventArgs(killer));
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine(e.Message);
+			}
+			finally
+			{
+				//isDying flag is ALWAYS set to false even if exception happens so it can get remove from the list
+				isDeadOrDying = false;
+			}
 		}
 
 		/// <summary>

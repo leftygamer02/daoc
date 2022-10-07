@@ -382,19 +382,15 @@ namespace DOL.GS
                 case eAttackResult.HitStyle:
                 case eAttackResult.Fumbled:
                     // remove an arrow and endurance
-                    InventoryItem ammo = RangeAttackAmmo;
-                    if (owner.GetModified(eProperty.ArrowRecovery) > 0 &&
-                        Util.Chance(100 - owner.GetModified(eProperty.ArrowRecovery)))
-                    {
-                        //do not remove an arrow
-                    }
-                    else
-                        owner.Inventory.RemoveCountFromStack(ammo, 1); //remove arrow
+                    int arrowRecoveryChance = owner.GetModified(eProperty.ArrowRecovery);
+
+                    if (arrowRecoveryChance == 0 || Util.Chance(100 - arrowRecoveryChance))
+                        owner.Inventory.RemoveCountFromStack(RangeAttackAmmo, 1);
 
                     if (RangedAttackType == eRangedAttackType.Critical)
                         owner.Endurance -= CRITICAL_SHOT_ENDURANCE;
-                    else if (RangedAttackType == eRangedAttackType.RapidFire && owner.GetAbilityLevel(Abilities.RapidFire) == 1)
-                        owner.Endurance -= 2 * RANGE_ATTACK_ENDURANCE;
+                    else if (RangedAttackType == eRangedAttackType.RapidFire && owner.GetAbilityLevel(Abilities.RapidFire) == 2)
+                        owner.Endurance -= (int)Math.Ceiling(RANGE_ATTACK_ENDURANCE / 2.0);
                     else owner.Endurance -= RANGE_ATTACK_ENDURANCE;
                     break;
             }

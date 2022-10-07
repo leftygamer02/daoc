@@ -6,17 +6,17 @@ using System;
 
 namespace DOL.GS
 {
-	public class Oona : GameEpicBoss
+	public class Oona : GameEpicNPC
 	{
 		public Oona() : base() { }
 		public override int GetResist(eDamageType damageType)
 		{
 			switch (damageType)
 			{
-				case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-				case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-				case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-				default: return 70;// dmg reduction for rest resists
+				case eDamageType.Slash: return 20;// dmg reduction for melee dmg
+				case eDamageType.Crush: return 20;// dmg reduction for melee dmg
+				case eDamageType.Thrust: return 20;// dmg reduction for melee dmg
+				default: return 20;// dmg reduction for rest resists
 			}
 		}
 		public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
@@ -74,7 +74,7 @@ namespace DOL.GS
 		}
 		public override int MaxHealth
 		{
-			get { return 20000; }
+			get { return 10000; }
 		}
 		public override bool AddToWorld()
 		{
@@ -92,7 +92,7 @@ namespace DOL.GS
 			Piety = npcTemplate.Piety;
 			Intelligence = npcTemplate.Intelligence;
 			Empathy = npcTemplate.Empathy;
-			RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+			RespawnInterval = ServerProperties.Properties.SET_EPIC_QUEST_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
 
 			OonaBrain sbrain = new OonaBrain();
 			SetOwnBrain(sbrain);

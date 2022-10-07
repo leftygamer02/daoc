@@ -27,7 +27,7 @@ namespace DOL.GS.Scripts
         }
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * 30;
+            return base.AttackDamage(weapon) * 30 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
         public override bool HasAbility(string keyName)
         {
@@ -41,7 +41,7 @@ namespace DOL.GS.Scripts
             get => (short) (191 + (Level * 2));
             set => m_maxSpeedBase = value;
         }
-        public override int MaxHealth => 200000;
+        public override int MaxHealth => 100000;
         public override int AttackRange
         {
             get => 180;
@@ -118,7 +118,7 @@ namespace DOL.AI.Brain
                     case 3: TeleportTarget.MoveTo(Body.CurrentRegionID, 38292, 31794, 13940, 986); break;
                 }
             }
-            new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetTeleport), Util.Random(25000,35000));
+            new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetTeleport), Util.Random(12000,18000));
             return 0;
         }
         private int ResetTeleport(ECSGameTimer timer)
