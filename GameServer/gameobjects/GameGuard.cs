@@ -30,16 +30,16 @@ namespace DOL.GS
             }
         }
 
+        /*
         public override void ProcessDeath(GameObject killer)
         {
-            Console.WriteLine($"killer near zone? {ConquestService.ConquestManager.IsPlayerNearConquestObjective(killer as GamePlayer)}");
             if (killer is GamePlayer p && ConquestService.ConquestManager.IsPlayerNearConquestObjective(p))
             {
                 ConquestService.ConquestManager.AddContributors(this.XPGainers.Keys.OfType<GamePlayer>().ToList());
             }
 
             base.ProcessDeath(killer);
-        }
+        }*/
 
         public override void DropLoot(GameObject killer)
         {

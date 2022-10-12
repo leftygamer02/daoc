@@ -80,6 +80,7 @@ namespace DOL.GS.Keeps
 			set { m_modelRealm = value; }
 		}
 
+		/*
 		public override void ProcessDeath(GameObject killer)
 		{
 			if (killer is GamePlayer p && ConquestService.ConquestManager.IsPlayerNearConquestObjective(p))
@@ -88,7 +89,7 @@ namespace DOL.GS.Keeps
 			}
 
 			base.ProcessDeath(killer);
-		}
+		}*/
 
 		public bool IsTowerGuard
 		{
