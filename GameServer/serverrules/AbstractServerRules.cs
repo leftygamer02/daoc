@@ -400,12 +400,6 @@ namespace DOL.GS.ServerRules
 					return false;
 				}
 			}
-			// Your pet can only attack stealthed players you have selected
-			if (defender.IsStealthed && attacker is GameNPC)
-				if (((attacker as GameNPC).Brain is IControlledBrain) &&
-					defender is GamePlayer &&
-					attacker.TargetObject != defender)
-					return false;
 
 			// GMs can't be attacked
 			if (playerDefender != null && playerDefender.Client.Account.PrivLevel > 1)
@@ -1786,8 +1780,8 @@ namespace DOL.GS.ServerRules
 
 			killedPlayer.LastDeathRealmPoints = 0;
 			// "player has been killed recently"
-			long noExpSeconds = ServerProperties.Properties.RP_WORTH_SECONDS;
-			if (killedPlayer.DeathTime + noExpSeconds > killedPlayer.PlayedTime)
+			long noExpSeconds = ServerProperties.Properties.RP_WORTH_SECONDS * 1000;
+			if (killedPlayer.DeathTime + noExpSeconds > GameLoop.GameLoopTime)
 			{
 				foreach (DictionaryEntry de in XPGainerList)
 				{
@@ -1902,6 +1896,13 @@ namespace DOL.GS.ServerRules
 				}
 
 				double damagePercent = (float)de.Value / totalDamage;
+
+				if (expGainPlayer.GetConLevel(killedPlayer) > -3)
+				{
+							
+					expGainPlayer.KillStreak++;
+					expGainPlayer.Out.SendMessage($"Kill Streak: {expGainPlayer.KillStreak}", eChatType.CT_ScreenCenterSmaller, eChatLoc.CL_SystemWindow);
+				}
 
 				// realm points
 				int rpCap = living.RealmPointsValue * 2;
@@ -2074,9 +2075,23 @@ namespace DOL.GS.ServerRules
 					{
 						money += 20 * money / 100;
 					}
-					//long money = (long)(Money.GetMoney(0, 0, 17, 85, 0) * damagePercent * killedPlayer.Level / 50);
-					player.AddMoney(money, "You receive {0}");
-					InventoryLogging.LogInventoryAction(killer, player, eInventoryActionType.Other, money);
+					
+					int killBonus = (int)((0.05 * (player.KillStreak > 10 ? 10 : player.KillStreak)) * money);
+
+					if (killBonus > 0)
+					{
+						money += killBonus;
+						//long money = (long)(Money.GetMoney(0, 0, 17, 85, 0) * damagePercent * killedPlayer.Level / 50);
+						player.AddMoney(money, "You receive {0} ("+ Money.GetShortString(killBonus) +" streak bonus)");
+						InventoryLogging.LogInventoryAction(killer, player, eInventoryActionType.Other, money);
+					}
+					else
+					{
+						player.AddMoney(money, "You receive {0}");
+						InventoryLogging.LogInventoryAction(killer, player, eInventoryActionType.Other, money);
+					}
+					
+					
 				}
 
 				if (killedPlayer.ReleaseType != eReleaseType.Duel && expGainPlayer != null)
@@ -2094,7 +2109,7 @@ namespace DOL.GS.ServerRules
 						{
 							killerCheck = expGainPlayer;
 						}
-						
+
 						switch ((eRealm)killedPlayer.Realm)
 						{
 							case eRealm.Albion:
