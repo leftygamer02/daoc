@@ -59,7 +59,7 @@
 	            return;
             }
             
-			client.Player.Release(eReleaseType.Normal, false);
+			client.Player.Release(eReleaseType.City, false);
 		}
 	}
 }
