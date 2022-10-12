@@ -1737,6 +1737,13 @@ namespace DOL.GS
                     }
                     break;
                 }
+                case eReleaseType.Random:
+                    var randomStone = BindstoneManager.BindstoneList.GetRandomBindstone();
+                    relRegion = (ushort) randomStone.Region;
+                    relX = randomStone.X;
+                    relY = randomStone.Y;
+                    relZ = randomStone.Z;
+                    break;
                 default:
                 {
                     if (!ServerProperties.Properties.DISABLE_TUTORIAL)
@@ -8482,8 +8489,8 @@ namespace DOL.GS
                         publicMessage = LanguageMgr.GetTranslation(Client.Account.Language, "GamePlayer.Die.KilledBy", GetName(0, true), killer.GetName(1, false));
                     }
 
-                    if(ConquestService.ConquestManager.IsPlayerInConquestArea(this) && killer.Realm != this.Realm && killer is GamePlayer && killer != this.DuelTarget)
-                        ConquestService.ConquestManager.AddContributor(this);
+                    //if(ConquestService.ConquestManager.IsPlayerInConquestArea(this) && killer.Realm != this.Realm && killer is GamePlayer && killer != this.DuelTarget)
+                        //ConquestService.ConquestManager.AddContributor(this);
                 }
             }
 
@@ -8758,6 +8765,7 @@ namespace DOL.GS
             if (ControlledBrain != null && ControlledBrain.Body.attackComponent.Attackers.Contains(enemy))
                 ControlledBrain.Body.attackComponent.RemoveAttacker(enemy);
 
+            /*
             if (CurrentZone.IsRvR)
             {
                 var activeConquest = ConquestService.ConquestManager.ActiveObjective;
@@ -8776,10 +8784,7 @@ namespace DOL.GS
                         //activeConquest.Contribute(this, baseContribution); 
                     }
                 }
-                        
-                    
-                
-            }
+            }*/
 
             base.EnemyKilled(enemy);
         }
@@ -14640,10 +14645,11 @@ namespace DOL.GS
                 range = levelDiff * 20 + 125; 
             }
 
+            /*
             if (ConquestService.ConquestManager.IsPlayerNearFlag(this))
             {
                 range += 50;
-            }
+            }*/
 
             // Mastery of Stealth Bonus
             /*
