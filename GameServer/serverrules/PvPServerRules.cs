@@ -246,11 +246,11 @@ namespace DOL.GS.ServerRules
 						}
 					}
 					
-					if(playerAttacker.CurrentZone != null && ZoneBonusRotator.GetCurrentSafetyZones().Contains(playerAttacker.CurrentZone.ID))
-					{
-						if (quiet == false) MessageToLiving(attacker, "You are in a temporarily safe realm-task zone, and cannot attack this target.");
-						return false;
-					}
+					//if(playerAttacker.CurrentZone != null && ZoneBonusRotator.GetCurrentSafetyZones().Contains(playerAttacker.CurrentZone.ID))
+					//{
+					//	if (quiet == false) MessageToLiving(attacker, "You are in a temporarily safe realm-task zone, and cannot attack this target.");
+					//	return false;
+					//}
 					
 					if(playerAttacker.PlayerAttackImmunityDict.ContainsKey(playerDefender))
 					{
