@@ -1251,9 +1251,10 @@ namespace DOL.GS.ServerRules
 			
 			switch (player.GetConLevel(highestMember))
 			{
-				case >=3: return .1;
-				case >2: return .50;
-				case >1: return .75;
+				case >=10: return .05; //really deep purple
+				case >7: return .15; //deep purple
+				case >3: return .50; //purple
+				case >2: return .75; //red
 				default: return 1.0;
 			}
 		}
