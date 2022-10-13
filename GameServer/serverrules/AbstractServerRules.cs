@@ -1239,6 +1239,25 @@ namespace DOL.GS.ServerRules
 			Diagnostics.StopPerfCounter("ReaperService-NPC-OnNPCKilled-XP-NPC("+killedNPC.GetHashCode()+")");
 		}
 
+		private double GetGroupModification(Group group, GamePlayer player)
+		{
+			if (group == null) return 1;
+			
+			GamePlayer highestMember = player;
+			foreach (GamePlayer member in group.GetPlayersInTheGroup())
+			{
+				if (member.Level > highestMember.Level) highestMember = member;
+			}
+			
+			switch (player.GetConLevel(highestMember))
+			{
+				case >=3: return .1;
+				case >2: return .50;
+				case >1: return .75;
+				default: return 1.0;
+			}
+		}
+
 		private void AwardExperience(DictionaryEntry de, GameNPC killedNPC, GameObject killer, float totalDamage, Dictionary<Group, int> plrGrpExp, bool isGroupInRange)
 		{
 			System.Globalization.NumberFormatInfo format = System.Globalization.NumberFormatInfo.InvariantInfo;
@@ -1349,7 +1368,8 @@ namespace DOL.GS.ServerRules
 			{
 				int scalingFactor = (int) Math.Ceiling((decimal) player.Group.MemberCount);
 				long tmpxp = (long) (xpReward * (1 + 0.125 * GetUniqueClassCount(player.Group)));
-				xpReward = tmpxp / scalingFactor;
+				Console.WriteLine($"GroupMod {GetGroupModification(player.Group, player)}");
+				xpReward = (long) (tmpxp / scalingFactor * GetGroupModification(player.Group, player));
 				//xpReward /= scalingFactor;
 			}
 
@@ -1869,6 +1889,7 @@ namespace DOL.GS.ServerRules
 				GamePlayer expGainPlayer = living as GamePlayer;
 				if (living == null) continue;
 				if (living.ObjectState != GameObject.eObjectState.Active) continue;
+				if (expGainPlayer == null) continue;
 				/*
 				 * http://www.camelotherald.com/more/2289.shtml
 				 * Dead players will now continue to retain and receive their realm point credit

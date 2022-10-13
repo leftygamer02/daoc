@@ -5432,6 +5432,7 @@ namespace DOL.GS
                 return;
             }
 
+            #region Realm Loyalty
             int numCurrentLoyalDays = this.TempProperties.getProperty<int>(CURRENT_LOYALTY_KEY);
             //check for cached loyalty days, and grab value if needed
             if (numCurrentLoyalDays == null || numCurrentLoyalDays == 0)
@@ -5454,7 +5455,7 @@ namespace DOL.GS
                 
                 this.TempProperties.setProperty(CURRENT_LOYALTY_KEY, numCurrentLoyalDays);
             }
-            
+
             //check for realm loyalty
             var loyaltyCheck = this.TempProperties.getProperty<DateTime>(REALM_LOYALTY_KEY);
             if (loyaltyCheck == null)
@@ -5512,9 +5513,12 @@ namespace DOL.GS
             {
                LoyaltyManager.HandlePVPKill(this);
             }
+            #endregion
 
             long RealmLoyaltyBonus = 0;
             long baseXp = 0;
+            
+            #region Exp Modification
             //xp rate modifier
             if (allowMultiply)
             {
@@ -5566,6 +5570,7 @@ namespace DOL.GS
                 expTotal += atlasBonus;
                 expTotal += RealmLoyaltyBonus;
             }
+            #endregion Exp Modification
             
             double loyaltyPercent = ((double)RealmLoyaltyBonus / (baseXp)) * 100.0;
             if (RealmLoyaltyBonus > 0 && XPLogState == eXPLogState.Verbose)
