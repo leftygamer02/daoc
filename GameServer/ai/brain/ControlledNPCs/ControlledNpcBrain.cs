@@ -22,11 +22,10 @@ using System.Collections;
 using System.Collections.Generic;
 using DOL.Events;
 using DOL.GS;
-using DOL.GS.Spells;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.GS.RealmAbilities;
-using DOL.GS.SkillHandler;
+using DOL.GS.Spells;
 using log4net;
 
 namespace DOL.AI.Brain
@@ -240,12 +239,16 @@ namespace DOL.AI.Brain
 			set
 			{
 				m_aggressionState = value;
-				Disengage();
 
-				if (WalkState == eWalkState.Follow)
-					FollowOwner();
-				else if (m_tempX > 0 && m_tempY > 0 && m_tempZ > 0)
-					Body.WalkTo(m_tempX, m_tempY, m_tempZ, Body.MaxSpeed);
+				if (m_aggressionState == eAggressionState.Passive)
+				{
+					Disengage();
+
+					if (WalkState == eWalkState.Follow)
+						FollowOwner();
+					else if (m_tempX > 0 && m_tempY > 0 && m_tempZ > 0)
+						Body.WalkTo(m_tempX, m_tempY, m_tempZ, Body.MaxSpeed);
+				}
 			}
 		}
 
@@ -273,6 +276,7 @@ namespace DOL.AI.Brain
 
 		public virtual void Disengage()
 		{
+			// We switch to defensive mode if we're in aggressive and have a target, so that we don't immediately aggro back
 			if (AggressionState == eAggressionState.Aggressive && Body.TargetObject != null)
 			{
 				AggressionState = eAggressionState.Defensive;
@@ -281,6 +285,7 @@ namespace DOL.AI.Brain
 			m_orderAttackTarget = null;
 			ClearAggroList();
 			Body.StopAttack();
+			Body.StopCurrentSpellcast();
 			Body.TargetObject = null;
 		}
 
@@ -311,9 +316,9 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public virtual void ComeHere()
 		{
-			m_tempX = Body.X;
-			m_tempY = Body.Y;
-			m_tempZ = Body.Z;
+			m_tempX = Owner.X;
+			m_tempY = Owner.Y;
+			m_tempZ = Owner.Z;
 			WalkState = eWalkState.ComeHere;
 			Body.StopFollowing();
 			Body.WalkTo(Owner, Body.MaxSpeed);
@@ -325,9 +330,9 @@ namespace DOL.AI.Brain
 		/// <param name="target"></param>
 		public virtual void Goto(GameObject target)
 		{
-			m_tempX = Body.X;
-			m_tempY = Body.Y;
-			m_tempZ = Body.Z;
+			m_tempX = target.X;
+			m_tempY = target.Y;
+			m_tempZ = target.Z;
 			WalkState = eWalkState.GoTarget;
 			Body.StopFollowing();
 			Body.WalkTo(target, Body.MaxSpeed);
