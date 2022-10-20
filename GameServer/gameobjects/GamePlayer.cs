@@ -8634,6 +8634,26 @@ namespace DOL.GS
                     xpLossPercent = MaxLevel - 40;
                 }
 
+                List<InventoryItem> itemsToRemove = new List<InventoryItem>();
+                foreach (InventoryItem item in this.Inventory.AllItems)
+                {
+                    if (item is GameInventoryItemLootable lootable)
+                    {
+                        Out.SendMessage($"The {lootable.Name} slips from your grasp as your vision darkens.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        Inventory.RemoveItem(lootable);
+                        lootable.Drop(this);
+                        itemsToRemove.Add(lootable);
+                    }
+                }
+
+                /*
+                //can't modify the Inventory collection while iterating above, so we do second pass here to remove
+                foreach (var item in itemsToRemove)
+                {
+                    Inventory.RemoveItem(item);
+                }*/
+                Out.SendInventoryItemsUpdate(itemsToRemove);
+
                 if (realmDeath || killer?.Realm == Realm) //Live PvP servers have 3 con loss on pvp death, can be turned off in server properties -Unty
                 {
                     int conpenalty = 0;
@@ -13140,10 +13160,15 @@ namespace DOL.GS
                 }
                 return false;
             }
-
+            
             if (floorObject is WorldInventoryItem)
             {
                 WorldInventoryItem floorItem = floorObject as WorldInventoryItem;
+                if (floorObject is WorldInventoryItemLootable lootable)
+                {
+                    floorItem = lootable;
+                    floorItem.OwnerID ??= this.InternalID;
+                }
 
                 lock (floorItem)
                 {
@@ -13236,7 +13261,15 @@ namespace DOL.GS
                     {
                         bool good = false;
                         if (floorItem.Item.IsStackable)
-                            good = Inventory.AddTemplate(GameInventoryItem.Create(floorItem.Item), floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                        {
+                            if (floorItem.Item is GameInventoryItemLootable)
+                            {
+                                floorItem.Item.OwnerID = this.InternalID;
+                                good = Inventory.AddTemplate(GameInventoryItemLootable.Create(floorItem.Item), floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                            }
+                            else
+                                good = Inventory.AddTemplate(GameInventoryItem.Create(floorItem.Item), floorItem.Item.Count, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+                        }
                         else
                             good = Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, floorItem.Item);
 
