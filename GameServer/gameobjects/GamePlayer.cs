@@ -10350,7 +10350,9 @@ namespace DOL.GS
             
             if (spell != null)
             {
-                if (ActiveBuffCharges >= Properties.MAX_CHARGE_ITEMS && SelfBuffChargeIDs.Contains(spell.ID))
+                if (ActiveBuffCharges >= Properties.MAX_CHARGE_ITEMS
+                    && SelfBuffChargeIDs.Contains(spell.ID)
+                    && effectListComponent.GetSpellEffects().FirstOrDefault(x => x.SpellHandler.Spell.ID == spell.ID) == null)
                 {
                     Out.SendMessage("You may only use two buff charge effects.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     return;
@@ -12702,7 +12704,12 @@ namespace DOL.GS
                 return;
             }
 
-            if (!item.IsMagical) return;
+            // Cancel any self buffs that are unequipped
+            if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID) && Inventory.EquippedItems.Where(x => x.SpellID == item.SpellID).Count() <= 1)
+                CancelChargeBuff(item.SpellID);
+
+            if (!item.IsMagical)
+                return;
 
             if (item.Bonus1 != 0)
             {
@@ -12774,12 +12781,6 @@ namespace DOL.GS
             if (item is IGameInventoryItem)
             {
                 (item as IGameInventoryItem).OnUnEquipped(this);
-            }
-            
-            //cancel any self buffs that are unequipped
-            if (item.SpellID > 0 && SelfBuffChargeIDs.Contains(item.SpellID))
-            {
-                CancelChargeBuff(item.SpellID);
             }
 
             if (ObjectState == eObjectState.Active)

@@ -73,7 +73,7 @@ namespace DOL.GS
             //			log.Error(Environment.StackTrace);
             lock (Attackers)
             {
-                if (m_attackers.Contains(attacker)) m_attackers.Remove(attacker);
+                m_attackers.Remove(attacker);
 
                 //if (m_attackers.Count() == 0)
                 //    EntityManager.RemoveComponent(typeof(AttackComponent), owner);
@@ -2032,14 +2032,14 @@ namespace DOL.GS
 
                             if (brain != null)
                             {
-                                GamePlayer owner = brain.GetPlayerOwner();
-                                if (owner != null)
+                                GamePlayer player = brain.GetPlayerOwner();
+                                if (player != null)
                                 {
                                     string damageAmount = (ad.StyleDamage > 0)
                                         ? " (+" + ad.StyleDamage + ", GR: " + ad.Style.GrowthRate + ")"
                                         : "";
-                                    owner.Out.SendMessage(
-                                        LanguageMgr.GetTranslation(owner.Client.Account.Language,
+                                    player.Out.SendMessage(
+                                        LanguageMgr.GetTranslation(player.Client.Account.Language,
                                             "StyleProcessor.ExecuteStyle.PerformsPerfectly", owner.Name, ad.Style.Name,
                                             damageAmount), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
                                 }
@@ -3113,8 +3113,9 @@ namespace DOL.GS
 
                 var visiblePlayers = target?.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE);
 
-                if (visiblePlayers == null) return;
-                //Parallel.ForEach(visiblePlayers, player =>
+                if (visiblePlayers == null)
+                    return;
+
                 foreach (GamePlayer player in visiblePlayers)
                 {
                     
@@ -3133,8 +3134,11 @@ namespace DOL.GS
                             break;
                     }
 
-                    player.Out.SendCombatAnimation(owner, ad.Target, (ushort) attackersWeapon, (ushort) defendersWeapon,
-                        animationId, 0, resultByte, ad.Target.HealthPercent);
+                    // It only affects the attacker's client, but for some reason, the attack animation doesn't play when the attack's target (who's being hit) is different than the actually selected target.
+                    // It makes fighting Spiritmasters very awkward, so until this get figured out, we'll instead play the "hit" animation on the player's actual target.
+                    player.Out.SendCombatAnimation(owner, player != owner || owner.TargetObject == target ? target : owner.TargetObject,
+                        (ushort) attackersWeapon, (ushort) defendersWeapon,
+                        animationId, 0, resultByte, target.HealthPercent);
                 }
             }
         }

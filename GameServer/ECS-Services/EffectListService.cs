@@ -49,7 +49,7 @@ namespace DOL.GS
             {
                 var effects = new List<ECSGameEffect>(10);
                 
-                lock (living.effectListComponent._effectsLock)
+                lock (living.effectListComponent.EffectsLock)
                 {
                     var currentEffects = living.effectListComponent.Effects.Values.ToList();
 
@@ -91,32 +91,36 @@ namespace DOL.GS
                                 {
                                     if (effect.SpellHandler.Caster.Mana >= effect.SpellHandler.Spell.PulsePower)
                                     {
-                                        effect.SpellHandler.Caster.Mana -= effect.SpellHandler.Spell.PulsePower;
-                                        effect.SpellHandler.StartSpell(null);
-                                        effect.ExpireTick += effect.PulseFreq;
+                                        if (effect.SpellHandler.StartSpell(null))
+                                        {
+                                            effect.SpellHandler.Caster.Mana -= effect.SpellHandler.Spell.PulsePower;
+                                            effect.ExpireTick += effect.PulseFreq;
+                                        }
+                                        else
+                                            continue;
                                     }
                                     else
                                     {
                                         ((SpellHandler)effect.SpellHandler).MessageToCaster("You do not have enough power and your spell was canceled.", eChatType.CT_SpellExpires);
-                                        EffectService.RequestCancelConcEffect((IConcentrationEffect)effect);
+                                        EffectService.RequestCancelConcEffect(effect);
                                         continue;
                                     }
                                 }
                                 else
                                 {
-                                    effect.SpellHandler.StartSpell(null);
-                                    effect.ExpireTick += effect.PulseFreq;
+                                    if (effect.SpellHandler.StartSpell(null))
+                                    {
+                                        effect.SpellHandler.Caster.Mana -= effect.SpellHandler.Spell.PulsePower;
+                                        effect.ExpireTick += effect.PulseFreq;
+                                    }
+                                    else
+                                        continue;
                                 }
 
                                 if (effect.SpellHandler.Spell.IsHarmful && effect.SpellHandler.Spell.SpellType != (byte)eSpellType.Charm && effect.SpellHandler.Spell.SpellType != (byte)eSpellType.SpeedDecrease)
                                 {
                                     if (!(effect.Owner.IsMezzed || effect.Owner.IsStunned))
                                         ((SpellHandler)effect.SpellHandler).SendCastAnimation();
-
-                                }
-                                else if (effect.SpellHandler.Spell.SpellType == (byte)eSpellType.SpeedDecrease)
-                                {
-                                    ((SpeedDecreaseSpellHandler)effect.SpellHandler).SendEffectAnimation(effect.SpellHandler.GetTarget(), 0, false, 1);
                                 }
                             }
                             else
@@ -232,7 +236,7 @@ namespace DOL.GS
         {
             List<ECSGameEffect> effects;
 
-            lock (target.effectListComponent._effectsLock)
+            lock (target.effectListComponent.EffectsLock)
             {
                 target.effectListComponent.Effects.TryGetValue(effectType, out effects);
             
@@ -250,7 +254,7 @@ namespace DOL.GS
             if (target == null) return null;
             List<ECSGameEffect> effects;
 
-            lock (target.effectListComponent._effectsLock)
+            lock (target.effectListComponent.EffectsLock)
             {
                 target.effectListComponent.Effects.TryGetValue(effectType, out effects);
 
@@ -265,7 +269,7 @@ namespace DOL.GS
         {
             List<ECSGameEffect> effects;
 
-            lock (target.effectListComponent._effectsLock)
+            lock (target.effectListComponent.EffectsLock)
             {
                 target.effectListComponent.Effects.TryGetValue(effectType, out effects);
 
@@ -280,7 +284,7 @@ namespace DOL.GS
         {
             List<ECSGameEffect> effects;
 
-            lock (target.effectListComponent._effectsLock)
+            lock (target.effectListComponent.EffectsLock)
             {
                 target.effectListComponent.Effects.TryGetValue(effectType, out effects);
 
@@ -295,7 +299,7 @@ namespace DOL.GS
         {
             List<ECSGameEffect> effects;
 
-            lock (target.effectListComponent._effectsLock)
+            lock (target.effectListComponent.EffectsLock)
             {
                 target.effectListComponent.Effects.TryGetValue(eEffect.Pulse, out effects);
 
@@ -313,7 +317,7 @@ namespace DOL.GS
 
             ECSGameEffect effectToCancel;
 
-            lock (target.effectListComponent._effectsLock)
+            lock (target.effectListComponent.EffectsLock)
             {
                 if (!target.effectListComponent.ContainsEffectForEffectType(effectType))
                     return false;

@@ -195,8 +195,10 @@ namespace DOL.GS
                     if (attackData != null && attackData.AttackResult is eAttackResult.Fumbled)
                     {
                         // Don't start the attack if the last one fumbled
-                        m_interval = attackComponent.AttackSpeed(attackWeapon) * 2;
+                        styleComponent.NextCombatStyle = null;
+                        styleComponent.NextCombatBackupStyle = null;
                         attackData.AttackResult = eAttackResult.Missed;
+                        m_interval = attackComponent.AttackSpeed(attackWeapon) * 2;
                         StartTime = m_interval;
                         return;
                     }
@@ -470,14 +472,5 @@ namespace DOL.GS
                 m_roundWithNoAttackTime = 0;
             return shouldRoundShowMessage;
         }
-        
-        private void GetIntervalBetweenAttacks(InventoryItem attackWeapon, InventoryItem leftWeapon, AttackComponent attackComponent)
-        {
-            if (attackWeapon != null && leftWeapon != null && attackComponent.UsedHandOnLastDualWieldAttack == 2 && leftWeapon.Object_Type != (int)eObjectType.Shield)
-                m_interval = attackComponent.AttackSpeed(attackWeapon, leftWeapon);
-            else
-                m_interval = attackComponent.AttackSpeed(attackWeapon);
-        }
-
     }
 }
