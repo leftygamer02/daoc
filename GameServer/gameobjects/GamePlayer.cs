@@ -8642,17 +8642,10 @@ namespace DOL.GS
                         Out.SendMessage($"The {lootable.Name} slips from your grasp as your vision darkens.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
                         Inventory.RemoveItem(lootable);
                         lootable.Drop(this);
-                        itemsToRemove.Add(lootable);
+                        itemsToRemove.Add(lootable); 
                     }
                 }
-
-                /*
-                //can't modify the Inventory collection while iterating above, so we do second pass here to remove
-                foreach (var item in itemsToRemove)
-                {
-                    Inventory.RemoveItem(item);
-                }*/
-                Out.SendInventoryItemsUpdate(itemsToRemove);
+                Out.SendInventoryItemsUpdate(itemsToRemove); //batch our item updates so we only have to send packets once, instead of once each in the foreach
 
                 if (realmDeath || killer?.Realm == Realm) //Live PvP servers have 3 con loss on pvp death, can be turned off in server properties -Unty
                 {
@@ -11276,6 +11269,20 @@ namespace DOL.GS
                 // CancelAllConcentrationEffects(true);
                 if (ControlledBrain != null)
                     CommandNpcRelease();
+
+                if (!rgn.IsDungeon)
+                {
+                    List<InventoryItem> itemsToSave = Inventory.AllItems.Where(item => item is GameInventoryItemLootable).ToList();
+                    for (int i = 0; i < itemsToSave.Count(); i++)
+                    {
+                        var inventoryItem = itemsToSave[i];
+                        if (inventoryItem == null) continue;
+                    
+                        Inventory.RemoveItem(inventoryItem);
+                        GameInventoryItem safeItem = GameInventoryItem.Create(inventoryItem);
+                        Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, safeItem);
+                    }
+                }
             }
             else
             {
