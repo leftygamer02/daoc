@@ -3006,44 +3006,34 @@ namespace DOL.GS.Spells
 
 		public virtual List<GameLiving> GetGroupAndPets(Spell spell)
         {
-			List<GameLiving> livings = new List<GameLiving>();
+			List<GameLiving> livingsInRange = new();
+			ICollection<GameLiving> groupMembers = Caster.Group?.GetMembersInTheGroup() ?? (Caster as NecromancerPet)?.Owner.Group?.GetMembersInTheGroup();
 
-			livings.Add(Caster);
-			if (Caster.ControlledBrain != null)
-				livings.Add(Caster.ControlledBrain.Body);
-			if (Caster.Group != null)
+			if (groupMembers == null)
+				groupMembers = new List<GameLiving>(){ Caster };
+
+			foreach (GameLiving living in groupMembers)
 			{
-				foreach (GameLiving living in Caster.Group.GetMembersInTheGroup().ToList())
-				{
-					if (living.GetDistanceTo(Caster) > spell.Range)
-					{
-						continue;
-					}
-					
-					livings.Add(living);
+				IControlledBrain controlledBrain = living.ControlledBrain;
+				IControlledBrain[] subControlledBrains = controlledBrain?.Body.ControlledNpcList;
 
-					if (living.ControlledBrain != null)
-						livings.Add(living.ControlledBrain.Body);
+				if (subControlledBrains != null)
+				{
+					foreach (IControlledBrain subControlledBrain in subControlledBrains.Where(x => x != null && Caster.IsWithinRadius(x.Body, spell.Range)))
+						livingsInRange.Add(subControlledBrain.Body);
 				}
 
-			}
-			else if (Caster is NecromancerPet nPet && nPet.Owner.Group != null)
-            {
-				foreach (GameLiving living in nPet.Owner.Group.GetMembersInTheGroup().ToList())
+				if (controlledBrain != null)
 				{
-					if (living.GetDistanceTo(Caster) > spell.Range)
-					{
-						continue;
-					}
-					
-					livings.Add(living);
-
-					if (living.ControlledBrain != null)
-						livings.Add(living.ControlledBrain.Body);
+					if (Caster.IsWithinRadius(controlledBrain.Body, spell.Range))
+						livingsInRange.Add(controlledBrain.Body);
 				}
+
+				if (Caster == living || Caster.IsWithinRadius(living, spell.Range))
+					livingsInRange.Add(living);
 			}
 
-			return livings;
+			return livingsInRange;
 		}
 
 		/// <summary>
@@ -3091,8 +3081,12 @@ namespace DOL.GS.Spells
 			}
 
 			IList<GameLiving> targets;
-			if (Spell.Target.ToLower() == "realm" && !Spell.IsConcentration && m_spellTarget == Caster && !Spell.IsHealing && Spell.IsBuff && 
-				Spell.SpellType != (byte)eSpellType.Bladeturn)
+			if (Spell.Target.ToLower() == "realm"
+				&& (m_spellTarget == Caster || Caster is NecromancerPet nPet && m_spellTarget == nPet.Owner)
+				&& !Spell.IsConcentration
+				&& !Spell.IsHealing
+				&& Spell.IsBuff
+				&& Spell.SpellType != (byte)eSpellType.Bladeturn)
 				targets = GetGroupAndPets(Spell);
 			else
 				targets = SelectTargets(m_spellTarget);
