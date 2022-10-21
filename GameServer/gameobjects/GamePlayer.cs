@@ -2870,7 +2870,7 @@ namespace DOL.GS
             constitution -= 50;
             if (constitution < 0) constitution *= 2;
 
-            int baseHpBoost = (int) Math.Round(400 * (level/50.0)); //400 extra max hp at max level
+            constitution += (int) Math.Round(26 * (level/50.0)); //free toa con boost at max level
             
             // hp1 : from level
             // hp2 : from constitution
@@ -2881,7 +2881,7 @@ namespace DOL.GS
             int hp3 = 0;
             if (ChampionLevel >= 1)
                 hp3 = ServerProperties.Properties.HPS_PER_CHAMPIONLEVEL * ChampionLevel;
-            double hp4 = 20 + hp1 / 50 + hp2 + hp3 + baseHpBoost;
+            double hp4 = 20 + hp1 / 50 + hp2 + hp3;
             if (GetModified(eProperty.ExtraHP) > 0)
                 hp4 += Math.Round(hp4 * (double)GetModified(eProperty.ExtraHP) / 100);
 
