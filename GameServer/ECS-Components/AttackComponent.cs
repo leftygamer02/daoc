@@ -57,8 +57,7 @@ namespace DOL.GS
                 if (m_attackers.Contains(attacker)) return;
                 m_attackers.Add(attacker);
 
-                if (m_attackers.Count() > 0 &&
-                    !EntityManager.GetLivingByComponent(typeof(AttackComponent)).Contains(owner))
+                if (m_attackers.Count() > 0)
                     EntityManager.AddComponent(typeof(AttackComponent), owner);
             }
         }
@@ -101,8 +100,7 @@ namespace DOL.GS
 
             if (weaponAction is null && attackAction is null && !owner.InCombat)
             {
-                if (EntityManager.GetLivingByComponent(typeof(AttackComponent)).ToArray().Contains(owner))
-                    EntityManager.RemoveComponent(typeof(AttackComponent), owner);
+                EntityManager.RemoveComponent(typeof(AttackComponent), owner);
             }
         }
 
@@ -616,15 +614,17 @@ namespace DOL.GS
                 //double effectiveness = Effectiveness;
                 double damage = (1.0 + owner.Level / Properties.PVE_MOB_DAMAGE_F1 + owner.Level * owner.Level / Properties.PVE_MOB_DAMAGE_F2) * AttackSpeed(weapon) *
                                 0.001;
-                if (weapon == null || weapon.Item_Type == Slot.RIGHTHAND || weapon.Item_Type == Slot.LEFTHAND ||
-                    weapon.Item_Type == Slot.TWOHAND)
+                if (weapon == null
+                    || weapon.SlotPosition == Slot.RIGHTHAND
+                    || weapon.SlotPosition == Slot.LEFTHAND
+                    || weapon.SlotPosition == Slot.TWOHAND)
                 {
                     //Melee damage buff,debuff,RA
                     effectiveness += owner.GetModified(eProperty.MeleeDamage) * 0.01;
                 }
-                else if (weapon.Item_Type == Slot.RANGED && (weapon.Object_Type == (int) eObjectType.Longbow ||
-                                                             weapon.Object_Type == (int) eObjectType.RecurvedBow ||
-                                                             weapon.Object_Type == (int) eObjectType.CompositeBow))
+                else if (weapon.SlotPosition == Slot.RANGED && (weapon.Object_Type == (int) eObjectType.Longbow
+                                                                || weapon.Object_Type == (int) eObjectType.RecurvedBow
+                                                                || weapon.Object_Type == (int) eObjectType.CompositeBow))
                 {
                     // RDSandersJR: Check to see if we are using old archery if so, use RangedDamge
                     if (ServerProperties.Properties.ALLOW_OLD_ARCHERY == true)
@@ -637,7 +637,7 @@ namespace DOL.GS
                         effectiveness += owner.GetModified(eProperty.SpellDamage) * 0.01;
                     }
                 }
-                else if (weapon.Item_Type == Slot.RANGED)
+                else if (weapon.SlotPosition == Slot.RANGED)
                 {
                     effectiveness += owner.GetModified(eProperty.RangedDamage) * 0.01;
                 }
@@ -654,8 +654,7 @@ namespace DOL.GS
         /// <param name="attackTarget">the target to attack</param>
         public void StartAttack(GameObject attackTarget)
         {
-            if (!EntityManager.GetLivingByComponent(typeof(AttackComponent)).ToArray().Contains(owner))
-                EntityManager.AddComponent(typeof(AttackComponent), owner);
+            EntityManager.AddComponent(typeof(AttackComponent), owner);
 
             var p = owner as GamePlayer;
 
@@ -1432,16 +1431,10 @@ namespace DOL.GS
 
                 return ad;
             }
-            else if (owner is NecromancerPet)
-            {
-                return (owner as NecromancerPet).MakeAttack(target, weapon, style, effectiveness, interruptDuration,
-                    dualWield, false);
-            }
+            else if (owner is NecromancerPet necromancerPet)
+                return necromancerPet.MakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield, false);
             else
-            {
-                effectiveness = 1;
-                return LivingMakeAttack(target, weapon, style, effectiveness, interruptDuration, dualWield);
-            }
+                return LivingMakeAttack(target, weapon, style, 1, interruptDuration, dualWield);
         }
 
         /// <summary>

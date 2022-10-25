@@ -17338,9 +17338,7 @@ namespace DOL.GS
             CreateStatistics();
 			
             //Add to EntityManager
-            EntityManager.AddPlayer((this));
-            EntityManager.RemoveNpc(this);
-            EntityManager.RemoveNpc(this);
+            EntityManager.AddPlayer(this);
         }
 
         /// <summary>

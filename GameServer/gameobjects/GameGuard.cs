@@ -2,15 +2,15 @@ using System;
 using DOL.AI.Brain;
 using DOL.Language;
 using System.Collections;
-using System.Linq;
+using DOL.AI.Brain;
 using DOL.GS.PacketHandler;
+using DOL.Language;
 
 namespace DOL.GS
 {
     public class GameGuard : GameNPC
     {
-        public GameGuard()
-            : base()
+        public GameGuard() : base()
         {
             m_ownBrain = new GuardBrain();
             m_ownBrain.Body = this;
@@ -22,13 +22,7 @@ namespace DOL.GS
             m_ownBrain.Body = this;
         }
 
-        public override bool IsStealthed
-        {
-            get
-            {
-                return (Flags & eFlags.STEALTH) != 0;
-            }
-        }
+        public override bool IsStealthed => (Flags & eFlags.STEALTH) != 0;
 
         /*
         public override void ProcessDeath(GameObject killer)
@@ -55,23 +49,33 @@ namespace DOL.GS
             return list;
         }
 
-        public void StartAttack(GameObject attackTarget)
+        public override void FireAmbientSentence(eAmbientTrigger trigger, GameObject living)
         {
-            attackComponent.StartAttack(attackTarget);
-
-            foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.SAY_DISTANCE))
+            if (trigger != eAmbientTrigger.aggroing)
             {
-                if (player != null)
-                    switch (Realm)
-                    {
-                        case eRealm.Albion:
-                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameGuard.Albion.StartAttackSay"), eChatType.CT_System, eChatLoc.CL_SystemWindow); break;
-                        case eRealm.Midgard:
-                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameGuard.Midgard.StartAttackSay"), eChatType.CT_System, eChatLoc.CL_SystemWindow); break;
-                        case eRealm.Hibernia:
-                            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameGuard.Hibernia.StartAttackSay"), eChatType.CT_System, eChatLoc.CL_SystemWindow); break;
-                    }
+                base.FireAmbientSentence(trigger, living);
+                return;
             }
+
+            string translatableObject = null;
+
+            switch (Realm)
+            {
+                case eRealm.Albion:
+                    translatableObject = "GameGuard.Albion.StartAttackSay";
+                    break;
+                case eRealm.Midgard:
+                    translatableObject = "GameGuard.Midgard.StartAttackSay";
+                    break;
+                case eRealm.Hibernia:
+                    translatableObject = "GameGuard.Hibernia.StartAttackSay";
+                    break;
+            }
+
+            if (translatableObject == null)
+                return;
+
+            Message.MessageToArea(this, $"{Name} says, \"{LanguageMgr.GetTranslation(LanguageMgr.DefaultLanguage, translatableObject)}\"", eChatType.CT_Say, eChatLoc.CL_ChatWindow, 512, null);
         }
     }
 }
