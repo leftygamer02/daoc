@@ -19,18 +19,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
+using System.Text;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.Effects;
-using DOL.GS.Movement;
+using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
 using DOL.GS.SkillHandler;
-using DOL.GS.Keeps;
 using DOL.Language;
-using log4net;
-using System.Text;
-using System.Linq;
 
 namespace DOL.AI.Brain
 {
@@ -39,32 +36,22 @@ namespace DOL.AI.Brain
     /// </summary>
     public class StandardMobBrain : APlayerVicinityBrain, IOldAggressiveBrain
     {
-        /// <summary>
-        /// Defines a logger for this class.
-        /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         public const int MAX_AGGRO_DISTANCE = 3600;
         public const int MAX_AGGRO_LIST_DISTANCE = 6000;
-        public const int MAX_PET_AGGRO_DISTANCE = 512; // Tolakram - Live test with caby pet - I was extremely close before auto aggro
 
         // Used for AmbientBehaviour "Seeing" - maintains a list of GamePlayer in range
         public List<GamePlayer> PlayersSeen = new List<GamePlayer>();
 
-        public new StandardMobFSM m_fsm;
-
-        public new StandardMobFSM FSM {
-            get { return m_fsm; }
-            set { m_fsm = value; }
-        }
+        public new StandardMobFSM FSM { get; private set; }
 
         /// <summary>
         /// Constructs a new StandardMobBrain
         /// </summary>
-        public StandardMobBrain()
-            : base()
+        public StandardMobBrain() : base()
         {
-            m_aggroLevel = 0;
-            m_aggroMaxRange = 0;
+            AggroLevel = 0;
+            AggroRange = 0;
+
             FSM = new StandardMobFSM();
             FSM.Add(new StandardMobState_IDLE(FSM, this));
             FSM.Add(new StandardMobState_WAKING_UP(FSM, this));
@@ -83,7 +70,7 @@ namespace DOL.AI.Brain
         /// <returns></returns>
         public override string ToString()
         {
-            return base.ToString() + ", m_aggroLevel=" + m_aggroLevel.ToString() + ", m_aggroMaxRange=" + m_aggroMaxRange.ToString();
+            return base.ToString() + ", AggroLevel=" + AggroLevel.ToString() + ", AggroRange=" + AggroRange.ToString();
         }
 
         public override bool Stop()
@@ -105,187 +92,33 @@ namespace DOL.AI.Brain
 
         #region AI
 
-        /// <summary>
-        /// Do the mob AI
-        /// </summary>
         public override void Think()
         {
-            //Satyr:
-            //This is a general information. When i review this Think-Procedure and the interaction between it and some
-            //code of GameNPC.cs i have the feeling this is a mixture of much ideas of diffeent people, much unfinished
-            //features like random-walk which does not actually fit to the rest of this Brain-logic.
-            //In other words:
-            //If somebody feeling like redoing this stuff completly i would appreciate it. It might be worth redoing
-            //instead of trying desperately to make something work that is simply chaoticly moded by too much
-            //diffeent inputs.
-            //For NOW i made the aggro working the following way (close to live but not yet 100% equal):
-            //Mobs will not aggro on their way back home (in fact they should even under some special circumstances)
-            //They will completly forget all Aggro when respawned and returned Home.
-
             FSM.Think();
-            /*
-			// If the NPC is tethered and has been pulled too far it will
-			// de-aggro and return to its spawn point.
-			if (Body.IsOutOfTetherRange && !Body.InCombat)
-			{
-				Body.WalkToSpawn();
-				return;
-			}
-			// If the NPC is Moving on path, it can detect closed doors and open them
-			if(Body.IsMovingOnPath) DetectDoor();
-			//Instead - lets just let CheckSpells() make all the checks for us
-			//Check for just positive spells
-			CheckSpells(eCheckSpellType.Defensive);
-
-			// Note: Offensive spells are checked in GameNPC:SpellAction timer
-
-			// check for returning to home if to far away
-			if (Body.MaxDistance != 0 && !Body.IsReturningHome)
-			{
-				int distance = Body.GetDistanceTo( Body.SpawnPoint );
-				int maxdistance = Body.MaxDistance > 0 ? Body.MaxDistance : -Body.MaxDistance * AggroRange / 100;
-				if (maxdistance > 0 && distance > maxdistance)
-				{
-					Body.WalkToSpawn();
-					return;
-				}
-			}
-
-			//If this NPC can randomly walk around, we allow it to walk around
-			if (!Body.AttackState && CanRandomWalk && !Body.IsRoaming && Util.Chance(DOL.GS.ServerProperties.Properties.GAMENPC_RANDOMWALK_CHANCE))
-			{
-				IPoint3D target = CalcRandomWalkTarget();
-				if (target != null)
-				{
-					if (Util.IsNearDistance(target.X, target.Y, target.Z, Body.X, Body.Y, Body.Z, GameNPC.CONST_WALKTOTOLERANCE))
-					{
-						Body.TurnTo(Body.GetHeading(target));
-					}
-					else
-					{
-						Body.WalkTo(target, 50);
-					}
-
-					Body.FireAmbientSentence(GameNPC.eAmbientTrigger.roaming);
-				}
-			}
-			//If the npc can move, and the npc is not casting, not moving, and not attacking or in combat
-			else if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.IsMoving && !Body.AttackState && !Body.InCombat && !Body.IsMovingOnPath)
-			{
-				//If the npc is not at it's spawn position, we tell it to walk to it's spawn position
-				//Satyr: If we use a tolerance to stop their Way back home we also need the same
-				//Tolerance to check if we need to go home AGAIN, otherwise we might be told to go home
-				//for a few units only and this may end before the next Arrive-At-Target Event is fired and in this case
-				//We would never lose the state "IsReturningHome", which is then followed by other erros related to agro again to players
-				if ( !Util.IsNearDistance( Body.X, Body.Y, Body.Z, Body.SpawnPoint.X, Body.SpawnPoint.Y, Body.SpawnPoint.Z, GameNPC.CONST_WALKTOTOLERANCE ) )
-					Body.WalkToSpawn();
-				else if (Body.Heading != Body.SpawnHeading)
-					Body.Heading = Body.SpawnHeading;
-			}
-
-			//Mob will now always walk on their path
-			if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.IsMoving
-			    && !Body.AttackState && !Body.InCombat && !Body.IsMovingOnPath
-			    && Body.PathID != null && Body.PathID != "" && Body.PathID != "NULL")
-			{
-				PathPoint path = MovementMgr.LoadPath(Body.PathID);
-				if (path != null)
-				{
-					Body.CurrentWayPoint = path;
-					Body.MoveOnPath((short)path.MaxSpeed);
-				}
-				else
-				{
-					log.ErrorFormat("Path {0} not found for mob {1}.", Body.PathID, Body.Name);
-				}
-			}
-
-			//If we are not attacking, and not casting, and not moving, and we aren't facing our spawn heading, we turn to the spawn heading
-			if( !Body.IsMovingOnPath && !Body.InCombat && !Body.AttackState && !Body.IsCasting && !Body.IsMoving && Body.IsWithinRadius( Body.SpawnPoint, 500 ) == false )
-			{
-				Body.WalkToSpawn(); // Mobs do not walk back at 2x their speed..
-				Body.IsReturningHome = false; // We are returning to spawn but not the long walk home, so aggro still possible
-			}
-
-			if (Body.IsReturningHome == false)
-			{
-				if (!Body.AttackState && AggroRange > 0)
-				{
-					var currentPlayersSeen = new List<GamePlayer>();
-					foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, true))
-					{
-						if (!PlayersSeen.Contains(player))
-						{
-							Body.FireAmbientSentence(GameNPC.eAmbientTrigger.seeing, player as GameLiving);
-							PlayersSeen.Add(player);
-						}
-						currentPlayersSeen.Add(player);
-					}
-					
-					for (int i=0; i<PlayersSeen.Count; i++)
-					{
-						if (!currentPlayersSeen.Contains(PlayersSeen[i])) PlayersSeen.RemoveAt(i);
-					}
-					
-				}
-				
-				//If we have an aggrolevel above 0, we check for players and npcs in the area to attack
-				if (!Body.AttackState && AggroLevel > 0)
-				{
-					CheckPlayerAggro();
-					CheckNPCAggro();
-				}
-
-				if (HasAggro)
-				{
-					Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, Body.TargetObject as GameLiving);
-					AttackMostWanted();
-					return;
-				}
-				else
-				{
-					if (Body.AttackState)
-						Body.StopAttack();
-
-					Body.TargetObject = null;
-				}
-			}*/
         }
 
-        public bool CheckForProximityAggro = true;
+        public bool ShouldCheckProximityAggro = true;
 
-        public virtual bool HasAggressionTable()
+        public virtual bool CheckProximityAggro()
         {
-            if (AggroRange > 0)
+            FireAmbientSentence();
+
+            // Check aggro only if we're not in combat.
+            if (ShouldCheckProximityAggro && !HasAggro && !Body.AttackState && Body.CurrentSpellHandler == null) 
             {
-                var currentPlayersSeen = new List<GamePlayer>();
-                foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, true))
-                {
-                    if (!PlayersSeen.Contains(player))
-                    {
-                        Body.FireAmbientSentence(GameNPC.eAmbientTrigger.seeing, player as GameLiving);
-                        PlayersSeen.Add(player);
-                    }
-                    currentPlayersSeen.Add(player);
-                }
+                // Don't check aggro if we spawned less than X seconds ago. This is to prevent clients from sending positive LoS check
+                // when they shouldn't, which can happen right after SendNPCCreate and makes mobs aggro through walls.
+                if (GameLoop.GameLoopTime - Body.SpawnTick < 1250)
+                    return false;
 
-                for (int i = 0; i < PlayersSeen.Count; i++)
-                {
-                    if (!currentPlayersSeen.Contains(PlayersSeen[i])) PlayersSeen.RemoveAt(i);
-                }
-
-            }
-
-            //If we have an aggrolevel above 0, we check for players and npcs in the area to attack
-            if (AggroLevel > 0)
-            {
                 CheckPlayerAggro();
                 CheckNPCAggro();
             }
 
+            // Some calls rely on this method to return if there's something in the aggro list, not necesarilly to perform a proximity aggro check.
+            // But this doesn't necessarily return wheter or not the check was positive, only the current state (LoS checks take time).
             return HasAggro;
         }
-
 
         public virtual bool IsBeyondTetherRange()
         {
@@ -293,114 +126,111 @@ namespace DOL.AI.Brain
             {
                 int distance = Body.GetDistanceTo(Body.SpawnPoint);
                 int maxdistance = Body.MaxDistance > 0 ? Body.MaxDistance : -Body.MaxDistance * AggroRange / 100;
-                if (maxdistance > 0 && distance > maxdistance) { return true; }
-                else { return false; }
-            }
-            else { return false; }
 
+                if (maxdistance > 0 && distance > maxdistance)
+                    return true;
+                else
+                    return false;
+            }
+            else
+                return false;
         }
 
         public virtual bool HasPatrolPath()
         {
-            if (Body.MaxSpeedBase > 0 && Body.CurrentSpellHandler == null && !Body.IsMoving
-                && !Body.attackComponent.AttackState && !Body.InCombat && !Body.IsMovingOnPath
-                && Body.PathID != null && Body.PathID != "" && Body.PathID != "NULL")
-            {
+            if (Body.MaxSpeedBase > 0
+                && Body.CurrentSpellHandler == null
+                && !Body.IsMoving
+                && !Body.attackComponent.AttackState
+                && !Body.InCombat
+                && !Body.IsMovingOnPath
+                && Body.PathID != null
+                && Body.PathID != ""
+                && Body.PathID != "NULL")
                 return true;
-            } else { return false; }
+            else
+                return false;
+        }
+
+        public long LastNPCAggroCheckTick = 0;
+
+        /// <summary>
+        /// Check for aggro against players
+        /// </summary>
+        protected virtual void CheckPlayerAggro()
+        {
+            foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, !Body.CurrentZone.IsDungeon))
+            {
+                if (!CanAggroTarget(player))
+                    continue;
+                if (player.IsStealthed || player.Steed != null)
+                    continue;
+                if (player.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+                    continue;
+
+                if (GS.ServerProperties.Properties.ALWAYS_CHECK_LOS)
+                    // We don't know if the LoS check will be positive, so we have to ask other players
+                    player.Out.SendCheckLOS(Body, player, new CheckLOSResponse(LosCheckForAggroCallback));
+                else
+                {
+                    AddToAggroList(player, 1);
+                    return;
+                }
+            }
         }
 
         /// <summary>
         /// Check for aggro against close NPCs
         /// </summary>
-        public virtual void CheckNPCAggro()
+        protected virtual void CheckNPCAggro()
         {
-            if (Body.attackComponent.AttackState)
-                return;
-
-            foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange, Body.CurrentRegion.IsDungeon ? false : true))
+            foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange, !Body.CurrentRegion.IsDungeon))
             {
-                if (!GameServer.ServerRules.IsAllowedToAttack(Body, npc, true)) continue;
-                if (m_aggroTable.ContainsKey(npc))
-                    continue; // add only new NPCs
-                if (!npc.IsAlive || npc.ObjectState != GameObject.eObjectState.Active)
+                if (!CanAggroTarget(npc))
                     continue;
-                if (npc is GameTaxi || npc is GameTrainingDummy)
-                    continue; //do not attack horses
+                if (npc is GameTaxi or GameTrainingDummy)
+                    continue;
 
-                if (CalculateAggroLevelToTarget(npc) > 0)
+                if (GS.ServerProperties.Properties.ALWAYS_CHECK_LOS)
                 {
-                    if (npc.Brain is ControlledNpcBrain) // This is a pet or charmed creature, checkLOS
-                        AddToAggroList(npc, (npc.Level + 1) << 1, true);
-                    else
-                        AddToAggroList(npc, (npc.Level + 1) << 1);
+                    // Check LoS if either the target or the current mob is a pet
+                    if (npc.Brain is ControlledNpcBrain theirControlledNpcBrain && theirControlledNpcBrain.GetPlayerOwner() is GamePlayer theirOwner)
+                    {
+                        theirOwner.Out.SendCheckLOS(Body, npc, new CheckLOSResponse(LosCheckForAggroCallback));
+                        continue;
+                    }
+                    else if (this is ControlledNpcBrain ourControlledNpcBrain && ourControlledNpcBrain.GetPlayerOwner() is GamePlayer ourOwner)
+                    {
+                        ourOwner.Out.SendCheckLOS(Body, npc, new CheckLOSResponse(LosCheckForAggroCallback));
+                        continue;
+                    }
                 }
+
+                AddToAggroList(npc, 1);
+                return;
             }
         }
 
-        /// <summary>
-        /// Check for aggro against players
-        /// </summary>
-        public virtual void CheckPlayerAggro()
+        public virtual void FireAmbientSentence()
         {
-            CheckPlayerAggro(false);
-        }
-
-        /// <summary>
-        /// Check for aggro against players
-        /// </summary>
-        public virtual void CheckPlayerAggro(bool useLOS)
-        {
-            //Check if we are already attacking, return if yes
-            if (Body.attackComponent.AttackState)
-                return;
-
-            if (!CheckForProximityAggro)
+            if (Body.ambientTexts != null && Body.ambientTexts.Any(item => item.Trigger == "seeing"))
             {
-                return;
-            }
-
-            foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, Body.CurrentZone.IsDungeon ? false : true))
-            {
-                if (!GameServer.ServerRules.IsAllowedToAttack(Body, player, true)) continue;
-                // Don't aggro on immune players.
-
-                if (player.EffectList.GetOfType<NecromancerShadeEffect>() != null)
-                    continue;
-
-                if (Body.CurrentZone.IsDungeon)
+                // Check if we can "see" players and fire off ambient text
+                var currentPlayersSeen = new List<GamePlayer>();
+                foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange, true))
                 {
-                    useLOS = true;
+                    if (!PlayersSeen.Contains(player))
+                    {
+                        Body.FireAmbientSentence(GameNPC.eAmbientTrigger.seeing, player);
+                        PlayersSeen.Add(player);
+                    }
+                    currentPlayersSeen.Add(player);
                 }
 
-                if (useLOS && player != null)
+                for (int i = 0; i < PlayersSeen.Count; i++)
                 {
-                    player.Out.SendCheckLOS(Body, player, new CheckLOSResponse(CheckAggroLOS));
-                }
-
-                int aggrolevel = 0;
-
-                if (Body.Faction != null)
-                {
-                    aggrolevel = Body.Faction.GetAggroToFaction(player);
-                    if (aggrolevel < 75)
-                        return;
-                }
-
-                if (aggrolevel <= 0 && AggroLevel <= 0)
-                    return;
-
-                if (m_aggroTable.ContainsKey(player))
-                    continue; // add only new players
-                if (!player.IsAlive || player.ObjectState != GameObject.eObjectState.Active || player.IsStealthed)
-                    continue;
-                if (player.Steed != null)
-                    continue; //do not attack players on steed
-
-                if (CalculateAggroLevelToTarget(player) > 0)
-                {
-                    if (useLOS && !AggroLOS) return;
-                    AddToAggroList(player, 1, true);
+                    if (!currentPlayersSeen.Contains(PlayersSeen[i]))
+                        PlayersSeen.RemoveAt(i);
                 }
             }
         }
@@ -409,8 +239,15 @@ namespace DOL.AI.Brain
         /// The interval for thinking, min 1.5 seconds
         /// 10 seconds for 0 aggro mobs
         /// </summary>
-        public override int ThinkInterval {
-            get { return Math.Max(500, 1500 - (AggroLevel/10) * 100); }
+        public override int ThinkInterval
+        {
+            get
+            { 
+                if (Body is GameMerchant or GameTrainer or GameHastener)
+                    return 5000; //Merchants and other special NPCs don't need to think that often
+
+                return Math.Max(500, 1500 - (AggroLevel / 10 * 100));
+            }
         }
 
         /// <summary>
@@ -436,52 +273,37 @@ namespace DOL.AI.Brain
 
         #region Aggro
 
+        protected int _aggroRange;
+
         /// <summary>
         /// Max Aggro range in that this npc searches for enemies
         /// </summary>
-        protected int m_aggroMaxRange;
-        /// <summary>
-        /// Aggressive Level of this npc
-        /// </summary>
-        protected int m_aggroLevel;
-        /// <summary>
-        /// List of livings that this npc has aggro on, living => aggroamount
-        /// </summary>
-        protected readonly Dictionary<GameLiving, long> m_aggroTable = new Dictionary<GameLiving, long>();
-
-        /// <summary>
-        /// The aggression table for this mob
-        /// </summary>
-        public Dictionary<GameLiving, long> AggroTable {
-            get { return m_aggroTable; }
-        }
+        public virtual int AggroRange { get => Math.Min(_aggroRange, MAX_AGGRO_DISTANCE); set => _aggroRange = value; }
 
         /// <summary>
         /// Aggressive Level in % 0..100, 0 means not Aggressive
         /// </summary>
-        public virtual int AggroLevel {
-            get { return m_aggroLevel; }
-            set { m_aggroLevel = value; }
-        }
+        public virtual int AggroLevel { get; set; }
 
         /// <summary>
-        /// Range in that this npc aggros
+        /// List of livings that this npc has aggro on, living => aggroAmount
         /// </summary>
-        public virtual int AggroRange {
-            get { return m_aggroMaxRange; }
-            set { m_aggroMaxRange = value; }
-        }
+        public Dictionary<GameLiving, long> AggroTable { get; private set; } = new Dictionary<GameLiving, long>();
 
         /// <summary>
         /// Checks whether living has someone on its aggrolist
         /// </summary>
-        public virtual bool HasAggro {
-            get {
+        public virtual bool HasAggro
+        {
+            get
+            {
                 bool hasAggro = false;
-                lock ((m_aggroTable as ICollection).SyncRoot)
+
+                lock ((AggroTable as ICollection).SyncRoot)
                 {
-                    hasAggro = (m_aggroTable.Count > 0);
+                    hasAggro = AggroTable.Count > 0;
                 }
+
                 return hasAggro;
             }
         }
@@ -492,172 +314,117 @@ namespace DOL.AI.Brain
         /// <param name="brain">The target brain.</param>
         public void AddAggroListTo(StandardMobBrain brain)
         {
-            // TODO: This should actually be the other way round, but access
-            // to m_aggroTable is restricted and needs to be threadsafe.
+            if (!brain.Body.IsAlive)
+                return;
 
-            // do not modify aggro list if dead
-            if (!brain.Body.IsAlive) return;
+            KeyValuePair<GameLiving, long>[] aggroTable = Array.Empty<KeyValuePair<GameLiving, long>>();
 
-            lock ((m_aggroTable as ICollection).SyncRoot)
-            {
-                Dictionary<GameLiving, long>.Enumerator dictEnum = m_aggroTable.GetEnumerator();
-                while (dictEnum.MoveNext())
-                    brain.AddToAggroList(dictEnum.Current.Key, Body.MaxHealth);
-            }
-        }
+            lock ((AggroTable as ICollection).SyncRoot)
+                aggroTable = AggroTable.ToArray();
 
-        // LOS Check on natural aggro (aggrorange & aggrolevel)
-        // This part is here due to los check constraints;
-        // Otherwise, it should be in CheckPlayerAggro() method.
-        private bool m_AggroLOS;
-        public virtual bool AggroLOS {
-            get { return m_AggroLOS; }
-            set { m_AggroLOS = value; }
-        }
-        protected void CheckAggroLOS(GamePlayer player, ushort response, ushort targetOID)
-        {
-            if ((response & 0x100) == 0x100)
-                AggroLOS = true;
-            else
-                AggroLOS = false;
+            foreach (var aggro in aggroTable)
+                brain.AddToAggroList(aggro.Key, Body.MaxHealth);
         }
 
         /// <summary>
         /// Add living to the aggrolist
-        /// aggroamount can be negative to lower amount of aggro
+        /// aggroAmount can be negative to lower amount of aggro
         /// </summary>
         /// <param name="living"></param>
-        /// <param name="aggroamount"></param>
-        public virtual void AddToAggroList(GameLiving living, int aggroamount)
-        {
-            AddToAggroList(living, aggroamount, false);
-        }
-
-        /// <summary>
-        /// Add living to the aggrolist
-        /// aggroamount can be negative to lower amount of aggro
-        /// </summary>
-        /// <param name="living"></param>
-        /// <param name="aggroamount"></param>
+        /// <param name="aggroAmount"></param>
         /// <param name="CheckLOS"></param>
-        public virtual void AddToAggroList(GameLiving living, int aggroamount, bool CheckLOS)
+        public virtual void AddToAggroList(GameLiving living, int aggroAmount)
         {
-            if (m_body.IsConfused) return;
-
             // tolakram - duration spell effects will attempt to add to aggro after npc is dead
-            if (!m_body.IsAlive) return;
-
-            if (living == null) return;
-
-            // Check LOS (walls, pits, etc...) before  attacking, player + pet
-            // Be sure the aggrocheck is triggered by the brain on Think() method
-            if (DOL.GS.ServerProperties.Properties.ALWAYS_CHECK_LOS && CheckLOS || (Body is GameKeepGuard guard && !guard.IsPortalKeepGuard))
-            {
-                GamePlayer thisLiving = null;
-                if (living is GamePlayer)
-                    thisLiving = (GamePlayer)living;
-                else if (living is GameNPC && (living as GameNPC).Brain is IControlledBrain)
-                    thisLiving = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
-
-                if (thisLiving != null)
-                {
-                    thisLiving.Out.SendCheckLOS(Body, living, new CheckLOSResponse(CheckAggroLOS));
-                    if (!AggroLOS) return;
-                }
-            }
+            if (Body.IsConfused || !Body.IsAlive || living == null)
+                return;
 
             BringFriends(living);
 
-            //Handle trigger to say sentance on first aggro.
-            if (m_aggroTable.Count < 1)
-            {
+            // Handle trigger to say sentance on first aggro.
+            if (AggroTable.Count < 1)
                 Body.FireAmbientSentence(GameNPC.eAmbientTrigger.aggroing, living);
-            }
 
-            // only protect if gameplayer and aggroamout > 0
-            if (living is GamePlayer && aggroamount > 0)
+            // Only protect if gameplayer and aggroAmount > 0
+            if (living is GamePlayer player && aggroAmount > 0)
             {
-                GamePlayer player = (GamePlayer)living;
-
+                // If player is in group, add whole group to aggro list
                 if (player.Group != null)
-                { // player is in group, add whole group to aggro list
-                    lock ((m_aggroTable as ICollection).SyncRoot)
+                { 
+                    lock ((AggroTable as ICollection).SyncRoot)
                     {
                         foreach (GamePlayer p in player.Group.GetPlayersInTheGroup())
                         {
-                            if (!m_aggroTable.ContainsKey(p))
-                            {
-                                m_aggroTable[p] = 1L;   // add the missing group member on aggro table
-                            }
+                            if (!AggroTable.ContainsKey(p))
+                                AggroTable[p] = 1L; // Add the missing group member on aggro table
                         }
                     }
                 }
 
-                //ProtectEffect protect = (ProtectEffect) player.EffectList.GetOfType(typeof(ProtectEffect));
                 foreach (ProtectECSGameEffect protect in player.effectListComponent.GetAbilityEffects().Where(e => e.EffectType == eEffect.Protect))
                 {
-                    // if no aggro left => break
-                    if (aggroamount <= 0) break;
+                    if (aggroAmount <= 0)
+                        break;
 
-                    //if (protect==null) continue;
-                    if (protect.ProtectTarget != living) continue;
-                    if (protect.ProtectSource.IsStunned) continue;
-                    if (protect.ProtectSource.IsMezzed) continue;
-                    if (protect.ProtectSource.IsSitting) continue;
-                    if (protect.ProtectSource.ObjectState != GameObject.eObjectState.Active) continue;
-                    if (!protect.ProtectSource.IsAlive) continue;
-                    if (!protect.ProtectSource.InCombat) continue;
-
-                    if (!living.IsWithinRadius(protect.ProtectSource, ProtectAbilityHandler.PROTECT_DISTANCE))
+                    if (protect.ProtectTarget != living)
                         continue;
+
+                    GamePlayer protectSource = protect.ProtectSource;
+
+                    if (protectSource.IsStunned
+                        || protectSource.IsMezzed
+                        || protectSource.IsSitting
+                        || protectSource.ObjectState != GameObject.eObjectState.Active
+                        || !protectSource.IsAlive
+                        || !protectSource.InCombat)
+                        continue;
+
+                    if (!living.IsWithinRadius(protectSource, ProtectAbilityHandler.PROTECT_DISTANCE))
+                        continue;
+
                     // P I: prevents 10% of aggro amount
                     // P II: prevents 20% of aggro amount
                     // P III: prevents 30% of aggro amount
                     // guessed percentages, should never be higher than or equal to 50%
-                    int abilityLevel = protect.ProtectSource.GetAbilityLevel(Abilities.Protect);
-                    int protectAmount = (int)((abilityLevel * 0.10) * aggroamount);
+                    int abilityLevel = protectSource.GetAbilityLevel(Abilities.Protect);
+                    int protectAmount = (int)(abilityLevel * 0.10 * aggroAmount);
 
                     if (protectAmount > 0)
                     {
-                        aggroamount -= protectAmount;
-                        protect.ProtectSource.Out.SendMessage(LanguageMgr.GetTranslation(protect.ProtectSource.Client.Account.Language, "AI.Brain.StandardMobBrain.YouProtDist", player.GetName(0, false),
-                                                                                         Body.GetName(0, false, protect.ProtectSource.Client.Account.Language, Body)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                        //player.Out.SendMessage("You are protected by " + protect.ProtectSource.GetName(0, false) + " from " + Body.GetName(0, false) + ".", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                        aggroAmount -= protectAmount;
+                        protectSource.Out.SendMessage(LanguageMgr.GetTranslation(protectSource.Client.Account.Language, "AI.Brain.StandardMobBrain.YouProtDist", player.GetName(0, false),
+                                                                                 Body.GetName(0, false, protectSource.Client.Account.Language, Body)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-                        lock ((m_aggroTable as ICollection).SyncRoot)
+                        lock ((AggroTable as ICollection).SyncRoot)
                         {
-                            if (m_aggroTable.ContainsKey(protect.ProtectSource))
-                                m_aggroTable[protect.ProtectSource] += protectAmount;
+                            if (AggroTable.ContainsKey(protectSource))
+                                AggroTable[protectSource] += protectAmount;
                             else
-                                m_aggroTable[protect.ProtectSource] = protectAmount;
+                                AggroTable[protectSource] = protectAmount;
                         }
                     }
                 }
             }
 
-            lock ((m_aggroTable as ICollection).SyncRoot)
+            lock ((AggroTable as ICollection).SyncRoot)
             {
-                if (m_aggroTable.ContainsKey(living))
+                if (AggroTable.ContainsKey(living))
                 {
-                    long amount = m_aggroTable[living];
-                    amount += aggroamount;
+                    long amount = AggroTable[living];
+                    amount += aggroAmount;
 
                     // can't be removed this way, set to minimum
                     if (amount <= 0)
                         amount = 1L;
 
-                    m_aggroTable[living] = amount;
+                    AggroTable[living] = amount;
                 }
                 else
                 {
-                    if (aggroamount > 0)
-                    {
-                        m_aggroTable[living] = aggroamount;
-                    }
+                    if (aggroAmount > 0)
+                        AggroTable[living] = aggroAmount;
                     else
-                    {
-                        m_aggroTable[living] = 1L;
-                    }
+                        AggroTable[living] = 1L;
                 }
             }
         }
@@ -665,10 +432,8 @@ namespace DOL.AI.Brain
         public void PrintAggroTable()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (GameLiving gl in m_aggroTable.Keys)
-            {
-                sb.AppendLine("Living: " + gl.Name + ", aggro: " + m_aggroTable[gl].ToString());
-            }
+            foreach (GameLiving gl in AggroTable.Keys)
+                sb.AppendLine("Living: " + gl.Name + ", aggro: " + AggroTable[gl].ToString());
             Console.WriteLine(sb.ToString());
         }
 
@@ -679,12 +444,10 @@ namespace DOL.AI.Brain
         /// <returns></returns>
         public virtual long GetAggroAmountForLiving(GameLiving living)
         {
-            lock ((m_aggroTable as ICollection).SyncRoot)
+            lock ((AggroTable as ICollection).SyncRoot)
             {
-                if (m_aggroTable.ContainsKey(living))
-                {
-                    return m_aggroTable[living];
-                }
+                if (AggroTable.ContainsKey(living))
+                    return AggroTable[living];
                 return 0;
             }
         }
@@ -695,10 +458,8 @@ namespace DOL.AI.Brain
         /// <param name="living"></param>
         public virtual void RemoveFromAggroList(GameLiving living)
         {
-            lock ((m_aggroTable as ICollection).SyncRoot)
-            {
-                m_aggroTable.Remove(living);
-            }
+            lock ((AggroTable as ICollection).SyncRoot)
+                AggroTable.Remove(living);
         }
 
         /// <summary>
@@ -708,9 +469,9 @@ namespace DOL.AI.Brain
         {
             CanBAF = true; // Mobs that drop out of combat can BAF again
 
-            lock ((m_aggroTable as ICollection).SyncRoot)
+            lock ((AggroTable as ICollection).SyncRoot)
             {
-                m_aggroTable.Clear();
+                AggroTable.Clear();
                 Body.TempProperties.removeProperty(Body.attackComponent.Attackers);
             }
         }
@@ -721,10 +482,8 @@ namespace DOL.AI.Brain
         /// <returns></returns>
         public virtual Dictionary<GameLiving, long> CloneAggroList()
         {
-            lock ((m_aggroTable as ICollection).SyncRoot)
-            {
-                return new Dictionary<GameLiving, long>(m_aggroTable);
-            }
+            lock ((AggroTable as ICollection).SyncRoot)
+                return new Dictionary<GameLiving, long>(AggroTable);
         }
 
         /// <summary>
@@ -736,17 +495,50 @@ namespace DOL.AI.Brain
                 return;
 
             if (ECS.Debug.Diagnostics.AggroDebugEnabled)
-            {
                 PrintAggroTable();
-            }
 
             Body.TargetObject = CalculateNextAttackTarget();
 
             if (Body.TargetObject != null)
             {
                 if (!CheckSpells(eCheckSpellType.Offensive))
-                {
                     Body.StartAttack(Body.TargetObject);
+            }
+        }
+
+        /// <summary>
+        /// Callback for when we receive a LoS check reply
+        /// </summary>
+        protected virtual void LosCheckForAggroCallback(GamePlayer player, ushort response, ushort targetOID)
+        {
+            // If we kept adding to the aggro list it would make mobs go from one target immediately to another
+            // For whatever reason, a call to CheckLOSResponse will result in this method being called with 0 arguments. We need to filter that out
+            if (HasAggro || targetOID == 0)
+                return; 
+
+            if ((response & 0x100) == 0x100)
+            {
+                GameObject gameObject = Body.CurrentRegion.GetObject(targetOID);
+
+                if (gameObject is GameLiving gameLiving)
+                    AddToAggroList(gameLiving, 1);
+            }
+        }
+
+        protected virtual void LosCheckInCombatCallback(GamePlayer player, ushort response, ushort targetOID)
+        {
+            // For whatever reason, a call to CheckLOSResponse will result in this method being called with 0 arguments. We need to filter that out
+            if (targetOID == 0)
+                return;
+
+            if ((response & 0x100) != 0x100)
+            {
+                GameObject gameObject = Body.CurrentRegion.GetObject(targetOID);
+
+				if (gameObject is GameLiving gameLiving)
+                {
+                    FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
+                    RemoveFromAggroList(gameLiving);
                 }
             }
         }
@@ -758,112 +550,94 @@ namespace DOL.AI.Brain
         protected virtual GameLiving CalculateNextAttackTarget()
         {
             GameLiving maxAggroObject = null;
-            lock ((m_aggroTable as ICollection).SyncRoot)
+            List<KeyValuePair<GameLiving, long>> aggroList = new List<KeyValuePair<GameLiving, long>>();
+
+            lock ((AggroTable as ICollection).SyncRoot)
+                aggroList = AggroTable.ToList();
+
+            double maxAggro = 0;
+            List<GameLiving> removable = new List<GameLiving>();
+            
+            foreach (var currentKey in aggroList)
             {
-                double maxAggro = 0;
-                Dictionary<GameLiving, long>.Enumerator aggros = m_aggroTable.GetEnumerator();
-                List<GameLiving> removable = new List<GameLiving>();
-                while (aggros.MoveNext())
+                GameLiving living = currentKey.Key;
+
+                if (living == null)
+                    continue;
+
+                // Check to make sure this target is still valid.
+                if (!living.IsAlive
+                    || living.ObjectState != GameObject.eObjectState.Active
+                    || living.IsStealthed
+                    || Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE
+                    || !GameServer.ServerRules.IsAllowedToAttack(Body, living, true))
                 {
-                    GameLiving living = aggros.Current.Key;
-
-                    // check to make sure this target is still valid
-                    if (living.IsAlive == false ||
-                        living.ObjectState != GameObject.eObjectState.Active ||
-                        living.IsStealthed ||
-                        Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE ||
-                        GameServer.ServerRules.IsAllowedToAttack(Body, living, true) == false)
-                    {
-                        removable.Add(living);
-                        continue;
-                    }
-
-                    // Don't bother about necro shade, can't attack it anyway.
+                    // Keep Necromancer shades so that we can attack them if their pets die.
                     if (living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
-                        continue;
+                        removable.Add(living);
+                    continue;
+                }
 
-                    long amount = aggros.Current.Value;
+                long amount = currentKey.Value;
 
-                    if (living.IsAlive
-                        && amount > maxAggro
-                        && living.CurrentRegion == Body.CurrentRegion
-                        && living.ObjectState == GameObject.eObjectState.Active)
+                if (living.IsAlive
+                    && amount > maxAggro
+                    && living.CurrentRegion == Body.CurrentRegion
+                    && living.ObjectState == GameObject.eObjectState.Active)
+                {
+                    double aggro = amount * Math.Min(500.0 / Body.GetDistanceTo(living), 1);
+                    if (aggro > maxAggro)
                     {
-                        int distance = Body.GetDistanceTo(living);
-                        int maxAggroDistance = (this is IControlledBrain) ? MAX_PET_AGGRO_DISTANCE : MAX_AGGRO_DISTANCE;
-
-                        if (distance <= maxAggroDistance)
-                        {
-                            double aggro = amount * Math.Min(500.0 / distance, 1);
-                            if (aggro > maxAggro)
-                            {
-                                maxAggroObject = living;
-                                maxAggro = aggro;
-                            }
-                        }
+                        maxAggroObject = living;
+                        maxAggro = aggro;
                     }
                 }
+            }
 
-                foreach (GameLiving l in removable)
-                {
-                    RemoveFromAggroList(l);
-                    Body.attackComponent.RemoveAttacker(l);
-                }
+            foreach (GameLiving l in removable)
+            {
+                RemoveFromAggroList(l);
+                Body.attackComponent.RemoveAttacker(l);
             }
 
             if (maxAggroObject == null)
             {
-                m_aggroTable.Clear();
+                lock ((AggroTable as ICollection).SyncRoot)
+                    AggroTable.Clear();
             }
 
             return maxAggroObject;
         }
 
-        /// <summary>
-        /// calculate the aggro of this npc against another living
-        /// </summary>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public virtual int CalculateAggroLevelToTarget(GameLiving target)
+        public virtual bool CanAggroTarget(GameLiving target)
         {
-            // Withdraw if can't attack.
-            if (GameServer.ServerRules.IsAllowedToAttack(Body, target, true) == false)
-                return 0;
+            if (!GameServer.ServerRules.IsAllowedToAttack(Body, target, true))
+                return false;
 
-            // Get owner if target is pet
+            // Get owner if target is pet or subpet
             GameLiving realTarget = target;
-            if (target is GameNPC)
-            {
-                if (((GameNPC)target).Brain is IControlledBrain)
-                {
-                    GameLiving owner = (((GameNPC)target).Brain as IControlledBrain).GetLivingOwner();
-                    if (owner != null)
-                        realTarget = owner;
-                }
-            }
 
-            // only attack if green+ to target
+            if (realTarget is GameNPC npcTarget && npcTarget.Brain is IControlledBrain npcTargetBrain)
+                realTarget = npcTargetBrain.GetPlayerOwner();
+
+            // Only attack if green+ to target
             if (realTarget.IsObjectGreyCon(Body))
-                return 0;
+                return false;
 
             // If this npc have Faction return the AggroAmount to Player
             if (Body.Faction != null)
             {
                 if (realTarget is GamePlayer)
-                {
-                    return Math.Min(100, Body.Faction.GetAggroToFaction((GamePlayer)realTarget));
-                }
+                    return Body.Faction.GetAggroToFaction((GamePlayer)realTarget) > 75;
                 else if (realTarget is GameNPC && Body.Faction.EnemyFactions.Contains(((GameNPC)realTarget).Faction))
-                {
-                    return 100;
-                }
+                    return true;
             }
 
-            //we put this here to prevent aggroing non-factions npcs
+            // We put this here to prevent aggroing non-factions npcs
             if (Body.Realm == eRealm.None && realTarget is GameNPC)
-                return 0;
+                return false;
 
-            return Math.Min(100, AggroLevel);
+            return AggroLevel > 0;
         }
 
         /// <summary>
@@ -875,102 +649,8 @@ namespace DOL.AI.Brain
         public override void Notify(DOLEvent e, object sender, EventArgs args)
         {
             base.Notify(e, sender, args);
-
-            if (!IsActive) return;
-
-            if (sender == Body)
-            {
-                if (e == GameObjectEvent.TakeDamage)
-                {
-                    TakeDamageEventArgs eArgs = args as TakeDamageEventArgs;
-                    if (eArgs == null || eArgs.DamageSource is GameLiving == false) return;
-
-                    int aggro = eArgs.DamageAmount + eArgs.CriticalAmount;
-                    if (eArgs.DamageSource is GameNPC)
-                    {
-                        // owner gets 25% of aggro
-                        IControlledBrain brain = ((GameNPC)eArgs.DamageSource).Brain as IControlledBrain;
-                        if (brain != null)
-                        {
-                            AddToAggroList(brain.Owner, (int)Math.Max(1, aggro * 0.25));
-                            aggro = (int)Math.Max(1, aggro * 0.75);
-                        }
-                    }
-                    AddToAggroList((GameLiving)eArgs.DamageSource, aggro);
-                    return;
-                }
-                else if (e == GameLivingEvent.AttackedByEnemy)
-                {
-                    //AttackedByEnemyEventArgs eArgs = args as AttackedByEnemyEventArgs;
-                   // if (eArgs == null) return;
-                    //OnAttackedByEnemy(eArgs.AttackData);
-                    return;
-                }
-                /*
-                else if (e == GameLivingEvent.Dying)
-                {
-                    // clean aggro table
-                    ClearAggroList();
-                    return;
-                }
-                */
-                else if (e == GameNPCEvent.FollowLostTarget) // this means we lost the target
-                {
-                    FollowLostTargetEventArgs eArgs = args as FollowLostTargetEventArgs;
-                    if (eArgs == null) return;
-                    OnFollowLostTarget(eArgs.LostTarget);
-                    return;
-                }
-                else if (e == GameLivingEvent.CastFailed)
-                {
-                    CastFailedEventArgs realArgs = args as CastFailedEventArgs;
-                    if (realArgs == null || realArgs.Reason == CastFailedEventArgs.Reasons.AlreadyCasting || realArgs.Reason == CastFailedEventArgs.Reasons.CrowdControlled)
-                        return;
-                    Body.StartAttack(Body.TargetObject);
-                }
-            }
-
-            if (e == GameLivingEvent.EnemyHealed)
-            {
-                EnemyHealedEventArgs eArgs = args as EnemyHealedEventArgs;
-                if (eArgs != null && eArgs.HealSource is GameLiving)
-                {
-                    // first check to see if the healer is in our aggrolist so we don't go attacking anyone who heals
-                    if (m_aggroTable.ContainsKey(eArgs.HealSource as GameLiving))
-                    {
-                        if (eArgs.HealSource is GamePlayer || (eArgs.HealSource is GameNPC && (((GameNPC)eArgs.HealSource).Flags & GameNPC.eFlags.PEACE) == 0))
-                        {
-                            AddToAggroList((GameLiving)eArgs.HealSource, eArgs.HealAmount);
-                        }
-                    }
-                }
-                return;
-            }
-            else if (e == GameLivingEvent.EnemyKilled)
-            {
-                EnemyKilledEventArgs eArgs = args as EnemyKilledEventArgs;
-                if (eArgs != null)
-                {
-                    // transfer all controlled target aggro to the owner
-                    if (eArgs.Target is GameNPC)
-                    {
-                        IControlledBrain controlled = ((GameNPC)eArgs.Target).Brain as IControlledBrain;
-                        if (controlled != null)
-                        {
-                            long contrAggro = GetAggroAmountForLiving(controlled.Body);
-                            AddToAggroList(controlled.Owner, (int)contrAggro);
-                        }
-                    }
-
-                    Body.attackComponent.Attackers.Remove(eArgs.Target);
-                    Body.TargetObject = null;
-                    //AttackMostWanted();
-                }
-                return;
-            }
-
         }
-
+        
         /// <summary>
         /// Lost follow target event
         /// </summary>
@@ -982,45 +662,61 @@ namespace DOL.AI.Brain
                 Body.WalkToSpawn();
         }
 
-        /// <summary>
-        /// Attacked by enemy event
-        /// </summary>
-        /// <param name="ad"></param>
-        public virtual void OnAttackedByEnemy(AttackData ad)
-        {
-            if (FSM.GetCurrentState() == FSM.GetState(eFSMStateType.PASSIVE)) { return; }
+		/// <summary>
+		/// Attacked by enemy event
+		/// </summary>
+		public virtual void OnAttackedByEnemy(AttackData ad)
+		{
+			if (!Body.IsAlive || Body.ObjectState != GameObject.eObjectState.Active)
+				return;
 
-            if (Body.castingComponent.IsCasting)
-            {
-                Body.StopCurrentSpellcast();
-            }
+			if (FSM.GetCurrentState() == FSM.GetState(eFSMStateType.PASSIVE))
+				return;
 
-            if (!Body.attackComponent.AttackState
-                && Body.IsAlive
-                && Body.ObjectState == GameObject.eObjectState.Active)
-            {
-                if (ad.AttackResult == eAttackResult.Missed)
-                {
-                    AddToAggroList(ad.Attacker, 1);
-                }
-                else
-                {
-                    AddToAggroList(ad.Attacker, ad.Damage + ad.CriticalDamage);
-                }
+			int damage = ad.Damage + ad.CriticalDamage + Math.Abs(ad.Modifier);
 
-                if (FSM.GetCurrentState() != FSM.GetState(eFSMStateType.AGGRO))
-                {
-                    FSM.SetCurrentState(eFSMStateType.AGGRO);
-                    FSM.Think();
-                }
+			if (!Body.attackComponent.AttackState && FSM.GetCurrentState() != FSM.GetState(eFSMStateType.AGGRO))
+			{
+				// Aggro must be generated before calling Think(), otherwise the mob won't attack immediately.
+				// Ensure that non damaging hits still result in the mob reacting.
+				ConvertDamageToAggroAmount(ad.Attacker, Math.Max(1, damage));
 
-                //Body.StartAttack(ad.Attacker);
-            }
-        }
+				if (this is CommanderBrain commanderBrain)
+					commanderBrain.Attack(ad.Attacker);
+
+				FSM.SetCurrentState(eFSMStateType.AGGRO);
+				FSM.Think();
+			}
+			else if (damage > 0)
+				ConvertDamageToAggroAmount(ad.Attacker, damage);
+		}
+
+		/// <summary>
+		/// Converts a damage amount into an aggro amount, and splits it between the pet and its owner if necessary.
+		/// Assumes damage to be superior than 0.
+		/// </summary>
+		private void ConvertDamageToAggroAmount(GameLiving attacker, int damage)
+		{
+			if (attacker is GameNPC NpcAttacker && NpcAttacker.Brain is IControlledBrain controlledBrain)
+			{
+				// Aggro is split between the owner (25%) and their pet (75%).
+				// We must ensure that the same amount of aggro isn't added for both, otherwise an out-of-combat mob could attack the owner when their pet engages it.
+				// This is one relatively fast way of doing it, and should (?) work as long as the split isn't 50 / 50.
+				int aggroForOwner = (int)(damage * 0.25);
+
+				if (aggroForOwner > 0)
+					AddToAggroList(controlledBrain.Owner, aggroForOwner);
+
+				AddToAggroList(NpcAttacker, damage - aggroForOwner);
+			}
+			else
+				AddToAggroList(attacker, damage);
+		}
 
         #endregion
 
         #region Bring a Friend
+
         /// <summary>
         /// Initial range to try to get BAFs from.
         /// May be overloaded for specific brain types, ie. dragons or keep guards
@@ -1138,7 +834,7 @@ namespace DOL.AI.Brain
                     // Puller isn't in a group, so we have to create the victims list for the BG
                     victims = new List<GamePlayer>(bg.PlayerCount);
 
-                foreach (GamePlayer player in bg.GetPlayersInTheBattleGroup())
+                foreach (GamePlayer player in bg.Members.Keys)
                     if (player != null && (player.InternalID == puller.InternalID || player.IsWithinRadius(puller, BAFPlayerRange, true)))
                     {
                         if (DOL.GS.ServerProperties.Properties.BAF_MOBS_COUNT_BG_MEMBERS
@@ -1538,8 +1234,15 @@ namespace DOL.AI.Brain
 
                 casted = Body.CastSpell(spell, m_mobSpellLine);
 
-                if (casted && spell.CastTime > 0 && Body.IsMoving)
+                // if (casted && spell.CastTime > 0 && Body.IsMoving)
+                //Stopfollowing if spell casted and the cast time > 0 (non-instant spells)
+                if (casted && spell.CastTime > 0)
                     Body.StopFollowing();
+                //If instant cast and spell casted, and current follow target is not the target object, then switch follow target to current TargetObject
+                else if(casted && (spell.CastTime == 0 && Body.CurrentFollowTarget != Body.TargetObject))
+                {
+                    Body.Follow(Body.TargetObject, GameNPC.STICKMINIMUMRANGE, GameNPC.STICKMAXIMUMRANGE);
+                }
             }
             return casted;
         }
@@ -1619,7 +1322,6 @@ namespace DOL.AI.Brain
                 return true;
 
             /* all my homies hate vampires
-             * 
             if (target is GamePlayer && (target as GamePlayer).CharacterClass.ID == (int)eCharacterClass.Vampiir)
             {
                 switch (spell.SpellType)
@@ -1630,34 +1332,22 @@ namespace DOL.AI.Brain
                     case (byte)eSpellType.DexterityBuff:
                     case (byte)eSpellType.ConstitutionBuff:
                     case (byte)eSpellType.AcuityBuff:
-
                         return true;
                 }
             }*/
 
-            spell.IsSpec = true;
-            if (EffectListService.GetEffectOnTarget(target, EffectService.GetEffectFromSpell(spell)) != null)
-            //if (target.effectListComponent.ContainsEffectForEffectType(EffectService.GetEffectFromSpell(spell)))
+            // May not be the right place for that, but without that check NPCs with more than one offensive or defensive proc will only buff themselves once.
+            if (spell.SpellType is (byte)eSpellType.OffensiveProc or (byte)eSpellType.DefensiveProc)
             {
-                return true;
-            }
-                /*
-                //Check through each effect in the target's effect list
-                foreach (IGameEffect effect in target.EffectList)
+                if (target.effectListComponent.Effects.TryGetValue(EffectService.GetEffectFromSpell(spell), out List<ECSGameEffect> existingEffects))
                 {
-                    //If the effect we are checking is not a gamespelleffect keep going
-                    if (effect is GameSpellEffect == false)
-                        continue;
-
-                    GameSpellEffect speffect = effect as GameSpellEffect;
-
-                    //if the effect effectgroup is the same as the checking spells effectgroup then these are considered the same
-                    if (speffect.Spell.EffectGroup == spell.EffectGroup)
+                    if (existingEffects.FirstOrDefault(e => e.SpellHandler.Spell.ID == spell.ID || (spell.EffectGroup > 0 && e.SpellHandler.Spell.EffectGroup == spell.EffectGroup)) != null)
                         return true;
-                }*/
+                }
+            }
+            else if (EffectListService.GetEffectOnTarget(target, EffectService.GetEffectFromSpell(spell)) != null)
+                return true;
 
-
-            //the answer is no, the effect has not been found
             return false;
         }
 
@@ -1679,10 +1369,10 @@ namespace DOL.AI.Brain
             return false;
         }
 
-
         #endregion
 
         #region Random Walk
+
         public virtual bool CanRandomWalk {
             get {
                 /* Roaming:
@@ -1715,7 +1405,9 @@ namespace DOL.AI.Brain
         }
 
         #endregion
+
         #region DetectDoor
+
         public virtual void DetectDoor()
         {
             ushort range = (ushort)((ThinkInterval / 800) * Body.CurrentWayPoint.MaxSpeed);

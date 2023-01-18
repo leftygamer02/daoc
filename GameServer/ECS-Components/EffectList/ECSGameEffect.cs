@@ -1,4 +1,5 @@
 using System;
+using DOL.Database;
 using DOL.GS.Effects;
 using DOL.GS.Spells;
 
@@ -43,6 +44,7 @@ namespace DOL.GS
         public int TickInterval;
         public long NextTick;
         public int PreviousPosition = -1;
+        public ISpellHandler SpellHandler { get; set; }
 
         /// <summary>
 		/// The icon for this effect.
@@ -96,6 +98,7 @@ namespace DOL.GS
             StartTick = GameLoop.GameLoopTime;
             LastTick = 0;
             NextTick = 0;
+            SpellHandler = initParams.SpellHandler;
         }
 
         public virtual long GetRemainingTimeForClient()
@@ -113,5 +116,7 @@ namespace DOL.GS
         public virtual void OnStartEffect() { }
         public virtual void OnStopEffect() { }
         public virtual void OnEffectPulse() { }
+
+        public virtual PlayerXEffect getSavedEffect() { return null; }
     }
 }

@@ -22,6 +22,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 using DOL.Database;
 using DOL.Events;
@@ -192,54 +193,6 @@ namespace DOL.GS
 			set { m_Heading = (ushort)(value & 0xFFF); }
 		}
 
-        /// <summary>
-        /// Calculates the heading this object needs to have to face the target spot
-        /// </summary>
-        /// <param name="tx">target x</param>
-        /// <param name="ty">target y</param>
-        /// <returns>the heading towards the target spot</returns>
-        [Obsolete( "Use GetHeading" )]
-        public ushort GetHeadingToSpot( int tx, int ty )
-        {
-            return GetHeading( new Point2D( tx, ty ) );
-        }
-
-        /// <summary>
-        /// Calculates the heading this object needs to have, to face the target
-        /// </summary>
-        /// <param name="target">IPoint3D target</param>
-        /// <returns>the heading towards the target</returns>
-        [Obsolete( "Use GetHeading" )]
-        public ushort GetHeadingToTarget( IPoint3D target )
-        {
-            return GetHeading( target );
-        }
-
-        /// <summary>
-        /// Returns the angle towards a target, clockwise
-        /// </summary>
-        /// <param name="target">the target</param>
-        /// <returns>the angle towards the target</returns>
-        [Obsolete( "Use GetAngle" )]
-        public float GetAngleToTarget( GameObject target )
-        {
-            return GetAngle( target );
-        }
-
-        [Obsolete( "Use GetAngle" )]
-        public float GetAngleToSpot( int x, int y )
-        {
-            return GetAngle( new Point2D( x, y ) );
-        }
-
-        [Obsolete( "Use GetPointFromHeading" )]
-        public void GetSpotFromHeading( int distance, out int tx, out int ty )
-        {
-            Point2D point = GetPointFromHeading( this.Heading, distance );
-            tx = point.X;
-            ty = point.Y;
-        }
-
 		/// <summary>
 		/// Returns the angle towards a target spot in degrees, clockwise
 		/// </summary>
@@ -327,7 +280,7 @@ namespace DOL.GS
 		/// <param name="viewangle"></param>
 		/// <param name="rangeCheck"></param>
 		/// <returns></returns>
-		public virtual bool IsObjectInFront(GameObject target, double viewangle, bool rangeCheck = true)
+		public virtual bool IsObjectInFront(GameObject target, double viewangle, int alwaysTrueRange = 32)
 		{
 			if (target == null)
 				return false;
@@ -336,8 +289,8 @@ namespace DOL.GS
 				return true;
 			// if target is closer than 32 units it is considered always in view
 			// tested and works this way for normal evade, parry, block (in 1.69)
-			if (rangeCheck)
-                return this.IsWithinRadius( target, 32 );
+			if (alwaysTrueRange > 0)
+                return this.IsWithinRadius(target, alwaysTrueRange);
 			else
                 return false;
 		}
@@ -394,10 +347,19 @@ namespace DOL.GS
 		{
 			get
 			{
-				if (CurrentZone != null)
-					return CurrentZone.GetAreasOfSpot(this);
-				return new List<IArea>();
+				List<IArea> areas = new List<IArea>();
+				try
+				{
+					if(CurrentZone != null) areas = CurrentZone.GetAreasOfSpot(this) as List<IArea>;
+				}
+				catch (Exception e)
+				{
+					log.Error($"Error encountered when querying current zone of {this.Name}: {e}");
+				}
+
+				return areas;
 			}
+			
 			set { }
 		}
 
@@ -715,13 +677,14 @@ namespace DOL.GS
 		}
 
 		/// <summary>
-		/// Adds messages to ArrayList which are sent when object is targeted
+		/// Creates an array list of examine messages to return to the player upon targeting the object
 		/// </summary>
-		/// <param name="player">GamePlayer that is examining this object</param>
-		/// <returns>list with string messages</returns>
+		/// <param name="player">The GamePlayer examining/targeting this object</param>
+		/// <returns>Multiple translated string messages</returns>
 		public virtual IList GetExamineMessages(GamePlayer player)
 		{
 			IList list = new ArrayList(4);
+			// Message: You target [{0}].
 			list.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameObject.GetExamineMessages.YouTarget", GetName(0, false)));
 			return list;
 		}
@@ -848,7 +811,7 @@ namespace DOL.GS
 			Notify(GameObjectEvent.AddToWorld, this);
 			ObjectState = eObjectState.Active;
 
-			CurrentZone.ObjectEnterZone(this);
+			CurrentZone?.ObjectEnterZone(this);
 			/*********** END OF MODIFICATION ***********/
 
 			m_spawnTick = GameLoop.GameLoopTime;
@@ -1214,6 +1177,16 @@ namespace DOL.GS
 			return GetPlayersInRadius(false, radiusToCheck, false, false);
 		}
 
+		public int GetPlayersInRadiusCount(ushort radiusToCheck)
+		{
+		var enumerable = GetPlayersInRadius(false, radiusToCheck, false, false);
+			var count = 0;
+            foreach (var item in enumerable)
+            {
+				count++;
+            }
+			return count;
+		}
 
 		public IEnumerable GetPlayersInRadius(ushort radiusToCheck, bool ignoreZ)
 		{
@@ -1272,12 +1245,12 @@ namespace DOL.GS
 				}
 				else
 				{
-					return CurrentRegion.GetPlayersInRadius(X, Y, Z, radiusToCheck, withDistance, ignoreZ);
+					return CurrentRegion?.GetPlayersInRadius(X, Y, Z, radiusToCheck, withDistance, ignoreZ);
 				}
 			}
 			return new Region.EmptyEnumerator();
 		}
-
+				
 		/// <summary>
 		/// Gets all npcs close to this object inside a certain radius
 		/// </summary>
@@ -1550,7 +1523,13 @@ namespace DOL.GS
 		{
 			if (ObjectState != eObjectState.Active)
 				return;
-			
+			// Parallel.ForEach(GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
+			// {
+			// 	if (player == null)
+			// 		return;
+				
+			// 	player.Out.SendObjectUpdate(this);
+			// });
 			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 			{
 				if (player == null)

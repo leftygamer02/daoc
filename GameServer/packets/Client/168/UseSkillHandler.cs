@@ -165,8 +165,18 @@ namespace DOL.GS.PacketHandler.Client.v168
 					}
 					else if (sk is Spell)
 					{
-						if(sksib != null && sksib is SpellLine)
+						if (sksib != null && sksib is SpellLine)
+						{
+							
+							if (GameLoop.GameLoopTime > player.TempProperties.getProperty<long>(sk.Name) + GameLoop.TickRate)
+							{
+							//todo How to attach a spell to a player? Casting Service should in theory create spellHandler and add to the player -- not the component
+							//player.CastSpell((Spell)sk, sl);
 							player.castingComponent.StartCastSpell((Spell)sk, (SpellLine)sksib);
+						}
+						}
+
+						player.TempProperties.setProperty(sk.Name, GameLoop.GameLoopTime);
 					}
 					else if (sk is Style)
 					{
@@ -184,7 +194,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles player use skill actions
 		/// </summary>
-		protected class UseSkillAction : RegionAction
+		protected class UseSkillAction : RegionECSAction
 		{
 			/// <summary>
 			/// The speed and flags data
@@ -219,11 +229,11 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GamePlayer player = (GamePlayer) m_actionSource;
 				if (player == null)
-					return;
+					return 0;
 
 				if ((m_flagSpeedData & 0x200) != 0)
 				{
@@ -280,7 +290,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 							eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						
 						if (player.Client.Account.PrivLevel < 2)
-							return;
+							return 0;
 					}
 					else if (reuseTime > 0)
 					{
@@ -288,7 +298,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						                       eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						
 						if (player.Client.Account.PrivLevel < 2) 
-							return;
+							return 0;
 					}
 
 					// See what we should do depending on skill type !
@@ -310,7 +320,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 						if (handler != null)
 						{
 							handler.Execute(ab, player);
-							return;
+							return 0;
 						}
 						
 						ab.Execute(player);
@@ -331,6 +341,8 @@ namespace DOL.GS.PacketHandler.Client.v168
 				{
 					player.Out.SendMessage("Skill is not implemented.", eChatType.CT_Advise, eChatLoc.CL_SystemWindow);
 				}
+
+				return 0;
 			}
 		}
 	}

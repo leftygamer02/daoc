@@ -179,6 +179,10 @@ namespace DOL.GS
 		/// </summary>
 		public const string Advanced_Evade = "Advanced Evade";
 		/// <summary>
+		/// Advanced Evade Ability
+		/// </summary>
+		public const string Enhanced_Evade = "Enhanced Evade";
+		/// <summary>
 		/// Evade Ability
 		/// </summary>
 		public const string Evade = "Evade";
@@ -372,7 +376,12 @@ namespace DOL.GS
 		/// <summary>
 		/// Crowd Control Immunity - NPC Only ability
 		/// </summary>
+
+		public const string ConfusionImmunity = "ConfusionImmunity";
+
 		public const string CCImmunity = "CCImmunity";
+
+		public const string NSImmunity = "NSImmunity";
 
 		public const string DamageImmunity = "DamageImmunity";
 

@@ -21,6 +21,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO.Enumeration;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using DOL.Database;
@@ -99,7 +101,7 @@ namespace DOL.GS
         /// <summary>
         /// Holds all the Zones inside this Region
         /// </summary>
-        protected readonly ReaderWriterList<Zone> m_zones;
+        protected readonly List<Zone> m_zones;
 
         protected object m_lockAreas = new object();
 
@@ -231,7 +233,7 @@ namespace DOL.GS
 
             m_graveStones = new Hashtable();
 
-            m_zones = new ReaderWriterList<Zone>(1);
+            m_zones = new List<Zone>();
             m_ZoneAreas = new ushort[64][];
             m_ZoneAreasCount = new ushort[64];
             for (int i = 0; i < 64; i++)
@@ -541,7 +543,7 @@ namespace DOL.GS
         /// </summary>
         public virtual long Time
         {
-            get { return m_timeManager.CurrentTime; }
+            get { return GameLoop.GameLoopTime; }
         }
 
         protected bool m_isDisabled = false;
@@ -604,12 +606,21 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// Create the appropriate GameKeep for this region
+        /// Create a keep for this region
         /// </summary>
         /// <returns></returns>
         public virtual AbstractGameKeep CreateGameKeep()
         {
             return new GameKeep();
+        }
+        
+        /// <summary>
+        /// Create a new Relic keep for this region
+        /// </summary>
+        /// <returns></returns>
+        public virtual AbstractGameKeep CreateRelicGameKeep()
+        {
+            return new RelicGameKeep();
         }
 
         /// <summary>
@@ -637,7 +648,7 @@ namespace DOL.GS
         {
             get
             {
-                if (IsPM)
+                if (m_isPM)
                     return false;
                 return true;
             }
@@ -654,21 +665,8 @@ namespace DOL.GS
                 uint cTime = GameTime;
 
                 uint hour = cTime / 1000 / 60 / 60;
-                bool pm = false;
+                bool pm = hour >= 12 && hour <= 23;
 
-                if (hour == 0)
-                {
-                    hour = 12;
-                }
-                else if (hour == 12)
-                {
-                    pm = true;
-                }
-                else if (hour > 12)
-                {
-                    hour -= 12;
-                    pm = true;
-                }
                 m_isPM = pm;
 
                 return m_isPM;
@@ -687,37 +685,10 @@ namespace DOL.GS
                 uint cTime = GameTime;
 
                 uint hour = cTime / 1000 / 60 / 60;
-                bool pm = false;
+                bool night = hour is >= 18 or < 6;
 
-                if (hour == 0)
-                {
-                    hour = 12;
-                }
-                else if (hour == 12)
-                {
-                    pm = true;
-                }
-                else if (hour > 12)
-                {
-                    hour -= 12;
-                    pm = true;
-                }
-
-                if (pm && hour >= 6)
-                    m_isNightTime = true;
-
-                if (!pm && hour <= 5)
-                    m_isNightTime = true;
-
-                if (!pm && hour == 12) //Special Handling for Midnight.
-                    m_isNightTime = true;
-
-                if (!pm && hour >= 6)
-                    m_isNightTime = false;
-
-                if (pm && hour < 6)
-                    m_isNightTime = false;
-
+                m_isNightTime = night;
+                    
                 return m_isNightTime;
             }
             set { m_isNightTime = value; }

@@ -57,7 +57,6 @@ namespace DOL.AI.Brain
 		public override int ThinkInterval
 		{
 			get { return 5000; }
-			set { }
 		}
 
 		public override void Think()
@@ -86,6 +85,7 @@ namespace DOL.AI.Brain
 		public eAggressionState AggressionState { get { return eAggressionState.Passive; } set { } }
 		public GameLiving Owner { get { return m_owner; } }
 		public void Attack(GameObject target) { }
+		public void Disengage() { }
 		public void Follow(GameObject target) { }
 		public void FollowOwner() { }
 		public void Stay() { }

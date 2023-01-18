@@ -423,6 +423,7 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte(group.MemberCount);
 					foreach (GameLiving living in group.GetMembersInTheGroup())
 					{
+						if (living == null) continue;
 						pak.WritePascalString(living.Name);
 						pak.WritePascalString(living is GamePlayer ? ((GamePlayer)living).CharacterClass.Name : "NPC");
 						pak.WriteShort((ushort)living.ObjectID); //or session id?
@@ -492,7 +493,7 @@ namespace DOL.GS.PacketHandler
 				//		}
 				//	}
 				//}
-				lock (living.effectListComponent._effectsLock)
+				lock (living.effectListComponent.EffectsLock)
 				{
 					byte i = 0;
 					var effects = living.effectListComponent.GetAllEffects();

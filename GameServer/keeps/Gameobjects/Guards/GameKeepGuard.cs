@@ -18,15 +18,14 @@
  */
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
 using DOL.GS.PacketHandler;
-using DOL.Language;
 using DOL.GS.ServerProperties;
-using System.Collections.Generic;
-using DOL.GS.Realm;
-using DOL.GS.PlayerClass;
+using DOL.Language;
 
 namespace DOL.GS.Keeps
 {
@@ -77,6 +76,16 @@ namespace DOL.GS.Keeps
 		{
 			get { return m_modelRealm; }
 			set { m_modelRealm = value; }
+		}
+
+		public override void ProcessDeath(GameObject killer)
+		{
+			if (killer is GamePlayer p && ConquestService.ConquestManager.IsPlayerNearConquestObjective(p))
+			{
+				ConquestService.ConquestManager.AddContributors(this.XPGainers.Keys.OfType<GamePlayer>().ToList());
+			}
+
+			base.ProcessDeath(killer);
 		}
 
 		public bool IsTowerGuard
@@ -155,281 +164,6 @@ namespace DOL.GS.Keeps
 
 		#region Combat
 
-		/// <summary>
-		/// Here we set the speeds we want our guards to have, this affects weapon damage
-		/// </summary>
-		/// <param name="weapon"></param>
-		/// <returns></returns>
-		public int AttackSpeed(params InventoryItem[] weapon)
-		{
-			//speed 1 second = 10
-			int speed = 0;
-			switch (ActiveWeaponSlot)
-			{
-				case eActiveWeaponSlot.Distance: speed = 45; break;
-				case eActiveWeaponSlot.TwoHanded: speed = 40; break;
-				default: speed = 24; break;
-			}
-			speed = speed + Util.Random(11);
-			return speed * 100;
-		}
-
-		/// <summary>
-		/// When moving guards have difficulty attacking players, so we double there attack range)
-		/// </summary>
-		public int AttackRange
-		{
-			get
-			{
-				int range = attackComponent.AttackRange;
-				if (IsMoving && ActiveWeaponSlot != eActiveWeaponSlot.Distance)
-					range *= 2;
-				return range;
-			}
-			set
-			{
-				attackComponent.AttackRange = value;
-			}
-		}
-
-		/// <summary>
-		/// The distance attack range
-		/// </summary>
-		public virtual int AttackRangeDistance
-		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		/// <summary>
-		/// We need an event after an attack is finished so we know when players are unreachable by archery
-		/// </summary>
-		/// <param name="e"></param>
-		/// <param name="sender"></param>
-		/// <param name="arguments"></param>
-		public static void AttackFinished(DOLEvent e, object sender, EventArgs arguments)
-		{
-			GameKeepGuard guard = sender as GameKeepGuard;
-			if (guard.TargetObject == null)
-				return;
-			if (!guard.attackComponent.AttackState)
-				return;
-			if (guard is GuardArcher == false && guard is GuardLord == false && guard is GuardCaster == false)
-				return;
-
-			AttackFinishedEventArgs afargs = arguments as AttackFinishedEventArgs;
-
-			if (guard.ActiveWeaponSlot != eActiveWeaponSlot.Distance && !guard.IsMoving)
-			{
-				eAttackResult result = afargs.AttackData.AttackResult;
-				if (result == eAttackResult.OutOfRange)
-				{
-                    //guard.StopAttack();
-                    guard.attackComponent.NPCStopAttack();
-					lock (guard.attackComponent.Attackers)
-					{
-						foreach (GameLiving living in guard.attackComponent.Attackers)
-						{
-							if (guard.IsWithinRadius(living, guard.AttackRange))
-							{
-								guard.StartAttack(living);
-								return;
-							}
-						}
-					}
-
-					if (guard.IsWithinRadius(guard.TargetObject, guard.AttackRangeDistance))
-					{
-						if (guard.MaxSpeedBase == 0 || (guard is GuardArcher && !guard.BeenAttackedRecently))
-							guard.SwitchToRanged(guard.TargetObject);
-					}
-				}
-				return;
-			}
-
-			if (guard.ActiveWeaponSlot == eActiveWeaponSlot.Distance)
-			{
-				if (GameServer.ServerRules.IsAllowedToAttack(guard, guard.TargetObject as GameLiving, true) == false)
-				{
-                    //guard.StopAttack();
-                    guard.attackComponent.NPCStopAttack();
-                    return;
-				}
-				if (!guard.IsWithinRadius(guard.TargetObject, guard.AttackRange))
-				{
-                    //guard.StopAttack();
-                    guard.attackComponent.NPCStopAttack();
-                    return;
-				}
-			}
-
-			GamePlayer player = null;
-
-			if (guard.TargetObject is GamePlayer)
-			{
-				player = guard.TargetObject as GamePlayer;
-			}
-			else if (guard.TargetObject is GameNPC)
-			{
-				GameNPC npc = (guard.TargetObject as GameNPC);
-
-				if (npc.Brain != null && ((npc is GameKeepGuard) == false) && npc.Brain is IControlledBrain)
-				{
-					player = (npc.Brain as IControlledBrain).GetPlayerOwner();
-				}
-			}
-
-			if (player != null)
-			{
-				player.Out.SendCheckLOS(guard, guard.TargetObject, new CheckLOSResponse(guard.GuardStopAttackCheckLOS));
-			}
-		}
-
-		/// <summary>
-		/// Override for StartAttack which chooses Ranged or Melee attack
-		/// </summary>
-		/// <param name="attackTarget"></param>
-		public void StartAttack(GameObject attackTarget)
-		{
-			if (IsPortalKeepGuard)
-			{
-                //base.StartAttack(attackTarget);
-                attackComponent.StartAttack(attackTarget);
-                return;
-			}
-
-			if (attackComponent.AttackState || CurrentSpellHandler != null)
-				return;
-
-			if (attackTarget is GameLiving == false)
-				return;
-			GameLiving target = attackTarget as GameLiving;
-			if (target == null || target.IsAlive == false)
-				return;
-
-			//we dont send LOS checks for people we cant attack
-			if (!GameServer.ServerRules.IsAllowedToAttack(this, target, true))
-				return;
-
-			//Prevent spam for LOS to same target multiple times
-
-			GameObject lastTarget = (GameObject)this.TempProperties.getProperty<object>(LAST_LOS_TARGET_PROPERTY, null);
-			long lastTick = this.TempProperties.getProperty<long>(LAST_LOS_TICK_PROPERTY);
-
-			if (lastTarget != null && lastTarget == attackTarget)
-			{
-				if (lastTick != 0 && GameLoop.GameLoopTime - lastTick < ServerProperties.Properties.KEEP_GUARD_LOS_CHECK_TIME * 1000)
-					return;
-			}
-
-			GamePlayer LOSChecker = null;
-			if (attackTarget is GamePlayer)
-			{
-				LOSChecker = attackTarget as GamePlayer;
-			}
-			else if (attackTarget is GameNPC && (attackTarget as GameNPC).Brain is IControlledBrain)
-			{
-				LOSChecker = ((attackTarget as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
-			}
-			else
-			{
-				// try to find another player to use for checking line of site
-				foreach (GamePlayer player in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-				{
-					LOSChecker = player;
-					break;
-				}
-			}
-
-			if (LOSChecker == null)
-			{
-				return;
-			}
-
-			lock (LOS_LOCK)
-			{
-				int count = TempProperties.getProperty<int>(NUM_LOS_CHECKS_INPROGRESS, 0);
-
-				if (count > 10)
-				{
-					log.DebugFormat("{0} LOS count check exceeds 10, aborting LOS check!", Name);
-
-					// Now do a safety check.  If it's been a while since we sent any check we should clear count
-					if (lastTick == 0 || GameLoop.GameLoopTime - lastTick > ServerProperties.Properties.LOS_PLAYER_CHECK_FREQUENCY * 1000)
-					{
-						log.Debug("LOS count reset!");
-						TempProperties.setProperty(NUM_LOS_CHECKS_INPROGRESS, 0);
-					}
-
-					return;
-				}
-
-				count++;
-				TempProperties.setProperty(NUM_LOS_CHECKS_INPROGRESS, count);
-
-				TempProperties.setProperty(LAST_LOS_TARGET_PROPERTY, attackTarget);
-				TempProperties.setProperty(LAST_LOS_TICK_PROPERTY, GameLoop.GameLoopTime);
-				TargetObject = attackTarget;
-			}
-
-			LOSChecker.Out.SendCheckLOS(this, attackTarget, new CheckLOSResponse(this.GuardStartAttackCheckLOS));
-		}
-
-		/// <summary>
-		/// We only attack if we have LOS
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="response"></param>
-		/// <param name="targetOID"></param>
-		public void GuardStartAttackCheckLOS(GamePlayer player, ushort response, ushort targetOID)
-		{
-			lock (LOS_LOCK)
-			{
-				int count = TempProperties.getProperty<int>(NUM_LOS_CHECKS_INPROGRESS, 0);
-				count--;
-				TempProperties.setProperty(NUM_LOS_CHECKS_INPROGRESS, Math.Max(0, count));
-			}
-
-			if ((response & 0x100) == 0x100)
-			{
-				if (this is GuardArcher || this is GuardLord)
-				{
-					if (ActiveWeaponSlot != eActiveWeaponSlot.Distance)
-					{
-						if (CanUseRanged)
-							SwitchToRanged(TargetObject);
-					}
-				}
-
-				attackComponent.StartAttack(TargetObject);
-			}
-			else if (TargetObject != null && TargetObject is GameLiving)
-			{
-				(this.Brain as KeepGuardBrain).RemoveFromAggroList(TargetObject as GameLiving);
-			}
-		}
-
-		/// <summary>
-		/// If we don't have LOS we stop attack
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="response"></param>
-		/// <param name="targetOID"></param>
-		public void GuardStopAttackCheckLOS(GamePlayer player, ushort response, ushort targetOID)
-		{
-			if ((response & 0x100) != 0x100)
-			{
-				attackComponent.NPCStopAttack();
-
-				if (TargetObject != null && TargetPosition is GameLiving)
-				{
-					(this.Brain as KeepGuardBrain).RemoveFromAggroList(TargetObject as GameLiving);
-				}
-			}
-		}
-
 		public void GuardStartSpellHealCheckLOS(GamePlayer player, ushort response, ushort targetOID)
 		{
 			if ((response & 0x100) == 0x100 && HealTarget != null)
@@ -438,14 +172,14 @@ namespace DOL.GS.Keeps
 
 				if (healSpell != null && !IsStunned && !IsMezzed)
 				{
-					attackComponent.NPCStopAttack();
+					attackComponent.StopAttack();
 					TargetObject = HealTarget;
 					CastSpell(healSpell, GuardSpellLine);
 				}
 			}
 		}
 
-		private Spell GetGuardHealSmallSpell(eRealm realm)
+		private static Spell GetGuardHealSmallSpell(eRealm realm)
 		{
 			switch (realm)
 			{
@@ -569,7 +303,7 @@ namespace DOL.GS.Keeps
 				}
 			}
 			if (attackComponent.AttackState)
-				attackComponent.NPCStopAttack();
+				attackComponent.StopAttack();
 			if (IsMoving)
 				StopFollowing();
 			TurnTo(TargetObject);
@@ -606,7 +340,7 @@ namespace DOL.GS.Keeps
 		/// <param name="target"></param>
 		/// <param name="viewangle"></param>
 		/// <returns></returns>
-		public override bool IsObjectInFront(GameObject target, double viewangle, bool rangeCheck = true)
+		public override bool IsObjectInFront(GameObject target, double viewangle, int alwaysTrueRange = 32)
 		{
 			return true;
 		}
@@ -627,7 +361,7 @@ namespace DOL.GS.Keeps
 					if (TargetObject != null && !IsWithinRadius(TargetObject, AttackRange))
 					{
 						//stop the attack
-						attackComponent.NPCStopAttack();
+						attackComponent.StopAttack();
 						//if the distance to the attacker is less than the attack range
 						if (IsWithinRadius(ad.Attacker, AttackRange))
 						{
@@ -726,8 +460,6 @@ namespace DOL.GS.Keeps
 				(this.Brain as KeepGuardBrain).AggroLevel = 99;
 			}
 
-			GameEventMgr.AddHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(AttackFinished));
-
 			if (PatrolGroup != null && !m_changingPositions)
 			{
 				bool foundGuard = false;
@@ -754,21 +486,6 @@ namespace DOL.GS.Keeps
 		}
 
 		/// <summary>
-		/// When we remove from world, we remove our special handler
-		/// </summary>
-		/// <returns></returns>
-		public override bool RemoveFromWorld()
-		{
-			if (base.RemoveFromWorld())
-			{
-				GameEventMgr.RemoveHandler(this, GameLivingEvent.AttackFinished, new DOLEventHandler(AttackFinished));
-				return true;
-			}
-
-			return false;
-		}
-
-		/// <summary>
 		/// Method to stop a guards respawn
 		/// </summary>
 		public void StopRespawn()
@@ -783,7 +500,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		/// <param name="respawnTimer"></param>
 		/// <returns></returns>
-		protected override int RespawnTimerCallback(RegionTimer respawnTimer)
+		protected override int RespawnTimerCallback(AuxECSGameTimer respawnTimer)
 		{
 			int temp = base.RespawnTimerCallback(respawnTimer);
 			RefreshTemplate();
@@ -982,6 +699,26 @@ namespace DOL.GS.Keeps
 		{
 			ClothingMgr.EquipGuard(this);
 
+			if (this is GuardMerchant)
+			{
+				if (IsAlive)
+				{
+					BroadcastLivingEquipmentUpdate();
+				}
+
+				GuildName = "Merchant";
+				return;
+			}
+			else if (this is GuardCurrencyMerchant)
+			{
+				if (IsAlive)
+				{
+					BroadcastLivingEquipmentUpdate();
+				}
+
+				GuildName = "Orb Merchant";
+				return;
+			}
 			Guild guild = Component.Keep.Guild;
 			string guildname = "";
 			if (guild != null)
@@ -1029,7 +766,7 @@ namespace DOL.GS.Keeps
 		{
 			if (PatrolGroup != null)
 			{
-				attackComponent.NPCStopAttack();
+				attackComponent.StopAttack();
 				StopFollowing();
 
 				StandardMobBrain brain = Brain as StandardMobBrain;
@@ -1088,7 +825,7 @@ namespace DOL.GS.Keeps
 			{
 				KeepGuardBrain brain = GetBrain();
 				AddBrain(brain);
-				brain.guard = this;
+				brain.Body = this;
 			}
 		}
 
@@ -1177,6 +914,14 @@ namespace DOL.GS.Keeps
 			else if (Component.Keep.Guild == null)
 			{
 				GuildName = "";
+			}
+			else if ((Component.Keep.Guild == null || Component.Keep.Guild != null)&& this is GuardMerchant)
+			{
+				GuildName = "Merchant";
+			}
+			else if ((Component.Keep.Guild == null || Component.Keep.Guild != null) && this is GuardCurrencyMerchant)
+			{
+				GuildName = "Orb Merchant";
 			}
 			else
 			{

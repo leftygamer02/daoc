@@ -1,6 +1,7 @@
 using System;
 using DOL.GS.Keeps;
 using DOL.GS.RealmAbilities;
+using DOL.GS.ServerProperties;
 
 namespace DOL.GS.PropertyCalc
 {
@@ -25,59 +26,60 @@ namespace DOL.GS.PropertyCalc
 				GamePlayer player = living as GamePlayer;
 				int hpBase = player.CalculateMaxHealth(player.Level, player.GetModified(eProperty.Constitution));
 				int buffBonus = living.BaseBuffBonusCategory[(int)property];
-				if (buffBonus < 0) buffBonus = (int)((1 + (buffBonus / -100.0)) * hpBase) - hpBase;
+
+				if (buffBonus < 0)
+					buffBonus = (int)((1 + (buffBonus / -100.0)) * hpBase) - hpBase;
+
 				int itemBonus = living.ItemBonus[(int)property];
-				int cap = Math.Max(player.Level * 4, 20) + // at least 20
+				int cap = Math.Max(player.Level * 4, 20) +
 						  Math.Min(living.ItemBonus[(int)eProperty.MaxHealthCapBonus], player.Level * 4);
 				itemBonus = Math.Min(itemBonus, cap);
+
 				if (player.HasAbility(Abilities.ScarsOfBattle) && player.Level >= 40)
 				{
 					int levelbonus = Math.Min(player.Level - 40, 10);
 					hpBase = (int)(hpBase * (100 + levelbonus) * 0.01);
 				}
+
 				int abilityBonus = living.AbilityBonus[(int)property];
+			
+				AtlasOF_ToughnessAbility toughness = player.GetAbility<AtlasOF_ToughnessAbility>();
+				double toughnessMod = toughness != null ? 1 + toughness.GetAmountForLevel(toughness.Level) * 0.01 : 1;
 
-				#region Calculation : AtlasOF_Thoughness
-				// --- [START] --- AtlasOF_Thoughness ---------------------------------------------------------
-				int raToughnessAmount = 0;
-				AtlasOF_ToughnessAbility raToughness = living.GetAbility<AtlasOF_ToughnessAbility>();
-
-				if (raToughness != null)
-				{
-					if (raToughness.Level > 0)
-					{
-						raToughnessAmount += (hpBase * raToughness.Level * 3) / 100;
-					}
-				}
-				// --- [ END ] --- AtlasOF_Thoughness ---------------------------------------------------------
-				#endregion
-
-				return Math.Max(hpBase + itemBonus + buffBonus + abilityBonus + raToughnessAmount, 1); // at least 1
+				return Math.Max((int)(hpBase * toughnessMod) + itemBonus + buffBonus + abilityBonus, 1);
 			}
 			else if (living is GameKeepComponent)
 			{
-				GameKeepComponent keepComp = living as GameKeepComponent;
+				AbstractGameKeep gameKeep = (living as GameKeepComponent)?.Keep;
 
-				if (keepComp.Keep != null)
-					return (keepComp.Keep.EffectiveLevel(keepComp.Keep.Level) + 1) * keepComp.Keep.BaseLevel * 200;
+				if (gameKeep != null)
+				{
+					int baseHealth = gameKeep.BaseLevel * Properties.KEEP_COMPONENTS_BASE_HEALTH;
+					baseHealth += (int)(baseHealth * (gameKeep.Level - 1) * Properties.KEEP_COMPONENTS_HEALTH_UPGRADE_MODIFIER);
+					return baseHealth;
+				}
 
 				return 0;
 			}
 			else if (living is GameKeepDoor)
 			{
-				GameKeepDoor keepdoor = living as GameKeepDoor;
+				AbstractGameKeep gameKeep = (living as GameKeepDoor)?.Component?.Keep;
 
-				if (keepdoor.Component != null && keepdoor.Component.Keep != null)
+				if (gameKeep != null)
 				{
-					return (keepdoor.Component.Keep.EffectiveLevel(keepdoor.Component.Keep.Level) + 1) * keepdoor.Component.Keep.BaseLevel * 200;
+					if (gameKeep.IsRelic)
+						return Properties.RELIC_DOORS_HEALTH;
+
+					int baseHealth = gameKeep.BaseLevel * Properties.KEEP_DOORS_BASE_HEALTH;
+					baseHealth += (int)(baseHealth * (gameKeep.Level - 1) * Properties.KEEP_DOORS_HEALTH_UPGRADE_MODIFIER);
+					return baseHealth;
 				}
 
 				return 0;
-
-				//todo : use material too to calculate maxhealth
 			}
 			else if (living is TheurgistPet theu)
 			{
+				/*
 				int hp = 1;
 				if (theu.Level < 2)
 				{
@@ -99,7 +101,24 @@ namespace DOL.GS.PropertyCalc
 					hp = (int) Math.Ceiling(hp * 1.5);
 				}
 				return hp;
+				*/
 
+				int hp = 1;
+				if (theu.Name.Contains("air"))
+				{
+					hp = 800;
+				}
+				else if (theu.Name.Contains("ice"))
+				{
+					hp = 500;
+				} else if (theu.Name.Contains("earth"))
+				{
+					hp = 350;
+				}
+				
+				hp = (int)((theu.Level / 44.0) * hp);
+				if (hp < 10) hp = 10;
+				return hp;
 			}
 			else if (living is TurretPet ani)
 			{
@@ -117,12 +136,12 @@ namespace DOL.GS.PropertyCalc
 
 				if (living.Level < 10)
 				{
-					hp = living.Level * 20 + 20 + ani.Constitution;  // default
+					hp = living.Level * 20 + 20 + ani.Constitution + living.BaseBuffBonusCategory[(int)property];  // default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level) + ani.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					hp = (int)(50 + 14 * living.Level + 0.548331 * living.Level) + ani.Constitution + living.BaseBuffBonusCategory[(int)property];
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -138,12 +157,12 @@ namespace DOL.GS.PropertyCalc
 
 				if (living.Level < 10)
 				{
-					hp = living.Level * 20 + 20 + pet.Constitution/*living.BaseBuffBonusCategory[(int)property]*/;  // default
+					hp = living.Level * 20 + 20 + pet.Constitution + living.BaseBuffBonusCategory[(int)property];  // default
 				}
 				else
 				{
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11 * living.Level + 0.548331 * living.Level * living.Level) + pet.Constitution /*living.BaseBuffBonusCategory[(int)property]*/;
+					hp = (int)(50 + 15 * living.Level + 0.548331 * living.Level * living.Level) + pet.Constitution + living.BaseBuffBonusCategory[(int)property];
 					if (living.Level < 25)
 						hp += 20;
 				}
@@ -183,18 +202,24 @@ namespace DOL.GS.PropertyCalc
 					//14 hp per level
 					//30 base
 					//con * level HP, scaled by level
-					hp = (int)((living.Level * 14) + 30 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
+					hp = (int)((living.Level * 11) + 20 + (Math.Floor((double)((living as GameNPC).Constitution * living.Level) / (1 + (20-living.Level))))) /*living.BaseBuffBonusCategory[(int)property]*/;	// default
 				}
 				else
 				{
+					double levelScalar = .5;
+					if (living.Level > 40)
+					{
+						//Console.WriteLine($"Scalar before {levelScalar} adding {(living.Level - 40) * .01} after {levelScalar + ((living.Level - 40) * .01)}");
+						levelScalar += (living.Level - 40) * .0015;
+					}
 					// approx to original formula, thx to mathematica :)
-					hp = (int)(50 + 11*living.Level + 0.448331 * living.Level * (living.Level)) + (living as GameNPC).Constitution;
+					hp = (int)(50 + 12*living.Level + levelScalar * living.Level * (living.Level)) + (living as GameNPC).Constitution;
 					if (living.Level < 25)
 						hp += 20;
 				}
 
 				int basecon = (living as GameNPC).Constitution;
-				int conmod = 20; // at level 50 +75 con ~= +300 hit points
+				int conmod = 25; // at level 50 +75 con ~= +300 hit points
 
 				// first adjust hitpoints based on base CON
 
@@ -217,6 +242,11 @@ namespace DOL.GS.PropertyCalc
 					else if (conhp < hp / 2)
 						conhp = hp / 2;
 				}
+
+				if(living is GameEpicBoss)
+					hp = (int)(hp * 1.5); //epic bosses get 50% extra hp
+				else if (living is GameEpicNPC)
+					hp = (int)( hp * 1.25); //epic NPCs get 25% extra hp
 
 				return hp;
 				//return conhp;

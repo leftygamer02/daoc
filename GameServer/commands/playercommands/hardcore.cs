@@ -65,6 +65,7 @@ namespace DOL.GS.GameEvents
     }
 }
 #endregion
+
 #region command
 namespace DOL.GS.Commands
 {
@@ -80,17 +81,20 @@ namespace DOL.GS.Commands
             if (IsSpammingCommand(client.Player, "hardcore"))
                 return;
             
+            if (client.Player.RealmPoints > 0)
+                return;
+            
             if (client.Player.HCFlag){
                 client.Out.SendMessage("Your Hardcore flag is ON! Death will result in the character deletion.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
                 return;
             }
-
+            
             if (args.Length < 2)
             {
                 DisplaySyntax(client);
                 return;
             }
-
+            
             if (args[1].ToLower().Equals("on"))
             {
                 if (client.Player.Level != 1)
@@ -106,20 +110,27 @@ namespace DOL.GS.Commands
         {
             if (response == 1)
             {
+                if (player.Level > 1)
                 {
-                    player.Emote(eEmote.StagFrenzy);
-                    player.HCFlag = true;
-                    player.Out.SendMessage("Your HARDCORE flag is ON. Your character will be deleted at death.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-
-                    if (player.NoHelp)
-                    {
-                        player.CurrentTitle = new HardCoreSoloTitle();
-                    }
-                    else
-                    {
-                        player.CurrentTitle = new HardCoreTitle();
-                    }
+                    player.Out.SendMessage("You must be level 1 to activate Hardcore.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                    return;
                 }
+                
+                player.Emote(eEmote.StagFrenzy);
+                player.HCFlag = true;
+                player.Out.SendMessage("Your HARDCORE flag is ON. Your character will be deleted at death.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+                
+                NoHelpCommandHandler.NoHelpActivate(player);
+
+                if (player.NoHelp)
+                {
+                    player.CurrentTitle = new HardCoreSoloTitle();
+                }
+                else
+                {
+                    player.CurrentTitle = new HardCoreTitle();
+                }
+                
             }
             else
             {
@@ -178,7 +189,7 @@ namespace DOL.GS.Commands
         {
             IList<string> output = new List<string>();
             IList<HCCharacter> hcCharacters = new List<HCCharacter>();
-            IList<DOLCharacters> characters = GameServer.Database.SelectObjects<DOLCharacters>("HCFlag = '1'").OrderByDescending(x => x.Level).Take(50).ToList();
+            IList<DOLCharacters> characters = GameServer.Database.SelectObjects<DOLCharacters>(DB.Column("HCFlag").IsEqualTo(1)).OrderByDescending(x => x.Level).Take(50).ToList();
             
             output.Add("Top 50 Hardcore characters:\n");
             
@@ -220,6 +231,7 @@ namespace DOL.GS.Commands
     
 }
 #endregion
+
 #region title
 namespace DOL.GS.PlayerTitles
 {

@@ -202,11 +202,15 @@ namespace DOL.GS
         SummonMerchant = 196,
         BeadRegen = 197,
         SummonVaultkeeper = 198,
-        Null = 200
-
-
-
-
-
+        OffhandDamage = 199,
+        OffhandChance = 200,
+        SummonSiegeRam = 201,
+        SummonSiegeBallista = 202,
+        SummonSiegeCatapult = 203,
+        SummonSiegeTrebuchet = 204,
+        SummonJuggernaut = 205,
+        SummonAnimistAmbusher = 206,
+        StrikingTheSoul = 207,
+        Null = 208
     }
 }

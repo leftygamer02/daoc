@@ -24,6 +24,7 @@ using DOL.Database.Attributes;
 using DOL.Events;
 using DOL.GS;
 using DOL.GS.Keeps;
+using DOL.GS.PacketHandler;
 using DOL.Language;
 
 namespace DOL.GS
@@ -40,12 +41,21 @@ namespace DOL.GS
 		{
 			if (player == null || player.InCombat)
 				return false;
+			
+			if (player.Client.Account.PrivLevel == 1 && !IsWithinRadius(player, WorldMgr.INTERACT_DISTANCE))
+			{
+				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameObject.Interact.TooFarAway", GetName(0, true)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				Notify(GameObjectEvent.InteractFailed, this, new InteractEventArgs(player));
+				return false;
+			}
+
 
 			if (!base.Interact(player))
 				return false;
 
 			// just give out speed without asking
 			GameNPCHelper.CastSpellOnOwnerAndPets(this, player, SkillBase.GetSpellByID(GameHastener.SPEEDOFTHEREALMID), SkillBase.GetSpellLine(GlobalSpellsLines.Realm_Spells), false);
+			player.Out.SendSpellEffectAnimation(this, player, SkillBase.GetSpellByID(935).ClientEffect, 0, false, 1);
 
 
 			if (player.CurrentRegion.IsCapitalCity)

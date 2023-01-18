@@ -51,13 +51,16 @@ namespace DOL.GS.Quests.Albion
 		protected const string questTitle = "Symbol of the Broken";
 		protected const int minimumLevel = 50;
 		protected const int maximumLevel = 50;
+		protected private int _DemonicMinionsKilled = 0;
+		protected private int _BechardKilled = 0;
+		protected private int _SilchardeKilled = 0;
 
 		private static GameNPC Ferowl = null; // Start NPC
-		private static GameNPC Morgana = null; // Mob
-		private static GameNPC Bechard = null; // Mob to kill
-		private static GameNPC Silcharde = null; // Mob to kill
+		private static Morgana Morgana = null; // Mob
+		private static Bechard Bechard = null; // Mob to kill
+		private static Silcharde Silcharde = null; // Mob to kill
 
-		private static IArea morganaArea = null;
+		//private static IArea morganaArea = null;
 
 		private static ItemTemplate sealed_pouch = null; //sealed pouch
 		private static ItemTemplate WizardEpicBoots = null; //Bernor's Numinous Boots 
@@ -142,15 +145,15 @@ namespace DOL.GS.Quests.Albion
 
 			if (npcs.Length > 0)
 				foreach (GameNPC npc in npcs)
-					if (npc.CurrentRegionID == 1 && npc.X == 306056 && npc.Y == 670106)
+					if (npc.CurrentRegionID == 1 && npc.X == 306093 && npc.Y == 670120)
 					{
-						Morgana = npc;
+						Morgana = npc as Morgana;
 						break;
 					}
 
 			if (Morgana == null)
 			{
-				Morgana = new GameNPC();
+				Morgana = new Morgana();
 				Morgana.Model = 283;
 				Morgana.Name = "Morgana";
 				if (log.IsWarnEnabled)
@@ -160,12 +163,12 @@ namespace DOL.GS.Quests.Albion
 				Morgana.CurrentRegionID = 1;
 				Morgana.Size = 51;
 				Morgana.Level = 90;
-				Morgana.X = 306056;
-				Morgana.Y = 670106;
-				Morgana.Z = 3095;
-				Morgana.Heading = 3261;
+				Morgana.X = 306093;
+				Morgana.Y = 670120;
+				Morgana.Z = 3116;
+				Morgana.Heading = 3277;
 
-				StandardMobBrain brain = new StandardMobBrain();
+				MorganaBrain brain = new MorganaBrain();
 				brain.AggroLevel = 0;
 				brain.AggroRange = 0;
 				Morgana.SetOwnBrain(brain);
@@ -178,20 +181,19 @@ namespace DOL.GS.Quests.Albion
 //				Morgana.AddNPCEquipment((byte) eVisibleItems.TORSO, 98, 43, 0, 0);
 //				Morgana.AddNPCEquipment((byte) eVisibleItems.BOOT, 133, 61, 0, 0);
 
-				//Morgana.AddToWorld(); will be added later during quest
-
+				Morgana.AddToWorld();
 				if (SAVE_INTO_DATABASE)
 					Morgana.SaveIntoDatabase();
 			}
 			// end npc
 
-			npcs = WorldMgr.GetNPCsByName("Bechard", eRealm.None);
+		/*	npcs = WorldMgr.GetNPCsByName("Bechard", eRealm.None);
 
 			if (npcs.Length > 0)
 				foreach (GameNPC npc in npcs)
 					if (npc.CurrentRegionID == 1 && npc.X == 306025 && npc.Y == 670473)
 					{
-						Bechard = npc;
+						Bechard = npc as Bechard;
 						break;
 					}
 
@@ -199,7 +201,7 @@ namespace DOL.GS.Quests.Albion
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Bechard , creating it ...");
-				Bechard = new GameNPC();
+				Bechard = new Bechard();
 				Bechard.Model = 606;
 				Bechard.Name = "Bechard";
 				Bechard.GuildName = "";
@@ -224,7 +226,7 @@ namespace DOL.GS.Quests.Albion
 				foreach (GameNPC npc in npcs)
 					if (npc.CurrentRegionID == 1 && npc.X == 306252 && npc.Y == 670274)
 					{
-						Silcharde = npc;
+						Silcharde = npc as Silcharde;
 						break;
 					}
 
@@ -232,7 +234,7 @@ namespace DOL.GS.Quests.Albion
 			{
 				if (log.IsWarnEnabled)
 					log.Warn("Could not find Silcharde , creating it ...");
-				Silcharde = new GameNPC();
+				Silcharde = new Silcharde();
 				Silcharde.Model = 606;
 				Silcharde.Name = "Silcharde";
 				Silcharde.GuildName = "";
@@ -249,7 +251,7 @@ namespace DOL.GS.Quests.Albion
 				if (SAVE_INTO_DATABASE)
 					Silcharde.SaveIntoDatabase();
 			}
-			// end npc
+			// end npc*/
 
 			#endregion
 
@@ -266,8 +268,8 @@ namespace DOL.GS.Quests.Albion
 				sealed_pouch.Level = 8;
 				sealed_pouch.Item_Type = 29;
 				sealed_pouch.Model = 488;
-				sealed_pouch.IsDropable = false;
-				sealed_pouch.IsPickable = false;
+				sealed_pouch.IsDropable = true;
+				sealed_pouch.IsPickable = true;
 				sealed_pouch.DPS_AF = 0;
 				sealed_pouch.SPD_ABS = 0;
 				sealed_pouch.Object_Type = 41;
@@ -1047,8 +1049,8 @@ namespace DOL.GS.Quests.Albion
 
 			#endregion
 
-			morganaArea = WorldMgr.GetRegion(Morgana.CurrentRegionID).AddArea(new Area.Circle(null, Morgana.X, Morgana.Y, 0, 1000));
-			morganaArea.RegisterPlayerEnter(new DOLEventHandler(PlayerEnterMorganaArea));
+			//morganaArea = WorldMgr.GetRegion(Morgana.CurrentRegionID).AddArea(new Area.Circle(null, Morgana.X, Morgana.Y, 0, 1000));
+			//morganaArea.RegisterPlayerEnter(new DOLEventHandler(PlayerEnterMorganaArea));
 
 			GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest, new DOLEventHandler(SubscribeQuest));
 			GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, new DOLEventHandler(SubscribeQuest));
@@ -1072,8 +1074,8 @@ namespace DOL.GS.Quests.Albion
 			if (Ferowl == null)
 				return;
 
-			morganaArea.UnRegisterPlayerEnter(new DOLEventHandler(PlayerEnterMorganaArea));
-			WorldMgr.GetRegion(Morgana.CurrentRegionID).RemoveArea(morganaArea);
+			//morganaArea.UnRegisterPlayerEnter(new DOLEventHandler(PlayerEnterMorganaArea));
+			//WorldMgr.GetRegion(Morgana.CurrentRegionID).RemoveArea(morganaArea);
 			// remove handlers
 			GameEventMgr.RemoveHandler(GamePlayerEvent.AcceptQuest, new DOLEventHandler(SubscribeQuest));
 			GameEventMgr.RemoveHandler(GamePlayerEvent.DeclineQuest, new DOLEventHandler(SubscribeQuest));
@@ -1085,7 +1087,7 @@ namespace DOL.GS.Quests.Albion
 			Ferowl.RemoveQuestToGive(typeof (Academy_50));
 		}
 
-		protected static void PlayerEnterMorganaArea(DOLEvent e, object sender, EventArgs args)
+		/*protected static void PlayerEnterMorganaArea(DOLEvent e, object sender, EventArgs args)
 		{
 			AreaEventArgs aargs = args as AreaEventArgs;
 			GamePlayer player = aargs.GameObject as GamePlayer;
@@ -1094,26 +1096,26 @@ namespace DOL.GS.Quests.Albion
 			if (quest != null && Morgana.ObjectState != GameObject.eObjectState.Active)
 			{
 				// player near grove
-				SendSystemMessage(player, "As you approach the fallen tower you see Morgana standing on top of the tower.");
+				//SendSystemMessage(player, "As you approach the fallen tower you see Morgana standing on top of the tower.");
 				quest.CreateMorgana();
 
-				if (player.Group != null)
-					Morgana.Yell("Ha, is this all the forces of Albion have to offer? I expected a whole army leaded by my brother Arthur, but what do they send a little group of adventurers lead by a poor " + player.CharacterClass.Name + "?");
-				else
-					Morgana.Yell("Ha, is this all the forces of Albion have to offer? I expected a whole army leaded by my brother Arthur, but what do they send a poor " + player.CharacterClass.Name + "?");
+				//if (player.Group != null)
+					//Morgana.Yell("Ha, is this all the forces of Albion have to offer? I expected a whole army leaded by my brother Arthur, but what do they send a little group of adventurers lead by a poor " + player.CharacterClass.Name + "?");
+				//else
+					//Morgana.Yell("Ha, is this all the forces of Albion have to offer? I expected a whole army leaded by my brother Arthur, but what do they send a poor " + player.CharacterClass.Name + "?");
 
 				foreach (GamePlayer visPlayer in Morgana.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
 				{
 					visPlayer.Out.SendSpellCastAnimation(Morgana, 1, 20);
 				}
 			}
-		}
+		}*/
 
-		protected virtual void CreateMorgana()
+		/*protected virtual void CreateMorgana()
 		{
 			if (Morgana == null)
 			{
-				Morgana = new GameNPC();
+				Morgana = new Morgana();
 				Morgana.Model = 283;
 				Morgana.Name = "Morgana";
 				if (log.IsWarnEnabled)
@@ -1148,9 +1150,9 @@ namespace DOL.GS.Quests.Albion
 
 		protected virtual void DeleteMorgana()
 		{
-			if (Morgana != null)
-				Morgana.Delete();
-		}
+			if (Morgana != null && MorganaBrain.CanRemoveMorgana)
+				Morgana.RemoveFromWorld();
+		}*/
 
 		protected static void TalkToFerowl(DOLEvent e, object sender, EventArgs args)
 		{
@@ -1170,7 +1172,16 @@ namespace DOL.GS.Quests.Albion
 				// Nag to finish quest
 				if (quest != null)
 				{
-					Ferowl.SayTo(player, "Were you able to [fulfill] your given task? Albions fate lies in you hands. ");
+					switch (quest.Step)
+					{
+						case 1:
+							Ferowl.SayTo(player, "Albions fate lies in you hands. Seek out [Morgana] at the fallen tower in Lyonesse!");
+							break;
+						case 2:
+							Ferowl.SayTo(player, "Were you able to [fulfill] your given task? Albions fate lies in you hands. ");
+							break;
+					}
+					
 				}
 				else
 				{
@@ -1199,7 +1210,7 @@ namespace DOL.GS.Quests.Albion
 							Ferowl.SayTo(player, "You must have heard about her, she's the evil sister of King Arthur, tried to take his throne. She must be [stopped]!");
 							break;
 						case "stopped":
-							Ferowl.SayTo(player, "Once Morgana has summoned her army everything is lost. So hurry and stop her unholy rituals. With the help of two mighty demons Silcharde and Bechard she can summon as many minions as she wants. Killing one of them should be enough to stop here [ritual].");
+							Ferowl.SayTo(player, "Once Morgana has summoned her army everything is lost. So hurry and stop her unholy rituals. With the help of two mighty demons Silcharde and Bechard she can summon as many minions as she wants. Killing them should be enough to stop her [ritual].");
 							break;
 						case "ritual":
 							Ferowl.SayTo(player, "Morgana is probably performing her rital at the fallen tower in Lyonesse. To get there follow the Telamon road past the majority of the Danaoian Farmers, until you see the [fallen tower].");
@@ -1210,7 +1221,21 @@ namespace DOL.GS.Quests.Albion
 
 							// once the deomns are dead:
 						case "fulfill":
-							Ferowl.SayTo(player, "Did you find anything near the fallen tower? If yes give it to me, we could need any hints we can get on our crusade against Morgana.");
+							Ferowl.SayTo(player, "Did you find anything near the fallen tower? If yes [give it to me], we could need any hints we can get on our crusade against Morgana.");
+							break;
+						case "give it to me":
+							if (quest.Step == 2)
+							{
+								RemoveItem(player, sealed_pouch);
+								if (player.Inventory.IsSlotsFree(6, eInventorySlot.FirstBackpack,
+									    eInventorySlot.LastBackpack))
+								{
+									Ferowl.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
+									quest.FinishQuest();
+								}
+								else
+									player.Out.SendMessage("You do not have enough free space in your inventory!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+							}
 							break;
 
 						case "abort":
@@ -1218,6 +1243,22 @@ namespace DOL.GS.Quests.Albion
 							break;
 					}
 				}
+			}
+			else if (e == GameObjectEvent.ReceiveItem)
+			{
+				var rArgs = (ReceiveItemEventArgs) args;
+				if (quest != null)
+					if (rArgs.Item.Id_nb == sealed_pouch.Id_nb && quest.Step == 2)
+					{
+						if (player.Inventory.IsSlotsFree(6, eInventorySlot.FirstBackpack,
+							eInventorySlot.LastBackpack))
+						{
+							Ferowl.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
+							quest.FinishQuest();
+						}
+						else
+							player.Out.SendMessage("You do not have enough free space in your inventory!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					}
 			}
 		}
 
@@ -1319,9 +1360,12 @@ namespace DOL.GS.Quests.Albion
 				switch (Step)
 				{
 					case 1:
-						return "[Step #1] Seek out Bechard or Silcharde at the fallen tower in Lyonesse and kill one!";
+						return "Seek out Bechard and Silcharde at the fallen tower in Lyonesse and kill them with rest of summoned demons!\n" +
+							"Bechard killed: ("+_BechardKilled+" | 1)\n" +
+							"Silcharde killed: (" + _SilchardeKilled + " | 1)\n" +
+							"Summoned demons killed: (" + _DemonicMinionsKilled + " | 20)";
 					case 2:
-						return "[Step #2] Return the pouch to Ferowl for your reward!";
+						return "Return the pouch to Ferowl for your reward!";
 				}
 				return base.Description;
 			}
@@ -1334,32 +1378,53 @@ namespace DOL.GS.Quests.Albion
 			if (player==null || player.IsDoingQuest(typeof (Academy_50)) == null)
 				return;
 
+			if (sender != m_questPlayer)
+				return;
+
 			if (Step == 1 && e == GameLivingEvent.EnemyKilled)
 			{
 				EnemyKilledEventArgs gArgs = (EnemyKilledEventArgs) args;
-				if (gArgs != null && gArgs.Target != null && Bechard != null && Silcharde != null)
+				if (gArgs != null && gArgs.Target != null)
 				{
-					if (gArgs.Target.Name == Bechard.Name || gArgs.Target.Name == Silcharde.Name)
+					if(gArgs.Target is DemonicMinion && _DemonicMinionsKilled <= 20)
+                    {
+						_DemonicMinionsKilled++;
+						player.Out.SendQuestUpdate(this);
+					}
+					if (gArgs.Target is Bechard && _BechardKilled <= 1)
+					{
+						_BechardKilled++;
+						player.Out.SendQuestUpdate(this);
+					}
+					if (gArgs.Target is Silcharde && _SilchardeKilled <= 1)
+					{
+						_SilchardeKilled++;
+						player.Out.SendQuestUpdate(this);
+					}				
+					if (_BechardKilled >= 1 && _SilchardeKilled >= 1 && _DemonicMinionsKilled >= 20 )
 					{
 						Morgana.Yell("You may have stopped me here, but I'll come back! Albion will be mine!");
-						DeleteMorgana();
-
+						//DeleteMorgana();
+						player.Out.SendMessage("A sense of calm settles about you!", eChatType.CT_Broadcast, eChatLoc.CL_ChatWindow);
+						GiveItem(player, sealed_pouch);
 						m_questPlayer.Out.SendMessage("Take the pouch to " + Ferowl.GetName(0, true), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						GiveItem(m_questPlayer, sealed_pouch);
 						Step = 2;
-						return;
 					}
 				}
 			}
-
 			if (Step == 2 && e == GamePlayerEvent.GiveItem)
 			{
 				GiveItemEventArgs gArgs = (GiveItemEventArgs) args;
 				if (gArgs.Target.Name == Ferowl.Name && gArgs.Item.Id_nb == sealed_pouch.Id_nb)
 				{
-					Ferowl.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
-					FinishQuest();
-					return;
+					if (player.Inventory.IsSlotsFree(6, eInventorySlot.FirstBackpack,
+						    eInventorySlot.LastBackpack))
+					{
+						Ferowl.SayTo(player, "You have earned this Epic Armor, wear it with honor!");
+						FinishQuest();
+					}
+					else
+						player.Out.SendMessage("You do not have enough free space in your inventory!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 				}
 			}
 		}
@@ -1373,48 +1438,41 @@ namespace DOL.GS.Quests.Albion
 
 		public override void FinishQuest()
 		{
-			if (m_questPlayer.Inventory.IsSlotsFree(6, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
+			RemoveItem(Ferowl, m_questPlayer, sealed_pouch);
+
+			if (m_questPlayer.CharacterClass.ID == (byte)eCharacterClass.Minstrel)
 			{
-				RemoveItem(Ferowl, m_questPlayer, sealed_pouch);
-
-				if (m_questPlayer.CharacterClass.ID == (byte)eCharacterClass.Minstrel)
-				{
-					GiveItem(m_questPlayer, MinstrelEpicBoots);
-					GiveItem(m_questPlayer, MinstrelEpicHelm);
-					GiveItem(m_questPlayer, MinstrelEpicGloves);
-					GiveItem(m_questPlayer, MinstrelEpicArms);
-					GiveItem(m_questPlayer, MinstrelEpicVest);
-					GiveItem(m_questPlayer, MinstrelEpicLegs);
-				}
-				else if (m_questPlayer.CharacterClass.ID == (byte)eCharacterClass.Wizard)
-				{
-					GiveItem(m_questPlayer, WizardEpicBoots);
-					GiveItem(m_questPlayer, WizardEpicHelm);
-					GiveItem(m_questPlayer, WizardEpicGloves);
-					GiveItem(m_questPlayer, WizardEpicVest);
-					GiveItem(m_questPlayer, WizardEpicArms);
-					GiveItem(m_questPlayer, WizardEpicLegs);
-				}
-				else if (m_questPlayer.CharacterClass.ID == (byte)eCharacterClass.Sorcerer)
-				{
-					GiveItem(m_questPlayer, SorcerorEpicBoots);
-					GiveItem(m_questPlayer, SorcerorEpicHelm);
-					GiveItem(m_questPlayer, SorcerorEpicGloves);
-					GiveItem(m_questPlayer, SorcerorEpicVest);
-					GiveItem(m_questPlayer, SorcerorEpicArms);
-					GiveItem(m_questPlayer, SorcerorEpicLegs);
-				}
-
-				base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
-
-
-				m_questPlayer.GainExperience(eXPSource.Quest, 1937768448, true);
-				//m_questPlayer.AddMoney(Money.GetMoney(0,0,0,2,Util.Random(50)), "You recieve {0} as a reward.");		
+				GiveItem(m_questPlayer, MinstrelEpicBoots);
+				GiveItem(m_questPlayer, MinstrelEpicHelm);
+				GiveItem(m_questPlayer, MinstrelEpicGloves);
+				GiveItem(m_questPlayer, MinstrelEpicArms);
+				GiveItem(m_questPlayer, MinstrelEpicVest);
+				GiveItem(m_questPlayer, MinstrelEpicLegs);
 			}
-			else
+			else if (m_questPlayer.CharacterClass.ID == (byte)eCharacterClass.Wizard)
 			{
-				m_questPlayer.Out.SendMessage("You do not have enough free space in your inventory!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+				GiveItem(m_questPlayer, WizardEpicBoots);
+				GiveItem(m_questPlayer, WizardEpicHelm);
+				GiveItem(m_questPlayer, WizardEpicGloves);
+				GiveItem(m_questPlayer, WizardEpicVest);
+				GiveItem(m_questPlayer, WizardEpicArms);
+				GiveItem(m_questPlayer, WizardEpicLegs);
 			}
+			else if (m_questPlayer.CharacterClass.ID == (byte)eCharacterClass.Sorcerer)
+			{
+				GiveItem(m_questPlayer, SorcerorEpicBoots);
+				GiveItem(m_questPlayer, SorcerorEpicHelm);
+				GiveItem(m_questPlayer, SorcerorEpicGloves);
+				GiveItem(m_questPlayer, SorcerorEpicVest);
+				GiveItem(m_questPlayer, SorcerorEpicArms);
+				GiveItem(m_questPlayer, SorcerorEpicLegs);
+			}
+
+			base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
+
+
+			m_questPlayer.GainExperience(eXPSource.Quest, 1937768448, false);
+			//m_questPlayer.AddMoney(Money.GetMoney(0,0,0,2,Util.Random(50)), "You recieve {0} as a reward.");		
 		}
 
 		#region Allakhazam Epic Source

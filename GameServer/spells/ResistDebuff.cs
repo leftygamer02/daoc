@@ -17,14 +17,10 @@
  *
  */
 using System;
-using System.Collections;
-using DOL.AI.Brain;
-using DOL.Database;
-using DOL.GS.Effects;
-using DOL.GS.PacketHandler;
-using DOL.GS.PropertyCalc;
-using DOL.Language;
 using System.Collections.Generic;
+using DOL.AI.Brain;
+using DOL.GS.PacketHandler;
+using DOL.Language;
 
 namespace DOL.GS.Spells
 {
@@ -75,9 +71,29 @@ namespace DOL.GS.Spells
 		/// <param name="effectiveness">factor from 0..1 (0%-100%)</param>
 		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
+			//check for existing effect
+			// var debuffs = target.effectListComponent.GetSpellEffects()
+			// 					.Where(x => x.SpellHandler is AbstractResistDebuff);
+
+			// foreach (var debuff in debuffs)
+			// {
+			// 	var debuffSpell = debuff.SpellHandler as AbstractResistDebuff;
+
+			// 	if (debuffSpell.Property1 == this.Property1 && debuffSpell.Spell.Value >= Spell.Value)
+			// 	{
+			// 		// Old Spell is Better than new one
+			// 		SendSpellResistAnimation(target);
+			// 		this.MessageToCaster(eChatType.CT_SpellResisted, "{0} already has that effect.", target.GetName(0, true));
+			// 		MessageToCaster("Wait until it expires. Spell Failed.", eChatType.CT_SpellResisted);
+			// 		// Prevent Adding.
+			// 		return;
+			// 	}
+			// }
+
+
 			//TODO: correct effectiveness formula
 			// invoke direct effect if not resisted for DD w/ debuff spells
-            if (Caster is GamePlayer && Spell.Level > 0)
+			if (Caster is GamePlayer && Spell.Level > 0)
             {
                 if (((GamePlayer)Caster).CharacterClass.ClassType == eClassType.ListCaster)
 				{
@@ -89,11 +105,14 @@ namespace DOL.GS.Spells
                     effectiveness *= (1.0 + m_caster.GetModified(eProperty.BuffEffectiveness) * 0.01);
                 }
 				else
-					{
-						effectiveness = 1.0; 
-						effectiveness *= (1.0 + m_caster.GetModified(eProperty.DebuffEffectivness) * 0.01);
-					}
+				{
+					effectiveness = 1.0; 
+					effectiveness *= (1.0 + m_caster.GetModified(eProperty.DebuffEffectivness) * 0.01);
+				}
+
+				effectiveness *= GetCritBonus();
 			}
+            
 			
 			base.ApplyEffectOnTarget(target, effectiveness);
 
@@ -115,6 +134,28 @@ namespace DOL.GS.Spells
 			}
 			if(Spell.CastTime>0) target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
 		}
+
+        private double GetCritBonus()
+        {
+            double critMod = 1.0;
+            int critChance = Caster.DotCriticalChance;
+
+            if (critChance <= 0)
+                return critMod;
+
+            GamePlayer playerCaster = Caster as GamePlayer;
+
+            if (playerCaster?.UseDetailedCombatLog == true && critChance > 0)
+                playerCaster.Out.SendMessage($"Debuff crit chance: {Caster.DotCriticalChance}", eChatType.CT_DamageAdd, eChatLoc.CL_SystemWindow);
+
+            if (Util.Chance(critChance))
+            {                    
+                critMod *= 1 + Util.Random(1, 10) * 0.1;
+                playerCaster?.Out.SendMessage($"Your {Spell.Name} critically debuffs the enemy for {Math.Round(critMod - 1,3) * 100}% additional effect!", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+            }
+
+            return critMod;
+        }
 
 		/// <summary>
 		/// Calculates chance of spell getting resisted

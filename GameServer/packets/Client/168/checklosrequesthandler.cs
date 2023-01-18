@@ -28,14 +28,40 @@ namespace DOL.GS.PacketHandler.Client.v168
 			ushort targetOID = packet.ReadShort();
 			ushort response = packet.ReadShort();
 			packet.ReadShort();
-
 			new HandleCheckAction(client.Player, checkerOID, targetOID, response).Start(1);
+			// LOSResponseHandler(client.Player, checkerOID, targetOID, response);
 		}
+
+		// private void LOSResponseHandler(GamePlayer m_actionSource, int m_checkerOid, int m_targetOid, int m_response)
+		// {
+		// 	// Check for Old Callback first
+
+		// 	string key = $"LOS C:0x{m_checkerOid} T:0x{m_targetOid}";
+
+		// 	GamePlayer player = (GamePlayer)m_actionSource;
+
+		// 	CheckLOSResponse callback = player.TempProperties.getProperty<CheckLOSResponse>(key, null);
+		// 	if (callback != null)
+		// 	{
+		// 		callback(player, (ushort)m_response, (ushort)m_targetOid);
+		// 		player.TempProperties.removeProperty(key);
+		// 	}
+
+		// 	string newkey = $"LOSMGR C:0x{m_checkerOid} T:0x{m_targetOid}";
+
+		// 	CheckLOSMgrResponse new_callback = player.TempProperties.getProperty<CheckLOSMgrResponse>(newkey, null);
+
+		// 	if (new_callback != null)
+		// 	{
+		// 		new_callback(player, (ushort)m_response, (ushort)m_checkerOid, (ushort)m_targetOid);
+		// 		player.TempProperties.removeProperty(newkey);
+		// 	}
+		// }
 
 		/// <summary>
 		/// Handles the LOS check response
 		/// </summary>
-		protected class HandleCheckAction : RegionAction
+		protected class HandleCheckAction : RegionECSAction
 		{
 			/// <summary>
 			/// The LOS source OID
@@ -69,30 +95,28 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				// Check for Old Callback first
+				GamePlayer player = (GamePlayer)m_actionSource;
 
 				string key = $"LOS C:0x{m_checkerOid} T:0x{m_targetOid}";
 
-				GamePlayer player = (GamePlayer)m_actionSource;
-
-				CheckLOSResponse callback = player.TempProperties.getProperty<CheckLOSResponse>(key, null);
-				if (callback != null)
+				if (player.TempProperties.removeAndGetProperty(key, out object callback))
 				{
-					callback(player, (ushort)m_response, (ushort)m_targetOid);
-					player.TempProperties.removeProperty(key);
+					if (callback is CheckLOSResponse checkLOSResponseCallback)
+						checkLOSResponseCallback(player, (ushort)m_response, (ushort)m_targetOid);
 				}
 
 				string newkey = $"LOSMGR C:0x{m_checkerOid} T:0x{m_targetOid}";
-
-				CheckLOSMgrResponse new_callback = player.TempProperties.getProperty<CheckLOSMgrResponse>(newkey, null);
-
-				if (new_callback != null)
+				
+				if (player.TempProperties.removeAndGetProperty(newkey, out object newCallback))
 				{
-					new_callback(player, (ushort)m_response, (ushort)m_checkerOid, (ushort)m_targetOid);
-					player.TempProperties.removeProperty(newkey);
+					if (newCallback is CheckLOSMgrResponse checkLOSResponseNewCallback)
+						checkLOSResponseNewCallback(player, (ushort)m_response, (ushort)m_checkerOid, (ushort)m_targetOid);
 				}
+
+				return 0;
 			}
 		}
 	}

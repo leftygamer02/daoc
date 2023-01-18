@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using Timer=System.Threading.Timer;
@@ -33,6 +34,7 @@ using DOL.Config;
 using DOL.GS.Housing;
 
 using log4net;
+using DOLDatabase.Tables;
 
 namespace DOL.GS
 {
@@ -529,7 +531,7 @@ namespace DOL.GS
 				                                	Region reg;
 				                                	if (m_regions.TryGetValue(data.Id, out reg))
 				                                		reg.LoadFromDatabase(data.Mobs, ref mobs, ref merchants, ref items, ref bindpoints);
-				                                });
+				});
 
 				if (log.IsInfoEnabled)
 				{
@@ -546,7 +548,7 @@ namespace DOL.GS
 				m_WorldUpdateThread.Start();
 
 				m_dayIncrement = Math.Max(0, Math.Min(1000, ServerProperties.Properties.WORLD_DAY_INCREMENT)); // increments > 1000 do not render smoothly on clients
-				m_dayStartTick = Environment.TickCount - (int)(DAY / Math.Max(1, m_dayIncrement) / 2); // set start time to 12pm
+				m_dayStartTick = (int)GameTimer.GetTickCount() - (int)(DAY / Math.Max(1, m_dayIncrement) / 2); // set start time to 12pm
 				m_dayResetTimer = new Timer(new TimerCallback(DayReset), null, DAY / Math.Max(1, m_dayIncrement) / 2, DAY / Math.Max(1, m_dayIncrement));
 
 				m_pingCheckTimer = new Timer(new TimerCallback(PingCheck), null, 10 * 1000, 0); // every 10s a check
@@ -649,7 +651,7 @@ namespace DOL.GS
 				try
 				{
 					Thread.Sleep(200); // check every 200ms for needed relocs
-					int start = Environment.TickCount;
+					long start = GameTimer.GetTickCount();
 
 					var regionsClone = m_regions.Values;
 
@@ -660,7 +662,7 @@ namespace DOL.GS
 							region.Relocate();
 						}
 					}
-					int took = Environment.TickCount - start;
+					long took = GameTimer.GetTickCount() - start;
 					if (took > 500)
 					{
 						if (log.IsWarnEnabled)
@@ -686,7 +688,7 @@ namespace DOL.GS
 		/// <param name="sender"></param>
 		private static void DayReset(object sender)
 		{
-			m_dayStartTick = Environment.TickCount;
+			m_dayStartTick = (int)GameTimer.GetTickCount();
 			foreach (GameClient client in GetAllPlayingClients())
 			{
 				if (client.Player != null && client.Player.CurrentRegion != null && client.Player.CurrentRegion.UseTimeManager)
@@ -714,7 +716,7 @@ namespace DOL.GS
 			}
 			else
 			{
-				m_dayStartTick = Environment.TickCount - (int)(dayStart / m_dayIncrement); // set start time to ...
+				m_dayStartTick = (int)GameTimer.GetTickCount() - (int)(dayStart / m_dayIncrement); // set start time to ...
 				m_dayResetTimer.Change((DAY - dayStart) / m_dayIncrement, Timeout.Infinite);
 			}
 
@@ -753,7 +755,7 @@ namespace DOL.GS
 			}
 			else
 			{
-				long diff = Environment.TickCount - m_dayStartTick;
+				long diff = GameTimer.GetTickCount() - m_dayStartTick;
 				long curTime = diff * m_dayIncrement;
 				return (uint)(curTime % DAY);
 			}
@@ -1236,147 +1238,6 @@ namespace DOL.GS
 			return;
 		}
 
-		//Various functions to get a list of players/mobs/items
-		#region getdistance
-		/// <summary>
-		/// Get's the distance of two GameObjects
-		/// </summary>
-		/// <param name="obj1">Object1</param>
-		/// <param name="obj2">Object2</param>
-		/// <returns>The distance in units or -1 if they are not the same Region</returns>
-		[Obsolete( "Use Point3D.GetDistance" )]
-		public static int GetDistance( GameObject obj1, GameObject obj2 )
-		{
-			if ( obj1 == null || obj2 == null || obj1.CurrentRegion != obj2.CurrentRegion )
-				return -1;
-			return GetDistance( obj1.X, obj1.Y, obj1.Z, obj2.X, obj2.Y, obj2.Z );
-		}
-
-		/// <summary>
-		/// Get's the distance of two GameObjects
-		/// </summary>
-		/// <param name="obj1">Object1</param>
-		/// <param name="obj2">Object2</param>
-		/// <param name="zfactor">Factor for Z distance use lower 0..1 to lower Z influence</param>
-		/// <returns>The distance in units or -1 if they are not the same Region</returns>
-		[Obsolete( "Use Point3D.GetDistance" )]
-		public static int GetDistance( GameObject obj1, GameObject obj2, double zfactor )
-		{
-			if ( obj1 == null || obj2 == null || obj1.CurrentRegion != obj2.CurrentRegion )
-				return -1;
-			return GetDistance( obj1.X, obj1.Y, obj1.Z, obj2.X, obj2.Y, obj2.Z, zfactor );
-		}
-
-		/// <summary>
-		/// Gets the distance of two arbitary points in space
-		/// </summary>
-		/// <param name="x1">X of Point1</param>
-		/// <param name="y1">Y of Point1</param>
-		/// <param name="z1">Z of Point1</param>
-		/// <param name="x2">X of Point2</param>
-		/// <param name="y2">Y of Point2</param>
-		/// <param name="z2">Z of Point2</param>
-		/// <returns>The distance</returns>
-		[Obsolete( "Use Point3D.GetDistance" )]
-		public static int GetDistance( int x1, int y1, int z1, int x2, int y2, int z2 )
-		{
-			long xdiff = (long)x1 - x2;
-			long ydiff = (long)y1 - y2;
-
-			long zdiff = (long)z1 - z2;
-			return (int)Math.Sqrt( xdiff * xdiff + ydiff * ydiff + zdiff * zdiff );
-		}
-
-		/// <summary>
-		/// Gets the distance of two arbitary points in space
-		/// </summary>
-		/// <param name="x1">X of Point1</param>
-		/// <param name="y1">Y of Point1</param>
-		/// <param name="z1">Z of Point1</param>
-		/// <param name="x2">X of Point2</param>
-		/// <param name="y2">Y of Point2</param>
-		/// <param name="z2">Z of Point2</param>
-		/// <param name="zfactor">Factor for Z distance use lower 0..1 to lower Z influence</param>
-		/// <returns>The distance</returns>
-		[Obsolete( "Use Point3D.GetDistance" )]
-		public static int GetDistance( int x1, int y1, int z1, int x2, int y2, int z2, double zfactor )
-		{
-			long xdiff = (long)x1 - x2;
-			long ydiff = (long)y1 - y2;
-
-			long zdiff = (long)( ( z1 - z2 ) * zfactor );
-			return (int)Math.Sqrt( xdiff * xdiff + ydiff * ydiff + zdiff * zdiff );
-		}
-
-		/// <summary>
-		/// Gets the distance of an Object to an arbitary point
-		/// </summary>
-		/// <param name="obj">GameObject used as Point1</param>
-		/// <param name="x">X of Point2</param>
-		/// <param name="y">Y of Point2</param>
-		/// <param name="z">Z of Point2</param>
-		/// <returns>The distance</returns>
-		[Obsolete( "Use Point3D.GetDistance" )]
-		public static int GetDistance( GameObject obj, int x, int y, int z )
-		{
-			return GetDistance( obj.X, obj.Y, obj.Z, x, y, z );
-		}
-		#endregion get distance
-
-		#region check distance
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		public static bool CheckDistance(int x1, int y1, int z1, int x2, int y2, int z2, int radius)
-		{
-			return CheckSquareDistance(x1, y1, z1, x2, y2, z2, radius * radius);
-		}
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		public static bool CheckDistance( IPoint3D obj, IPoint3D obj2, int radius )
-		{
-			return CheckDistance(obj.X, obj.Y, obj.Z, obj2.X, obj2.Y, obj2.Z, radius);
-		}
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		public static bool CheckDistance( GameObject obj, int x2, int y2, int z2, int radius )
-		{
-			return CheckDistance(obj.X, obj.Y, obj.Z, x2, y2, z2, radius);
-		}
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		public static bool CheckDistance( GameObject obj, GameObject obj2, int radius )
-		{
-			if (obj == null || obj2 == null)
-				return false;
-			if (obj.CurrentRegion != obj2.CurrentRegion)
-				return false;
-			return CheckDistance(obj.X, obj.Y, obj.Z, obj2.X, obj2.Y, obj2.Z, radius);
-		}
-		#endregion
-		#region check square distance
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		private static bool CheckSquareDistance( int x1, int y1, int z1, int x2, int y2, int z2, int squareRadius )
-		{
-			long xdiff = (long)x1 - x2;
-			long ydiff = (long)y1 - y2;
-			long zdiff = (long)z1 - z2;
-			return (xdiff * xdiff + ydiff * ydiff + zdiff * zdiff <= squareRadius);
-		}
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		private static bool CheckSquareDistance( IPoint3D obj, IPoint3D obj2, int squareRadius )
-		{
-			return CheckSquareDistance(obj.X, obj.Y, obj.Z, obj2.X, obj2.Y, obj2.Z, squareRadius);
-		}
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		private static bool CheckSquareDistance( GameObject obj, int x2, int y2, int z2, int squareRadius )
-		{
-			return CheckSquareDistance(obj.X, obj.Y, obj.Z, x2, y2, z2, squareRadius);
-		}
-		[Obsolete( "Use Point3D.IsWithinRadius" )]
-		private static bool CheckSquareDistance( GameObject obj, GameObject obj2, int squareRadius )
-		{
-			if (obj.CurrentRegion != obj2.CurrentRegion)
-				return false;
-			return CheckSquareDistance(obj.X, obj.Y, obj.Z, obj2.X, obj2.Y, obj2.Z, squareRadius);
-		}
-		#endregion
-
 		/// <summary>
 		/// Returns the number of playing Clients inside a realm
 		/// </summary>
@@ -1507,7 +1368,56 @@ namespace DOL.GS
 
 			return targetClients;
 		}
+		/// <summary>
+		/// Returns a list of playing clients inside a zone
+		/// </summary>
+		/// <param name="zoneID">The ID of the Zone</param>
+		/// <returns>Array of GameClients from that Zone</returns>
+		public static IList<GameClient> GetClientsOfZone(ushort zoneID)
+		{
+			var targetClients = new List<GameClient>();
 
+			lock (m_clients.SyncRoot)
+			{
+				foreach (GameClient client in m_clients)
+				{
+					if (client != null)
+					{
+						if (client.IsPlaying
+							&& client.Player != null
+							&& client.Player.ObjectState == GameObject.eObjectState.Active
+							&& client.Player.CurrentZone.ID == zoneID)
+							targetClients.Add(client);
+					}
+				}
+			}
+
+			return targetClients;
+		}
+		
+		/// <summary>
+		/// Returns a list of playing clients from a given IP address
+		/// </summary>
+		/// <param name="ip">The IP address</param>
+		/// <returns>Array of GameClients from that IP</returns>
+		public static IList<GameClient> GetClientsFromIP(string ip)
+		{
+			var targetClients = new List<GameClient>();
+
+			lock (m_clients.SyncRoot)
+			{
+				foreach (GameClient client in m_clients)
+				{
+					if (client != null)
+					{
+						if (((IPEndPoint)client.Socket.RemoteEndPoint)?.Address.ToString() == ip)
+							targetClients.Add(client);
+					}
+				}
+			}
+			return targetClients;
+		}
+		
 		/// <summary>
 		/// Find a GameClient by the Player's ID
 		/// Case-insensitive, make sure you use returned Player.Name instead of what player typed.
@@ -1564,7 +1474,8 @@ namespace DOL.GS
 		{
 			if (exactMatch)
 			{
-				return GetClientByPlayerNameAndRealm(playerName, 0, activeRequired);
+				var client = GetClientByPlayerNameAndRealm(playerName, 0, activeRequired).FirstOrDefault();
+				return client.Player.Name.ToLower() == playerName.ToLower() ? client : null; //only return if it's an exact match
 			}
 			else
 			{
@@ -1581,22 +1492,33 @@ namespace DOL.GS
 		/// <param name="realmID">search in: 0=all realms or player.Realm</param>
 		/// <param name="activeRequired"></param>
 		/// <returns>The found GameClient or null</returns>
-		public static GameClient GetClientByPlayerNameAndRealm(string playerName, eRealm realm, bool activeRequired)
+		public static List<GameClient> GetClientByPlayerNameAndRealm(string playerName, eRealm realm, bool activeRequired)
 		{
+			List<GameClient> potentialMatches = new List<GameClient>();
 			lock (m_clients.SyncRoot)
 			{
+				
 				foreach (GameClient client in m_clients)
 				{
 					if (client != null && client.Player != null && (realm == eRealm.None || client.Player.Realm == realm))
 					{
 						if (activeRequired && (!client.IsPlaying || client.Player.ObjectState != GameObject.eObjectState.Active))
 							continue;
-						if (0 == string.Compare(client.Player.Name, playerName, true)) // case insensitive comapre
+						
+						if (0 == String.Compare(client.Player.Name, playerName, StringComparison.OrdinalIgnoreCase)) // case insensitive comapre
 						{
-							return client;
+							potentialMatches.Add(client);
+							//return potentialMatches;
+							return new List<GameClient> { client }; //return exact match
 						}
+
+						if (client.Player.Name.ToLower().StartsWith(playerName.ToLower())) potentialMatches.Add(client);
+
 					}
 				}
+
+				return potentialMatches;
+
 			}
 			return null;
 		}
@@ -1614,8 +1536,8 @@ namespace DOL.GS
 		{
 			// first try exact match in case player with "abcde" name is
 			// before "abc" in list and user typed "abc"
-			GameClient guessedClient = GetClientByPlayerNameAndRealm(playerName, realm, activeRequired);
-			if (guessedClient != null)
+			GameClient guessedClient = GetClientByPlayerNameAndRealm(playerName, realm, activeRequired).FirstOrDefault();
+			if (guessedClient != null && guessedClient.Player.Name.ToLower() == playerName.ToLower())
 			{
 				result = 3; // exact match
 				return guessedClient;

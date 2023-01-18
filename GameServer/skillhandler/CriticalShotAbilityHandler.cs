@@ -56,6 +56,13 @@ namespace DOL.GS.SkillHandler
 			if (trueshot != null)
 				EffectService.RequestImmediateCancelEffect(trueshot, false);
 
+			ECSGameEffect volley = EffectListService.GetEffectOnTarget(player, eEffect.Volley);
+			if (volley != null)
+            {
+				player.Out.SendMessage("You can't use Critical-Shot while Volley is active!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				return;
+			}
+
 			if (player.attackComponent.AttackState)
 			{
 				if (player.rangeAttackComponent.RangedAttackType == eRangedAttackType.Critical)
@@ -70,7 +77,7 @@ namespace DOL.GS.SkillHandler
 				return;
 			}
 			player.rangeAttackComponent.RangedAttackType = eRangedAttackType.Critical;
-			player.attackComponent.StartAttack(player.TargetObject);
+			player.attackComponent.RequestStartAttack(player.TargetObject);
 		}
 	}
 }

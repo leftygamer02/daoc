@@ -46,13 +46,17 @@ namespace DOL.GS
         }
 
         /// <summary>
-		/// Holds the Style that this living should use next
+		/// Holds the style that this living should use next
 		/// </summary>
 		protected Style m_nextCombatStyle;
         /// <summary>
         /// Holds the backup style for the style that the living should use next
         /// </summary>
         protected Style m_nextCombatBackupStyle;
+        /// <summary>
+        /// Holds the time at which the style was set
+        /// </summary>
+        protected long m_nextCombatStyleTime;
 
         /// <summary>
         /// Gets or Sets the next combat style to use
@@ -69,6 +73,14 @@ namespace DOL.GS
         {
             get { return m_nextCombatBackupStyle; }
             set { m_nextCombatBackupStyle = value; }
+        }
+        /// <summary>
+        /// Gets or Sets the time at which the style was set
+        /// </summary>
+        public long NextCombatStyleTime
+        {
+            get { return m_nextCombatStyleTime; }
+            set { m_nextCombatStyleTime = value; }
         }
 
         /// <summary>
@@ -101,7 +113,7 @@ namespace DOL.GS
             if (NextCombatStyle == null) return null;
             if (NextCombatStyle.WeaponTypeRequirement == (int)eObjectType.Shield)
                 weapon = owner.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-            else weapon = owner.attackComponent.AttackWeapon;
+            else weapon = owner.ActiveWeapon;
 
             if (StyleProcessor.CanUseStyle(owner, NextCombatStyle, weapon))
                 return NextCombatStyle;
@@ -112,7 +124,7 @@ namespace DOL.GS
         }
 
         /// <summary>
-		/// Picks a style, prioritizing reactives an	d chains over positionals and anytimes
+		/// Picks a style, prioritizing reactives and chains over positionals and anytimes
 		/// </summary>
 		/// <returns>Selected style</returns>
 		public Style NPCGetStyleToUse()
@@ -121,44 +133,49 @@ namespace DOL.GS
             if (p.Styles == null || p.Styles.Count < 1 || p.TargetObject == null)
                 return null;
 
-            // Chain and defensive styles skip the GAMENPC_CHANCES_TO_STYLE,
-            //	or they almost never happen e.g. NPC blocks 10% of the time,
-            //	default 20% style chance means the defensive style only happens
-            //	2% of the time, and a chain from it only happens 0.4% of the time.
+            // Chain and defensive styles are excluded from the chance roll because they would almost never happen otherwise. 
+            // For example, an NPC blocks 10% of the time, so the default 20% style chance effectively means the defensive 
+            // style would only actually occur during 2% of of a mob's attacks. In comparison, a style chain would only happen 
+            // 0.4% of the time.
             if (p.StylesChain != null && p.StylesChain.Count > 0)
                 foreach (Style s in p.StylesChain)
-                    if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
+                    if (StyleProcessor.CanUseStyle(p, s, p.ActiveWeapon))
                         return s;
 
             if (p.StylesDefensive != null && p.StylesDefensive.Count > 0)
                 foreach (Style s in p.StylesDefensive)
-                    if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon)
+                    if (StyleProcessor.CanUseStyle(p, s, p.ActiveWeapon)
                         && p.CheckStyleStun(s)) // Make sure we don't spam stun styles like Brutalize
                         return s;
 
             if (Util.Chance(Properties.GAMENPC_CHANCES_TO_STYLE))
             {
-                // Check positional styles
-                // Picking random styles allows mobs to use multiple styles from the same position
-                //	e.g. a mob with both Pincer and Ice Storm side styles will use both of them.
+                // All of the remaining lists are randomly picked from,
+                // as this creates more variety with each combat result.
+                // For example, a mob with both Pincer and Ice Storm
+                // styles could potentially use one or the other with
+                // each attack roll that succeeds.
+                
+                // First, check positional styles (in order of back, side, front)
+                // in case the defender is facing another direction
                 if (p.StylesBack != null && p.StylesBack.Count > 0)
                 {
                     Style s = p.StylesBack[Util.Random(0, p.StylesBack.Count - 1)];
-                    if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
+                    if (StyleProcessor.CanUseStyle(p, s, p.ActiveWeapon))
                         return s;
                 }
 
                 if (p.StylesSide != null && p.StylesSide.Count > 0)
                 {
                     Style s = p.StylesSide[Util.Random(0, p.StylesSide.Count - 1)];
-                    if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
+                    if (StyleProcessor.CanUseStyle(p, s, p.ActiveWeapon))
                         return s;
                 }
 
                 if (p.StylesFront != null && p.StylesFront.Count > 0)
                 {
                     Style s = p.StylesFront[Util.Random(0, p.StylesFront.Count - 1)];
-                    if (StyleProcessor.CanUseStyle(p, s, p.attackComponent.AttackWeapon))
+                    if (StyleProcessor.CanUseStyle(p, s, p.ActiveWeapon))
                         return s;
                 }
 

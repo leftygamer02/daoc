@@ -1,12 +1,11 @@
 using System;
-using System.Reflection;
 using System.Collections;
 using DOL.Events;
-using DOL.GS;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
 using DOL.Database;
-using log4net;
+using DOL.GS.ServerProperties;
+
 
 namespace DOL.GS
 {
@@ -29,10 +28,11 @@ namespace DOL.GS
 		GamePlayer m_currentCarrier = null;
 		GameRelicPad m_currentRelicPad = null;
 		GameRelicPad m_returnRelicPad = null;
-		RegionTimer m_currentCarrierTimer;
+		DateTime m_lastCapturedDate = DateTime.Now;
+		ECSGameTimer m_currentCarrierTimer;
 		DBRelic m_dbRelic;
 		eRelicType m_relicType;
-		RegionTimer m_returnRelicTimer;
+		ECSGameTimer m_returnRelicTimer;
 		long m_timeRelicOnGround = 0;
 
 		protected int ReturnRelicInterval
@@ -89,6 +89,12 @@ namespace DOL.GS
 			{
 				m_lastRealm = value;
 			}
+		}
+
+		public DateTime LastCaptureDate
+		{
+			get { return m_lastCapturedDate; }
+			set { m_lastCapturedDate = value; }
 		}
 
 		/// <summary>
@@ -230,10 +236,10 @@ namespace DOL.GS
 				AbstractGameKeep keep = GameServer.KeepManager.GetKeepCloseToSpot(m_currentRelicPad.CurrentRegionID, m_currentRelicPad, WorldMgr.VISIBILITY_DISTANCE);
 
 				log.DebugFormat("keep {0}", keep);
-
-				if (keep != null && keep.Realm != player.Realm)
+				
+				if (m_currentRelicPad.GetEnemiesOnPad() < Properties.RELIC_PLAYERS_REQUIRED_ON_PAD)
 				{
-					player.Out.SendMessage("You must capture this keep before taking a relic.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					player.Out.SendMessage($"You must have {Properties.RELIC_PLAYERS_REQUIRED_ON_PAD} players nearby the pad before taking a relic.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 					return;
 				}
 			}
@@ -241,7 +247,7 @@ namespace DOL.GS
 			if (player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, m_item))
 			{
 				if (m_item == null)
-					log.Warn("GameRelic: Could not retrive " + Name + " as InventoryItem on player " + player.Name);
+					log.Warn("GameRelic: Could not retrieve " + Name + " as InventoryItem on player " + player.Name);
 				InventoryLogging.LogInventoryAction(this, player, eInventoryActionType.Other, m_item.Template, m_item.Count);
 
 
@@ -313,13 +319,15 @@ namespace DOL.GS
 			player.TempProperties.removeProperty(PLAYER_CARRY_RELIC_WEAK);
 			m_currentCarrier = null;
 			player.Out.SendUpdateMaxSpeed();
+			//CurrentRegion.Time;
 
 			if (IsMounted == false)
 			{
 				// launch the reset timer if this relic is not dropped on a pad
-				m_timeRelicOnGround = CurrentRegion.Time;
-				m_returnRelicTimer = new RegionTimer(this, new RegionTimerCallback(ReturnRelicTick), RelicEffectInterval);
+				m_timeRelicOnGround = GameLoop.GameLoopTime;
+				m_returnRelicTimer = new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(ReturnRelicTick), RelicEffectInterval);
 				log.DebugFormat("{0} dropped, return timer for relic set to {1} seconds.", Name, ReturnRelicInterval / 1000);
+				Console.WriteLine($"Starting return relic timer {m_returnRelicTimer}");
 
 				// update the position of the worldObject Relic
 				Update();
@@ -331,9 +339,9 @@ namespace DOL.GS
 		/// <summary>
 		/// when the relic is lost and ReturnRelicInterval is elapsed
 		/// </summary>
-		protected virtual int ReturnRelicTick(RegionTimer timer)
+		protected virtual int ReturnRelicTick(ECSGameTimer timer)
 		{
-			if (CurrentRegion.Time - m_timeRelicOnGround < ReturnRelicInterval)
+			if (GameLoop.GameLoopTime - m_timeRelicOnGround < ReturnRelicInterval)
 			{
 				// Note: This does not show up, possible issue with SendSpellEffect
 				ushort effectID = (ushort)Util.Random(5811, 5815);
@@ -367,6 +375,7 @@ namespace DOL.GS
 		/// <param name="player">Player to set the timer on. Timer stops if param is null</param>
 		protected virtual void StartPlayerTimer(GamePlayer player)
 		{
+			Console.WriteLine($"Starting player relic timer {player} currentTimer {m_currentCarrierTimer}");
 			if (player != null)
 			{
 				if (m_currentCarrierTimer != null)
@@ -375,7 +384,7 @@ namespace DOL.GS
 					m_currentCarrierTimer.Stop();
 					m_currentCarrierTimer = null;
 				}
-				m_currentCarrierTimer = new RegionTimer(player, new RegionTimerCallback(CarrierTimerTick));
+				m_currentCarrierTimer = new ECSGameTimer(player, new ECSGameTimer.ECSTimerCallback(CarrierTimerTick));
 				m_currentCarrierTimer.Start(RelicEffectInterval);
 
 			}
@@ -395,7 +404,7 @@ namespace DOL.GS
 		/// The callback for the pulsing spelleffect
 		/// </summary>
 		/// <param name="timer">The ObjectTimerCallback object</param>
-		private int CarrierTimerTick(RegionTimer timer)
+		private int CarrierTimerTick(ECSGameTimer timer)
 		{
 			//update the relic position
 			Update();
@@ -502,6 +511,7 @@ namespace DOL.GS
 			Realm = (eRealm)m_dbRelic.Realm;
 			m_originalRealm = (eRealm)m_dbRelic.OriginalRealm;
 			m_lastRealm = (eRealm)m_dbRelic.LastRealm;
+			m_lastCapturedDate = m_dbRelic.LastCaptureDate;
 
 
 			//get constant values
@@ -547,6 +557,7 @@ namespace DOL.GS
 			m_dbRelic.X = X;
 			m_dbRelic.Y = Y;
 			m_dbRelic.Z = Z;
+			m_dbRelic.LastCaptureDate = m_lastCapturedDate;
 
 			if (InternalID == null)
 			{
@@ -579,7 +590,7 @@ namespace DOL.GS
 				case eRealm.Albion:
 					if (RelicType == eRelicType.Magic)
 					{
-						m_template.Name = "Merlins Staff";
+						m_template.Name = "Merlin's Staff";
 						m_template.Model = 630;
 					}
 					else
@@ -596,7 +607,7 @@ namespace DOL.GS
 					}
 					else
 					{
-						m_template.Name = "Thors Hammer";
+						m_template.Name = "Thor's Hammer";
 						m_template.Model = 634;
 					}
 					break;
@@ -608,12 +619,12 @@ namespace DOL.GS
 					}
 					else
 					{
-						m_template.Name = " Lughs Spear of Lightning";
+						m_template.Name = "Lug's Spear of Lightning";
 						m_template.Model = 633;
 					}
 					break;
 				default:
-					m_template.Name = "Unkown Relic";
+					m_template.Name = "Unknown Relic";
 					m_template.Model = 633;
 					break;
 

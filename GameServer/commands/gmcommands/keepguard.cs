@@ -127,6 +127,20 @@ namespace DOL.GS.Commands
 									break;
 								}
 							#endregion Caster
+							#region Merchant
+							case "merchant":
+							{
+								guard = new GuardMerchant();
+								break;
+							}
+							#endregion Merchant
+							#region CurrencyMerchant
+							case "currencymerchant":
+							{
+								guard = new GuardCurrencyMerchant();
+								break;
+							}
+							#endregion CurrencyMerchant
 							#region Hastener
 							case "hastener":
 								{
@@ -191,6 +205,25 @@ namespace DOL.GS.Commands
 									return;
 								}
 							#endregion Patrol
+							#region CorpseSummoner
+                            case "corpsesummoner":
+                                {
+                                    guard = new GuardCorpseSummoner();
+                                    break;
+                                }
+                            #endregion CorpseSummoner
+                            #region GateKeeper
+                            case "gatekeeperin":
+                                {
+                                    guard = new GateKeeperIn();
+                                    break;
+                                }
+                            case "gatekeeperout":
+                                {
+                                    guard = new GateKeeperOut();
+                                    break;
+                                }
+                            #endregion GateKeeper
 						}
 
 						if (guard == null)

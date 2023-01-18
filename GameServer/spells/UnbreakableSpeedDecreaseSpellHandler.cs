@@ -34,12 +34,15 @@ namespace DOL.GS.Spells
 		{
 			new StatDebuffECSEffect(initParams);
 		}
+		
 		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
 			var effect = EffectListService.GetSpellEffectOnTarget(target, eEffect.MovementSpeedDebuff);
 			if (target.HasAbility(Abilities.CCImmunity)||target.HasAbility(Abilities.RootImmunity) || 
-				EffectListService.GetEffectOnTarget(target, eEffect.SnareImmunity) != null || 
-				(effect != null && effect.SpellHandler.Spell.Value == 99))
+				EffectListService.GetEffectOnTarget(target, eEffect.SnareImmunity) != null ||
+				EffectListService.GetEffectOnTarget(target, eEffect.SpeedOfSound) != null || 
+				(effect != null && effect.SpellHandler.Spell.Value == 99)
+				&& !Spell.Name.Equals("Prevent Flight"))
 			{
 				//EffectService.RequestCancelEffect(effect);
 				MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
@@ -118,6 +121,9 @@ namespace DOL.GS.Spells
 				duration = 1;
 			else if (duration > (Spell.Duration * 4))
 				duration = (Spell.Duration * 4);
+
+			if (Spell.Name.Equals("Prevent Flight"))
+				duration = Spell.Duration;
 			return (int)duration;
 		}
 

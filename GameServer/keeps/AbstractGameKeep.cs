@@ -67,12 +67,12 @@ namespace DOL.GS.Keeps
 		/// <summary>
 		/// Timer to remove bounty point and add realm point to guild which own keep
 		/// </summary>
-		protected RegionTimer m_claimTimer;
+		protected ECSGameTimer m_claimTimer;
 
 		/// <summary>
 		/// Timerto upgrade the keep level
 		/// </summary>
-		protected RegionTimer m_changeLevelTimer;
+		protected AuxECSGameTimer m_changeLevelTimer;
 
 		protected long m_lastAttackedByEnemyTick = 0;
 		public long LastAttackedByEnemyTick
@@ -315,6 +315,17 @@ namespace DOL.GS.Keeps
 			}
 		}
 
+		protected byte m_skinType = 0;
+		public bool IsRelic
+		{
+			get
+			{
+				if (m_skinType == 0)
+					m_skinType = DBKeep.SkinType;
+				return m_skinType == 99;
+			}
+		}
+
 		/// <summary>
 		/// calculate the effective level from a keep level
 		/// </summary>
@@ -472,7 +483,6 @@ namespace DOL.GS.Keeps
 			{
 				area = new KeepArea(this);
 				area.CanBroadcast = true;
-				area.CheckLOS = true;
 				CurrentRegion.AddArea(area);
 			}
 			area.Keep = this;
@@ -661,7 +671,8 @@ namespace DOL.GS.Keeps
 				int count = 0;
 				foreach (GamePlayer p in player.Group.GetPlayersInTheGroup())
 				{
-					if (GameServer.KeepManager.GetKeepCloseToSpot(p.CurrentRegionID, p, 1000) == this)
+					// if (GameServer.KeepManager.GetKeepCloseToSpot(p.CurrentRegionID, p, 1000) == this)
+					if (p.CurrentAreas.Contains(this.Area)) //Check if player is in keep area
 						count++;
 				}
 
@@ -704,10 +715,10 @@ namespace DOL.GS.Keeps
 				banner.ChangeGuild();
 			}
 
-			GameKeepDoor door = new GameKeepDoor();
+			// GameKeepDoor door = new GameKeepDoor();
     		this.SaveIntoDatabase();
             LoadFromDatabase(DBKeep);
-            door.BroadcastDoorStatus();
+            // door.BroadcastDoorStatus();
             StartDeductionTimer();
             GameEventMgr.Notify(KeepEvent.KeepClaimed, this, new KeepEventArgs(this));
 		}
@@ -717,7 +728,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public void StartDeductionTimer()
 		{
-			m_claimTimer.Start(1);
+			//m_claimTimer.Start(1);
 		}
 
 		/// <summary>
@@ -725,24 +736,26 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public void StopDeductionTimer()
 		{
-			m_claimTimer.Stop();
+			//m_claimTimer.Stop();
 		}
 
 		protected void InitialiseTimers()
 		{
-			m_changeLevelTimer = new RegionTimer(CurrentRegion.TimeManager);
-			m_changeLevelTimer.Callback = new RegionTimerCallback(ChangeLevelTimerCallback);
-			m_claimTimer = new RegionTimer(CurrentRegion.TimeManager);
-			m_claimTimer.Callback = new RegionTimerCallback(ClaimCallBack);
-			m_claimTimer.Interval = CLAIM_CALLBACK_INTERVAL;
+			m_changeLevelTimer = new AuxECSGameTimer(new GameNPC());
+			m_changeLevelTimer.Callback = new AuxECSGameTimer.AuxECSTimerCallback(ChangeLevelTimerCallback);
+
+			//Commenting out claimTimer as we dont give RPs to guilds for holding onto claimed keeps currently.
+			// m_claimTimer = new ECSGameTimer(new GameNPC());
+			// m_claimTimer.Callback = new ECSGameTimer.ECSTimerCallback(ClaimCallBack);
+			// m_claimTimer.Interval = CLAIM_CALLBACK_INTERVAL;
 		}
 
 		protected void UnloadTimers()
 		{
 			m_changeLevelTimer.Stop();
 			m_changeLevelTimer = null;
-			m_claimTimer.Stop();
-			m_claimTimer = null;
+			// m_claimTimer.Stop();
+			// m_claimTimer = null;
 		}
 
 		/// <summary>
@@ -750,12 +763,12 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		/// <param name="timer"></param>
 		/// <returns></returns>
-		public int ClaimCallBack(RegionTimer timer)
+		public int ClaimCallBack(ECSGameTimer timer)
 		{
 			if (Guild == null)
 				return 0;
 
-			int amount = CalculRP();
+			var amount = CalculRP();
 			this.Guild.RealmPoints+=amount;
 
 			return timer.Interval;
@@ -772,7 +785,7 @@ namespace DOL.GS.Keeps
 
 		public virtual bool CheckForRelease(GamePlayer player)
 		{
-			if (InCombat)
+			if (InCombat && player.Client.Account.PrivLevel == 1)
 			{
 				player.Out.SendMessage(Name + " is under attack and can't be released.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				log.DebugFormat("KEEPWARNING: {0} attempted to release {1} while in combat.", player.Name, Name);
@@ -950,11 +963,11 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public void StartChangeLevelTimer()
 		{
-			int newinterval = CalculateTimeToUpgrade();
+			var newinterval = CalculateTimeToUpgrade();
 
 			if (m_changeLevelTimer.IsAlive)
 			{
-				int timeelapsed = m_changeLevelTimer.Interval - m_changeLevelTimer.TimeUntilElapsed;
+				var timeelapsed = m_changeLevelTimer.Interval - m_changeLevelTimer.TimeUntilElapsed;
 				//if timer has run for more then we need, run event instantly
 				if (timeelapsed > m_changeLevelTimer.Interval)
 					newinterval = 1;
@@ -994,7 +1007,7 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		/// <param name="timer"></param>
 		/// <returns></returns>
-		public int ChangeLevelTimerCallback(RegionTimer timer)
+		public int ChangeLevelTimerCallback(AuxECSGameTimer timer)
 		{
 			if (this is GameKeepTower)
 			{

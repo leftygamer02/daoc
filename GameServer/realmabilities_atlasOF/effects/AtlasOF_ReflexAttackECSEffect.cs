@@ -11,7 +11,7 @@ namespace DOL.GS.Effects
             EffectService.RequestStartEffect(this);
         }
 
-        public override ushort Icon { get { return 3011; } }
+        public override ushort Icon { get { return 4277; } }
         public override string Name { get { return "Reflex Attack"; } }
         public override bool HasPositiveEffect { get { return true; } }
 
@@ -30,6 +30,7 @@ namespace DOL.GS.Effects
                 {
                     t_player.Out.SendMessage(OwnerPlayer.Name + " starts automatically counter-attacking melee attacks!", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
                 }
+                t_player.Out.SendSpellEffectAnimation(OwnerPlayer, OwnerPlayer, 7012, 0, false, 1);
             }
         }
 

@@ -57,7 +57,7 @@ namespace DOL.AI.Brain
                 playerowner.Client.GameObjectUpdateArray.TryAdd(new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID), lastUpdate);
             }
 
-            if (playerowner != null && (GameTimer.GetTickCount() - playerowner.Client.GameObjectUpdateArray[new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID)]) > ThinkInterval)
+            if (playerowner != null && (GameLoop.GameLoopTime - playerowner.Client.GameObjectUpdateArray[new Tuple<ushort, ushort>(Body.CurrentRegionID, (ushort)Body.ObjectID)]) > ThinkInterval)
             {
                 playerowner.Out.SendObjectUpdate(Body);
             }
@@ -148,7 +148,8 @@ namespace DOL.AI.Brain
 					CheckNPCAggro();
 					target = CalculateNextAttackTarget();
 				}
-                if ( target != null && Body.IsWithinRadius( target, spell.Range ) )
+
+				if ( target != null && Body.IsWithinRadius( target, spell.Range ) )
 				{
 					if(!Body.IsAttacking || target != Body.TargetObject)
 					{
@@ -157,7 +158,7 @@ namespace DOL.AI.Brain
 						{
 							Body.TurnTo(Body.TargetObject);
 						}
-						Body.CastSpell(spell, m_mobSpellLine);
+						Body.CastSpell(spell, m_mobSpellLine, false);
 					}
 				}
 				else
@@ -191,7 +192,7 @@ namespace DOL.AI.Brain
 		/// <returns></returns>
 		public GameLiving GetDefensiveTarget(Spell spell)
 		{
-			foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)spell.Range, Body.CurrentRegion.IsDungeon ? false : true))
+			foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)spell.Range, !Body.CurrentRegion.IsDungeon))
 			{
 				if(GameServer.ServerRules.IsAllowedToAttack(Body, player, true))
 					continue;
@@ -213,7 +214,7 @@ namespace DOL.AI.Brain
 
 				ListDefensiveTarget.Add(player);
 			}
-			foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)spell.Range, Body.CurrentRegion.IsDungeon ? false : true))
+			foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)spell.Range, !Body.CurrentRegion.IsDungeon))
 			{
 				if(GameServer.ServerRules.IsAllowedToAttack(Body, npc, true))
 					continue;

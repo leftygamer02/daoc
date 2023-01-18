@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-using System;
 using System.Collections.Generic;
 using DOL.Database;
 using DOL.GS.Effects;
@@ -29,7 +28,7 @@ namespace DOL.GS.Spells
 	public interface ISpellHandler
 	{
 		GameLiving GetTarget();
-		
+		eCastState CastState { get; set; }
 		void CreateECSEffect(ECSGameEffectInitParams initParams);
 		/// <summary>
 		/// Called when a spell is casted
@@ -61,6 +60,12 @@ namespace DOL.GS.Spells
 		/// this callback is called
 		/// </summary>
 		void InterruptCasting();
+
+		/// <summary>
+		/// Special Use case when Amnesia is casted against caster.
+		/// </summary>
+		void AmnesiaInterruptCasting();
+
 
 		/// <summary>
 		/// Has to be called when the caster moves

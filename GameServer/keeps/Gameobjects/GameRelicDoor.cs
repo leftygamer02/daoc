@@ -19,6 +19,8 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Linq;
 
 using DOL.Database;
 using DOL.Events;
@@ -155,10 +157,10 @@ namespace DOL.GS.Keeps
 			{
                 Point2D point;
 				//calculate x y
-                if ( IsObjectInFront( player, 180, false ) )
-                    point = this.GetPointFromHeading( this.Heading, -500 );
+                if (IsObjectInFront(player, 180) )
+                    point = this.GetPointFromHeading(this.Heading, -500);
                 else
-                    point = this.GetPointFromHeading( this.Heading, 500 );
+                    point = this.GetPointFromHeading(this.Heading, 500);
 
 				//move player
 				player.MoveTo(CurrentRegionID, point.X, point.Y, player.Z, player.Heading);
@@ -294,10 +296,24 @@ namespace DOL.GS.Keeps
 		/// </summary>
 		public virtual void BroadcastDoorStatus()
 		{
-			foreach (GameClient client in WorldMgr.GetClientsOfRegion(CurrentRegionID))
+
+			
+			Parallel.ForEach(this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE).OfType<GamePlayer>(), player =>
 			{
-				client.Player.SendDoorUpdate(this);
-			}
+				try
+				{
+					player.SendDoorUpdate(this);
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine($"Critical error encountered in Relic Door health broadcast: {e}");
+				}
+			});
+
+			// foreach (GameClient client in WorldMgr.GetClientsOfRegion(CurrentRegionID))
+			// {
+			// 	client.Player.SendDoorUpdate(this);
+			// }
 		}
 
 		/*

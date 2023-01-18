@@ -16,12 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
+using System.Linq;
 using DOL.AI.Brain;
-using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using DOL.GS.RealmAbilities;
-using DOL.GS.Spells;
+
 
 namespace DOL.GS.PropertyCalc
 {
@@ -45,7 +46,7 @@ namespace DOL.GS.PropertyCalc
 
 		public override int CalcValue(GameLiving living, eProperty property)
 		{
-			if (living.IsMezzed || living.IsStunned) return 0;
+			if ((living.IsMezzed || living.IsStunned) && living.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) == null) return 0;
 
 			double speed = living.BuffBonusMultCategory1.Get((int)property);
 
@@ -80,7 +81,6 @@ namespace DOL.GS.PropertyCalc
 						if (speed <= 0)
 						{
 							speed = 0;
-							player.Out.SendMessage("You are encumbered and cannot move.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						}
 					}
 					else
@@ -90,21 +90,23 @@ namespace DOL.GS.PropertyCalc
 				}
 				if (player.IsStealthed)
 				{
-					MasteryOfStealthAbility mos = player.GetAbility<MasteryOfStealthAbility>();
+					AtlasOF_MasteryOfStealth mos = player.GetAbility<AtlasOF_MasteryOfStealth>();
 					//GameSpellEffect bloodrage = SpellHandler.FindEffectOnTarget(player, "BloodRage");
-					VanishEffect vanish = player.EffectList.GetOfType<VanishEffect>();
+					//VanishEffect vanish = player.EffectList.GetOfType<VanishEffect>();
 
 					double stealthSpec = player.GetModifiedSpecLevel(Specs.Stealth);
 					if (stealthSpec > player.Level)
 						stealthSpec = player.Level;
 					speed *= 0.3 + (stealthSpec + 10) * 0.3 / (player.Level + 10);
-					if (vanish != null)
-						speed *= vanish.SpeedBonus;
+					//if (vanish != null)
+						//speed *= vanish.SpeedBonus;
 					if (mos != null)
-						speed *= 1 + MasteryOfStealthAbility.GetSpeedBonusForLevel(mos.Level);
+						speed *= 1 + mos.GetAmountForLevel(mos.Level) / 100.0;
 					//if (bloodrage != null)
-						//speed *= 1 + (bloodrage.Spell.Value * 0.01); // 25 * 0.01 = 0.25 (a.k 25%) value should be 25.
-					
+						//speed *= 1 + (bloodrage.Spell.Value * 0.01); // 25 * 0.01 = 0.25 (a.k 25%) value should be 25.5
+					if (player.effectListComponent.ContainsEffectForEffectType(eEffect.ShadowRun)) //double stealthed movement with ShadowRun
+						speed *= 2;
+
 				}
 
 				if (GameRelic.IsPlayerCarryingRelic(player))
@@ -126,17 +128,25 @@ namespace DOL.GS.PropertyCalc
 			}
 			else if (living is GameNPC)
 			{
+				IControlledBrain brain = ((GameNPC)living).Brain as IControlledBrain;
+				
 				if (!living.InCombat)
 				{
-					IControlledBrain brain = ((GameNPC)living).Brain as IControlledBrain;
-					if (brain != null)
+					if (brain != null && brain.Body != null)
 					{
                         GameLiving owner = brain.GetLivingOwner();
+                        int distance = brain.Body.GetDistanceTo(owner);
 						if (owner != null)
 						{
 							if (owner == brain.Body.CurrentFollowTarget)
 							{
-								speed *= 1.25;
+								if (distance > 20)
+									speed *= 1.25;
+
+								if (living is NecromancerPet && distance > 700)
+								{
+									speed *= 1.25;
+								}
 
 								double ownerSpeedAdjust = (double)owner.MaxSpeed / (double)GamePlayer.PLAYER_BASE_SPEED;
 
@@ -147,7 +157,29 @@ namespace DOL.GS.PropertyCalc
 
                                 if (owner is GamePlayer && (owner as GamePlayer).IsOnHorse)
                                 {
-									speed *= 1.45;
+									speed *= 3.0;
+								}
+                                
+                                if (owner is GamePlayer && (owner as GamePlayer).IsSprinting)
+                                {
+	                                speed *= 1.4;
+                                }
+							}
+						}
+					}
+				}
+				else
+				{
+					if (brain != null)
+					{
+						GameLiving owner = brain.GetLivingOwner();
+						if (owner != null)
+						{
+							if (owner == brain.Body.CurrentFollowTarget)
+							{
+								if (owner is GamePlayer && (owner as GamePlayer).IsSprinting)
+								{
+									speed *= 1.3;
 								}
 							}
 						}
@@ -162,22 +194,8 @@ namespace DOL.GS.PropertyCalc
 			}
 
 			speed = living.MaxSpeedBase * speed + 0.5; // 0.5 is to fix the rounding error when converting to int so root results in speed 2 (191*0.01=1.91+0.5=2.41)
-
-			//GameSpellEffect iConvokerEffect = SpellHandler.FindEffectOnTarget(living, "SpeedWrap");
-			/*
-			if (iConvokerEffect != null && living.EffectList.GetOfType<ChargeEffect>() == null)
-			{
-				if (living.EffectList.GetOfType<SprintEffect>() != null && speed > 248)
-				{
-					return 248;
-				}
-				else if (speed > 191)
-				{
-					return 191;
-				}
-			}*/
-
-			if (speed < 0)
+			
+			if (speed <= 0.5) // fix for the rounding fix above, lol
 				return 0;
 
 			return (int)speed;

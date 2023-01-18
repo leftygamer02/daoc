@@ -123,6 +123,8 @@ namespace DOL.GS
 			if(tincture.ProcSpellID != 0)
 			{
 				item.ProcSpellID = tincture.ProcSpellID;
+				if(tincture.ProcChance != 0)
+					item.ProcChance = tincture.ProcChance;
 			}
 			else
 			{
@@ -130,6 +132,9 @@ namespace DOL.GS
 				item.Charges = item.MaxCharges;
 				item.SpellID = tincture.SpellID;
 			}
+
+			item.LevelRequirement = tincture.LevelRequirement;
+			//item.Level = tincture.LevelRequirement;
 
 			player.Inventory.RemoveCountFromStack(tincture, 1);
 			InventoryLogging.LogInventoryAction(player, "(craft)", eInventoryActionType.Craft, tincture.Template);

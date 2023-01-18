@@ -36,7 +36,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 		/// <summary>
 		/// Handles player cancel effect requests
 		/// </summary>
-		protected class CancelEffectHandler : RegionAction
+		protected class CancelEffectHandler : RegionECSAction
 		{
 			/// <summary>
 			/// The effect index
@@ -56,12 +56,12 @@ namespace DOL.GS.PacketHandler.Client.v168
 			/// <summary>
 			/// Called on every timer tick
 			/// </summary>
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				var player = (GamePlayer) m_actionSource;
 
 				IConcentrationEffect effect = null;
-                lock (player.effectListComponent._effectsLock)
+                lock (player.effectListComponent.EffectsLock)
                 {
                     if (m_index < player.effectListComponent.ConcentrationEffects.Count)
 					{
@@ -70,6 +70,7 @@ namespace DOL.GS.PacketHandler.Client.v168
 				}
 
 				EffectService.RequestImmediateCancelConcEffect(effect, true);
+				return 0;
 			}
 		}
 	}

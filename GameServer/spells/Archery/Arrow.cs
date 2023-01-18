@@ -80,16 +80,6 @@ namespace DOL.GS.Spells
 			return true;
 		}
 
-		private bool CheckLOS(GameLiving living)
-		{
-			foreach (AbstractArea area in living.CurrentAreas)
-			{
-				if (area.CheckLOS)
-					return true;
-			}
-			return false;
-		}
-
 		private void DealDamageCheckLOS(GamePlayer player, ushort response, ushort targetOID)
 		{
 			if ((response & 0x100) == 0x100)
@@ -116,7 +106,7 @@ namespace DOL.GS.Spells
 		/// <summary>
 		/// Delayed action when arrow reach the target
 		/// </summary>
-		protected class ArrowOnTargetAction : RegionAction
+		protected class ArrowOnTargetAction : RegionECSAction
 		{
 			/// <summary>
 			/// The arrow target
@@ -145,20 +135,11 @@ namespace DOL.GS.Spells
 				m_handler = spellHandler;
 			}
 
-			/// <summary>
-			/// Called on every timer tick
-			/// </summary>
-			public virtual void OnTickBase()
-			{
-				OnTick();
-			}
-
-
-			protected override void OnTick()
+			protected override int OnTick(ECSGameTimer timer)
 			{
 				GameLiving target = m_arrowTarget;
 				GameLiving caster = (GameLiving)m_actionSource;
-				if (target == null || !target.IsAlive || target.ObjectState != GameObject.eObjectState.Active || target.CurrentRegionID != caster.CurrentRegionID) return;
+				if (target == null || !target.IsAlive || target.ObjectState != GameObject.eObjectState.Active || target.CurrentRegionID != caster.CurrentRegionID) return 0;
 
 				int missrate = 100 - m_handler.CalculateToHitChance(target);
 				// add defence bonus from last executed style if any
@@ -177,7 +158,7 @@ namespace DOL.GS.Spells
 				// check for bladeturn miss
 				if (ad.AttackResult == eAttackResult.Missed)
 				{
-					return;
+					return 0;
 				}
 
 				if (Util.Chance(missrate))
@@ -193,7 +174,7 @@ namespace DOL.GS.Spells
 						if (aggroBrain != null)
 							aggroBrain.AddToAggroList(caster, 1);
 					}
-					return;
+					return 0;
 				}
 
 				ad.Damage = (int)((double)ad.Damage * (1.0 + caster.GetModified(eProperty.SpellDamage) * 0.01));
@@ -204,7 +185,7 @@ namespace DOL.GS.Spells
 				{
 					GamePlayer player = (GamePlayer)target;
 					InventoryItem lefthand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-					if (lefthand != null && (player.AttackWeapon == null || player.AttackWeapon.Item_Type == Slot.RIGHTHAND || player.AttackWeapon.Item_Type == Slot.LEFTHAND))
+					if (lefthand != null && (player.ActiveWeapon == null || player.ActiveWeapon.Item_Type == Slot.RIGHTHAND || player.ActiveWeapon.Item_Type == Slot.LEFTHAND))
 					{
 						if (target.IsObjectInFront(caster, 180) && lefthand.Object_Type == (int)eObjectType.Shield)
 						{
@@ -223,7 +204,7 @@ namespace DOL.GS.Spells
 								{
 									// Engage raised block change to 85% if attacker is engageTarget and player is in attackstate
 									// You cannot engage a mob that was attacked within the last X seconds...
-									if (engage.EngageTarget.LastAttackedByEnemyTick > engage.EngageTarget.CurrentRegion.Time - EngageAbilityHandler.ENGAGE_ATTACK_DELAY_TICK)
+									if (engage.EngageTarget.LastAttackedByEnemyTick > GameLoop.GameLoopTime - EngageAbilityHandler.ENGAGE_ATTACK_DELAY_TICK)
 									{
 										if (engage.Owner is GamePlayer)
 											(engage.Owner as GamePlayer).Out.SendMessage(engage.EngageTarget.GetName(0, true) + " has been attacked recently and you are unable to engage.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -238,8 +219,8 @@ namespace DOL.GS.Spells
 										if (engage.Owner is GamePlayer)
 											(engage.Owner as GamePlayer).Out.SendMessage("You concentrate on blocking the blow!", eChatType.CT_Skill, eChatLoc.CL_SystemWindow);
 
-										if (blockchance < 85)
-											blockchance = 85;
+										if (blockchance < 95)
+											blockchance = 95;
 									}
 								}
 							}
@@ -287,13 +268,13 @@ namespace DOL.GS.Spells
 
 					ad.Damage += (int)damage;
 
-					if (caster.AttackWeapon != null)
+					if (caster.ActiveWeapon != null)
 					{
 						// Quality
-						ad.Damage -= (int)(ad.Damage * (100 - caster.AttackWeapon.Quality) * .01);
+						ad.Damage -= (int)(ad.Damage * (100 - caster.ActiveWeapon.Quality) * .01);
 
 						// Condition
-						ad.Damage = (int)((double)ad.Damage * Math.Min(1.0, (double)caster.AttackWeapon.Condition / (double)caster.AttackWeapon.MaxCondition));
+						ad.Damage = (int)((double)ad.Damage * Math.Min(1.0, (double)caster.ActiveWeapon.Condition / (double)caster.ActiveWeapon.MaxCondition));
 
 						// Patch Note:  http://support.darkageofcamelot.com/kb/article.php?id=931
 						// - The Damage Per Second (DPS) of your bow will have an effect on your damage for archery shots. If the effective DPS
@@ -302,9 +283,9 @@ namespace DOL.GS.Spells
 
 						int spellRequiredDPS = 12 + 3 * m_handler.Spell.Level;
 
-						if (caster.AttackWeapon.DPS_AF < spellRequiredDPS)
+						if (caster.ActiveWeapon.DPS_AF < spellRequiredDPS)
 						{
-							double percentReduction = (double)caster.AttackWeapon.DPS_AF / (double)spellRequiredDPS;
+							double percentReduction = (double)caster.ActiveWeapon.DPS_AF / (double)spellRequiredDPS;
 							ad.Damage = (int)(ad.Damage * percentReduction);
 						}
 					}
@@ -349,13 +330,15 @@ namespace DOL.GS.Spells
 					}
 				}
 
-				if (arrowBlock == false && m_handler.Caster.AttackWeapon != null && GlobalConstants.IsBowWeapon((eObjectType)m_handler.Caster.AttackWeapon.Object_Type))
+				if (arrowBlock == false && m_handler.Caster.ActiveWeapon != null && GlobalConstants.IsBowWeapon((eObjectType)m_handler.Caster.ActiveWeapon.Object_Type))
 				{
 					if (ad.AttackResult == eAttackResult.HitUnstyled || ad.AttackResult == eAttackResult.HitStyle)
 					{
-						caster.CheckWeaponMagicalEffect(ad, m_handler.Caster.AttackWeapon);
+						caster.CheckWeaponMagicalEffect(ad, m_handler.Caster.ActiveWeapon);
 					}
 				}
+
+				return 0;
 			}
 		}
 

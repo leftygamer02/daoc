@@ -85,7 +85,7 @@ namespace DOL.GS.Spells
 			if (Caster.IsStunned || Caster.IsMezzed)
 				return;
 
-			(Caster as GamePlayer).Out.SendCheckLOS(Caster, m_spellTarget, CheckLOSPlayerToTarget);
+			//(Caster as GamePlayer).Out.SendCheckLOS(Caster, m_spellTarget, CheckLOSPlayerToTarget);
 
 			if (Caster.Mana >= Spell.PulsePower)
 			{
@@ -119,58 +119,13 @@ namespace DOL.GS.Spells
            
 			if (IsCasting && Stage < 2)
 			{
-				if (Caster.ChanceSpellInterrupt(attacker))
-				{
-					Caster.LastInterruptMessage = attacker.GetName(0, true) + " attacks you and your spell is interrupted!";
-					MessageToLiving(Caster, Caster.LastInterruptMessage, eChatType.CT_SpellResisted);
-					InterruptCasting(); // always interrupt at the moment
-					return true;
-				}
+				Caster.LastInterruptMessage = attacker.GetName(0, true) + " attacks you and your spell is interrupted!";
+				MessageToLiving(Caster, Caster.LastInterruptMessage, eChatType.CT_SpellResisted);
+				InterruptCasting(); // always interrupt at the moment
+				return true;
 			}
 			return false;
 		}
-
-		//protected override void FocusSpellAction(DOLEvent e, object sender, EventArgs args)
-		//{
-		//	GameLiving living = sender as GameLiving;
-		//	if (living == null) return;
-
-		//	GameSpellEffect currentEffect = (GameSpellEffect)living.TempProperties.getProperty<object>(FOCUS_SPELL, null);
-		//	if (currentEffect == null)
-		//		return;
-
-		//	if (args is AttackedByEnemyEventArgs attackedByEnemy)
-		//	{
-		//		var attacker = attackedByEnemy.AttackData.Attacker;
-		//		if (e == GameLivingEvent.AttackedByEnemy && Spell.Uninterruptible && Caster.GetDistanceTo(attacker) > 200) 
-		//		{ 
-		//			return; 
-		//		}
-		//	}
-			
-		//	GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackFinished, new DOLEventHandler(FocusSpellAction));
-		//	GameEventMgr.RemoveHandler(Caster, GameLivingEvent.CastStarting, new DOLEventHandler(FocusSpellAction));
-		//	GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Moving, new DOLEventHandler(FocusSpellAction));
-		//	GameEventMgr.RemoveHandler(Caster, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
-		//	GameEventMgr.RemoveHandler(Caster, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(FocusSpellAction));
-		//	GameEventMgr.RemoveHandler(currentEffect.Owner, GameLivingEvent.Dying, new DOLEventHandler(FocusSpellAction));
-		//	Caster.TempProperties.removeProperty(FOCUS_SPELL);
-		//	foreach (GamePlayer player in Caster.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-		//	{
-		//		player.Out.SendInterruptAnimation(Caster);
-		//	}
-		//	GameSpellEffect effect = FindEffectOnTarget(currentEffect.Owner, this);
-		//	if (effect != null)
-		//		effect.Cancel(false);
-
-		//	CancelPulsingSpell(Caster, Spell.SpellType);
-		//	currentEffect.Cancel(false);
-
-		//	if (e == GameLivingEvent.Moving)
-		//		MessageToCaster("You move and interrupt your focus!", eChatType.CT_Important);
-
-		//	MessageToCaster(String.Format("You lose your focus on your {0} spell.", currentEffect.Spell.Name), eChatType.CT_SpellExpires);
-		//}
 
 		public override void OnDirectEffect(GameLiving target, double effectiveness)
 		{

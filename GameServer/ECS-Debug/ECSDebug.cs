@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -25,6 +26,8 @@ namespace ECS.Debug
         private static bool stateMachineDebugEnabled = false;
         private static bool aggroDebugEnabled = false;
         private static Dictionary<string, System.Diagnostics.Stopwatch> PerfCounters = new Dictionary<string, System.Diagnostics.Stopwatch>();
+
+        private static object _PerfCountersLock = new object();
 
         private static bool GameEventMgrNotifyProfilingEnabled = false;
         private static int GameEventMgrNotifyTimerInterval = 0;
@@ -89,7 +92,10 @@ namespace ECS.Debug
 
             InitializeStreamWriter();
             System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            PerfCounters.Add(uniqueID, stopwatch);
+            lock(_PerfCountersLock)
+            {
+                PerfCounters.TryAdd(uniqueID, stopwatch);
+            }
         }
 
         public static void StopPerfCounter(string uniqueID)
@@ -98,9 +104,12 @@ namespace ECS.Debug
                 return;
 
             System.Diagnostics.Stopwatch stopwatch;
-            if (PerfCounters.TryGetValue(uniqueID, out stopwatch))
+            lock(_PerfCountersLock)
             {
-                stopwatch.Stop();
+                if (PerfCounters.TryGetValue(uniqueID, out stopwatch))
+                {
+                    stopwatch.Stop();
+                }
             }
         }
 
@@ -110,23 +119,26 @@ namespace ECS.Debug
                 return;
 
             // Report perf counters that were active this frame and then flush them.
-            if (PerfCounters.Count > 0)
+            lock(_PerfCountersLock)
             {
-                string logString = "[PerfCounters] ";
-
-                foreach (var counter in PerfCounters)
+                if (PerfCounters.Count > 0)
                 {
-                    var counterName = counter.Key;
-                    var elapsed = (float)counter.Value.Elapsed.TotalMilliseconds;
-                    string elapsedString = elapsed.ToString();
-                    elapsedString = DOL.GS.Util.TruncateString(elapsedString, 4);
-                    logString += ($"{counterName} {elapsedString}ms | ");
+                    string logString = "[PerfCounters] ";
+
+                    foreach (var counter in PerfCounters)
+                    {
+                        var counterName = counter.Key;
+                        var elapsed = (float)counter.Value.Elapsed.TotalMilliseconds;
+                        string elapsedString = elapsed.ToString();
+                        elapsedString = DOL.GS.Util.TruncateString(elapsedString, 4);
+                        logString += ($"{counterName} {elapsedString}ms | ");
+                    }
+                    //Console.WriteLine(logString);
+                    //log.Logger.Log(typeof(Diagnostics), Level.Info, logString, null);
+                    //log.Info(logString);
+                    _perfStreamWriter.WriteLine(logString);
+                    PerfCounters.Clear();
                 }
-                //Console.WriteLine(logString);
-                //log.Logger.Log(typeof(Diagnostics), Level.Info, logString, null);
-                //log.Info(logString);
-                _perfStreamWriter.WriteLine(logString);
-                PerfCounters.Clear();
             }
         }
 
@@ -235,7 +247,10 @@ namespace DOL.GS.Commands
     ePrivLevel.GM,
     "Toggle server logging of performance diagnostics.",
     "/diag perf <on|off> to toggle performance diagnostics logging on server.",
-    "/diag notify <on|off> <interval> to toggle GameEventMgr Notify profiling, where interval is the period of time in milliseconds during which to accumulate stats.")]
+    "/diag notify <on|off> <interval> to toggle GameEventMgr Notify profiling, where interval is the period of time in milliseconds during which to accumulate stats.",
+    "/diag timer <tickcount> enables debugging of the TimerService for <tickcount> ticks and outputs to the server Console.",
+    "/diag think <tickcount> enables debugging of the NPCThinkService for <tickcount> ticks and outputs to the server Console.",
+    "/diag currentservicetick - returns the current service the gameloop tick is on; useful for debugging lagging/frozen server.")]
     public class ECSDiagnosticsCommandHandler : AbstractCommandHandler, ICommandHandler
     {
         public void OnCommand(GameClient client, string[] args)
@@ -253,6 +268,18 @@ namespace DOL.GS.Commands
             // extra check to disallow all but server GM's
             if (client.Account.PrivLevel < 2)
                 return;
+
+            if (args.Length < 2)
+            {
+                DisplaySyntax(client);
+                return;
+            }
+
+            if (args[1].ToLower().Equals("currentservicetick"))
+            {
+                DisplayMessage(client, "Gameloop CurrentService Tick: " + GameLoop.currentServiceTick);
+                return;
+            }
 
             if (args.Length < 3)
             {
@@ -293,6 +320,34 @@ namespace DOL.GS.Commands
                     ECS.Debug.Diagnostics.StopGameEventMgrNotifyTimeReporting();
                     DisplayMessage(client, "GameEventMgr Notify() logging turned off.");
                 }
+            }
+
+            if (args[1].ToLower().Equals("timer"))
+            {
+                int tickcount = Int32.Parse(args[2]);
+                if (tickcount <= 0)
+                {
+                    DisplayMessage(client, "Invalid tickcount argument. Please specify a positive integer value.");
+                    return;
+                }
+
+                TimerService.debugTimer = true;
+                TimerService.debugTimerTickCount = tickcount;
+                DisplayMessage(client, "Debugging next " + tickcount + " TimerService tick(s)");
+            }
+            
+            if (args[1].ToLower().Equals("think"))
+            {
+                int tickcount = Int32.Parse(args[2]);
+                if (tickcount <= 0)
+                {
+                    DisplayMessage(client, "Invalid tickcount argument. Please specify a positive integer value.");
+                    return;
+                }
+
+                NPCThinkService.thinkTimer = true;
+                NPCThinkService.debugTimerTickCount = tickcount;
+                DisplayMessage(client, "Debugging next " + tickcount + " NPCThinkService tick(s)");
             }
         }
     }

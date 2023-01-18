@@ -340,6 +340,11 @@ namespace DOL.GS
 		}
 
         /// <summary>
+        /// When the linkdeath occured. 0 if there wasn't any
+        /// </summary>
+		public long LinkDeathTime { get; set; }
+
+        /// <summary>
         /// Variable is false if account/player is Ban, for a wrong password, if server is closed etc ... 
         /// </summary>
         public bool IsConnected = true;
@@ -598,16 +603,19 @@ namespace DOL.GS
 		/// </summary>
 		public override void OnDisconnect()
 		{
+			bool linkdead = false;
 			try
 			{
 				if (PacketProcessor != null)
 					PacketProcessor.OnDisconnect();
 
+				
 				//If we went linkdead and we were inside the game
 				//we don't let the player disappear!
 				if (ClientState == eClientState.Playing)
 				{
 					OnLinkdeath();
+					linkdead = true;
 					return;
 				}
 
@@ -623,8 +631,9 @@ namespace DOL.GS
 			}
 			finally
 			{
-				// Make sure the client is diconnected even on errors
-				Quit();
+				// Make sure the client is diconnected even on errors but only if OnLinkDeath() wasnt called.
+				if(!linkdead)
+					Quit();
 			}
 		}
 
@@ -639,7 +648,7 @@ namespace DOL.GS
 		public void LoadPlayer(int accountindex)
 		{
 			LoadPlayer(accountindex, Properties.PLAYER_CLASS);
-		}
+		} 
 		public void LoadPlayer(DOLCharacters dolChar)
 		{
 			LoadPlayer(dolChar, Properties.PLAYER_CLASS);
@@ -784,6 +793,7 @@ namespace DOL.GS
 			else
 			{
 				ClientState = eClientState.Linkdead;
+				LinkDeathTime = GameLoop.GameLoopTime;
 				// If we have a good sessionid, we won't remove the client yet!
 				// OnLinkdeath() can start a timer to remove the client "a bit later"
 				curPlayer.OnLinkdeath();
@@ -832,7 +842,7 @@ namespace DOL.GS
 					}
 
 					ClientState = eClientState.Disconnected;
-					Player = null;
+					//Player = null;
 
 					GameEventMgr.Notify(GameClientEvent.Disconnected, this);
 
@@ -849,6 +859,8 @@ namespace DOL.GS
 								log.Info("(" + TcpEndpoint + ") " + Account.Name + " just disconnected!");
 							}
 						}
+						Account.LastDisconnected = DateTime.Now;
+						GameServer.Database.SaveObject(Account);
 
 						// log disconnect
 						AuditMgr.AddAuditEntry(this, AuditType.Account, AuditSubtype.AccountLogout, "", Account.Name);

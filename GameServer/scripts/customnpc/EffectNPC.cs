@@ -29,9 +29,15 @@ namespace DOL.GS {
         private Queue m_timer = new Queue();//Gametimer for casting some spell at the end of the process
         private Queue castplayer = new Queue();//Used to hold the player who the spell gets cast on
         public string currencyName = "Orbs";
-        private int effectPrice = 1800; //effects price
-        private int dyePrice = 500; //effects price
+        private int effectPrice = 5000; //effects price
+        private int dyePrice = 2000; //effects price
         private int removePrice = 0; //removal is free
+        public string TempProperty = "ItemEffect";
+        public string DisplayedItem = "EffectDisplay";
+        public string TempEffectId = "TempEffectID";
+        public string TempColorId = "TempColorID";
+        private string _currencyID = ServerProperties.Properties.ALT_CURRENCY_ID;
+
 
 
         public override bool AddToWorld()
@@ -41,45 +47,53 @@ namespace DOL.GS {
             base.AddToWorld();
             return true;
         }
-
+        
         public override bool Interact(GamePlayer player)
         {
             if (base.Interact(player))
             {
-                TurnTo(player, 250);
-                foreach (GamePlayer emoteplayer in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                TurnTo(player, 500);
+                InventoryItem item = player.TempProperties.getProperty<InventoryItem>(TempProperty);
+                InventoryItem displayItem = player.TempProperties.getProperty<InventoryItem>(DisplayedItem);
+
+                if (item == null)
                 {
-                    emoteplayer.Out.SendEmoteAnimation(this, Emotes);
+                    SendReply(player, "Hello there! \n" +
+                                      "I can offer a variety of aesthetics... for those willing to pay for it.\n" +
+                                      "Hand me the item and then we can talk prices.");
                 }
-                SendReply(player, "Greetings " + player.Name + "!\n\n" +
-                                    "I can either change the effect or the color of your weapons, armors...\n" +
-                                    "Simply give me the item and i will start my work.\n\n" +
-                                    "In exchange for my services, I will gladly take some of your Atlas Orbs.");
-                //"On my countless journeys, i have mastered the art of"+ Didnt like the amount of talking
-                //"focusing the etheral flows to a certain weapon.\n"+  so i slimmed it a  bit o.O
-                //"Using this technique, i can make your weapon glow in"+
-                //"every kind and color you can imagine.\n"+
-                //"Just hand me the weapon and pay a small donation of "+PriceString+".");
+                else
+                {
+                    ReceiveItem(player, item);
+                }
+
+                if (displayItem != null)
+                    DisplayReskinPreviewTo(player, (InventoryItem)displayItem.Clone());
+
                 return true;
             }
+
             return false;
         }
 
         public override bool ReceiveItem(GameLiving source, InventoryItem item)
         {
-            GamePlayer t = source as GamePlayer;
-            if (t == null || item == null) return false;
-            if (GetDistanceTo(t) > WorldMgr.INTERACT_DISTANCE)
+            if (source == null || item == null || item.Id_nb == _currencyID) return false;
+            if (source is GamePlayer p)
             {
-                t.Out.SendMessage("You are too far away to give anything to " + GetName(0, false) + ".", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return false;
+                SendReply(p, "What service do you want to use ?\n" +
+                             "I can add an [effect] to it or change its color with a [dye].\n\n" +
+                             "Alternatively, I can [remove all effects] or [remove dye] from your weapon. "
+                );
+                p.TempProperties.setProperty(EFFECTNPC_ITEM_WEAK, item);
+
+                SendReply(p, "When you are finished browsing, let me know and I will [confirm effect]."
+                );
+                var tmp = (InventoryItem) item.Clone();
+                p.TempProperties.setProperty(TempProperty, item);
+                p.TempProperties.setProperty(DisplayedItem, tmp);
             }
 
-            SendReply(t, "What service do you want to use ?\n" +
-                         "I can add an [effect] to it or change its color with a [dye].\n\n" +
-                         "Alternatively, I can [remove all effects] or [remove dye] from your weapon. "
-                         );
-            t.TempProperties.setProperty(EFFECTNPC_ITEM_WEAK, item);
             return false;
         }
 
@@ -91,7 +105,11 @@ namespace DOL.GS {
 
             GamePlayer player = source as GamePlayer;
             InventoryItem item = player.TempProperties.getProperty<InventoryItem>(EFFECTNPC_ITEM_WEAK);
+            
+            int cachedEffectID = player.TempProperties.getProperty<int>(TempEffectId);
+            int cachedColorID = player.TempProperties.getProperty<int>(TempColorId);
 
+            if (item == null) return false;
 
             switch (str)
             {
@@ -204,6 +222,20 @@ namespace DOL.GS {
                                         "[axe - hot purple glow] (" + effectPrice + " " + currencyName + ")\n" +
                                         "[axe - blue->purple->orange glow] (" + effectPrice + " " + currencyName + ")\n");
                             break;
+                        case (int) eObjectType.Shield:
+                            SendReply(player,"[crush - arcing halo] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - center arcing] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - smaller arcing halo] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - hot orange core glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - orange aura] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - subtle aura with sparks] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - yellow flame] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - mana flame] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - hot green glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - hot red glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - hot purple glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                             "[crush - cold vapor] (" + effectPrice + " " + currencyName + ")\n");
+                            break;
                         case (int)eObjectType.Spear:
                         case (int)eObjectType.CelticSpear:
                         case (int)eObjectType.PolearmWeapon:
@@ -235,7 +267,19 @@ namespace DOL.GS {
                                 "[staff - blue glow with twinkles] (" + effectPrice + " " + currencyName + ")\n" +
                                 "[staff - gold glow] (" + effectPrice + " " + currencyName + ")\n" +
                                 "[staff - gold glow with twinkles] (" + effectPrice + " " + currencyName + ")\n" +
-                                "[staff - faint red glow] (" + effectPrice + " " + currencyName + ")\n");
+                                "[staff - faint red glow] (" + effectPrice + " " + currencyName + ")\n" + 
+                                "[crush - arcing halo] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - center arcing] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - smaller arcing halo] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - hot orange core glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - orange aura] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - subtle aura with sparks] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - yellow flame] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - mana flame] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - hot green glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - hot red glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - hot purple glow] (" + effectPrice + " " + currencyName + ")\n" +
+                                "[crush - cold vapor] (" + effectPrice + " " + currencyName + ")\n");
                             break;
 
                         default:
@@ -247,111 +291,111 @@ namespace DOL.GS {
                     break;
 
                 //remove all effect
-                case "remove all effects": SetEffect(player, 0, removePrice); break;
+                case "remove all effects": PreviewEffect(player, 0); break;
                 //Longsword
-                case "longsword - propane-style flame": SetEffect(player, 1, effectPrice); break;
-                case "longsword - regular flame": SetEffect(player, 2, effectPrice); break;
-                case "longsword - orange flame": SetEffect(player, 3, effectPrice); break;
-                case "longsword - rising flame": SetEffect(player, 4, effectPrice); break;
-                case "longsword - flame with smoke": SetEffect(player, 5, effectPrice); break;
-                case "longsword - flame with sparks": SetEffect(player, 6, effectPrice); break;
-                case "longsword - hot glow": SetEffect(player, 7, effectPrice); break;
-                case "longsword - hot aura": SetEffect(player, 8, effectPrice); break;
-                case "longsword - blue aura": SetEffect(player, 9, effectPrice); break;
-                case "longsword - hot gold glow": SetEffect(player, 10, effectPrice); break;
-                case "longsword - hot blue glow": SetEffect(player, 11, effectPrice); break;
-                case "longsword - hot red glow": SetEffect(player, 12, effectPrice); break;
-                case "longsword - red aura": SetEffect(player, 13, effectPrice); break;
-                case "longsword - cold aura with sparkles": SetEffect(player, 14, effectPrice); break;
-                case "longsword - cold aura with vapor": SetEffect(player, 15, effectPrice); break;
-                case "longsword - hilt wavering blue beam": SetEffect(player, 16, effectPrice); break;
-                case "longsword - hilt wavering green beam": SetEffect(player, 17, effectPrice); break;
-                case "longsword - hilt wavering red beam": SetEffect(player, 18, effectPrice); break;
-                case "longsword - hilt red/blue beam": SetEffect(player, 19, effectPrice); break;
-                case "longsword - hilt purple beam": SetEffect(player, 20, effectPrice); break;
+                case "longsword - propane-style flame": PreviewEffect(player, 1); break;
+                case "longsword - regular flame": PreviewEffect(player, 2); break;
+                case "longsword - orange flame": PreviewEffect(player, 3); break;
+                case "longsword - rising flame": PreviewEffect(player, 4); break;
+                case "longsword - flame with smoke": PreviewEffect(player, 5); break;
+                case "longsword - flame with sparks": PreviewEffect(player, 6); break;
+                case "longsword - hot glow": PreviewEffect(player, 7); break;
+                case "longsword - hot aura": PreviewEffect(player, 8); break;
+                case "longsword - blue aura": PreviewEffect(player, 9); break;
+                case "longsword - hot gold glow": PreviewEffect(player, 10); break;
+                case "longsword - hot blue glow": PreviewEffect(player, 11); break;
+                case "longsword - hot red glow": PreviewEffect(player, 12); break;
+                case "longsword - red aura": PreviewEffect(player, 13); break;
+                case "longsword - cold aura with sparkles": PreviewEffect(player, 14); break;
+                case "longsword - cold aura with vapor": PreviewEffect(player, 15); break;
+                case "longsword - hilt wavering blue beam": PreviewEffect(player, 16); break;
+                case "longsword - hilt wavering green beam": PreviewEffect(player, 17); break;
+                case "longsword - hilt wavering red beam": PreviewEffect(player, 18); break;
+                case "longsword - hilt red/blue beam": PreviewEffect(player, 19); break;
+                case "longsword - hilt purple beam": PreviewEffect(player,20); break;
                 //2hand sword
-                case "gr sword - yellow flames": SetEffect(player, 21, effectPrice); break;
-                case "gr sword - orange flames": SetEffect(player, 22, effectPrice); break;
-                case "gr sword - fire with smoke": SetEffect(player, 23, effectPrice); break;
-                case "gr sword - fire with sparks": SetEffect(player, 24, effectPrice); break;
+                case "gr sword - yellow flames": PreviewEffect(player,21); break;
+                case "gr sword - orange flames": PreviewEffect(player,22); break;
+                case "gr sword - fire with smoke": PreviewEffect(player,23); break;
+                case "gr sword - fire with sparks": PreviewEffect(player,24); break;
                 //2hand hammer
-                case "gr - blue glow with sparkles": SetEffect(player, 25, effectPrice); break;
-                case "gr - blue aura with cold vapor": SetEffect(player, 26, effectPrice); break;
-                case "gr - icy blue glow": SetEffect(player, 27, effectPrice); break;
-                case "gr - red aura": SetEffect(player, 28, effectPrice); break;
-                case "gr - strong crimson glow": SetEffect(player, 29, effectPrice); break;
-                case "gr - white core red glow": SetEffect(player, 30, effectPrice); break;
-                case "gr - silvery/white glow": SetEffect(player, 31, effectPrice); break;
-                case "gr - gold/yellow glow": SetEffect(player, 31, effectPrice); break;
-                case "gr - hot green glow": SetEffect(player, 33, effectPrice); break;
+                case "gr - blue glow with sparkles": PreviewEffect(player,25); break;
+                case "gr - blue aura with cold vapor": PreviewEffect(player,26); break;
+                case "gr - icy blue glow": PreviewEffect(player,27); break;
+                case "gr - red aura": PreviewEffect(player,28); break;
+                case "gr - strong crimson glow": PreviewEffect(player,29); break;
+                case "gr - white core red glow": PreviewEffect(player,30); break;
+                case "gr - silvery/white glow": PreviewEffect(player,31); break;
+                case "gr - gold/yellow glow": PreviewEffect(player,31); break;
+                case "gr - hot green glow": PreviewEffect(player,33); break;
                 //hammer/blunt/crush
-                case "hammer - red aura": SetEffect(player, 34, effectPrice); break;
-                case "hammer - fiery glow": SetEffect(player, 35, effectPrice); break;
-                case "hammer - more intense fiery glow": SetEffect(player, 36, effectPrice); break;
-                case "hammer - flaming": SetEffect(player, 37, effectPrice); break;
-                case "hammer - torchlike flaming": SetEffect(player, 38, effectPrice); break;
-                case "hammer - silvery glow": SetEffect(player, 39, effectPrice); break;
-                case "hammer - purple glow": SetEffect(player, 40, effectPrice); break;
-                case "hammer - blue aura": SetEffect(player, 41, effectPrice); break;
-                case "hammer - blue glow": SetEffect(player, 42, effectPrice); break;
-                case "hammer - arcs from head to handle": SetEffect(player, 43, effectPrice); break;
-                case "crush - arcing halo": SetEffect(player, 44, effectPrice); break;
-                case "crush - center arcing": SetEffect(player, 45, effectPrice); break;
-                case "crush - smaller arcing halo": SetEffect(player, 46, effectPrice); break;
-                case "crush - hot orange core glow": SetEffect(player, 47, effectPrice); break;
-                case "crush - orange aura": SetEffect(player, 48, effectPrice); break;
-                case "crush - subtle aura with sparks": SetEffect(player, 49, effectPrice); break;
-                case "crush - yellow flame": SetEffect(player, 50, effectPrice); break;
-                case "crush - mana flame": SetEffect(player, 51, effectPrice); break;
-                case "crush - hot green glow": SetEffect(player, 52, effectPrice); break;
-                case "crush - hot red glow": SetEffect(player, 53, effectPrice); break;
-                case "crush - hot purple glow": SetEffect(player, 54, effectPrice); break;
-                case "crush - cold vapor": SetEffect(player, 55, effectPrice); break;
+                case "hammer - red aura": PreviewEffect(player,34); break;
+                case "hammer - fiery glow": PreviewEffect(player,35); break;
+                case "hammer - more intense fiery glow": PreviewEffect(player,36); break;
+                case "hammer - flaming": PreviewEffect(player,37); break;
+                case "hammer - torchlike flaming": PreviewEffect(player,38); break;
+                case "hammer - silvery glow": PreviewEffect(player,39); break;
+                case "hammer - purple glow": PreviewEffect(player,40); break;
+                case "hammer - blue aura": PreviewEffect(player,41); break;
+                case "hammer - blue glow": PreviewEffect(player,42); break;
+                case "hammer - arcs from head to handle": PreviewEffect(player,43); break;
+                case "crush - arcing halo": PreviewEffect(player,44); break;
+                case "crush - center arcing": PreviewEffect(player,45); break;
+                case "crush - smaller arcing halo": PreviewEffect(player,46); break;
+                case "crush - hot orange core glow": PreviewEffect(player,47); break;
+                case "crush - orange aura": PreviewEffect(player,48); break;
+                case "crush - subtle aura with sparks": PreviewEffect(player,49); break;
+                case "crush - yellow flame": PreviewEffect(player,50); break;
+                case "crush - mana flame": PreviewEffect(player,51); break;
+                case "crush - hot green glow": PreviewEffect(player,52); break;
+                case "crush - hot red glow": PreviewEffect(player,53); break;
+                case "crush - hot purple glow": PreviewEffect(player,54); break;
+                case "crush - cold vapor": PreviewEffect(player,55); break;
                 //Axe
-                case "axe - basic flame": SetEffect(player, 56, effectPrice); break;
-                case "axe - orange flame": SetEffect(player, 57, effectPrice); break;
-                case "axe - slow orange flame with sparks": SetEffect(player, 58, effectPrice); break;
-                case "axe - fiery/trailing flame": SetEffect(player, 59, effectPrice); break;
-                case "axe - cold vapor": SetEffect(player, 60, effectPrice); break;
-                case "axe - blue aura with twinkles": SetEffect(player, 61, effectPrice); break;
-                case "axe - hot green glow": SetEffect(player, 62, effectPrice); break;
-                case "axe - hot blue glow": SetEffect(player, 63, effectPrice); break;
-                case "axe - hot cyan glow": SetEffect(player, 64, effectPrice); break;
-                case "axe - hot purple glow": SetEffect(player, 65, effectPrice); break;
-                case "axe - blue->purple->orange glow": SetEffect(player, 66, effectPrice); break;
+                case "axe - basic flame": PreviewEffect(player,56); break;
+                case "axe - orange flame": PreviewEffect(player,57); break;
+                case "axe - slow orange flame with sparks": PreviewEffect(player,58); break;
+                case "axe - fiery/trailing flame": PreviewEffect(player,59); break;
+                case "axe - cold vapor": PreviewEffect(player,60); break;
+                case "axe - blue aura with twinkles": PreviewEffect(player,61); break;
+                case "axe - hot green glow": PreviewEffect(player,62); break;
+                case "axe - hot blue glow": PreviewEffect(player,63); break;
+                case "axe - hot cyan glow": PreviewEffect(player,64); break;
+                case "axe - hot purple glow": PreviewEffect(player,65); break;
+                case "axe - blue->purple->orange glow": PreviewEffect(player,66); break;
                 //shortsword
-                case "shortsword - propane flame": SetEffect(player, 67, effectPrice); break;
-                case "shortsword - orange flame with sparks": SetEffect(player, 68, effectPrice); break;
-                case "shortsword - blue aura with twinkles": SetEffect(player, 69, effectPrice); break;
-                case "shortsword - green cloud with bubbles": SetEffect(player, 70, effectPrice); break;
-                case "shortsword - red aura with blood bubbles": SetEffect(player, 71, effectPrice); break;
-                case "shortsword - evil green glow": SetEffect(player, 72, effectPrice); break;
-                case "shortsword - black glow": SetEffect(player, 73, effectPrice); break;
+                case "shortsword - propane flame": PreviewEffect(player,67); break;
+                case "shortsword - orange flame with sparks": PreviewEffect(player,68); break;
+                case "shortsword - blue aura with twinkles": PreviewEffect(player,69); break;
+                case "shortsword - green cloud with bubbles": PreviewEffect(player,70); break;
+                case "shortsword - red aura with blood bubbles": PreviewEffect(player,71); break;
+                case "shortsword - evil green glow": PreviewEffect(player,72); break;
+                case "shortsword - black glow": PreviewEffect(player,73); break;
                 //BattleSpear SetEffect
-                case "battlespear - cold with twinkles": SetEffect(player, 74, effectPrice); break;
-                case "battlespear - evil green aura": SetEffect(player, 75, effectPrice); break;
-                case "battlespear - evil red aura": SetEffect(player, 76, effectPrice); break;
-                case "battlespear - flaming": SetEffect(player, 77, effectPrice); break;
-                case "battlespear - hot gold glow": SetEffect(player, 78, effectPrice); break;
-                case "battlespear - hot fire glow": SetEffect(player, 79, effectPrice); break;
-                case "battlespear - red aura": SetEffect(player, 80, effectPrice); break;
+                case "battlespear - cold with twinkles": PreviewEffect(player,74); break;
+                case "battlespear - evil green aura": PreviewEffect(player,75); break;
+                case "battlespear - evil red aura": PreviewEffect(player,76); break;
+                case "battlespear - flaming": PreviewEffect(player,77); break;
+                case "battlespear - hot gold glow": PreviewEffect(player,78); break;
+                case "battlespear - hot fire glow": PreviewEffect(player,79); break;
+                case "battlespear - red aura": PreviewEffect(player,80); break;
                 //Spear SetEffect
-                case "lugged spear - blue glow": SetEffect(player, 81, effectPrice); break;
-                case "lugged spear - hot blue glow": SetEffect(player, 82, effectPrice); break;
-                case "lugged spear - cold with twinkles": SetEffect(player, 83, effectPrice); break;
-                case "lugged spear - flaming": SetEffect(player, 84, effectPrice); break;
-                case "lugged spear - electric arcing": SetEffect(player, 85, effectPrice); break;
-                case "lugged spear - hot yellow flame": SetEffect(player, 86, effectPrice); break;
-                case "lugged spear - orange flame with sparks": SetEffect(player, 87, effectPrice); break;
-                case "lugged spear - orange to purple flame": SetEffect(player, 88, effectPrice); break;
-                case "lugged spear - hot purple flame": SetEffect(player, 89, effectPrice); break;
-                case "lugged spear - silvery glow": SetEffect(player, 90, effectPrice); break;
+                case "lugged spear - blue glow": PreviewEffect(player,81); break;
+                case "lugged spear - hot blue glow": PreviewEffect(player,82); break;
+                case "lugged spear - cold with twinkles": PreviewEffect(player,83); break;
+                case "lugged spear - flaming": PreviewEffect(player,84); break;
+                case "lugged spear - electric arcing": PreviewEffect(player,85); break;
+                case "lugged spear - hot yellow flame": PreviewEffect(player,86); break;
+                case "lugged spear - orange flame with sparks": PreviewEffect(player,87); break;
+                case "lugged spear - orange to purple flame": PreviewEffect(player,88); break;
+                case "lugged spear - hot purple flame": PreviewEffect(player,89); break;
+                case "lugged spear - silvery glow": PreviewEffect(player,90); break;
                 //Staff SetEffect
-                case "staff - blue glow": SetEffect(player, 90, effectPrice); break;
-                case "staff - blue glow with twinkles": SetEffect(player, 91, effectPrice); break;
-                case "staff - gold glow": SetEffect(player, 92, effectPrice); break;
-                case "staff - gold glow with twinkles": SetEffect(player, 93, effectPrice); break;
-                case "staff - faint red glow": SetEffect(player, 94, effectPrice); break;
+                case "staff - blue glow": PreviewEffect(player,90); break;
+                case "staff - blue glow with twinkles": PreviewEffect(player,91); break;
+                case "staff - gold glow": PreviewEffect(player,92); break;
+                case "staff - gold glow with twinkles": PreviewEffect(player,93); break;
+                case "staff - faint red glow": PreviewEffect(player,94); break;
                 #endregion
                 #region dye
 
@@ -516,406 +560,413 @@ namespace DOL.GS {
                     break;
 
                 case "remove dye":
-                    SetColor(player, 0, removePrice);
+                    SetColor(player,0, removePrice);
                     break;
                 case "White":
-                    SetColor(player, 0, dyePrice);
+                    PreviewColor(player,0);
                     break;
                 case "Old Red":
-                    SetColor(player, 1, dyePrice);
+                    PreviewColor(player,1);
                     break;
                 case "Old Green":
-                    SetColor(player, 2, dyePrice);
+                    PreviewColor(player,2);
                     break;
                 case "Old Blue":
-                    SetColor(player, 3, dyePrice);
+                    PreviewColor(player,3);
                     break;
                 case "Old Yellow":
-                    SetColor(player, 4, dyePrice);
+                    PreviewColor(player,4);
                     break;
                 case "Old Purple":
-                    SetColor(player, 5, dyePrice);
+                    PreviewColor(player,5);
                     break;
                 case "Gray":
-                    SetColor(player, 6, dyePrice);
+                    PreviewColor(player,6);
                     break;
                 case "Old Turquoise":
-                    SetColor(player, 7, dyePrice);
+                    PreviewColor(player,7);
                     break;
                 case "Leather Yellow":
-                    SetColor(player, 8, dyePrice);
+                    PreviewColor(player,8);
                     break;
                 case "Leather Red":
-                    SetColor(player, 9, dyePrice);
+                    PreviewColor(player,9);
                     break;
                 case "Leather Green":
-                    SetColor(player, 10, dyePrice);
+                    PreviewColor(player,10);
                     break;
                 case "Leather Orange":
-                    SetColor(player, 11, dyePrice);
+                    PreviewColor(player,11);
                     break;
                 case "Leather Violet":
-                    SetColor(player, 12, dyePrice);
+                    PreviewColor(player,12);
                     break;
                 case "Leather Forest Green":
-                    SetColor(player, 13, dyePrice);
+                    PreviewColor(player,13);
                     break;
                 case "Leather Blue":
-                    SetColor(player, 14, dyePrice);
+                    PreviewColor(player,14);
                     break;
                 case "Leather Purple":
-                    SetColor(player, 15, dyePrice);
+                    PreviewColor(player,15);
                     break;
                 case "Bronze":
-                    SetColor(player, 16, dyePrice);
+                    PreviewColor(player,16);
                     break;
                 case "Iron":
-                    SetColor(player, 17, dyePrice);
+                    PreviewColor(player,17);
                     break;
                 case "Steel":
-                    SetColor(player, 18, dyePrice);
+                    PreviewColor(player,18);
                     break;
                 case "Alloy":
-                    SetColor(player, 19, dyePrice);
+                    PreviewColor(player,19);
                     break;
                 case "Fine Alloy":
-                    SetColor(player, 20, dyePrice);
+                    PreviewColor(player,20);
                     break;
                 case "Mithril":
-                    SetColor(player, 21, dyePrice);
+                    PreviewColor(player,21);
                     break;
                 case "Asterite":
-                    SetColor(player, 22, dyePrice);
+                    PreviewColor(player,22);
                     break;
                 case "Eog":
-                    SetColor(player, 23, dyePrice);
+                    PreviewColor(player,23);
                     break;
                 case "Xenium":
-                    SetColor(player, 24, dyePrice);
+                    PreviewColor(player,24);
                     break;
                 case "Vaanum":
-                    SetColor(player, 25, dyePrice);
+                    PreviewColor(player,25);
                     break;
                 case "Adamantium":
-                    SetColor(player, 26, dyePrice);
+                    PreviewColor(player,26);
                     break;
                 case "Red Cloth":
-                    SetColor(player, 27, dyePrice);
+                    PreviewColor(player,27);
                     break;
                 case "Orange Cloth":
-                    SetColor(player, 28, dyePrice);
+                    PreviewColor(player,28);
                     break;
                 case "Yellow-Orange Cloth":
-                    SetColor(player, 29, dyePrice);
+                    PreviewColor(player,29);
                     break;
                 case "Yellow Cloth":
-                    SetColor(player, 30, dyePrice);
+                    PreviewColor(player,30);
                     break;
                 case "Yellow-Green Cloth":
-                    SetColor(player, 31, dyePrice);
+                    PreviewColor(player,31);
                     break;
                 case "Green Cloth":
-                    SetColor(player, 32, dyePrice);
+                    PreviewColor(player,32);
                     break;
                 case "Blue-Green Cloth":
-                    SetColor(player, 33, dyePrice);
+                    PreviewColor(player,33);
                     break;
                 case "Turquoise Cloth":
-                    SetColor(player, 34, dyePrice);
+                    PreviewColor(player,34);
                     break;
                 case "Light Blue Cloth":
-                    SetColor(player, 35, dyePrice);
+                    PreviewColor(player,35);
                     break;
                 case "Blue Cloth":
-                    SetColor(player, 36, dyePrice);
+                    PreviewColor(player,36);
                     break;
                 case "Blue-Violet Cloth":
-                    SetColor(player, 37, dyePrice);
+                    PreviewColor(player,37);
                     break;
                 case "Violet Cloth":
-                    SetColor(player, 38, dyePrice);
+                    PreviewColor(player,38);
                     break;
                 case "Bright Violet Cloth":
-                    SetColor(player, 39, dyePrice);
+                    PreviewColor(player,39);
                     break;
                 case "Purple Cloth":
-                    SetColor(player, 40, dyePrice);
+                    PreviewColor(player,40);
                     break;
                 case "Bright Purple Cloth":
-                    SetColor(player, 41, dyePrice);
+                    PreviewColor(player,41);
                     break;
                 case "Purple-Red Cloth":
-                    SetColor(player, 42, dyePrice);
+                    PreviewColor(player,42);
                     break;
                 case "Black Cloth":
-                    SetColor(player, 43, dyePrice);
+                    PreviewColor(player,43);
                     break;
                 case "Brown Cloth":
-                    SetColor(player, 44, dyePrice);
+                    PreviewColor(player,44);
                     break;
                 case "Blue Metal":
-                    SetColor(player, 45, dyePrice);
+                    PreviewColor(player,45);
                     break;
                 case "Green Metal":
-                    SetColor(player, 46, dyePrice);
+                    PreviewColor(player,46);
                     break;
                 case "Yellow Metal":
-                    SetColor(player, 47, dyePrice);
+                    PreviewColor(player,47);
                     break;
                 case "Gold Metal":
-                    SetColor(player, 48, dyePrice);
+                    PreviewColor(player,48);
                     break;
                 case "Red Metal":
-                    SetColor(player, 49, dyePrice);
+                    PreviewColor(player,49);
                     break;
                 case "Purple Metal":
-                    SetColor(player, 50, dyePrice);
+                    PreviewColor(player,50);
                     break;
                 case "Blue 1":
-                    SetColor(player, 51, dyePrice);
+                    PreviewColor(player,51);
                     break;
                 case "Blue 2":
-                    SetColor(player, 52, dyePrice);
+                    PreviewColor(player,52);
                     break;
                 case "Blue 3":
-                    SetColor(player, 53, dyePrice);
+                    PreviewColor(player,53);
                     break;
                 case "Blue 4":
-                    SetColor(player, 54, dyePrice);
+                    PreviewColor(player,54);
                     break;
                 case "Turquoise 1":
-                    SetColor(player, 55, dyePrice);
+                    PreviewColor(player,55);
                     break;
                 case "Turquoise 2":
-                    SetColor(player, 56, dyePrice);
+                    PreviewColor(player,56);
                     break;
                 case "Turquoise 3":
-                    SetColor(player, 57, dyePrice);
+                    PreviewColor(player,57);
                     break;
                 case "Teal 1":
-                    SetColor(player, 58, dyePrice);
+                    PreviewColor(player,58);
                     break;
                 case "Teal 2":
-                    SetColor(player, 59, dyePrice);
+                    PreviewColor(player,59);
                     break;
                 case "Teal 3":
-                    SetColor(player, 60, dyePrice);
+                    PreviewColor(player,60);
                     break;
                 case "Brown 1":
-                    SetColor(player, 61, dyePrice);
+                    PreviewColor(player,61);
                     break;
                 case "Brown 2":
-                    SetColor(player, 62, dyePrice);
+                    PreviewColor(player,62);
                     break;
                 case "Brown 3":
-                    SetColor(player, 63, dyePrice);
+                    PreviewColor(player,63);
                     break;
                 case "Red 1":
-                    SetColor(player, 64, dyePrice);
+                    PreviewColor(player,64);
                     break;
                 case "Red 2":
-                    SetColor(player, 65, dyePrice);
+                    PreviewColor(player,65);
                     break;
                 case "Red 3":
-                    SetColor(player, 66, dyePrice);
+                    PreviewColor(player,66);
                     break;
                 case "Red 4":
-                    SetColor(player, 67, dyePrice);
+                    PreviewColor(player,67);
                     break;
                 case "Green 1":
-                    SetColor(player, 68, dyePrice);
+                    PreviewColor(player,68);
                     break;
                 case "Green 2":
-                    SetColor(player, 69, dyePrice);
+                    PreviewColor(player,69);
                     break;
                 case "Green 3":
-                    SetColor(player, 70, dyePrice);
+                    PreviewColor(player,70);
                     break;
                 case "Green 4":
-                    SetColor(player, 71, dyePrice);
+                    PreviewColor(player,71);
                     break;
                 case "Gray 1":
-                    SetColor(player, 72, dyePrice);
+                    PreviewColor(player,72);
                     break;
                 case "Gray 2":
-                    SetColor(player, 73, dyePrice);
+                    PreviewColor(player,73);
                     break;
                 case "Gray 3":
-                    SetColor(player, 74, dyePrice);
+                    PreviewColor(player,74);
                     break;
                 case "Orange 1":
-                    SetColor(player, 75, dyePrice);
+                    PreviewColor(player,75);
                     break;
                 case "Orange 2":
-                    SetColor(player, 76, dyePrice);
+                    PreviewColor(player,76);
                     break;
                 case "Orange 3":
-                    SetColor(player, 77, dyePrice);
+                    PreviewColor(player,77);
                     break;
                 case "Purple 1":
-                    SetColor(player, 78, dyePrice);
+                    PreviewColor(player,78);
                     break;
                 case "Purple 2":
-                    SetColor(player, 79, dyePrice);
+                    PreviewColor(player,79);
                     break;
                 case "Purple 3":
-                    SetColor(player, 80, dyePrice);
+                    PreviewColor(player,80);
                     break;
                 case "Yellow 1":
-                    SetColor(player, 81, dyePrice);
+                    PreviewColor(player,81);
                     break;
                 case "Yellow 2":
-                    SetColor(player, 82, dyePrice);
+                    PreviewColor(player,82);
                     break;
                 case "Yellow 3":
-                    SetColor(player, 83, dyePrice);
+                    PreviewColor(player,83);
                     break;
                 case "violet":
-                    SetColor(player, 84, dyePrice);
+                    PreviewColor(player,84);
                     break;
                 case "Mauve":
-                    SetColor(player, 85, dyePrice);
+                    PreviewColor(player,85);
                     break;
                 case "Blue 5":
-                    SetColor(player, 86, dyePrice);
+                    PreviewColor(player,86);
                     break;
                 case "Purple 4":
-                    SetColor(player, 87, dyePrice);
+                    PreviewColor(player,87);
                     break;
                 case "Ship Red":
-                    SetColor(player, 100, dyePrice);
+                    PreviewColor(player,100);
                     break;
                 case "Ship Red 2":
-                    SetColor(player, 101, dyePrice);
+                    PreviewColor(player,101);
                     break;
                 case "Ship Orange":
-                    SetColor(player, 102, dyePrice);
+                    PreviewColor(player,102);
                     break;
                 case "Ship Orange 2":
-                    SetColor(player, 103, dyePrice);
+                    PreviewColor(player,103);
                     break;
                 case "Orange 4":
-                    SetColor(player, 104, dyePrice);
+                    PreviewColor(player,104);
                     break;
                 case "Ship Yellow":
-                    SetColor(player, 105, dyePrice);
+                    PreviewColor(player,105);
                     break;
                 case "Ship Lime Green":
-                    SetColor(player, 106, dyePrice);
+                    PreviewColor(player,106);
                     break;
                 case "Ship Green":
-                    SetColor(player, 107, dyePrice);
+                    PreviewColor(player,107);
                     break;
                 case "Ship Green 2":
-                    SetColor(player, 108, dyePrice);
+                    PreviewColor(player,108);
                     break;
                 case "Ship Turquoise":
-                    SetColor(player, 109, dyePrice);
+                    PreviewColor(player,109);
                     break;
                 case "Ship Turquoise 2":
-                    SetColor(player, 110, dyePrice);
+                    PreviewColor(player,110);
                     break;
                 case "Ship Blue":
-                    SetColor(player, 111, dyePrice);
+                    PreviewColor(player,111);
                     break;
                 case "Ship Blue 2":
-                    SetColor(player, 112, dyePrice);
+                    PreviewColor(player,112);
                     break;
                 case "Ship Blue 3":
-                    SetColor(player, 113, dyePrice);
+                    PreviewColor(player,113);
                     break;
                 case "Ship Purple":
-                    SetColor(player, 114, dyePrice);
+                    PreviewColor(player,114);
                     break;
                 case "Ship Purple 2":
-                    SetColor(player, 115, dyePrice);
+                    PreviewColor(player,115);
                     break;
                 case "Ship Purple 3":
-                    SetColor(player, 116, dyePrice);
+                    PreviewColor(player,116);
                     break;
                 case "Ship Pink":
-                    SetColor(player, 117, dyePrice);
+                    PreviewColor(player,117);
                     break;
                 case "Ship Charcoal":
-                    SetColor(player, 118, dyePrice);
+                    PreviewColor(player,118);
                     break;
                 case "Ship Charcoal 2":
-                    SetColor(player, 119, dyePrice);
+                    PreviewColor(player,119);
                     break;
                 case "Red - crafter only":
-                    SetColor(player, 120, dyePrice);
+                    PreviewColor(player,120);
                     break;
                 case "Plum - crafter only":
-                    SetColor(player, 121, dyePrice);
+                    PreviewColor(player,121);
                     break;
                 case "Purple - crafter only":
-                    SetColor(player, 122, dyePrice);
+                    PreviewColor(player,122);
                     break;
                 case "Dark Purple - crafter only":
-                    SetColor(player, 123, dyePrice);
+                    PreviewColor(player,123);
                     break;
                 case "Dusky Purple - crafter only":
-                    SetColor(player, 124, dyePrice);
+                    PreviewColor(player,124);
                     break;
                 case "Light Gold - crafter only":
-                    SetColor(player, 125, dyePrice);
+                    PreviewColor(player,125);
                     break;
                 case "Dark Gold - crafter only":
-                    SetColor(player, 126, dyePrice);
+                    PreviewColor(player,126);
                     break;
                 case "Dirty Orange - crafter only":
-                    SetColor(player, 127, dyePrice);
+                    PreviewColor(player,127);
                     break;
                 case "Dark Tan - crafter only":
-                    SetColor(player, 128, dyePrice);
+                    PreviewColor(player,128);
                     break;
                 case "Brown - crafter only":
-                    SetColor(player, 129, dyePrice);
+                    PreviewColor(player,129);
                     break;
                 case "Light Green - crafter only":
-                    SetColor(player, 130, dyePrice);
+                    PreviewColor(player,130);
                     break;
                 case "Olive Green - crafter only":
-                    SetColor(player, 131, dyePrice);
+                    PreviewColor(player,131);
                     break;
                 case "Cornflower Blue - crafter only":
-                    SetColor(player, 132, dyePrice);
+                    PreviewColor(player,132);
                     break;
                 case "Light Gray - crafter only":
-                    SetColor(player, 133, dyePrice);
+                    PreviewColor(player,133);
                     break;
                 case "Hot Pink - crafter only":
-                    SetColor(player, 134, dyePrice);
+                    PreviewColor(player,134);
                     break;
                 case "Dusky Rose - crafter only":
-                    SetColor(player, 135, dyePrice);
+                    PreviewColor(player,135);
                     break;
                 case "Sage Green - crafter only":
-                    SetColor(player, 136, dyePrice);
+                    PreviewColor(player,136);
                     break;
                 case "Lime Green - crafter only":
-                    SetColor(player, 137, dyePrice);
+                    PreviewColor(player,137);
                     break;
                 case "Gray Teal - crafter only":
-                    SetColor(player, 138, dyePrice);
+                    PreviewColor(player,138);
                     break;
                 case "Gray Blue - crafter only":
-                    SetColor(player, 139, dyePrice);
+                    PreviewColor(player,139);
                     break;
                 case "Olive Gray - crafter only":
-                    SetColor(player, 140, dyePrice);
+                    PreviewColor(player,140);
                     break;
                 case "Navy Blue - crafter only":
-                    SetColor(player, 141, dyePrice);
+                    PreviewColor(player,141);
                     break;
                 case "Forest Green - crafter only":
-                    SetColor(player, 142, dyePrice);
+                    PreviewColor(player,142);
                     break;
                 case "Burgundy - crafter only":
-                    SetColor(player, 143, dyePrice);
+                    PreviewColor(player,143);
                     break;
 
                     #endregion
+                
+                case "confirm effect":
+                    SetEffect(player, cachedEffectID, effectPrice);
+                    break;
+                case "confirm color":
+                    SetColor(player, cachedColorID, dyePrice);
+                    break;
             }
 
             return true;
@@ -925,231 +976,6 @@ namespace DOL.GS {
         {
             player.Out.SendMessage(msg, eChatType.CT_System, eChatLoc.CL_PopupWindow);
         }
-
-        #region setrealmlevel
-        public void SetRealmLevel(GamePlayer player, int rps)
-        {
-            if (player == null)
-                return;
-
-            if (rps == 0) { player.RealmLevel = 1; }
-            else
-            if (rps is >= 25 and < 125) { player.RealmLevel = 2; }
-            else
-            if (rps is >= 125 and < 350) { player.RealmLevel = 3; }
-            else
-            if (rps is >= 350 and < 750) { player.RealmLevel = 4; }
-            else
-            if (rps is >= 750 and < 1375) { player.RealmLevel = 5; }
-            else
-            if (rps is >= 1375 and < 2275) { player.RealmLevel = 6; }
-            else
-            if (rps is >= 2275 and < 3500) { player.RealmLevel = 7; }
-            else
-            if (rps is >= 3500 and < 5100) { player.RealmLevel = 8; }
-            else
-            if (rps is >= 5100 and < 7125) { player.RealmLevel = 9; }
-            else
-            //2l0
-            if (rps is >= 7125 and < 9625) { player.RealmLevel = 10; }
-            else
-            if (rps is >= 9625 and < 12650) { player.RealmLevel = 11; }
-            else
-            if (rps is >= 12650 and < 16250) { player.RealmLevel = 12; }
-            else
-            if (rps is >= 16250 and < 20475) { player.RealmLevel = 13; }
-            else
-            if (rps is >= 20475 and < 25375) { player.RealmLevel = 14; }
-            else
-            if (rps is >= 25375 and < 31000) { player.RealmLevel = 15; }
-            else
-            if (rps is >= 31000 and < 37400) { player.RealmLevel = 16; }
-            else
-            if (rps is >= 37400 and < 44625) { player.RealmLevel = 17; }
-            else
-            if (rps is >= 44625 and < 52725) { player.RealmLevel = 18; }
-            else
-            if (rps is >= 52725 and < 61750) { player.RealmLevel = 19; }
-            else
-            //3l0
-            if (rps is >= 61750 and < 71750) { player.RealmLevel = 20; }
-            else
-            if (rps is >= 71750 and < 82775) { player.RealmLevel = 21; }
-            else
-            if (rps is >= 82775 and < 94875) { player.RealmLevel = 22; }
-            else
-            if (rps is >= 94875 and < 108100) { player.RealmLevel = 23; }
-            else
-            if (rps is >= 108100 and < 122500) { player.RealmLevel = 24; }
-            else
-            if (rps is >= 122500 and < 138125) { player.RealmLevel = 25; }
-            else
-            if (rps is >= 138125 and < 155025) { player.RealmLevel = 26; }
-            else
-            if (rps is >= 155025 and < 173250) { player.RealmLevel = 27; }
-            else
-            if (rps is >= 173250 and < 192850) { player.RealmLevel = 28; }
-            else
-            if (rps is >= 192850 and < 213875) { player.RealmLevel = 29; }
-            else
-            //4L0
-            if (rps is >= 213875 and < 236375) { player.RealmLevel = 30; }
-            else
-            if (rps is >= 236375 and < 260400) { player.RealmLevel = 31; }
-            else
-            if (rps is >= 260400 and < 286000) { player.RealmLevel = 32; }
-            else
-            if (rps is >= 286000 and < 313225) { player.RealmLevel = 33; }
-            else
-            if (rps is >= 313225 and < 342125) { player.RealmLevel = 34; }
-            else
-            if (rps is >= 342125 and < 372750) { player.RealmLevel = 35; }
-            else
-            if (rps is >= 372750 and < 405150) { player.RealmLevel = 36; }
-            else
-            if (rps is >= 405150 and < 439375) { player.RealmLevel = 37; }
-            else
-            if (rps is >= 439375 and < 475475) { player.RealmLevel = 38; }
-            else
-            if (rps is >= 475475 and < 513500) { player.RealmLevel = 39; }
-            else
-            //5L0
-            if (rps is >= 513500 and < 553500) { player.RealmLevel = 40; }
-            else
-            if (rps is >= 553500 and < 595525) { player.RealmLevel = 41; }
-            else
-            if (rps is >= 595525 and < 639625) { player.RealmLevel = 42; }
-            else
-            if (rps is >= 639625 and < 685850) { player.RealmLevel = 43; }
-            else
-            if (rps is >= 685850 and < 734250) { player.RealmLevel = 44; }
-            else
-            if (rps is >= 734250 and < 784875) { player.RealmLevel = 45; }
-            else
-            if (rps is >= 784875 and < 837775) { player.RealmLevel = 46; }
-            else
-            if (rps is >= 837775 and < 893000) { player.RealmLevel = 47; }
-            else
-            if (rps is >= 893000 and < 950600) { player.RealmLevel = 48; }
-            else
-            if (rps is >= 950600 and < 1010625) { player.RealmLevel = 49; }
-            else
-            //6L0
-            if (rps is >= 1010625 and < 1073125) { player.RealmLevel = 50; }
-            else
-            if (rps is >= 1073125 and < 1138150) { player.RealmLevel = 51; }
-            else
-            if (rps is >= 1138150 and < 1205750) { player.RealmLevel = 52; }
-            else
-            if (rps is >= 1205750 and < 1275975) { player.RealmLevel = 53; }
-            else
-            if (rps is >= 1275975 and < 1348875) { player.RealmLevel = 54; }
-            else
-            if (rps is >= 1348875 and < 1424500) { player.RealmLevel = 55; }
-            else
-            if (rps is >= 1424500 and < 1502900) { player.RealmLevel = 56; }
-            else
-            if (rps is >= 1502900 and < 1584125) { player.RealmLevel = 57; }
-            else
-            if (rps is >= 1584125 and < 1668225) { player.RealmLevel = 58; }
-            else
-            if (rps is >= 1668225 and < 1755250) { player.RealmLevel = 59; }
-            else
-            //7L0
-            if (rps is >= 1755250 and < 1845250) { player.RealmLevel = 60; }
-            else
-            if (rps is >= 1845250 and < 1938275) { player.RealmLevel = 61; }
-            else
-            if (rps is >= 1938275 and < 2034375) { player.RealmLevel = 62; }
-            else
-            if (rps is >= 2034375 and < 2133600) { player.RealmLevel = 63; }
-            else
-            if (rps is >= 2133600 and < 2236000) { player.RealmLevel = 64; }
-            else
-            if (rps is >= 2236000 and < 2341625) { player.RealmLevel = 65; }
-            else
-            if (rps is >= 2341625 and < 2450525) { player.RealmLevel = 66; }
-            else
-            if (rps is >= 2450525 and < 2562750) { player.RealmLevel = 67; }
-            else
-            if (rps is >= 2562750 and < 2678350) { player.RealmLevel = 68; }
-            else
-            if (rps is >= 2678350 and < 2797375) { player.RealmLevel = 69; }
-            else
-            //8L0
-            if (rps is >= 2797375 and < 2919875) { player.RealmLevel = 70; }
-            else
-            if (rps is >= 2919875 and < 3045900) { player.RealmLevel = 71; }
-            else
-            if (rps is >= 3045900 and < 3175500) { player.RealmLevel = 72; }
-            else
-            if (rps is >= 3175500 and < 3308725) { player.RealmLevel = 73; }
-            else
-            if (rps is >= 3308725 and < 3445625) { player.RealmLevel = 74; }
-            else
-            if (rps is >= 3445625 and < 3586250) { player.RealmLevel = 75; }
-            else
-            if (rps is >= 3586250 and < 3730650) { player.RealmLevel = 76; }
-            else
-            if (rps is >= 3730650 and < 3878875) { player.RealmLevel = 77; }
-            else
-            if (rps is >= 3878875 and < 4030975) { player.RealmLevel = 78; }
-            else
-            if (rps is >= 4030975 and < 4187000) { player.RealmLevel = 79; }
-            else
-            //9L0
-            if (rps is >= 4187000 and < 4347000) { player.RealmLevel = 80; }
-            else
-            if (rps is >= 4347000 and < 4511025) { player.RealmLevel = 81; }
-            else
-            if (rps is >= 4511025 and < 4679125) { player.RealmLevel = 82; }
-            else
-            if (rps is >= 4679125 and < 4851350) { player.RealmLevel = 83; }
-            else
-            if (rps is >= 4851350 and < 5027750) { player.RealmLevel = 84; }
-            else
-            if (rps is >= 5027750 and < 5208375) { player.RealmLevel = 85; }
-            else
-            if (rps is >= 5208375 and < 5393275) { player.RealmLevel = 86; }
-            else
-            if (rps is >= 5393275 and < 5582500) { player.RealmLevel = 87; }
-            else
-            if (rps is >= 5582500 and < 5776100) { player.RealmLevel = 88; }
-            else
-            if (rps is >= 5776100 and < 5974125) { player.RealmLevel = 89; }
-            else
-            //10L0
-            if (rps is >= 5974125 and < 6176625) { player.RealmLevel = 90; }
-            else
-            if (rps is >= 6176625 and < 6383650) { player.RealmLevel = 91; }
-            else
-            if (rps is >= 6383650 and < 6595250) { player.RealmLevel = 92; }
-            else
-            if (rps is >= 6595250 and < 6811475) { player.RealmLevel = 93; }
-            else
-            if (rps is >= 6811475 and < 7032375) { player.RealmLevel = 94; }
-            else
-            if (rps is >= 7032375 and < 7258000) { player.RealmLevel = 95; }
-            else
-            if (rps is >= 7258000 and < 7488400) { player.RealmLevel = 96; }
-            else
-            if (rps is >= 7488400 and < 7723625) { player.RealmLevel = 97; }
-            else
-            if (rps is >= 7723625 and < 7963725) { player.RealmLevel = 98; }
-            else
-            if (rps is >= 7963725 and < 8208750) { player.RealmLevel = 99; }
-            else
-            //11L0
-            if (rps is >= 8208750) { player.RealmLevel = 100; }
-
-            player.Out.SendUpdatePlayer();
-            player.Out.SendCharStatsUpdate();
-            player.Out.SendUpdatePoints();
-            player.UpdatePlayerStatus();
-        }
-        #endregion
-
-
         #region setcolor
         public void SetColor(GamePlayer player, int color, int price)
         {
@@ -1168,9 +994,10 @@ namespace DOL.GS {
                item.Object_Type == 46)
             {
                 SendReply(player, "You can't dye that.");
+                return;
             }
 
-            int playerOrbs = player.Inventory.CountItemTemplate("token_many", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+            int playerOrbs = player.Inventory.CountItemTemplate(_currencyID, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
             log.Info("Player Orbs:" + playerOrbs);
 
             if (playerOrbs < price)
@@ -1179,7 +1006,7 @@ namespace DOL.GS {
                 return;
             }
 
-            m_timer.Enqueue(new RegionTimer(this, new RegionTimerCallback(Effect), duration));
+            m_timer.Enqueue(new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Effect), duration));
             castplayer.Enqueue(player);
 
             player.Inventory.RemoveItem(item);
@@ -1198,13 +1025,23 @@ namespace DOL.GS {
             GameServer.Database.AddObject(unique);
 
             InventoryItem newInventoryItem = GameInventoryItem.Create<ItemUnique>(unique);
+            if(item.IsCrafted)
+                newInventoryItem.IsCrafted = true;
+            if(item.Creator != "")
+                newInventoryItem.Creator = item.Creator;
+            newInventoryItem.Count = 1;
             player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, newInventoryItem);
             player.Out.SendInventoryItemsUpdate(new InventoryItem[] { newInventoryItem });
             //player.RealmPoints -= price;
             //player.RespecRealm();
             //SetRealmLevel(player, (int)player.RealmPoints);
-            player.Inventory.RemoveTemplate("token_many", price, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+            player.Inventory.RemoveTemplate(_currencyID, price, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 
+            player.TempProperties.removeProperty(TempProperty);
+            player.TempProperties.removeProperty(DisplayedItem);
+            player.TempProperties.removeProperty(TempEffectId);
+            player.TempProperties.removeProperty(TempColorId);
+            
             SendReply(player, "Thanks for your donation. The color has come out beautifully, wear it with pride.");
 
             foreach (GamePlayer visplayer in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
@@ -1214,6 +1051,28 @@ namespace DOL.GS {
         }
         #endregion setcolor
 
+
+        private void PreviewEffect(GamePlayer player, int effect)
+        {
+            InventoryItem item = (InventoryItem)player.TempProperties.getProperty<InventoryItem>(TempProperty).Clone();
+            InventoryItem displayItem = player.TempProperties.getProperty<InventoryItem>(DisplayedItem);
+            item.Effect = effect;
+            player.TempProperties.setProperty(TempEffectId, effect);
+            DisplayReskinPreviewTo(player, item);
+            SendReply(player, "When you are finished browsing, let me know and I will [confirm effect]."
+            );
+        }
+        
+        private void PreviewColor(GamePlayer player, int color)
+        {
+            InventoryItem item = (InventoryItem)player.TempProperties.getProperty<InventoryItem>(TempProperty).Clone();
+            InventoryItem displayItem = player.TempProperties.getProperty<InventoryItem>(DisplayedItem);
+            item.Color = color;
+            player.TempProperties.setProperty(TempColorId, color);
+            DisplayReskinPreviewTo(player, item);
+            SendReply(player, "When you are finished browsing, let me know and I will [confirm color]."
+            );
+        }
 
         #region seteffect
         public void SetEffect(GamePlayer player, int effect, int price)
@@ -1227,9 +1086,9 @@ namespace DOL.GS {
             if (item == null)
                 return;
 
-            if (item.Object_Type < 1 || item.Object_Type > 26)
+            if ((item.Object_Type < 1 || item.Object_Type > 26) || item.Object_Type == 42)
             {
-                SendReply(player, "I cannot work on anything else than weapons.");
+                SendReply(player, "I cannot work on anything other than weapons and shields.");
                 return;
             }
 
@@ -1240,7 +1099,7 @@ namespace DOL.GS {
                 return;
             }
 
-            int playerOrbs = player.Inventory.CountItemTemplate("token_many", eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+            int playerOrbs = player.Inventory.CountItemTemplate(_currencyID, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
             log.Info("Player Orbs:" + playerOrbs);
 
             if (playerOrbs < price)
@@ -1249,7 +1108,7 @@ namespace DOL.GS {
                 return;
             }
 
-            m_timer.Enqueue(new RegionTimer(this, new RegionTimerCallback(Effect), duration));
+            m_timer.Enqueue(new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Effect), duration));
             castplayer.Enqueue(player);
 
 
@@ -1269,14 +1128,23 @@ namespace DOL.GS {
             GameServer.Database.AddObject(unique);
 
             InventoryItem newInventoryItem = GameInventoryItem.Create<ItemUnique>(unique);
+            if(item.IsCrafted)
+                newInventoryItem.IsCrafted = true;
+            if(item.Creator != "")
+                newInventoryItem.Creator = item.Creator;
+            newInventoryItem.Count = 1;
             player.Inventory.AddItem(eInventorySlot.FirstEmptyBackpack, newInventoryItem);
             player.Out.SendInventoryItemsUpdate(new InventoryItem[] { newInventoryItem });
             //player.RealmPoints -= price;
             //player.RespecRealm();
             //SetRealmLevel(player, (int)player.RealmPoints);
-            player.Inventory.RemoveTemplate("token_many", price, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
+            player.Inventory.RemoveTemplate(_currencyID, price, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack);
 
-
+            player.TempProperties.removeProperty(TempProperty);
+            player.TempProperties.removeProperty(DisplayedItem);
+            player.TempProperties.removeProperty(TempEffectId);
+            player.TempProperties.removeProperty(TempColorId);
+            
             SendReply(player, "Thanks for your donation. May the " + item.Name + " lead you to a bright future.");
             foreach (GamePlayer visplayer in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
@@ -1285,7 +1153,7 @@ namespace DOL.GS {
         }
         #endregion seteffect
 
-        public int Effect(RegionTimer timer)
+        public int Effect(ECSGameTimer timer)
         {
             m_timer.Dequeue();
             GamePlayer player = (GamePlayer)castplayer.Dequeue();
@@ -1294,6 +1162,65 @@ namespace DOL.GS {
                 visplayer.Out.SendSpellEffectAnimation(this, player, spell, 0, false, 1);
             }
             return 0;
+        }
+        
+        private void DisplayReskinPreviewTo(GamePlayer player, InventoryItem item)
+        {
+            GameNPC display = CreateDisplayNPC(player, item);
+            display.AddToWorld();
+
+            var tempAd = new AttackData();
+            tempAd.Attacker = display;
+            tempAd.Target = display;
+            if (item.Hand == 1)
+            {
+                tempAd.AttackType = AttackData.eAttackType.MeleeTwoHand;
+                display.SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+            }
+            else
+            {
+                tempAd.AttackType = AttackData.eAttackType.MeleeOneHand;
+                display.SwitchWeapon(eActiveWeaponSlot.Standard);
+            }
+
+            tempAd.AttackResult = eAttackResult.HitUnstyled;
+            display.AttackState = true;
+            display.TargetObject = display;
+            display.ObjectState = eObjectState.Active;
+            display.attackComponent.AttackState = true;
+            display.BroadcastLivingEquipmentUpdate();
+            player.Out.SendObjectUpdate(display);
+
+            //Uncomment this if you want animations
+            // var animationThread = new Thread(() => LoopAnimation(player,item, display,tempAd));
+            // animationThread.IsBackground = true;
+            // animationThread.Start();
+        }
+        
+        private GameNPC CreateDisplayNPC(GamePlayer player, InventoryItem item)
+        {
+            var mob = new DisplayModel(player, item);
+
+            //player model contains 5 bits of extra data that causes issues if used
+            //for an NPC model. we do this to drop the first 5 bits and fill w/ 0s
+            ushort tmpModel = (ushort)(player.Model << 5);
+            tmpModel = (ushort)(tmpModel >> 5);
+
+            //Fill the object variables
+            mob.X = this.X + 50;
+            mob.Y = this.Y;
+            mob.Z = this.Z;
+            mob.CurrentRegion = this.CurrentRegion;
+
+            return mob;
+
+            /*
+            mob.Inventory = new GameNPCInventory(GameNpcInventoryTemplate.EmptyTemplate);
+            //Console.WriteLine($"item: {item} slot: {item.Item_Type}");
+            //mob.Inventory.AddItem((eInventorySlot) item.Item_Type, item);
+            //Console.WriteLine($"mob inventory: {mob.Inventory.ToString()}");
+            player.Out.SendNPCCreate(mob);
+            //mob.AddToWorld();*/
         }
     }
 }

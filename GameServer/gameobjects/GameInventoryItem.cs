@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using DOL.Language;
 using DOL.GS.PacketHandler;
 using DOL.Database;
+using DOL.GS.Scripts;
 using DOL.GS.Spells;
 
 using log4net;
@@ -406,12 +407,6 @@ namespace DOL.GS {
                 delve.Add(" ");
             }
 
-            if (Charges > 0 && Name.Equals("Bead of Regeneration"))
-            {
-                delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.Charges", Charges));
-                delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.MaxCharges", MaxCharges));
-            }
-
             if ((Object_Type >= (int)eObjectType.GenericWeapon) && (Object_Type <= (int)eObjectType._LastWeapon) ||
                 Object_Type == (int)eObjectType.Instrument)
             {
@@ -436,6 +431,7 @@ namespace DOL.GS {
 
             if (Object_Type == (int)eObjectType.Magical || Object_Type == (int)eObjectType.AlchemyTincture || Object_Type == (int)eObjectType.SpellcraftGem)
             {
+                WriteUsableClasses(delve, player.Client);
                 WriteMagicalBonuses(delve, player.Client, false);
             }
 
@@ -449,10 +445,36 @@ namespace DOL.GS {
 
             if (Object_Type == (int)eObjectType.Magical && Item_Type == (int)eInventorySlot.FirstBackpack) // potion
             {
-                if (SpellID == 31051)
-                    WritePotionInfo(delve, AllStatsBarrel.BuffList, player.Client);
-                else
-                    WritePotionInfo(delve, player.Client);
+                switch (SpellID)
+                {
+                    case 31051:
+                        // buff barrel
+                        WritePotionInfo(delve, AllStatsBarrel.BuffList, player.Client);
+                        break;
+                    case 31052:
+                        // regen barrel
+                        WritePotionInfo(delve, AllRegenBuff.RegenList, player.Client);
+                        break;
+                    case 31053:
+                        // summon merchant
+                        delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.ChargedMagic"));
+                        delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.Charges", Charges));
+                        delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.MaxCharges", MaxCharges));
+                        break;
+                    case 31054:
+                        // bead regen gem
+                        WritePotionInfo(delve, BeadRegen.BeadRegenList, player.Client);
+                        break;
+                    case 34000:
+                        // summon vaultkeeper
+                        delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.ChargedMagic"));
+                        delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.Charges", Charges));
+                        delve.Add(LanguageMgr.GetTranslation(player.Client.Account.Language, "DetailDisplayHandler.WritePotionInfo.MaxCharges", MaxCharges));
+                        break;
+                    default:
+                        WritePotionInfo(delve, player.Client);
+                        break;
+                }
             }
             else if (CanUseEvery > 0)
             {
@@ -870,7 +892,7 @@ namespace DOL.GS {
             }
         }
 
-        private double GetTotalUtility()
+        public double GetTotalUtility()
         {
             double totalUti = 0;
 
@@ -880,10 +902,10 @@ namespace DOL.GS {
             //10 == maxHP =  *.25
             //11-19 == resists = *2
             //20-115 == skill = *5
-            //163 == all magic = *10
-            //164 == all melee = *10
-            //167 == all dual weild = *10
-            //168 == all archery = *10
+            //163 == all magic = *5
+            //164 == all melee = *5
+            //167 == all dual weild = *5
+            //168 == all archery = *5
             if (Bonus1Type != 0 &&
                 Bonus1 != 0)
             {
@@ -893,7 +915,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus1Type == 9)
                 {
-                    totalUti += Bonus1 * 2;
+                    totalUti += Bonus1;
                 }
                 else if (Bonus1Type == 10)
                 {
@@ -913,7 +935,7 @@ namespace DOL.GS {
                   || Bonus1Type == 168
                   || Bonus1Type == 213)
                 {
-                    totalUti += Bonus1 * 10;
+                    totalUti += Bonus1 * 5;
                 }
             }
 
@@ -926,7 +948,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus2Type == 9)
                 {
-                    totalUti += Bonus2 * 2;
+                    totalUti += Bonus2;
                 }
                 else if (Bonus2Type == 10)
                 {
@@ -946,7 +968,7 @@ namespace DOL.GS {
                   || Bonus2Type == 168
                   || Bonus2Type == 213)
                 {
-                    totalUti += Bonus2 * 10;
+                    totalUti += Bonus2 * 5;
                 }
             }
 
@@ -959,7 +981,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus3Type == 9)
                 {
-                    totalUti += Bonus3 * 2;
+                    totalUti += Bonus3;
                 }
                 else if (Bonus3Type == 10)
                 {
@@ -979,7 +1001,7 @@ namespace DOL.GS {
                   || Bonus3Type == 168
                   || Bonus3Type == 213)
                 {
-                    totalUti += Bonus3 * 10;
+                    totalUti += Bonus3 * 5;
                 }
             }
 
@@ -992,7 +1014,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus4Type == 9)
                 {
-                    totalUti += Bonus4 * 2;
+                    totalUti += Bonus4;
                 }
                 else if (Bonus4Type == 10)
                 {
@@ -1012,7 +1034,7 @@ namespace DOL.GS {
                   || Bonus4Type == 168
                   || Bonus4Type == 213)
                 {
-                    totalUti += Bonus4 * 10;
+                    totalUti += Bonus4 * 5;
                 }
             }
 
@@ -1025,7 +1047,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus5Type == 9)
                 {
-                    totalUti += Bonus5 * 2;
+                    totalUti += Bonus5;
                 }
                 else if (Bonus5Type == 10)
                 {
@@ -1045,7 +1067,7 @@ namespace DOL.GS {
                   || Bonus5Type == 168
                   || Bonus5Type == 213)
                 {
-                    totalUti += Bonus5 * 10;
+                    totalUti += Bonus5 * 5;
                 }
             }
 
@@ -1058,7 +1080,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus6Type == 9)
                 {
-                    totalUti += Bonus6 * 2;
+                    totalUti += Bonus6;
                 }
                 else if (Bonus6Type == 10)
                 {
@@ -1078,7 +1100,7 @@ namespace DOL.GS {
                   || Bonus6Type == 168
                   || Bonus6Type == 213)
                 {
-                    totalUti += Bonus6 * 10;
+                    totalUti += Bonus6 * 5;
                 }
             }
 
@@ -1091,7 +1113,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus7Type == 9)
                 {
-                    totalUti += Bonus7 * 2;
+                    totalUti += Bonus7;
                 }
                 else if (Bonus7Type == 10)
                 {
@@ -1111,7 +1133,7 @@ namespace DOL.GS {
                   || Bonus7Type == 168
                   || Bonus7Type == 213)
                 {
-                    totalUti += Bonus7 * 10;
+                    totalUti += Bonus7 * 5;
                 }
             }
             if (Bonus8Type != 0 &&
@@ -1123,7 +1145,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus8Type == 9)
                 {
-                    totalUti += Bonus8 * 2;
+                    totalUti += Bonus8;
                 }
                 else if (Bonus8Type == 10)
                 {
@@ -1143,7 +1165,7 @@ namespace DOL.GS {
                   || Bonus8Type == 168
                   || Bonus8Type == 213)
                 {
-                    totalUti += Bonus8 * 10;
+                    totalUti += Bonus8 * 5;
                 }
             }
             if (Bonus9Type != 0 &&
@@ -1155,7 +1177,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus9Type == 9)
                 {
-                    totalUti += Bonus9 * 2;
+                    totalUti += Bonus9;
                 }
                 else if (Bonus9Type == 10)
                 {
@@ -1175,7 +1197,7 @@ namespace DOL.GS {
                   || Bonus9Type == 168
                   || Bonus9Type == 213)
                 {
-                    totalUti += Bonus9 * 10;
+                    totalUti += Bonus9 * 5;
                 }
             }
             if (Bonus10Type != 0 &&
@@ -1187,7 +1209,7 @@ namespace DOL.GS {
                 }
                 else if (Bonus10Type == 9)
                 {
-                    totalUti += Bonus10 * 2;
+                    totalUti += Bonus10;
                 }
                 else if (Bonus10Type == 10)
                 {
@@ -1207,7 +1229,7 @@ namespace DOL.GS {
                   || Bonus10Type == 168
                   || Bonus10Type == 213)
                 {
-                    totalUti += Bonus10 * 10;
+                    totalUti += Bonus10 * 5;
                 }
             }
             if (ExtraBonusType != 0 &&
@@ -1219,7 +1241,7 @@ namespace DOL.GS {
                 }
                 else if (ExtraBonusType == 9)
                 {
-                    totalUti += ExtraBonus * 2;
+                    totalUti += ExtraBonus;
                 }
                 else if (ExtraBonusType == 10)
                 {
@@ -1239,7 +1261,7 @@ namespace DOL.GS {
                   || ExtraBonusType == 168
                   || ExtraBonusType == 213)
                 {
-                    totalUti += ExtraBonus * 10;
+                    totalUti += ExtraBonus * 5;
                 }
             }
 
@@ -1256,10 +1278,10 @@ namespace DOL.GS {
             //10 == maxHP =  *.25
             //11-19 == resists = *2
             //20-115 == skill = *5
-            //163 == all magic = *10
-            //164 == all melee = *10
-            //167 == all dual weild = *10
-            //168 == all archery = *10
+            //163 == all magic = *5
+            //164 == all melee = *5
+            //167 == all dual wield = *5
+            //168 == all archery = *5
             if (BonusType != 0 &&
                 Bonus != 0)
             {
@@ -1269,7 +1291,7 @@ namespace DOL.GS {
                 }
                 else if (BonusType == 9)
                 {
-                    totalUti += Bonus * 2;
+                    totalUti += Bonus;
                 }
                 else if (BonusType == 10)
                 {
@@ -1289,7 +1311,7 @@ namespace DOL.GS {
                   || BonusType == 168
                   || BonusType == 213)
                 {
-                    totalUti += Bonus * 10;
+                    totalUti += Bonus * 5;
                 }
             }
 
@@ -1464,6 +1486,7 @@ namespace DOL.GS {
         protected virtual void WritePotionInfo(IList<string> list, IList<int> idList, GameClient client)
         {
             Spell mSpell = SkillBase.GetSpellByID(SpellID);
+            list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.ChargedMagic"));
             list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.Charges", Charges));
             list.Add(LanguageMgr.GetTranslation(client.Account.Language, "DetailDisplayHandler.WritePotionInfo.MaxCharges", MaxCharges));
             list.Add(" ");
@@ -1596,6 +1619,8 @@ namespace DOL.GS {
         {
             double itemDPS = DPS_AF / 10.0;
             double clampedDPS = Math.Min(itemDPS, 1.2 + 0.3 * player.Level);
+            if (player.RealmLevel > 39)
+                clampedDPS += 0.3;
             double itemSPD = SPD_ABS / 10.0;
             double effectiveDPS = clampedDPS * Quality / 100.0 * Condition / MaxCondition;
 

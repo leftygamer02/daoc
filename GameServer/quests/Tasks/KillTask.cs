@@ -265,6 +265,7 @@ namespace DOL.GS.Quests
 					InteractWithEventArgs myargs = (InteractWithEventArgs)args;
 					if (myargs.Target.Name == ((KillTask)player.Task).ReceiverName)
 					{
+						if (player.Level > 20) return;
 						player.Out.SendMessage(myargs.Target.Name + " says, *Good work " + player.Name + ". Here is your reward as promised.*", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 						FinishTask();
 					}
@@ -278,6 +279,7 @@ namespace DOL.GS.Quests
 
 				if (player.Task.ReceiverName == target.Name && item.Name == player.Task.ItemName)
 				{
+					if (player.Level > 20) return;
 					player.Inventory.RemoveItem(item);
                     InventoryLogging.LogInventoryAction(player, target, eInventoryActionType.Quest, item.Template, item.Count);
 					player.Out.SendMessage(target.Name + " says, *Good work " + player.Name + ". Here is your reward as promised.*", eChatType.CT_System, eChatLoc.CL_SystemWindow);
@@ -305,7 +307,7 @@ namespace DOL.GS.Quests
 				player.Out.SendMessage("Sorry, I couldn't find any mob kill order. Come back later!",eChatType.CT_Say,eChatLoc.CL_PopupWindow);
 				return false;
 			}
-			
+
 			if (!GameServer.ServerRules.IsAllowedToAttack(player,Mob,true) || string.IsNullOrEmpty(Mob.Name))
 			{
 				player.Out.SendMessage("I have no task for you, come back later",eChatType.CT_Say,eChatLoc.CL_PopupWindow);
@@ -358,7 +360,7 @@ namespace DOL.GS.Quests
 			int maxLevel = Player.Level;
 			GameNPC npc = Player.CurrentZone.GetRandomNPC(eRealm.None, minLevel,maxLevel);
 			
-			return npc;
+			return npc != null && npc.Name.ToLower().Equals(npc.Name) ? npc : null;
 		}
 
 		/// <summary>
@@ -402,7 +404,7 @@ namespace DOL.GS.Quests
 
 			String name = living.Name;
 
-			if (name.IndexOf("Guard")>=0)
+			if (name?.IndexOf("Guard")>=0)
 			{
 				
 				if (name =="Guardian") return false;
@@ -452,7 +454,7 @@ namespace DOL.GS.Quests
 			}
 
 
-			if (name.IndexOf("Viking")>=0)
+			if (name?.IndexOf("Viking")>=0)
 			{
 				if (name.EndsWith("Archer")) return false;
 				if (name.EndsWith("Dreng")) return false;

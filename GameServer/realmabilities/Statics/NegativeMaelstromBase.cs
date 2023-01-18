@@ -11,7 +11,7 @@ namespace DOL.GS.RealmAbilities.Statics
 	public class NegativeMaelstromBase : GenericBase 
     {
 		protected override string GetStaticName() {return "Negative Maelstrom";}
-		protected override ushort GetStaticModel() {return 1293;}
+		protected override ushort GetStaticModel() => 3738;
 		protected override ushort GetStaticEffect() {return 7027;}
 		private DBSpell dbs;
 		private Spell   s;
@@ -28,9 +28,9 @@ namespace DOL.GS.RealmAbilities.Statics
 			dbs.DamageType = (int)eDamageType.Cold;
 			dbs.Target = "Enemy";
 			dbs.Radius = 0;
-            dbs.Type = eSpellType.DirectDamageNoVariance.ToString();
-			dbs.Value =0;
-			dbs.Duration = 0;
+            dbs.Type = eSpellType.DirectDamageWithDebuff.ToString();
+			dbs.Value = 10;
+			dbs.Duration = 10;
 			dbs.Pulse = 0;
 			dbs.PulsePower = 0;
 			dbs.Power = 0;

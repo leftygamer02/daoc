@@ -18,6 +18,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.Database;
@@ -58,7 +59,7 @@ namespace DOL.GS.Spells
 			duration *= (1.0 + m_caster.GetModified(eProperty.SpellDuration) * 0.01);
 			if (Spell.InstrumentRequirement != 0)
 			{
-				InventoryItem instrument = Caster.AttackWeapon;
+				InventoryItem instrument = Caster.ActiveWeapon;
 				if (instrument != null)
 				{
 					duration *= 1.0 + Math.Min(1.0, instrument.Level / (double)Caster.Level); // up to 200% duration for songs
@@ -122,7 +123,7 @@ namespace DOL.GS.Spells
 			if (target.EffectList.GetOfType<ArmsLengthEffect>() != null)
 				return;
 
-			if (target.EffectList.GetOfType<SpeedOfSoundEffect>() != null)
+			if (target.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) != null)
 				return;
 
 			if (target is GamePlayer && (target as GamePlayer).IsRiding)
@@ -244,6 +245,9 @@ namespace DOL.GS.Spells
 				return;
 			}
 
+			if (living.effectListComponent.GetAllEffects().FirstOrDefault(x => x.GetType() == typeof(SpeedOfSoundECSEffect)) != null)
+				return;
+			
 			//GameSpellEffect speed = SpellHandler.FindEffectOnTarget(living, this);
 			ECSGameEffect speed = EffectListService.GetEffectOnTarget(living, eEffect.MovementSpeedBuff);
 			if (speed != null)

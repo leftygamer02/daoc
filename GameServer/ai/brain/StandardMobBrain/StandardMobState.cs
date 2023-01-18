@@ -1,22 +1,20 @@
-﻿using DOL.AI;
+﻿using System;
+using System.Reflection;
 using DOL.AI.Brain;
 using DOL.GS;
 using DOL.GS.Movement;
 using FiniteStateMachine;
 using log4net;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
 using static DOL.AI.Brain.StandardMobBrain;
 
 public class StandardMobState : State
 {
-    public eFSMStateType ID { get { return _id; } }
     protected static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
     protected StandardMobBrain _brain = null;
     protected eFSMStateType _id;
 
+    public eFSMStateType ID => _id;
 
     public StandardMobState(FSM fsm, StandardMobBrain brain) : base(fsm)
     {
@@ -52,13 +50,12 @@ public class StandardMobState_IDLE : StandardMobState
         {
             Console.WriteLine($"{_brain.Body} is entering IDLE");
         }
-        _brain.CheckForProximityAggro = true;
+        _brain.ShouldCheckProximityAggro = true;
         base.Enter();
     }
 
     public override void Think()
     {
-
         //if DEAD, bail out of calc
         //if HP < 0, set state to DEAD
 
@@ -85,9 +82,9 @@ public class StandardMobState_IDLE : StandardMobState
 
         //if aggroList > 0,
         //setStatus = aggro
-        if (_brain.HasAggressionTable())
+        if (_brain.CheckProximityAggro())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
         }
@@ -133,9 +130,9 @@ public class StandardMobState_WAKING_UP : StandardMobState
 
         //if aggroList > 0,
         //setStatus = aggro
-        if (_brain.HasAggressionTable())
+        if (_brain.CheckProximityAggro())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             //_brain.AttackMostWanted();
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
@@ -143,7 +140,7 @@ public class StandardMobState_WAKING_UP : StandardMobState
 
         //else,
         //set state = IDLE
-        _brain.m_fsm.SetCurrentState(eFSMStateType.IDLE);
+        _brain.FSM.SetCurrentState(eFSMStateType.IDLE);
 
         base.Think();
     }
@@ -169,7 +166,7 @@ public class StandardMobState_AGGRO : StandardMobState
         {
             Console.WriteLine($"{_brain.Body} is entering AGGRO");
         }
-        _brain.CheckForProximityAggro = true;
+        _brain.ShouldCheckProximityAggro = true;
         //_brain.AttackMostWanted();
 
         base.Enter();
@@ -188,20 +185,24 @@ public class StandardMobState_AGGRO : StandardMobState
     public override void Think()
     {
         // check for returning to home if to far away
-        if (!(_brain is KeepGuardBrain) && _brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(15000))
+        if (!(_brain is KeepGuardBrain) && _brain.IsBeyondTetherRange() && !_brain.Body.InCombatInLast(25000))
         {
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
         }
 
         //if no aggro targets, set State = RETURN_TO_SPAWN
-        if (!_brain.HasAggressionTable())
+        if (!_brain.CheckProximityAggro())
         {
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
         }
+        
+        if (_brain.Body.Flags.HasFlag(GameNPC.eFlags.STEALTH))
+            _brain.Body.Flags ^= GameNPC.eFlags.STEALTH;
 
         _brain.AttackMostWanted();
+        _brain.Body.TurnTo(_brain.Body.TargetObject);
 
         base.Think();
     }
@@ -237,9 +238,9 @@ public class StandardMobState_ROAMING : StandardMobState
 
         //if aggroList > 0,
         //setStatus = aggro
-        if (_brain.HasAggressionTable())
+        if (_brain.CheckProximityAggro())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             //_brain.AttackMostWanted();
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
@@ -262,7 +263,7 @@ public class StandardMobState_ROAMING : StandardMobState
                     _brain.Body.WalkTo(target, 50);
                 }
 
-                _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.roaming);
+                _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.roaming, _brain.Body);
             }
             _lastRoamTick = GameLoop.GameLoopTime;
         }
@@ -288,29 +289,37 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
         {
             Console.WriteLine($"{_brain.Body} is entering RETURN_TO_SPAWN");
         }
-
+        if (_brain.Body.WasStealthed)
+            _brain.Body.Flags |= GameNPC.eFlags.STEALTH;
         _brain.ClearAggroList();
-        _brain.CheckForProximityAggro = false;
+        _brain.ShouldCheckProximityAggro = false;
         _brain.Body.WalkToSpawn();
         base.Enter();
     }
 
     public override void Exit()
     {
-        _brain.CheckForProximityAggro = true;
+        _brain.ShouldCheckProximityAggro = true;
 
         base.Exit();
     }
 
     public override void Think()
     {
+        // If the mob is not near his spawn, doesnt have aggro, is not enganged and is just standing around and  interested in going home, send him home.
+        if(!_brain.Body.IsNearSpawn() && (this._brain.AggroTable.Count == 0 || !this._brain.Body.IsEngaging) && (_brain.Body.IsReturningHome == false || _brain.Body.IsReturningToSpawnPoint == false) && this._brain.Body.CurrentSpeed == 0)
+        {
+            _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
+            _brain.Body.ResetHeading();
+            return;
+        }
         if (_brain.Body.IsNearSpawn())
         {
             _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
             _brain.Body.ResetHeading();
             return;
         }
-        if (_brain.Body.InCombat || _brain.HasAggressionTable())
+        if (_brain.CheckProximityAggro())
         {
             _brain.Body.CancelWalkToSpawn();
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
@@ -347,9 +356,9 @@ public class StandardMobState_PATROLLING : StandardMobState
 
         //if aggroList > 0,
         //setStatus = aggro
-        if (_brain.HasAggressionTable())
+        if (_brain.CheckProximityAggro())
         {
-            _brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
+            //_brain.Body.FireAmbientSentence(GameNPC.eAmbientTrigger.fighting, _brain.Body.TargetObject as GameLiving);
             _brain.FSM.SetCurrentState(eFSMStateType.AGGRO);
             return;
         }

@@ -2474,7 +2474,7 @@ namespace DOL.GS.PacketHandler
 				pak.WriteByte(0x00); //unk
 
 				// weapondamage
-				var wd = (int) (m_gameClient.Player.WeaponDamage(m_gameClient.Player.AttackWeapon)*100.0);
+				var wd = (int) (m_gameClient.Player.WeaponDamage(m_gameClient.Player.ActiveWeapon)*100.0);
 				pak.WriteByte((byte) (wd/100));
 				pak.WritePascalString(" ");
 				pak.WriteByte((byte) (wd%100));
@@ -3040,7 +3040,7 @@ namespace DOL.GS.PacketHandler
 
 			using (var pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.ConcentrationList)))
 			{
-				lock (m_gameClient.Player.effectListComponent._concentrationEffectsLock)
+				lock (m_gameClient.Player.effectListComponent.ConcentrationEffectsLock)
 				{
 					pak.WriteByte((byte) (m_gameClient.Player.effectListComponent.ConcentrationEffects.Count));
 					pak.WriteByte(0); // unknown

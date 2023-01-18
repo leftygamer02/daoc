@@ -17,13 +17,11 @@
  *
  */
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-using DOL.Language;
-using DOL.AI.Brain;
 using DOL.Database;
+using DOL.Language;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
 using DOL.GS.Spells;
@@ -146,15 +144,17 @@ namespace DOL.GS.Styles
 							//Back Styles
 							//60 degree since 1.62 patch
 							case Style.eOpeningPosition.Back:
-								if (!(angle > 120 && angle < 240)) return false;
+								if (!(angle > 150 && angle < 210)) return false;
 								break;
 							// Side Styles  
 							//105 degree since 1.62 patch
+							// Atlas change: 90 degrees
 							case Style.eOpeningPosition.Side:
-								if (!(angle >= 60 && angle <= 120) && !(angle >= 240 && angle <= 300)) return false;
+								if (!(angle >= 60 && angle <= 150) && !(angle >= 210 && angle <= 300)) return false;
 								break;
 							// Front Styles
 							// 90 degree
+							// Atlas change: 120 degrees
 							case Style.eOpeningPosition.Front:
 								if (!(angle > 300 || angle < 60)) return false;
 								break;
@@ -216,7 +216,7 @@ namespace DOL.GS.Styles
 				//Changing the attack state clears out the styles...
 				if (living.attackComponent.AttackState == false || EffectListService.GetEffectOnTarget(living, eEffect.Engage) != null)
 				{
-					living.attackComponent.StartAttack(player.TargetObject);
+					living.attackComponent.RequestStartAttack(player.TargetObject);
 				}
 
 				if (living.TargetObject == null)
@@ -226,7 +226,7 @@ namespace DOL.GS.Styles
 					return;
 				}
 
-				InventoryItem weapon = (style.WeaponTypeRequirement == (int)eObjectType.Shield) ? living.Inventory.GetItem(eInventorySlot.LeftHandWeapon) : living.attackComponent.AttackWeapon;
+				InventoryItem weapon = (style.WeaponTypeRequirement == (int)eObjectType.Shield) ? living.Inventory.GetItem(eInventorySlot.LeftHandWeapon) : living.ActiveWeapon;
 				//				if (weapon == null) return;	// no weapon = no style
 				if (!CheckWeaponType(style, living, weapon))
 				{
@@ -274,6 +274,7 @@ namespace DOL.GS.Styles
 
 						player.styleComponent.NextCombatStyle = style;
 						player.styleComponent.NextCombatBackupStyle = null;
+						player.styleComponent.NextCombatStyleTime = GameLoop.GameLoopTime;
 						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "StyleProcessor.TryToUseStyle.PreparePerform", style.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
 						if (living.IsEngaging)
@@ -412,11 +413,20 @@ namespace DOL.GS.Styles
 					double styleGrowth = Math.Max(0,attackData.Style.GrowthOffset + attackData.Style.GrowthRate * living.GetModifiedSpecLevel(attackData.Style.Spec));
 					double styleDamageBonus = living.GetModified(eProperty.StyleDamage) * 0.01 - 1;
 
+					double talyGrowth = attackData.Style.GrowthRate;
+					double talySpec = living.GetModifiedSpecLevel(attackData.Style.Spec);
+					double talySpeed = living.attackComponent.AttackSpeed(weapon) * 0.001;
+					double talyCap = living.attackComponent.UnstyledDamageCap(weapon);
+					
+					//Console.WriteLine($"Growth {talyGrowth} | Spec {talySpec} | Speed {talySpeed} | UnstyleCap {talyCap}");
+					//Console.WriteLine($"Numerator: {talyGrowth * talySpec * talySpeed} | Denominator {talyCap} | Base Damage {attackData.Damage} | StyleMod * Base {attackData.Damage * (talyGrowth * talySpec * talySpeed / talyCap)}");
+					//Console.WriteLine($"TalyVal {(talyGrowth * talySpec * talySpeed / talyCap)} DamMod {attackData.DamageMod}");
+
 					if (staticGrowth)
 					{
-						//if (living.attackComponent.AttackWeapon.Item_Type == Slot.TWOHAND)
+						//if (living.ActiveWeapon.Item_Type == Slot.TWOHAND)
 						//{
-						//	styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.attackComponent.AttackWeapon) * Math.Max(0,living.attackComponent.AttackWeapon.SPD_ABS - 21) * 10 / 66d;
+						//	styleGrowth = styleGrowth * 1.25 + living.WeaponDamage(living.ActiveWeapon) * Math.Max(0,living.ActiveWeapon.SPD_ABS - 21) * 10 / 66d;
 						//}
 						//attackData.StyleDamage = (int)(absorbRatio * styleGrowth * ServerProperties.Properties.CS_OPENING_EFFECTIVENESS);
 
@@ -437,7 +447,7 @@ namespace DOL.GS.Styles
 								}
 								break;
 							case 343: //Perforate Artery
-								if (living.attackComponent.AttackWeapon.Item_Type == Slot.TWOHAND)
+								if (living.ActiveWeapon.Item_Type == Slot.TWOHAND)
 								{
 									//Perforate Artery 2h Cap = 75 + Critical Strike Spec * 12 + Nonstyle Cap
 									attackData.StyleDamage = (int)((Math.Min(75, spec * 1.5) +  spec * 12));
@@ -458,13 +468,11 @@ namespace DOL.GS.Styles
 						attackData.StyleDamage = (int)(attackData.StyleDamage * (1.0 - Math.Min(0.85, attackData.Target.GetArmorAbsorb(attackData.ArmorHitLocation))));
 						attackData.StyleDamage -= (int)(attackData.StyleDamage * (attackData.Target.GetResist(attackData.DamageType) + SkillBase.GetArmorResist(armor, attackData.DamageType)) * 0.01);
 						attackData.StyleDamage -= (int)(attackData.StyleDamage * attackData.Target.GetDamageResist(attackData.Target.GetResistTypeForDamage(attackData.DamageType)) * 0.01);
-
-						attackData.Modifier -= (int)(initialDamage - attackData.StyleDamage);
 					}
 					else
-						attackData.StyleDamage = (int)(absorbRatio * styleGrowth * effectiveWeaponSpeed);
-
-					attackData.StyleDamage += (int)(attackData.Damage * styleDamageBonus);
+					{
+						attackData.StyleDamage = (int)((talyGrowth * talySpec * talySpeed / talyCap) * attackData.Damage);
+					}
 
 					//Eden - style absorb bonus
 					int absorb=0;
@@ -474,10 +482,10 @@ namespace DOL.GS.Styles
 						attackData.StyleDamage -= absorb;
 					}					
 
-					//Increase regular damage by styledamage ... like on live servers
-
+					// Increase regular damage by styledamage ... like on live server
 					attackData.Damage += attackData.StyleDamage;
-
+					// Update the modifier as well, otherwise we will show the player the damage resisted of the unstyled hit only (wouldn't it be better to calculate it just once?)
+					attackData.Modifier = (int)(attackData.Damage * attackData.Modifier / (double)(attackData.Damage - attackData.StyleDamage + attackData.Modifier));
 
 					if (player != null)
 					{
@@ -621,7 +629,7 @@ namespace DOL.GS.Styles
 				case Style.SpecialWeaponType.DualWield:
 					// both weapons are needed to use style,
 					// shield is not a weapon here
-					InventoryItem rightHand = player.attackComponent.AttackWeapon;
+					InventoryItem rightHand = player.ActiveWeapon;
 					InventoryItem leftHand = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
 
 					if (rightHand == null || leftHand == null || (rightHand.Item_Type != Slot.RIGHTHAND && rightHand.Item_Type != Slot.LEFTHAND))
@@ -647,7 +655,7 @@ namespace DOL.GS.Styles
 
 					// can't use shield styles if no active weapon
 					if (style.WeaponTypeRequirement == (int)eObjectType.Shield
-						&& (player.attackComponent.AttackWeapon == null || (player.attackComponent.AttackWeapon.Item_Type != Slot.RIGHTHAND && player.attackComponent.AttackWeapon.Item_Type != Slot.LEFTHAND)))
+						&& (player.ActiveWeapon == null || (player.ActiveWeapon.Item_Type != Slot.RIGHTHAND && player.ActiveWeapon.Item_Type != Slot.LEFTHAND)))
 						return false;
 
 					// weapon type check

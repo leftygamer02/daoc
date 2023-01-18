@@ -21,11 +21,11 @@ namespace DOL.GS.RealmAbilities
 
         protected override string ValueUnit { get { return "%"; } }
 
-        public override bool CheckRequirement(GamePlayer player) { return AtlasRAHelpers.HasSerenityLevel(player, 2); }
+        public override bool CheckRequirement(GamePlayer player) { return AtlasRAHelpers.GetSerenityLevel(player) >= 2; }
 
         public override int GetAmountForLevel(int level) { return AtlasRAHelpers.GetPropertyEnhancer3AmountForLevel(level); }
         
-        public override int CostForUpgrade(int level) { return AtlasRAHelpers.GetCommonPassivesCostForUpgrade(level); }
+        public override int CostForUpgrade(int level) { return AtlasRAHelpers.GetCommonUpgradeCostFor5LevelsRA(level); }
 
         public override void Activate(GameLiving living, bool sendUpdates)
         {

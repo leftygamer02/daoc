@@ -17,7 +17,9 @@
  *
  */
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
 using DOL.GS.PacketHandler;
 namespace DOL.GS
 {
@@ -31,6 +33,12 @@ namespace DOL.GS
 		/// This holds all players inside the battlegroup
 		/// </summary>
 		protected HybridDictionary m_battlegroupMembers = new HybridDictionary();
+        protected GameLiving m_battlegroupLeader;
+        protected List<GamePlayer> m_battlegroupModerators = new List<GamePlayer>();
+
+        protected Dictionary<GamePlayer, int> m_battlegroupRolls;
+        protected bool recordingRolls;
+        protected int rollRecordThreshold;
 
         bool battlegroupLootType = false;
         GamePlayer battlegroupTreasurer = null;
@@ -43,24 +51,40 @@ namespace DOL.GS
 		{
             battlegroupLootType = false;
             battlegroupTreasurer = null;
+            m_battlegroupLeader = null;
 		}
+
+        public GameLiving Leader
+        {
+            get { return m_battlegroupLeader; }
+        }
+
 		public HybridDictionary Members
 		{
 			get{return m_battlegroupMembers;}
 			set{m_battlegroupMembers=value;}
 		}
+		
+		public List<GamePlayer> Moderators
+		{
+			get{return m_battlegroupModerators;}
+			set{m_battlegroupModerators=value;}
+		}
+
 		private bool listen=false;
 		public bool Listen
 		{
 			get{return listen;}
 			set{listen = value;}
 		}
+
 		private bool ispublic=true;
 		public bool IsPublic
 		{
 			get{return ispublic;}
 			set{ispublic = value;}
 		}
+
 		private string password="";
 		public string Password
 		{
@@ -82,10 +106,10 @@ namespace DOL.GS
 				if (m_battlegroupMembers.Contains(player))
 					return false;
 				player.TempProperties.setProperty(BATTLEGROUP_PROPERTY, this);
-				player.Out.SendMessage("You join the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                player.Out.SendMessage("You join the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				foreach(GamePlayer member in Members.Keys)
 				{
-					member.Out.SendMessage(player.Name+" has joined the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    member.Out.SendMessage(player.Name + " has joined the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				m_battlegroupMembers.Add(player,leader);
 
@@ -106,10 +130,132 @@ namespace DOL.GS
         {
             return battlegroupLootType;
         }
+        
+        public bool IsRecordingRolls()
+        {
+	        return recordingRolls;
+        }
+        
+        public int GetRecordingThreshold()
+        {
+	        return rollRecordThreshold;
+        }
+        
+        public void StartRecordingRolls(int maxRoll = 1000)
+		{
+	        recordingRolls = true;
+	        rollRecordThreshold = maxRoll;
+	        m_battlegroupRolls = new Dictionary<GamePlayer, int>();
+	        
+	        foreach (GamePlayer ply in Members.Keys)
+	        {
+		        ply.Out.SendMessage($"{Leader.Name} has initiated the recording. Use /random {maxRoll} now to roll for this item.",eChatType.CT_BattleGroupLeader, eChatLoc.CL_ChatWindow);
+	        }
+		}
+
+        public void StopRecordingRolls()
+        {
+	        recordingRolls = false;
+	        foreach (GamePlayer ply in Members.Keys)
+	        {
+		        ply.Out.SendMessage($"{Leader.Name} stopped the recording. Use /bg showrolls to display the results.",eChatType.CT_BattleGroupLeader, eChatLoc.CL_ChatWindow);
+	        }
+        }
+        
+        public void AddRoll(GamePlayer player, int roll)
+		{
+	        if(!recordingRolls)
+		        return;
+	        if (roll > rollRecordThreshold)
+		        return;
+	        lock (m_battlegroupRolls)
+	        {
+		        if(m_battlegroupRolls.ContainsKey(player))
+			        return;
+		        m_battlegroupRolls.Add(player, roll);
+	        }
+		}
+        public void ShowRollsWindow(GamePlayer player)
+        {
+	        if (recordingRolls)
+	        {
+		        player.Client.Out.SendMessage("Rolls are being recorded. Please wait.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+		        return;
+	        }
+
+	        if (m_battlegroupRolls == null || m_battlegroupRolls.Count == 0)
+	        {
+		        player.Client.Out.SendMessage("No rolls have been recorded yet.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+		        return;
+	        }
+	        
+	        var output = new List<string>();
+
+	        var sorted = new List<KeyValuePair<GamePlayer, int>>();
+
+	        sorted = m_battlegroupRolls.ToList();
+	        sorted.Sort((pair1, pair2) => pair2.Value.CompareTo(pair1.Value));
+	        
+
+	        var i = 1;
+	        foreach (var value in sorted)
+	        {
+		        output.Add($"{i}) {value.Key.Name} rolled {value.Value}");
+		        i++;
+	        }
+	        
+	        player.Out.SendCustomTextWindow("LAST ROLL RESULTS", output);
+
+        }
 
         public GamePlayer GetBGTreasurer()
         {
             return battlegroupTreasurer;
+        }
+
+        public GameLiving GetBGLeader()
+        {
+            return m_battlegroupLeader;
+        }
+
+        public bool SetBGLeader(GameLiving living)
+        {
+            if (living != null)
+            {
+                m_battlegroupLeader = living;
+                return true;
+            }
+
+            return false;
+        }
+        public bool IsBGTreasurer(GameLiving living)
+        {
+            if (battlegroupTreasurer != null && living != null)
+            {
+                return battlegroupTreasurer == living;
+            }
+
+            return false;
+        }
+        public bool IsBGLeader(GameLiving living)
+        {
+            if (m_battlegroupLeader != null && living != null)
+            {
+                return m_battlegroupLeader == living;
+            }
+
+            return false;
+        }
+        
+        public bool IsBGModerator(GamePlayer living)
+        {
+	        if (m_battlegroupModerators != null && living != null)
+	        {
+		        var ismod = m_battlegroupModerators.Contains(living);
+		        return ismod;
+	        }
+
+	        return false;
         }
 
         public int GetBGLootTypeThreshold()
@@ -171,18 +317,6 @@ namespace DOL.GS
                 return false;
             }
         }
-        
-        public GamePlayer[] GetPlayersInTheBattleGroup()
-        {
-            ArrayList players;
-            lock (m_battlegroupMembers.SyncRoot) // Mannen 10:56 PM 10/30/2006 - Fixing every lock(this)
-            {
-                players = new ArrayList(m_battlegroupMembers.Keys.Count);
-                foreach (GamePlayer player in m_battlegroupMembers.Keys)
-                    players.Add(player);
-            }
-            return (GamePlayer[])players.ToArray(typeof(GamePlayer));
-        }
 
         public virtual void SendMessageToBattleGroupMembers(string msg, eChatType type, eChatLoc loc)
         {
@@ -211,12 +345,14 @@ namespace DOL.GS
 			{
 				if (!m_battlegroupMembers.Contains(player))
 					return false;
+				var leader = IsBGLeader(player);
 				m_battlegroupMembers.Remove(player);
 				player.TempProperties.removeProperty(BATTLEGROUP_PROPERTY);
-				player.Out.SendMessage("You leave the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+				player.isInBG = false; //Xarik: Player is no more in the BG
+                player.Out.SendMessage("You leave the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				foreach(GamePlayer member in Members.Keys)
 				{
-					member.Out.SendMessage(player.Name+" has left the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                    member.Out.SendMessage(player.Name + " has left the battle group.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				}
 				if (m_battlegroupMembers.Count == 1)
 				{
@@ -226,9 +362,23 @@ namespace DOL.GS
 					{
 						RemoveBattlePlayer(plr);
 					}
+				} else if (leader && m_battlegroupMembers.Count >= 2)
+				{
+					var bgPlayers = new ArrayList(m_battlegroupMembers.Count);
+					lock (bgPlayers)
+					{
+						bgPlayers.AddRange(m_battlegroupMembers.Keys);
+						var randomPlayer = bgPlayers[Util.Random(bgPlayers.Count - 1)] as GamePlayer;
+						if (randomPlayer == null) return false;
+						SetBGLeader(randomPlayer);
+						m_battlegroupMembers[randomPlayer] = true;
+						foreach(GamePlayer member in Members.Keys)
+						{
+							member.Out.SendMessage(randomPlayer.Name + " is the new leader of the battle group.", eChatType.CT_BattleGroupLeader, eChatLoc.CL_SystemWindow);
+						}
+					}
 				}
 
-                player.isInBG = false; //Xarik: Player is no more in the BG
 			}
 			return true;
 		}

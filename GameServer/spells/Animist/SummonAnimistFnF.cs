@@ -17,13 +17,14 @@
  *
  */
 using System;
-using DOL.Events;
-using DOL.GS.PacketHandler;
+using System.Linq;
 using DOL.AI.Brain;
+using DOL.Events;
 using DOL.GS.Effects;
+using DOL.GS.Keeps;
+using DOL.GS.PacketHandler;
 using DOL.GS.ServerProperties;
 using DOL.Language;
-using System.Linq;
 
 namespace DOL.GS.Spells
 {
@@ -48,9 +49,26 @@ namespace DOL.GS.Spells
                 return false;
 			}
 
+			//Limit the height of FnF Shrooms if in a keep area
+			foreach (AbstractArea area in rgn.GetAreasOfSpot(Caster.GroundTarget))
+			{
+				if (area is KeepArea)
+				{
+					if (Caster.GroundTarget.Z - Caster.Z > 200)
+					{
+						if (Caster is GamePlayer)
+                    		MessageToCaster("Cannot summon a turret this high near a keep!", eChatType.CT_SpellResisted);
+						return false;
+					}
+					
+				}
+			}
+
 			foreach (GameNPC npc in Caster.CurrentRegion.GetNPCsInRadius(Caster.GroundTarget.X, Caster.GroundTarget.Y, Caster.GroundTarget.Z, (ushort)Properties.TURRET_AREA_CAP_RADIUS, false, true))
+			{
 				if (npc.Brain is TurretFNFBrain)
 					nCount++;
+			}
 
 			if (nCount >= Properties.TURRET_AREA_CAP_COUNT)
 			{
@@ -73,17 +91,21 @@ namespace DOL.GS.Spells
 		{
 			base.ApplyEffectOnTarget(target, effectiveness);
 
-			if (Spell.SubSpellID > 0 && SkillBase.GetSpellByID(Spell.SubSpellID) != null)
+			if (Spell.SubSpellID > 0 && m_pet.Spells != null && SkillBase.GetSpellByID(Spell.SubSpellID) != null)
 			{
 				m_pet.Spells.Add(SkillBase.GetSpellByID(Spell.SubSpellID));
 			}
 
 			(m_pet.Brain as TurretBrain).IsMainPet = false;
-
 			(m_pet.Brain as IOldAggressiveBrain).AddToAggroList(target, 1);
 			(m_pet.Brain as TurretBrain).Think();
-			//[Ganrod] Nidel: Set only one spell.
-			(m_pet as TurretPet).TurretSpell = m_pet.Spells[0] as Spell;
+
+			if (m_pet.Spells.Count > 0)
+			{
+				//[Ganrod] Nidel: Set only one spell.
+				(m_pet as TurretPet).TurretSpell = m_pet.Spells[0] as Spell;
+			}
+
 			Caster.PetCount++;
 		}
 

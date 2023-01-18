@@ -22,11 +22,10 @@ using System.Collections;
 using System.Collections.Generic;
 using DOL.Events;
 using DOL.GS;
-using DOL.GS.Spells;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.GS.RealmAbilities;
-using DOL.GS.SkillHandler;
+using DOL.GS.Spells;
 using log4net;
 
 namespace DOL.AI.Brain
@@ -41,12 +40,13 @@ namespace DOL.AI.Brain
 		/// </summary>
 		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+		public const int MAX_PET_AGGRO_DISTANCE = 512; // Tolakram - Live test with caby pet - I was extremely close before auto aggro
 		// note that a minimum distance is inforced in GameNPC
-		public static readonly short MIN_OWNER_FOLLOW_DIST = 50;
+		public const short MIN_OWNER_FOLLOW_DIST = 50;
 		//4000 - rough guess, needs to be confirmed
-		public static readonly short MAX_OWNER_FOLLOW_DIST = 5000; // setting this to max stick distance
-		public static readonly short MIN_ENEMY_FOLLOW_DIST = 90;
-		public static readonly short MAX_ENEMY_FOLLOW_DIST = 512;
+		public const short MAX_OWNER_FOLLOW_DIST = 10000; // setting this to max stick distance
+		public const short MIN_ENEMY_FOLLOW_DIST = 90;
+		public const short MAX_ENEMY_FOLLOW_DIST = 5000;
 
 		protected int m_tempX = 0;
 		protected int m_tempY = 0;
@@ -79,19 +79,15 @@ namespace DOL.AI.Brain
 		public ControlledNpcBrain(GameLiving owner)
 			: base()
 		{
-            if (owner == null)
-                throw new ArgumentNullException("owner");
-
-            m_owner = owner;
+			m_owner = owner ?? throw new ArgumentNullException("owner");
             m_aggressionState = eAggressionState.Defensive;
             m_walkState = eWalkState.Follow;
-            if (owner is GameNPC && (owner as GameNPC).Brain is StandardMobBrain)
-            {
-                m_aggroLevel = ((owner as GameNPC).Brain as StandardMobBrain).AggroLevel;
-            }
+
+            if (owner is GameNPC npcOwner && npcOwner.Brain is StandardMobBrain npcOwnerBrain)
+                AggroLevel = npcOwnerBrain.AggroLevel;
             else
-                m_aggroLevel = 99;
-            m_aggroMaxRange = 1500;
+                AggroLevel = 99;
+            AggroRange = 1500;
 
 			FSM.ClearStates();
 
@@ -102,12 +98,13 @@ namespace DOL.AI.Brain
 			FSM.Add(new StandardMobState_DEAD(FSM, this));
 
 			FSM.SetCurrentState(eFSMStateType.WAKING_UP);
-			
 		}
 
 		protected bool m_isMainPet = true;
 		public bool checkAbility;
 		public bool sortedSpells;
+
+		public override int AggroRange => Math.Min(base.AggroRange, MAX_PET_AGGRO_DISTANCE);
 
 		/// <summary>
 		/// Checks if this NPC is a permanent/charmed or timed pet
@@ -240,21 +237,16 @@ namespace DOL.AI.Brain
 			set
 			{
 				m_aggressionState = value;
-				m_orderAttackTarget = null;
+
 				if (m_aggressionState == eAggressionState.Passive)
 				{
-					ClearAggroList();
-					Body.StopAttack();
-					Body.TargetObject = null;
-
-					FSM.SetCurrentState(eFSMStateType.PASSIVE);
+					Disengage();
 
 					if (WalkState == eWalkState.Follow)
 						FollowOwner();
 					else if (m_tempX > 0 && m_tempY > 0 && m_tempZ > 0)
 						Body.WalkTo(m_tempX, m_tempY, m_tempZ, Body.MaxSpeed);
 				}
-				//AttackMostWanted();
 			}
 		}
 
@@ -273,19 +265,27 @@ namespace DOL.AI.Brain
 			previousIsStealthed = false;
 			if (target is GamePlayer) 
 				previousIsStealthed = (target as GamePlayer).IsStealthed;
-
-			if (FSM.GetState(eFSMStateType.AGGRO) != FSM.GetCurrentState()){	FSM.SetCurrentState(eFSMStateType.AGGRO);}
+			FSM.SetCurrentState(eFSMStateType.AGGRO);
 			if (target != Body.TargetObject && Body.IsCasting)
 				Body.StopCurrentSpellcast();
 
-    //        if (Body.CanCastHarmfulSpells)
-    //        {
-				//CheckSpells(eCheckSpellType.Offensive);
-    //        } else
-    //        {
-				AttackMostWanted();
-			//}
-			
+			AttackMostWanted();
+		}
+
+		public virtual void Disengage()
+		{
+			// We switch to defensive mode if we're in aggressive and have a target, so that we don't immediately aggro back
+			if (AggressionState == eAggressionState.Aggressive && Body.TargetObject != null)
+			{
+				AggressionState = eAggressionState.Defensive;
+				UpdatePetWindow();
+			}
+
+			m_orderAttackTarget = null;
+			ClearAggroList();
+			Body.StopAttack();
+			Body.StopCurrentSpellcast();
+			Body.TargetObject = null;
 		}
 
 		/// <summary>
@@ -315,9 +315,9 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public virtual void ComeHere()
 		{
-			m_tempX = Body.X;
-			m_tempY = Body.Y;
-			m_tempZ = Body.Z;
+			m_tempX = Owner.X;
+			m_tempY = Owner.Y;
+			m_tempZ = Owner.Z;
 			WalkState = eWalkState.ComeHere;
 			Body.StopFollowing();			
 			//Body.WalkTo(Owner, Body.MaxSpeed);
@@ -330,9 +330,9 @@ namespace DOL.AI.Brain
 		/// <param name="target"></param>
 		public virtual void Goto(GameObject target)
 		{
-			m_tempX = Body.X;
-			m_tempY = Body.Y;
-			m_tempZ = Body.Z;
+			m_tempX = target.X;
+			m_tempY = target.Y;
+			m_tempZ = target.Z;
 			WalkState = eWalkState.GoTarget;
 			Body.StopFollowing();
 			//Body.WalkTo(target, Body.MaxSpeed);
@@ -351,7 +351,7 @@ namespace DOL.AI.Brain
 		public virtual void UpdatePetWindow()
 		{
 			if (m_owner is GamePlayer)
-				((GamePlayer)m_owner).Out.SendPetWindow(m_body, ePetWindowAction.Update, m_aggressionState, m_walkState);
+				((GamePlayer)m_owner).Out.SendPetWindow(Body, ePetWindowAction.Update, m_aggressionState, m_walkState);
 		}
 
 		/// <summary>
@@ -359,7 +359,9 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public virtual void FollowOwner()
 		{
-			Body.StopAttack();
+			if (Body.IsAttacking)
+				Body.StopAttack();
+				
 			if (Owner is GamePlayer
 			    && IsMainPet
 			    && ((GamePlayer)Owner).CharacterClass.ID != (int)eCharacterClass.Animist
@@ -389,12 +391,13 @@ namespace DOL.AI.Brain
 		/// <returns>true if started</returns>
 		public override bool Start()
 		{
-			if (!base.Start()) return false;
+			if (!base.Start())
+				return false;
+
 			if (WalkState == eWalkState.Follow)
 				FollowOwner();
-			// [Ganrod] On supprime la cible du pet au moment  du contrôle.
+
 			Body.TargetObject = null;
-			//GameEventMgr.AddHandler(Owner, GameLivingEvent.AttackedByEnemy, new DOLEventHandler(OnOwnerAttacked));
 
 			return true;
 		}
@@ -425,13 +428,13 @@ namespace DOL.AI.Brain
 		/// </summary>
 		public override void CheckAbilities()
 		{
-			Console.WriteLine($"Loading abilities for {this}");
+			//Console.WriteLine($"Loading abilities for {this}");
 			////load up abilities
 			if (Body.Abilities != null && Body.Abilities.Count > 0)
 			{
 				foreach (Ability ab in Body.Abilities.Values)
 				{
-					Console.WriteLine($"Ability: {ab}");
+					//Console.WriteLine($"Ability: {ab}");
 					switch (ab.KeyName)
 					{
 						case Abilities.Intercept:
@@ -480,8 +483,8 @@ namespace DOL.AI.Brain
 		/// <returns>True if we are begin to cast or are already casting</returns>
 		public override bool CheckSpells(eCheckSpellType type)
 		{
-			
-			if (Body == null || Body.Spells == null || Body.Spells.Count < 1) return false;
+			if (Body == null || Body.Spells == null || Body.Spells.Count < 1)
+				return false;
 			
 			bool casted = false;
 			if (type == eCheckSpellType.Defensive)
@@ -533,11 +536,9 @@ namespace DOL.AI.Brain
 							break;
 						}
 			}
-
-			return casted || Body.IsCasting;
+			bool checkingSpellLOS = Body.TempProperties.getProperty<Spell>("LOSCURRENTSPELL", null) != null; //Check if pet is checking for spell LoS
+			return casted || Body.IsCasting || checkingSpellLOS;
 		}
-
-		
 
 		/// <summary>
 		/// Checks the Positive Spells.  Handles buffs, heals, etc.
@@ -620,26 +621,21 @@ namespace DOL.AI.Brain
                 case (byte)eSpellType.DamageShield:
                 case (byte)eSpellType.Bladeturn:
                     {
-						String target;
-
+						string target = spell.Target.ToUpper();
 						spell.IsSpec = true;
-						//Buff self
+
+						// Buff self
 						if (!LivingHasEffect(Body, spell))
 						{
                             Body.TargetObject = Body;
 							break;
 						}
-
-						target = spell.Target.ToUpper();
-							
-						if (target == "SELF")
-							break;
 						
-						if (target == "REALM" || target == "GROUP")
+						if (target is "REALM" or "GROUP")
 						{
 							owner = (this as IControlledBrain).Owner;
-							player = null;
-							//Buff owner
+
+							// Buff owner
 							if (!LivingHasEffect(owner, spell) && Body.IsWithinRadius(owner, spell.Range))
 							{
                                 Body.TargetObject = owner;
@@ -662,7 +658,7 @@ namespace DOL.AI.Brain
 
 							player = GetPlayerOwner();
 
-							//Buff player
+							// Buff player
 							if (player != null)
 							{
 								if (!LivingHasEffect(player, spell))
@@ -673,11 +669,11 @@ namespace DOL.AI.Brain
 
 								if (player.Group != null)
 								{
-									foreach (GamePlayer p in player.Group.GetPlayersInTheGroup())
+									foreach (GamePlayer member in player.Group.GetPlayersInTheGroup())
 									{
-										if (!LivingHasEffect(p, spell) && Body.IsWithinRadius(p, spell.Range))
+										if (!LivingHasEffect(member, spell) && Body.IsWithinRadius(member, spell.Range))
 										{
-                                            Body.TargetObject = p;
+                                            Body.TargetObject = member;
 											break;
 										}
 									}
@@ -771,6 +767,10 @@ namespace DOL.AI.Brain
 					//underhill ally heals at half the normal threshold 'will heal seriously injured groupmates'
 					int healThreshold = this.Body.Name.Contains("underhill") ? GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD / 2 : GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD;
 
+					if (Body.Name.Contains("empyrean"))
+					{
+						healThreshold = this.Body.Name.Contains("empyrean") ? GS.ServerProperties.Properties.CHARMED_NPC_HEAL_THRESHOLD : GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD;
+					}
 
 					if (spellTarget == "SELF")
 					{
@@ -866,7 +866,7 @@ namespace DOL.AI.Brain
 
 				default:
 					log.Warn($"CheckDefensiveSpells() encountered an unknown spell type [{spell.SpellType}], calling base method");
-					return base.CheckDefensiveSpells(spell);
+				return base.CheckDefensiveSpells(spell);
 			}
 
 			if (Body.TargetObject != null)
@@ -883,8 +883,6 @@ namespace DOL.AI.Brain
 				}
 			}
 
-			
-
 			return casted;
 		}
 
@@ -895,7 +893,7 @@ namespace DOL.AI.Brain
 				return false;
 
 			// Make sure we're currently able to cast the spell
-			if (spell.CastTime > 0 && Body.IsBeingInterrupted && !spell.Uninterruptible)
+			if (spell.CastTime > 0 && Body.IsBeingInterrupted && !spell.Uninterruptible )
 				return false;
 
 			// Make sure the spell isn't disabled
@@ -903,6 +901,10 @@ namespace DOL.AI.Brain
 				return false;
 
 			if (!Body.IsWithinRadius(Body.TargetObject, spell.Range))
+				return false;
+
+			//Don't allow casting of non-instant Offsensive spells if already in attackstate and cant cast this spell in combat
+			if(spell.CastTime > 0 && Body.attackComponent.AttackState && !Body.CanCastInCombat(spell))
 				return false;
 
 			return base.CheckOffensiveSpells(spell);
@@ -923,36 +925,17 @@ namespace DOL.AI.Brain
 			FollowOwner();
 		}
 
-		/// <summary>
-		/// Add living to the aggrolist
-		/// aggroamount can be negative to lower amount of aggro
-		/// </summary>
-		/// <param name="living"></param>
-		/// <param name="aggroamount"></param>
-		public override void AddToAggroList(GameLiving living, int aggroamount)
+		public override bool CanAggroTarget(GameLiving target)
 		{
-            GameNPC npc_owner = GetNPCOwner();
-            if (npc_owner == null || !(npc_owner.Brain is StandardMobBrain))
-                base.AddToAggroList(living, aggroamount);
-            else
-            {
-                (npc_owner.Brain as StandardMobBrain).AddToAggroList(living, aggroamount);
-            }
+			// Only attack if target (or target's owner) is green+ to our owner
+			if (target is GameNPC npc && npc.Brain is IControlledBrain controlledBrain && controlledBrain.Owner != null)
+				target = controlledBrain.Owner;
+
+			if (!GameServer.ServerRules.IsAllowedToAttack(Body, target, true) || Owner.IsObjectGreyCon(target))
+				return false;
+
+			return AggroLevel > 0;
 		}
-
-		public override int CalculateAggroLevelToTarget(GameLiving target)
-		{
-			// only attack if target is green+ to OWNER; always attack higher levels regardless of CON
-			if (GameServer.ServerRules.IsAllowedToAttack(Body, target, true) == false || Owner.IsObjectGreyCon(target))
-				return 0;
-
-			return AggroLevel > 100 ? 100 : AggroLevel;
-		}
-
-        public override bool HasAggressionTable()
-        {
-			return AggroTable.Count > 0;   
-        }
 
         /// <summary>
         /// Returns the best target to attack
@@ -975,29 +958,35 @@ namespace DOL.AI.Brain
 				m_orderAttackTarget = null;
 			}
 
-			lock ((m_aggroTable as ICollection).SyncRoot)
+			lock ((AggroTable as ICollection).SyncRoot)
 			{
-				IDictionaryEnumerator aggros = m_aggroTable.GetEnumerator();
+				IDictionaryEnumerator aggros = AggroTable.GetEnumerator();
 				List<GameLiving> removable = new List<GameLiving>();
 				while (aggros.MoveNext())
 				{
 					GameLiving living = (GameLiving)aggros.Key;
+					
+					if(living == null)
+						continue;
 
-					if (living.IsMezzed ||
-					    living.IsAlive == false ||
-					    living.ObjectState != GameObject.eObjectState.Active ||
-					    Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE ||
-					    GameServer.ServerRules.IsAllowedToAttack(this.Body, living, true) == false)
+					if (living != null)
 					{
-						removable.Add(living);
-					}
-					else
-					{
-						//GameSpellEffect root = SpellHandler.FindEffectOnTarget(living, "SpeedDecrease");
-						ECSGameSpellEffect root = EffectListService.GetSpellEffectOnTarget(living, eEffect.MovementSpeedDebuff);
-						if (root != null && root.SpellHandler.Spell.Value == 99)
+						if (living.IsMezzed ||
+						    living.IsAlive == false ||
+						    living.ObjectState != GameObject.eObjectState.Active ||
+						    Body.GetDistanceTo(living, 0) > MAX_AGGRO_LIST_DISTANCE ||
+						    GameServer.ServerRules.IsAllowedToAttack(this.Body, living, true) == false)
 						{
 							removable.Add(living);
+						}
+						else
+						{
+							//GameSpellEffect root = SpellHandler.FindEffectOnTarget(living, "SpeedDecrease");
+							ECSGameSpellEffect root = EffectListService.GetSpellEffectOnTarget(living, eEffect.MovementSpeedDebuff);
+							if (root != null && root.SpellHandler.Spell.Value == 99)
+							{
+								removable.Add(living);
+							}
 						}
 					}
 				}
@@ -1089,6 +1078,12 @@ namespace DOL.AI.Brain
 				if (!CheckSpells(eCheckSpellType.Offensive))
 				{
 					Body.StartAttack(target);
+
+					if (Body.CurrentFollowTarget != target)
+					{
+						Body.StopFollowing();
+						Body.Follow(target, MIN_ENEMY_FOLLOW_DIST, MAX_ENEMY_FOLLOW_DIST);
+					}
 				}
 			}
 			else
@@ -1129,7 +1124,7 @@ namespace DOL.AI.Brain
 
 			//AttackedByEnemyEventArgs args = arguments as AttackedByEnemyEventArgs;
 			//if (args == null) return;
-			if (ad.Target is GamePlayer && (ad.Target as GamePlayer).ControlledBrain != this)
+			if (ad.Target is GamePlayer && ((ad.Target as GamePlayer).ControlledBrain != this || (ad.Target as GamePlayer).ControlledBrain.Body == Owner))
 				return;
 			// react only on these attack results
 			switch (ad.AttackResult)

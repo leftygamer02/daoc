@@ -17,9 +17,9 @@ namespace DOL.GS.RealmAbilities
 
         public AtlasOF_SerenityAbility(DBAbility dba, int level) : base(dba, level, eProperty.Undefined) { }
 
-        public override bool CheckRequirement(GamePlayer player) { return AtlasRAHelpers.HasAugAcuityLevel(player, 2); }
+        public override bool CheckRequirement(GamePlayer player) { return AtlasRAHelpers.GetAugAcuityLevel(player) >= 2; }
 
-        public override int CostForUpgrade(int level) { return AtlasRAHelpers.GetCommonPassivesCostForUpgrade(level); }
+        public override int CostForUpgrade(int level) { return AtlasRAHelpers.GetCommonUpgradeCostFor5LevelsRA(level); }
 
         public override int GetAmountForLevel(int level)
         {

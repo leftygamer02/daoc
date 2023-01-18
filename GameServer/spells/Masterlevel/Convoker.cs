@@ -614,7 +614,7 @@ namespace DOL.GS.Spells
 
 		private int x, y, z;
 		GameNPC summoned = null;
-		RegionTimer m_growTimer;
+		ECSGameTimer m_growTimer;
 		private const int C_GROWTIMER = 2000;
 		
 		public Convoker10SpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
@@ -679,11 +679,11 @@ namespace DOL.GS.Spells
 			summoned.AddToWorld();
 			controlledBrain.AggressionState = eAggressionState.Aggressive;
 			effect.Start(summoned);
-			m_growTimer = new RegionTimer((GameObject)m_caster, new RegionTimerCallback(TitanGrows), C_GROWTIMER);
+			m_growTimer = new ECSGameTimer((GameObject)m_caster, new ECSGameTimer.ECSTimerCallback(TitanGrows), C_GROWTIMER);
 		}
 		
 		// Make titan growing, and activate it on completition
-		private int TitanGrows(RegionTimer timer)
+		private int TitanGrows(ECSGameTimer timer)
 		{
 			if(summoned != null && summoned.Size != 60)
 			{
@@ -884,7 +884,7 @@ public class MLBrain : GuardBrain
 	{
 		get { return 400; }
 	}
-	public override void CheckNPCAggro()
+	protected override void CheckNPCAggro()
 	{
 		//Check if we are already attacking, return if yes
 		if (Body.attackComponent.AttackState)
@@ -892,7 +892,7 @@ public class MLBrain : GuardBrain
 
 		foreach (GameNPC npc in Body.GetNPCsInRadius((ushort)AggroRange))
 		{
-			if (m_aggroTable.ContainsKey(npc))
+			if (AggroTable.ContainsKey(npc))
 				continue; // add only new npcs
 			if ((npc.Flags & GameNPC.eFlags.FLYING) != 0)
 				continue; // let's not try to attack flying mobs

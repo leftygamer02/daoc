@@ -43,6 +43,8 @@ namespace DOL.GS.RealmAbilities
 					case 3: heal = 100; break;
 				}				
 			}
+			
+			
 
 			int healed = living.ChangeHealth(living, eHealthChangeType.Spell, living.MaxHealth * heal / 100);
 
@@ -54,7 +56,14 @@ namespace DOL.GS.RealmAbilities
 				if (healed > 0) player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "FirstAidAbility.Execute.HealYourself", healed), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
 				if (heal > healed)
 				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "FirstAidAbility.Execute.FullyHealed"), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+					if (healed == 0)
+					{
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "FirstAidAbility.Execute.AlreadyFullyHealed"), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+					}
+					else
+					{
+						player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "FirstAidAbility.Execute.FullyHealed"), eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
+					}
 				}
 			}
 			if (healed > 0) DisableSkill(living);
@@ -63,6 +72,21 @@ namespace DOL.GS.RealmAbilities
 		public override int GetReUseDelay(int level)
 		{
 			return 180;
+		}
+		
+		public override int CostForUpgrade(int level)
+		{
+			switch (level)
+			{
+				case 1:
+					return 3;
+				case 2:
+					return 6;
+				case 3:
+					return 10;
+				default:	// default must return value for lvl 1
+					return 3;
+			}
 		}
 
 		public override void AddEffectsInfo(IList<string> list)

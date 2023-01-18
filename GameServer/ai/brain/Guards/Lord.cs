@@ -9,9 +9,7 @@ namespace DOL.AI.Brain
 	/// </summary>
 	public class LordBrain : KeepGuardBrain
 	{
-		public LordBrain() : base()
-		{
-		}
+		public LordBrain() : base() { }
 
 		public override void Think()
 		{

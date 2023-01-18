@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using DOL.Database;
 using DOL.GS.Housing;
 using DOL.GS.PacketHandler;
@@ -106,46 +105,57 @@ namespace DOL.GS.Scripts
             if (player.Realm != this.Realm && player.Client.Account.PrivLevel == 1) return false;
 
             TurnTo(player, 10000);
+            
+            var message = "";
 
             switch (Realm)
             {
                 case eRealm.Albion:
-                    SayTo(player, "Greetings, " + player.Name +
-                                  " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
-                                  "[Castle Sauvage] in Camelot Hills or \n[Snowdonia Fortress] in Black Mtns. North\n" +
-                                  "[Avalon Marsh] wharf\n" +
-                                  "[Gothwaite Harbor] in the [Shrouded Isles]\n" +
-                                  "[Camelot] our glorious capital\n" +
-                                  "[Entrance] to the areas of [Housing]\n\n" +
-                                  "Or one of the many [towns] throughout Albion");
+
+                    message = "Greetings, " + player.Name +
+                              " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
+                              "[Castle Sauvage] in Camelot Hills or \n[Snowdonia Fortress] in Black Mtns. North,\n" +
+                              "[Avalon Marsh] wharf,\n" +
+                              "[Gothwaite Harbor] in the [Shrouded Isles],\n" +
+                              "[Camelot] our glorious capital,\n" +
+                              "[Entrance] to the areas of [Housing]\n\n" +
+                              "or one of the many [towns] throughout Albion.";
+                              //"For this event duration, I can send you to [Darkness Falls]";
                     break;
 
                 case eRealm.Midgard:
-                    SayTo(player, "Greetings, " + player.Name +
-                                  " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
-                                  "[Svasud Faste] in Mularn or \n[Vindsaul Faste] in West Svealand\n" +
-                                  "Beaches of [Gotar] near Nailiten\n" +
-                                  "[Aegirhamn] in the [Shrouded Isles]\n" +
-                                  "Our glorious city of [Jordheim]\n" +
-                                  "[Entrance] to the areas of [Housing]\n\n" +
-                                  "Or one of the many [towns] throughout Midgard");
+                    
+                    message = "Greetings, " + player.Name +
+                              " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
+                              "[Svasud Faste] in Mularn or \n[Vindsaul Faste] in West Svealand,\n" +
+                              "Beaches of [Gotar] near Nailiten,\n" +
+                              "[Aegirhamn] in the [Shrouded Isles],\n" +
+                              "Our glorious city of [Jordheim],\n" +
+                              "[Entrance] to the areas of [Housing]\n\n" +
+                              "or one of the many [towns] throughout Midgard.";
                     break;
 
                 case eRealm.Hibernia:
-                    SayTo(player, "Greetings, " + player.Name +
-                                  " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
-                                  "[Druim Ligen] in Connacht or \n[Druim Cain] in Bri Leith\n" +
-                                  "[Shannon Estuary] watchtower\n" +
-                                  "[Domnann] Grove in the [Shrouded Isles]\n" +
-                                  "[Tir na Nog] our glorious capital\n" +
-                                  "[Entrance] to the areas of [Housing]\n\n" +
-                                  "Or one of the many [towns] throughout Hibernia");
+                    
+                    message = "Greetings, " + player.Name +
+                              " I am able to channel energy to transport you to distant lands. I can send you to the following locations:\n\n" +
+                              "[Druim Ligen] in Connacht or \n[Druim Cain] in Bri Leith,\n" +
+                              "[Shannon Estuary] watchtower,\n" +
+                              "[Domnann] Grove in the [Shrouded Isles],\n" +
+                              "[Tir na Nog] our glorious capital,\n" +
+                              "[Entrance] to the areas of [Housing]\n\n" +
+                              "or one of the many [towns] throughout Hibernia.";
                     break;
 
                 default:
                     SayTo(player, "I have no Realm set, so don't know what locations to offer..");
                     break;
             }
+            
+            message += "\n\n" +
+                       "Perhaps you would like the challenge of the [Epic Dungeon]?";
+
+            SayTo(player, message);
 
             return true;
         }
@@ -197,7 +207,24 @@ namespace DOL.GS.Scripts
                                       "[Adribard's Retreat]\n" +
                                       "[Yarley's Farm]");
                         return false;
-                    } 
+                    }
+
+                    /*
+                    if (text.ToLower() == "darkness falls")
+                    {
+                        IGameLocation location = new GameLocation("df", 249, 249, 23122, 19634, 22897, 3074);
+                        
+                        Teleport teleport = new Teleport();
+                        teleport.TeleportID = "Darkness Falls";
+                        teleport.Realm = (int) DestinationRealm;
+                        teleport.RegionID = location.RegionID;
+                        teleport.X = location.X;
+                        teleport.Y = location.Y;
+                        teleport.Z = location.Z;
+                        teleport.Heading = location.Heading;
+                        OnDestinationPicked(player, teleport);
+                        return true;
+                    }*/
                     
                     break;
                 
@@ -269,6 +296,8 @@ namespace DOL.GS.Scripts
 
             // Another special case is personal house, as there is no location
             // that will work for every player.
+            if (text == "Entrance") text = text.ToLower();
+            
             if (text.ToLower() == "personal")
             {
                 House house = HouseMgr.GetHouseByPlayer(player);
@@ -382,6 +411,22 @@ namespace DOL.GS.Scripts
                 }
             }
 
+            if (text.ToLower() == "epic dungeon")
+            {
+                switch (player.Realm)
+                {
+                    case eRealm.Albion:
+                        GetTeleportLocation(player, "Caer Sidi");
+                        return true;
+                    case eRealm.Midgard:
+                        GetTeleportLocation(player, "Tuscaran Glacier");
+                        return true;
+                    case eRealm.Hibernia:
+                        GetTeleportLocation(player, "Galladoria");
+                        return false;
+                }
+            }
+
             // Find the teleport location in the database.
             Teleport port = WorldMgr.GetTeleportLocation(DestinationRealm, String.Format("{0}:{1}", Type, text));
             if (port != null)
@@ -419,7 +464,10 @@ namespace DOL.GS.Scripts
                 return;
             }
             
-            Say("I'm now teleporting you to " + destination.TeleportID + ".");
+            var message = $"{Name} says, \"I'm now teleporting you to {destination.TeleportID}.\"";
+            
+            player.Out.SendMessage(message, eChatType.CT_Say, eChatLoc.CL_ChatWindow);
+            
             OnTeleportSpell(player, destination);
         }
 
@@ -449,7 +497,6 @@ namespace DOL.GS.Scripts
             {
                 TargetObject = player;
                 UniPortal portalHandler = new UniPortal(this, spell, spellLine, destination);
-                m_runningSpellHandler = portalHandler;
                 portalHandler.CastSpell();
                 return;
             }

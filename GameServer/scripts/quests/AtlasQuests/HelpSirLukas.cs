@@ -49,9 +49,7 @@ namespace DOL.GS.Quests.Albion
 
 		private static IList<WorldObject> GetItems()
 		{
-			string FlitzitinaGrave = "Name = \"Flitzitina\'s Grave\"";
-			
-			return (GameServer.Database.SelectObjects<WorldObject>(FlitzitinaGrave));
+			return GameServer.Database.SelectObjects<WorldObject>(DB.Column("Name").IsEqualTo("Flitzitina's Grave"));
 		}
 
 		// Constructors
@@ -757,23 +755,17 @@ namespace DOL.GS.Quests.Albion
 
 		public override void FinishQuest()
 		{
-			if (m_questPlayer.Inventory.IsSlotsFree(6, eInventorySlot.FirstBackpack, eInventorySlot.LastBackpack))
-			{
-				Lukas.SayTo(m_questPlayer, "You helped me preserve the history of this heroine of Albion, and I will follow in her steps and make her proud. " +
-                    "Thank you again, " + m_questPlayer.Name + ", it means more than you know.");
-				Lukas.TurnTo(m_questPlayer);
-				Lukas.Emote(eEmote.Curtsey);
-				Lukas.ResetHeading();
+			Lukas.SayTo(m_questPlayer, "You helped me preserve the history of this heroine of Albion, and I will follow in her steps and make her proud. " +
+			                           "Thank you again, " + m_questPlayer.Name + ", it means more than you know.");
+			Lukas.TurnTo(m_questPlayer);
+			Lukas.Emote(eEmote.Curtsey);
+			Lukas.ResetHeading();
 
-				m_questPlayer.GainExperience(eXPSource.Quest, 1768448, true);
-				m_questPlayer.AddMoney(Money.GetMoney(0,0,2,32,Util.Random(50)), "You receive {0} as a reward.");
+			m_questPlayer.GainExperience(eXPSource.Quest, 20, false);
+			m_questPlayer.AddMoney(Money.GetMoney(0,0,1,32,Util.Random(50)), "You receive {0} as a reward.");
 
-				base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
-			}
-			else
-			{
-				m_questPlayer.Out.SendMessage("You do not have enough free space in your inventory!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-			}
+			base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
+			
 		}
 	}
 }

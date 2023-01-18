@@ -23,16 +23,22 @@ namespace DOL.GS.Commands
 		{
 			if (IsSpammingCommand(client.Player, "nohelp"))
 				return;
-
+			
 			if (!client.Player.NoHelp)
 			{
+				if (client.Player.RealmPoints > 0)
+				{
+					client.Player.Out.SendMessage("You have already received help and cannot join this challenge.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					return;
+				}
+			
 				const string customKey = "grouped_char";
 				var hasGrouped = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId")
 					.IsEqualTo(client.Player.ObjectId).And(DB.Column("KeyName").IsEqualTo(customKey)));
-
+			
 				DateTime d1 = new DateTime(2022, 1, 4);
 				DateTime d2 = new DateTime(2022, 1, 7, 21,0,0);
-
+			
 				if (client.Player.Level == 1 || hasGrouped == null && client.Player.CreationDate >= d1 && client.Player.CreationDate <= d2)
 				{
 					client.Out.SendCustomDialog("Do you want to follow the path of Solitude?",
@@ -47,33 +53,52 @@ namespace DOL.GS.Commands
 
 
 			if (client.Player.NoHelp)
+			{
+				if (client.Player.HCFlag)
+				{
+					client.Player.Out.SendMessage("You cannot leave this challenge while you are in a Hardcore game.",
+						eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+					return;
+				}
 				client.Out.SendCustomDialog(
-					"Feeling lonely? Abandoning this path will void all your efforts in this challenge.",
-					new CustomDialogResponse(NoHelpAbandon));
+						"Feeling lonely? Abandoning this path will void all your efforts in this challenge.",
+						new CustomDialogResponse(NoHelpAbandon));
+			}
+				
 		}
 
 		protected virtual void NoHelpInitiate(GamePlayer player, byte response)
 		{
 			if (response == 1)
 			{
+				if (player.Level > 1)
 				{
-					player.Emote(eEmote.Rude);
-					player.NoHelp = true;
-					player.Out.SendMessage(
-						"You have chosen the path of solitude and will no longer receive any help from members of your Realm.",
+					player.Out.SendMessage("You have already received help and cannot join this challenge.",
 						eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-
-					if (player.HCFlag)
-						player.CurrentTitle = new HardCoreSoloTitle();
-					else
-						player.CurrentTitle = new NoHelpTitle();
+					return;
 				}
+				
+				NoHelpActivate(player);
 			}
 			else
 			{
 				player.Out.SendMessage("Use the command again if you change your mind.", eChatType.CT_Important,
 					eChatLoc.CL_SystemWindow);
 			}
+		}
+
+		public static void NoHelpActivate(GamePlayer player)
+		{
+			player.Emote(eEmote.Rude);
+			player.NoHelp = true;
+			player.Out.SendMessage(
+				"You have chosen the path of solitude and will no longer receive any help from members of your Realm.",
+				eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+
+			if (player.HCFlag)
+				player.CurrentTitle = new HardCoreSoloTitle();
+			else
+				player.CurrentTitle = new NoHelpTitle();
 		}
 
 		protected virtual void NoHelpAbandon(GamePlayer player, byte response)
@@ -158,7 +183,7 @@ namespace DOL.GS.Commands
 				{
 					IList<string> output = new List<string>();
 					IList<SoloCharacter> soloCharacters = new List<SoloCharacter>();
-					IList<DOLCharacters> characters = GameServer.Database.SelectObjects<DOLCharacters>("NoHelp = '1'")
+					IList<DOLCharacters> characters = GameServer.Database.SelectObjects<DOLCharacters>(DB.Column("NoHelp").IsEqualTo(1))
 						.OrderByDescending(x => x.Level).Take(50).ToList();
 
 					output.Add("Top 50 Solo characters:\n");

@@ -277,7 +277,7 @@ namespace DOL.GS.PacketHandler
 
 					pak.WriteByte((byte)c.Class);
 					pak.WriteByte((byte)c.Realm); // ok?
-					pak.WriteByte((byte)((((c.Race & 0x10) << 2) + (c.Race & 0x0F)) | (c.Gender << 4)));
+					pak.WriteByte((byte)((((c.Race & 0x10) << 2) + (c.Race & 0x0F)) | (c.Gender << 7)));
 					if (c.ActiveWeaponSlot == (byte)eActiveWeaponSlot.TwoHanded)
 					{
 						pak.WriteByte(0x02);
@@ -341,7 +341,7 @@ namespace DOL.GS.PacketHandler
 					pak.WriteByte(0x00); //unk
 
 					// weapondamage
-					var wd = (int)(m_gameClient.Player.WeaponDamage(m_gameClient.Player.AttackWeapon) * 100.0);
+					var wd = (int)(m_gameClient.Player.WeaponDamage(m_gameClient.Player.ActiveWeapon) * 100.0);
 					pak.WriteByte((byte)(wd / 256));
 					pak.WriteByte(0x00);
 					pak.WriteByte((byte)(wd % 256));

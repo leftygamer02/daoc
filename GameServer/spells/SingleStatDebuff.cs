@@ -17,10 +17,12 @@
  *
  */
 using System;
+using System.Linq;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
+using DOL.GS.RealmAbilities;
 
 namespace DOL.GS.Spells
 {
@@ -44,6 +46,25 @@ namespace DOL.GS.Spells
         /// <param name="effectiveness">factor from 0..1 (0%-100%)</param>
         public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
 		{
+			// var debuffs = target.effectListComponent.GetSpellEffects()
+			// 					.Where(x => x.SpellHandler is SingleStatDebuff);
+
+			// foreach (var debuff in debuffs)
+            // {
+			// 	var debuffSpell = debuff.SpellHandler as SingleStatDebuff;
+
+			// 	if (debuffSpell.Property1 == this.Property1 && debuffSpell.Spell.Value >= Spell.Value)
+			// 	{
+			// 		// Old Spell is Better than new one
+			// 		SendSpellResistAnimation(target);
+			// 		this.MessageToCaster(eChatType.CT_SpellResisted, "{0} already has that effect.", target.GetName(0, true));
+			// 		MessageToCaster("Wait until it expires. Spell Failed.", eChatType.CT_SpellResisted);
+			// 		// Prevent Adding.
+			// 		return;
+			// 	}
+            // }
+
+
 			base.ApplyEffectOnTarget(target, effectiveness);
 			
 			if (target.Realm == 0 || Caster.Realm == 0)

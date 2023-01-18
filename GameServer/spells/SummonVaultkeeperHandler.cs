@@ -11,7 +11,7 @@ namespace DOL.GS.Spells
     public class SummonVaultkeeperSpellHandler : SpellHandler
     {
         protected GameVaultKeeper Npc;
-        protected RegionTimer timer;
+        protected ECSGameTimer timer;
 
         public SummonVaultkeeperSpellHandler(GameLiving caster, Spell spell, SpellLine line)
             : base(caster, spell, line)
@@ -55,10 +55,9 @@ namespace DOL.GS.Spells
                 Npc.LoadTemplate(template);
             }
            
-            int x, y;
-            m_caster.GetSpotFromHeading(64, out x, out y);
-            Npc.X = x;
-            Npc.Y = y;
+            Point2D point = m_caster.GetPointFromHeading(m_caster.Heading, 64);
+            Npc.X = point.X;
+            Npc.Y = point.Y;
             Npc.Z = m_caster.Z;
             Npc.Flags += (byte) GameNPC.eFlags.GHOST + (byte) GameNPC.eFlags.PEACE;
             Npc.CurrentRegion = m_caster.CurrentRegion;
@@ -85,10 +84,10 @@ namespace DOL.GS.Spells
             }
             Npc.SetOwnBrain(new BlankBrain());
             Npc.AddToWorld();
-            timer = new RegionTimer(Npc, new RegionTimerCallback(OnEffectExpires), Spell.Duration);
+            timer = new ECSGameTimer(Npc, new ECSGameTimer.ECSTimerCallback(OnEffectExpires), Spell.Duration);
         }
 
-        public int OnEffectExpires(RegionTimer timer)
+        public int OnEffectExpires(ECSGameTimer timer)
         {
             Npc?.Delete();
             timer.Stop();

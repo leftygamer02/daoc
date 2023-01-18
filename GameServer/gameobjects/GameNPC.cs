@@ -18,18 +18,17 @@
  */
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-
 using DOL.AI;
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
-using DOL.GS;
 using DOL.GS.Effects;
 using DOL.GS.Housing;
-using DOL.GS.Keeps;
 using DOL.GS.Movement;
 using DOL.GS.PacketHandler;
 using DOL.GS.Quests;
@@ -38,7 +37,7 @@ using DOL.GS.Styles;
 using DOL.GS.Utils;
 using DOL.Language;
 using DOL.GS.ServerProperties;
-using FiniteStateMachine;
+using ECS.Debug;
 using System.Threading.Tasks;
 using DOL.Geometry;
 
@@ -57,11 +56,13 @@ namespace DOL.GS
         /// </summary>
         /// <remarks>
         /// This helps to reduce the turning of an npc while fighting or returning to a spawn
-        /// Tested - min distance for mob sticking within combat range to player is 25
+        /// Tested - min distance for mob sticking within combat range to player is 25 (Edit Navelator, 25 stops them too early, 20 keeps them in range)
         /// </remarks>
-        public const int CONST_WALKTOTOLERANCE = 25;
+        public const int CONST_WALKTOTOLERANCE = 20;
 
         private int m_databaseLevel;
+		
+		public bool NeedsBroadcastUpdate { get; set; }
 
 
         #region Formations/Spacing
@@ -193,7 +194,8 @@ namespace DOL.GS
                 ushort oldHeading = base.Heading;
                 base.Heading = value;
                 if (base.Heading != oldHeading)
-                    BroadcastUpdate();
+                    NeedsBroadcastUpdate = true;
+				//BroadcastUpdate();
             }
         }
 
@@ -331,7 +333,8 @@ namespace DOL.GS
             Charisma = (short)(29 + Level);
         }
 
-        /// <summary>
+        /*
+		/// <summary>
         /// Gets or Sets the effective level of the Object
         /// </summary>
         public override int EffectiveLevel
@@ -343,7 +346,7 @@ namespace DOL.GS
                     return brain.Owner.EffectiveLevel;
                 return base.EffectiveLevel;
             }
-        }
+        }*/
 
         /// <summary>
         /// Gets or sets the Realm of this NPC
@@ -765,7 +768,7 @@ namespace DOL.GS
         /// </summary>
         public virtual bool IsVisibleToPlayers
         {
-            get { return (uint)Environment.TickCount - m_lastVisibleToPlayerTick < 60000; }
+            get { return (uint)GameLoop.GameLoopTime - m_lastVisibleToPlayerTick < 60000; }
         }
 
         /// <summary>
@@ -826,7 +829,8 @@ namespace DOL.GS
                 if (base.CurrentSpeed != value)
                 {
                     base.CurrentSpeed = value;
-                    BroadcastUpdate();
+                    NeedsBroadcastUpdate = true;
+					//BroadcastUpdate();
                 }
             }
         }
@@ -941,7 +945,16 @@ namespace DOL.GS
         {
             get
             {
-                return (Flags & eFlags.STEALTH) != 0;
+                return false;// (Flags & eFlags.STEALTH) != 0;
+            }
+        }
+
+		bool m_wasStealthed = false;
+		public bool WasStealthed
+        {
+			get
+            {
+				return m_wasStealthed;
             }
         }
 
@@ -1044,7 +1057,7 @@ namespace DOL.GS
         /// <summary>
         /// Timer with purpose of follow updating
         /// </summary>
-        protected RegionTimer m_followTimer;
+        protected ECSGameTimer m_followTimer;
         /// <summary>
         /// Property entry on follow timer, wether the follow target is in range
         /// </summary>
@@ -1057,10 +1070,7 @@ namespace DOL.GS
         /// Minimum allowed pet follow distance
         /// </summary>
         protected const int MIN_ALLOWED_PET_FOLLOW_DISTANCE = 90;
-        /// <summary>
-        /// At what health percent will npc give up range attack and rush the attacker
-        /// </summary>
-        protected const int MINHEALTHPERCENTFORRANGEDATTACK = 70;
+        
 
         private string m_pathID;
         public string PathID
@@ -1091,27 +1101,7 @@ namespace DOL.GS
             }
         }
 
-        /// <summary>
-        /// The target object.
-        /// </summary>
-        public override GameObject TargetObject
-        {
-            get
-            {
-                return base.TargetObject;
-            }
-            set
-            {
-                GameObject previousTarget = TargetObject;
-                GameObject newTarget = value;
-
-                base.TargetObject = newTarget;
-
-                if (previousTarget != null && newTarget != previousTarget)
-                    previousTarget.Notify(GameNPCEvent.SwitchedTarget, this,
-                                          new SwitchedTargetEventArgs(previousTarget, newTarget));
-            }
-        }
+        
 
         private GameObject m_cachedTarget;
 
@@ -1147,7 +1137,7 @@ namespace DOL.GS
                     SetTickSpeed(0, 0, 0);
                     return;
                 }
-
+		
                 double dx = (double)(TargetPosition.X - m_x) / dist;
                 double dy = (double)(TargetPosition.Y - m_y) / dist;
                 double dz = (double)(TargetPosition.Z - m_z) / dist;
@@ -1190,7 +1180,7 @@ namespace DOL.GS
         {
             if (IsStunned || IsMezzed) return;
 
-            Notify(GameNPCEvent.TurnTo, this, new TurnToEventArgs(tx, ty));
+            // Notify(GameNPCEvent.TurnTo, this, new TurnToEventArgs(tx, ty));
 
             if (sendUpdate)
                 Heading = GetHeading(new Point2D(tx, ty));
@@ -1216,7 +1206,7 @@ namespace DOL.GS
         {
             if (IsStunned || IsMezzed) return;
 
-            Notify(GameNPCEvent.TurnToHeading, this, new TurnToHeadingEventArgs(heading));
+            // Notify(GameNPCEvent.TurnToHeading, this, new TurnToHeadingEventArgs(heading));
 
             if (sendUpdate)
                 if (Heading != heading) Heading = heading;
@@ -1282,7 +1272,7 @@ namespace DOL.GS
         /// <summary>
         /// Restores the NPC heading after some time
         /// </summary>
-        protected class RestoreHeadingAction : RegionAction
+        protected class RestoreHeadingAction : RegionECSAction
         {
             /// <summary>
             /// The NPCs old heading
@@ -1308,22 +1298,24 @@ namespace DOL.GS
             /// <summary>
             /// Called on every timer tick
             /// </summary>
-            protected override void OnTick()
+            protected override int OnTick(ECSGameTimer timer)
             {
                 GameNPC npc = (GameNPC)m_actionSource;
 
                 npc.TempProperties.removeProperty(RESTORE_HEADING_ACTION_PROP);
 
-                if (npc.ObjectState != eObjectState.Active) return;
-                if (!npc.IsAlive) return;
-                if (npc.attackComponent.AttackState) return;
-                if (npc.IsMoving) return;
-                if (npc.Equals(m_oldPosition)) return;
-                if (npc.Heading == m_oldHeading) return; // already set? oO
+                if (npc.ObjectState != eObjectState.Active) return 0;
+                if (!npc.IsAlive) return 0;
+                if (npc.attackComponent.AttackState) return 0;
+                if (npc.IsMoving) return 0;
+                if (npc.Equals(m_oldPosition)) return 0;
+                if (npc.Heading == m_oldHeading) return 0; // already set? oO
 
                 npc.TurnTo(m_oldHeading);
-            }
-        }
+            
+        return 0;
+			}
+		}
 
         /// <summary>
         /// Gets the last time this mob was updated
@@ -1336,7 +1328,7 @@ namespace DOL.GS
         /// <summary>
         /// Gets the last this this NPC was actually update to at least one player.
         /// </summary>
-        public uint LastVisibleToPlayersTickCount
+        public long LastVisibleToPlayersTickCount
         {
             get { return m_lastVisibleToPlayerTick; }
         }
@@ -1344,7 +1336,7 @@ namespace DOL.GS
         /// <summary>
         /// Delayed action that fires an event when an NPC arrives at its target
         /// </summary>
-        protected class ArriveAtTargetAction : RegionAction
+        protected class ArriveAtTargetAction : RegionECSAction
         {
             private Action<GameNPC> _onCloseToTarget;
             /// <summary>
@@ -1367,35 +1359,41 @@ namespace DOL.GS
             /// This time was estimated using walking speed and distance.
             /// It fires the ArriveAtTarget event
             /// </summary>
-            protected override void OnTick()
+            protected override int OnTick(ECSGameTimer timer)
             {
                 GameNPC npc = (GameNPC)m_actionSource;
 
                 bool arriveAtSpawnPoint = npc.IsReturningToSpawnPoint;
 
-                if (_onCloseToTarget != null)
-                {
-                    _onCloseToTarget(npc);
-                }
-                else
-                {
-                    npc.StopMoving();
-                    npc.CurrentSpeed = 0;
-                    npc.BroadcastUpdate();
-                    npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
-                }
-                if (arriveAtSpawnPoint)
-                {
-                    npc.Notify(GameNPCEvent.ArriveAtSpawnPoint, npc);
-                }
-            }
-        }
+				npc.StopMoving();
+				//npc.Notify(GameNPCEvent.ArriveAtTarget, npc);
+
+				if (arriveAtSpawnPoint)
+				{
+					npc.TurnTo(npc.SpawnHeading);
+					return 0;
+				}
+
+				if (!npc.IsMovingOnPath)
+					return 0;
+
+				if (npc.CurrentWayPoint != null)
+				{
+					WaypointDelayAction waitTimer = new WaypointDelayAction(npc);
+					waitTimer.Start(Math.Max(1, npc.CurrentWayPoint.WaitTime * 100));
+				}
+				else
+					npc.StopMovingOnPath();
+
+				return 0;
+			}
+		}
 
         public virtual void CancelWalkToTimer()
         {
             if (m_arriveAtTargetAction != null)
             {
-                m_arriveAtTargetAction.Stop();
+                m_arriveAtTargetAction?.Stop();
                 m_arriveAtTargetAction = null;
             }
         }
@@ -1428,7 +1426,7 @@ namespace DOL.GS
             Y = target.Y;
             Z = target.Z;
 
-            MovementStartTick = Environment.TickCount;
+            MovementStartTick = GameLoop.GameLoopTime;
         }
 
         public virtual void WalkTo(Vector3 position, short speed, Action<GameNPC> closeToTargetCallback = null)
@@ -1453,8 +1451,7 @@ namespace DOL.GS
         /// <summary>
         /// Walk to a certain spot at a given speed.
         /// </summary>
-        /// <param name="p"></param>
-        /// <param name="speed"></param>
+        
         public virtual void WalkTo(IPoint3D target, short speed, Action<GameNPC> onCloseToTarget = null)
         {
             if (IsTurningDisabled)
@@ -1471,33 +1468,34 @@ namespace DOL.GS
             //    log.Info($"Current Target Destination: X: {target.X} Y: {target.Y}, Z: {target.Z}");
             //}
 
-            TargetPosition = target; // this also saves the current position
+            TargetPosition = target; // This also saves the current position.
 
-            if (IsWithinRadius(TargetPosition, CONST_WALKTOTOLERANCE))
-            {
+            
                 // No need to start walking.
 
-                //Notify(GameNPCEvent.ArriveAtTarget, this);
+                if (IsWithinRadius(TargetPosition, CONST_WALKTOTOLERANCE))
                 return;
-            }
+            
 
-
-            //update existing component
-            //register moveComponent w/ the movement-to-be-processed queue
-
-
-            //kill everything below this line?
+            
             CancelWalkToTimer();
 
             m_Heading = GetHeading(TargetPosition);
             m_currentSpeed = speed;
-
+MovementStartTick = GameLoop.GameLoopTime; // Adding this to prevent pets from warping when using GoTo and Here on the same target twice.
             UpdateTickSpeed();
-            Notify(GameNPCEvent.WalkTo, this, new WalkToEventArgs(TargetPosition, speed));
+            int ticksToArrive = GetTicksToArriveAt(TargetPosition, speed);
 
-            StartArriveAtTargetAction(GetTicksToArriveAt(TargetPosition, speed), onCloseToTarget);
-            BroadcastUpdate();
-        }
+			// Cancel the ranged attack if the NPC is moving.
+			if (ActiveWeaponSlot == eActiveWeaponSlot.Distance && ticksToArrive > 0)
+			{
+				StopAttack();
+				attackComponent.attackAction?.CleanUp();
+			}
+
+			StartArriveAtTargetAction(ticksToArrive);
+			NeedsBroadcastUpdate = true;
+		}
 
         /// <summary>
         /// Walk some distance into direction of given target point
@@ -1649,7 +1647,7 @@ namespace DOL.GS
         /// </summary>
         public virtual void WalkToSpawn(short speed)
         {
-            attackComponent.NPCStopAttack();
+            attackComponent.StopAttack();
             StopFollowing();
 
             StandardMobBrain brain = Brain as StandardMobBrain;
@@ -1683,9 +1681,9 @@ namespace DOL.GS
 
             m_currentSpeed = speed;
 
-            MovementStartTick = Environment.TickCount;
-            UpdateTickSpeed();
-            BroadcastUpdate();
+            MovementStartTick = GameLoop.GameLoopTime;
+            UpdateTickSpeed();NeedsBroadcastUpdate = true;
+            //BroadcastUpdate();
         }
 
         /// <summary>
@@ -1726,7 +1724,8 @@ namespace DOL.GS
             }
 
             SavePosition(target);
-            BroadcastUpdate();
+            NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
         }
 
         public const int STICKMINIMUMRANGE = 75;
@@ -1740,16 +1739,25 @@ namespace DOL.GS
         /// <param name="maxDistance">Max distance to keep following</param>
         public virtual void Follow(GameObject target, int minDistance, int maxDistance)
         {
-            if (m_followTimer.IsAlive)
-                m_followTimer.Stop();
-
             if (target == null || target.ObjectState != eObjectState.Active)
-                return;
+					return;
+			
+				if (m_followTimer != null && m_followTimer.IsAlive && m_followTarget?.Target == target && m_followMinDist == minDistance && m_followMaxDist == maxDistance)
+					return;
+				else if (m_followTimer != null)
+				{
+                m_followTimer.Stop();
+}
+            else if (m_followTimer == null)
+				{
+                m_followTimer = new ECSGameTimer(this);
+					m_followTimer.Callback = new ECSGameTimer.ECSTimerCallback(FollowTimerCallback);
+				}
 
             m_followMaxDist = maxDistance;
             m_followMinDist = minDistance;
             m_followTarget.Target = target;
-            m_followTimer.Start(100);
+            m_followTimer.StartExistingTimer(100);
         }
 
         /// <summary>
@@ -1760,7 +1768,10 @@ namespace DOL.GS
             lock (m_followTimer)
             {
                 if (m_followTimer.IsAlive)
-                    m_followTimer.Stop();
+                    {
+					m_followTimer.Stop();
+				}
+					
 
                 m_followTarget.Target = null;
                 StopMoving();
@@ -1777,7 +1788,7 @@ namespace DOL.GS
             {
                 // if in last attack the enemy was out of range, we can attack him now immediately
                 AttackData ad = (AttackData)TempProperties.getProperty<object>(LAST_ATTACK_DATA, null);
-                if (ad != null && ad.AttackResult == eAttackResult.OutOfRange)
+                if (ad != null && ad.AttackResult == eAttackResult.OutOfRange && attackComponent.attackAction != null)
                 {
                     //m_attackAction.Start(1);// schedule for next tick
                     attackComponent.attackAction.StartTime = 1;
@@ -1786,7 +1797,7 @@ namespace DOL.GS
             //sirru
             else if (attackComponent.Attackers.Count == 0 && this.Spells.Count > 0 && this.TargetObject != null && GameServer.ServerRules.IsAllowedToAttack(this, (this.TargetObject as GameLiving), true))
             {
-                if (TargetObject.Realm == 0 || Realm == 0)
+                if (TargetObject?.Realm == 0 || Realm == 0)
                     m_lastAttackTickPvE = m_CurrentRegion.Time;
                 else m_lastAttackTickPvP = m_CurrentRegion.Time;
                 if (this.CurrentRegion.Time - LastAttackedByEnemyTick > 10 * 1000)
@@ -1805,8 +1816,10 @@ namespace DOL.GS
         /// <summary>
         /// Keep following a specific object at a max distance
         /// </summary>
-        protected virtual int FollowTimerCallback(RegionTimer callingTimer)
-        {
+        protected virtual int FollowTimerCallback(ECSGameTimer callingTimer)
+		{
+			double followSpeedScaler = 2.5; //This is used to scale the follow speed based on the distance from target
+        
             if (IsCasting)
                 return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
 
@@ -1820,7 +1833,7 @@ namespace DOL.GS
             if (followLiving != null && !followLiving.IsAlive)
             {
                 StopFollowing();
-                Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+                //Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
                 return 0;
             }
 
@@ -1828,7 +1841,7 @@ namespace DOL.GS
             if (followTarget == null || followTarget.ObjectState != eObjectState.Active || CurrentRegionID != followTarget.CurrentRegionID)
             {
                 StopFollowing();
-                Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+                //Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
                 return 0;
             }
 
@@ -1845,7 +1858,7 @@ namespace DOL.GS
             if ((int)distance > m_followMaxDist)
             {
                 StopFollowing();
-                Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+                //Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
                 this.WalkToSpawn();
                 return 0;
             }
@@ -1860,14 +1873,14 @@ namespace DOL.GS
                 {
                     if (attackComponent.AttackState && brain != null && followLiving != null)
                     {
-                        long seconds = 20 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
+                        long seconds = 25 + ((brain.GetAggroAmountForLiving(followLiving) / (MaxHealth + 1)) * 100);
                         long lastattacked = LastAttackTick;
                         long lasthit = LastAttackedByEnemyTick;
                         if ((GameLoop.GameLoopTime - lastattacked > seconds * 1000 && GameLoop.GameLoopTime - lasthit > seconds * 1000)
                             && lasthit != 0)
                         {
                             //StopFollow();
-                            Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
+                            //Notify(GameNPCEvent.FollowLostTarget, this, new FollowLostTargetEventArgs(followTarget));
                             //brain.ClearAggroList();
                             //this.WalkToSpawn();
                             LastAttackedByEnemyTickPvE = 0;
@@ -1886,9 +1899,13 @@ namespace DOL.GS
                 {
                     //do nothing 
                 }
-                else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
-                {
-                    WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
+                //else if (brain.CheckFormation(ref newX, ref newY, ref newZ) || TargetObject?.Realm == this.Realm)
+                else if (brain.CheckFormation(ref newX, ref newY, ref newZ))
+				{
+					short followspeed= (short) Math.Max(Math.Min(MaxSpeed,GetDistance(new Point2D(newX, newY))*followSpeedScaler),50);
+					//log.Debug($"Followspeed: {followspeed}");
+					WalkTo(newX, newY, (ushort) newZ, followspeed);
+                    //WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
 
                     return ServerProperties.Properties.GAMENPC_FOLLOWCHECK_TIME;
                 }
@@ -1929,10 +1946,14 @@ namespace DOL.GS
             {
                 if (InCombat || Brain is BomberBrain || TargetObject != null)
                     WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
-                else if (!IsWithinRadius(new Point2D(newX, newY), MaxSpeed))// MaxSpeed < GetDistance(new Point2D(newX, newY)))
-                    WalkTo(newX, newY, (ushort)newZ, MaxSpeed);//(short)Math.Min(MaxSpeed, followLiving.CurrentSpeed + 50));
-                else
-                    WalkTo(newX, newY, (ushort)newZ, (short)(GetDistance(new Point2D(newX, newY)) + 110));
+                // else if (!IsWithinRadius(new Point2D(newX, newY),200))// MaxSpeed < GetDistance(new Point2D(newX, newY)))
+                    //WalkTo(newX, newY, (ushort)newZ, MaxSpeed);//(short)Math.Min(MaxSpeed, followLiving.CurrentSpeed + 50));
+                else//If close, slow down followspeed to target. This is based on distance and followSpeedScaler
+				{
+                    // WalkTo(newX, newY, (ushort) newZ, (short)185);//(GetDistance(new Point2D(newX, newY)) + 191));
+					short followspeed = (short) Math.Max(Math.Min(MaxSpeed,GetDistance(new Point2D(newX, newY))*followSpeedScaler),50);
+					WalkTo(newX, newY, (ushort) newZ, followspeed);
+				}
             }
             else
                 //WalkTo(newX, newY, (ushort)newZ, MaxSpeed);
@@ -1949,7 +1970,8 @@ namespace DOL.GS
             bool old = IsTurningDisabled;
             base.DisableTurning(add);
             if (old != IsTurningDisabled)
-                BroadcastUpdate();
+                NeedsBroadcastUpdate = true;
+			//BroadcastUpdate();
         }
 
         #endregion
@@ -2016,7 +2038,7 @@ namespace DOL.GS
             if (this.IsWithinRadius(CurrentWayPoint, 100))
             {
                 // reaching a waypoint can start an ambient sentence
-                FireAmbientSentence(eAmbientTrigger.moving);
+                FireAmbientSentence(eAmbientTrigger.moving, this);
 
                 if (CurrentWayPoint.Type == ePathType.Path_Reverse && CurrentWayPoint.FiredFlag)
                     CurrentWayPoint = CurrentWayPoint.Prev;
@@ -2031,10 +2053,10 @@ namespace DOL.GS
 
             if (CurrentWayPoint != null)
             {
-                GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+                //GameEventMgr.AddHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
                 WalkTo(CurrentWayPoint, Math.Min(speed, (short)CurrentWayPoint.MaxSpeed));
                 m_IsMovingOnPath = true;
-                Notify(GameNPCEvent.PathMoveStarts, this);
+                //Notify(GameNPCEvent.PathMoveStarts, this);
             }
             else
             {
@@ -2050,9 +2072,15 @@ namespace DOL.GS
             if (!IsMovingOnPath)
                 return;
 
-            GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
-            Notify(GameNPCEvent.PathMoveEnds, this);
             m_IsMovingOnPath = false;
+			
+			//GameEventMgr.RemoveHandler(this, GameNPCEvent.ArriveAtTarget, new DOLEventHandler(OnArriveAtWaypoint));
+            //Notify(GameNPCEvent.PathMoveEnds, this);
+            if (this is GameTaxi || this is GameTaxiBoat)
+			{
+				StopMoving();
+				RemoveFromWorld();
+			}
         }
 
         /// <summary>
@@ -2078,7 +2106,7 @@ namespace DOL.GS
         /// <summary>
         /// Delays movement to the next waypoint
         /// </summary>
-        protected class WaypointDelayAction : RegionAction
+        protected class WaypointDelayAction : RegionECSAction
         {
             /// <summary>
             /// Constructs a new WaypointDelayAction
@@ -2092,11 +2120,11 @@ namespace DOL.GS
             /// <summary>
             /// Called on every timer tick
             /// </summary>
-            protected override void OnTick()
+            protected override int OnTick(ECSGameTimer timer)
             {
                 GameNPC npc = (GameNPC)m_actionSource;
                 if (!npc.IsMovingOnPath)
-                    return;
+                    return 0;
                 PathPoint oldPathPoint = npc.CurrentWayPoint;
                 PathPoint nextPathPoint = npc.CurrentWayPoint.Next;
                 if ((npc.CurrentWayPoint.Type == ePathType.Path_Reverse) && (npc.CurrentWayPoint.FiredFlag))
@@ -2109,7 +2137,7 @@ namespace DOL.GS
                         case ePathType.Loop:
                             {
                                 npc.CurrentWayPoint = MovementMgr.FindFirstPathPoint(npc.CurrentWayPoint);
-                                npc.Notify(GameNPCEvent.PathMoveStarts, npc);
+                                //npc.Notify(GameNPCEvent.PathMoveStarts, npc);
                                 break;
                             }
                         case ePathType.Once:
@@ -2140,8 +2168,9 @@ namespace DOL.GS
                 {
                     npc.StopMovingOnPath();
                 }
-            }
-        }
+            
+        return 0;
+			}}
         #endregion
 
         #region Inventory/LoadfromDB
@@ -2178,7 +2207,7 @@ namespace DOL.GS
                 if (Inventory != null)
                 {
                     //if the distance slot isnt empty we use that
-                    //Seems to always
+                    
                     if (Inventory.GetItem(eInventorySlot.DistanceWeapon) != null)
                         SwitchWeapon(eActiveWeaponSlot.Distance);
                     else
@@ -2686,6 +2715,13 @@ namespace DOL.GS
                 AggroRange = template.AggroRange
             };
         }
+		
+		public void UpdateNPCEquipmentAppearance()
+		{
+			if (ObjectState != eObjectState.Active) return;
+			foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+				player.Out.SendLivingEquipmentUpdate(this);
+		}
 
         /// <summary>
         /// Switches the active weapon to another one
@@ -3006,7 +3042,7 @@ namespace DOL.GS
 
             Notify(GameNPCEvent.RiderMount, this, new RiderMountEventArgs(rider, this));
             int slot = GetFreeArrayLocation();
-            Riders[slot] = rider;
+            if(slot == -1) return false; //fullRiders[slot] = rider;
             rider.Steed = this;
             return true;
         }
@@ -3162,7 +3198,7 @@ namespace DOL.GS
         {
             base.BroadcastUpdate();
 
-            m_lastUpdateTickCount = (uint)Environment.TickCount;
+            m_lastUpdateTickCount = (uint)GameLoop.GameLoopTime;
         }
 
         /// <summary>
@@ -3171,7 +3207,7 @@ namespace DOL.GS
         /// </summary>
         public void NPCUpdatedCallback()
         {
-            m_lastVisibleToPlayerTick = (uint)Environment.TickCount;
+            m_lastVisibleToPlayerTick = (uint)GameLoop.GameLoopTime;
             lock (BrainSync)
             {
                 ABrain brain = Brain;
@@ -3203,7 +3239,7 @@ namespace DOL.GS
             }
 
             if (anyPlayer)
-                m_lastVisibleToPlayerTick = (uint)Environment.TickCount;
+                m_lastVisibleToPlayerTick = (uint)GameLoop.GameLoopTime;
 
             m_spawnPoint.X = X;
             m_spawnPoint.Y = Y;
@@ -3218,7 +3254,7 @@ namespace DOL.GS
 
             if (Mana <= 0 && MaxMana > 0)
                 Mana = MaxMana;
-            else if (Mana > 0 && MaxMana > 0)
+            else if (Mana > 0 && MaxMana > 0 && Mana < MaxMana)  //Only start PowerRegen if needed
                 StartPowerRegeneration();
 
             //If the Mob has a Path assigned he will now walk on it!
@@ -3254,7 +3290,7 @@ namespace DOL.GS
             // create the ambiant text list for this NPC
             BuildAmbientTexts();
             if (GameServer.Instance.ServerStatus == eGameServerStatus.GSS_Open)
-                FireAmbientSentence(eAmbientTrigger.spawning);
+                FireAmbientSentence(eAmbientTrigger.spawning, this);
 
 
             if (ShowTeleporterIndicator)
@@ -3277,7 +3313,8 @@ namespace DOL.GS
                 m_teleporterIndicator.AddToWorld();
             }
 
-            return true;
+            if (Flags.HasFlag(eFlags.STEALTH))
+				m_wasStealthed = true;return true;
         }
 
         /// <summary>
@@ -3412,8 +3449,8 @@ namespace DOL.GS
                 if (oldRegion != newRegion && newRegion != null)
                 {
                     if (m_followTimer != null) m_followTimer.Stop();
-                    m_followTimer = new RegionTimer(this);
-                    m_followTimer.Callback = new RegionTimerCallback(FollowTimerCallback);
+                    m_followTimer = new ECSGameTimer(this);
+                    m_followTimer.Callback = new ECSGameTimer.ECSTimerCallback(FollowTimerCallback);
                 }
             }
         }
@@ -3587,10 +3624,17 @@ namespace DOL.GS
             // TODO: correct aggro strings
             string aggroLevelString = "";
             int aggroLevel;
-            if (Faction != null)
+            IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
+			//Calculate Faction aggro - base AggroLevel needs to be greater tha 0 for Faction aggro calc to work.
+			if (Faction != null && aggroBrain != null && aggroBrain.AggroLevel > 0 && aggroBrain.AggroRange > 0)
             {
                 aggroLevel = Faction.GetAggroToFaction(player);
-                if (aggroLevel > 75)
+                if (GameServer.ServerRules.IsSameRealm(this, player, true))
+				{
+					if (firstLetterUppercase) aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Friendly2");
+					else aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Friendly1");
+				}
+				else if (aggroLevel > 75)
                     aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Aggressive1");
                 else if (aggroLevel > 50)
                     aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Hostile1");
@@ -3601,7 +3645,7 @@ namespace DOL.GS
             }
             else
             {
-                IOldAggressiveBrain aggroBrain = Brain as IOldAggressiveBrain;
+                
                 if (GameServer.ServerRules.IsSameRealm(this, player, true))
                 {
                     if (firstLetterUppercase) aggroLevelString = LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.GetAggroLevelString.Friendly2");
@@ -3792,19 +3836,19 @@ namespace DOL.GS
         #region Interact/WhisperReceive/SayTo
 
         /// <summary>
-        /// The possible triggers for GameNPC ambient actions
+        /// The possible ambient triggers for GameNPC actions (e.g., killing, roaming, dying)
         /// </summary>
         public enum eAmbientTrigger
         {
             spawning,
-            dieing,
+            dying,
             aggroing,
             fighting,
             roaming,
             killing,
             moving,
             interact,
-            seeing,
+            seeing
         }
 
         /// <summary>
@@ -3837,7 +3881,11 @@ namespace DOL.GS
                 if (this is GameSiegeRam)
                     name = "ram";
 
-                if (RiderSlot(player) != -1)
+                if (this is GameSiegeRam && player.Realm != this.Realm)
+				{
+					player.Out.SendMessage($"This siege equipment is owned by an enemy realm!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+					return false;
+				}if (RiderSlot(player) != -1)
                 {
                     player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GameNPC.Interact.AlreadyRiding", name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
                     return false;
@@ -3861,7 +3909,7 @@ namespace DOL.GS
 
                 player.MountSteed(this, true);
             }
-
+			
             FireAmbientSentence(eAmbientTrigger.interact, player);
             return true;
         }
@@ -3879,31 +3927,41 @@ namespace DOL.GS
             if (source is GamePlayer == false)
                 return true;
 
-            GamePlayer player = (GamePlayer)source;
-
-            //TODO: Guards in rvr areas doesn't need check
-            if (text == "task")
-            {
-                if (source.TargetObject == null)
-                    return false;
-                if (KillTask.CheckAvailability(player, (GameLiving)source.TargetObject))
-                {
-                    KillTask.BuildTask(player, (GameLiving)source.TargetObject);
-                    return true;
-                }
-                else if (MoneyTask.CheckAvailability(player, (GameLiving)source.TargetObject))
-                {
-                    MoneyTask.BuildTask(player, (GameLiving)source.TargetObject);
-                    return true;
-                }
-                else if (CraftTask.CheckAvailability(player, (GameLiving)source.TargetObject))
-                {
-                    CraftTask.BuildTask(player, (GameLiving)source.TargetObject);
-                    return true;
-                }
-            }
+            // GamePlayer player = (GamePlayer)source;
+			//
+            ////TODO: Guards in rvr areas doesn't need check
+            //if (text == "task")
+            //{
+                //if (source.TargetObject == null)
+                    //return false;
+                //if (KillTask.CheckAvailability(player, (GameLiving)source.TargetObject))
+                //{
+                    //KillTask.BuildTask(player, (GameLiving)source.TargetObject);
+                    //return true;
+                //}
+                //else if (MoneyTask.CheckAvailability(player, (GameLiving)source.TargetObject))
+                //{
+                    //MoneyTask.BuildTask(player, (GameLiving)source.TargetObject);
+                    //return true;
+                //}
+                //else if (CraftTask.CheckAvailability(player, (GameLiving)source.TargetObject))
+                //{
+                    //CraftTask.BuildTask(player, (GameLiving)source.TargetObject);
+                    //return true;
+                //}
+            //}
             return true;
-        }
+        }public override bool ReceiveItem(GameLiving source, InventoryItem item)
+		{
+			if (this.DataQuestList.Count > 0)
+			{
+				foreach (DataQuest quest in DataQuestList)
+				{
+					quest.Notify(GameLivingEvent.ReceiveItem, this, new ReceiveItemEventArgs(source, this, item));
+				}
+			}
+			return base.ReceiveItem(source, item);
+		}
 
         /// <summary>
         /// Format "say" message and send it to target in popup window
@@ -3959,17 +4017,9 @@ namespace DOL.GS
         /// </summary>
         public const int CHARMED_NOEXP_TIMEOUT = 60000;
 
-        public const string LAST_LOS_TARGET_PROPERTY = "last_LOS_checkTarget";
-        public const string LAST_LOS_TICK_PROPERTY = "last_LOS_checkTick";
-        public const string NUM_LOS_CHECKS_INPROGRESS = "num_LOS_progress";
-
-        public object LOS_LOCK = new object();
-
-        public GameObject m_targetLOSObject = null;
-
         public virtual void StopAttack()
         {
-            attackComponent.NPCStopAttack();
+            attackComponent.StopAttack();
         }
 
         /// <summary>
@@ -3978,157 +4028,22 @@ namespace DOL.GS
         /// <param name="target">The object to attack</param>
         public virtual void StartAttack(GameObject target)
         {
-            attackComponent.StartAttack(target);
-            //if (target == null)
-            //    return;
+            attackComponent.RequestStartAttack(target);
 
-            //TargetObject = target;
-
-            //long lastTick = this.TempProperties.getProperty<long>(LAST_LOS_TICK_PROPERTY);
-
-            //if (ServerProperties.Properties.ALWAYS_CHECK_PET_LOS &&
-            //    Brain != null &&
-            //    Brain is IControlledBrain &&
-            //    (target is GamePlayer || (target is GameNPC && (target as GameNPC).Brain != null && (target as GameNPC).Brain is IControlledBrain)))
-            //{
-            //    GameObject lastTarget = (GameObject)this.TempProperties.getProperty<object>(LAST_LOS_TARGET_PROPERTY, null);
-            //    if (lastTarget != null && lastTarget == target)
-            //    {
-            //        if (lastTick != 0 && CurrentRegion.Time - lastTick < ServerProperties.Properties.LOS_PLAYER_CHECK_FREQUENCY * 1000)
-            //            return;
-            //    }
-
-            //    GamePlayer losChecker = null;
-            //    if (target is GamePlayer)
-            //    {
-            //        losChecker = target as GamePlayer;
-            //    }
-            //    else if (target is GameNPC && (target as GameNPC).Brain is IControlledBrain)
-            //    {
-            //        losChecker = ((target as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
-            //    }
-            //    else
-            //    {
-            //        // try to find another player to use for checking line of site
-            //        foreach (GamePlayer player in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-            //        {
-            //            losChecker = player;
-            //            break;
-            //        }
-            //    }
-
-            //    if (losChecker == null)
-            //    {
-            //        return;
-            //    }
-
-            //    lock (LOS_LOCK)
-            //    {
-            //        int count = TempProperties.getProperty<int>(NUM_LOS_CHECKS_INPROGRESS, 0);
-
-            //        if (count > 10)
-            //        {
-            //            log.DebugFormat("{0} LOS count check exceeds 10, aborting LOS check!", Name);
-
-            //            // Now do a safety check.  If it's been a while since we sent any check we should clear count
-            //            if (lastTick == 0 || CurrentRegion.Time - lastTick > ServerProperties.Properties.LOS_PLAYER_CHECK_FREQUENCY * 1000)
-            //            {
-            //                log.Debug("LOS count reset!");
-            //                TempProperties.setProperty(NUM_LOS_CHECKS_INPROGRESS, 0);
-            //            }
-
-            //            return;
-            //        }
-
-            //        count++;
-            //        TempProperties.setProperty(NUM_LOS_CHECKS_INPROGRESS, count);
-
-            //        TempProperties.setProperty(LAST_LOS_TARGET_PROPERTY, target);
-            //        TempProperties.setProperty(LAST_LOS_TICK_PROPERTY, CurrentRegion.Time);
-            //        m_targetLOSObject = target;
-
-            //    }
-
-            //    losChecker.Out.SendCheckLOS(this, target, new CheckLOSResponse(this.NPCStartAttackCheckLOS));
-            //    return;
-            //}
-
-            //ContinueStartAttack(target);
-        }
-
-        /// <summary>
-        /// We only attack if we have LOS
-        /// </summary>
-        /// <param name="player"></param>
-        /// <param name="response"></param>
-        /// <param name="targetOID"></param>
-        public void NPCStartAttackCheckLOS(GamePlayer player, ushort response, ushort targetOID)
-        {
-            lock (LOS_LOCK)
-            {
-                int count = TempProperties.getProperty<int>(NUM_LOS_CHECKS_INPROGRESS, 0);
-                count--;
-                TempProperties.setProperty(NUM_LOS_CHECKS_INPROGRESS, Math.Max(0, count));
-            }
-
-            if ((response & 0x100) == 0x100)
-            {
-                // make sure we didn't switch targets
-                if (TargetObject != null && m_targetLOSObject != null && TargetObject == m_targetLOSObject)
-                    attackComponent.ContinueStartAttack(m_targetLOSObject);
-            }
-            else
-            {
-                if (m_targetLOSObject != null && m_targetLOSObject is GameLiving && Brain != null && Brain is IOldAggressiveBrain)
+			if (CurrentFollowTarget!=target)
                 {
-                    // there will be a think delay before mob attempts to attack next target
-                    (Brain as IOldAggressiveBrain).RemoveFromAggroList(m_targetLOSObject as GameLiving);
-                }
+                StopFollowing();
+                Follow(target, m_followMinDist, m_followMaxDist);
             }
+
+            FireAmbientSentence(eAmbientTrigger.fighting, target);
+                    
         }
 
 
-        //public virtual void ContinueStartAttack(GameObject target)
-        //{
-        //	StopMoving();
-        //	StopMovingOnPath();
+        private int scalingFactor = Properties.GAMENPC_SCALING;
 
-        //	if (Brain != null && Brain is IControlledBrain)
-        //	{
-        //		if ((Brain as IControlledBrain).AggressionState == eAggressionState.Passive)
-        //			return;
-
-        //		GamePlayer owner = null;
-
-        //		if ((owner = ((IControlledBrain)Brain).GetPlayerOwner()) != null)
-        //			owner.Stealth(false);
-        //	}
-
-        //	SetLastMeleeAttackTick();
-        //	StartMeleeAttackTimer();
-
-        //	base.StartAttack(target);
-
-        //	if (AttackState)
-        //	{
-        //		// if we're moving we need to lock down the current position
-        //		if (IsMoving)
-        //			SaveCurrentPosition();
-
-        //		if (ActiveWeaponSlot == eActiveWeaponSlot.Distance)
-        //		{
-        //			// Archer mobs sometimes bug and keep trying to fire at max range unsuccessfully so force them to get just a tad closer.
-        //			Follow(target, AttackRange - 30, STICKMAXIMUMRANGE);
-        //		}
-        //		else
-        //		{
-        //			Follow(target, STICKMINIMUMRANGE, STICKMAXIMUMRANGE);
-        //		}
-        //	}
-
-        //}
-
-        private int scalingFactor = 23;
+        private int orbsReward = 0;
 
         public override double GetWeaponSkill(InventoryItem weapon)
         {
@@ -4140,78 +4055,26 @@ namespace DOL.GS
 			*(100 + WEAPONSKILL_BONUS) / 100]
 			*/
             int weaponskill = 0;
-
+  
             weaponskill = (Level + 1)
-                * ScalingFactor //scaling factor. Higher = more difficult
+                * (int)(ScalingFactor/4) //mob damage table calc, basically
                 * (200 + GetModified(eProperty.MeleeDamage)) / 500 //melee damage buffs
                 * ((100 + Strength) / 100) //NPCs only use STR to calculate, can skip str or str/dex check
                 * ((100 + GetModified(eProperty.WeaponSkill)) / 100); //weaponskill buffs
-
+  
             return weaponskill;
         }
+		
 
-
-        public override void RangedAttackFinished()
-        {
-            base.RangedAttackFinished();
-
-            if (ServerProperties.Properties.ALWAYS_CHECK_PET_LOS &&
-                Brain != null &&
-                Brain is IControlledBrain &&
-                (TargetObject is GamePlayer || (TargetObject is GameNPC && (TargetObject as GameNPC).Brain != null && (TargetObject as GameNPC).Brain is IControlledBrain)))
-            {
-                GamePlayer player = null;
-
-                if (TargetObject is GamePlayer)
-                {
-                    player = TargetObject as GamePlayer;
-                }
-                else if (TargetObject is GameNPC && (TargetObject as GameNPC).Brain != null && (TargetObject as GameNPC).Brain is IControlledBrain)
-                {
-                    if (((TargetObject as GameNPC).Brain as IControlledBrain).Owner is GamePlayer)
-                    {
-                        player = ((TargetObject as GameNPC).Brain as IControlledBrain).Owner as GamePlayer;
-                    }
-                }
-
-                if (player != null)
-                {
-                    player.Out.SendCheckLOS(this, TargetObject, new CheckLOSResponse(NPCStopRangedAttackCheckLOS));
-                    if (ServerProperties.Properties.ENABLE_DEBUG)
-                    {
-                        log.Debug(Name + " sent LOS check to player " + player.Name);
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// If we don't have LOS we stop attack
-        /// </summary>
-        /// <param name="player"></param>
-        /// <param name="response"></param>
-        /// <param name="targetOID"></param>
-        public void NPCStopRangedAttackCheckLOS(GamePlayer player, ushort response, ushort targetOID)
-        {
-            if ((response & 0x100) != 0x100)
-            {
-                if (ServerProperties.Properties.ENABLE_DEBUG)
-                {
-                    log.Debug(Name + " FAILED stop ranged attack LOS check to player " + player.Name);
-                }
-
-                attackComponent.NPCStopAttack();
-            }
-        }
+        
 
 
         public void SetLastMeleeAttackTick()
         {
             if (TargetObject?.Realm == 0 || Realm == 0)
-                m_lastAttackTickPvE = m_CurrentRegion.Time;
+                m_lastAttackTickPvE = GameLoop.GameLoopTime;
             else
-                m_lastAttackTickPvP = m_CurrentRegion.Time;
+                m_lastAttackTickPvP = GameLoop.GameLoopTime;
         }
 
         public void StartMeleeAttackTimer()
@@ -4233,26 +4096,9 @@ namespace DOL.GS
         /// <returns></returns>
         public virtual double AttackDamage(InventoryItem weapon)
         {
-            double damage = attackComponent.AttackDamage(weapon);
+            return attackComponent.AttackDamage(weapon);
 
-            if (ActiveWeaponSlot == eActiveWeaponSlot.TwoHanded && m_blockChance > 0)
-                switch (this)
-                {
-                    case Keeps.GameKeepGuard guard:
-                        if (ServerProperties.Properties.GUARD_2H_BONUS_DAMAGE)
-                            damage *= (100 + m_blockChance) / 100.00;
-                        break;
-                    case GamePet pet:
-                        if (ServerProperties.Properties.PET_2H_BONUS_DAMAGE)
-                            damage *= (100 + m_blockChance) / 100.00;
-                        break;
-                    default:
-                        if (ServerProperties.Properties.MOB_2H_BONUS_DAMAGE)
-                            damage *= (100 + m_blockChance) / 100.00;
-                        break;
-                }
-
-            return damage;
+            
         }
 
         /// <summary>
@@ -4313,10 +4159,15 @@ namespace DOL.GS
                     return false;
                 if (this.Brain is IControlledBrain)
                     return false;
-                lock (m_xpGainers.SyncRoot)
+                HybridDictionary XPGainerList = new HybridDictionary();lock (m_xpGainers.SyncRoot)
                 {
-                    if (m_xpGainers.Keys.Count == 0) return false;
-                    foreach (DictionaryEntry de in m_xpGainers)
+                    foreach (DictionaryEntry gainer in m_xpGainers)
+					{
+						XPGainerList.Add(gainer.Key, gainer.Value);
+					}
+				}
+				if (XPGainerList.Keys.Count == 0) return false;
+                    foreach (DictionaryEntry de in XPGainerList)
                     {
                         GameObject obj = (GameObject)de.Key;
                         if (obj is GamePlayer)
@@ -4342,7 +4193,7 @@ namespace DOL.GS
                         }
                     }
                     return true;
-                }
+                
             }
             set
             {
@@ -4361,23 +4212,28 @@ namespace DOL.GS
         /// <summary>
         /// Called when this living dies
         /// </summary>
-        public override void Die(GameObject killer)
-        {
+        public override void ProcessDeath(GameObject killer)
+		{
+            try
+            {
+        
             Brain?.KillFSM();
 
-            FireAmbientSentence(eAmbientTrigger.dieing, killer as GameLiving);
+            FireAmbientSentence(eAmbientTrigger.dying, killer);
 
             if (ControlledBrain != null)
                 ControlledNPC_Release();
 
             if (killer != null)
             {
-                if (IsWorthReward)
-                    DropLoot(killer);
+                if (killer is GamePet pet) killer = pet.Owner;
+				Diagnostics.StartPerfCounter("ReaperService-NPC-ProcessDeath-DropLoot-NPC("+this.GetHashCode()+")");
+				if (IsWorthReward)
+                    DropLoot(killer);Diagnostics.StopPerfCounter("ReaperService-NPC-ProcessDeath-DropLoot-NPC("+this.GetHashCode()+")");
 
-                Message.SystemToArea(this, GetName(0, true) + " dies!", eChatType.CT_PlayerDied, killer);
+                Diagnostics.StartPerfCounter("ReaperService-NPC-ProcessDeath-AreaMessages-NPC("+this.GetHashCode()+")");Message.SystemToArea(this, GetName(0, true) + " dies!", eChatType.CT_PlayerDied, killer);
                 if (killer is GamePlayer)
-                    ((GamePlayer)killer).Out.SendMessage(GetName(0, true) + " dies!", eChatType.CT_PlayerDied, eChatLoc.CL_SystemWindow);
+                    ((GamePlayer)killer).Out.SendMessage(GetName(0, true) + " dies!", eChatType.CT_PlayerDied, eChatLoc.CL_SystemWindow);Diagnostics.StopPerfCounter("ReaperService-NPC-ProcessDeath-AreaMessages-NPC("+this.GetHashCode()+")");
             }
             StopFollowing();
 
@@ -4389,36 +4245,68 @@ namespace DOL.GS
                 // Handle faction alignement changes // TODO Review
                 if ((Faction != null) && (killer is GamePlayer))
                 {
-                    // Get All Attackers. // TODO check if this shouldn't be set to Attackers instead of XPGainers ?
-                    foreach (DictionaryEntry de in this.XPGainers)
+                    lock (this.attackComponent.Attackers)
+					{
+						List <GamePlayer> additionalPlayerList = new List<GamePlayer>();// Get All Attackers. // TODO check if this shouldn't be set to Attackers instead of XPGainers ?
+                    foreach (GameObject de in this.attackComponent.Attackers)
                     {
-                        GameLiving living = de.Key as GameLiving;
+                        GameLiving living = de as GameLiving;
                         GamePlayer player = living as GamePlayer;
-
+if (player != null && player.IsObjectGreyCon(this)) continue;
                         // Get Pets Owner (// TODO check if they are not already treated as attackers ?)
-                        if (living is GameNPC && (living as GameNPC).Brain is IControlledBrain)
-                            player = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();
+                        if (living is GameNPC && (living as GameNPC).Brain is IControlledBrain){
+                            player = ((living as GameNPC).Brain as IControlledBrain).GetPlayerOwner();if (!this.attackComponent.Attackers.Contains(player) && !additionalPlayerList.Contains(player))
+                                    {
+										// Petmaster never attacked the mob but still needs to get the increase / decrease only once
+										// we have to keep a second list because a Pet master could have more than 1 pet in the attackers list (Bds)
+										additionalPlayerList.Add(player);
+									}
+									continue;
+								}
 
                         if (player != null && player.ObjectState == GameObject.eObjectState.Active && player.IsAlive && player.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
                         {
                             Faction.KillMember(player);
                         }
                     }
-                }
+                //masters of pets who didnt attack the mob themselfs and let pet do all the work
+                            foreach (GamePlayer additionalPlayer in additionalPlayerList)
+                            {
+								if (additionalPlayer != null && additionalPlayer.ObjectState == GameObject.eObjectState.Active && additionalPlayer.IsAlive && additionalPlayer.IsWithinRadius(this, WorldMgr.MAX_EXPFORKILL_DISTANCE))
+								{
+									Faction.KillMember(additionalPlayer);
+								}
+							}
+					}
+				}
 
                 // deal out exp and realm points based on server rules
-                GameServer.ServerRules.OnNPCKilled(this, killer);
-                base.Die(killer);
+                Diagnostics.StartPerfCounter("ReaperService-NPC-ProcessDeath-OnNPCKIlled-NPC("+this.GetHashCode()+")");GameServer.ServerRules.OnNPCKilled(this, killer);
+                Diagnostics.StopPerfCounter("ReaperService-NPC-ProcessDeath-OnNPCKIlled-NPC("+this.GetHashCode()+")");
             }
 
-            Delete();
+            base.ProcessDeath(killer);
+
+			lock (this.XPGainers.SyncRoot)
+				this.XPGainers.Clear();
+			
+			
+			Delete();
+			Diagnostics.StopPerfCounter("ReaperService-NPC-ProcessDeath-Delete-NPC("+this.GetHashCode()+")");
 
             // remove temp properties
             TempProperties.removeAllProperties();
 
-            if (!(this is GamePet))
+            if (!(this is GamePet)&& !(this is SINeckBoss))
                 StartRespawn();
-        }
+        }finally
+			{
+				if(isDeadOrDying == true)
+                {
+					base.ProcessDeath(killer);
+                }
+			}
+		}
 
         /// <summary>
         /// Stores the melee damage type of this NPC
@@ -4534,7 +4422,7 @@ namespace DOL.GS
         {
             // Tolakram: Order is important here.  First StopAttack, then switch weapon
             StopFollowing();
-            attackComponent.NPCStopAttack();
+            attackComponent.StopAttack();
 
             InventoryItem twohand = Inventory.GetItem(eInventorySlot.TwoHandWeapon);
             InventoryItem righthand = Inventory.GetItem(eInventorySlot.RightHandWeapon);
@@ -4550,7 +4438,7 @@ namespace DOL.GS
             else
                 SwitchWeapon(eActiveWeaponSlot.Standard);
 
-            attackComponent.StartAttack(target);
+            attackComponent.RequestStartAttack(target);
         }
 
         /// <summary>
@@ -4560,9 +4448,9 @@ namespace DOL.GS
         public void SwitchToRanged(GameObject target)
         {
             StopFollowing();
-            attackComponent.NPCStopAttack();
+            attackComponent.StopAttack();
             SwitchWeapon(eActiveWeaponSlot.Distance);
-            attackComponent.StartAttack(target);
+            attackComponent.RequestStartAttack(target);
         }
 
         /// <summary>
@@ -4576,44 +4464,24 @@ namespace DOL.GS
 
                 BroadcastUpdate();
 
-                attackComponent.AttackState = false;
+				attackComponent.AttackState = false;
             }
         }
 
-        /// <summary>
-        /// If npcs cant move, they cant be interupted from range attack
-        /// </summary>
-        /// <param name="attacker"></param>
-        /// <param name="attackType"></param>
-        /// <returns></returns>
-        protected override bool OnInterruptTick(GameLiving attacker, AttackData.eAttackType attackType)
+        
+        protected override bool CheckRangedAttackInterrupt(GameLiving attacker, AttackData.eAttackType attackType)
         {
-            if (this.MaxSpeedBase == 0)
-            {
-                if (attackType == AttackData.eAttackType.Ranged || attackType == AttackData.eAttackType.Spell)
-                {
-                    if (this.IsWithinRadius(attacker, 150) == false)
+            // Immobile NPCs can only be interrupted from close range attacks.
+			if (MaxSpeedBase == 0 && attackType is AttackData.eAttackType.Ranged or AttackData.eAttackType.Spell && !IsWithinRadius(attacker, 150))
                         return false;
-                }
-            }
+                
 
-            // Experimental - this prevents interrupts from causing ranged attacks to always switch to melee
-            if (attackComponent.AttackState)
-            {
-                if (ActiveWeaponSlot == eActiveWeaponSlot.Distance && HealthPercent < MINHEALTHPERCENTFORRANGEDATTACK)
-                {
-                    SwitchToMelee(attacker);
-                }
-                else if (ActiveWeaponSlot != eActiveWeaponSlot.Distance &&
-                         Inventory != null &&
-                         Inventory.GetItem(eInventorySlot.DistanceWeapon) != null &&
-                         GetDistanceTo(attacker) > 500)
-                {
-                    SwitchToRanged(attacker);
-                }
-            }
+            bool interrupted = base.CheckRangedAttackInterrupt(attacker, attackType);
 
-            return base.OnInterruptTick(attacker, attackType);
+            if (interrupted)
+				attackComponent.attackAction.OnAimInterrupt(attacker);
+
+			return interrupted;
         }
 
         /// <summary>
@@ -4623,11 +4491,12 @@ namespace DOL.GS
         /// <summary>
         /// A timer that will respawn this mob
         /// </summary>
-        protected RegionTimer m_respawnTimer;
+        protected AuxECSGameTimer m_respawnTimer;
         /// <summary>
         /// The sync object for respawn timer modifications
         /// </summary>
         protected readonly object m_respawnTimerLock = new object();
+
         /// <summary>
         /// The Respawn Interval of this mob in milliseconds
         /// </summary>
@@ -4703,7 +4572,11 @@ namespace DOL.GS
             if (this.Brain is IControlledBrain)
                 return;
 
-            int respawnInt = RespawnInterval;
+            if (m_healthRegenerationTimer != null)
+			{
+				m_healthRegenerationTimer.Stop();
+				m_healthRegenerationTimer = null;
+			}int respawnInt = RespawnInterval;
             int minBound = (int)Math.Floor(respawnInt * .95);
             int maxBound = (int)Math.Floor(respawnInt * 1.05);
             respawnInt = Util.Random(minBound, maxBound);
@@ -4713,8 +4586,8 @@ namespace DOL.GS
                 {
                     if (m_respawnTimer == null)
                     {
-                        m_respawnTimer = new RegionTimer(this);
-                        m_respawnTimer.Callback = new RegionTimerCallback(RespawnTimerCallback);
+                        m_respawnTimer = new AuxECSGameTimer(this);
+                        m_respawnTimer.Callback = new AuxECSGameTimer.AuxECSTimerCallback(RespawnTimerCallback);
                     }
                     else if (m_respawnTimer.IsAlive)
                     {
@@ -4732,7 +4605,7 @@ namespace DOL.GS
         /// </summary>
         /// <param name="respawnTimer">the timer calling this callback</param>
         /// <returns>the new interval</returns>
-        protected virtual int RespawnTimerCallback(RegionTimer respawnTimer)
+        protected virtual int RespawnTimerCallback(AuxECSGameTimer respawnTimer)
         {
             int dummy;
             // remove Mob from "respawning"
@@ -4784,15 +4657,15 @@ namespace DOL.GS
         /// </summary>
         /// <param name="selfRegenerationTimer">the regeneration timer</param>
         /// <returns>the new interval</returns>
-        protected override int HealthRegenerationTimerCallback(RegionTimer selfRegenerationTimer)
+        protected int HealthRegenerationTimerCallback(ECSGameTimer selfRegenerationTimer)
         {
-            int period = m_healthRegenerationPeriod;
+            int period = base.HealthRegenerationTimerCallback(selfRegenerationTimer);
             if (!InCombat)
             {
                 int oldPercent = HealthPercent;
-                period = base.HealthRegenerationTimerCallback(selfRegenerationTimer);
-                if (oldPercent != HealthPercent)
-                    BroadcastUpdate();
+                
+                if (oldPercent != HealthPercent)NeedsBroadcastUpdate = true;
+                    //BroadcastUpdate();
             }
             return (Health < MaxHealth) ? period : 0;
         }
@@ -4822,7 +4695,7 @@ namespace DOL.GS
             //if (m_attackAction != null)
             //	m_attackAction.Stop();
             if (attackComponent.attackAction != null)
-                attackComponent.attackAction.CleanupAttackAction();
+                attackComponent.attackAction.CleanUp();
             StopFollowing();
         }
 
@@ -4855,13 +4728,14 @@ namespace DOL.GS
 
         public override void OnAttackedByEnemy(AttackData ad)
         {
-            if (Brain is StandardMobBrain standardMobBrain && Brain is not NecromancerPetBrain)
-            {
-                standardMobBrain.AddToAggroList(ad.Attacker, ad.Damage + ad.CriticalDamage);
+            if (Brain is StandardMobBrain standardMobBrain )
                 standardMobBrain.OnAttackedByEnemy(ad);
-            }
-            base.OnAttackedByEnemy(ad);
-        }
+
+			if ((Flags & eFlags.STEALTH) != 0)
+                Flags ^= eFlags.STEALTH;
+
+			base.OnAttackedByEnemy(ad);
+		}
 
         /// <summary>
         /// This method is called to drop loot after this mob dies
@@ -4874,9 +4748,15 @@ namespace DOL.GS
             ArrayList autolootlist = new ArrayList();
             ArrayList aplayer = new ArrayList();
 
-            lock (m_xpGainers.SyncRoot)
+            HybridDictionary XPGainerList = new HybridDictionary();lock (m_xpGainers.SyncRoot)
             {
-                if (m_xpGainers.Keys.Count == 0) return;
+                foreach (DictionaryEntry gainer in m_xpGainers)
+				{
+					XPGainerList.Add(gainer.Key, gainer.Value);
+				}
+			}
+			
+			if (XPGainerList.Keys.Count == 0) return;
 
                 ItemTemplate[] lootTemplates = LootMgr.GetLoot(this, killer);
 
@@ -4940,34 +4820,7 @@ namespace DOL.GS
                         loot.Name = lootTemplate.Name;
                         loot.Model = (ushort)lootTemplate.Model;
                     }
-                    else if (lootTemplate.Name.StartsWith("scroll|"))
-                    {
-                        String[] scrollData = lootTemplate.Name.Split('|');
-
-                        if (scrollData.Length >= 3)
-                        {
-                            String artifactID = scrollData[1];
-                            int pageNumber = UInt16.Parse(scrollData[2]);
-                            loot = ArtifactMgr.CreateScroll(artifactID, pageNumber);
-                        }
-
-                        if (loot == null)
-                        {
-                            log.Error($"Artifact scroll could not be created for data string [{lootTemplate.Name}]");
-                            continue;
-                        }
-                        else
-                        {
-                            loot.X = X;
-                            loot.Y = Y;
-                            loot.Z = Z;
-                            loot.Heading = Heading;
-                            loot.CurrentRegion = CurrentRegion;
-                            (loot as WorldInventoryItem).Item.IsCrafted = false;
-                            (loot as WorldInventoryItem).Item.Creator = Name;
-                        }
-                    }
-                    else
+                    else 
                     {
                         InventoryItem invitem;
 
@@ -4979,7 +4832,10 @@ namespace DOL.GS
                         else
                             invitem = GameInventoryItem.Create(lootTemplate);
 
-                        loot = new WorldInventoryItem(invitem);
+                        if (lootTemplate is GeneratedUniqueItem)
+					{
+						invitem.IsROG = true;
+					}loot = new WorldInventoryItem(invitem);
                         loot.X = X;
                         loot.Y = Y;
                         loot.Z = Z;
@@ -4999,8 +4855,18 @@ namespace DOL.GS
                     }
 
                     GamePlayer playerAttacker = null;
-                    foreach (GameObject gainer in m_xpGainers.Keys)
-                    {
+                    BattleGroup activeBG = null;
+				if (killer is GamePlayer playerKiller &&
+				    playerKiller.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null) != null)
+					activeBG = playerKiller.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null);
+				
+				foreach (GameObject gainer in XPGainerList.Keys)
+				{
+					//if a battlegroup killed the mob, filter out any non BG players
+					if (activeBG != null && gainer is GamePlayer p &&
+					    p.TempProperties.getProperty<BattleGroup>(BattleGroup.BATTLEGROUP_PROPERTY, null) != activeBG)
+						continue;
+                    
                         if (gainer is GamePlayer)
                         {
                             playerAttacker = gainer as GamePlayer;
@@ -5022,9 +4888,11 @@ namespace DOL.GS
 
 
                     droplist.Add(loot.GetName(1, false));
-                    loot.AddToWorld();
+                    Diagnostics.StartPerfCounter("ReaperService-NPC-DropLoot-AddToWorld-loot("+loot.GetHashCode()+")");
+				loot.AddToWorld();
+				Diagnostics.StopPerfCounter("ReaperService-NPC-DropLoot-AddToWorld-loot("+loot.GetHashCode()+")");
 
-                    foreach (GameObject gainer in m_xpGainers.Keys)
+                    foreach (GameObject gainer in XPGainerList.Keys)
                     {
                         if (gainer is GamePlayer)
                         {
@@ -5038,11 +4906,13 @@ namespace DOL.GS
                         }
                     }
                 }
-            }
+            
 
-            BroadcastLoot(droplist);
+            Diagnostics.StartPerfCounter("ReaperService-NPC-DropLoot-BroadcastLoot-npc("+this.GetHashCode()+")");
+			BroadcastLoot(droplist);
+			Diagnostics.StopPerfCounter("ReaperService-NPC-DropLoot-BroadcastLoot-npc("+this.GetHashCode()+")");
 
-            if (autolootlist.Count > 0)
+            Diagnostics.StartPerfCounter("ReaperService-NPC-DropLoot-PickupLoot-npc("+this.GetHashCode()+")");if (autolootlist.Count > 0)
             {
                 foreach (GameObject obj in autolootlist)
                 {
@@ -5053,7 +4923,8 @@ namespace DOL.GS
                     }
                 }
             }
-        }
+        Diagnostics.StopPerfCounter("ReaperService-NPC-DropLoot-PickupLoot-npc("+this.GetHashCode()+")");
+		}
 
         /// <summary>
         /// The enemy is healed, so we add to the xp gainers list
@@ -5096,14 +4967,25 @@ namespace DOL.GS
             {
                 this.AddXPGainer(healSource, (float)healAmount);
             }
-            //DealDamage needs to be called after addxpgainer!
+            if (Brain is StandardMobBrain mobBrain)
+			{
+				// first check to see if the healer is in our aggrolist so we don't go attacking anyone who heals
+				if (mobBrain.AggroTable.ContainsKey(healSource as GameLiving))
+				{
+					if (healSource is GamePlayer || (healSource is GameNPC && (((GameNPC)healSource).Flags & eFlags.PEACE) == 0))
+					{
+						mobBrain.AddToAggroList((GameLiving)healSource, healAmount);
+					}
+				}
+			}//DealDamage needs to be called after addxpgainer!
         }
 
         #endregion
 
         #region Spell
         private List<Spell> m_spells = new List<Spell>(0);
-        /// <summary>
+        private SpellAction m_spellaction = null;
+		private ConcurrentDictionary<GameObject, Tuple<Spell, SpellLine, long>> m_spellTargetLosChecks = new();/// <summary>
         /// property of spell array of NPC
         /// </summary>
         public virtual IList Spells
@@ -5123,7 +5005,7 @@ namespace DOL.GS
                 }
                 else
                 {
-                    m_spells = value.Cast<Spell>().ToList();
+                    m_spells = value.Cast<Spell>().ToList();//if(!SortedSpells)
                     SortSpells();
                 }
             }
@@ -5284,8 +5166,267 @@ namespace DOL.GS
                     }
                 }
             } // foreach
-        }
-        #endregion
+        
+        //SortedSpells = true;
+		}
+
+		/// <summary>
+		/// The timer that controls an npc's spell casting
+		/// </summary>
+		public SpellAction SpellTimer
+		{
+			get { return m_spellaction; }
+			set { m_spellaction = value; }
+		}
+
+		/// <summary>
+		/// Callback after spell execution finished and next spell can be processed
+		/// </summary>
+		/// <param name="handler"></param>
+		public override void OnAfterSpellCastSequence(ISpellHandler handler)
+		{
+			/*
+			if (SpellTimer != null)
+			{
+				if (this == null || this.ObjectState != eObjectState.Active || !this.IsAlive || this.TargetObject == null || (this.TargetObject is GameLiving && this.TargetObject.ObjectState != eObjectState.Active || !(this.TargetObject as GameLiving).IsAlive))
+					SpellTimer.Stop();
+				else
+				{
+					int interval = 1500;
+
+					if (Brain != null)
+					{
+						interval = Math.Min(interval, Brain.ThinkInterval);
+					}
+
+					SpellTimer.Start(interval);
+				}
+			}
+			*/
+			
+
+			if (CurrentSpellHandler != null)
+			{
+				//prevent from relaunch
+				base.OnAfterSpellCastSequence(handler);
+			}
+
+			if(TargetObject == null)
+            {
+				TargetObject = CachedTarget;
+            }
+
+			// Notify Brain of Cast Finishing.
+			if (Brain != null)
+				Brain.Notify(GameNPCEvent.CastFinished, this, new CastingEventArgs(handler));
+		}
+
+		/// <summary>
+		/// The spell action of this living
+		/// </summary>
+		public class SpellAction : RegionECSAction
+		{
+			/// <summary>
+			/// Constructs a new attack action
+			/// </summary>
+			/// <param name="owner">The action source</param>
+			public SpellAction(GameLiving owner)
+				: base(owner)
+			{
+			}
+
+			/// <summary>
+			/// Called on every timer tick
+			/// </summary>
+			protected override int OnTick(ECSGameTimer timer)
+			{
+				GameNPC owner = null;
+				if (m_actionSource != null && m_actionSource is GameNPC)
+					owner = (GameNPC)m_actionSource;
+				else
+				{
+					Stop();
+					return 0;
+				}
+
+				if (owner.TargetObject == null || !owner.attackComponent.AttackState)
+				{
+					Stop();
+					return 0;
+				}
+
+				//If we started casting a spell, stop the timer and wait for
+				//GameNPC.OnAfterSpellSequenceCast to start again
+				if (owner.Brain is StandardMobBrain && ((StandardMobBrain)owner.Brain).CheckSpells(StandardMobBrain.eCheckSpellType.Offensive))
+				{
+					Stop();
+					return 0;
+				}
+				else
+				{
+					//If we aren't a distance NPC, lets make sure we are in range to attack the target!
+					if (owner.ActiveWeaponSlot != eActiveWeaponSlot.Distance && !owner.IsWithinRadius(owner.TargetObject, STICKMINIMUMRANGE))
+						((GameNPC)owner).Follow(owner.TargetObject, STICKMINIMUMRANGE, STICKMAXIMUMRANGE);
+				}
+
+				if (owner.Brain != null)
+				{
+					Interval = Math.Min(1500, owner.Brain.CastInterval);
+				}
+				else
+				{
+					Interval = 1500;
+				}
+
+				return Interval;
+			}
+		}
+
+		/// <summary>
+		/// Cast a spell, with optional LOS check
+		/// </summary>
+		/// <param name="spell"></param>
+		/// <param name="line"></param>
+		/// <param name="checkLOS"></param>
+		public virtual bool CastSpell(Spell spell, SpellLine line, bool checkLOS)
+		{
+			bool cast;
+
+			if (IsIncapacitated)
+				return false;
+
+			if (checkLOS)
+			{
+				cast = CastSpell(spell, line);
+			}
+			else
+			{
+				Spell spellToCast;
+
+				if (line.KeyName == GlobalSpellsLines.Mob_Spells)
+				{
+					// NPC spells will get the level equal to their caster
+					spellToCast = (Spell)spell.Clone();
+					spellToCast.Level = Level;
+				}
+				else
+				{
+					spellToCast = spell;
+				}
+
+				cast = base.CastSpell(spellToCast, line);
+			}
+
+			return cast;
+		}
+
+		/// <summary>
+		/// Cast a spell with LOS check to a player
+		/// </summary>
+		/// <param name="spell"></param>
+		/// <param name="line"></param>
+ 		/// <returns>Whether the spellcast started successfully</returns>
+		public override bool CastSpell(Spell spell, SpellLine line)
+		{
+			// Good opportunity to clean up our SpellTargetLosChecks.
+			// Entries older than 3 seconds are removed.
+			for (int i = m_spellTargetLosChecks.Count - 1 ; i >= 0 ; i--)
+			{
+				var element = m_spellTargetLosChecks.ElementAt(i);
+				if (element.Value.Item3 + 3000 > GameLoop.GameLoopTime)
+					m_spellTargetLosChecks.TryRemove(element.Key, out _);
+			}
+
+			if (IsIncapacitated)
+				return false;
+
+			Spell spellToCast = null;
+
+			if (line.KeyName == GlobalSpellsLines.Mob_Spells)
+			{
+				// NPC spells will get the level equal to their caster
+				spellToCast = (Spell)spell.Clone();
+				spellToCast.Level = Level;
+			}
+			else
+				spellToCast = spell;
+
+			if (TargetObject == this)
+				return base.CastSpell(spellToCast, line);
+
+			if (spellToCast.Range > 0 && !IsWithinRadius(TargetObject, spellToCast.Range))
+				return false;
+
+			GamePlayer LosChecker = TargetObject as GamePlayer;
+
+			if (LosChecker == null && this is GamePet pet)
+			{
+				if (pet.Owner is GamePlayer player)
+					LosChecker = player;
+				else if (pet.Owner is CommanderPet commander && commander.Owner is GamePlayer owner)
+					LosChecker = owner;
+			}
+			else if (LosChecker == null && Brain is IControlledBrain controlledBrain) // Check for charmed pets
+			{
+				if (controlledBrain.Owner is GamePlayer player)
+					LosChecker = player;
+			}
+
+			if (LosChecker == null)
+			{
+				foreach (GamePlayer playerInRange in GetPlayersInRadius(350))
+				{
+					if (playerInRange != null)
+					{
+						LosChecker = playerInRange;
+						break;
+					}
+				}
+			}
+
+			if (LosChecker == null)
+				return base.CastSpell(spellToCast, line);
+			else
+			{
+				if (m_spellTargetLosChecks.TryAdd(TargetObject, new Tuple<Spell, SpellLine, long>(spellToCast, line, GameLoop.GameLoopTime)))
+					LosChecker.Out.SendCheckLOS(this, TargetObject, new CheckLOSResponse(StartSpellAttackCheckLOS)); 
+				
+				return true;
+			}
+		}
+
+		public void StartSpellAttackCheckLOS(GamePlayer player, ushort response, ushort targetOID)
+		{
+			if (targetOID == 0)
+				return;
+
+			GameObject target = CurrentRegion.GetObject(targetOID);
+
+			if (m_spellTargetLosChecks.TryRemove(target, out Tuple<Spell, SpellLine, long> value))
+			{
+				Spell spell = value.Item1;
+				SpellLine line = value.Item2;
+
+				if ((response & 0x100) == 0x100 && line != null && spell != null)
+				{
+					GameObject lasttarget = TargetObject;
+					TargetObject = target;
+
+					if (TargetObject is GameLiving living && living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
+					{
+						if (living is GamePlayer && (living as GamePlayer).ControlledBrain != null)
+							TargetObject = (living as GamePlayer).ControlledBrain.Body;
+					}
+
+					base.CastSpell(spell, line);
+					TargetObject = lasttarget;
+				}
+				else
+					Notify(GameLivingEvent.CastFailed, this, new CastFailedEventArgs(null, CastFailedEventArgs.Reasons.TargetNotInView));
+			}
+		}
+
+		#endregion
 
         #region Styles
         /// <summary>
@@ -5514,271 +5655,7 @@ namespace DOL.GS
             }
         }
 
-        private SpellAction m_spellaction = null;
-        /// <summary>
-        /// The timer that controls an npc's spell casting
-        /// </summary>
-        public SpellAction SpellTimer
-        {
-            get { return m_spellaction; }
-            set { m_spellaction = value; }
-        }
-
-        /// <summary>
-        /// Callback after spell execution finished and next spell can be processed
-        /// </summary>
-        /// <param name="handler"></param>
-        public override void OnAfterSpellCastSequence(ISpellHandler handler)
-        {
-            /*
-			if (SpellTimer != null)
-			{
-				if (this == null || this.ObjectState != eObjectState.Active || !this.IsAlive || this.TargetObject == null || (this.TargetObject is GameLiving && this.TargetObject.ObjectState != eObjectState.Active || !(this.TargetObject as GameLiving).IsAlive))
-					SpellTimer.Stop();
-				else
-				{
-					int interval = 1500;
-
-					if (Brain != null)
-					{
-						interval = Math.Min(interval, Brain.ThinkInterval);
-					}
-
-					SpellTimer.Start(interval);
-				}
-			}
-			*/
-
-
-            if (m_runningSpellHandler != null)
-            {
-                //prevent from relaunch
-                base.OnAfterSpellCastSequence(handler);
-            }
-
-            if (TargetObject == null)
-            {
-                TargetObject = CachedTarget;
-            }
-
-            // Notify Brain of Cast Finishing.
-            if (Brain != null)
-                Brain.Notify(GameNPCEvent.CastFinished, this, new CastingEventArgs(handler));
-        }
-
-        /// <summary>
-        /// The spell action of this living
-        /// </summary>
-        public class SpellAction : RegionAction
-        {
-            /// <summary>
-            /// Constructs a new attack action
-            /// </summary>
-            /// <param name="owner">The action source</param>
-            public SpellAction(GameLiving owner)
-                : base(owner)
-            {
-            }
-
-            /// <summary>
-            /// Called on every timer tick
-            /// </summary>
-            protected override void OnTick()
-            {
-                GameNPC owner = null;
-                if (m_actionSource != null && m_actionSource is GameNPC)
-                    owner = (GameNPC)m_actionSource;
-                else
-                {
-                    Stop();
-                    return;
-                }
-
-                if (owner.TargetObject == null || !owner.attackComponent.AttackState)
-                {
-                    Stop();
-                    return;
-                }
-
-                //If we started casting a spell, stop the timer and wait for
-                //GameNPC.OnAfterSpellSequenceCast to start again
-                if (owner.Brain is StandardMobBrain && ((StandardMobBrain)owner.Brain).CheckSpells(StandardMobBrain.eCheckSpellType.Offensive))
-                {
-                    Stop();
-                    return;
-                }
-                else
-                {
-                    //If we aren't a distance NPC, lets make sure we are in range to attack the target!
-                    if (owner.ActiveWeaponSlot != eActiveWeaponSlot.Distance && !owner.IsWithinRadius(owner.TargetObject, STICKMINIMUMRANGE))
-                        ((GameNPC)owner).Follow(owner.TargetObject, STICKMINIMUMRANGE, STICKMAXIMUMRANGE);
-                }
-
-                if (owner.Brain != null)
-                {
-                    Interval = Math.Min(1500, owner.Brain.CastInterval);
-                }
-                else
-                {
-                    Interval = 1500;
-                }
-            }
-        }
-
-        private const string LOSTEMPCHECKER = "LOSTEMPCHECKER";
-        private const string LOSCURRENTSPELL = "LOSCURRENTSPELL";
-        private const string LOSCURRENTLINE = "LOSCURRENTLINE";
-        private const string LOSSPELLTARGET = "LOSSPELLTARGET";
-
-
-        /// <summary>
-        /// Cast a spell, with optional LOS check
-        /// </summary>
-        /// <param name="spell"></param>
-        /// <param name="line"></param>
-        /// <param name="checkLOS"></param>
-        public virtual bool CastSpell(Spell spell, SpellLine line, bool checkLOS)
-        {
-            bool cast = false;
-            if (IsIncapacitated)
-                return false;
-
-            if (checkLOS)
-            {
-                cast = CastSpell(spell, line);
-            }
-            else
-            {
-                Spell spellToCast = null;
-
-                if (line.KeyName == GlobalSpellsLines.Mob_Spells)
-                {
-                    // NPC spells will get the level equal to their caster
-                    spellToCast = (Spell)spell.Clone();
-                    spellToCast.Level = Level;
-                }
-                else
-                {
-                    spellToCast = spell;
-                }
-
-                cast = base.CastSpell(spellToCast, line);
-            }
-
-            return cast;
-        }
-
-        /// <summary>
-        /// Cast a spell with LOS check to a player
-        /// </summary>
-        /// <param name="spell"></param>
-        /// <param name="line"></param>
-        /// <returns>Whether the spellcast started successfully</returns>
-        public override bool CastSpell(Spell spell, SpellLine line)
-        {
-            if (IsIncapacitated)
-                return false;
-
-            if (TempProperties.getProperty<Spell>(LOSCURRENTSPELL, null) != null)
-                return false;
-
-            bool casted = false;
-            Spell spellToCast = null;
-
-            if (line.KeyName == GlobalSpellsLines.Mob_Spells)
-            {
-                // NPC spells will get the level equal to their caster
-                spellToCast = (Spell)spell.Clone();
-                spellToCast.Level = Level;
-            }
-            else
-            {
-                spellToCast = spell;
-            }
-
-            // Let's do a few checks to make sure it doesn't just wait on the LOS check
-            int tempProp = TempProperties.getProperty<int>(LOSTEMPCHECKER);
-
-            if (tempProp <= 0)
-            {
-                GamePlayer LOSChecker = TargetObject as GamePlayer;
-
-                if (LOSChecker == null && this is GamePet pet)
-                {
-                    if (pet.Owner is GamePlayer player)
-                        LOSChecker = player;
-                    else if (pet.Owner is CommanderPet petComm && petComm.Owner is GamePlayer owner)
-                        LOSChecker = owner;
-                }
-
-                if (LOSChecker == null)
-                {
-                    foreach (GamePlayer ply in GetPlayersInRadius(350))
-                    {
-                        if (ply != null)
-                        {
-                            LOSChecker = ply;
-                            break;
-                        }
-                    }
-                }
-
-                if (LOSChecker == null)
-                {
-                    TempProperties.setProperty(LOSTEMPCHECKER, 0);
-                    casted = base.CastSpell(spellToCast, line);
-                }
-                else
-                {
-                    TempProperties.setProperty(LOSTEMPCHECKER, 10);
-                    TempProperties.setProperty(LOSCURRENTSPELL, spellToCast);
-                    TempProperties.setProperty(LOSCURRENTLINE, line);
-                    TempProperties.setProperty(LOSSPELLTARGET, TargetObject);
-                    LOSChecker.Out.SendCheckLOS(LOSChecker, this, new CheckLOSResponse(StartSpellAttackCheckLOS));
-                    casted = true;
-                }
-            }
-            else
-                TempProperties.setProperty(LOSTEMPCHECKER, tempProp - 1);
-
-            return casted;
-        }
-
-        public void StartSpellAttackCheckLOS(GamePlayer player, ushort response, ushort targetOID)
-        {
-            SpellLine line = TempProperties.getProperty<SpellLine>(LOSCURRENTLINE, null);
-            Spell spell = TempProperties.getProperty<Spell>(LOSCURRENTSPELL, null);
-            GameObject target = TempProperties.getProperty<GameObject>(LOSSPELLTARGET, null);
-            GameObject lasttarget = TargetObject;
-
-            TempProperties.removeProperty(LOSSPELLTARGET);
-            TempProperties.removeProperty(LOSTEMPCHECKER);
-            TempProperties.removeProperty(LOSCURRENTLINE);
-            TempProperties.removeProperty(LOSCURRENTSPELL);
-            TempProperties.setProperty(LOSTEMPCHECKER, 0);
-
-            if ((response & 0x100) == 0x100 && line != null && spell != null)
-            {
-                TargetObject = target;
-
-                GameLiving living = TargetObject as GameLiving;
-
-                if (living != null && living.EffectList.GetOfType<NecromancerShadeEffect>() != null)
-                {
-                    if (living is GamePlayer && (living as GamePlayer).ControlledBrain != null)
-                    {
-                        TargetObject = (living as GamePlayer).ControlledBrain.Body;
-                    }
-                }
-
-                base.CastSpell(spell, line);
-                TargetObject = lasttarget;
-            }
-            else
-            {
-                Notify(GameLivingEvent.CastFailed, this, new CastFailedEventArgs(null, CastFailedEventArgs.Reasons.TargetNotInView));
-            }
-        }
+        
 
         #endregion
 
@@ -5801,14 +5678,14 @@ namespace DOL.GS
         }
 
         /// <summary>
-        /// Handle triggers for ambient sentences
+        /// Handles all ambient messages triggered by a mob or NPC action
         /// </summary>
-        /// <param name="action">The trigger action</param>
-        /// <param name="npc">The NPC to handle the trigger for</param>
-        public void FireAmbientSentence(eAmbientTrigger trigger, GameLiving living = null)
+        /// <param name="trigger">The action triggering the message (e.g., aggroing, dying, roaming)</param>
+        /// <param name="living">The entity triggering the action (e.g., a player)</param>
+        public virtual void FireAmbientSentence(eAmbientTrigger trigger, GameObject living)
         {
             if (IsSilent || ambientTexts == null || ambientTexts.Count == 0) return;
-            if (trigger == eAmbientTrigger.interact && living == null) return;
+            if (trigger == eAmbientTrigger.interact && living == null) return; // Do not trigger interact messages with a corpse
             List<MobXAmbientBehaviour> mxa = (from i in ambientTexts where i.Trigger == trigger.ToString() select i).ToList();
             if (mxa.Count == 0) return;
 
@@ -5817,35 +5694,69 @@ namespace DOL.GS
             if (!Util.Chance(chosen.Chance)) return;
 
             string controller = string.Empty;
-            if (Brain is IControlledBrain)
+            if (Brain is IControlledBrain) // Used for '{controller}' trigger keyword, use the name of the mob's owner (else returns blank)--this is used when a pet has an ambient trigger.
             {
-                GamePlayer playerOwner = (Brain as IControlledBrain).GetPlayerOwner();
+                GamePlayer playerOwner = ((IControlledBrain) Brain).GetPlayerOwner();
                 if (playerOwner != null)
                     controller = playerOwner.Name;
             }
 
-            string text = chosen.Text.Replace("{sourcename}", Name).Replace("{targetname}", living == null ? string.Empty : living.Name).Replace("{controller}", controller);
+            string text = chosen.Text;
 
-            if (chosen.Emote != 0)
+            if (TargetObject == null)
+			{
+				text = chosen.Text.Replace("{sourcename}", Brain?.Body?.Name) // '{sourcename}' returns the mob or NPC name
+					.Replace("{targetname}", living?.Name) // '{targetname}' returns the mob/NPC target's name
+					.Replace("{controller}", controller); // '{controller}' returns the result of the controller var (use this when pets have dialogue)
+				
+				// Replace trigger keywords
+				if (living is GamePlayer)
+					text = text.Replace("{class}", ((GamePlayer) living).CharacterClass.Name).Replace("{race}", ((GamePlayer) living).RaceName);
+				if (living is GameNPC)
+					text = text.Replace("{class}", "NPC").Replace("{race}", "NPC");
+			}
+			else
+			{
+				text = chosen.Text.Replace("{sourcename}", Brain.Body.Name) // '{sourcename}' returns the mob or NPC name
+					.Replace("{targetname}", TargetObject == null ? string.Empty : TargetObject.Name) // '{targetname}' returns the mob/NPC target's name
+					.Replace("{controller}", controller); // '{controller}' returns the result of the controller var (use this when pets have dialogue)
+				
+				// Replace trigger keywords
+				if (TargetObject is GamePlayer)
+					text = text.Replace("{class}", ((GamePlayer) TargetObject).CharacterClass.Name).Replace("{race}", ((GamePlayer) TargetObject).RaceName);
+				if (TargetObject is GameNPC)
+					text = text.Replace("{class}", "NPC").Replace("{race}", "NPC");
+			}
+			// Replace trigger keywordsif (chosen.Emote != 0)
             {
                 Emote((eEmote)chosen.Emote);
             }
 
-            // issuing text
-            if (living is GamePlayer)
-                text = text.Replace("{class}", (living as GamePlayer).CharacterClass.Name).Replace("{race}", (living as GamePlayer).RaceName);
-            if (living is GameNPC)
+            // Replace trigger keywords
+            if (TargetObject is GamePlayer &&living is GamePlayer)
+                text = text.Replace("{class}", ((GamePlayer) living).CharacterClass.Name).Replace("{race}", ((GamePlayer) living).RaceName);
+            if (TargetObject is GameNPC &&living is GameNPC)
                 text = text.Replace("{class}", "NPC").Replace("{race}", "NPC");
 
-            // for interact text we pop up a window
-            if (trigger == eAmbientTrigger.interact)
+            /*// Determines message delivery method for trigger voice
+            if (chosen.Voice.StartsWith("b")) // Broadcast message without "[Broadcast] {0}:" string start
             {
-                (living as GamePlayer).Out.SendMessage(text, eChatType.CT_System, eChatLoc.CL_PopupWindow);
+                foreach (GamePlayer player in CurrentRegion.GetPlayersInRadius(X, Y, Z, 25000, false, false))
+				{
+					player.Out.SendMessage(text, eChatType.CT_Broadcast, eChatLoc.CL_ChatWindow);
+				}
+				return;
+			}
+			if (chosen.Voice.StartsWith("y")) // Yell message (increased range) without "{0} yells," string start
+			{
+				Yell(text);
                 return;
-            }
+            }*/
 
-            // broadcasted , yelled or talked ?
-            if (chosen.Voice.StartsWith("b"))
+            // Determines message delivery method for triggers
+            switch (chosen.Voice)
+			{
+				case "b": // Broadcast message without "[Broadcast] {0}:" string start
             {
                 foreach (GamePlayer player in CurrentRegion.GetPlayersInRadius(X, Y, Z, 25000, false, false))
                 {
@@ -5853,12 +5764,31 @@ namespace DOL.GS
                 }
                 return;
             }
-            if (chosen.Voice.StartsWith("y"))
+            case "y": // Yell message (increased range) without "{0} yells," string start
             {
                 Yell(text);
-                return;
-            }
-            Say(text);
+                return;}
+				case "s": // Return custom System message in System/Combat window to all players within range
+				{
+					Message.MessageToArea(Brain.Body, text, eChatType.CT_System, eChatLoc.CL_SystemWindow, 512, null);
+					return;
+				}
+				case "c": // Return custom Say message in Chat window to all players within range, without "{0} says," string start
+				{
+					Message.MessageToArea(Brain.Body, text, eChatType.CT_Say, eChatLoc.CL_ChatWindow, 512, null);
+					return;
+				}
+				case "p": // Return custom System message in popup dialog only to player interating with the NPC
+					// For interact triggers
+				{
+					((GamePlayer) living).Out.SendMessage(text, eChatType.CT_System, eChatLoc.CL_PopupWindow);
+					return;
+				}
+				default: // Return Say message with "{0} says," string start included (contrary to parameter description)
+            {
+            Say(text);return;
+				}
+			}
         }
         #endregion
 
@@ -5940,12 +5870,9 @@ namespace DOL.GS
         /// <returns></returns>
         public virtual bool IsFriend(GameNPC npc)
         {
-            if (npc.Name.Equals(Name))
-                return true;
-            else return false;
-            //if (Faction == null || npc.Faction == null)
-            //	return false;
-            //return (npc.Faction == Faction || Faction.FriendFactions.Contains(npc.Faction));
+            if (Faction == null || npc.Faction == null)
+            	return false;
+            return (npc.Faction == Faction || Faction.FriendFactions.Contains(npc.Faction));
         }
 
         /// <summary>
@@ -6183,5 +6110,7 @@ namespace DOL.GS
         }
 
         public int ScalingFactor { get => scalingFactor; set => scalingFactor = value; }
+        
+        public int OrbsReward { get => orbsReward; set => orbsReward = value; }
     }
 }

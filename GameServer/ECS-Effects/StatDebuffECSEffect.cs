@@ -6,6 +6,8 @@ using DOL.AI.Brain;
 using DOL.GS.PropertyCalc;
 using System.Collections.Generic;
 using DOL.GS.API;
+using System.Linq;
+using DOL.GS.PlayerClass;
 
 namespace DOL.GS
 {
@@ -36,6 +38,8 @@ namespace DOL.GS
 
             if (EffectType == eEffect.StrConDebuff || EffectType == eEffect.DexQuiDebuff)
             {
+                if (Caster is GamePlayer {CharacterClass: ClassChampion})
+                    Effectiveness = 2;
                 foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
                 {
                     //Console.WriteLine($"Debuffing {prop.ToString()}");
@@ -55,18 +59,32 @@ namespace DOL.GS
 
                     //Console.WriteLine("Debuffing Speed for " + e.Owner.Name);
                     //e.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, e.SpellHandler.Spell.ID, 1.0 - e.SpellHandler.Spell.Value * 0.01);
+
+                    var speedDebuffs = Owner.effectListComponent.GetSpellEffects(eEffect.MovementSpeedDebuff)
+                                                                .Where(x => x.SpellHandler.Spell.ID != this.SpellHandler.Spell.ID);
+
+                    if (speedDebuffs.Any(x => x.SpellHandler.Spell.Value > this.SpellHandler.Spell.Value))
+                    {
+                        return;
+                    }
+
+                    foreach (var effect in speedDebuffs)
+                    {
+                        EffectService.RequestDisableEffect(effect);
+                    }
+
+                    var effectiveValue = SpellHandler.Spell.Value * Effectiveness;
+
                     Owner.BuffBonusMultCategory1.Set((int) eProperty.MaxSpeed, EffectType,
-                        1.0 - SpellHandler.Spell.Value * 0.01);
+                        1.0 - effectiveValue * 0.01);
                     UnbreakableSpeedDecreaseSpellHandler.SendUpdates(Owner);
 
-                    (SpellHandler as SpellHandler).MessageToLiving(Owner, SpellHandler.Spell.Message1,
-                        eChatType.CT_Spell);
-                    Message.SystemToArea(Owner, Util.MakeSentence(SpellHandler.Spell.Message2, Owner.GetName(0, true)),
-                        eChatType.CT_Spell, Owner);
                 }
                 else
                 {
                     bool interruptSent = false;
+                    if (Caster is GamePlayer {CharacterClass: ClassChampion})
+                        Effectiveness = 2;
                     foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
                     {
                         //Console.WriteLine($"Debuffing {prop.ToString()}");
@@ -80,6 +98,10 @@ namespace DOL.GS
                 }
             }
 
+            // "Your agility is suppressed!"
+            // "{0} seems uncoordinated!"
+            OnEffectStartsMsg(Owner, true, true, true);
+            
             //IsBuffActive = true;
         }
 
@@ -87,6 +109,8 @@ namespace DOL.GS
         {
             if (EffectType == eEffect.StrConDebuff || EffectType == eEffect.DexQuiDebuff)
             {
+                if (Caster is GamePlayer {CharacterClass: ClassChampion})
+                    Effectiveness = 2;
                 foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
                 {
                     //Console.WriteLine($"Canceling {prop.ToString()} on {e.Owner}.");
@@ -103,11 +127,21 @@ namespace DOL.GS
                     //}
 
                     //e.Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, e.SpellHandler.Spell.ID);
+
+                    var speedDebuff = Owner.effectListComponent.GetBestDisabledSpellEffect(eEffect.MovementSpeedDebuff);
+
+                    if (speedDebuff != null)
+                    {
+                        EffectService.RequestEnableEffect(speedDebuff);
+                    }
+
                     Owner.BuffBonusMultCategory1.Remove((int) eProperty.MaxSpeed, EffectType);
                     UnbreakableSpeedDecreaseSpellHandler.SendUpdates(Owner);
                 }
                 else
                 {
+                    if (Caster is GamePlayer {CharacterClass: ClassChampion})
+                        Effectiveness = 2;
                     foreach (var prop in EffectService.GetPropertiesFromEffect(EffectType))
                     {
                         //Console.WriteLine($"Canceling {prop.ToString()} on {e.Owner}.");
@@ -127,6 +161,10 @@ namespace DOL.GS
             {
                 Owner.StartHealthRegeneration();
             }
+            
+            // "Your coordination returns."
+            // "{0}'s coordination returns."
+            OnEffectExpiresMsg(Owner, true, false, true);
 
             IsBuffActive = false;
         }
@@ -134,14 +172,18 @@ namespace DOL.GS
         private static void ApplyBonus(GameLiving owner, eBuffBonusCategory BonusCat, eProperty Property, double Value,
             double Effectiveness, bool IsSubstracted)
         {
-            int effectiveValue = (int) (Value * Effectiveness);
+            
+            int effectiveValue = (int) Value;
+
+            if (Property != eProperty.FatigueConsumption)
+                effectiveValue = (int)(Value * Effectiveness);
 
             IPropertyIndexer tblBonusCat;
             if (Property != eProperty.Undefined)
             {
                 tblBonusCat = GetBonusCategory(owner, BonusCat);
 
-                //Console.WriteLine($"Value before: {tblBonusCat[(int)Property]}");
+                //Console.WriteLine($"Value before: {tblBonusCat[(int)Property]} effectiveness {Effectiveness}");
                 if (IsSubstracted)
                 {
                     tblBonusCat[(int) Property] -= effectiveValue;

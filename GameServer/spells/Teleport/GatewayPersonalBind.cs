@@ -54,7 +54,7 @@ namespace DOL.GS.Spells
 			if (player == null)
 				return false;
 
-			if ((player.CurrentZone.IsRvR || player.CurrentRegion.IsInstance) && GameServer.Instance.Configuration.ServerType != eGameServerType.GST_PvE)
+			if (((player.CurrentZone != null && player.CurrentZone.IsRvR) || ( player.CurrentRegion != null && player.CurrentRegion.IsInstance)) && GameServer.Instance.Configuration.ServerType != eGameServerType.GST_PvE)
 			{
 				// Actual live message is: You can't use that item!
 				player.Out.SendMessage("You can't use that here!", DOL.GS.PacketHandler.eChatType.CT_System, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
@@ -70,6 +70,11 @@ namespace DOL.GS.Spells
 			if (player.InCombat || GameRelic.IsPlayerCarryingRelic(player))
 			{
 				player.Out.SendMessage("You have been in combat recently and cannot use this item!", DOL.GS.PacketHandler.eChatType.CT_System, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
+				return false;
+			}
+			if(player.CurrentRegion.ID == 497 && player.Client.Account.PrivLevel == 1)
+            {
+				player.Out.SendMessage("You can't use Bind Stone in Jail!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return false;
 			}
 

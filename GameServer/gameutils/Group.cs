@@ -23,6 +23,7 @@ using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
 using DOL.Database;
+using DOL.GS.API;
 
 namespace DOL.GS
 {
@@ -174,6 +175,12 @@ namespace DOL.GS
 		{
 			return m_groupMembers.OfType<GamePlayer>().ToArray();
 		}
+
+		public ICollection<GamePlayer> GetNearbyPlayersInTheGroup(GamePlayer source)
+		{
+			return m_groupMembers.OfType<GamePlayer>().Where(groupmate =>
+				source.GetDistance(groupmate) <= WorldMgr.MAX_EXPFORKILL_DISTANCE).ToArray();
+		}
 		
 		/// <summary>
 		/// Adds a living to the group
@@ -196,6 +203,9 @@ namespace DOL.GS
 			                                      }))
 				return false;
 
+			if (living is GamePlayer p && p.DuelTarget != null) 
+				p.DuelStop();
+			
 			UpdateGroupWindow();
 			// update icons of joined player to everyone in the group
 			UpdateMember(living, true, false);
@@ -312,7 +322,7 @@ namespace DOL.GS
 			m_groupMembers.FreezeWhile(l => {
 			                           	for (byte ind = 0; ind < l.Count; ind++)
 			                           		l[ind].GroupIndex = ind;
-			                           });
+			});
 		}
 		
 		/// <summary>
@@ -344,6 +354,61 @@ namespace DOL.GS
 			}
 
 			return allOk;
+		}
+		
+		
+		/// <summary>
+		/// Makes living current leader of the group
+		/// </summary>
+		/// <param name="living"></param>
+		/// <returns></returns>
+		public bool SwitchPlayers(GameLiving source, GameLiving target)
+		{
+			bool allOk = m_groupMembers.FreezeWhile<bool>(l => {
+				if (!l.Contains(source))
+					return false;
+				if (!l.Contains(target))
+					return false;
+			                                        	
+				byte sourceInd = source.GroupIndex;
+				byte targetInd = target.GroupIndex;
+				
+				source.GroupIndex = targetInd;
+				l[targetInd] = source;
+				target.GroupIndex = sourceInd;
+				l[sourceInd] = target;
+
+				return true;
+			});
+			if (allOk)
+			{
+				// all went ok
+				UpdateGroupWindow();
+				SendMessageToGroupMembers(string.Format("Switched group member {0} with {1}", source.Name, target.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+			}
+
+			return allOk;
+		}
+
+		public GamePlayer GetMemberByIndex(byte index)
+		{
+			GamePlayer player = m_groupMembers.FreezeWhile<GamePlayer>(l =>
+			{
+
+				GamePlayer player = l[index] as GamePlayer;
+				
+				if (player == null)
+					return null;
+
+				return player;
+			});
+			if (player != null)
+			{
+				// all went ok
+				UpdateGroupWindow(); 
+			}
+
+			return player;
 		}
 		#endregion
 		
@@ -495,15 +560,7 @@ namespace DOL.GS
 				BattleGroup mybattlegroup = (BattleGroup)player.TempProperties.getProperty<object>(BattleGroup.BATTLEGROUP_PROPERTY, null);
 				foreach (GamePlayer plr in m_groupMembers)
 				{
-					if (mybattlegroup.IsInTheBattleGroup(plr))
-					{
-						if ((bool)mybattlegroup.Members[plr] == true)
-						{
-							text.Append("<Leader> ");
-						}
-					}
-					text.Append("(" + plr.CharacterClass.Name + ")");
-					text.Append(plr.Name + " ");
+					text.Append($"{plr.Name} ({plr.CharacterClass.Name}) ");
 				}
 				return text.ToString();
 			}
