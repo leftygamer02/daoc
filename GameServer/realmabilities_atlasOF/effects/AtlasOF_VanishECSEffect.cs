@@ -3,26 +3,28 @@ using DOL.Database;
 using DOL.GS.PacketHandler;
 using DOL.GS.Spells;
 
-namespace DOL.GS.Effects
+namespace DOL.GS.Effects;
+
+public class AtlasOF_VanishECSEffect : ECSGameAbilityEffect
 {
-    public class AtlasOF_VanishECSEffect : ECSGameAbilityEffect
+    public new SpellHandler SpellHandler;
+
+    public AtlasOF_VanishECSEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public new SpellHandler SpellHandler;
-        public AtlasOF_VanishECSEffect(ECSGameEffectInitParams initParams)
-            : base(initParams)
-        {
-            EffectType = eEffect.Vanish;
-            EffectService.RequestStartEffect(this);
-        }
+        EffectType = eEffect.Vanish;
+        EffectService.RequestStartEffect(this);
+    }
 
-        public override ushort Icon { get { return 4280; } }
-        public override string Name { get { return "Vanish"; } }
-        public override bool HasPositiveEffect { get { return true; } }
+    public override ushort Icon => 4280;
 
-        public override void OnStartEffect()
-        {
-            OwnerPlayer.Stealth(true);
-            base.OnStartEffect();
-        }
+    public override string Name => "Vanish";
+
+    public override bool HasPositiveEffect => true;
+
+    public override void OnStartEffect()
+    {
+        OwnerPlayer.Stealth(true);
+        base.OnStartEffect();
     }
 }

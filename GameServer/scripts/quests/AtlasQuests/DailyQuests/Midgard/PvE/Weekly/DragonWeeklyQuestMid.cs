@@ -11,345 +11,340 @@ using DOL.GS.PlayerTitles;
 using DOL.GS.Quests;
 using log4net;
 
-namespace DOL.GS.WeeklyQuest.Midgard
+namespace DOL.GS.WeeklyQuest.Midgard;
+
+public class DragonWeeklyQuestMid : Quests.WeeklyQuest
 {
-	public class DragonWeeklyQuestMid : Quests.WeeklyQuest
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		private const string DRAGON_NAME = "Gjalpinulva";
+    private const string DRAGON_NAME = "Gjalpinulva";
 
-		private const string questTitle = "[Weekly] Extinction of " + DRAGON_NAME;
-		private const int minimumLevel = 45;
-		private const int maximumLevel = 50;
-		
-		// Kill Goal
-		private const int MAX_KILLED = 1;
-		// Quest Counter
-		private int DragonKilled = 0;
-		
-		private static GameNPC Isaac = null; // Start NPC
+    private const string questTitle = "[Weekly] Extinction of " + DRAGON_NAME;
+    private const int minimumLevel = 45;
+    private const int maximumLevel = 50;
 
-		// Constructors
-		public DragonWeeklyQuestMid() : base()
-		{
-		}
+    // Kill Goal
+    private const int MAX_KILLED = 1;
 
-		public DragonWeeklyQuestMid(GamePlayer questingPlayer) : base(questingPlayer)
-		{
-		}
+    // Quest Counter
+    private int DragonKilled = 0;
 
-		public DragonWeeklyQuestMid(GamePlayer questingPlayer, int step) : base(questingPlayer, step)
-		{
-		}
+    private static GameNPC Isaac = null; // Start NPC
 
-		public DragonWeeklyQuestMid(GamePlayer questingPlayer, DBQuest dbQuest) : base(questingPlayer, dbQuest)
-		{
-		}
+    // Constructors
+    public DragonWeeklyQuestMid() : base()
+    {
+    }
 
-		public override int Level
-		{
-			get
-			{
-				// Quest Level
-				return minimumLevel;
-			}
-		}
-		
-		[ScriptLoadedEvent]
-		public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
-		{
-			if (!ServerProperties.Properties.LOAD_QUESTS)
-				return;
-			
+    public DragonWeeklyQuestMid(GamePlayer questingPlayer) : base(questingPlayer)
+    {
+    }
 
-			#region defineNPCs
+    public DragonWeeklyQuestMid(GamePlayer questingPlayer, int step) : base(questingPlayer, step)
+    {
+    }
 
-			GameNPC[] npcs = WorldMgr.GetNPCsByName("Isaac", eRealm.Midgard);
+    public DragonWeeklyQuestMid(GamePlayer questingPlayer, DBQuest dbQuest) : base(questingPlayer, dbQuest)
+    {
+    }
 
-			if (npcs.Length > 0)
-				foreach (GameNPC npc in npcs)
-					if (npc.CurrentRegionID == 100 && npc.X == 766590 && npc.Y == 670407)
-					{
-						Isaac = npc;
-						break;
-					}
+    public override int Level =>
+        // Quest Level
+        minimumLevel;
 
-			if (Isaac == null)
-			{
-				if (log.IsWarnEnabled)
-					log.Warn("Could not find Isaac , creating it ...");
-				Isaac = new GameNPC();
-				Isaac.Model = 774;
-				Isaac.Name = "Isaac";
-				Isaac.GuildName = "Advisor to the King";
-				Isaac.Realm = eRealm.Midgard;
-				Isaac.CurrentRegionID = 100;
-				Isaac.Size = 50;
-				Isaac.Level = 59;
-				//Castle Sauvage Location
-				Isaac.X = 766590;
-				Isaac.Y = 670407;
-				Isaac.Z = 5736;
-				Isaac.Heading = 2358;
-				Isaac.AddToWorld();
-				if (SAVE_INTO_DATABASE)
-				{
-					Isaac.SaveIntoDatabase();
-				}
-			}
+    [ScriptLoadedEvent]
+    public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
+    {
+        if (!ServerProperties.Properties.LOAD_QUESTS)
+            return;
 
-			#endregion
 
-			#region defineItems
-			#endregion
+        #region defineNPCs
 
-			#region defineObject
-			#endregion
+        var npcs = WorldMgr.GetNPCsByName("Isaac", eRealm.Midgard);
 
-			GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest, new DOLEventHandler(SubscribeQuest));
-			GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, new DOLEventHandler(SubscribeQuest));
+        if (npcs.Length > 0)
+            foreach (var npc in npcs)
+                if (npc.CurrentRegionID == 100 && npc.X == 766590 && npc.Y == 670407)
+                {
+                    Isaac = npc;
+                    break;
+                }
 
-			GameEventMgr.AddHandler(Isaac, GameObjectEvent.Interact, new DOLEventHandler(TalkToIsaac));
-			GameEventMgr.AddHandler(Isaac, GameLivingEvent.WhisperReceive, new DOLEventHandler(TalkToIsaac));
+        if (Isaac == null)
+        {
+            if (log.IsWarnEnabled)
+                log.Warn("Could not find Isaac , creating it ...");
+            Isaac = new GameNPC();
+            Isaac.Model = 774;
+            Isaac.Name = "Isaac";
+            Isaac.GuildName = "Advisor to the King";
+            Isaac.Realm = eRealm.Midgard;
+            Isaac.CurrentRegionID = 100;
+            Isaac.Size = 50;
+            Isaac.Level = 59;
+            //Castle Sauvage Location
+            Isaac.X = 766590;
+            Isaac.Y = 670407;
+            Isaac.Z = 5736;
+            Isaac.Heading = 2358;
+            Isaac.AddToWorld();
+            if (SAVE_INTO_DATABASE) Isaac.SaveIntoDatabase();
+        }
 
-			/* Now we bring to Herou the possibility to give this quest to players */
-			Isaac.AddQuestToGive(typeof (DragonWeeklyQuestMid));
+        #endregion
 
-			if (log.IsInfoEnabled)
-				log.Info("Quest \"" + questTitle + "\" initialized");
-		}
+        #region defineItems
 
-		[ScriptUnloadedEvent]
-		public static void ScriptUnloaded(DOLEvent e, object sender, EventArgs args)
-		{
-			//if not loaded, don't worry
-			if (Isaac == null)
-				return;
-			// remove handlers
-			GameEventMgr.RemoveHandler(GamePlayerEvent.AcceptQuest, new DOLEventHandler(SubscribeQuest));
-			GameEventMgr.RemoveHandler(GamePlayerEvent.DeclineQuest, new DOLEventHandler(SubscribeQuest));
+        #endregion
 
-			GameEventMgr.RemoveHandler(Isaac, GameObjectEvent.Interact, new DOLEventHandler(TalkToIsaac));
-			GameEventMgr.RemoveHandler(Isaac, GameLivingEvent.WhisperReceive, new DOLEventHandler(TalkToIsaac));
+        #region defineObject
 
-			/* Now we remove to Isaac the possibility to give this quest to players */
-			Isaac.RemoveQuestToGive(typeof (DragonWeeklyQuestMid));
-		}
+        #endregion
 
-		private static void TalkToIsaac(DOLEvent e, object sender, EventArgs args)
-		{
-			//We get the player from the event arguments and check if he qualifies		
-			GamePlayer player = ((SourceEventArgs) args).Source as GamePlayer;
-			if (player == null)
-				return;
+        GameEventMgr.AddHandler(GamePlayerEvent.AcceptQuest, new DOLEventHandler(SubscribeQuest));
+        GameEventMgr.AddHandler(GamePlayerEvent.DeclineQuest, new DOLEventHandler(SubscribeQuest));
 
-			if(Isaac.CanGiveQuest(typeof (DragonWeeklyQuestMid), player)  <= 0)
-				return;
+        GameEventMgr.AddHandler(Isaac, GameObjectEvent.Interact, new DOLEventHandler(TalkToIsaac));
+        GameEventMgr.AddHandler(Isaac, GameLivingEvent.WhisperReceive, new DOLEventHandler(TalkToIsaac));
 
-			//We also check if the player is already doing the quest
-			DragonWeeklyQuestMid quest = player.IsDoingQuest(typeof (DragonWeeklyQuestMid)) as DragonWeeklyQuestMid;
+        /* Now we bring to Herou the possibility to give this quest to players */
+        Isaac.AddQuestToGive(typeof(DragonWeeklyQuestMid));
 
-			if (e == GameObjectEvent.Interact)
-			{
-				if (quest != null)
-				{
-					switch (quest.Step)
-					{
-						case 1:
-							Isaac.SayTo(player, player.Name + ", please travel to Malmohus and kill the dragon for Midgard!");
-							break;
-						case 2:
-							Isaac.SayTo(player, "Hello " + player.Name + ", did you [slay the dragon] and return for your reward?");
-							break;
-					}
-				}
-				else
-				{
-					Isaac.SayTo(player, "Hello "+ player.Name +", I am Isaac. I bring sad news today. " + DRAGON_NAME + " razed a small settlement in Malmohus last night. \n" +
-					                    "Please, help the king avenge their deaths and keep Midgard safe from " + DRAGON_NAME +  "\'s influence. \n\n"+
-					                    "Can you support Midgard and [kill the dragon]?");
-				}
-			}
-				// The player whispered to the NPC
-			else if (e == GameLivingEvent.WhisperReceive)
-			{
-				WhisperReceiveEventArgs wArgs = (WhisperReceiveEventArgs) args;
-				if (quest == null)
-				{
-					switch (wArgs.Text)
-					{
-						case "kill the dragon":
-							player.Out.SendQuestSubscribeCommand(Isaac, QuestMgr.GetIDForQuestType(typeof(DragonWeeklyQuestMid)), "Will you help Isaac "+questTitle+"?");
-							break;
-					}
-				}
-				else
-				{
-					switch (wArgs.Text)
-					{
-						case "slay the dragon":
-							if (quest.Step == 2)
-							{
-								player.Out.SendMessage("Thank you for your contribution!", eChatType.CT_Chat, eChatLoc.CL_PopupWindow);
-								quest.FinishQuest();
-							}
-							break;
-						case "abort":
-							player.Out.SendCustomDialog("Do you really want to abort this quest, \nall items gained during quest will be lost?", new CustomDialogResponse(CheckPlayerAbortQuest));
-							break;
-					}
-				}
-			}
-		}
-		
-		public override bool CheckQuestQualification(GamePlayer player)
-		{
-			// if the player is already doing the quest his level is no longer of relevance
-			if (player.IsDoingQuest(typeof (DragonWeeklyQuestMid)) != null)
-				return true;
+        if (log.IsInfoEnabled)
+            log.Info("Quest \"" + questTitle + "\" initialized");
+    }
 
-			// This checks below are only performed is player isn't doing quest already
+    [ScriptUnloadedEvent]
+    public static void ScriptUnloaded(DOLEvent e, object sender, EventArgs args)
+    {
+        //if not loaded, don't worry
+        if (Isaac == null)
+            return;
+        // remove handlers
+        GameEventMgr.RemoveHandler(GamePlayerEvent.AcceptQuest, new DOLEventHandler(SubscribeQuest));
+        GameEventMgr.RemoveHandler(GamePlayerEvent.DeclineQuest, new DOLEventHandler(SubscribeQuest));
 
-			//if (player.HasFinishedQuest(typeof(Academy_47)) == 0) return false;
+        GameEventMgr.RemoveHandler(Isaac, GameObjectEvent.Interact, new DOLEventHandler(TalkToIsaac));
+        GameEventMgr.RemoveHandler(Isaac, GameLivingEvent.WhisperReceive, new DOLEventHandler(TalkToIsaac));
 
-			//if (!CheckPartAccessible(player,typeof(CityOfCamelot)))
-			//	return false;
+        /* Now we remove to Isaac the possibility to give this quest to players */
+        Isaac.RemoveQuestToGive(typeof(DragonWeeklyQuestMid));
+    }
 
-			if (player.Level < minimumLevel || player.Level > maximumLevel)
-				return false;
+    private static void TalkToIsaac(DOLEvent e, object sender, EventArgs args)
+    {
+        //We get the player from the event arguments and check if he qualifies		
+        var player = ((SourceEventArgs) args).Source as GamePlayer;
+        if (player == null)
+            return;
 
-			return true;
-		}
+        if (Isaac.CanGiveQuest(typeof(DragonWeeklyQuestMid), player) <= 0)
+            return;
 
-		private static void CheckPlayerAbortQuest(GamePlayer player, byte response)
-		{
-			DragonWeeklyQuestMid quest = player.IsDoingQuest(typeof (DragonWeeklyQuestMid)) as DragonWeeklyQuestMid;
+        //We also check if the player is already doing the quest
+        var quest = player.IsDoingQuest(typeof(DragonWeeklyQuestMid)) as DragonWeeklyQuestMid;
 
-			if (quest == null)
-				return;
+        if (e == GameObjectEvent.Interact)
+        {
+            if (quest != null)
+                switch (quest.Step)
+                {
+                    case 1:
+                        Isaac.SayTo(player,
+                            player.Name + ", please travel to Malmohus and kill the dragon for Midgard!");
+                        break;
+                    case 2:
+                        Isaac.SayTo(player,
+                            "Hello " + player.Name + ", did you [slay the dragon] and return for your reward?");
+                        break;
+                }
+            else
+                Isaac.SayTo(player, "Hello " + player.Name + ", I am Isaac. I bring sad news today. " +
+                                    DRAGON_NAME + " razed a small settlement in Malmohus last night. \n" +
+                                    "Please, help the king avenge their deaths and keep Midgard safe from " +
+                                    DRAGON_NAME + "\'s influence. \n\n" +
+                                    "Can you support Midgard and [kill the dragon]?");
+        }
+        // The player whispered to the NPC
+        else if (e == GameLivingEvent.WhisperReceive)
+        {
+            var wArgs = (WhisperReceiveEventArgs) args;
+            if (quest == null)
+                switch (wArgs.Text)
+                {
+                    case "kill the dragon":
+                        player.Out.SendQuestSubscribeCommand(Isaac,
+                            QuestMgr.GetIDForQuestType(typeof(DragonWeeklyQuestMid)),
+                            "Will you help Isaac " + questTitle + "?");
+                        break;
+                }
+            else
+                switch (wArgs.Text)
+                {
+                    case "slay the dragon":
+                        if (quest.Step == 2)
+                        {
+                            player.Out.SendMessage("Thank you for your contribution!", eChatType.CT_Chat,
+                                eChatLoc.CL_PopupWindow);
+                            quest.FinishQuest();
+                        }
 
-			if (response == 0x00)
-			{
-				SendSystemMessage(player, "Good, now go out there and scout the dragon!");
-			}
-			else
-			{
-				SendSystemMessage(player, "Aborting Quest " + questTitle + ". You can start over again if you want.");
-				quest.AbortQuest();
-			}
-		}
+                        break;
+                    case "abort":
+                        player.Out.SendCustomDialog(
+                            "Do you really want to abort this quest, \nall items gained during quest will be lost?",
+                            new CustomDialogResponse(CheckPlayerAbortQuest));
+                        break;
+                }
+        }
+    }
 
-		private static void SubscribeQuest(DOLEvent e, object sender, EventArgs args)
-		{
-			QuestEventArgs qargs = args as QuestEventArgs;
-			if (qargs == null)
-				return;
+    public override bool CheckQuestQualification(GamePlayer player)
+    {
+        // if the player is already doing the quest his level is no longer of relevance
+        if (player.IsDoingQuest(typeof(DragonWeeklyQuestMid)) != null)
+            return true;
 
-			if (qargs.QuestID != QuestMgr.GetIDForQuestType(typeof(DragonWeeklyQuestMid)))
-				return;
+        // This checks below are only performed is player isn't doing quest already
 
-			if (e == GamePlayerEvent.AcceptQuest)
-				CheckPlayerAcceptQuest(qargs.Player, 0x01);
-			else if (e == GamePlayerEvent.DeclineQuest)
-				CheckPlayerAcceptQuest(qargs.Player, 0x00);
-		}
+        //if (player.HasFinishedQuest(typeof(Academy_47)) == 0) return false;
 
-		private static void CheckPlayerAcceptQuest(GamePlayer player, byte response)
-		{
-			if(Isaac.CanGiveQuest(typeof (DragonWeeklyQuestMid), player)  <= 0)
-				return;
+        //if (!CheckPartAccessible(player,typeof(CityOfCamelot)))
+        //	return false;
 
-			if (player.IsDoingQuest(typeof (DragonWeeklyQuestMid)) != null)
-				return;
+        if (player.Level < minimumLevel || player.Level > maximumLevel)
+            return false;
 
-			if (response == 0x00)
-			{
-				player.Out.SendMessage("Thank you for helping Atlas.", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
-			}
-			else
-			{
-				//Check if we can add the quest!
-				if (!Isaac.GiveQuest(typeof (DragonWeeklyQuestMid), player, 1))
-					return;
+        return true;
+    }
 
-				Isaac.SayTo(player, "Please, find the dragon in Malmohus and defend our realm.");
+    private static void CheckPlayerAbortQuest(GamePlayer player, byte response)
+    {
+        var quest = player.IsDoingQuest(typeof(DragonWeeklyQuestMid)) as DragonWeeklyQuestMid;
 
-			}
-		}
+        if (quest == null)
+            return;
 
-		//Set quest name
-		public override string Name
-		{
-			get { return questTitle; }
-		}
+        if (response == 0x00)
+        {
+            SendSystemMessage(player, "Good, now go out there and scout the dragon!");
+        }
+        else
+        {
+            SendSystemMessage(player, "Aborting Quest " + questTitle + ". You can start over again if you want.");
+            quest.AbortQuest();
+        }
+    }
 
-		// Define Steps
-		public override string Description
-		{
-			get
-			{
-				switch (Step)
-				{
-					case 1:
-						return "Travel to Malmohus and slay " + DRAGON_NAME + " for Midgard. \nKilled: " + DRAGON_NAME + " ("+ DragonKilled +" | " + MAX_KILLED + ")";
-					case 2:
-						return "Return to Isaac for your Reward.";
-				}
-				return base.Description;
-			}
-		}
+    private static void SubscribeQuest(DOLEvent e, object sender, EventArgs args)
+    {
+        var qargs = args as QuestEventArgs;
+        if (qargs == null)
+            return;
 
-		public override void Notify(DOLEvent e, object sender, EventArgs args)
-		{
-			GamePlayer player = sender as GamePlayer;
+        if (qargs.QuestID != QuestMgr.GetIDForQuestType(typeof(DragonWeeklyQuestMid)))
+            return;
 
-			if (player?.IsDoingQuest(typeof(DragonWeeklyQuestMid)) == null)
-				return;
+        if (e == GamePlayerEvent.AcceptQuest)
+            CheckPlayerAcceptQuest(qargs.Player, 0x01);
+        else if (e == GamePlayerEvent.DeclineQuest)
+            CheckPlayerAcceptQuest(qargs.Player, 0x00);
+    }
 
-			if (sender != m_questPlayer)
-				return;
+    private static void CheckPlayerAcceptQuest(GamePlayer player, byte response)
+    {
+        if (Isaac.CanGiveQuest(typeof(DragonWeeklyQuestMid), player) <= 0)
+            return;
 
-			if (Step != 1 || e != GameLivingEvent.EnemyKilled) return;
-			EnemyKilledEventArgs gArgs = (EnemyKilledEventArgs) args;
+        if (player.IsDoingQuest(typeof(DragonWeeklyQuestMid)) != null)
+            return;
 
-			if (gArgs.Target.Name.ToLower() != DRAGON_NAME.ToLower()) return;
-			DragonKilled = 1;
-			player.Out.SendMessage("[Weekly] You killed " + DRAGON_NAME + ": (" + DragonKilled + " | " + MAX_KILLED + ")", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-			player.Out.SendQuestUpdate(this);
-					
-			if (DragonKilled >= MAX_KILLED)
-			{
-				// FinishQuest or go back to Isaac
-				Step = 2;
-			}
+        if (response == 0x00)
+        {
+            player.Out.SendMessage("Thank you for helping Atlas.", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+        }
+        else
+        {
+            //Check if we can add the quest!
+            if (!Isaac.GiveQuest(typeof(DragonWeeklyQuestMid), player, 1))
+                return;
 
-		}
-		
-		public override string QuestPropertyKey
-		{
-			get => "DragonWeeklyQuestMid";
-			set { ; }
-		}
-		
-		public override void LoadQuestParameters()
-		{
-		}
+            Isaac.SayTo(player, "Please, find the dragon in Malmohus and defend our realm.");
+        }
+    }
 
-		public override void SaveQuestParameters()
-		{
-		}
+    //Set quest name
+    public override string Name => questTitle;
 
-		public override void FinishQuest()
-		{
-			m_questPlayer.ForceGainExperience((m_questPlayer.ExperienceForNextLevel - m_questPlayer.ExperienceForCurrentLevel));
-			m_questPlayer.AddMoney(Money.GetMoney(0,0,m_questPlayer.Level * 5,32,Util.Random(50)), "You receive {0} as a reward.");
-			AtlasROGManager.GenerateReward(m_questPlayer, 1500);
-			DragonKilled = 0;
-			base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
-		}
-	}
+    // Define Steps
+    public override string Description
+    {
+        get
+        {
+            switch (Step)
+            {
+                case 1:
+                    return "Travel to Malmohus and slay " + DRAGON_NAME + " for Midgard. \nKilled: " + DRAGON_NAME +
+                           " (" + DragonKilled + " | " + MAX_KILLED + ")";
+                case 2:
+                    return "Return to Isaac for your Reward.";
+            }
+
+            return base.Description;
+        }
+    }
+
+    public override void Notify(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = sender as GamePlayer;
+
+        if (player?.IsDoingQuest(typeof(DragonWeeklyQuestMid)) == null)
+            return;
+
+        if (sender != m_questPlayer)
+            return;
+
+        if (Step != 1 || e != GameLivingEvent.EnemyKilled) return;
+        var gArgs = (EnemyKilledEventArgs) args;
+
+        if (gArgs.Target.Name.ToLower() != DRAGON_NAME.ToLower()) return;
+        DragonKilled = 1;
+        player.Out.SendMessage(
+            "[Weekly] You killed " + DRAGON_NAME + ": (" + DragonKilled + " | " + MAX_KILLED + ")",
+            eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
+        player.Out.SendQuestUpdate(this);
+
+        if (DragonKilled >= MAX_KILLED)
+            // FinishQuest or go back to Isaac
+            Step = 2;
+    }
+
+    public override string QuestPropertyKey
+    {
+        get => "DragonWeeklyQuestMid";
+        set { ; }
+    }
+
+    public override void LoadQuestParameters()
+    {
+    }
+
+    public override void SaveQuestParameters()
+    {
+    }
+
+    public override void FinishQuest()
+    {
+        m_questPlayer.ForceGainExperience(m_questPlayer.ExperienceForNextLevel -
+                                          m_questPlayer.ExperienceForCurrentLevel);
+        m_questPlayer.AddMoney(Money.GetMoney(0, 0, m_questPlayer.Level * 5, 32, Util.Random(50)),
+            "You receive {0} as a reward.");
+        AtlasROGManager.GenerateReward(m_questPlayer, 1500);
+        DragonKilled = 0;
+        base.FinishQuest(); //Defined in Quest, changes the state, stores in DB etc ...
+    }
 }

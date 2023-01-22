@@ -16,27 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&sprint",
+    ePrivLevel.Player,
+    "Toggles sprint mode",
+    "/sprint")]
+public class SprintCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&sprint",
-		ePrivLevel.Player,
-		"Toggles sprint mode",
-		"/sprint")]
-	public class SprintCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (client.Player.HasAbility(Abilities.Sprint))
-			{
-				client.Player.Sprint(!client.Player.IsSprinting);
-			}
-			else
-			{
-				client.Out.SendMessage("You do not have a sprint ability.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-			}
-		}
-	}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (client.Player.HasAbility(Abilities.Sprint))
+            client.Player.Sprint(!client.Player.IsSprinting);
+        else
+            client.Out.SendMessage("You do not have a sprint ability.", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+    }
 }

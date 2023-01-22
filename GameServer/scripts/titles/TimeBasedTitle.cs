@@ -18,28 +18,38 @@
  */
 
 using System;
-
 using DOL.Events;
 
-namespace GameServerScripts.Titles
+namespace GameServerScripts.Titles;
+
+/// <summary>
+/// "Veteran" title granted to all chars that play for at least 180 days.
+/// </summary>
+public class VeteranTitle : TranslatedNoGenderGenericEventPlayerTitle
 {
-	/// <summary>
-	/// "Veteran" title granted to all chars that play for at least 180 days.
-	/// </summary>
-	public class VeteranTitle : TranslatedNoGenderGenericEventPlayerTitle
-	{
-		public override DOLEvent Event { get { return GamePlayerEvent.GameEntered; }}
-		protected override Tuple<string, string> DescriptionValue { get { return new Tuple<string, string>("Titles.Time.Character.Veteran", "Titles.Time.Character.Veteran"); }}
-		protected override Func<DOL.GS.GamePlayer, bool> SuitableMethod { get { return player => DateTime.Now.Subtract(player.CreationDate).TotalDays >= 178; }} // ~half year
-	}
-	
-	/// <summary>
-	/// "Elder" title granted to all chars on all accounts that created for at least one year.
-	/// </summary>
-	public class ElderTitle : TranslatedNoGenderGenericEventPlayerTitle
-	{
-		public override DOLEvent Event { get { return GamePlayerEvent.GameEntered; }}
-		protected override Tuple<string, string> DescriptionValue { get { return new Tuple<string, string>("Titles.Time.Account.ElderTitle", "Titles.Time.Account.ElderTitle"); }}
-		protected override Func<DOL.GS.GamePlayer, bool> SuitableMethod { get { return player => DateTime.Now.Subtract(player.Client.Account.CreationDate).TotalDays >= 365; }} // a year
-	}
+    public override DOLEvent Event => GamePlayerEvent.GameEntered;
+
+    protected override Tuple<string, string> DescriptionValue =>
+        new Tuple<string, string>("Titles.Time.Character.Veteran", "Titles.Time.Character.Veteran");
+
+    protected override Func<DOL.GS.GamePlayer, bool> SuitableMethod
+    {
+        get { return player => DateTime.Now.Subtract(player.CreationDate).TotalDays >= 178; }
+    } // ~half year
+}
+
+/// <summary>
+/// "Elder" title granted to all chars on all accounts that created for at least one year.
+/// </summary>
+public class ElderTitle : TranslatedNoGenderGenericEventPlayerTitle
+{
+    public override DOLEvent Event => GamePlayerEvent.GameEntered;
+
+    protected override Tuple<string, string> DescriptionValue =>
+        new Tuple<string, string>("Titles.Time.Account.ElderTitle", "Titles.Time.Account.ElderTitle");
+
+    protected override Func<DOL.GS.GamePlayer, bool> SuitableMethod
+    {
+        get { return player => DateTime.Now.Subtract(player.Client.Account.CreationDate).TotalDays >= 365; }
+    } // a year
 }

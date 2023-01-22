@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  *
  * This program is free software; you can redistribute it and/or
@@ -16,29 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Reflection;
 using DOL.GS.Quests;
 using DOL.Database;
 using log4net;
 
-namespace DOL.GS.PacketHandler
-{
-	[PacketLib(195, GameClient.eClientVersion.Version195)]
-	public class PacketLib195 : PacketLib194
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+namespace DOL.GS.PacketHandler;
 
-		/// <summary>
-		/// Constructs a new PacketLib for Version 1.95 clients
-		/// </summary>
-		/// <param name="client">the gameclient this lib is associated with</param>
-		public PacketLib195(GameClient client)
-			: base(client)
-		{
-		}
-	}
+[PacketLib(195, GameClient.eClientVersion.Version195)]
+public class PacketLib195 : PacketLib194
+{
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+    /// <summary>
+    /// Constructs a new PacketLib for Version 1.95 clients
+    /// </summary>
+    /// <param name="client">the gameclient this lib is associated with</param>
+    public PacketLib195(GameClient client)
+        : base(client)
+    {
+    }
 }

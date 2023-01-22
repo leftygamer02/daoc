@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Reflection;
 using DOL.Database;
 using DOL.GS.Effects;
@@ -25,69 +26,71 @@ using log4net;
 using DOL.AI.Brain;
 using System;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Spell to change up to 3 property bonuses at once
+/// in one their specific given bonus category
+/// </summary>
+public abstract class PropertyChangingSpell : SpellHandler
 {
-	/// <summary>
-	/// Spell to change up to 3 property bonuses at once
-	/// in one their specific given bonus category
-	/// </summary>
-	
-	public abstract class PropertyChangingSpell : SpellHandler
-	{
-		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+    private static readonly ILog log =
+        LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public override void CreateECSEffect(ECSGameEffectInitParams initParams)
-		{
-			new StatBuffECSEffect(initParams);
-		}
+    public override void CreateECSEffect(ECSGameEffectInitParams initParams)
+    {
+        new StatBuffECSEffect(initParams);
+    }
 
-		/// <summary>
-		/// Execute property changing spell
-		/// </summary>
-		/// <param name="target"></param>
-		public override void FinishSpellCast(GameLiving target)
-		{
-			m_caster.Mana -= PowerCost(target);
-			base.FinishSpellCast(target);
-		}
+    /// <summary>
+    /// Execute property changing spell
+    /// </summary>
+    /// <param name="target"></param>
+    public override void FinishSpellCast(GameLiving target)
+    {
+        m_caster.Mana -= PowerCost(target);
+        base.FinishSpellCast(target);
+    }
 
-		/// <summary>
-		/// Calculates the effect duration in milliseconds
-		/// </summary>
-		/// <param name="target">The effect target</param>
-		/// <param name="effectiveness">The effect effectiveness</param>
-		/// <returns>The effect duration in milliseconds</returns>
-		protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
-		{
-			double duration = Spell.Duration;
-			if (HasPositiveEffect)
-			{	
-				duration *= (1.0 + m_caster.GetModified(eProperty.SpellDuration) * 0.01);
-				if (Spell.InstrumentRequirement != 0)
-				{
-					InventoryItem instrument = Caster.ActiveWeapon;
-					if (instrument != null)
-					{
-						duration *= 1.0 + Math.Min(1.0, instrument.Level / (double)Caster.Level); // up to 200% duration for songs
-						duration *= instrument.Condition / (double)instrument.MaxCondition * instrument.Quality / 100;
-					}
-				}
-				if (duration < 1)
-					duration = 1;
-				else if (duration > (Spell.Duration * 4))
-					duration = (Spell.Duration * 4);
-				return (int)duration; 
-			}
-			duration = base.CalculateEffectDuration(target, effectiveness);
-			return (int)duration;
-		}
+    /// <summary>
+    /// Calculates the effect duration in milliseconds
+    /// </summary>
+    /// <param name="target">The effect target</param>
+    /// <param name="effectiveness">The effect effectiveness</param>
+    /// <returns>The effect duration in milliseconds</returns>
+    protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
+    {
+        double duration = Spell.Duration;
+        if (HasPositiveEffect)
+        {
+            duration *= 1.0 + m_caster.GetModified(eProperty.SpellDuration) * 0.01;
+            if (Spell.InstrumentRequirement != 0)
+            {
+                var instrument = Caster.ActiveWeapon;
+                if (instrument != null)
+                {
+                    duration *= 1.0 + Math.Min(1.0,
+                        instrument.Level / (double) Caster.Level); // up to 200% duration for songs
+                    duration *= instrument.Condition / (double) instrument.MaxCondition * instrument.Quality / 100;
+                }
+            }
 
-		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
-		{
-			
-			GamePlayer player = target as GamePlayer;
-			if (player != null)
-			{
+            if (duration < 1)
+                duration = 1;
+            else if (duration > Spell.Duration * 4)
+                duration = Spell.Duration * 4;
+            return (int) duration;
+        }
+
+        duration = base.CalculateEffectDuration(target, effectiveness);
+        return (int) duration;
+    }
+
+    public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
+    {
+        var player = target as GamePlayer;
+        if (player != null)
+        {
 // 				//vampiir, they cannot be buffed except with resists/armor factor/ haste / power regen
 // 				if (HasPositiveEffect && player.CharacterClass.ID == (int)eCharacterClass.Vampiir && m_caster != player)
 // 				{
@@ -120,448 +123,390 @@ namespace DOL.GS.Spells
 // 						}
 // 					}
 // 				}
-				if (target is GamePlayer && (target as GamePlayer).NoHelp && Caster is GamePlayer && target != Caster && target.Realm == Caster.Realm)
-				{
-					//player not grouped, anyone else
-					//player grouped, different group
-					if ((target as GamePlayer).Group == null ||
-					    (Caster as GamePlayer).Group == null ||
-					    (Caster as GamePlayer).Group != (target as GamePlayer).Group)
-					{
-						MessageToCaster("That player does not want assistance", eChatType.CT_SpellResisted);
-						return;
-					}
-				}
+            if (target is GamePlayer && (target as GamePlayer).NoHelp && Caster is GamePlayer && target != Caster &&
+                target.Realm == Caster.Realm)
+                //player not grouped, anyone else
+                //player grouped, different group
+                if ((target as GamePlayer).Group == null ||
+                    (Caster as GamePlayer).Group == null ||
+                    (Caster as GamePlayer).Group != (target as GamePlayer).Group)
+                {
+                    MessageToCaster("That player does not want assistance", eChatType.CT_SpellResisted);
+                    return;
+                }
 
 
-				if (this is HeatColdMatterBuff || this is AllMagicResistsBuff)
-				{
-					if (this.Spell.Frequency <= 0)
-					{
-						//GameSpellEffect Matter = FindEffectOnTarget(player, "MatterResistBuff");
-						//GameSpellEffect Cold = FindEffectOnTarget(player, "ColdResistBuff");
-						//GameSpellEffect Heat = FindEffectOnTarget(player, "HeatResistBuff");
-						ECSGameEffect Matter = EffectListService.GetEffectOnTarget(player, eEffect.MatterResistBuff);
-						ECSGameEffect Cold = EffectListService.GetEffectOnTarget(player, eEffect.ColdResistBuff);
-						ECSGameEffect Heat = EffectListService.GetEffectOnTarget(player, eEffect.HeatResistBuff);
-						if (Matter != null || Cold != null || Heat != null)
-						{
-							MessageToCaster(target.Name + " already has this effect", eChatType.CT_SpellResisted);
-							return;
-						}
-					}
-				}
-				
-				if (this is BodySpiritEnergyBuff || this is AllMagicResistsBuff)
-				{
-					if (this.Spell.Frequency <= 0)
-					{
-						//GameSpellEffect Body = FindEffectOnTarget(player, "BodyResistBuff");
-						//GameSpellEffect Spirit = FindEffectOnTarget(player, "SpiritResistBuff");
-						//GameSpellEffect Energy = FindEffectOnTarget(player, "EnergyResistBuff");
-						ECSGameEffect Body = EffectListService.GetEffectOnTarget(player, eEffect.BodyResistBuff);
-						ECSGameEffect Spirit = EffectListService.GetEffectOnTarget(player, eEffect.SpiritResistBuff);
-						ECSGameEffect Energy = EffectListService.GetEffectOnTarget(player, eEffect.EnergyResistBuff);
-						if (Body != null || Spirit != null || Energy != null)
-						{
-							MessageToCaster(target.Name + " already has this effect", eChatType.CT_SpellResisted);
-							return;
-						}
-					}
-				}
-			}
+            if (this is HeatColdMatterBuff || this is AllMagicResistsBuff)
+                if (Spell.Frequency <= 0)
+                {
+                    //GameSpellEffect Matter = FindEffectOnTarget(player, "MatterResistBuff");
+                    //GameSpellEffect Cold = FindEffectOnTarget(player, "ColdResistBuff");
+                    //GameSpellEffect Heat = FindEffectOnTarget(player, "HeatResistBuff");
+                    var Matter = EffectListService.GetEffectOnTarget(player, eEffect.MatterResistBuff);
+                    var Cold = EffectListService.GetEffectOnTarget(player, eEffect.ColdResistBuff);
+                    var Heat = EffectListService.GetEffectOnTarget(player, eEffect.HeatResistBuff);
+                    if (Matter != null || Cold != null || Heat != null)
+                    {
+                        MessageToCaster(target.Name + " already has this effect", eChatType.CT_SpellResisted);
+                        return;
+                    }
+                }
 
-			base.ApplyEffectOnTarget(target, effectiveness);
-		}
+            if (this is BodySpiritEnergyBuff || this is AllMagicResistsBuff)
+                if (Spell.Frequency <= 0)
+                {
+                    //GameSpellEffect Body = FindEffectOnTarget(player, "BodyResistBuff");
+                    //GameSpellEffect Spirit = FindEffectOnTarget(player, "SpiritResistBuff");
+                    //GameSpellEffect Energy = FindEffectOnTarget(player, "EnergyResistBuff");
+                    var Body = EffectListService.GetEffectOnTarget(player, eEffect.BodyResistBuff);
+                    var Spirit = EffectListService.GetEffectOnTarget(player, eEffect.SpiritResistBuff);
+                    var Energy = EffectListService.GetEffectOnTarget(player, eEffect.EnergyResistBuff);
+                    if (Body != null || Spirit != null || Energy != null)
+                    {
+                        MessageToCaster(target.Name + " already has this effect", eChatType.CT_SpellResisted);
+                        return;
+                    }
+                }
+        }
 
-		/// <summary>
-		/// start changing effect on target
-		/// </summary>
-		/// <param name="effect"></param>
-		public override void OnEffectStart(GameSpellEffect effect)
-		{
-			ApplyBonus(effect.Owner, BonusCategory1, Property1, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory2, Property2, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory3, Property3, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory4, Property4, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory5, Property5, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory6, Property6, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory7, Property7, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory8, Property8, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory9, Property9, (int)(Spell.Value * effect.Effectiveness), false);
-			ApplyBonus(effect.Owner, BonusCategory10, Property10, (int)(Spell.Value * effect.Effectiveness), false);
+        base.ApplyEffectOnTarget(target, effectiveness);
+    }
 
-			SendUpdates(effect.Owner);
+    /// <summary>
+    /// start changing effect on target
+    /// </summary>
+    /// <param name="effect"></param>
+    public override void OnEffectStart(GameSpellEffect effect)
+    {
+        ApplyBonus(effect.Owner, BonusCategory1, Property1, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory2, Property2, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory3, Property3, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory4, Property4, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory5, Property5, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory6, Property6, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory7, Property7, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory8, Property8, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory9, Property9, (int) (Spell.Value * effect.Effectiveness), false);
+        ApplyBonus(effect.Owner, BonusCategory10, Property10, (int) (Spell.Value * effect.Effectiveness), false);
 
-			eChatType toLiving = eChatType.CT_SpellPulse;
-			eChatType toOther = eChatType.CT_SpellPulse;
-			if (Spell.Pulse == 0 || !HasPositiveEffect)
-			{
-				toLiving = eChatType.CT_Spell;
-				toOther = eChatType.CT_System;
-				SendEffectAnimation(effect.Owner, 0, false, 1);
-			}
+        SendUpdates(effect.Owner);
 
-			GameLiving player = null;
+        var toLiving = eChatType.CT_SpellPulse;
+        var toOther = eChatType.CT_SpellPulse;
+        if (Spell.Pulse == 0 || !HasPositiveEffect)
+        {
+            toLiving = eChatType.CT_Spell;
+            toOther = eChatType.CT_System;
+            SendEffectAnimation(effect.Owner, 0, false, 1);
+        }
 
-			if (Caster is GameNPC && (Caster as GameNPC).Brain is IControlledBrain)
-				player = ((Caster as GameNPC).Brain as IControlledBrain).Owner;
-			else if (effect.Owner is GameNPC && (effect.Owner as GameNPC).Brain is IControlledBrain)
-				player = ((effect.Owner as GameNPC).Brain as IControlledBrain).Owner;
+        GameLiving player = null;
 
-			if (player != null)
-			{
-				// Controlled NPC. Show message in blue writing to owner...
+        if (Caster is GameNPC && (Caster as GameNPC).Brain is IControlledBrain)
+            player = ((Caster as GameNPC).Brain as IControlledBrain).Owner;
+        else if (effect.Owner is GameNPC && (effect.Owner as GameNPC).Brain is IControlledBrain)
+            player = ((effect.Owner as GameNPC).Brain as IControlledBrain).Owner;
 
-				MessageToLiving(player, String.Format(Spell.Message2,
-													  effect.Owner.GetName(0, true)), toLiving);
+        if (player != null)
+        {
+            // Controlled NPC. Show message in blue writing to owner...
 
-				// ...and in white writing for everyone else.
+            MessageToLiving(player, string.Format(Spell.Message2,
+                effect.Owner.GetName(0, true)), toLiving);
 
-				foreach (GamePlayer gamePlayer in effect.Owner.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
-					if (gamePlayer != player)
-						MessageToLiving(gamePlayer, String.Format(Spell.Message2,
-																  effect.Owner.GetName(0, true)), toOther);
-			}
-			else
-			{
-				MessageToLiving(effect.Owner, Spell.Message1, toLiving);
-				Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, false)), toOther, effect.Owner);
-			}
+            // ...and in white writing for everyone else.
 
-		}
+            foreach (GamePlayer gamePlayer in effect.Owner.GetPlayersInRadius(WorldMgr.INFO_DISTANCE))
+                if (gamePlayer != player)
+                    MessageToLiving(gamePlayer, string.Format(Spell.Message2,
+                        effect.Owner.GetName(0, true)), toOther);
+        }
+        else
+        {
+            MessageToLiving(effect.Owner, Spell.Message1, toLiving);
+            Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, false)),
+                toOther, effect.Owner);
+        }
+    }
 
-		BuffCheckAction m_buffCheckAction = null;
+    private BuffCheckAction m_buffCheckAction = null;
 
-		/// <summary>
-		/// When an applied effect expires.
-		/// Duration spells only.
-		/// </summary>
-		/// <param name="effect">The expired effect</param>
-		/// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
-		/// <returns>immunity duration in milliseconds</returns>
-		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-		{
-			if (!noMessages && Spell.Pulse == 0)
-			{
-				MessageToLiving(effect.Owner, Spell.Message3, eChatType.CT_SpellExpires);
-				Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message4, effect.Owner.GetName(0, false)), eChatType.CT_SpellExpires, effect.Owner);
-			}
+    /// <summary>
+    /// When an applied effect expires.
+    /// Duration spells only.
+    /// </summary>
+    /// <param name="effect">The expired effect</param>
+    /// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
+    /// <returns>immunity duration in milliseconds</returns>
+    public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+    {
+        if (!noMessages && Spell.Pulse == 0)
+        {
+            MessageToLiving(effect.Owner, Spell.Message3, eChatType.CT_SpellExpires);
+            Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message4, effect.Owner.GetName(0, false)),
+                eChatType.CT_SpellExpires, effect.Owner);
+        }
 
-			ApplyBonus(effect.Owner, BonusCategory1, Property1, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory2, Property2, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory3, Property3, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory4, Property4, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory5, Property5, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory6, Property6, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory7, Property7, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory8, Property8, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory9, Property9, (int)(Spell.Value * effect.Effectiveness), true);
-			ApplyBonus(effect.Owner, BonusCategory10, Property10, (int)(Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory1, Property1, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory2, Property2, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory3, Property3, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory4, Property4, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory5, Property5, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory6, Property6, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory7, Property7, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory8, Property8, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory9, Property9, (int) (Spell.Value * effect.Effectiveness), true);
+        ApplyBonus(effect.Owner, BonusCategory10, Property10, (int) (Spell.Value * effect.Effectiveness), true);
 
 
-			SendUpdates(effect.Owner);
+        SendUpdates(effect.Owner);
 
-			if (m_buffCheckAction != null)
-			{
-				m_buffCheckAction.Stop();
-				m_buffCheckAction = null;
-			}
+        if (m_buffCheckAction != null)
+        {
+            m_buffCheckAction.Stop();
+            m_buffCheckAction = null;
+        }
 
-			return base.OnEffectExpires(effect, noMessages);
-		}
+        return base.OnEffectExpires(effect, noMessages);
+    }
 
-		protected virtual void SendUpdates(GameLiving target)
-		{
-		}
+    protected virtual void SendUpdates(GameLiving target)
+    {
+    }
 
-		protected IPropertyIndexer GetBonusCategory(GameLiving target, eBuffBonusCategory categoryid)
-		{
-			IPropertyIndexer bonuscat = null;
-			switch (categoryid)
-			{
-				case eBuffBonusCategory.BaseBuff:
-					bonuscat = target.BaseBuffBonusCategory;
-					break;
-				case eBuffBonusCategory.SpecBuff:
-					bonuscat = target.SpecBuffBonusCategory;
-					break;
-				case eBuffBonusCategory.Debuff:
-					bonuscat = target.DebuffCategory;
-					break;
-				case eBuffBonusCategory.Other:
-					bonuscat = target.BuffBonusCategory4;
-					break;
-				case eBuffBonusCategory.SpecDebuff:
-					bonuscat = target.SpecDebuffCategory;
-					break;
-				case eBuffBonusCategory.AbilityBuff:
-					bonuscat = target.AbilityBonus;
-					break;
-				default:
-					if (log.IsErrorEnabled)
-						log.Error("BonusCategory not found " + categoryid + "!");
-					break;
-			}
-			return bonuscat;
-		}
+    protected IPropertyIndexer GetBonusCategory(GameLiving target, eBuffBonusCategory categoryid)
+    {
+        IPropertyIndexer bonuscat = null;
+        switch (categoryid)
+        {
+            case eBuffBonusCategory.BaseBuff:
+                bonuscat = target.BaseBuffBonusCategory;
+                break;
+            case eBuffBonusCategory.SpecBuff:
+                bonuscat = target.SpecBuffBonusCategory;
+                break;
+            case eBuffBonusCategory.Debuff:
+                bonuscat = target.DebuffCategory;
+                break;
+            case eBuffBonusCategory.Other:
+                bonuscat = target.BuffBonusCategory4;
+                break;
+            case eBuffBonusCategory.SpecDebuff:
+                bonuscat = target.SpecDebuffCategory;
+                break;
+            case eBuffBonusCategory.AbilityBuff:
+                bonuscat = target.AbilityBonus;
+                break;
+            default:
+                if (log.IsErrorEnabled)
+                    log.Error("BonusCategory not found " + categoryid + "!");
+                break;
+        }
 
-		/// <summary>
-		/// Property 1 which bonus value has to be changed
-		/// </summary>
-		public abstract eProperty Property1 { get; }
+        return bonuscat;
+    }
 
-		/// <summary>
-		/// Property 2 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property2
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 1 which bonus value has to be changed
+    /// </summary>
+    public abstract eProperty Property1 { get; }
 
-		/// <summary>
-		/// Property 3 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property3
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 2 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property2 => eProperty.Undefined;
 
-		/// <summary>
-		/// Property 4 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property4
-		{
-			get { return eProperty.Undefined; }
-		}
-		/// <summary>
-		/// Property 5 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property5
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 3 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property3 => eProperty.Undefined;
 
-		/// <summary>
-		/// Property 6 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property6
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 4 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property4 => eProperty.Undefined;
 
-		/// <summary>
-		/// Property 7 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property7
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 5 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property5 => eProperty.Undefined;
 
-		/// <summary>
-		/// Property 8 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property8
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 6 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property6 => eProperty.Undefined;
 
-		/// <summary>
-		/// Property 9 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property9
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 7 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property7 => eProperty.Undefined;
 
-		/// <summary>
-		/// Property 10 which bonus value has to be changed
-		/// </summary>
-		public virtual eProperty Property10
-		{
-			get { return eProperty.Undefined; }
-		}
+    /// <summary>
+    /// Property 8 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property8 => eProperty.Undefined;
 
-		/// <summary>
-		/// Bonus Category where to change the Property1
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory1
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Property 9 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property9 => eProperty.Undefined;
 
-		/// <summary>
-		/// Bonus Category where to change the Property2
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory2
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Property 10 which bonus value has to be changed
+    /// </summary>
+    public virtual eProperty Property10 => eProperty.Undefined;
 
-		/// <summary>
-		/// Bonus Category where to change the Property3
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory3
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property1
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory1 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property4
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory4
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property2
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory2 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property5
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory5
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property3
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory3 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property6
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory6
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property4
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory4 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property7
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory7
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property5
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory5 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property8
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory8
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property6
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory6 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property9
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory9
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property7
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory7 => eBuffBonusCategory.BaseBuff;
 
-		/// <summary>
-		/// Bonus Category where to change the Property10
-		/// </summary>
-		public virtual eBuffBonusCategory BonusCategory10
-		{
-			get { return eBuffBonusCategory.BaseBuff; }
-		}
+    /// <summary>
+    /// Bonus Category where to change the Property8
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory8 => eBuffBonusCategory.BaseBuff;
 
-		public override void OnEffectRestored(GameSpellEffect effect, int[] vars)
-		{
-			ApplyBonus(effect.Owner, BonusCategory1, Property1, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory2, Property2, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory3, Property3, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory4, Property4, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory5, Property5, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory6, Property6, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory7, Property7, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory8, Property8, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory9, Property9, vars[1], false);
-			ApplyBonus(effect.Owner, BonusCategory10, Property10, vars[1], false);
+    /// <summary>
+    /// Bonus Category where to change the Property9
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory9 => eBuffBonusCategory.BaseBuff;
+
+    /// <summary>
+    /// Bonus Category where to change the Property10
+    /// </summary>
+    public virtual eBuffBonusCategory BonusCategory10 => eBuffBonusCategory.BaseBuff;
+
+    public override void OnEffectRestored(GameSpellEffect effect, int[] vars)
+    {
+        ApplyBonus(effect.Owner, BonusCategory1, Property1, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory2, Property2, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory3, Property3, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory4, Property4, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory5, Property5, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory6, Property6, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory7, Property7, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory8, Property8, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory9, Property9, vars[1], false);
+        ApplyBonus(effect.Owner, BonusCategory10, Property10, vars[1], false);
 
 
-			SendUpdates(effect.Owner);
-		}
+        SendUpdates(effect.Owner);
+    }
 
-		public override int OnRestoredEffectExpires(GameSpellEffect effect, int[] vars, bool noMessages)
-		{
-			if (!noMessages && Spell.Pulse == 0)
-			{
-				MessageToLiving(effect.Owner, Spell.Message3, eChatType.CT_SpellExpires);
-				Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message4, effect.Owner.GetName(0, false)), eChatType.CT_SpellExpires, effect.Owner);
-			}
+    public override int OnRestoredEffectExpires(GameSpellEffect effect, int[] vars, bool noMessages)
+    {
+        if (!noMessages && Spell.Pulse == 0)
+        {
+            MessageToLiving(effect.Owner, Spell.Message3, eChatType.CT_SpellExpires);
+            Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message4, effect.Owner.GetName(0, false)),
+                eChatType.CT_SpellExpires, effect.Owner);
+        }
 
-			ApplyBonus(effect.Owner, BonusCategory1, Property1, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory2, Property2, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory3, Property3, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory4, Property4, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory5, Property5, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory6, Property6, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory7, Property7, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory8, Property8, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory9, Property9, vars[1], true);
-			ApplyBonus(effect.Owner, BonusCategory10, Property10, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory1, Property1, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory2, Property2, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory3, Property3, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory4, Property4, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory5, Property5, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory6, Property6, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory7, Property7, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory8, Property8, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory9, Property9, vars[1], true);
+        ApplyBonus(effect.Owner, BonusCategory10, Property10, vars[1], true);
 
 
-			SendUpdates(effect.Owner);
-			return 0;
-		}
+        SendUpdates(effect.Owner);
+        return 0;
+    }
 
-		/// <summary>
-		/// Method used to apply bonuses
-		/// </summary>
-		/// <param name="owner"></param>
-		/// <param name="BonusCat"></param>
-		/// <param name="Property"></param>
-		/// <param name="Value"></param>
-		/// <param name="IsSubstracted"></param>
-		protected void ApplyBonus(GameLiving owner,  eBuffBonusCategory BonusCat, eProperty Property, int Value, bool IsSubstracted)
-		{
-			IPropertyIndexer tblBonusCat;
-			if (Property != eProperty.Undefined)
-			{
-				tblBonusCat = GetBonusCategory(owner, BonusCat);
-				if (IsSubstracted)
-					tblBonusCat[(int)Property] -= Value;
-				else
-					tblBonusCat[(int)Property] += Value;
-			}
-		}
+    /// <summary>
+    /// Method used to apply bonuses
+    /// </summary>
+    /// <param name="owner"></param>
+    /// <param name="BonusCat"></param>
+    /// <param name="Property"></param>
+    /// <param name="Value"></param>
+    /// <param name="IsSubstracted"></param>
+    protected void ApplyBonus(GameLiving owner, eBuffBonusCategory BonusCat, eProperty Property, int Value,
+        bool IsSubstracted)
+    {
+        IPropertyIndexer tblBonusCat;
+        if (Property != eProperty.Undefined)
+        {
+            tblBonusCat = GetBonusCategory(owner, BonusCat);
+            if (IsSubstracted)
+                tblBonusCat[(int) Property] -= Value;
+            else
+                tblBonusCat[(int) Property] += Value;
+        }
+    }
 
-		// constructor
-		public PropertyChangingSpell(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
-		{
-		}
-	}
+    // constructor
+    public PropertyChangingSpell(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
+    }
+}
 
-	public class BuffCheckAction : RegionECSAction
-	{
-		public const int BUFFCHECKINTERVAL = 60000;//60 seconds
+public class BuffCheckAction : RegionECSAction
+{
+    public const int BUFFCHECKINTERVAL = 60000; //60 seconds
 
-		private GameLiving m_caster = null;
-		private GameLiving m_owner = null;
-		private GameSpellEffect m_effect = null;
+    private GameLiving m_caster = null;
+    private GameLiving m_owner = null;
+    private GameSpellEffect m_effect = null;
 
-		public BuffCheckAction(GameLiving caster, GameLiving owner, GameSpellEffect effect)
-			: base(caster)
-		{
-			m_caster = caster;
-			m_owner = owner;
-			m_effect = effect;
-		}
+    public BuffCheckAction(GameLiving caster, GameLiving owner, GameSpellEffect effect)
+        : base(caster)
+    {
+        m_caster = caster;
+        m_owner = owner;
+        m_effect = effect;
+    }
 
-		/// <summary>
-		/// Called on every timer tick
-		/// </summary>
-		protected override int OnTick(ECSGameTimer timer)
-		{
-			if (m_caster == null ||
-			    m_owner == null ||
-			    m_effect == null)
-				return 0;
+    /// <summary>
+    /// Called on every timer tick
+    /// </summary>
+    protected override int OnTick(ECSGameTimer timer)
+    {
+        if (m_caster == null ||
+            m_owner == null ||
+            m_effect == null)
+            return 0;
 
-			if ( !m_caster.IsWithinRadius( m_owner, ServerProperties.Properties.BUFF_RANGE ) )
-				m_effect.Cancel(false);
-			else
-				return BUFFCHECKINTERVAL;
+        if (!m_caster.IsWithinRadius(m_owner, ServerProperties.Properties.BUFF_RANGE))
+            m_effect.Cancel(false);
+        else
+            return BUFFCHECKINTERVAL;
 
-			return 0;
-		}
-	}
+        return 0;
+    }
 }

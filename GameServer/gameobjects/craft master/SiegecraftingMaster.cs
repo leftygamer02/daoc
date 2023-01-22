@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -19,56 +19,37 @@
 
 using DOL.Language;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+[NPCGuildScript("Siegecrafting Master")]
+public class SiegecraftingMaster : CraftNPC
 {
-	[NPCGuildScript("Siegecrafting Master")]
-	public class SiegecraftingMaster : CraftNPC
-	{
-		private static readonly eCraftingSkill[] m_trainedSkills = 
-		{
-			eCraftingSkill.MetalWorking,
-			eCraftingSkill.WoodWorking,
-			eCraftingSkill.SiegeCrafting,
-		};
+    private static readonly eCraftingSkill[] m_trainedSkills =
+    {
+        eCraftingSkill.MetalWorking,
+        eCraftingSkill.WoodWorking,
+        eCraftingSkill.SiegeCrafting
+    };
 
-		public override eCraftingSkill[] TrainedSkills
-		{
-			get { return m_trainedSkills; }
-		}
+    public override eCraftingSkill[] TrainedSkills => m_trainedSkills;
 
-		public override string GUILD_ORDER
-		{
-			get
-			{
-                return LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "SiegecraftingMaster.GuildOrder");
-            }
-		}
+    public override string GUILD_ORDER =>
+        LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE,
+            "SiegecraftingMaster.GuildOrder");
 
-		public override string ACCEPTED_BY_ORDER_NAME
-		{
-			get
-			{
-                return LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "SiegecraftingMaster.AcceptedByOrderName");
-            }
-		}
+    public override string ACCEPTED_BY_ORDER_NAME =>
+        LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE,
+            "SiegecraftingMaster.AcceptedByOrderName");
 
-		/// <summary>
-		/// The eCraftingSkill
-		/// </summary>
-		public override eCraftingSkill TheCraftingSkill
-		{
-			get { return eCraftingSkill.SiegeCrafting; }
-		}
+    /// <summary>
+    /// The eCraftingSkill
+    /// </summary>
+    public override eCraftingSkill TheCraftingSkill => eCraftingSkill.SiegeCrafting;
 
-		/// <summary>
-		/// The text for join order
-		/// </summary>
-		public override string InitialEntersentence
-		{
-			get
-			{
-                return LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "SiegecraftingMaster.InitialEntersentence");
-            }
-		}
-	}
+    /// <summary>
+    /// The text for join order
+    /// </summary>
+    public override string InitialEntersentence =>
+        LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE,
+            "SiegecraftingMaster.InitialEntersentence");
 }

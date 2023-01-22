@@ -16,29 +16,33 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute(
-		"&gtrange",
-		ePrivLevel.Player,
-		"Gives a range to a ground target",
-		"/gtrange")]
-	public class GroundTargetRangeCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "gtrange"))
-				return;
+namespace DOL.GS.Commands;
 
-			if (client.Player.GroundTarget != null)
-			{
-                int range = client.Player.GetDistanceTo( client.Player.GroundTarget );
-				client.Out.SendMessage("Range to target: " + range + " units.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-			}
-			else
-				client.Out.SendMessage("Range to target: You don't have a ground target set.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-		}
-	}
+[CmdAttribute(
+    "&gtrange",
+    ePrivLevel.Player,
+    "Gives a range to a ground target",
+    "/gtrange")]
+public class GroundTargetRangeCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "gtrange"))
+            return;
+
+        if (client.Player.GroundTarget != null)
+        {
+            var range = client.Player.GetDistanceTo(client.Player.GroundTarget);
+            client.Out.SendMessage("Range to target: " + range + " units.", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+        }
+        else
+        {
+            client.Out.SendMessage("Range to target: You don't have a ground target set.", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+        }
+    }
 }

@@ -9,31 +9,28 @@ using DOL.Database;
 using DOL.GS.Spells;
 using DOL.GS.Styles;
 
-namespace DOL.GS.RealmAbilities
-{
-    public class AtlasOF_StyleDoombringer : StyleRealmAbility
-    {
-        
-        public AtlasOF_StyleDoombringer(DBAbility ability, int level) : base(ability, level)
-        {
-        }
+namespace DOL.GS.RealmAbilities;
 
-        protected override Style CreateStyle()
-        {
-            DBStyle tmpStyle = new DBStyle();
-            tmpStyle.Name = "Doombringer";
-            tmpStyle.GrowthRate = 1.4;
-            tmpStyle.EnduranceCost = 0;
-            tmpStyle.BonusToHit = 15;
-            tmpStyle.BonusToDefense = 10;
-            tmpStyle.WeaponTypeRequirement = 1001; //any weapon type
-            tmpStyle.OpeningRequirementType = 0;
-            tmpStyle.OpeningRequirementValue = 0;
-            tmpStyle.AttackResultRequirement = 0;
-            tmpStyle.Icon = 1696; 
-            tmpStyle.SpecKeyName = GlobalSpellsLines.Realm_Spells;
-            return new Style(tmpStyle);
-        }
+public class AtlasOF_StyleDoombringer : StyleRealmAbility
+{
+    public AtlasOF_StyleDoombringer(DBAbility ability, int level) : base(ability, level)
+    {
     }
 
+    protected override Style CreateStyle()
+    {
+        var tmpStyle = new DBStyle();
+        tmpStyle.Name = "Doombringer";
+        tmpStyle.GrowthRate = 1.4;
+        tmpStyle.EnduranceCost = 0;
+        tmpStyle.BonusToHit = 15;
+        tmpStyle.BonusToDefense = 10;
+        tmpStyle.WeaponTypeRequirement = 1001; //any weapon type
+        tmpStyle.OpeningRequirementType = 0;
+        tmpStyle.OpeningRequirementValue = 0;
+        tmpStyle.AttackResultRequirement = 0;
+        tmpStyle.Icon = 1696;
+        tmpStyle.SpecKeyName = GlobalSpellsLines.Realm_Spells;
+        return new Style(tmpStyle);
+    }
 }

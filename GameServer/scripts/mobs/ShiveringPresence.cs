@@ -16,7 +16,6 @@ namespace DOL.GS.Scripts
             Model = 966;
             return base.AddToWorld();
         }
-
     }
 }
 
@@ -24,10 +23,7 @@ namespace DOL.AI.Brain
 {
     public class ShiveringPresenceBrain : StandardMobBrain
     {
-        public override int ThinkInterval
-        {
-            get { return 3000; }
-        }
+        public override int ThinkInterval => 3000;
 
         public override void Think()
         {

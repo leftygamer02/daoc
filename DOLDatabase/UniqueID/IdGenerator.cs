@@ -16,22 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Database.UniqueID
+namespace DOL.Database.UniqueID;
+
+/// <summary>
+/// Generates an UniqeID for every Object.
+/// </summary>
+public static class IDGenerator
 {
-	/// <summary>
-	/// Generates an UniqeID for every Object.
-	/// </summary>
-	public static class IDGenerator
-	{
-		/// <summary>
-		/// Generate a new GUID String
-		/// </summary>
-		/// <returns>a new unique Key</returns>
-		public static string GenerateID()
-		{
-			return Guid.NewGuid().ToString();
-		}
-	}
+    /// <summary>
+    /// Generate a new GUID String
+    /// </summary>
+    /// <returns>a new unique Key</returns>
+    public static string GenerateID()
+    {
+        return Guid.NewGuid().ToString();
+    }
 }

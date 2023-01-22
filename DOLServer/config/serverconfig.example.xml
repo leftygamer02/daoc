@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+
 <root>
     <Server>
         <Port>10300</Port>
@@ -13,7 +14,7 @@
         <ServerNameShort>DOLSERVER</ServerNameShort>
         <LogConfigFile>./config/logconfig.xml</LogConfigFile>
         <ScriptCompilationTarget>./lib/GameServerScripts.dll</ScriptCompilationTarget>
-        <ScriptAssemblies> </ScriptAssemblies>
+        <ScriptAssemblies></ScriptAssemblies>
         <EnableCompilation>True</EnableCompilation>
         <AutoAccountCreation>True</AutoAccountCreation>
         <GameType>Normal</GameType>
@@ -21,7 +22,9 @@
         <GMActionLoggerName>gmactions</GMActionLoggerName>
         <InvalidNamesFile>./config/invalidnames.txt</InvalidNamesFile>
         <DBType>MYSQL</DBType>
-        <DBConnectionString>server=localhost;port=3306;database=DBNAME;user id=USERNAME;password=PASSWORD;treattinyasboolean=false</DBConnectionString>
+        <DBConnectionString>server=localhost;port=3306;database=DBNAME;user
+            id=USERNAME;password=PASSWORD;treattinyasboolean=false
+        </DBConnectionString>
         <DBAutosave>True</DBAutosave>
         <DBAutosaveInterval>10</DBAutosaveInterval>
         <CpuUse>8</CpuUse>

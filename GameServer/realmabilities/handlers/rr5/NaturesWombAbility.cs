@@ -3,48 +3,48 @@ using System.Collections.Generic;
 using DOL.Database;
 using DOL.GS.Effects;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+/// <summary>
+/// Mastery of Concentration RA
+/// </summary>
+public class NaturesWombAbility : RR5RealmAbility
 {
-	/// <summary>
-	/// Mastery of Concentration RA
-	/// </summary>
-	public class NaturesWombAbility : RR5RealmAbility
-	{
-		public NaturesWombAbility(DBAbility dba, int level) : base(dba, level) { }
+    public NaturesWombAbility(DBAbility dba, int level) : base(dba, level)
+    {
+    }
 
-		/// <summary>
-		/// Action
-		/// </summary>
-		/// <param name="living"></param>
-		public override void Execute(GameLiving living)
-		{
-			if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
+    /// <summary>
+    /// Action
+    /// </summary>
+    /// <param name="living"></param>
+    public override void Execute(GameLiving living)
+    {
+        if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
 
+        var player = living as GamePlayer;
+        if (player != null)
+        {
+            SendCasterSpellEffectAndCastMessage(player, 7053, true);
+            var effect = new NaturesWombEffect();
+            effect.Start(player);
+        }
 
-			GamePlayer player = living as GamePlayer;
-			if (player != null)
-			{
-				SendCasterSpellEffectAndCastMessage(player, 7053, true);
-				NaturesWombEffect effect = new NaturesWombEffect();
-				effect.Start(player);
-			}
-			DisableSkill(living);
-		}
+        DisableSkill(living);
+    }
 
-		public override int GetReUseDelay(int level)
-		{
-			return 600;
-		}
+    public override int GetReUseDelay(int level)
+    {
+        return 600;
+    }
 
-		public override void AddEffectsInfo(IList<string> list)
-		{
-			list.Add("Stuns you for 5 seconds. During this time all damage is converted into healing!");
-			list.Add("");
-			list.Add("Target: Self");
-			list.Add("Duration: 5 sec");
-			list.Add("Casting time: instant");
-		}
-
-	}
+    public override void AddEffectsInfo(IList<string> list)
+    {
+        list.Add("Stuns you for 5 seconds. During this time all damage is converted into healing!");
+        list.Add("");
+        list.Add("Target: Self");
+        list.Add("Duration: 5 sec");
+        list.Add("Casting time: instant");
+    }
 }

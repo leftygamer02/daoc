@@ -9,8 +9,8 @@ namespace DOL.GS
 {
     public class HighLordBaelerdoth : GameEpicBoss
     {
-        private static readonly log4net.ILog log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
@@ -18,10 +18,12 @@ namespace DOL.GS
             if (log.IsInfoEnabled)
                 log.Info("High Lord Baelerdoth initialized..");
         }
+
         public HighLordBaelerdoth()
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -32,19 +34,20 @@ namespace DOL.GS
                 default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162129);
@@ -60,25 +63,29 @@ namespace DOL.GS
 
             // demon
             BodyType = 2;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(191);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(191));
 
-            BaelerdothBrain sBrain = new BaelerdothBrain();
+            var sBrain = new BaelerdothBrain();
             SetOwnBrain(sBrain);
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100  * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -86,22 +93,21 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
-        public virtual byte HealthPercent
-        {
-            get { return (byte) (MaxHealth <= 0 ? 0 : Health * 100 / MaxHealth); }
-        }
+
+        public virtual byte HealthPercent => (byte) (MaxHealth <= 0 ? 0 : Health * 100 / MaxHealth);
+
         public override void Die(GameObject killer)
         {
             base.Die(killer);
         }
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
-            if (HealthPercent < 25)
-            {
-                CastSpell(AbsDebuff, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-            }
+            if (HealthPercent < 25) CastSpell(AbsDebuff, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
+
             base.TakeDamage(source, damageType, damageAmount, criticalAmount);
         }
+
         #region pbaoe abs debuff
 
         /// <summary>
@@ -121,7 +127,7 @@ namespace DOL.GS
             {
                 if (m_absDebuffSpell == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.Duration = 20;
@@ -162,6 +168,7 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 850;
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -170,6 +177,7 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
             }
+
             base.Think();
         }
     }

@@ -16,53 +16,53 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 using DOL.Database;
 using DOL.AI.Brain;
 using log4net;
 using System.Reflection;
 using DOL.GS.Movement;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.SetMonsterPath, DefaultValueP = eDefaultValueConstants.NPC)]
+public class SetMonsterPathAction : AbstractAction<PathPoint, GameNPC>
 {
-    [ActionAttribute(ActionType = eActionType.SetMonsterPath,DefaultValueP=eDefaultValueConstants.NPC)]
-    public class SetMonsterPathAction : AbstractAction<PathPoint,GameNPC>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+    public SetMonsterPathAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.SetMonsterPath, p, q)
     {
-
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        public SetMonsterPathAction(GameNPC defaultNPC,  Object p, Object q)
-            : base(defaultNPC, eActionType.SetMonsterPath, p, q)
-        {                
-        }
+    }
 
 
-        public SetMonsterPathAction(GameNPC defaultNPC,  PathPoint firstPathPoint, GameNPC npc)
-            : this(defaultNPC,  (object)firstPathPoint, (object)npc) { }
-        
+    public SetMonsterPathAction(GameNPC defaultNPC, PathPoint firstPathPoint, GameNPC npc)
+        : this(defaultNPC, (object) firstPathPoint, (object) npc)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var npc = Q;
+
+        if (npc.Brain is RoundsBrain)
         {
-            GameNPC npc = Q;
-
-            if (npc.Brain is RoundsBrain)
-            {
-                RoundsBrain brain = (RoundsBrain)npc.Brain;
-                npc.CurrentWayPoint = P;
-                brain.Start();                
-            }
-            else
-            {
-                if (log.IsWarnEnabled)
-                    log.Warn("Mob without RoundsBrain was assigned to walk along Path");                
-            }
-            
+            var brain = (RoundsBrain) npc.Brain;
+            npc.CurrentWayPoint = P;
+            brain.Start();
+        }
+        else
+        {
+            if (log.IsWarnEnabled)
+                log.Warn("Mob without RoundsBrain was assigned to walk along Path");
         }
     }
 }

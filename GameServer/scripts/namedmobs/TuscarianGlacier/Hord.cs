@@ -9,16 +9,19 @@ namespace DOL.GS.Scripts
 {
     public class Hord : GameEpicBoss
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public Hord()
             : base()
         {
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
-        }      
+        }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60159449);
@@ -30,7 +33,8 @@ namespace DOL.GS.Scripts
             Piety = npcTemplate.Piety;
             Intelligence = npcTemplate.Intelligence;
             Empathy = npcTemplate.Empathy;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
 
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
@@ -42,24 +46,23 @@ namespace DOL.GS.Scripts
             // Giant
             BodyType = 5;
             ScalingFactor = 45;
-            
-            HordBrain sBrain = new HordBrain();
+
+            var sBrain = new HordBrain();
             SetOwnBrain(sBrain);
-            LoadedFromScript = false;//load from database
+            LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
 
-        public override int MaxHealth
-        {
-            get{return 100000;}
-        }
+        public override int MaxHealth => 100000;
+
         public override int AttackRange
         {
-            get{ return 450;}
-            set{}
+            get => 450;
+            set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -67,6 +70,7 @@ namespace DOL.GS.Scripts
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
@@ -77,6 +81,7 @@ namespace DOL.GS.Scripts
             // 85% ABS is cap.
             return 0.20;
         }
+
         #region Damage & Heal Events
 
         /// <summary>
@@ -92,17 +97,20 @@ namespace DOL.GS.Scripts
             Brain.Notify(GameObjectEvent.TakeDamage, this,
                 new TakeDamageEventArgs(source, damageType, damageAmount, criticalAmount));
         }
+
         #endregion
-        
     }
 }
+
 namespace DOL.AI.Brain
 {
     public class HordBrain : StandardMobBrain
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        protected String m_HealAnnounce;
-        
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        protected string m_HealAnnounce;
+
         public HordBrain()
             : base()
         {
@@ -110,14 +118,13 @@ namespace DOL.AI.Brain
             AggroLevel = 200;
             AggroRange = 1500; //so players cant just pass him without aggroing
         }
-        
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_ChatWindow);
-            }
-        }    
+        }
+
         public override void Think()
         {
             /*if (Body.TargetObject != null && Body.InCombat && Body.Health != Body.MaxHealth && HasAggro)
@@ -133,6 +140,7 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
             }
+
             base.Think();
         }
 
@@ -140,14 +148,10 @@ namespace DOL.AI.Brain
         {
             base.Notify(e, sender, args);
 
-            if (e == GameNPCEvent.TakeDamage)
-            {
+            if (e == GameObjectEvent.TakeDamage)
                 if (Body.TargetObject != null && Body.InCombat && Body.Health != Body.MaxHealth && HasAggro)
-                {
                     if (Util.Chance(3))
                         new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastHeal), 1000);
-                }
-            }
         }
 
         /// <summary>
@@ -161,8 +165,9 @@ namespace DOL.AI.Brain
             Body.CastSpell(Heal, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             return 0;
         }
-        
+
         protected Spell m_healSpell;
+
         /// <summary>
         /// The Heal spell.
         /// </summary>
@@ -172,7 +177,7 @@ namespace DOL.AI.Brain
             {
                 if (m_healSpell == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 0;
@@ -194,6 +199,7 @@ namespace DOL.AI.Brain
                     m_healSpell = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_healSpell);
                 }
+
                 return m_healSpell;
             }
         }

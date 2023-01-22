@@ -16,56 +16,59 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.AI.Brain;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Style taunt effect spell handler
+/// </summary>
+[SpellHandler("StyleTaunt")]
+public class StyleTaunt : SpellHandler
 {
-	/// <summary>
-	/// Style taunt effect spell handler
-	/// </summary>
-	[SpellHandler("StyleTaunt")]
-	public class StyleTaunt : SpellHandler 
-	{
-		public override int CalculateSpellResistChance(GameLiving target)
-		{
-			return 0;
-		}
+    public override int CalculateSpellResistChance(GameLiving target)
+    {
+        return 0;
+    }
 
-		/// <summary>
-		/// Determines wether this spell is compatible with given spell
-		/// and therefore overwritable by better versions
-		/// spells that are overwritable cannot stack
-		/// </summary>
-		/// <param name="compare"></param>
-		/// <returns></returns>
-		public override bool IsOverwritable(GameSpellEffect compare)
-		{
-            return false;
-		}
+    /// <summary>
+    /// Determines wether this spell is compatible with given spell
+    /// and therefore overwritable by better versions
+    /// spells that are overwritable cannot stack
+    /// </summary>
+    /// <param name="compare"></param>
+    /// <returns></returns>
+    public override bool IsOverwritable(GameSpellEffect compare)
+    {
+        return false;
+    }
 
-        public override void OnDirectEffect(GameLiving target, double effectiveness)
+    public override void OnDirectEffect(GameLiving target, double effectiveness)
+    {
+        if (target is GameNPC)
         {
-            if (target is GameNPC)
+            var ad =
+                Caster.TempProperties.getProperty<object>(GameLiving.LAST_ATTACK_DATA, null) as AttackData;
+            if (ad != null)
             {
-                AttackData ad = Caster.TempProperties.getProperty<object>(GameLiving.LAST_ATTACK_DATA, null) as AttackData;
-                if (ad != null)
+                var aggroBrain = ((GameNPC) target).Brain as IOldAggressiveBrain;
+                if (aggroBrain != null)
                 {
-                    IOldAggressiveBrain aggroBrain = ((GameNPC)target).Brain as IOldAggressiveBrain;
-					if (aggroBrain != null)
-					{
-						int aggro = Convert.ToInt32(ad.Damage * Spell.Value);
-						aggroBrain.AddToAggroList(Caster, aggro);
+                    var aggro = Convert.ToInt32(ad.Damage * Spell.Value);
+                    aggroBrain.AddToAggroList(Caster, aggro);
 
-						//log.DebugFormat("Damage: {0}, Taunt Value: {1}, (de)Taunt Amount {2}", ad.Damage, Spell.Value, aggro.ToString());
-					}
+                    //log.DebugFormat("Damage: {0}, Taunt Value: {1}, (de)Taunt Amount {2}", ad.Damage, Spell.Value, aggro.ToString());
                 }
             }
         }
+    }
 
-		// constructor
-        public StyleTaunt(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
-	}
+    // constructor
+    public StyleTaunt(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
+    }
 }

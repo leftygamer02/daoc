@@ -16,43 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the TurnTo event of GameNPC
+/// </summary>
+public class TurnToEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the TurnTo event of GameNPC
-	/// </summary>
-	public class TurnToEventArgs : EventArgs
-	{
-		private int x;
-		private int y;
+    private int x;
+    private int y;
 
-		/// <summary>
-		/// Constructs a new TurnToEventArgs
-		/// </summary>
-		/// <param name="x">the target x</param>
-		/// <param name="y">the target y</param>
-		public TurnToEventArgs(int x, int y)
-		{
-			this.x=x;
-			this.y=y;
-		}
+    /// <summary>
+    /// Constructs a new TurnToEventArgs
+    /// </summary>
+    /// <param name="x">the target x</param>
+    /// <param name="y">the target y</param>
+    public TurnToEventArgs(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
 
-		/// <summary>
-		/// Gets the target X
-		/// </summary>
-		public int X
-		{
-			get { return x; }
-		}		
-		
-		/// <summary>
-		/// Gets the target Y
-		/// </summary>
-		public int Y
-		{
-			get { return y; }
-		}
-	}
+    /// <summary>
+    /// Gets the target X
+    /// </summary>
+    public int X => x;
+
+    /// <summary>
+    /// Gets the target Y
+    /// </summary>
+    public int Y => y;
 }

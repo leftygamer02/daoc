@@ -1,57 +1,57 @@
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+/// <summary>
+/// Table that holds the association between items and required  kill credits
+/// </summary>
+[DataTable(TableName = "ItemXKillCredit")]
+public class ItemXKillCredit : DataObject
 {
-	/// <summary>
-	/// Table that holds the association between items and required  kill credits
-	/// </summary>
-	[DataTable(TableName = "ItemXKillCredit")]
-	public class ItemXKillCredit : DataObject
-	{
-		//important data
-		public string m_mobName;
-		public string m_itemTemplate;
-		public int m_id;
-		
-		/// <summary>
-		/// Primary Key Auto Increment.
-		/// </summary>
-		[PrimaryKey(AutoIncrement = true)]
-		public int KillCreditID
-		{
-			get { return m_id; }
-			set
-			{
-				Dirty = true;
-				m_id = value;
-			}
-		}
-		
-		[DataElement(AllowDbNull = false, Index = false)]
-		public string MobName
-		{
-			get { return m_mobName; }
-			set
-			{
-				Dirty = true;
-				m_mobName = value;
-			}
-		}
-		
-		[DataElement(AllowDbNull = false, Index = false)]
-		public string ItemTemplate
-		{
-			get { return m_itemTemplate; }
-			set
-			{
-				Dirty = true;
-				m_itemTemplate = value;
-			}
-		}
-	}
+    //important data
+    public string m_mobName;
+    public string m_itemTemplate;
+    public int m_id;
+
+    /// <summary>
+    /// Primary Key Auto Increment.
+    /// </summary>
+    [PrimaryKey(AutoIncrement = true)]
+    public int KillCreditID
+    {
+        get => m_id;
+        set
+        {
+            Dirty = true;
+            m_id = value;
+        }
+    }
+
+    [DataElement(AllowDbNull = false, Index = false)]
+    public string MobName
+    {
+        get => m_mobName;
+        set
+        {
+            Dirty = true;
+            m_mobName = value;
+        }
+    }
+
+    [DataElement(AllowDbNull = false, Index = false)]
+    public string ItemTemplate
+    {
+        get => m_itemTemplate;
+        set
+        {
+            Dirty = true;
+            m_itemTemplate = value;
+        }
+    }
 }
 
 #region sql to populate table
+
 // CREATE TABLE IF NOT EXISTS itemxkillcredit (
 //     `KillCreditID` INT,
 //     `MobName` VARCHAR(27) CHARACTER SET utf8,
@@ -672,4 +672,5 @@ namespace DOL.Database
 //     (609,'Yar','Paw_of_the_Wulfen','2022-06-22 00:00:00'),
 //     (610,'Yar','Vest_of_the_Pack','2022-06-22 00:00:00'),
 //     (611,'Yar','Wulfen-fur_Trimmed_Cloak','2022-06-22 00:00:00');
+
 #endregion

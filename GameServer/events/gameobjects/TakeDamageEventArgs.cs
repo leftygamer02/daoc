@@ -16,66 +16,55 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the TakeDamage event of GameObjects
+/// </summary>
+public class TakeDamageEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the TakeDamage event of GameObjects
-	/// </summary>
-	public class TakeDamageEventArgs : EventArgs
-	{
-		private GameObject m_damageSource;
-		private eDamageType m_damageType;
-		private int m_damageAmount;
-		private int m_criticalAmount;
+    private GameObject m_damageSource;
+    private eDamageType m_damageType;
+    private int m_damageAmount;
+    private int m_criticalAmount;
 
-		/// <summary>
-		/// Constructs new TakeDamageEventArgs
-		/// </summary>
-		/// <param name="damageSource">The damage source</param>
-		/// <param name="damageType">The damage type</param>
-		/// <param name="damageAmount">The damage amount</param>
-		/// <param name="criticalAmount">The critical damage amount</param>
-		public TakeDamageEventArgs(GameObject damageSource, eDamageType damageType, int damageAmount, int criticalAmount)
-		{
-			m_damageSource = damageSource;
-			m_damageType = damageType;
-			m_damageAmount = damageAmount;
-			m_criticalAmount = criticalAmount;
-		}
+    /// <summary>
+    /// Constructs new TakeDamageEventArgs
+    /// </summary>
+    /// <param name="damageSource">The damage source</param>
+    /// <param name="damageType">The damage type</param>
+    /// <param name="damageAmount">The damage amount</param>
+    /// <param name="criticalAmount">The critical damage amount</param>
+    public TakeDamageEventArgs(GameObject damageSource, eDamageType damageType, int damageAmount,
+        int criticalAmount)
+    {
+        m_damageSource = damageSource;
+        m_damageType = damageType;
+        m_damageAmount = damageAmount;
+        m_criticalAmount = criticalAmount;
+    }
 
-		/// <summary>
-		/// Gets the damage source
-		/// </summary>
-		public GameObject DamageSource
-		{
-			get { return m_damageSource; }
-		}
+    /// <summary>
+    /// Gets the damage source
+    /// </summary>
+    public GameObject DamageSource => m_damageSource;
 
-		/// <summary>
-		/// Gets the damage type
-		/// </summary>
-		public eDamageType DamageType
-		{
-			get { return m_damageType; }
-		}
+    /// <summary>
+    /// Gets the damage type
+    /// </summary>
+    public eDamageType DamageType => m_damageType;
 
-		/// <summary>
-		/// Gets the damage amount
-		/// </summary>
-		public int DamageAmount
-		{
-			get { return m_damageAmount; }
-		}
+    /// <summary>
+    /// Gets the damage amount
+    /// </summary>
+    public int DamageAmount => m_damageAmount;
 
-		/// <summary>
-		/// Gets the critical damage amount
-		/// </summary>
-		public int CriticalAmount
-		{
-			get { return m_criticalAmount; }
-		}
-	}
+    /// <summary>
+    /// Gets the critical damage amount
+    /// </summary>
+    public int CriticalAmount => m_criticalAmount;
 }

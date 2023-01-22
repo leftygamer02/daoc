@@ -25,12 +25,9 @@ public class AlluvianGlobuleState_IDLE : StandardMobState_IDLE
     public override void Think()
     {
         if ((_brain as AlluvianGlobuleBrain).CheckStorm())
-        {
             if (!(_brain as AlluvianGlobuleBrain).hasGrown)
-            {
                 (_brain as AlluvianGlobuleBrain).Grow(); //idle
-            }
-        }
+
         base.Think();
     }
 }
@@ -51,12 +48,10 @@ public class AlluvianGlobuleState_ROAMING : StandardMobState_ROAMING
     public override void Think()
     {
         if (!_brain.Body.attackComponent.AttackState && !_brain.Body.IsMoving && !_brain.Body.InCombat)
-        {
             // loc range around the lake that Alluvian spanws.
-            _brain.Body.WalkTo(544196 + Util.Random(1, 3919), 514980 + Util.Random(1, 3200), 3140 + Util.Random(1, 540), 80);
-        }
+            _brain.Body.WalkTo(544196 + Util.Random(1, 3919), 514980 + Util.Random(1, 3200), 3140 + Util.Random(1, 540),
+                80);
+
         base.Think();
     }
 }
-
-

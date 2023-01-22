@@ -16,27 +16,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using log4net;
 using System.Reflection;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Djinn stone base class.
+/// </summary>
+/// <author>Aredhel</author>
+public class DjinnStone : GameStaticItem
 {
+    private AncientBoundDjinn m_djinn;
+
     /// <summary>
-    /// Djinn stone base class.
+    /// The djinn bound to this stone.
     /// </summary>
-    /// <author>Aredhel</author>
-    public class DjinnStone : GameStaticItem
+    protected AncientBoundDjinn Djinn
     {
-        private AncientBoundDjinn m_djinn;
-        
-        /// <summary>
-        /// The djinn bound to this stone.
-        /// </summary>
-        protected AncientBoundDjinn Djinn
-        {
-            get { return m_djinn;  }
-            set { m_djinn = value; }
-        }
+        get => m_djinn;
+        set => m_djinn = value;
     }
 }

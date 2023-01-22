@@ -16,46 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.LookingForGroup, "handle Looking for a group",
+    eClientStatus.PlayerInGame)]
+public class LookingForAGroupHandler : IPacketHandler
 {
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.LookingForGroup, "handle Looking for a group", eClientStatus.PlayerInGame)]
-	public class LookingForAGroupHandler : IPacketHandler
-	{
-		//rewritten by Corillian so if it doesn't work you know who to yell at ;)
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			byte grouped = (byte)packet.ReadByte();
-			ArrayList list = new ArrayList();
-			if (grouped != 0x00)
-			{
-				var groups = GroupMgr.ListGroupByStatus(0x00);
-				if (groups != null)
-				{
-					foreach (Group group in groups)
-						if (GameServer.ServerRules.IsAllowedToGroup(group.Leader, client.Player, true))
-						{
-							list.Add(group.Leader);
-						}
-				}
-			}
+    //rewritten by Corillian so if it doesn't work you know who to yell at ;)
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        var grouped = (byte) packet.ReadByte();
+        var list = new ArrayList();
+        if (grouped != 0x00)
+        {
+            var groups = GroupMgr.ListGroupByStatus(0x00);
+            if (groups != null)
+                foreach (var group in groups)
+                    if (GameServer.ServerRules.IsAllowedToGroup(group.Leader, client.Player, true))
+                        list.Add(group.Leader);
+        }
 
-			var Lfg = GroupMgr.LookingForGroupPlayers();
+        var Lfg = GroupMgr.LookingForGroupPlayers();
 
-			if (Lfg != null)
-			{
-				foreach (GamePlayer player in Lfg)
-				{
-					if (player != client.Player && GameServer.ServerRules.IsAllowedToGroup(client.Player, player, true))
-					{
-						list.Add(player);
-					}
-				}
-			}
+        if (Lfg != null)
+            foreach (var player in Lfg)
+                if (player != client.Player && GameServer.ServerRules.IsAllowedToGroup(client.Player, player, true))
+                    list.Add(player);
 
-			client.Out.SendFindGroupWindowUpdate((GamePlayer[])list.ToArray(typeof(GamePlayer)));
-		}
-	}
+        client.Out.SendFindGroupWindowUpdate((GamePlayer[]) list.ToArray(typeof(GamePlayer)));
+    }
 }

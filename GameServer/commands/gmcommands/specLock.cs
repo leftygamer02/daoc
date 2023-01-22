@@ -16,53 +16,52 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&speclock",
+    ePrivLevel.GM,
+    "Set your SpecMod combat modifier to a designated value <0.01 min>",
+    "/speclock <value> - where value is a decimal input like 1.10 or 0.85",
+    "/speclock reset - clear value and use normal combat calculations")]
+public class SpecLockCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&speclock",
-		ePrivLevel.GM,
-		"Set your SpecMod combat modifier to a designated value <0.01 min>",
-		"/speclock <value> - where value is a decimal input like 1.10 or 0.85", 
-		"/speclock reset - clear value and use normal combat calculations")]
-	
-	public class SpecLockCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (args.Length < 2)
-			{
-				DisplaySyntax(client);
-				return;
-			}
-				
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (args.Length < 2)
+        {
+            DisplaySyntax(client);
+            return;
+        }
 
-			try
-			{
-				if (args[1].Equals("reset"))
-				{
-					client.Player.SpecLock = 0;
-					return;
-				}
 
-				double input = Double.Parse(args[1]);
-				if (input <= 0)
-				{
-					DisplaySyntax(client);
-					return;
-				}
+        try
+        {
+            if (args[1].Equals("reset"))
+            {
+                client.Player.SpecLock = 0;
+                return;
+            }
 
-				client.Player.SpecLock = input;
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e + ": " + e.StackTrace);
-				DisplaySyntax(client);
-			}
-		}
-	}
+            var input = double.Parse(args[1]);
+            if (input <= 0)
+            {
+                DisplaySyntax(client);
+                return;
+            }
+
+            client.Player.SpecLock = input;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e + ": " + e.StackTrace);
+            DisplaySyntax(client);
+        }
+    }
 }

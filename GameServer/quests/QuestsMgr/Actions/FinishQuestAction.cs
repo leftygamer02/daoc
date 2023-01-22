@@ -16,34 +16,36 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 
-namespace DOL.GS.Quests.Actions
+namespace DOL.GS.Quests.Actions;
+
+[ActionAttribute(ActionType = eActionType.FinishQuest)]
+public class FinishQuestAction : AbstractAction<Type, Unused>
 {
-    [ActionAttribute(ActionType = eActionType.FinishQuest)]
-    public class FinishQuestAction: AbstractAction<Type,Unused>
+    public FinishQuestAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.FinishQuest, p, q)
     {
+    }
 
-        public FinishQuestAction(GameNPC defaultNPC, Object p, Object q)
-            : base(defaultNPC, eActionType.FinishQuest, p, q) 
-        { }
-
-        public FinishQuestAction(GameNPC defaultNPC, Type questType)
-            : this(defaultNPC, (object) questType,(object) null)
-        { }
+    public FinishQuestAction(GameNPC defaultNPC, Type questType)
+        : this(defaultNPC, (object) questType, (object) null)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            AbstractQuest playerQuest = player.IsDoingQuest(P);
-            if (playerQuest != null)
-                playerQuest.FinishQuest();
-        }
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        var playerQuest = player.IsDoingQuest(P);
+        if (playerQuest != null)
+            playerQuest.FinishQuest();
     }
 }

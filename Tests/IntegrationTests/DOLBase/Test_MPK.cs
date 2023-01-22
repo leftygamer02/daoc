@@ -3,66 +3,68 @@ using NUnit.Framework;
 using System.Text;
 using System.IO;
 
-namespace DOL.Tests.Integration.DOLBase
+namespace DOL.Tests.Integration.DOLBase;
+
+[TestFixture]
+internal class Test_MPK
 {
-    [TestFixture]
-    class Test_MPK
+    private string testDirectory => "testMPK";
+    private string textFileLocation => "test.txt";
+    private string mpkFileLocation => "test.mpk";
+    private string extractPath => "extractDirectory";
+    private string textFileContent => "1234";
+
+    [OneTimeSetUp]
+    public void CreateFilesToBeAddedToMPK()
     {
-        private string testDirectory => "testMPK";
-        private string textFileLocation => "test.txt";
-        private string mpkFileLocation => "test.mpk";
-        private string extractPath => "extractDirectory";
-        private string textFileContent => "1234";
+        Directory.CreateDirectory(testDirectory);
+        Directory.SetCurrentDirectory(testDirectory);
 
-        [OneTimeSetUp]
-        public void CreateFilesToBeAddedToMPK()
-        {
-            Directory.CreateDirectory(testDirectory);
-            Directory.SetCurrentDirectory(testDirectory);
+        var testFile = File.Create(textFileLocation);
+        var fileContent = Encoding.ASCII.GetBytes(textFileContent);
+        testFile.Write(fileContent, 0, fileContent.Length);
+        testFile.Close();
+    }
 
-            var testFile = File.Create(textFileLocation);
-            var fileContent = Encoding.ASCII.GetBytes(textFileContent);
-            testFile.Write(fileContent, 0, fileContent.Length);
-            testFile.Close();
-        }
+    [Test]
+    [Order(1)]
+    public void Save_TestTxtToMPK_CorrectCRC()
+    {
+        var newMPK = new MPK.MPK(mpkFileLocation, true);
+        var mpkFile = new MPKFile(textFileLocation);
+        newMPK.AddFile(mpkFile);
+        newMPK[textFileLocation].Header.TimeStamp = 0; //Make MPK creation deterministic
 
-        [Test, Order(1)]
-        public void Save_TestTxtToMPK_CorrectCRC()
-        {
-            var newMPK = new MPK.MPK(mpkFileLocation, true);
-            var mpkFile = new MPKFile(textFileLocation);
-            newMPK.AddFile(mpkFile);
-            newMPK[textFileLocation].Header.TimeStamp = 0; //Make MPK creation deterministic
+        newMPK.Save();
+        Assert.AreEqual(1, newMPK.Count);
 
-            newMPK.Save();
-            Assert.AreEqual(1, newMPK.Count);
+        var expectedCRCValue = 375344986;
+        Assert.AreEqual(expectedCRCValue, newMPK.CRCValue);
+    }
 
-            var expectedCRCValue = 375344986;
-            Assert.AreEqual(expectedCRCValue, newMPK.CRCValue);
-        }
+    [Test]
+    [Order(2)]
+    public void Open_TestMPK_NoExceptions()
+    {
+        _ = new MPK.MPK(mpkFileLocation, false);
+    }
 
-        [Test, Order(2)]
-        public void Open_TestMPK_NoExceptions()
-        {
-            _ = new MPK.MPK(mpkFileLocation, false);
-        }
+    [Test]
+    [Order(3)]
+    public void Extract_TestMPK_SameTxtContent()
+    {
+        var mpk = new MPK.MPK(mpkFileLocation, false);
+        mpk.Extract(extractPath);
 
-        [Test, Order(3)]
-        public void Extract_TestMPK_SameTxtContent()
-        {
-            var mpk = new MPK.MPK(mpkFileLocation, false);
-            mpk.Extract(extractPath);
+        var actualFileText = File.ReadAllText(Path.Combine(extractPath, textFileLocation));
+        var expectedFileText = textFileContent;
+        Assert.AreEqual(expectedFileText, actualFileText);
+    }
 
-            var actualFileText = File.ReadAllText(Path.Combine(extractPath,  textFileLocation));
-            var expectedFileText = textFileContent;
-            Assert.AreEqual(expectedFileText, actualFileText);
-        }
-
-        [OneTimeTearDown]
-        public void RemoveArtifacts()
-        {
-            Directory.SetCurrentDirectory("..");
-            Directory.Delete(Path.Combine(testDirectory), true);
-        }
+    [OneTimeTearDown]
+    public void RemoveArtifacts()
+    {
+        Directory.SetCurrentDirectory("..");
+        Directory.Delete(Path.Combine(testDirectory), true);
     }
 }

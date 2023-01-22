@@ -16,94 +16,96 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+/// <summary>
+/// Relation between artifacts and the actual items.
+/// </summary>
+/// <author>Aredhel</author>
+[DataTable(TableName = "ArtifactXItem")]
+public class ArtifactXItem : DataObject
 {
-	/// <summary>
-	/// Relation between artifacts and the actual items.
-	/// </summary>
-	/// <author>Aredhel</author>
-	[DataTable(TableName = "ArtifactXItem")]
-	public class ArtifactXItem : DataObject
-	{
-		private string m_artifactID;
-		private string m_itemID;
-		private string m_version;
-		private int m_realm;
+    private string m_artifactID;
+    private string m_itemID;
+    private string m_version;
+    private int m_realm;
 
-		/// <summary>
-		/// Create a new artifact/item relation.
-		/// </summary>
-		public ArtifactXItem()
-			: base() { }
+    /// <summary>
+    /// Create a new artifact/item relation.
+    /// </summary>
+    public ArtifactXItem()
+        : base()
+    {
+    }
 
-		/// <summary>
-		/// Whether to auto-save this object or not.
-		/// </summary>
-		public override bool AllowAdd
-		{
-			get { return false; }
-			set { }
-		}
+    /// <summary>
+    /// Whether to auto-save this object or not.
+    /// </summary>
+    public override bool AllowAdd
+    {
+        get => false;
+        set { }
+    }
 
-		/// <summary>
-		/// The artifact ID.
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public string ArtifactID
-		{
-			get { return m_artifactID; }
-			set
-			{
-				Dirty = true;
-				m_artifactID = value;
-			}
-		}
+    /// <summary>
+    /// The artifact ID.
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string ArtifactID
+    {
+        get => m_artifactID;
+        set
+        {
+            Dirty = true;
+            m_artifactID = value;
+        }
+    }
 
-		/// <summary>
-		/// The item ID.
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public string ItemID
-		{
-			get { return m_itemID; }
-			set
-			{
-				Dirty = true;
-				m_itemID = value;
-			}
-		}
+    /// <summary>
+    /// The item ID.
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string ItemID
+    {
+        get => m_itemID;
+        set
+        {
+            Dirty = true;
+            m_itemID = value;
+        }
+    }
 
-		/// <summary>
-		/// The artifact version.
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public string Version
-		{
-			get { return m_version; }
-			set
-			{
-				Dirty = true;
-				m_version = value;
-			}
-		}
+    /// <summary>
+    /// The artifact version.
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string Version
+    {
+        get => m_version;
+        set
+        {
+            Dirty = true;
+            m_version = value;
+        }
+    }
 
-		/// <summary>
-		/// The realm.
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int Realm
-		{
-			get { return m_realm; }
-			set
-			{
-				Dirty = true;
-				m_realm = value;
-			}
-		}
-	}
+    /// <summary>
+    /// The realm.
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Realm
+    {
+        get => m_realm;
+        set
+        {
+            Dirty = true;
+            m_realm = value;
+        }
+    }
 }

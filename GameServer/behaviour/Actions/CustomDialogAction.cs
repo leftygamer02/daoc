@@ -16,36 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.CustomDialog)]
+public class CustomDialogAction : AbstractAction<string, CustomDialogResponse>
 {
-    [ActionAttribute(ActionType = eActionType.CustomDialog)]
-    public class CustomDialogAction : AbstractAction<string, CustomDialogResponse>
-    {               
-
-        public CustomDialogAction(GameNPC defaultNPC, Object p, Object q)
-            : base(defaultNPC, eActionType.CustomDialog, p, q)
-        {                
-        }
+    public CustomDialogAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.CustomDialog, p, q)
+    {
+    }
 
 
-        public CustomDialogAction(GameNPC defaultNPC, string message, CustomDialogResponse customDialogResponse)
-            : this(defaultNPC,  (object)message, (object)customDialogResponse) { }
-        
+    public CustomDialogAction(GameNPC defaultNPC, string message, CustomDialogResponse customDialogResponse)
+        : this(defaultNPC, (object) message, (object) customDialogResponse)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
 
-            string message = BehaviourUtils.GetPersonalizedMessage(P, player);            
-            player.Out.SendCustomDialog(message, Q);
-        }
+        var message = BehaviourUtils.GetPersonalizedMessage(P, player);
+        player.Out.SendCustomDialog(message, Q);
     }
 }

@@ -4,24 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Holds the possible activeWeaponSlot values
+/// </summary>
+public enum eActiveWeaponSlot : byte
 {
     /// <summary>
-    /// Holds the possible activeWeaponSlot values
+    /// Weapon slot righthand
     /// </summary>
-    public enum eActiveWeaponSlot : byte
-    {
-        /// <summary>
-        /// Weapon slot righthand
-        /// </summary>
-        Standard = 0x00,
-        /// <summary>
-        /// Weaponslot twohanded
-        /// </summary>
-        TwoHanded = 0x01,
-        /// <summary>
-        /// Weaponslot distance
-        /// </summary>
-        Distance = 0x02
-    }
+    Standard = 0x00,
+
+    /// <summary>
+    /// Weaponslot twohanded
+    /// </summary>
+    TwoHanded = 0x01,
+
+    /// <summary>
+    /// Weaponslot distance
+    /// </summary>
+    Distance = 0x02
 }

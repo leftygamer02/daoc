@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,29 +25,33 @@ using DOL.Events;
 using DOL.GS.Behaviour.Attributes;
 using DOL.GS.Behaviour;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.PlaySound, IsNullableQ = true)]
+public class PlaySoundAction : AbstractAction<ushort, eSoundType>
 {
-	[ActionAttribute(ActionType = eActionType.PlaySound, IsNullableQ=true)]
-	public class PlaySoundAction : AbstractAction<ushort, eSoundType>
-	{
-
-		public PlaySoundAction(GameNPC defaultNPC, Object p, Object q)
-			: base(defaultNPC, eActionType.PlaySound, p, q) { }
+    public PlaySoundAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.PlaySound, p, q)
+    {
+    }
 
 
-		public PlaySoundAction(GameNPC defaultNPC, ushort id, eSoundType type)
-			: this(defaultNPC, (object)id, (object)type) { }
+    public PlaySoundAction(GameNPC defaultNPC, ushort id, eSoundType type)
+        : this(defaultNPC, (object) id, (object) type)
+    {
+    }
 
 
-		public PlaySoundAction(GameNPC defaultNPC, ushort id)
-			: this(defaultNPC, (object)id, (object)eSoundType.Divers) { }
+    public PlaySoundAction(GameNPC defaultNPC, ushort id)
+        : this(defaultNPC, (object) id, (object) eSoundType.Divers)
+    {
+    }
 
 
-		public override void Perform(DOLEvent e, object sender, EventArgs args)
-		{
-			GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-			ushort message = P;
-			player.Out.SendPlaySound(Q, P);
-		}
-	}
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        var message = P;
+        player.Out.SendPlaySound(Q, P);
+    }
 }

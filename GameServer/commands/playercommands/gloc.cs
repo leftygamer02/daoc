@@ -16,24 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute("&gloc", //command to handle
-		ePrivLevel.Player, //minimum privelege level
-		"Show the current coordinates", //command description
-		"/gloc")] //command usage
-	public class GlocCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "gloc"))
-				return;
+namespace DOL.GS.Commands;
 
-			DisplayMessage(client, string.Format("You are at X:{0} Y:{1} Z:{2} Heading:{3} Region:{4} {5} Zone:{6}",
-				client.Player.X, client.Player.Y, client.Player.Z, client.Player.Heading, client.Player.CurrentRegionID,
-				client.Player.CurrentRegion is BaseInstance ? string.Format("Skin:{0}", client.Player.CurrentRegion.Skin) : "", client.Player.CurrentZone.ID));
-		}
-	}
+[CmdAttribute("&gloc", //command to handle
+    ePrivLevel.Player, //minimum privelege level
+    "Show the current coordinates", //command description
+    "/gloc")] //command usage
+public class GlocCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "gloc"))
+            return;
+
+        DisplayMessage(client, string.Format("You are at X:{0} Y:{1} Z:{2} Heading:{3} Region:{4} {5} Zone:{6}",
+            client.Player.X, client.Player.Y, client.Player.Z, client.Player.Heading, client.Player.CurrentRegionID,
+            client.Player.CurrentRegion is BaseInstance
+                ? string.Format("Skin:{0}", client.Player.CurrentRegion.Skin)
+                : "", client.Player.CurrentZone.ID));
+    }
 }

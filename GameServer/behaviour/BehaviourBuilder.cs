@@ -16,34 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Text;
 using System.Reflection;
 using DOL.Database;
 using DOL.GS.Quests;
 
-namespace DOL.GS.Behaviour
+namespace DOL.GS.Behaviour;
+
+public class BehaviourBuilder
 {
-    public class BehaviourBuilder
+    //private MethodInfo addActionMethod;
+
+    public BehaviourBuilder()
     {
-        
-        //private MethodInfo addActionMethod;
+        //this.addActionMethod = questType.GetMethod("AddBehaviour", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);            
+    }
 
-        public BehaviourBuilder()
-        {            
-            //this.addActionMethod = questType.GetMethod("AddBehaviour", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);            
-        }                
+    public void AddBehaviour(QuestBehaviour questPart)
+    {
+        //addActionMethod.Invoke(null, new object[] { questPart });
+    }
 
-        public void AddBehaviour(QuestBehaviour questPart)
-        {            
-            //addActionMethod.Invoke(null, new object[] { questPart });
-        }        
-
-        public BaseBehaviour CreateBehaviour(GameNPC npc)
-        {
-            BaseBehaviour behaviour =  new BaseBehaviour(npc);            
-            return behaviour;
-        }
-        
+    public BaseBehaviour CreateBehaviour(GameNPC npc)
+    {
+        var behaviour = new BaseBehaviour(npc);
+        return behaviour;
     }
 }

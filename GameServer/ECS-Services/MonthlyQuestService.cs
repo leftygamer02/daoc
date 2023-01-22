@@ -18,16 +18,14 @@ public class MonthlyQuestService
     static MonthlyQuestService()
     {
         EntityManager.AddService(typeof(MonthlyQuestService));
-        
+
         var loadQuestsProp = GameServer.Database.SelectAllObjects<TaskRefreshIntervals>();
 
         foreach (var interval in loadQuestsProp)
-        {
             if (interval.RolloverInterval.Equals(MonthlyIntervalKey))
                 lastMonthlyRollover = interval.LastRollover;
-        }
-        
-        if(lastMonthlyRollover == null)
+
+        if (lastMonthlyRollover == null)
             lastMonthlyRollover = DateTime.UnixEpoch;
     }
 
@@ -40,9 +38,11 @@ public class MonthlyQuestService
         if (lastMonthlyRollover.Date.Month < DateTime.Now.Date.Month || lastMonthlyRollover.Year < DateTime.Now.Year)
         {
             lastMonthlyRollover = DateTime.Now;
-            
+
             //update db
-            var loadQuestsProp = GameServer.Database.SelectObject<TaskRefreshIntervals>(DB.Column("RolloverInterval").IsEqualTo(MonthlyIntervalKey));
+            var loadQuestsProp =
+                GameServer.Database.SelectObject<TaskRefreshIntervals>(DB.Column("RolloverInterval")
+                    .IsEqualTo(MonthlyIntervalKey));
             //update the one we've got, otherwise...
             if (loadQuestsProp != null)
             {
@@ -52,23 +52,21 @@ public class MonthlyQuestService
             else
             {
                 //make a new one
-                TaskRefreshIntervals newTime = new TaskRefreshIntervals();
+                var newTime = new TaskRefreshIntervals();
                 newTime.LastRollover = DateTime.Now;
                 newTime.RolloverInterval = MonthlyIntervalKey;
                 GameServer.Database.AddObject(newTime);
             }
-            
+
             foreach (var player in EntityManager.GetAllPlayers())
             {
-                List<AbstractQuest> questsToRemove = new List<AbstractQuest>();
+                var questsToRemove = new List<AbstractQuest>();
                 foreach (var quest in player.QuestListFinished)
-                {
                     if (quest is Quests.MonthlyQuest)
                     {
                         quest.AbortQuest();
-                        questsToRemove.Add(quest);    
+                        questsToRemove.Add(quest);
                     }
-                }
 
                 foreach (var quest in questsToRemove)
                 {
@@ -76,14 +74,13 @@ public class MonthlyQuestService
                     player.QuestListFinished.Remove(quest);
                 }
             }
-            
-            var existingMonthlyQuests = GameServer.Database.SelectObjects<DBQuest>(DB.Column("Name").IsLike("%MonthlyQuest%"));
+
+            var existingMonthlyQuests =
+                GameServer.Database.SelectObjects<DBQuest>(DB.Column("Name").IsLike("%MonthlyQuest%"));
 
             foreach (var existingMonthlyQuest in existingMonthlyQuests)
-            {
-                if(existingMonthlyQuest.Step <= -1)
+                if (existingMonthlyQuest.Step <= -1)
                     GameServer.Database.DeleteObject(existingMonthlyQuest);
-            }
         }
 
         Diagnostics.StopPerfCounter(ServiceName);

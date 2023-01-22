@@ -16,51 +16,56 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using DOL.Language;
 
-namespace DOL.GS.SkillHandler
+namespace DOL.GS.SkillHandler;
+
+/// <summary>
+/// Handler for Rapid Fire ability
+/// </summary>
+[SkillHandlerAttribute(Abilities.RapidFire)]
+public class RapidFireAbilityHandler : IAbilityActionHandler
 {
-	/// <summary>
-	/// Handler for Rapid Fire ability
-	/// </summary>
-	[SkillHandlerAttribute(Abilities.RapidFire)]
-	public class RapidFireAbilityHandler : IAbilityActionHandler
-	{
-		public void Execute(Ability ab, GamePlayer player)
-		{
+    public void Execute(Ability ab, GamePlayer player)
+    {
+        var rapidFire =
+            (RapidFireECSGameEffect) EffectListService.GetAbilityEffectOnTarget(player, eEffect.RapidFire);
+        if (rapidFire != null)
+        {
+            EffectService.RequestImmediateCancelEffect(rapidFire, false);
+            return;
+        }
 
-			RapidFireECSGameEffect rapidFire = (RapidFireECSGameEffect)EffectListService.GetAbilityEffectOnTarget(player, eEffect.RapidFire);
-			if (rapidFire!=null)
-			{
-				EffectService.RequestImmediateCancelEffect(rapidFire, false);
-				return;
-			}
+        if (!player.IsAlive)
+        {
+            player.Out.SendMessage(
+                LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.RapidFire.CannotUseDead"),
+                eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return;
+        }
 
-			if(!player.IsAlive)
-			{
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.RapidFire.CannotUseDead"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return;
-			}
+        var sureShot =
+            (SureShotECSGameEffect) EffectListService.GetAbilityEffectOnTarget(player, eEffect.SureShot);
+        if (sureShot != null)
+            EffectService.RequestImmediateCancelEffect(sureShot);
 
-			SureShotECSGameEffect sureShot = (SureShotECSGameEffect)EffectListService.GetAbilityEffectOnTarget(player, eEffect.SureShot);
-			if (sureShot != null)
-				EffectService.RequestImmediateCancelEffect(sureShot);
+        var trueshot =
+            (TrueShotECSGameEffect) EffectListService.GetAbilityEffectOnTarget(player, eEffect.TrueShot);
+        if (trueshot != null)
+            EffectService.RequestImmediateCancelEffect(trueshot, false);
 
-			TrueShotECSGameEffect trueshot = (TrueShotECSGameEffect)EffectListService.GetAbilityEffectOnTarget(player, eEffect.TrueShot);
-			if (trueshot != null)
-				EffectService.RequestImmediateCancelEffect(trueshot, false);
+        var volley = EffectListService.GetEffectOnTarget(player, eEffect.Volley);
+        if (volley != null)
+        {
+            player.Out.SendMessage("You can't use " + ab.Name + " while Volley is active!", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            return;
+        }
 
-			ECSGameEffect volley = EffectListService.GetEffectOnTarget(player, eEffect.Volley);
-			if (volley != null)
-			{
-				player.Out.SendMessage("You can't use "+ab.Name+" while Volley is active!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				return;
-			}
-
-			new RapidFireECSGameEffect(new ECSGameEffectInitParams(player, 0, 1));
-		}
-	}
+        new RapidFireECSGameEffect(new ECSGameEffectInitParams(player, 0, 1));
+    }
 }

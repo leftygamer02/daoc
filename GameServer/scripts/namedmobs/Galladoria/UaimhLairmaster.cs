@@ -20,23 +20,25 @@ namespace DOL.GS.Scripts
 {
     public class UaimhLairmaster : GameEpicBoss
     {
-        protected String m_FleeingAnnounce;
+        protected string m_FleeingAnnounce;
         public static bool IsFleeing = true;
 
         public UaimhLairmaster() : base()
         {
             m_FleeingAnnounce = "{0} starts fleeing!";
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override bool AddToWorld()
         {
             Model = 844;
@@ -49,7 +51,8 @@ namespace DOL.GS.Scripts
             RoamingRange = 0;
             MaxSpeedBase = 300;
 
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(96);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60167362);
@@ -73,14 +76,11 @@ namespace DOL.GS.Scripts
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+        public override int MaxHealth => 100000;
 
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
 
@@ -140,7 +140,7 @@ namespace DOL.GS.Scripts
         /// </summary>
         public override void WalkToSpawn()
         {
-            UaimhLairmasterBrain brain = new UaimhLairmasterBrain();
+            var brain = new UaimhLairmasterBrain();
             StopAttack();
             StopFollowing();
             brain.AggroTable.Clear();
@@ -162,12 +162,10 @@ namespace DOL.GS.Scripts
         /// Broadcast relevant messages to the raid.
         /// </summary>
         /// <param name="message">The message to be broadcast.</param>
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
 
         #endregion
@@ -177,9 +175,8 @@ namespace DOL.GS.Scripts
             base.Notify(e, sender, args);
 
             if (e == GameObjectEvent.TakeDamage)
-            {
-                if (CheckHealth()) return;
-            }
+                if (CheckHealth())
+                    return;
 
             if (e == GameNPCEvent.ArriveAtTarget)
                 EvadeChance = 0;
@@ -197,7 +194,7 @@ namespace DOL.GS.Scripts
         {
             if (HealthPercent <= 60 && IsFleeing)
             {
-                BroadcastMessage(String.Format(m_FleeingAnnounce, Name));
+                BroadcastMessage(string.Format(m_FleeingAnnounce, Name));
                 WalkToSpawn();
                 IsFleeing = false;
                 return true;
@@ -222,7 +219,7 @@ namespace DOL.GS.Scripts
             protected byte MAX_Size = 100;
             protected byte MIN_Size = 60;
 
-            protected String m_AggroAnnounce;
+            protected string m_AggroAnnounce;
             public static bool IsAggroEnemies = true;
 
             private static readonly log4net.ILog log =
@@ -238,13 +235,9 @@ namespace DOL.GS.Scripts
                 if (Body.InCombat && Body.IsAlive && HasAggro)
                 {
                     if (Body.TargetObject != null)
-                    {
                         if (IsAggroEnemies)
-                        {
                             //Starts Growing
                             GrowSize();
-                        }
-                    }
                 }
                 else
                 {
@@ -261,19 +254,17 @@ namespace DOL.GS.Scripts
             /// Broadcast relevant messages to the raid.
             /// </summary>
             /// <param name="message">The message to be broadcast.</param>
-            public void BroadcastMessage(String message)
+            public void BroadcastMessage(string message)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-                {
                     player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-                }
             }
 
             #endregion
 
             public void GrowSize()
             {
-                BroadcastMessage(String.Format(m_AggroAnnounce, Body.Name));
+                BroadcastMessage(string.Format(m_AggroAnnounce, Body.Name));
                 Body.Size = MAX_Size;
                 IsAggroEnemies = false;
             }

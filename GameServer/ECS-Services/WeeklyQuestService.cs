@@ -18,16 +18,14 @@ public class WeeklyQuestService
     static WeeklyQuestService()
     {
         EntityManager.AddService(typeof(WeeklyQuestService));
-        
+
         var loadQuestsProp = GameServer.Database.SelectAllObjects<TaskRefreshIntervals>();
 
         foreach (var interval in loadQuestsProp)
-        {
             if (interval.RolloverInterval.Equals(WeeklyIntervalKey))
                 lastWeeklyRollover = interval.LastRollover;
-        }
-        
-        if(lastWeeklyRollover == null)
+
+        if (lastWeeklyRollover == null)
             lastWeeklyRollover = DateTime.UnixEpoch;
     }
 
@@ -37,12 +35,15 @@ public class WeeklyQuestService
         //.WriteLine($"daily:{lastDailyRollover.Date.DayOfYear} weekly:{lastWeeklyRollover.Date.DayOfYear+7} now:{DateTime.Now.Date.DayOfYear}");
 
         //this is where the weekly check will go once testing is finished
-        if (lastWeeklyRollover.Date.DayOfYear+7 < DateTime.Now.Date.DayOfYear || lastWeeklyRollover.Year < DateTime.Now.Year)
+        if (lastWeeklyRollover.Date.DayOfYear + 7 < DateTime.Now.Date.DayOfYear ||
+            lastWeeklyRollover.Year < DateTime.Now.Year)
         {
             lastWeeklyRollover = DateTime.Now;
-            
+
             //update db
-            var loadQuestsProp = GameServer.Database.SelectObject<TaskRefreshIntervals>(DB.Column("RolloverInterval").IsEqualTo(WeeklyIntervalKey));
+            var loadQuestsProp =
+                GameServer.Database.SelectObject<TaskRefreshIntervals>(DB.Column("RolloverInterval")
+                    .IsEqualTo(WeeklyIntervalKey));
             //update the one we've got, otherwise...
             if (loadQuestsProp != null)
             {
@@ -52,23 +53,21 @@ public class WeeklyQuestService
             else
             {
                 //make a new one
-                TaskRefreshIntervals newTime = new TaskRefreshIntervals();
+                var newTime = new TaskRefreshIntervals();
                 newTime.LastRollover = DateTime.Now;
                 newTime.RolloverInterval = WeeklyIntervalKey;
                 GameServer.Database.AddObject(newTime);
             }
-            
+
             foreach (var player in EntityManager.GetAllPlayers())
             {
-                List<AbstractQuest> questsToRemove = new List<AbstractQuest>();
+                var questsToRemove = new List<AbstractQuest>();
                 foreach (var quest in player.QuestListFinished)
-                {
                     if (quest is Quests.WeeklyQuest)
                     {
                         quest.AbortQuest();
-                        questsToRemove.Add(quest);    
+                        questsToRemove.Add(quest);
                     }
-                }
 
                 foreach (var quest in questsToRemove)
                 {
@@ -76,14 +75,13 @@ public class WeeklyQuestService
                     player.QuestListFinished.Remove(quest);
                 }
             }
-            
-            var existingWeeklyQuests = GameServer.Database.SelectObjects<DBQuest>(DB.Column("Name").IsLike("%WeeklyQuest%"));
+
+            var existingWeeklyQuests =
+                GameServer.Database.SelectObjects<DBQuest>(DB.Column("Name").IsLike("%WeeklyQuest%"));
 
             foreach (var existingWeeklyQuest in existingWeeklyQuests)
-            {
-                if(existingWeeklyQuest.Step <= -1)
+                if (existingWeeklyQuest.Step <= -1)
                     GameServer.Database.DeleteObject(existingWeeklyQuest);
-            }
         }
 
         Diagnostics.StopPerfCounter(ServiceName);

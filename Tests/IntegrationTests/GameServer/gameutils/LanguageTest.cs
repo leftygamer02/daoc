@@ -16,25 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Language;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+[TestFixture]
+public class LanguageTest : ServerTests
 {
-	[TestFixture]
-	public class LanguageTest: ServerTests
-	{
-		public LanguageTest()
-		{
-		}
-		
-		[Test]
-		public void TestGetString()
-		{
-			Console.WriteLine("TestGetString();");
-			Console.WriteLine(LanguageMgr.GetTranslation ("test","fail default string"));
-			Assert.IsTrue(true, "ok");
-		}
-	}
+    public LanguageTest()
+    {
+    }
+
+    [Test]
+    public void TestGetString()
+    {
+        Console.WriteLine("TestGetString();");
+        Console.WriteLine(LanguageMgr.GetTranslation("test", "fail default string"));
+        Assert.IsTrue(true, "ok");
+    }
 }

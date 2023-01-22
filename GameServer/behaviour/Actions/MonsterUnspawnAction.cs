@@ -16,34 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 using DOL.Database;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.MonsterUnspawn, DefaultValueP = eDefaultValueConstants.NPC)]
+public class MonsterUnspawnAction : AbstractAction<GameLiving, Unused>
 {
-    [ActionAttribute(ActionType = eActionType.MonsterUnspawn,DefaultValueP=eDefaultValueConstants.NPC)]
-    public class MonsterUnspawnAction : AbstractAction<GameLiving,Unused>
-    {               
-
-        public MonsterUnspawnAction(GameNPC defaultNPC,  Object p, Object q)
-            : base(defaultNPC, eActionType.MonsterUnspawn, p, q)
-        {                
-        }
+    public MonsterUnspawnAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.MonsterUnspawn, p, q)
+    {
+    }
 
 
-        public MonsterUnspawnAction(GameNPC defaultNPC,  GameLiving monsterToUnspawn)
-            : this(defaultNPC, (object)monsterToUnspawn, (object)null) { }
-        
+    public MonsterUnspawnAction(GameNPC defaultNPC, GameLiving monsterToUnspawn)
+        : this(defaultNPC, (object) monsterToUnspawn, (object) null)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            P.RemoveFromWorld();
-        }
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        P.RemoveFromWorld();
     }
 }

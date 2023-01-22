@@ -6,30 +6,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class RapidFireECSGameEffect : ECSGameAbilityEffect
 {
-    public class RapidFireECSGameEffect : ECSGameAbilityEffect
+    public RapidFireECSGameEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public RapidFireECSGameEffect(ECSGameEffectInitParams initParams)
-            : base(initParams)
-        {
-            EffectType = eEffect.RapidFire;
-            EffectService.RequestStartEffect(this);
-        }
+        EffectType = eEffect.RapidFire;
+        EffectService.RequestStartEffect(this);
+    }
 
 
-        public override ushort Icon { get { return 484; } }
-        public override string Name { get { return LanguageMgr.GetTranslation(((GamePlayer)Owner).Client, "Effects.RapidFireEffect.Name"); } }
-        public override bool HasPositiveEffect { get { return true; } }
+    public override ushort Icon => 484;
 
-        public override void OnStartEffect()
-        {
-            if (OwnerPlayer != null)
-                OwnerPlayer.Out.SendMessage(LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.RapidFireEffect.YouSwitchRFMode"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-        }
-        public override void OnStopEffect()
-        {
+    public override string Name =>
+        LanguageMgr.GetTranslation(((GamePlayer) Owner).Client, "Effects.RapidFireEffect.Name");
 
-        }
+    public override bool HasPositiveEffect => true;
+
+    public override void OnStartEffect()
+    {
+        if (OwnerPlayer != null)
+            OwnerPlayer.Out.SendMessage(
+                LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.RapidFireEffect.YouSwitchRFMode"),
+                eChatType.CT_System, eChatLoc.CL_SystemWindow);
+    }
+
+    public override void OnStopEffect()
+    {
     }
 }

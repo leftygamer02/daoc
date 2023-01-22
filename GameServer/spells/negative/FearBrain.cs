@@ -16,47 +16,42 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-using System;
 
+using System;
 using DOL.GS;
 
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+public class FearBrain : StandardMobBrain
 {
-	public class FearBrain : StandardMobBrain
-	{
-		/// <summary>
-		/// Fixed thinking Interval for Fleeing
-		/// </summary>
-		public override int ThinkInterval {
-			get {
-				return 3000;
-			}
-		}
-		
-		/// <summary>
-		/// Flee from Players on Brain Think
-		/// </summary>
-		public override void Think()
-		{
-			foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)Math.Max(AggroRange, 750)))
-			{
-				CalculateFleeTarget(player);
-				break;
-			}
-		}
+    /// <summary>
+    /// Fixed thinking Interval for Fleeing
+    /// </summary>
+    public override int ThinkInterval => 3000;
 
-		///<summary>
-		/// Calculate flee target.
-		/// </summary>
-		///<param name="target">The target to flee.</param>
-		protected virtual void CalculateFleeTarget(GameLiving target)
-		{
-			ushort TargetAngle = (ushort)((Body.GetHeading(target) + 2048) % 4096);
+    /// <summary>
+    /// Flee from Players on Brain Think
+    /// </summary>
+    public override void Think()
+    {
+        foreach (GamePlayer player in Body.GetPlayersInRadius((ushort) Math.Max(AggroRange, 750)))
+        {
+            CalculateFleeTarget(player);
+            break;
+        }
+    }
 
-            Point2D fleePoint = Body.GetPointFromHeading(TargetAngle, 300);
-			Body.StopFollowing();
-			Body.StopAttack();
-			Body.WalkTo(fleePoint.X, fleePoint.Y, Body.Z, Body.MaxSpeed);
-		}
-	}
-} 
+    ///<summary>
+    /// Calculate flee target.
+    /// </summary>
+    ///<param name="target">The target to flee.</param>
+    protected virtual void CalculateFleeTarget(GameLiving target)
+    {
+        var TargetAngle = (ushort) ((Body.GetHeading(target) + 2048) % 4096);
+
+        var fleePoint = Body.GetPointFromHeading(TargetAngle, 300);
+        Body.StopFollowing();
+        Body.StopAttack();
+        Body.WalkTo(fleePoint.X, fleePoint.Y, Body.Z, Body.MaxSpeed);
+    }
+}

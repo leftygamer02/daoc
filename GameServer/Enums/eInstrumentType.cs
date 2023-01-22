@@ -17,16 +17,15 @@
  *
  */
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// instrument types
+/// </summary>
+public enum eInstrumentType : int
 {
-    /// <summary>
-    /// instrument types
-    /// </summary>
-    public enum eInstrumentType : int
-	{
-		Drum = 1,
-		Lute = 2,
-		Flute = 3,
-		Harp = 4,
-	}
+    Drum = 1,
+    Lute = 2,
+    Flute = 3,
+    Harp = 4
 }

@@ -16,188 +16,176 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using System.Reflection;
 using DOL.Database;
 using log4net;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Manages NPC templates data
+/// </summary>
+public sealed class NpcTemplateMgr
 {
-	/// <summary>
-	/// Manages NPC templates data
-	/// </summary>
-	public sealed class NpcTemplateMgr
-	{
-		public enum eBodyType : int
-		{
-			None = 0,
-			Animal = 1,
-			Demon = 2,
-			Dragon = 3,
-			Elemental = 4,
-			Giant = 5,
-			Humanoid = 6,
-			Insect = 7,
-			Magical = 8,
-			Reptile = 9,
-			Plant = 10,
-			Undead = 11,
-			_Last = 11,
-		}
+    public enum eBodyType : int
+    {
+        None = 0,
+        Animal = 1,
+        Demon = 2,
+        Dragon = 3,
+        Elemental = 4,
+        Giant = 5,
+        Humanoid = 6,
+        Insect = 7,
+        Magical = 8,
+        Reptile = 9,
+        Plant = 10,
+        Undead = 11,
+        _Last = 11
+    }
 
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>
-		/// Holds all NPC templates
-		/// </summary>
-		private static readonly Hashtable m_mobTemplates = new Hashtable(1024);
-		private static readonly Hashtable m_mobTemplatesByName = new Hashtable(1024);
+    /// <summary>
+    /// Holds all NPC templates
+    /// </summary>
+    private static readonly Hashtable m_mobTemplates = new(1024);
 
-		public Hashtable MobTemplates
-		{
-			get { return m_mobTemplatesByName; }
-		}
+    private static readonly Hashtable m_mobTemplatesByName = new(1024);
 
-		/// <summary>
-		/// Initializes NPC templates manager
-		/// </summary>
-		/// <returns>success</returns>
-		public static bool Init()
-		{
-			try
-			{
-				lock (m_mobTemplates.SyncRoot)
-				{
-					m_mobTemplates.Clear();
-					var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
-					foreach (DBNpcTemplate dbTemplate in objs)
-					{
-						try
-						{
-							AddTemplate(new NpcTemplate(dbTemplate));
-						}
-						catch (Exception ex)
-						{
-							log.Error("Error loading template " + dbTemplate.Name, ex);
-						}
-					}
+    public Hashtable MobTemplates => m_mobTemplatesByName;
 
-					return true;
-				}
-			}
-			catch (Exception e)
-			{
-				log.Error(e);
-				return false;
-			}
-		}
+    /// <summary>
+    /// Initializes NPC templates manager
+    /// </summary>
+    /// <returns>success</returns>
+    public static bool Init()
+    {
+        try
+        {
+            lock (m_mobTemplates.SyncRoot)
+            {
+                m_mobTemplates.Clear();
+                var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
+                foreach (var dbTemplate in objs)
+                    try
+                    {
+                        AddTemplate(new NpcTemplate(dbTemplate));
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error("Error loading template " + dbTemplate.Name, ex);
+                    }
 
-		/// <summary>
-		/// Reload templates from the database, being careful not to wipe out script loaded templates
-		/// </summary>
-		/// <returns></returns>
-		public static bool Reload()
-		{
-			try
-			{
-				lock (m_mobTemplates.SyncRoot)
-				{
-					var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error(e);
+            return false;
+        }
+    }
 
-					// remove all the db templates
-					foreach (DBNpcTemplate dbTemplate in objs)
-					{
-						RemoveTemplate(new NpcTemplate(dbTemplate));
-					}
+    /// <summary>
+    /// Reload templates from the database, being careful not to wipe out script loaded templates
+    /// </summary>
+    /// <returns></returns>
+    public static bool Reload()
+    {
+        try
+        {
+            lock (m_mobTemplates.SyncRoot)
+            {
+                var objs = GameServer.Database.SelectAllObjects<DBNpcTemplate>();
 
-					// add them back in
-					foreach (DBNpcTemplate dbTemplate in objs)
-					{
-						AddTemplate(new NpcTemplate(dbTemplate));
-					}
+                // remove all the db templates
+                foreach (var dbTemplate in objs) RemoveTemplate(new NpcTemplate(dbTemplate));
 
-					return true;
-				}
-			}
-			catch (Exception e)
-			{
-				log.Error(e);
-				return false;
-			}
-		}
+                // add them back in
+                foreach (var dbTemplate in objs) AddTemplate(new NpcTemplate(dbTemplate));
 
-		/// <summary>
-		/// Removes a template
-		/// </summary>
-		/// <param name="template">mob template</param>
-		public static void RemoveTemplate(INpcTemplate template)
-		{
-			lock (m_mobTemplates.SyncRoot)
-			{
-				if (m_mobTemplates[template.TemplateId] != null)
-				{
-					m_mobTemplates[template.TemplateId] = null;
-				}
-			}
-		}
+                return true;
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error(e);
+            return false;
+        }
+    }
 
-		/// <summary>
-		/// Adds the mob template to collection
-		/// </summary>
-		/// <param name="template">New mob template</param>
-		public static void AddTemplate(INpcTemplate template)
-		{
-			lock (m_mobTemplates.SyncRoot)
-			{
-				object entry = m_mobTemplates[template.TemplateId];
+    /// <summary>
+    /// Removes a template
+    /// </summary>
+    /// <param name="template">mob template</param>
+    public static void RemoveTemplate(INpcTemplate template)
+    {
+        lock (m_mobTemplates.SyncRoot)
+        {
+            if (m_mobTemplates[template.TemplateId] != null) m_mobTemplates[template.TemplateId] = null;
+        }
+    }
 
-				if (entry == null)
-				{
-					m_mobTemplates[template.TemplateId] = template;
-				}
-				else if (entry is ArrayList)
-				{
-					ArrayList array = (ArrayList)entry;
-					array.Add(template);
-				}
-				else
-				{
-					ArrayList arr = new ArrayList(2);
-					arr.Add(entry);
-					arr.Add(template);
-					m_mobTemplates[template.TemplateId] = arr;
-				}
-			}
-		}
+    /// <summary>
+    /// Adds the mob template to collection
+    /// </summary>
+    /// <param name="template">New mob template</param>
+    public static void AddTemplate(INpcTemplate template)
+    {
+        lock (m_mobTemplates.SyncRoot)
+        {
+            var entry = m_mobTemplates[template.TemplateId];
 
-		/// <summary>
-		/// Gets mob template by ID, returns random if multiple templates with same ID
-		/// </summary>
-		/// <param name="templateId">The mob template ID</param>
-		/// <returns>The mob template or null if nothing is found</returns>
-		public static NpcTemplate GetTemplate(int templateId)
-		{
-			if (templateId == -1 || templateId == 0)
-				return null;
-			lock (m_mobTemplates.SyncRoot)
-			{
-				object entry = m_mobTemplates[templateId];
-				if (entry is ArrayList)
-				{
-					ArrayList array = (ArrayList)entry;
-					return (NpcTemplate)array[Util.Random(array.Count - 1)];
-				}
-				else if (entry == null)
-				{
-					log.Error("No npctemplate with ID " + templateId + " found.");
-					return null;
-				}
-				return (NpcTemplate)entry;
-			}
-		}
-	}
+            if (entry == null)
+            {
+                m_mobTemplates[template.TemplateId] = template;
+            }
+            else if (entry is ArrayList)
+            {
+                var array = (ArrayList) entry;
+                array.Add(template);
+            }
+            else
+            {
+                var arr = new ArrayList(2);
+                arr.Add(entry);
+                arr.Add(template);
+                m_mobTemplates[template.TemplateId] = arr;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets mob template by ID, returns random if multiple templates with same ID
+    /// </summary>
+    /// <param name="templateId">The mob template ID</param>
+    /// <returns>The mob template or null if nothing is found</returns>
+    public static NpcTemplate GetTemplate(int templateId)
+    {
+        if (templateId == -1 || templateId == 0)
+            return null;
+        lock (m_mobTemplates.SyncRoot)
+        {
+            var entry = m_mobTemplates[templateId];
+            if (entry is ArrayList)
+            {
+                var array = (ArrayList) entry;
+                return (NpcTemplate) array[Util.Random(array.Count - 1)];
+            }
+            else if (entry == null)
+            {
+                log.Error("No npctemplate with ID " + templateId + " found.");
+                return null;
+            }
+
+            return (NpcTemplate) entry;
+        }
+    }
 }

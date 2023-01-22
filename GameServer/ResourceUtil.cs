@@ -16,60 +16,59 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Reflection;
 using System.IO;
 
-namespace DOL.Config
+namespace DOL.Config;
+
+/// <summary>
+/// Helps managing embedded resources
+/// </summary>
+public class ResourceUtil
 {
-	/// <summary>
-	/// Helps managing embedded resources
-	/// </summary>
-	public class ResourceUtil
-	{
-		/// <summary>
-		/// Searches for a specific resource and returns the stream
-		/// </summary>
-		/// <param name="fileName">the resource name</param>
-		/// <returns>the resource stream</returns>
-		public static Stream GetResourceStream(string fileName)
-		{
-			Assembly myAssembly = Assembly.GetAssembly(typeof(ResourceUtil));
-			fileName = fileName.ToLower();
-			foreach(string name in myAssembly.GetManifestResourceNames())
-			{
-				if(name.ToLower().EndsWith(fileName))
-					return myAssembly.GetManifestResourceStream(name);
-			}
-			return null;
-		}
+    /// <summary>
+    /// Searches for a specific resource and returns the stream
+    /// </summary>
+    /// <param name="fileName">the resource name</param>
+    /// <returns>the resource stream</returns>
+    public static Stream GetResourceStream(string fileName)
+    {
+        var myAssembly = Assembly.GetAssembly(typeof(ResourceUtil));
+        fileName = fileName.ToLower();
+        foreach (var name in myAssembly.GetManifestResourceNames())
+            if (name.ToLower().EndsWith(fileName))
+                return myAssembly.GetManifestResourceStream(name);
 
-		/// <summary>
-		/// Extracts a given resource
-		/// </summary>
-		/// <param name="fileName">the resource name</param>
-		public static void ExtractResource(string fileName)
-		{
-			ExtractResource(fileName, fileName);
-		}
-		
-		/// <summary>
-		/// Extracts a given resource
-		/// </summary>
-		/// <param name="resourceName">the resource name</param>
-		/// <param name="fileName">the external file name</param>
-		public static void ExtractResource(string resourceName, string fileName)
-		{
-			FileInfo finfo = new FileInfo(fileName);
-			if(!finfo.Directory.Exists)
-				finfo.Directory.Create();
+        return null;
+    }
 
-			using(StreamReader reader = new StreamReader(GetResourceStream(resourceName)))
-			{
-				using(StreamWriter writer = new StreamWriter(File.Create(fileName)))
-				{
-					writer.Write(reader.ReadToEnd());
-				}
-			}
-		}
-	}
+    /// <summary>
+    /// Extracts a given resource
+    /// </summary>
+    /// <param name="fileName">the resource name</param>
+    public static void ExtractResource(string fileName)
+    {
+        ExtractResource(fileName, fileName);
+    }
+
+    /// <summary>
+    /// Extracts a given resource
+    /// </summary>
+    /// <param name="resourceName">the resource name</param>
+    /// <param name="fileName">the external file name</param>
+    public static void ExtractResource(string resourceName, string fileName)
+    {
+        var finfo = new FileInfo(fileName);
+        if (!finfo.Directory.Exists)
+            finfo.Directory.Create();
+
+        using (var reader = new StreamReader(GetResourceStream(resourceName)))
+        {
+            using (var writer = new StreamWriter(File.Create(fileName)))
+            {
+                writer.Write(reader.ReadToEnd());
+            }
+        }
+    }
 }

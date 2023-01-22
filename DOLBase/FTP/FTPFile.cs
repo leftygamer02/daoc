@@ -18,16 +18,15 @@
  */
 //Written by the DotNetFTPClient team: http://www.sourceforge.net/projects/dotnetftpclient
 
-namespace DOL.FTP
+namespace DOL.FTP;
+
+/// <summary>
+/// This class represents a FTP file
+/// </summary>
+public class FTPFile
 {
-	/// <summary>
-	/// This class represents a FTP file
-	/// </summary>
-	public class FTPFile
-	{
-		/// <summary>
-		/// Sets the name of the file
-		/// </summary>
-		public string Name { get; set; }
-	}
+    /// <summary>
+    /// Sets the name of the file
+    /// </summary>
+    public string Name { get; set; }
 }

@@ -16,33 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+public class NextCraftingTierReachedEventArgs : System.EventArgs
 {
-	public class NextCraftingTierReachedEventArgs : System.EventArgs
-	{
-		private eCraftingSkill m_skill;
-		private int m_points;
-		public eCraftingSkill Skill
-		{
-			get
-			{
-				return m_skill;
-			}
-		}
-		public int Points
-		{
-			get
-			{
-				return m_points;
-			}
-		}
-		public NextCraftingTierReachedEventArgs(eCraftingSkill skill, int points)
-			: base()
-		{
-			m_skill = skill;
-			m_points = points;
-		}
-	}
+    private eCraftingSkill m_skill;
+    private int m_points;
+
+    public eCraftingSkill Skill => m_skill;
+
+    public int Points => m_points;
+
+    public NextCraftingTierReachedEventArgs(eCraftingSkill skill, int points)
+        : base()
+    {
+        m_skill = skill;
+        m_points = points;
+    }
 }

@@ -16,31 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.DatabaseConverters
+namespace DOL.GS.DatabaseConverters;
+
+/// <summary>
+/// Attribute that denotes a class as a database converter
+/// from previous version to the specified in attribute
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class DatabaseConverterAttribute : Attribute
 {
-	/// <summary>
-	/// Attribute that denotes a class as a database converter
-	/// from previous version to the specified in attribute
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple=false)]
-	public class DatabaseConverterAttribute : Attribute
-	{
-		private int m_targetVersion;
+    private int m_targetVersion;
 
-		/// <summary>
-		/// Constructs new attribute for database converter classes
-		/// </summary>
-		/// <param name="targetVersion">Target database version after convertion</param>
-		public DatabaseConverterAttribute(int targetVersion)
-		{
-			m_targetVersion = targetVersion;
-		}
+    /// <summary>
+    /// Constructs new attribute for database converter classes
+    /// </summary>
+    /// <param name="targetVersion">Target database version after convertion</param>
+    public DatabaseConverterAttribute(int targetVersion)
+    {
+        m_targetVersion = targetVersion;
+    }
 
-		public int TargetVersion
-		{
-			get { return m_targetVersion; }
-		}
-	}
+    public int TargetVersion => m_targetVersion;
 }

@@ -19,14 +19,10 @@
 
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+// data table attribute not set until door translations are supported.
+internal class LanguageDoor : LanguageDataObject
 {
-    // data table attribute not set until door translations are supported.
-    class LanguageDoor : LanguageDataObject
-    {
-        public override eTranslationIdentifier TranslationIdentifier
-        {
-            get { return eTranslationIdentifier.eDoor; }
-        }
-    }
+    public override eTranslationIdentifier TranslationIdentifier => eTranslationIdentifier.eDoor;
 }

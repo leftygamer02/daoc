@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public enum eHorseSaddleBag : byte
 {
-    public enum eHorseSaddleBag : byte
-    {
-        None = 0x00,
-        LeftFront = 0x01,
-        RightFront = 0x02,
-        LeftRear = 0x04,
-        RightRear = 0x08,
-        All = 0x0F
-    }
+    None = 0x00,
+    LeftFront = 0x01,
+    RightFront = 0x02,
+    LeftRear = 0x04,
+    RightRear = 0x08,
+    All = 0x0F
 }

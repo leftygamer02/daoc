@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -19,58 +19,44 @@
 
 using DOL.GS.Quests;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+// Command handler for the various /commands used in quests
+
+[CmdAttribute(
+    "&search",
+    ePrivLevel.Player,
+    "Search the current area.",
+    "/search")]
+public class QuestSearchCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	// Command handler for the various /commands used in quests
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "search"))
+            return;
 
+        var player = client.Player;
 
-	[CmdAttribute(
-		"&search",
-		ePrivLevel.Player,
-		"Search the current area.",
-		"/search")]
-	public class QuestSearchCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "search"))
-				return;
+        if (player == null)
+            return;
 
-			GamePlayer player = client.Player;
+        var searched = false;
 
-			if (player == null)
-				return;
+        foreach (var quest in player.QuestList)
+            if (quest.Command(player, AbstractQuest.eQuestCommand.Search))
+                searched = true;
 
-			bool searched = false;
+        // Also check for DataQuests started via searching
 
-			foreach (AbstractQuest quest in player.QuestList)
-			{
-				if (quest.Command(player, AbstractQuest.eQuestCommand.Search))
-				{
-					searched = true;
-				}
-			}
+        if (searched == false)
+            foreach (AbstractArea area in player.CurrentAreas)
+                if (area is QuestSearchArea && (area as QuestSearchArea).DataQuest != null &&
+                    (area as QuestSearchArea).Step == 0)
+                    if ((area as QuestSearchArea).DataQuest.Command(player, AbstractQuest.eQuestCommand.SearchStart,
+                            area))
+                        searched = true;
 
-            // Also check for DataQuests started via searching
-
-            if (searched == false)
-            {
-                foreach (AbstractArea area in player.CurrentAreas)
-                {
-                    if (area is QuestSearchArea && (area as QuestSearchArea).DataQuest != null && (area as QuestSearchArea).Step == 0)
-                    {
-                        if ((area as QuestSearchArea).DataQuest.Command(player, AbstractQuest.eQuestCommand.SearchStart, area))
-                        {
-                            searched = true;
-                        }
-                    }
-                }
-            }
-
-			if (searched == false)
-			{
-				player.Out.SendMessage("You can't do that here!", DOL.GS.PacketHandler.eChatType.CT_Important, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
-			}
-		}
-	}
+        if (searched == false)
+            player.Out.SendMessage("You can't do that here!", PacketHandler.eChatType.CT_Important,
+                PacketHandler.eChatLoc.CL_SystemWindow);
+    }
 }

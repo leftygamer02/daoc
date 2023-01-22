@@ -7,52 +7,60 @@ namespace DOL.GS.RealmAbilities;
 
 public class AtlasOF_BrilliantAura : TimedRealmAbility, ISpellCastingAbilityHandler
 {
-    public AtlasOF_BrilliantAura(DBAbility dba, int level) : base(dba, level) { }
+    public AtlasOF_BrilliantAura(DBAbility dba, int level) : base(dba, level)
+    {
+    }
 
     private SpellHandler m_handler;
-    
-    public Spell Spell { get { return m_spell; } }
-    public SpellLine SpellLine { get { return m_spellline; } }
-    public Ability Ability { get { return this; } }
 
-    public override int MaxLevel { get { return 1; } }
-    public override int GetReUseDelay(int level) { return 1800; } // 30 min
-    public override int CostForUpgrade(int level) { return 14; }
+    public Spell Spell => m_spell;
 
-    int m_range = 1500;
+    public SpellLine SpellLine => m_spellline;
+
+    public Ability Ability => this;
+
+    public override int MaxLevel => 1;
+
+    public override int GetReUseDelay(int level)
+    {
+        return 1800;
+    } // 30 min
+
+    public override int CostForUpgrade(int level)
+    {
+        return 14;
+    }
+
+    private int m_range = 1500;
 
     public override void Execute(GameLiving living)
     {
         if (CheckPreconditions(living, DEAD | SITTING)) return;
 
-        GamePlayer player = living as GamePlayer;
+        var player = living as GamePlayer;
 
         if (player == null)
             return;
         if (m_handler == null) m_handler = CreateSpell(player);
 
-        ArrayList targets = new ArrayList();
+        var targets = new ArrayList();
         if (player.Group == null)
             targets.Add(player);
         else
-        {
-            foreach (GamePlayer grpplayer in player.Group.GetPlayersInTheGroup())
-            {
+            foreach (var grpplayer in player.Group.GetPlayersInTheGroup())
                 if (player.IsWithinRadius(grpplayer, m_range, true) && grpplayer.IsAlive)
                     targets.Add(grpplayer);
-            }
-        }
 
         SendCastMessage(player);
 
-        bool AtLeastOneEffectRemoved = false;
+        var AtLeastOneEffectRemoved = false;
         foreach (GamePlayer target in targets)
         {
             new StatBuffECSEffect(new ECSGameEffectInitParams(target, 30000, 1, m_handler));
             foreach (GamePlayer pl in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
-                pl.Out.SendSpellEffectAnimation(target,target,4317,20000,false,1);
-                pl.Out.SendSpellEffectAnimation(target,target,5208,20000,false,1);
+                pl.Out.SendSpellEffectAnimation(target, target, 4317, 20000, false, 1);
+                pl.Out.SendSpellEffectAnimation(target, target, 5208, 20000, false, 1);
             }
         }
 
@@ -83,9 +91,8 @@ public class AtlasOF_BrilliantAura : TimedRealmAbility, ISpellCastingAbilityHand
         m_spellline = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", true);
         return new SpellHandler(caster, m_spell, m_spellline);
     }
-    
+
     private DBSpell m_dbspell;
     private Spell m_spell = null;
     private SpellLine m_spellline;
-
 }

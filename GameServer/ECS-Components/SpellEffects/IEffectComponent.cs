@@ -1,8 +1,7 @@
-namespace DOL.GS.SpellEffects
+namespace DOL.GS.SpellEffects;
+
+public interface IEffectComponent
 {
-    public interface IEffectComponent
-    {
-        eSpellEffect Type { get; set; }
-        ushort SpellEffectId { get; set; }
-    }
+    eSpellEffect Type { get; set; }
+    ushort SpellEffectId { get; set; }
 }

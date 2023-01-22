@@ -16,37 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.WalkTo, DefaultValueQ = eDefaultValueConstants.NPC)]
+public class WalkToAction : AbstractAction<IPoint3D, GameNPC>
 {
-    [ActionAttribute(ActionType = eActionType.WalkTo,DefaultValueQ=eDefaultValueConstants.NPC)]
-    public class WalkToAction : AbstractAction<IPoint3D,GameNPC>
+    public WalkToAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.WalkTo, p, q)
     {
-
-        public WalkToAction(GameNPC defaultNPC,  Object p, Object q)
-            : base(defaultNPC, eActionType.WalkTo, p, q)
-        {                
-            }
+    }
 
 
-        public WalkToAction(GameNPC defaultNPC,  IPoint3D destination, GameNPC npc)
-            : this(defaultNPC, (object) destination,(object) npc) { }
-        
+    public WalkToAction(GameNPC defaultNPC, IPoint3D destination, GameNPC npc)
+        : this(defaultNPC, (object) destination, (object) npc)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            IPoint3D location = (P is IPoint3D) ? (IPoint3D)P : player;            
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        var location = P is IPoint3D ? (IPoint3D) P : player;
 
-            Q.WalkTo(location, Q.CurrentSpeed);
-            
-        }
+        Q.WalkTo(location, Q.CurrentSpeed);
     }
 }

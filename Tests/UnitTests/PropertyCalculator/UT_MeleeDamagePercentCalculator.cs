@@ -2,35 +2,38 @@
 using DOL.GS;
 using DOL.GS.PropertyCalc;
 
-namespace DOL.Tests.Unit.Gameserver.PropertyCalc
+namespace DOL.Tests.Unit.Gameserver.PropertyCalc;
+
+[TestFixture]
+internal class UT_MeleeDamagePercentCalculator
 {
-    [TestFixture]
-    class UT_MeleeDamagePercentCalculator
+    [Test]
+    public void CalcValue_50StrengthBuff_6()
     {
-        [Test]
-        public void CalcValue_50StrengthBuff_6()
-        {
-            var npc = NewNPC();
-            npc.BaseBuffBonusCategory[eProperty.Strength] = 50;
+        var npc = NewNPC();
+        npc.BaseBuffBonusCategory[eProperty.Strength] = 50;
 
-            int actual = MeleeDamageBonusCalculator.CalcValue(npc, MeleeDamageProperty);
+        var actual = MeleeDamageBonusCalculator.CalcValue(npc, MeleeDamageProperty);
 
-            Assert.AreEqual(6, actual);
-        }
+        Assert.AreEqual(6, actual);
+    }
 
-        [Test]
-        public void CalcValue_NPCWith50StrengthDebuff_Minus6()
-        {
-            var npc = NewNPC();
-            npc.DebuffCategory[eProperty.Strength] = 50;
+    [Test]
+    public void CalcValue_NPCWith50StrengthDebuff_Minus6()
+    {
+        var npc = NewNPC();
+        npc.DebuffCategory[eProperty.Strength] = 50;
 
-            int actual = MeleeDamageBonusCalculator.CalcValue(npc, MeleeDamageProperty);
+        var actual = MeleeDamageBonusCalculator.CalcValue(npc, MeleeDamageProperty);
 
-            Assert.AreEqual(-6, actual);
-        }
+        Assert.AreEqual(-6, actual);
+    }
 
-        private MeleeDamagePercentCalculator MeleeDamageBonusCalculator => new MeleeDamagePercentCalculator();
-        private eProperty MeleeDamageProperty => eProperty.MeleeDamage;
-        private FakeNPC NewNPC() => new FakeNPC();
+    private MeleeDamagePercentCalculator MeleeDamageBonusCalculator => new();
+    private eProperty MeleeDamageProperty => eProperty.MeleeDamage;
+
+    private FakeNPC NewNPC()
+    {
+        return new();
     }
 }

@@ -28,238 +28,226 @@ using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+/// <summary>
+/// A brain for the commanders
+/// </summary>
+public class CommanderBrain : ControlledNpcBrain
 {
-	/// <summary>
-	/// A brain for the commanders
-	/// </summary>
-	public class CommanderBrain : ControlledNpcBrain
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public CommanderBrain(GameLiving owner)
-			: base(owner)
-		{
-		}
+    public CommanderBrain(GameLiving owner)
+        : base(owner)
+    {
+    }
 
-		public bool MinionsAssisting
-		{
-			get { return Body is CommanderPet commander && commander.MinionsAssisting; }
-		}
+    public bool MinionsAssisting => Body is CommanderPet commander && commander.MinionsAssisting;
 
-		/// <summary>
-		/// Determines if a given controlled brain is part of the commanders subpets
-		/// </summary>
-		/// <param name="brain">The brain to check</param>
-		/// <returns>True if found, else false</returns>
-		public bool FindPet(IControlledBrain brain)
-		{
-			if (Body.ControlledNpcList != null)
-			{
-				lock (Body.ControlledNpcList)
-				{
-					foreach (IControlledBrain icb in Body.ControlledNpcList)
-						if (brain == icb)
-							return true;
-				}
-			}
-			return false;
-		}
+    /// <summary>
+    /// Determines if a given controlled brain is part of the commanders subpets
+    /// </summary>
+    /// <param name="brain">The brain to check</param>
+    /// <returns>True if found, else false</returns>
+    public bool FindPet(IControlledBrain brain)
+    {
+        if (Body.ControlledNpcList != null)
+            lock (Body.ControlledNpcList)
+            {
+                foreach (var icb in Body.ControlledNpcList)
+                    if (brain == icb)
+                        return true;
+            }
 
-		public override void OnOwnerAttacked(AttackData ad)
-		{
-			if (Body.ControlledNpcList != null)
-			{
-				foreach (var controlledBrain in Body.ControlledNpcList)
-				{
-					if (controlledBrain is BDPetBrain bdPetBrain)
-						bdPetBrain.OnOwnerAttacked(ad);
-				}
-			}
-		
-			// react only on these attack results
-			switch (ad.AttackResult)
-			{
-				case eAttackResult.Blocked:
-				case eAttackResult.Evaded:
-				case eAttackResult.Fumbled:
-				case eAttackResult.HitStyle:
-				case eAttackResult.HitUnstyled:
-				case eAttackResult.Missed:
-				case eAttackResult.Parried:
-					AddToAggroList(ad.Attacker, ad.Attacker.EffectiveLevel + ad.Damage + ad.CriticalDamage);
-					break;
-			}
+        return false;
+    }
 
-			if (FSM.GetState(eFSMStateType.AGGRO) != FSM.GetCurrentState())
-				FSM.SetCurrentState(eFSMStateType.AGGRO);
+    public override void OnOwnerAttacked(AttackData ad)
+    {
+        if (Body.ControlledNpcList != null)
+            foreach (var controlledBrain in Body.ControlledNpcList)
+                if (controlledBrain is BDPetBrain bdPetBrain)
+                    bdPetBrain.OnOwnerAttacked(ad);
 
-			AttackMostWanted();
-		}
+        // react only on these attack results
+        switch (ad.AttackResult)
+        {
+            case eAttackResult.Blocked:
+            case eAttackResult.Evaded:
+            case eAttackResult.Fumbled:
+            case eAttackResult.HitStyle:
+            case eAttackResult.HitUnstyled:
+            case eAttackResult.Missed:
+            case eAttackResult.Parried:
+                AddToAggroList(ad.Attacker, ad.Attacker.EffectiveLevel + ad.Damage + ad.CriticalDamage);
+                break;
+        }
 
-		/// <summary>
-		/// Attack the target on command
-		/// </summary>
-		/// <param name="target">The target to attack</param>
-		public override void Attack(GameObject target)
-		{
-			base.Attack(target);
-			//Check for any abilities
-			CheckAbilities();
+        if (FSM.GetState(eFSMStateType.AGGRO) != FSM.GetCurrentState())
+            FSM.SetCurrentState(eFSMStateType.AGGRO);
 
-			if (MinionsAssisting && Body.ControlledNpcList != null)
-			{
-				lock (Body.ControlledNpcList)
-				{
-					foreach (BDPetBrain icb in Body.ControlledNpcList)
-						if (icb != null)
-							icb.Attack(target);
-				}
-			}
-		}
-		
-		/// <summary>
-		/// Defend a minion that is being attacked
-		/// </summary>
-		/// <param name="ad"></param>
-		public void DefendMinion(GameLiving attacker)
-		{
-			AddToAggroList(attacker, 1);
-			AttackMostWanted();
-		}
+        AttackMostWanted();
+    }
 
-		/// <summary>
-		/// Make sure the subpets are following the commander
-		/// </summary>
-		/// <param name="target"></param>
-		public override void Follow(GameObject target)
-		{
-			base.Follow(target);
-			SubpetFollow();
-		}
+    /// <summary>
+    /// Attack the target on command
+    /// </summary>
+    /// <param name="target">The target to attack</param>
+    public override void Attack(GameObject target)
+    {
+        base.Attack(target);
+        //Check for any abilities
+        CheckAbilities();
 
-		/// <summary>
-		/// Direct all the sub pets to follow the commander
-		/// </summary>
-		private void SubpetFollow()
-		{
-			if (Body.ControlledNpcList != null)
-			{
-				lock (Body.ControlledNpcList)
-				{
-					foreach (BDPetBrain icb in Body.ControlledNpcList)
-						if (icb != null)
-							icb.FollowOwner();
-				}
-			}
-		}
+        if (MinionsAssisting && Body.ControlledNpcList != null)
+            lock (Body.ControlledNpcList)
+            {
+                foreach (BDPetBrain icb in Body.ControlledNpcList)
+                    if (icb != null)
+                        icb.Attack(target);
+            }
+    }
 
-		/// <summary>
-		/// Direct all the sub pets to follow the commander
-		/// </summary>
-		public override void Stay()
-		{
-			base.Stay();
-			SubpetFollow();
-		}
+    /// <summary>
+    /// Defend a minion that is being attacked
+    /// </summary>
+    /// <param name="ad"></param>
+    public void DefendMinion(GameLiving attacker)
+    {
+        AddToAggroList(attacker, 1);
+        AttackMostWanted();
+    }
 
-		/// <summary>
-		/// Direct all the sub pets to follow the commander
-		/// </summary>
-		public override void ComeHere()
-		{
-			base.ComeHere();
-			SubpetFollow();
-		}
+    /// <summary>
+    /// Make sure the subpets are following the commander
+    /// </summary>
+    /// <param name="target"></param>
+    public override void Follow(GameObject target)
+    {
+        base.Follow(target);
+        SubpetFollow();
+    }
 
-		/// <summary>
-		/// Direct all the sub pets to follow the commander
-		/// </summary>
-		/// <param name="target"></param>
-		public override void Goto(GameObject target)
-		{
-			base.Goto(target);
-			SubpetFollow();
-		}
+    /// <summary>
+    /// Direct all the sub pets to follow the commander
+    /// </summary>
+    private void SubpetFollow()
+    {
+        if (Body.ControlledNpcList != null)
+            lock (Body.ControlledNpcList)
+            {
+                foreach (BDPetBrain icb in Body.ControlledNpcList)
+                    if (icb != null)
+                        icb.FollowOwner();
+            }
+    }
 
-		public override void SetAggressionState(eAggressionState state)
-		{
-			base.SetAggressionState(state);
-			if (Body.ControlledNpcList != null)
-			{
-				lock (Body.ControlledNpcList)
-				{
-					foreach (BDPetBrain icb in Body.ControlledNpcList)
-						if (icb != null)
-							icb.SetAggressionState(state);
-				}
-			}
-		}
+    /// <summary>
+    /// Direct all the sub pets to follow the commander
+    /// </summary>
+    public override void Stay()
+    {
+        base.Stay();
+        SubpetFollow();
+    }
 
-		/// <summary>
-		/// Checks if any spells need casting
-		/// </summary>
-		/// <param name="type">Which type should we go through and check for?</param>
-		/// <returns></returns>
-		public override bool CheckSpells(eCheckSpellType type)
-		{
-			bool casted = false;
+    /// <summary>
+    /// Direct all the sub pets to follow the commander
+    /// </summary>
+    public override void ComeHere()
+    {
+        base.ComeHere();
+        SubpetFollow();
+    }
 
-			if (type == eCheckSpellType.Offensive && Body is CommanderPet pet
-				&& pet.PreferredSpell != CommanderPet.eCommanderPreferredSpell.None
-				&& !pet.IsCasting && !pet.IsBeingInterrupted && pet.TargetObject is GameLiving living && living.IsAlive)
+    /// <summary>
+    /// Direct all the sub pets to follow the commander
+    /// </summary>
+    /// <param name="target"></param>
+    public override void Goto(GameObject target)
+    {
+        base.Goto(target);
+        SubpetFollow();
+    }
 
-			{
-				Spell spellDamage = pet.CommSpellDamage;
-				Spell spellDamageDebuff = pet.CommSpellDamageDebuff;
-				Spell spellDot = pet.CommSpellDot;
-				Spell spellDebuff = pet.CommSpellDebuff;
-				Spell spellOther = pet.CommSpellOther;
+    public override void SetAggressionState(eAggressionState state)
+    {
+        base.SetAggressionState(state);
+        if (Body.ControlledNpcList != null)
+            lock (Body.ControlledNpcList)
+            {
+                foreach (BDPetBrain icb in Body.ControlledNpcList)
+                    if (icb != null)
+                        icb.SetAggressionState(state);
+            }
+    }
 
-				Spell cast = null;
-				switch (pet.PreferredSpell)
-				{
-					case CommanderPet.eCommanderPreferredSpell.Debuff:
-						if (spellDebuff != null && !living.HasEffect(spellDebuff))
-							cast = spellDebuff;
-						break;
-					case CommanderPet.eCommanderPreferredSpell.Other:
-						cast = spellOther;
-						break;
-				}
+    /// <summary>
+    /// Checks if any spells need casting
+    /// </summary>
+    /// <param name="type">Which type should we go through and check for?</param>
+    /// <returns></returns>
+    public override bool CheckSpells(eCheckSpellType type)
+    {
+        var casted = false;
 
-				if (cast == null)
-				{
-					// Pick a damage spell
-					if (spellDot != null && !living.HasEffect(spellDot))
-						cast = spellDot;
-					else if (spellDamageDebuff != null && (!living.HasEffect(spellDamageDebuff) || spellDamage == null))
-						cast = spellDamageDebuff;
-					else if (spellDamage != null)
-						cast = spellDamage;
-				}
+        if (type == eCheckSpellType.Offensive && Body is CommanderPet pet
+                                              && pet.PreferredSpell != CommanderPet.eCommanderPreferredSpell.None
+                                              && !pet.IsCasting && !pet.IsBeingInterrupted &&
+                                              pet.TargetObject is GameLiving living && living.IsAlive)
 
-				if (cast != null)
-					casted = CheckOffensiveSpells(cast);
-			}
+        {
+            var spellDamage = pet.CommSpellDamage;
+            var spellDamageDebuff = pet.CommSpellDamageDebuff;
+            var spellDot = pet.CommSpellDot;
+            var spellDebuff = pet.CommSpellDebuff;
+            var spellOther = pet.CommSpellOther;
 
-			if(casted)
-			{
-				// Check instant spells, but only cast one to prevent spamming
-				if (Body.CanCastInstantHarmfulSpells)
-					foreach (Spell spell in Body.InstantHarmfulSpells)
-						if (CheckOffensiveSpells(spell))
-							break;
-			}
-			else
-				// Only call base method if we didn't cast anything, 
-				//	otherwise it tries to cast a second offensive spell
-				casted = base.CheckSpells(type);
+            Spell cast = null;
+            switch (pet.PreferredSpell)
+            {
+                case CommanderPet.eCommanderPreferredSpell.Debuff:
+                    if (spellDebuff != null && !living.HasEffect(spellDebuff))
+                        cast = spellDebuff;
+                    break;
+                case CommanderPet.eCommanderPreferredSpell.Other:
+                    cast = spellOther;
+                    break;
+            }
 
-			return casted;
-		}
-	}
+            if (cast == null)
+            {
+                // Pick a damage spell
+                if (spellDot != null && !living.HasEffect(spellDot))
+                    cast = spellDot;
+                else if (spellDamageDebuff != null && (!living.HasEffect(spellDamageDebuff) || spellDamage == null))
+                    cast = spellDamageDebuff;
+                else if (spellDamage != null)
+                    cast = spellDamage;
+            }
+
+            if (cast != null)
+                casted = CheckOffensiveSpells(cast);
+        }
+
+        if (casted)
+        {
+            // Check instant spells, but only cast one to prevent spamming
+            if (Body.CanCastInstantHarmfulSpells)
+                foreach (var spell in Body.InstantHarmfulSpells)
+                    if (CheckOffensiveSpells(spell))
+                        break;
+        }
+        else
+            // Only call base method if we didn't cast anything, 
+            //	otherwise it tries to cast a second offensive spell
+        {
+            casted = base.CheckSpells(type);
+        }
+
+        return casted;
+    }
 }

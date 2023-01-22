@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -17,21 +17,20 @@
  *
  */
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute(
-		"&pray",
-		ePrivLevel.Player,
-		"You can pray on your gravestones to get some experience back",
-		"/pray")]
-	public class PrayCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "pray"))
-				return;
+namespace DOL.GS.Commands;
 
-			client.Player.Pray();
-		}
-	}
+[CmdAttribute(
+    "&pray",
+    ePrivLevel.Player,
+    "You can pray on your gravestones to get some experience back",
+    "/pray")]
+public class PrayCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "pray"))
+            return;
+
+        client.Player.Pray();
+    }
 }

@@ -9,7 +9,7 @@ namespace DOL.GS
     {
         public override bool AddToWorld()
         {
-            AlinaModelBrain sBrain = new AlinaModelBrain();
+            var sBrain = new AlinaModelBrain();
             SetOwnBrain(sBrain);
             base.AddToWorld();
             return true;
@@ -32,11 +32,10 @@ namespace DOL.AI.Brain
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private bool changed;
-        
+
         public override void Think()
         {
             if (Body.CurrentRegion.IsNightTime == false)
-            {
                 if (changed == false)
                 {
                     Body.Model = 220;
@@ -46,9 +45,8 @@ namespace DOL.AI.Brain
                     Body.LoadEquipmentTemplateFromDatabase("Alina");
                     changed = true;
                 }
-            }
+
             if (Body.CurrentRegion.IsNightTime)
-            {
                 if (changed)
                 {
                     Body.Model = 395;
@@ -58,7 +56,7 @@ namespace DOL.AI.Brain
                     Body.LoadEquipmentTemplateFromDatabase("");
                     changed = false;
                 }
-            }
+
             base.Think();
         }
     }

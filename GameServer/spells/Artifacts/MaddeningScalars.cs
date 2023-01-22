@@ -16,56 +16,61 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Maddening Scalars Defensive proc spell handler
+/// </summary>
+[SpellHandlerAttribute("MaddeningScalars")]
+public class MaddeningScalars : OffensiveProcSpellHandler
 {
-    /// <summary>
-    /// Maddening Scalars Defensive proc spell handler
-    /// </summary>
-    [SpellHandlerAttribute("MaddeningScalars")]
-    public class MaddeningScalars : OffensiveProcSpellHandler
-    {   	
-   		public override void OnEffectStart(GameSpellEffect effect)
-		{
-            base.OnEffectStart(effect);
-            if(effect.Owner is GamePlayer)
-            {
-	            GamePlayer player = effect.Owner as GamePlayer;
-				foreach (GameSpellEffect Effect in player.EffectList.GetAllOfType<GameSpellEffect>())
+    public override void OnEffectStart(GameSpellEffect effect)
+    {
+        base.OnEffectStart(effect);
+        if (effect.Owner is GamePlayer)
+        {
+            var player = effect.Owner as GamePlayer;
+            foreach (var Effect in player.EffectList.GetAllOfType<GameSpellEffect>())
+                if (Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
+                    Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
+                    Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
+                    Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
+                    Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph") ||
+                    Effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
                 {
-                    if (Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph") ||
-                        Effect.SpellHandler.Spell.SpellType.Equals("AlvarusMorph"))
-                    {
-                        player.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
-                        return;
-                    }
+                    player.Out.SendMessage("You already have an active morph!",
+                        eChatType.CT_SpellResisted,
+                        eChatLoc.CL_ChatWindow);
+                    return;
                 }
-	            if(player.CharacterClass.ID!=(byte)eCharacterClass.Necromancer && (ushort)Spell.LifeDrainReturn > 0)
-                    player.Model = (ushort)Spell.LifeDrainReturn; // 102 official model
-	   			player.Out.SendUpdatePlayer();
-   			}
-   		}
-   		
-  		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-		{
-  			if(effect.Owner is GamePlayer)
-            {
-	            GamePlayer player = effect.Owner as GamePlayer; 				
-  				if(player.CharacterClass.ID!=(byte)eCharacterClass.Necromancer)
-                    player.Model = player.CreationModel;
-    			player.Out.SendUpdatePlayer();
-    		}	
-    		return base.OnEffectExpires(effect,noMessages);
-  		}
-        
-        public MaddeningScalars(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+            if (player.CharacterClass.ID != (byte) eCharacterClass.Necromancer &&
+                (ushort) Spell.LifeDrainReturn > 0)
+                player.Model = (ushort) Spell.LifeDrainReturn; // 102 official model
+            player.Out.SendUpdatePlayer();
+        }
+    }
+
+    public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+    {
+        if (effect.Owner is GamePlayer)
+        {
+            var player = effect.Owner as GamePlayer;
+            if (player.CharacterClass.ID != (byte) eCharacterClass.Necromancer)
+                player.Model = player.CreationModel;
+            player.Out.SendUpdatePlayer();
+        }
+
+        return base.OnEffectExpires(effect, noMessages);
+    }
+
+    public MaddeningScalars(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
     }
 }

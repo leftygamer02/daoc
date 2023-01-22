@@ -16,55 +16,46 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
-namespace DOL.Events
+
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the Dying event of GameLivings
+/// </summary>
+public class HealthChangedEventArgs : EventArgs
 {
     /// <summary>
-    /// Holds the arguments for the Dying event of GameLivings
+    /// The source of changing
     /// </summary>
-    public class HealthChangedEventArgs : EventArgs
+    private GameObject m_changesource;
+
+    /// <summary>
+    /// The type of changing
+    /// </summary>
+    private eHealthChangeType m_changetype;
+
+
+    /// <summary>
+    /// The amount of changing
+    /// </summary>
+    private int m_changeamount;
+
+    /// <summary>
+    /// Constructs a new Dying event args
+    /// </summary>
+    public HealthChangedEventArgs(GameObject source, eHealthChangeType type, int amount)
     {
-
-        /// <summary>
-        /// The source of changing
-        /// </summary>
-        private GameObject m_changesource;
-
-        /// <summary>
-        /// The type of changing
-        /// </summary>
-        private eHealthChangeType m_changetype;
-
-
-        /// <summary>
-        /// The amount of changing
-        /// </summary>
-        private int m_changeamount;
-
-        /// <summary>
-        /// Constructs a new Dying event args
-        /// </summary>
-        public HealthChangedEventArgs(GameObject source, eHealthChangeType type, int amount)
-        {
-            m_changesource = source;
-            m_changetype = type;
-            m_changeamount = amount;
-        }
-
-        public GameObject ChangeSource
-        {
-            get { return m_changesource; }
-        }
-
-        public eHealthChangeType ChangeType
-        {
-            get { return m_changetype; }
-        }
-
-        public int ChangeAmount
-        {
-            get { return m_changeamount; }
-        }
+        m_changesource = source;
+        m_changetype = type;
+        m_changeamount = amount;
     }
+
+    public GameObject ChangeSource => m_changesource;
+
+    public eHealthChangeType ChangeType => m_changetype;
+
+    public int ChangeAmount => m_changeamount;
 }

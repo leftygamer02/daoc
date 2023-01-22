@@ -40,7 +40,7 @@ namespace DOL.GS.Scripts
             Faction = FactionMgr.GetFactionByID(69);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(69));
 
-            BotonidBrain sBrain = new BotonidBrain();
+            var sBrain = new BotonidBrain();
             SetOwnBrain(sBrain);
 
             //1.30min

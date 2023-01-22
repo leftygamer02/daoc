@@ -16,54 +16,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the GainedRealmPoints event of GameLivings
+/// </summary>
+public class GainedRealmPointsEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the GainedRealmPoints event of GameLivings
-	/// </summary>
-	public class GainedRealmPointsEventArgs : EventArgs
-	{
-		private long m_realmPoints;
+    private long m_realmPoints;
 
-		/// <summary>
-		/// Constructs new GainedRealmPointsEventArgs
-		/// </summary>
-		/// <param name="realmPoints">the amount of realm points gained</param>
-		public GainedRealmPointsEventArgs(long realmPoints)
-		{
-			m_realmPoints = realmPoints;
-		}
-
-		/// <summary>
-		/// Gets the amount of realm points gained
-		/// </summary>
-		public long RealmPoints
-		{
-			get { return m_realmPoints; }
-		}
-	}
-    public class GainedBountyPointsEventArgs : EventArgs
+    /// <summary>
+    /// Constructs new GainedRealmPointsEventArgs
+    /// </summary>
+    /// <param name="realmPoints">the amount of realm points gained</param>
+    public GainedRealmPointsEventArgs(long realmPoints)
     {
-        private long m_realmPoints;
-
-        /// <summary>
-        /// Constructs new GainedRealmPointsEventArgs
-        /// </summary>
-        /// <param name="realmPoints">the amount of realm points gained</param>
-        public GainedBountyPointsEventArgs(long realmPoints)
-        {
-            m_realmPoints = realmPoints;
-        }
-
-        /// <summary>
-        /// Gets the amount of realm points gained
-        /// </summary>
-        public long BountyPoints
-        {
-            get { return m_realmPoints; }
-        }
+        m_realmPoints = realmPoints;
     }
+
+    /// <summary>
+    /// Gets the amount of realm points gained
+    /// </summary>
+    public long RealmPoints => m_realmPoints;
+}
+
+public class GainedBountyPointsEventArgs : EventArgs
+{
+    private long m_realmPoints;
+
+    /// <summary>
+    /// Constructs new GainedRealmPointsEventArgs
+    /// </summary>
+    /// <param name="realmPoints">the amount of realm points gained</param>
+    public GainedBountyPointsEventArgs(long realmPoints)
+    {
+        m_realmPoints = realmPoints;
+    }
+
+    /// <summary>
+    /// Gets the amount of realm points gained
+    /// </summary>
+    public long BountyPoints => m_realmPoints;
 }

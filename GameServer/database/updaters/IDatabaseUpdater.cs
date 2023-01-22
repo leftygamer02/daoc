@@ -16,18 +16,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.DatabaseUpdate
+namespace DOL.GS.DatabaseUpdate;
+
+/// <summary>
+/// Interface for all database updaters
+/// </summary>
+public interface IDatabaseUpdater
 {
-	/// <summary>
-	/// Interface for all database updaters
-	/// </summary>
-	public interface IDatabaseUpdater
-	{
-		/// <summary>
-		/// Converts the database to new version specified in attribute
-		/// </summary>
-		void Update();
-	}
+    /// <summary>
+    /// Converts the database to new version specified in attribute
+    /// </summary>
+    void Update();
 }

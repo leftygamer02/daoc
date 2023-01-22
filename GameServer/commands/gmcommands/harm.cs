@@ -16,45 +16,46 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&harm",
+    ePrivLevel.GM,
+    "GMCommands.Harm.Description",
+    "GMCommands.Harm.Usage")]
+public class HarmCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&harm",
-		ePrivLevel.GM,
-		"GMCommands.Harm.Description",
-		"GMCommands.Harm.Usage")]
-	public class HarmCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (args.Length == 1)
-			{
-				DisplaySyntax(client);
-				return;
-			}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (args.Length == 1)
+        {
+            DisplaySyntax(client);
+            return;
+        }
 
-			int amount;
+        int amount;
 
-			try
-			{
-				amount = Convert.ToInt16(args[1]);
-				GameLiving living = client.Player.TargetObject as GameLiving;
-				if (living != null)
-					living.TakeDamage(client.Player, eDamageType.GM, amount, 0);
-				else
-					DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Harm.InvalidTarget"));
-			}
-			catch (Exception ex)
-			{
-				List<string> list = new List<string>();
-				list.Add(ex.ToString());
-				client.Out.SendCustomTextWindow("Exception", list);
-			}
-		}
-	}
+        try
+        {
+            amount = Convert.ToInt16(args[1]);
+            var living = client.Player.TargetObject as GameLiving;
+            if (living != null)
+                living.TakeDamage(client.Player, eDamageType.GM, amount, 0);
+            else
+                DisplayMessage(client,
+                    LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Harm.InvalidTarget"));
+        }
+        catch (Exception ex)
+        {
+            var list = new List<string>();
+            list.Add(ex.ToString());
+            client.Out.SendCustomTextWindow("Exception", list);
+        }
+    }
 }

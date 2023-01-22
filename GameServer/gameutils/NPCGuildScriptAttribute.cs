@@ -16,53 +16,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Marks a class as a guild wide npc script
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class NPCGuildScriptAttribute : Attribute
 {
-	/// <summary>
-	/// Marks a class as a guild wide npc script
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class NPCGuildScriptAttribute : Attribute
-	{
-		string m_guild;
-		eRealm m_realm;
+    private string m_guild;
+    private eRealm m_realm;
 
-		/// <summary>
-		/// constructs new attribute
-		/// </summary>
-		/// <param name="guildname">name of the npc guild to that the script has to be applied</param>
-		/// <param name="realm">valid realm for the script</param>
-		public NPCGuildScriptAttribute(string guildname, eRealm realm)
-		{
-			m_guild = guildname;
-			m_realm = realm;
-		}
+    /// <summary>
+    /// constructs new attribute
+    /// </summary>
+    /// <param name="guildname">name of the npc guild to that the script has to be applied</param>
+    /// <param name="realm">valid realm for the script</param>
+    public NPCGuildScriptAttribute(string guildname, eRealm realm)
+    {
+        m_guild = guildname;
+        m_realm = realm;
+    }
 
-		/// <summary>
-		/// constructs new attribute
-		/// </summary>
-		/// <param name="guildname">name of the npc guild to that the script has to be applied</param>
-		public NPCGuildScriptAttribute(string guildname)
-		{
-			m_guild = guildname;
-			m_realm = eRealm.None;
-		}
+    /// <summary>
+    /// constructs new attribute
+    /// </summary>
+    /// <param name="guildname">name of the npc guild to that the script has to be applied</param>
+    public NPCGuildScriptAttribute(string guildname)
+    {
+        m_guild = guildname;
+        m_realm = eRealm.None;
+    }
 
-		/// <summary>
-		/// npc guild
-		/// </summary>
-		public string GuildName {
-			get { return m_guild; }
-		}
+    /// <summary>
+    /// npc guild
+    /// </summary>
+    public string GuildName => m_guild;
 
-		/// <summary>
-		/// valid realm for this script
-		/// </summary>
-		public eRealm Realm {
-			get { return m_realm; }
-		}
-	}
+    /// <summary>
+    /// valid realm for this script
+    /// </summary>
+    public eRealm Realm => m_realm;
 }

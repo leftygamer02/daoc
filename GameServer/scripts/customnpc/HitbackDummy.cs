@@ -1,57 +1,56 @@
 ﻿using System;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class HitbackDummy : GameTrainingDummy
 {
-    public class HitbackDummy : GameTrainingDummy {
-        Int32 Damage = 0;
-        DateTime StartTime;
-        TimeSpan TimePassed;
-        Boolean StartCheck = true;
+    private int Damage = 0;
+    private DateTime StartTime;
+    private TimeSpan TimePassed;
+    private bool StartCheck = true;
 
-        public override short MaxSpeedBase { get => 0; }
+    public override short MaxSpeedBase => 0;
 
-        public override bool FixedSpeed { get => true;}
+    public override bool FixedSpeed => true;
 
-        public override ushort Heading { get => base.Heading; set => base.Heading = SpawnHeading; }
+    public override ushort Heading
+    {
+        get => base.Heading;
+        set => base.Heading = SpawnHeading;
+    }
 
-        public override bool Interact(GamePlayer player)
+    public override bool Interact(GamePlayer player)
+    {
+        if (!base.Interact(player)) return false;
+
+        Damage = 0;
+        StartCheck = true;
+        StopAttack();
+        return true;
+    }
+
+    public override void OnAttackedByEnemy(AttackData ad)
+    {
+        if (StartCheck)
         {
-            if (!base.Interact(player))
-            {
-                return false;
-            }
-
-            Damage = 0;
-            StartCheck = true;
-            this.StopAttack();
-            return true;
+            StartTime = DateTime.Now;
+            StartCheck = false;
         }
 
-        public override void OnAttackedByEnemy(AttackData ad)
-        {
-            if (StartCheck)
-            {
-                StartTime = DateTime.Now;
-                StartCheck = false;
-            }
+        Damage += ad.Damage + ad.CriticalDamage;
+        TimePassed = DateTime.Now - StartTime;
 
-            Damage += ad.Damage + ad.CriticalDamage;
-            TimePassed = (DateTime.Now - StartTime);
+        if (!attackComponent.AttackState)
+            attackComponent.RequestStartAttack(ad.Attacker);
+    }
 
-            if (!this.attackComponent.AttackState)
-                this.attackComponent.RequestStartAttack(ad.Attacker);
-            
-        }
-
-        public override bool AddToWorld()
-        {
-            Name = "Hitback Dummy - Right Click to Reset";
-            GuildName = "Atlas Dummy Union";
-            Model = 34;
-            Strength = 10;
-            ScalingFactor = 4;
-            return base.AddToWorld(); // Finish up and add him to the world.
-        }
-
+    public override bool AddToWorld()
+    {
+        Name = "Hitback Dummy - Right Click to Reset";
+        GuildName = "Atlas Dummy Union";
+        Model = 34;
+        Strength = 10;
+        ScalingFactor = 4;
+        return base.AddToWorld(); // Finish up and add him to the world.
     }
 }

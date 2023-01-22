@@ -1,14 +1,15 @@
 using DOL.Database;
 
-namespace DOL.GS.RealmAbilities
-{
-    public class AtlasOF_RainOfFire : AtlasOF_RainOfBase
-    {
-        public AtlasOF_RainOfFire(DBAbility ability, int level) : base(ability, level) { }
+namespace DOL.GS.RealmAbilities;
 
-        public override void Execute(GameLiving living)
-        {
-            Execute("Rain Of Fire", 7125, 7125, 11, living);
-        }
+public class AtlasOF_RainOfFire : AtlasOF_RainOfBase
+{
+    public AtlasOF_RainOfFire(DBAbility ability, int level) : base(ability, level)
+    {
+    }
+
+    public override void Execute(GameLiving living)
+    {
+        Execute("Rain Of Fire", 7125, 7125, 11, living);
     }
 }

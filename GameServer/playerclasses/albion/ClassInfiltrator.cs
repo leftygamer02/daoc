@@ -16,45 +16,42 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.Realm;
 using System.Collections.Generic;
 
-namespace DOL.GS.PlayerClass
+namespace DOL.GS.PlayerClass;
+
+[CharacterClass((int) eCharacterClass.Infiltrator, "Infiltrator", "Rogue")]
+public class ClassInfiltrator : ClassAlbionRogue
 {
-	[CharacterClass((int)eCharacterClass.Infiltrator, "Infiltrator", "Rogue")]
-	public class ClassInfiltrator : ClassAlbionRogue
-	{
-		private static readonly string[] AutotrainableSkills = new[] { Specs.Stealth };
+    private static readonly string[] AutotrainableSkills = new[] {Specs.Stealth};
 
-		public ClassInfiltrator()
-			: base()
-		{
-			m_profession = "PlayerClass.Profession.GuildofShadows";
-			m_specializationMultiplier = 25;
-			m_primaryStat = eStat.DEX;
-			m_secondaryStat = eStat.QUI;
-			m_tertiaryStat = eStat.STR;
-			m_baseHP = 720;
-		}
+    public ClassInfiltrator()
+        : base()
+    {
+        m_profession = "PlayerClass.Profession.GuildofShadows";
+        m_specializationMultiplier = 25;
+        m_primaryStat = eStat.DEX;
+        m_secondaryStat = eStat.QUI;
+        m_tertiaryStat = eStat.STR;
+        m_baseHP = 720;
+    }
 
-		public override bool CanUseLefthandedWeapon
-		{
-			get { return true; }
-		}
+    public override bool CanUseLefthandedWeapon => true;
 
-		public override IList<string> GetAutotrainableSkills()
-		{
-			return AutotrainableSkills;
-		}
+    public override IList<string> GetAutotrainableSkills()
+    {
+        return AutotrainableSkills;
+    }
 
-		public override bool HasAdvancedFromBaseClass()
-		{
-			return true;
-		}
+    public override bool HasAdvancedFromBaseClass()
+    {
+        return true;
+    }
 
-		public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-		{
-			 PlayerRace.Briton, PlayerRace.Inconnu, PlayerRace.Saracen,
-		};
-	}
+    public override List<PlayerRace> EligibleRaces => new()
+    {
+        PlayerRace.Briton, PlayerRace.Inconnu, PlayerRace.Saracen
+    };
 }

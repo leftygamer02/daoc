@@ -16,25 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.PropertyCalc
+namespace DOL.GS.PropertyCalc;
+
+/// <summary>
+/// The Archery Speed bonus percent calculator
+///
+/// BuffBonusCategory1 is used for buffs
+/// BuffBonusCategory2 unused
+/// BuffBonusCategory3 is used for debuff
+/// BuffBonusCategory4 unused
+/// BuffBonusMultCategory1 unused
+/// </summary>
+[PropertyCalculator(eProperty.ResIllnessReduction)]
+public class ResSickPercentCalculator : PropertyCalculator
 {
-	/// <summary>
-	/// The Archery Speed bonus percent calculator
-	///
-	/// BuffBonusCategory1 is used for buffs
-	/// BuffBonusCategory2 unused
-	/// BuffBonusCategory3 is used for debuff
-	/// BuffBonusCategory4 unused
-	/// BuffBonusMultCategory1 unused
-	/// </summary>
-	[PropertyCalculator(eProperty.ResIllnessReduction)]
-	public class ResSickPercentCalculator : PropertyCalculator
-	{
-		public override int CalcValue(GameLiving living, eProperty property)
-		{
-			return Math.Max(0, living.AbilityBonus[(int)property] - living.DebuffCategory[(int)property]);
-		}
-	}
+    public override int CalcValue(GameLiving living, eProperty property)
+    {
+        return Math.Max(0, living.AbilityBonus[(int) property] - living.DebuffCategory[(int) property]);
+    }
 }

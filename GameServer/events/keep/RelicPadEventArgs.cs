@@ -16,49 +16,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
-namespace DOL.Events
+
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the RelicPad event
+/// </summary>
+public class RelicPadEventArgs : EventArgs
 {
     /// <summary>
-    /// Holds the arguments for the RelicPad event
+    /// The player
     /// </summary>
-    public class RelicPadEventArgs : EventArgs
+    private GamePlayer m_player;
+
+    /// <summary>
+    /// The player
+    /// </summary>
+    private GameRelic m_relic;
+
+    /// <summary>
+    /// Constructs a new KeepEventArgs
+    /// </summary>
+    public RelicPadEventArgs(GamePlayer player, GameRelic relic)
     {
-
-        /// <summary>
-        /// The player
-        /// </summary>
-        private GamePlayer m_player;
-
-        /// <summary>
-        /// The player
-        /// </summary>
-        private GameRelic m_relic;
-
-        /// <summary>
-        /// Constructs a new KeepEventArgs
-        /// </summary>
-        public RelicPadEventArgs(GamePlayer player, GameRelic relic)
-        {
-            this.m_player = player;
-            this.m_relic = relic;
-        }
-
-        /// <summary>
-        /// Gets the player
-        /// </summary>
-        public GamePlayer Player
-        {
-            get { return m_player; }
-        }
-
-        /// <summary>
-        /// Gets the player
-        /// </summary>
-        public GameRelic Relic
-        {
-            get { return m_relic; }
-        }
+        m_player = player;
+        m_relic = relic;
     }
+
+    /// <summary>
+    /// Gets the player
+    /// </summary>
+    public GamePlayer Player => m_player;
+
+    /// <summary>
+    /// Gets the player
+    /// </summary>
+    public GameRelic Relic => m_relic;
 }

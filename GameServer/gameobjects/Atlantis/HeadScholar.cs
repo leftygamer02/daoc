@@ -16,19 +16,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Head scholar class.
+/// </summary>
+/// <author>Aredhel</author>
+public class HeadScholar : Researcher
 {
-    /// <summary>
-    /// Head scholar class.
-    /// </summary>
-    /// <author>Aredhel</author>
-    public class HeadScholar : Researcher
+    public HeadScholar()
+        : base()
     {
-        public HeadScholar()
-            : base() { }
     }
 }

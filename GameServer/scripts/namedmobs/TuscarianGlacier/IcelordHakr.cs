@@ -14,25 +14,29 @@ namespace DOL.GS
         public Hakr() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -40,26 +44,29 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override void Die(GameObject killer) //on kill generate orbs
         {
             Spawn_Snakes = false;
             HakrBrain.spam_message1 = false;
             base.Die(killer);
         }
+
         public static bool Spawn_Snakes = false;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162347);
@@ -73,7 +80,8 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Spawn_Snakes = false;
             HakrBrain.spam_message1 = false;
             if (Spawn_Snakes == false)
@@ -81,13 +89,15 @@ namespace DOL.GS
                 SpawnSnakes();
                 Spawn_Snakes = true;
             }
-            HakrBrain sbrain = new HakrBrain();
+
+            var sbrain = new HakrBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
+
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
@@ -98,7 +108,7 @@ namespace DOL.GS
                 log.Warn("Icelord Hakr not found, creating it...");
 
                 log.Warn("Initializing Icelord Hakr ...");
-                Hakr TG = new Hakr();
+                var TG = new Hakr();
                 TG.Name = "Icelord Hakr";
                 TG.Model = 918;
                 TG.Realm = 0;
@@ -106,7 +116,9 @@ namespace DOL.GS
                 TG.Size = 70;
                 TG.CurrentRegionID = 160; //tuscaran glacier
                 TG.MeleeDamageType = eDamageType.Crush;
-                TG.RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+                TG.RespawnInterval =
+                    ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL *
+                    60000; //1min is 60000 miliseconds
                 TG.Faction = FactionMgr.GetFactionByID(140);
                 TG.Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
 
@@ -114,20 +126,23 @@ namespace DOL.GS
                 TG.Y = 57241;
                 TG.Z = 11359;
                 TG.Heading = 1939;
-                HakrBrain ubrain = new HakrBrain();
+                var ubrain = new HakrBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
                 TG.SaveIntoDatabase();
                 TG.Brain.Start();
             }
             else
+            {
                 log.Warn("Icelord Hakr exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
+
         public void SpawnSnakes()
         {
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                HakrAdd Add1 = new HakrAdd();
+                var Add1 = new HakrAdd();
                 Add1.X = X + Util.Random(-100, 100);
                 Add1.Y = Y + Util.Random(-100, 100);
                 Add1.Z = Z;
@@ -137,9 +152,10 @@ namespace DOL.GS
                 Add1.AddToWorld();
                 ++HakrAdd.IceweaverCount;
             }
-            for (int i = 0; i < 2; i++)
+
+            for (var i = 0; i < 2; i++)
             {
-                HakrAdd Add2 = new HakrAdd();
+                var Add2 = new HakrAdd();
                 Add2.X = 30008 + Util.Random(-100, 100);
                 Add2.Y = 56329 + Util.Random(-100, 100);
                 Add2.Z = 11894;
@@ -151,11 +167,14 @@ namespace DOL.GS
         }
     }
 }
+
 namespace DOL.AI.Brain
 {
     public class HakrBrain : StandardMobBrain
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public HakrBrain()
             : base()
         {
@@ -163,49 +182,44 @@ namespace DOL.AI.Brain
             AggroRange = 600;
             ThinkInterval = 1500;
         }
+
         public static bool IsPulled = false;
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (IsPulled == false)
-            {
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
+                foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     if (npc != null)
-                    {
                         if (npc.IsAlive && npc.Brain is HakrAddBrain brain && npc.PackageID == "HakrBaf")
                         {
-                            GameLiving target = Body.TargetObject as GameLiving;
+                            var target = Body.TargetObject as GameLiving;
                             if (!brain.HasAggro && Body != npc && target != null && target.IsAlive)
                                 brain.AddToAggroList(target, 10);
                             IsPulled = true;
                         }
-                    }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
+
         public void TeleportPlayer()
         {
             if (HakrAdd.IceweaverCount > 0)
             {
                 IList enemies = new ArrayList(AggroTable.Keys);
                 foreach (GamePlayer player in Body.GetPlayersInRadius(1100))
-                {
                     if (player != null)
-                    {
                         if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
                             if (!AggroTable.ContainsKey(player))
                                 AggroTable.Add(player, 1);
-                        }
-                    }
-                }
+
                 if (enemies.Count == 0)
+                {
                     return;
+                }
                 else
                 {
-                    List<GameLiving> damage_enemies = new List<GameLiving>();
-                    for (int i = 0; i < enemies.Count; i++)
+                    var damage_enemies = new List<GameLiving>();
+                    for (var i = 0; i < enemies.Count; i++)
                     {
                         if (enemies[i] == null)
                             continue;
@@ -216,51 +230,55 @@ namespace DOL.AI.Brain
                         GameLiving living = null;
                         living = enemies[i] as GameLiving;
                         if (living.IsVisibleTo(Body) && Body.TargetInView && living is GamePlayer)
-                        {
                             damage_enemies.Add(enemies[i] as GameLiving);
-                        }
                     }
+
                     if (damage_enemies.Count > 0)
                     {
-                        GamePlayer PortTarget = (GamePlayer) damage_enemies[Util.Random(0, damage_enemies.Count - 1)];
+                        var PortTarget = (GamePlayer) damage_enemies[Util.Random(0, damage_enemies.Count - 1)];
                         if (PortTarget.IsVisibleTo(Body) && Body.TargetInView)
                         {
                             PortTarget.MoveTo(Body.CurrentRegionID, Body.X + Util.Random(-50, 50),
-                            Body.Y + Util.Random(-50, 50), Body.Z + 220, Body.Heading);
-                            BroadcastMessage(String.Format("Icelord Hakr says, '" + PortTarget.Name +" Touchdown! That's a really cool way of putting it!'"));
+                                Body.Y + Util.Random(-50, 50), Body.Z + 220, Body.Heading);
+                            BroadcastMessage(string.Format("Icelord Hakr says, '" + PortTarget.Name +
+                                                           " Touchdown! That's a really cool way of putting it!'"));
                             PortTarget = null;
                         }
                     }
                 }
             }
         }
+
         public int PortTimer(ECSGameTimer timer)
         {
             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(DoPortTimer), 2000);
             return 0;
         }
+
         public int DoPortTimer(ECSGameTimer timer)
         {
             TeleportPlayer();
             spam_teleport = false;
             return 0;
         }
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public static bool spam_teleport = false;
         public static bool spam_message1 = false;
+
         public override void Think()
         {
             if (HakrAdd.IceweaverCount == 0 && spam_message1 == false && Body.IsAlive)
             {
-                BroadcastMessage(String.Format("Magic barrier fades away from Icelord Hakr!"));
+                BroadcastMessage(string.Format("Magic barrier fades away from Icelord Hakr!"));
                 spam_message1 = true;
             }
+
             if (!CheckProximityAggro())
             {
                 //set state to RETURN TO SPAWN
@@ -270,19 +288,20 @@ namespace DOL.AI.Brain
                 spam_message1 = false;
                 spam_teleport = false;
             }
+
             if (HasAggro)
-            {
                 if (spam_teleport == false && Body.TargetObject != null && HakrAdd.IceweaverCount > 0)
                 {
-                    int rand = Util.Random(10000, 20000);
+                    var rand = Util.Random(10000, 20000);
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PortTimer), rand);
                     spam_teleport = true;
                 }
-            }
+
             base.Think();
         }
     }
 }
+
 ////////////////////////////////////////////////////////////////////Adds-snakes////////////////////////////////////////////
 namespace DOL.GS
 {
@@ -291,6 +310,7 @@ namespace DOL.GS
         public HakrAdd() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -301,36 +321,51 @@ namespace DOL.GS
                 default: return 35; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 300;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 20000; }
-        }
+
+        public override int MaxHealth => 20000;
+
         public static int IceweaverCount = 0;
+
         public override void Die(GameObject killer)
         {
             --IceweaverCount;
             base.Die(killer);
         }
-        public override short Quickness { get => base.Quickness; set => base.Quickness = 80; }
-        public override short Strength { get => base.Strength; set => base.Strength = 250; }
+
+        public override short Quickness
+        {
+            get => base.Quickness;
+            set => base.Quickness = 80;
+        }
+
+        public override short Strength
+        {
+            get => base.Strength;
+            set => base.Strength = 250;
+        }
+
         public override bool AddToWorld()
         {
             Model = 766;
@@ -349,7 +384,7 @@ namespace DOL.GS
             BodyType = 1;
             Realm = eRealm.None;
 
-            HakrAddBrain adds = new HakrAddBrain();
+            var adds = new HakrAddBrain();
             SetOwnBrain(adds);
             LoadedFromScript = true;
             base.AddToWorld();
@@ -362,34 +397,34 @@ namespace DOL.AI.Brain
 {
     public class HakrAddBrain : StandardMobBrain
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public HakrAddBrain()
             : base()
         {
             AggroLevel = 100;
             AggroRange = 500;
         }
+
         public static bool IsPulled = false;
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (IsPulled == false)
-            {
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
+                foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     if (npc != null)
-                    {
                         if (npc.IsAlive && npc.Brain is HakrAddBrain brain && npc.PackageID == "HakrBaf")
                         {
-                            GameLiving target = Body.TargetObject as GameLiving;
+                            var target = Body.TargetObject as GameLiving;
                             if (!brain.HasAggro && Body != npc && target != null && target.IsAlive)
                                 brain.AddToAggroList(target, 10);
                             IsPulled = true;
                         }
-                    }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -398,31 +433,29 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 IsPulled = false;
             }
+
             if (HasAggro)
-            {
                 if (Body.TargetObject != null)
-                {
                     if (Body.TargetObject.IsWithinRadius(Body, Body.AttackRange))
                     {
-                        GameLiving target = Body.TargetObject as GameLiving;
+                        var target = Body.TargetObject as GameLiving;
                         if (!target.effectListComponent.ContainsEffectForEffectType(eEffect.DamageOverTime))
-                        {
                             if (Util.Chance(25))
                                 Body.CastSpell(IceweaverPoison, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                        }
                     }
-                }
-            }
+
             base.Think();
         }
+
         public Spell m_IceweaverPoison;
+
         public Spell IceweaverPoison
         {
             get
             {
                 if (m_IceweaverPoison == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.ClientEffect = 3411;
@@ -447,6 +480,7 @@ namespace DOL.AI.Brain
                     m_IceweaverPoison = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_IceweaverPoison);
                 }
+
                 return m_IceweaverPoison;
             }
         }

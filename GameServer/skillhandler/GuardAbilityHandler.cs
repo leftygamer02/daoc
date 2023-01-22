@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Reflection;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
@@ -24,87 +25,97 @@ using log4net;
 using DOL.Language;
 using System.Linq;
 
-namespace DOL.GS.SkillHandler
+namespace DOL.GS.SkillHandler;
+
+/// <summary>
+/// Handler for Guard ability clicks
+/// </summary>
+[SkillHandler(Abilities.Guard)]
+public class GuardAbilityHandler : IAbilityActionHandler
 {
-	/// <summary>
-	/// Handler for Guard ability clicks
-	/// </summary>
-	[SkillHandler(Abilities.Guard)]
-	public class GuardAbilityHandler : IAbilityActionHandler
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>
-		/// The guard distance
-		/// </summary>
-		public const int GUARD_DISTANCE = 256;
+    /// <summary>
+    /// The guard distance
+    /// </summary>
+    public const int GUARD_DISTANCE = 256;
 
-		public void Execute(Ability ab, GamePlayer player)
-		{
-			if (player == null)
-			{
-				if (log.IsWarnEnabled)
-					log.Warn("Could not retrieve player in GuardAbilityHandler.");
-				return;
-			}
+    public void Execute(Ability ab, GamePlayer player)
+    {
+        if (player == null)
+        {
+            if (log.IsWarnEnabled)
+                log.Warn("Could not retrieve player in GuardAbilityHandler.");
+            return;
+        }
 
-			GameObject targetObject = player.TargetObject;
-			if (targetObject == null)
-			{
-				foreach (GuardECSGameEffect guard in player.effectListComponent.GetAllEffects().Where(e => e.EffectType == eEffect.Guard))
-				{ 
-					if (guard.GuardSource == player)
-						guard.Cancel(false);
-				}
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.Guard.CancelTargetNull"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+        var targetObject = player.TargetObject;
+        if (targetObject == null)
+        {
+            foreach (GuardECSGameEffect guard in player.effectListComponent.GetAllEffects()
+                         .Where(e => e.EffectType == eEffect.Guard))
+                if (guard.GuardSource == player)
+                    guard.Cancel(false);
+
+            player.Out.SendMessage(
+                LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.Guard.CancelTargetNull"),
+                eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return;
+        }
+
+        // You cannot guard attacks on yourself            
+        var guardTarget = player.TargetObject as GamePlayer;
+        if (guardTarget == player)
+        {
+            player.Out.SendMessage(
+                LanguageMgr.GetTranslation(player.Client.Account.Language,
+                    "Skill.Ability.Guard.CannotUse.GuardTargetIsGuardSource"), eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            return;
+        }
+
+        // Only attacks on other players may be guarded. 
+        // guard may only be used on other players in group
+        var group = player.Group;
+        if (guardTarget == null || group == null || !group.IsInTheGroup(guardTarget))
+        {
+            player.Out.SendMessage(
+                LanguageMgr.GetTranslation(player.Client.Account.Language,
+                    "Skill.Ability.Guard.CannotUse.NotInGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return;
+        }
+
+        // check if someone is guarding the target
+        foreach (GuardECSGameEffect guard in guardTarget.effectListComponent.GetAllEffects()
+                     .Where(e => e.EffectType == eEffect.Guard))
+        {
+            if (guard.GuardTarget != guardTarget) continue;
+            if (guard.GuardSource == player)
+            {
+                guard.Cancel(false);
                 return;
-			}
+            }
 
-			// You cannot guard attacks on yourself            
-			GamePlayer guardTarget = player.TargetObject as GamePlayer;
-			if (guardTarget == player)
-			{
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.Guard.CannotUse.GuardTargetIsGuardSource"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            if (!(guard.GuardSource is GameNPC))
+            {
+                player.Out.SendMessage(
+                    LanguageMgr.GetTranslation(player.Client.Account.Language,
+                        "Skill.Ability.Guard.CannotUse.GuardTargetAlreadyGuarded",
+                        guard.GuardSource.GetName(0, true), guard.GuardTarget.GetName(0, false)),
+                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
                 return;
-			}
+            }
+        }
 
-			// Only attacks on other players may be guarded. 
-			// guard may only be used on other players in group
-			Group group = player.Group;
-			if (guardTarget == null || group == null || !group.IsInTheGroup(guardTarget))
-			{
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.Guard.CannotUse.NotInGroup"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return;
-			}
+        // cancel all guard effects by this player before adding a new one
+        foreach (GuardECSGameEffect guard in player.effectListComponent.GetAllEffects()
+                     .Where(e => e.EffectType == eEffect.Guard))
+            if (guard.GuardSource == player)
+                guard.Cancel(false);
 
-			// check if someone is guarding the target
-			foreach (GuardECSGameEffect guard in guardTarget.effectListComponent.GetAllEffects().Where(e => e.EffectType == eEffect.Guard))
-			{
-				
-				if (guard.GuardTarget != guardTarget) continue;
-				if (guard.GuardSource == player)
-				{
-					guard.Cancel(false);
-					return;
-				}
-				if(!(guard.GuardSource is GameNPC))
-				{
-                    player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Skill.Ability.Guard.CannotUse.GuardTargetAlreadyGuarded", guard.GuardSource.GetName(0, true), guard.GuardTarget.GetName(0, false)), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                    return;
-				}
-			}
-
-			// cancel all guard effects by this player before adding a new one
-			foreach (GuardECSGameEffect guard in player.effectListComponent.GetAllEffects().Where(e => e.EffectType == eEffect.Guard))
-			{
-				if (guard.GuardSource == player)
-					guard.Cancel(false);
-			}
-
-			new GuardECSGameEffect(new ECSGameEffectInitParams(player, 0, 1, null), player, guardTarget);
-		}
-	}
+        new GuardECSGameEffect(new ECSGameEffectInitParams(player, 0, 1, null), player, guardTarget);
+    }
 }

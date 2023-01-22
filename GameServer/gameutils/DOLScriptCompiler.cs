@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 #if NET
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using log4net;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -40,19 +40,22 @@ namespace DOL.GS
         static DOLScriptCompiler()
         {
             referencedAssemblies = AppDomain.CurrentDomain
-                                .GetAssemblies()
-                                .Where(a => !a.IsDynamic)
-                                .Select(a => a.Location)
-                                .Where(s => !string.IsNullOrEmpty(s))
-                                .Select(s => MetadataReference.CreateFromFile(s))
-                                .ToList();
+                .GetAssemblies()
+                .Where(a => !a.IsDynamic)
+                .Select(a => a.Location)
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Select(s => MetadataReference.CreateFromFile(s))
+                .ToList();
 
             var additionalReferences = GameServer.Instance.Configuration.AdditionalScriptAssemblies;
 
             foreach (var additionalReference in additionalReferences)
             {
                 var dllName = additionalReference.EndsWith(".dll") ? additionalReference : additionalReference + ".dll";
-                var probingPaths = new[] { ".", "lib", Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location) };
+                var probingPaths = new[]
+                {
+                    ".", "lib", Path.GetDirectoryName(typeof(System.Runtime.GCSettings).GetTypeInfo().Assembly.Location)
+                };
                 var foundReference = false;
                 foreach (var probingPath in probingPaths)
                 {
@@ -64,6 +67,7 @@ namespace DOL.GS
                         break;
                     }
                 }
+
                 if (foundReference == false) log.Error($"Reference not found: {additionalReference}");
             }
         }
@@ -87,7 +91,7 @@ namespace DOL.GS
         public Assembly CompileFromSource(string code)
         {
             var outputFile = new FileInfo("code_" + Guid.NewGuid() + ".dll");
-            var syntaxTrees = new List<SyntaxTree>() { CSharpSyntaxTree.ParseText(code) };
+            var syntaxTrees = new List<SyntaxTree>() {CSharpSyntaxTree.ParseText(code)};
 
             Compile(outputFile, syntaxTrees);
             if (HasErrors) return null;
@@ -99,8 +103,8 @@ namespace DOL.GS
         private void Compile(FileInfo outputFile, IEnumerable<SyntaxTree> syntaxTrees)
         {
             var compilerParameters = new CSharpCompilationOptions(
-                    outputKind: OutputKind.DynamicallyLinkedLibrary,
-                    warningLevel: 2);
+                OutputKind.DynamicallyLinkedLibrary,
+                warningLevel: 2);
             compiler = CSharpCompilation.Create(
                 outputFile.Name,
                 options: compilerParameters,
@@ -115,28 +119,25 @@ namespace DOL.GS
         public IEnumerable<string> GetDetailedErrorMessages()
         {
             var errorDiagnostics = lastEmitResult.Diagnostics.Where(diagnostic =>
-                    diagnostic.IsWarningAsError ||
-                    diagnostic.Severity == DiagnosticSeverity.Error);
+                diagnostic.IsWarningAsError ||
+                diagnostic.Severity == DiagnosticSeverity.Error);
 
             var errorMessages = new List<string>();
             foreach (var diag in errorDiagnostics)
-            {
                 errorMessages.Add($"\t{diag.Location} {diag.Id}: {diag.GetMessage()}");
-            }
+
             return errorMessages;
         }
 
         public IEnumerable<string> GetErrorMessages()
         {
             var errorDiagnostics = lastEmitResult.Diagnostics.Where(diagnostic =>
-                    diagnostic.IsWarningAsError ||
-                    diagnostic.Severity == DiagnosticSeverity.Error);
+                diagnostic.IsWarningAsError ||
+                diagnostic.Severity == DiagnosticSeverity.Error);
 
             var errorMessages = new List<string>();
-            foreach (var diag in errorDiagnostics)
-            {
-                errorMessages.Add(diag.GetMessage());
-            }
+            foreach (var diag in errorDiagnostics) errorMessages.Add(diag.GetMessage());
+
             return errorMessages;
         }
     }

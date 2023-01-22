@@ -4,33 +4,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class ResurrectionIllnessECSGameEffect : ECSGameSpellEffect
 {
-    public class ResurrectionIllnessECSGameEffect : ECSGameSpellEffect
+    public ResurrectionIllnessECSGameEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public ResurrectionIllnessECSGameEffect(ECSGameEffectInitParams initParams)
-            : base(initParams) { }
+    }
 
-        public override void OnStartEffect()
+    public override void OnStartEffect()
+    {
+        var gPlayer = Owner as GamePlayer;
+        if (gPlayer != null)
         {
-            GamePlayer gPlayer = Owner as GamePlayer;
-            if (gPlayer != null)
-            {
-                gPlayer.Effectiveness -= SpellHandler.Spell.Value * 0.01;
-                gPlayer.Out.SendUpdateWeaponAndArmorStats();
-                gPlayer.Out.SendStatusUpdate();
-            }
+            gPlayer.Effectiveness -= SpellHandler.Spell.Value * 0.01;
+            gPlayer.Out.SendUpdateWeaponAndArmorStats();
+            gPlayer.Out.SendStatusUpdate();
         }
+    }
 
-        public override void OnStopEffect()
+    public override void OnStopEffect()
+    {
+        var gPlayer = Owner as GamePlayer;
+        if (gPlayer != null)
         {
-            GamePlayer gPlayer = Owner as GamePlayer;
-            if (gPlayer != null)
-            {
-                gPlayer.Effectiveness += SpellHandler.Spell.Value * 0.01;
-                gPlayer.Out.SendUpdateWeaponAndArmorStats();
-                gPlayer.Out.SendStatusUpdate();
-            }
+            gPlayer.Effectiveness += SpellHandler.Spell.Value * 0.01;
+            gPlayer.Out.SendUpdateWeaponAndArmorStats();
+            gPlayer.Out.SendStatusUpdate();
         }
     }
 }

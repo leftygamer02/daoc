@@ -24,103 +24,109 @@ using DOL.GS.Effects;
 using DOL.GS.Spells;
 using System.Collections.Generic;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+/// <summary>
+/// Minion Rescue RA
+/// </summary>
+public class BlissfulIgnoranceAbility : RR5RealmAbility
 {
-    /// <summary>
-    /// Minion Rescue RA
-    /// </summary>
-    public class BlissfulIgnoranceAbility : RR5RealmAbility
+    private static readonly log4net.ILog log =
+        log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+    public const int DURATION = 30 * 1000;
+
+    public BlissfulIgnoranceAbility(DBAbility dba, int level) : base(dba, level)
     {
-		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+    }
 
-        public const int DURATION = 30 * 1000;
+    /// <summary>
+    /// Action
+    /// </summary>
+    /// <param name="living"></param>
+    public override void Execute(GameLiving living)
+    {
+        if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
-        public BlissfulIgnoranceAbility(DBAbility dba, int level) : base(dba, level) { }
-
-        /// <summary>
-        /// Action
-        /// </summary>
-        /// <param name="living"></param>
-        public override void Execute(GameLiving living)
+        var player = living as GamePlayer;
+        if (player != null)
         {
-            if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
+            /*BlissfulIgnoranceEffect BlissfulIgnorance = (BlissfulIgnoranceEffect)player.EffectList.GetOfType(typeof(BlissfulIgnoranceEffect));
+            if (BlissfulIgnorance != null)
+                BlissfulIgnorance.Cancel(false);
 
-            GamePlayer player = living as GamePlayer;
-            if (player != null)
+            new BlissfulIgnoranceEffect().Start(player);*/
+
+            var table_spells = new Hashtable();
+            foreach (var spell in SkillBase.GetSpellList("Savagery"))
             {
-                /*BlissfulIgnoranceEffect BlissfulIgnorance = (BlissfulIgnoranceEffect)player.EffectList.GetOfType(typeof(BlissfulIgnoranceEffect));
-                if (BlissfulIgnorance != null)
-                    BlissfulIgnorance.Cancel(false);
+                if (spell.Group == 0 || spell.Target.ToLower() != "self") continue;
 
-                new BlissfulIgnoranceEffect().Start(player);*/
-
-                Hashtable table_spells = new Hashtable();
-				foreach (Spell spell in SkillBase.GetSpellList("Savagery"))
-				{
-                    if(spell.Group==0 || spell.Target.ToLower()!="self") continue;
-
-                    if (spell.Level <= player.GetSpellLine("Savagery").Level)
-					{
-						if (!table_spells.ContainsKey(spell.Group))
-                            table_spells.Add(spell.Group, spell);
-						else
-						{
-                            Spell oldspell = (Spell)table_spells[spell.Group];
-							if (spell.Level > oldspell.Level)
-                                table_spells[spell.Group] = spell;
-						}
-					}
-				}
-				foreach (object obj in table_spells.Values)
-				{
-                    if (obj == null || !(obj is Spell)) continue;
-                    Spell spell = obj as Spell;
-                    try
-					{
-						DBSpell db = new DBSpell();
-                        db.ClientEffect = spell.ClientEffect;
-						db.Icon = spell.Icon;
-						db.Name = spell.Name;
-						db.Description = spell.Description;
-						db.Duration = spell.Duration / 1000;
-                        db.Power = 0;
-						db.Value = spell.Value;
-	                    db.Message1 = "";
-	                    db.Message2 = "";
-	                    db.Message3 = "";
-	                    db.Message4 = "";
-                        db.Type = ((eSpellType)spell.SpellType).ToString();
-                        db.Target = "Self";
-                        db.MoveCast = true;
-                        db.Uninterruptible = true;
-						
-						SpellHandler handler = new SpellHandler(player, new Spell(db, 0), SkillBase.GetSpellLine("Savagery"));
-                        if(handler!=null)
-                            handler.CastSpell();
-					}
-					catch (Exception e)
-					{
-						if (log.IsErrorEnabled)
-							log.Error("RR5 Savage : use spell, ", e);
-					}
-				}
+                if (spell.Level <= player.GetSpellLine("Savagery").Level)
+                {
+                    if (!table_spells.ContainsKey(spell.Group))
+                    {
+                        table_spells.Add(spell.Group, spell);
+                    }
+                    else
+                    {
+                        var oldspell = (Spell) table_spells[spell.Group];
+                        if (spell.Level > oldspell.Level)
+                            table_spells[spell.Group] = spell;
+                    }
+                }
             }
-            DisableSkill(living);
+
+            foreach (var obj in table_spells.Values)
+            {
+                if (obj == null || !(obj is Spell)) continue;
+                var spell = obj as Spell;
+                try
+                {
+                    var db = new DBSpell();
+                    db.ClientEffect = spell.ClientEffect;
+                    db.Icon = spell.Icon;
+                    db.Name = spell.Name;
+                    db.Description = spell.Description;
+                    db.Duration = spell.Duration / 1000;
+                    db.Power = 0;
+                    db.Value = spell.Value;
+                    db.Message1 = "";
+                    db.Message2 = "";
+                    db.Message3 = "";
+                    db.Message4 = "";
+                    db.Type = ((eSpellType) spell.SpellType).ToString();
+                    db.Target = "Self";
+                    db.MoveCast = true;
+                    db.Uninterruptible = true;
+
+                    var handler =
+                        new SpellHandler(player, new Spell(db, 0), SkillBase.GetSpellLine("Savagery"));
+                    if (handler != null)
+                        handler.CastSpell();
+                }
+                catch (Exception e)
+                {
+                    if (log.IsErrorEnabled)
+                        log.Error("RR5 Savage : use spell, ", e);
+                }
+            }
         }
 
-        public override int GetReUseDelay(int level)
-        {
-            return 300;
-        }
+        DisableSkill(living);
+    }
 
-        public override void AddEffectsInfo(IList<string> list)
-        {
-            list.Add("No penality Hit from self buffs. 30s duration, 5min RUT.");
-            list.Add("");
-            list.Add("Target: Self");
-            list.Add("Duration: 30s");
-            list.Add("Casting time: Instant");
-        }
+    public override int GetReUseDelay(int level)
+    {
+        return 300;
+    }
 
+    public override void AddEffectsInfo(IList<string> list)
+    {
+        list.Add("No penality Hit from self buffs. 30s duration, 5min RUT.");
+        list.Add("");
+        list.Add("Target: Self");
+        list.Add("Duration: 30s");
+        list.Add("Casting time: Instant");
     }
 }

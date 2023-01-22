@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  *
  * This program is free software; you can redistribute it and/or
@@ -16,40 +16,40 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using log4net;
 using System.Reflection;
 
-namespace DOL.GS.PacketHandler
+namespace DOL.GS.PacketHandler;
+
+[PacketLib(188, GameClient.eClientVersion.Version188)]
+public class PacketLib188 : PacketLib187
 {
-	[PacketLib(188, GameClient.eClientVersion.Version188)]
-	public class PacketLib188 : PacketLib187
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>
-		/// Constructs a new PacketLib for Version 1.88 clients
-		/// </summary>
-		/// <param name="client">the gameclient this lib is associated with</param>
-		public PacketLib188(GameClient client)
-			: base(client)
-		{
-		}
+    /// <summary>
+    /// Constructs a new PacketLib for Version 1.88 clients
+    /// </summary>
+    /// <param name="client">the gameclient this lib is associated with</param>
+    public PacketLib188(GameClient client)
+        : base(client)
+    {
+    }
 
-		public override void SendXFireInfo(byte flag)
-		{
-			if (m_gameClient == null || m_gameClient.Player == null)
-				return;
-			using (GSTCPPacketOut pak = new GSTCPPacketOut((byte)eServerPackets.XFire))
-			{
-				pak.WriteShort((ushort)m_gameClient.Player.ObjectID);
-				pak.WriteByte(flag);
-				pak.WriteByte(0x00);
-				SendTCP(pak);
-			}
-		}
-	}
+    public override void SendXFireInfo(byte flag)
+    {
+        if (m_gameClient == null || m_gameClient.Player == null)
+            return;
+        using (var pak = new GSTCPPacketOut((byte) eServerPackets.XFire))
+        {
+            pak.WriteShort((ushort) m_gameClient.Player.ObjectID);
+            pak.WriteByte(flag);
+            pak.WriteByte(0x00);
+            SendTCP(pak);
+        }
+    }
 }

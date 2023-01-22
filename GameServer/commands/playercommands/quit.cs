@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -17,20 +17,19 @@
  *
  */
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute("&quit", new string[] { "&q" }, //command to handle
-		ePrivLevel.Player, //minimum privelege level
-		"Removes the player from the world", //command description
-		"/quit")] //usage
-	public class QuitCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "quit"))
-				return;
+namespace DOL.GS.Commands;
 
-			client.Player.Quit(false);
-		}
-	}
+[CmdAttribute("&quit", new string[] {"&q"}, //command to handle
+    ePrivLevel.Player, //minimum privelege level
+    "Removes the player from the world", //command description
+    "/quit")] //usage
+public class QuitCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "quit"))
+            return;
+
+        client.Player.Quit(false);
+    }
 }

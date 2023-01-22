@@ -1,7 +1,8 @@
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+/// <summary>
+/// Caster Guards Brain
+/// </summary>
+public class PveSafetyGuard : KeepGuardBrain
 {
-	/// <summary>
-	/// Caster Guards Brain
-	/// </summary>
-	public class PveSafetyGuard : KeepGuardBrain { }
 }

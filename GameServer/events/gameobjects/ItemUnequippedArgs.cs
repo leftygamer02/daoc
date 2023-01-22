@@ -16,56 +16,50 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the ItemUnEquipped event of PlayerInventory
+/// </summary>
+public class ItemUnequippedArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the ItemUnEquipped event of PlayerInventory
-	/// </summary>
-	public class ItemUnequippedArgs : EventArgs
-	{
-		private InventoryItem m_item;
-		private eInventorySlot m_previousSlotPos;
+    private InventoryItem m_item;
+    private eInventorySlot m_previousSlotPos;
 
-		/// <summary>
-		/// Constructs a new ItemEquippedArgs
-		/// </summary>
-		/// <param name="item">The unequipped item</param>
-		/// <param name="previousSlotPos">The slot position item had before it was equipped</param>
-		public ItemUnequippedArgs(InventoryItem item, eInventorySlot previousSlotPos)
-		{
-			m_item = item;
-			m_previousSlotPos = previousSlotPos;
-		}
+    /// <summary>
+    /// Constructs a new ItemEquippedArgs
+    /// </summary>
+    /// <param name="item">The unequipped item</param>
+    /// <param name="previousSlotPos">The slot position item had before it was equipped</param>
+    public ItemUnequippedArgs(InventoryItem item, eInventorySlot previousSlotPos)
+    {
+        m_item = item;
+        m_previousSlotPos = previousSlotPos;
+    }
 
-		/// <summary>
-		/// Constructs a new ItemEquippedArgs
-		/// </summary>
-		/// <param name="item">The unequipped item</param>
-		/// <param name="previousSlotPos">The slot position item had before it was equipped</param>
-		public ItemUnequippedArgs(InventoryItem item, int previousSlotPos)
-		{
-			m_item = item;
-			m_previousSlotPos = (eInventorySlot)previousSlotPos;
-		}
+    /// <summary>
+    /// Constructs a new ItemEquippedArgs
+    /// </summary>
+    /// <param name="item">The unequipped item</param>
+    /// <param name="previousSlotPos">The slot position item had before it was equipped</param>
+    public ItemUnequippedArgs(InventoryItem item, int previousSlotPos)
+    {
+        m_item = item;
+        m_previousSlotPos = (eInventorySlot) previousSlotPos;
+    }
 
-		/// <summary>
-		/// Gets the unequipped item
-		/// </summary>
-		public InventoryItem Item
-		{
-			get { return m_item; }
-		}
+    /// <summary>
+    /// Gets the unequipped item
+    /// </summary>
+    public InventoryItem Item => m_item;
 
-		/// <summary>
-		/// Gets the previous slot position
-		/// </summary>
-		public eInventorySlot PreviousSlotPosition
-		{
-			get { return m_previousSlotPos; }
-		}
-	}
+    /// <summary>
+    /// Gets the previous slot position
+    /// </summary>
+    public eInventorySlot PreviousSlotPosition => m_previousSlotPos;
 }

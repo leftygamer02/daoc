@@ -16,109 +16,98 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Specialized;
 using System.Text;
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+/// <summary>
+/// 
+/// </summary>
+[DataTable(TableName = "Quest")]
+public class DBQuest : DataObject
 {
-	/// <summary>
-	/// 
-	/// </summary>
-	[DataTable(TableName="Quest")]
-	public class DBQuest : DataObject
-	{
-		private string		m_name;
-		private	string		m_characterid;
-		private	int			m_step;
-		private string		m_customPropertiesString;
+    private string m_name;
+    private string m_characterid;
+    private int m_step;
+    private string m_customPropertiesString;
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		public DBQuest() : this(string.Empty, 1, string.Empty)
-		{
-		}
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public DBQuest() : this(string.Empty, 1, string.Empty)
+    {
+    }
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="name">The quest name</param>
-		/// <param name="step">The step number</param>
-		/// <param name="charname">The character name</param>
-		public DBQuest(string name, int step, string charname)
-		{
-			m_name = name;
-			m_step = step;
-			m_characterid = charname;
-		}
-		/// <summary>
-		/// Quest Name
-		/// </summary>
-		[DataElement(AllowDbNull=false,Unique=false)]
-		public string Name
-		{
-			get
-			{
-				return m_name;
-			}
-			set
-			{
-				Dirty = true;
-				m_name = value;
-			}
-		}
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="name">The quest name</param>
+    /// <param name="step">The step number</param>
+    /// <param name="charname">The character name</param>
+    public DBQuest(string name, int step, string charname)
+    {
+        m_name = name;
+        m_step = step;
+        m_characterid = charname;
+    }
 
-		/// <summary>
-		/// Quest Step
-		/// </summary>
-		[DataElement(AllowDbNull=false,Unique=false)]
-		public int Step
-		{
-			get
-			{
-				return m_step;
-			}
-			set
-			{
-				Dirty = true;
-				m_step = value;
-			}
-		}
+    /// <summary>
+    /// Quest Name
+    /// </summary>
+    [DataElement(AllowDbNull = false, Unique = false)]
+    public string Name
+    {
+        get => m_name;
+        set
+        {
+            Dirty = true;
+            m_name = value;
+        }
+    }
 
-		/// <summary>
-		/// Character Name
-		/// </summary>
-		[DataElement(AllowDbNull=false,Unique=false,Index=true)]
-		public string Character_ID
-		{
-			get
-			{
-				return m_characterid;
-			}
-			set
-			{
-				Dirty = true;
-				m_characterid = value;
-			}
-		}
+    /// <summary>
+    /// Quest Step
+    /// </summary>
+    [DataElement(AllowDbNull = false, Unique = false)]
+    public int Step
+    {
+        get => m_step;
+        set
+        {
+            Dirty = true;
+            m_step = value;
+        }
+    }
 
-		/// <summary>
-		/// Custom properties string
-		/// </summary>
-		[DataElement(AllowDbNull=true,Unique=false)]
-		public string CustomPropertiesString
-		{
-			get
-			{
-				return m_customPropertiesString;
-			}
-			set
-			{
-				Dirty = true;
-				m_customPropertiesString = value;
-			}
-		}
-	}
+    /// <summary>
+    /// Character Name
+    /// </summary>
+    [DataElement(AllowDbNull = false, Unique = false, Index = true)]
+    public string Character_ID
+    {
+        get => m_characterid;
+        set
+        {
+            Dirty = true;
+            m_characterid = value;
+        }
+    }
+
+    /// <summary>
+    /// Custom properties string
+    /// </summary>
+    [DataElement(AllowDbNull = true, Unique = false)]
+    public string CustomPropertiesString
+    {
+        get => m_customPropertiesString;
+        set
+        {
+            Dirty = true;
+            m_customPropertiesString = value;
+        }
+    }
 }

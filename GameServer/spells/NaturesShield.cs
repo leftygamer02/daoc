@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+[SpellHandler("NaturesShield")]
+public class NaturesShieldSpellHandler : SpellHandler
 {
-    [SpellHandler("NaturesShield")]
-    public class NaturesShieldSpellHandler : SpellHandler
+    public NaturesShieldSpellHandler(GameLiving caster, Spell spell, SpellLine spellLine) : base(caster, spell,
+        spellLine)
     {
-        public NaturesShieldSpellHandler(GameLiving caster, Spell spell, SpellLine spellLine) : base(caster, spell, spellLine)
-        {
-        }
     }
 }

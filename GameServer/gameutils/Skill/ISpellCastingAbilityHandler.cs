@@ -19,15 +19,14 @@
 
 using System;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// ISpellCastingAbilityHandler is an Interface for Providing Basic access to an Ability Casting a Spell
+/// </summary>
+public interface ISpellCastingAbilityHandler
 {
-	/// <summary>
-	/// ISpellCastingAbilityHandler is an Interface for Providing Basic access to an Ability Casting a Spell
-	/// </summary>
-	public interface ISpellCastingAbilityHandler
-	{
-		Spell Spell { get; }
-		SpellLine SpellLine { get; }
-		Ability Ability { get; }
-	}
+    Spell Spell { get; }
+    SpellLine SpellLine { get; }
+    Ability Ability { get; }
 }

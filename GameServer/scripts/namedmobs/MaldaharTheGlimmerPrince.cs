@@ -16,6 +16,7 @@ namespace DOL.GS
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -26,32 +27,34 @@ namespace DOL.GS
                 default: return 30; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 40000; }
-        }
-        public virtual int MaldaharTheGlimmerPrinceDifficulty
-        {
-            get { return ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS; }
-        }
+
+        public override int MaxHealth => 40000;
+
+        public virtual int MaldaharTheGlimmerPrinceDifficulty =>
+            ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS;
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100;
         }
+
         public override int AttackRange
         {
             get => 450;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
@@ -59,6 +62,7 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(44043);
@@ -76,9 +80,10 @@ namespace DOL.GS
             BodyType = 8;
             Faction = FactionMgr.GetFactionByID(83);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(83));
-            RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
 
-            MaldaharBrain sBrain = new MaldaharBrain();
+            var sBrain = new MaldaharBrain();
             SetOwnBrain(sBrain);
             base.AddToWorld();
             return true;
@@ -100,18 +105,15 @@ namespace DOL.AI.Brain
             AggroRange = 500;
         }
 
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
 
         public override void AttackMostWanted()
         {
             if (Body.IsWithinRadius(Body.TargetObject, Body.AttackRange + 250))
-            {
                 switch (Util.Random(1, 2))
                 {
                     case 1:
@@ -131,7 +133,6 @@ namespace DOL.AI.Brain
 
                         break;
                 }
-            }
 
             base.AttackMostWanted();
         }
@@ -152,7 +153,7 @@ namespace DOL.AI.Brain
             base.Notify(e, sender, args);
 
             if (e != GameObjectEvent.TakeDamage && e != GameLivingEvent.EnemyHealed) return;
-            GameObject source = (args as TakeDamageEventArgs)?.DamageSource;
+            var source = (args as TakeDamageEventArgs)?.DamageSource;
             if (source == null) return;
             if (Body.IsWithinRadius(source, Body.AttackRange + 250)) return;
             switch (Util.Random(1, 2))
@@ -186,7 +187,7 @@ namespace DOL.AI.Brain
             {
                 if (m_Lifetap == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.ClientEffect = 710;
@@ -222,7 +223,7 @@ namespace DOL.AI.Brain
             {
                 if (m_PBAoe == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.ClientEffect = 4204;

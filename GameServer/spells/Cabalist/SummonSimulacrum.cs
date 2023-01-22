@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,27 +28,30 @@ using DOL.GS.PropertyCalc;
 using System.Collections;
 using DOL.Language;
 
-namespace DOL.GS.Spells
-{
-	/// <summary>
-	/// Spell handler to summon a bonedancer pet.
-	/// </summary>
-	/// <author>IST</author>
-	[SpellHandler("SummonSimulacrum")]
-	public class SummonSimulacrum : SummonSpellHandler
-	{
-		public SummonSimulacrum(GameLiving caster, Spell spell, SpellLine line)
-			: base(caster, spell, line) { }
+namespace DOL.GS.Spells;
 
-		public override bool CheckEndCast(GameLiving selectedTarget)
-		{
-			if (Caster is GamePlayer && ((GamePlayer)Caster).ControlledBrain != null)
-			{
-                MessageToCaster(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "Summon.CheckBeginCast.AlreadyHaveaPet"), eChatType.CT_SpellResisted);
-                return false;
-			}
-			return base.CheckEndCast(selectedTarget);
-		}
-		
-	}
+/// <summary>
+/// Spell handler to summon a bonedancer pet.
+/// </summary>
+/// <author>IST</author>
+[SpellHandler("SummonSimulacrum")]
+public class SummonSimulacrum : SummonSpellHandler
+{
+    public SummonSimulacrum(GameLiving caster, Spell spell, SpellLine line)
+        : base(caster, spell, line)
+    {
+    }
+
+    public override bool CheckEndCast(GameLiving selectedTarget)
+    {
+        if (Caster is GamePlayer && ((GamePlayer) Caster).ControlledBrain != null)
+        {
+            MessageToCaster(
+                LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "Summon.CheckBeginCast.AlreadyHaveaPet"),
+                eChatType.CT_SpellResisted);
+            return false;
+        }
+
+        return base.CheckEndCast(selectedTarget);
+    }
 }

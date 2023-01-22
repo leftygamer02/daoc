@@ -46,10 +46,8 @@ public class StandardMobState_IDLE : StandardMobState
 
     public override void Enter()
     {
-        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
-            Console.WriteLine($"{_brain.Body} is entering IDLE");
-        }
+        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled) Console.WriteLine($"{_brain.Body} is entering IDLE");
+
         _brain.ShouldCheckProximityAggro = true;
         base.Enter();
     }
@@ -157,15 +155,15 @@ public class StandardMobState_AGGRO : StandardMobState
     {
         //enable attack component
         //enable spell component
-        if (_brain.Body.attackComponent == null) { _brain.Body.attackComponent = new DOL.GS.AttackComponent(_brain.Body); }
+        if (_brain.Body.attackComponent == null) _brain.Body.attackComponent = new AttackComponent(_brain.Body);
+
         EntityManager.AddComponent(typeof(AttackComponent), _brain.Body);
-        if (_brain.Body.castingComponent == null) { _brain.Body.castingComponent = new DOL.GS.CastingComponent(_brain.Body); }
+        if (_brain.Body.castingComponent == null) _brain.Body.castingComponent = new CastingComponent(_brain.Body);
+
         EntityManager.AddComponent(typeof(CastingComponent), _brain.Body);
 
-        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
-            Console.WriteLine($"{_brain.Body} is entering AGGRO");
-        }
+        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled) Console.WriteLine($"{_brain.Body} is entering AGGRO");
+
         _brain.ShouldCheckProximityAggro = true;
         //_brain.AttackMostWanted();
 
@@ -197,7 +195,7 @@ public class StandardMobState_AGGRO : StandardMobState
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
             return;
         }
-        
+
         if (_brain.Body.Flags.HasFlag(GameNPC.eFlags.STEALTH))
             _brain.Body.Flags ^= GameNPC.eFlags.STEALTH;
 
@@ -220,10 +218,8 @@ public class StandardMobState_ROAMING : StandardMobState
 
     public override void Enter()
     {
-        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
-            Console.WriteLine($"{_brain.Body} is entering ROAM");
-        }
+        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled) Console.WriteLine($"{_brain.Body} is entering ROAM");
+
         base.Enter();
     }
 
@@ -250,14 +246,15 @@ public class StandardMobState_ROAMING : StandardMobState
         //find new point
         //walk to point
         if (!_brain.Body.IsCasting)
-        {
-            if (_lastRoamTick + _roamCooldown <= GameLoop.GameLoopTime && Util.Chance(DOL.GS.ServerProperties.Properties.GAMENPC_RANDOMWALK_CHANCE))
+            if (_lastRoamTick + _roamCooldown <= GameLoop.GameLoopTime &&
+                Util.Chance(DOL.GS.ServerProperties.Properties.GAMENPC_RANDOMWALK_CHANCE))
             {
-                IPoint3D target = _brain.CalcRandomWalkTarget();
+                var target = _brain.CalcRandomWalkTarget();
 
                 if (target != null)
                 {
-                    if (Util.IsNearDistance(target.X, target.Y, target.Z, _brain.Body.X, _brain.Body.Y, _brain.Body.Z, GameNPC.CONST_WALKTOTOLERANCE))
+                    if (Util.IsNearDistance(target.X, target.Y, target.Z, _brain.Body.X, _brain.Body.Y, _brain.Body.Z,
+                            GameNPC.CONST_WALKTOTOLERANCE))
                         _brain.Body.TurnTo(_brain.Body.GetHeading(target));
                     else
                         _brain.Body.WalkTo(target, 50);
@@ -267,7 +264,6 @@ public class StandardMobState_ROAMING : StandardMobState
 
                 _lastRoamTick = GameLoop.GameLoopTime;
             }
-        }
 
         //cast self buffs if applicable
         _brain.CheckSpells(eCheckSpellType.Defensive);
@@ -285,9 +281,8 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
     public override void Enter()
     {
         if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
             Console.WriteLine($"{_brain.Body} is entering RETURN_TO_SPAWN");
-        }
+
         if (_brain.Body.WasStealthed)
             _brain.Body.Flags |= GameNPC.eFlags.STEALTH;
         _brain.ClearAggroList();
@@ -306,18 +301,22 @@ public class StandardMobState_RETURN_TO_SPAWN : StandardMobState
     public override void Think()
     {
         // If the mob is not near his spawn, doesnt have aggro, is not enganged and is just standing around and  interested in going home, send him home.
-        if(!_brain.Body.IsNearSpawn() && (this._brain.AggroTable.Count == 0 || !this._brain.Body.IsEngaging) && (_brain.Body.IsReturningHome == false || _brain.Body.IsReturningToSpawnPoint == false) && this._brain.Body.CurrentSpeed == 0)
+        if (!_brain.Body.IsNearSpawn() && (_brain.AggroTable.Count == 0 || !_brain.Body.IsEngaging) &&
+            (_brain.Body.IsReturningHome == false || _brain.Body.IsReturningToSpawnPoint == false) &&
+            _brain.Body.CurrentSpeed == 0)
         {
             _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
             _brain.Body.ResetHeading();
             return;
         }
+
         if (_brain.Body.IsNearSpawn())
         {
             _brain.FSM.SetCurrentState(eFSMStateType.WAKING_UP);
             _brain.Body.ResetHeading();
             return;
         }
+
         if (_brain.CheckProximityAggro())
         {
             _brain.Body.CancelWalkToSpawn();
@@ -337,10 +336,8 @@ public class StandardMobState_PATROLLING : StandardMobState
 
     public override void Enter()
     {
-        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
-            Console.WriteLine($"{_brain.Body} is PATROLLING");
-        }
+        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled) Console.WriteLine($"{_brain.Body} is PATROLLING");
+
         _brain.ClearAggroList();
         base.Enter();
     }
@@ -348,10 +345,7 @@ public class StandardMobState_PATROLLING : StandardMobState
     public override void Think()
     {
         // check for returning to home if to far away
-        if (_brain.IsBeyondTetherRange())
-        {
-            _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-        }
+        if (_brain.IsBeyondTetherRange()) _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
 
         //if aggroList > 0,
         //setStatus = aggro
@@ -363,11 +357,11 @@ public class StandardMobState_PATROLLING : StandardMobState
         }
 
         //handle patrol logic
-        PathPoint path = MovementMgr.LoadPath(_brain.Body.PathID);
+        var path = MovementMgr.LoadPath(_brain.Body.PathID);
         if (path != null)
         {
             _brain.Body.CurrentWayPoint = path;
-            _brain.Body.MoveOnPath((short)path.MaxSpeed);
+            _brain.Body.MoveOnPath((short) path.MaxSpeed);
         }
         else
         {
@@ -388,10 +382,8 @@ public class StandardMobState_DEAD : StandardMobState
 
     public override void Enter()
     {
-        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
-            Console.WriteLine($"{_brain.Body} has entered DEAD state");
-        }
+        if (ECS.Debug.Diagnostics.StateMachineDebugEnabled) Console.WriteLine($"{_brain.Body} has entered DEAD state");
+
         _brain.ClearAggroList();
         base.Enter();
     }

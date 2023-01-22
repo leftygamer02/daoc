@@ -1,7 +1,6 @@
-namespace DOL.GS
+namespace DOL.GS;
+
+public interface IECSService
 {
-    public interface IECSService
-    {
-        void Tick(long tick);
-    }
+    void Tick(long tick);
 }

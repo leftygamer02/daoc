@@ -16,144 +16,122 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Collections.Generic;
 using System;
 using System.Reflection;
-
 using DOL.Database;
 using DOL.GS.Keeps;
-
 using log4net;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// DoorMgr is manager of all door regular door and keep door
+/// </summary>
+public sealed class DoorMgr
 {
-	/// <summary>
-	/// DoorMgr is manager of all door regular door and keep door
-	/// </summary>
-	public sealed class DoorMgr
-	{
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private static readonly object Lock = new object();
+    private static readonly object Lock = new();
 
-		private static Dictionary<int, List<IDoor>> m_doors = new Dictionary<int, List<IDoor>>();
+    private static Dictionary<int, List<IDoor>> m_doors = new();
 
-		public const string WANT_TO_ADD_DOORS = "WantToAddDoors";
+    public const string WANT_TO_ADD_DOORS = "WantToAddDoors";
 
-		/// <summary>
-		/// this function load all door from DB
-		/// </summary>
-		public static bool Init()
-		{
-			var dbdoors = GameServer.Database.SelectAllObjects<DBDoor>();
-			foreach (DBDoor door in dbdoors)
-			{
-				if (!LoadDoor(door))
-				{
-					log.Error("Unable to load door id " + door.ObjectId + ", correct your database");
-					// continue loading, no need to stop server for one bad door!
-				}
-			}
-			return true;
-		}
+    /// <summary>
+    /// this function load all door from DB
+    /// </summary>
+    public static bool Init()
+    {
+        var dbdoors = GameServer.Database.SelectAllObjects<DBDoor>();
+        foreach (var door in dbdoors)
+            if (!LoadDoor(door))
+                log.Error("Unable to load door id " + door.ObjectId + ", correct your database");
+        // continue loading, no need to stop server for one bad door!
+        return true;
+    }
 
-		public static void SaveKeepDoors()
-		{
-			if (log.IsDebugEnabled)
-				log.Debug("Saving keep doors...");
-			try
-			{
-				lock (Lock)
-				{
-					foreach (List<IDoor> doorList in m_doors.Values)
-					{
-						foreach (IDoor door in doorList)
-						{
-							if (door is GameKeepDoor keepDoor && keepDoor.IsAttackableDoor)
-								keepDoor.SaveIntoDatabase();
-						}
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				if (log.IsErrorEnabled)
-					log.Error("Error saving keep doors.", e);
-			}
-		}
+    public static void SaveKeepDoors()
+    {
+        if (log.IsDebugEnabled)
+            log.Debug("Saving keep doors...");
+        try
+        {
+            lock (Lock)
+            {
+                foreach (var doorList in m_doors.Values)
+                foreach (var door in doorList)
+                    if (door is GameKeepDoor keepDoor && keepDoor.IsAttackableDoor)
+                        keepDoor.SaveIntoDatabase();
+            }
+        }
+        catch (Exception e)
+        {
+            if (log.IsErrorEnabled)
+                log.Error("Error saving keep doors.", e);
+        }
+    }
 
-		public static bool LoadDoor(DBDoor door)
-		{
-			IDoor mydoor = null;
-			ushort zone = (ushort)(door.InternalID / 1000000);
+    public static bool LoadDoor(DBDoor door)
+    {
+        IDoor mydoor = null;
+        var zone = (ushort) (door.InternalID / 1000000);
 
-			Zone currentZone = WorldMgr.GetZone(zone);
-			if (currentZone == null) return false;
-			
-			//check if the door is a keep door
-			foreach (AbstractArea area in currentZone.GetAreasOfSpot(door.X, door.Y, door.Z))
-			{
-				if (area is KeepArea)
-				{
-					mydoor = new GameKeepDoor();
-					mydoor.LoadFromDatabase(door);
-					break;
-				}
-			}
+        var currentZone = WorldMgr.GetZone(zone);
+        if (currentZone == null) return false;
 
-			//if the door is not a keep door, create a standard door
-			if (mydoor == null)
-			{
-				mydoor = new GameDoor();
-				mydoor.LoadFromDatabase(door);
-			}
+        //check if the door is a keep door
+        foreach (AbstractArea area in currentZone.GetAreasOfSpot(door.X, door.Y, door.Z))
+            if (area is KeepArea)
+            {
+                mydoor = new GameKeepDoor();
+                mydoor.LoadFromDatabase(door);
+                break;
+            }
 
-			//add to the list of doors
-			if (mydoor != null)
-			{
-				RegisterDoor(mydoor);
-			}
+        //if the door is not a keep door, create a standard door
+        if (mydoor == null)
+        {
+            mydoor = new GameDoor();
+            mydoor.LoadFromDatabase(door);
+        }
 
-			return true;
-		}
+        //add to the list of doors
+        if (mydoor != null) RegisterDoor(mydoor);
 
-	    public static void RegisterDoor(IDoor door)
-	    {
-	        lock (Lock)
-	        {
-	            if (!m_doors.ContainsKey(door.DoorID))
-	            {
-	                List<IDoor> createDoorList = new List<IDoor>();
-	                m_doors.Add(door.DoorID, createDoorList);
-	            }
+        return true;
+    }
 
-	            List<IDoor> addDoorList = m_doors[door.DoorID];
-	            addDoorList.Add(door);
-	        }
-	    }
+    public static void RegisterDoor(IDoor door)
+    {
+        lock (Lock)
+        {
+            if (!m_doors.ContainsKey(door.DoorID))
+            {
+                var createDoorList = new List<IDoor>();
+                m_doors.Add(door.DoorID, createDoorList);
+            }
 
-		public static void UnRegisterDoor(int doorID)
-		{
-			if (m_doors.ContainsKey(doorID))
-			{
-				m_doors.Remove(doorID);
-			}
-		}
+            var addDoorList = m_doors[door.DoorID];
+            addDoorList.Add(door);
+        }
+    }
 
-		/// <summary>
-		/// This function get the door object by door index
-		/// </summary>
-		/// <returns>return the door with the index</returns>
-		public static List<IDoor> getDoorByID(int id)
-		{
-			if (m_doors.ContainsKey(id))
-			{
-				return m_doors[id];
-			}
-			else
-			{
-				return new List<IDoor>();
-			}
-		}
-	}
+    public static void UnRegisterDoor(int doorID)
+    {
+        if (m_doors.ContainsKey(doorID)) m_doors.Remove(doorID);
+    }
+
+    /// <summary>
+    /// This function get the door object by door index
+    /// </summary>
+    /// <returns>return the door with the index</returns>
+    public static List<IDoor> getDoorByID(int id)
+    {
+        if (m_doors.ContainsKey(id))
+            return m_doors[id];
+        else
+            return new List<IDoor>();
+    }
 }

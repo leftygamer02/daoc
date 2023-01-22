@@ -1,41 +1,40 @@
 using DOL.GS.Spells;
 
-namespace DOL.GS.Effects
+namespace DOL.GS.Effects;
+
+public class AtlasOF_ForestheartAmbusherECSEffect : ECSGameAbilityEffect
 {
-    public class AtlasOF_ForestheartAmbusherECSEffect : ECSGameAbilityEffect
+    public AtlasOF_ForestheartAmbusherECSEffect(ECSGameEffectInitParams initParams) : base(initParams)
     {
-        public AtlasOF_ForestheartAmbusherECSEffect(ECSGameEffectInitParams initParams) : base(initParams)
-        {
-            EffectType = eEffect.ForestheartAmbusher;
-            EffectService.RequestStartEffect(this);
-        }
+        EffectType = eEffect.ForestheartAmbusher;
+        EffectService.RequestStartEffect(this);
+    }
 
-        public override ushort Icon => 4268;
-        public override string Name => "Forestheart Ambusher";
-        public override bool HasPositiveEffect => true;
-        public SummonAnimistAmbusher PetSpellHander;
+    public override ushort Icon => 4268;
+    public override string Name => "Forestheart Ambusher";
+    public override bool HasPositiveEffect => true;
+    public SummonAnimistAmbusher PetSpellHander;
 
-        public override void OnStartEffect()
-        {
-            SpellLine RAspellLine = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", true);
-            Spell ForestheartAmbusher = SkillBase.GetSpellByID(90802);
-            
-            if (ForestheartAmbusher != null)
-                Owner.CastSpell(ForestheartAmbusher, RAspellLine);
+    public override void OnStartEffect()
+    {
+        var RAspellLine = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", true);
+        var ForestheartAmbusher = SkillBase.GetSpellByID(90802);
 
-            base.OnStartEffect();
-        }
+        if (ForestheartAmbusher != null)
+            Owner.CastSpell(ForestheartAmbusher, RAspellLine);
 
-        public override void OnStopEffect()
-        {
-            PetSpellHander.Pet.TakeDamage(null, eDamageType.Natural, 9999, 0);
-            base.OnStopEffect();
-        }
-        
-        public void Cancel(bool playerCancel)
-        {
-            EffectService.RequestImmediateCancelEffect(this, playerCancel);
-            OnStopEffect();
-        }
+        base.OnStartEffect();
+    }
+
+    public override void OnStopEffect()
+    {
+        PetSpellHander.Pet.TakeDamage(null, eDamageType.Natural, 9999, 0);
+        base.OnStopEffect();
+    }
+
+    public void Cancel(bool playerCancel)
+    {
+        EffectService.RequestImmediateCancelEffect(this, playerCancel);
+        OnStopEffect();
     }
 }

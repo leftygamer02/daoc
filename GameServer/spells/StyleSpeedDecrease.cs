@@ -16,53 +16,55 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Style speed decrease effect spell handler
+/// </summary>
+[SpellHandler("StyleSpeedDecrease")]
+public class StyleSpeedDecrease : SpeedDecreaseSpellHandler
 {
-	/// <summary>
-	/// Style speed decrease effect spell handler
-	/// </summary>
-	[SpellHandler("StyleSpeedDecrease")]
-	public class StyleSpeedDecrease : SpeedDecreaseSpellHandler
-	{
-		public override void CreateECSEffect(ECSGameEffectInitParams initParams)
-		{
-			new StatDebuffECSEffect(initParams);
-		}
-		
-		public override int CalculateSpellResistChance(GameLiving target)
-		{
-			return 0;
-		}
+    public override void CreateECSEffect(ECSGameEffectInitParams initParams)
+    {
+        new StatDebuffECSEffect(initParams);
+    }
 
-		/// <summary>
-		/// Calculates the effect duration in milliseconds
-		/// </summary>
-		/// <param name="target">The effect target</param>
-		/// <param name="effectiveness">The effect effectiveness</param>
-		/// <returns>The effect duration in milliseconds</returns>
-		protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
-		{
-			return Spell.Duration;
-		}
+    public override int CalculateSpellResistChance(GameLiving target)
+    {
+        return 0;
+    }
 
-		/// <summary>
-		/// When an applied effect expires.
-		/// Duration spells only.
-		/// </summary>
-		/// <param name="effect">The expired effect</param>
-		/// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
-		/// <returns>immunity duration in milliseconds</returns>
-		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-		{
-			base.OnEffectExpires(effect, noMessages);
-			return 0;
-		}
+    /// <summary>
+    /// Calculates the effect duration in milliseconds
+    /// </summary>
+    /// <param name="target">The effect target</param>
+    /// <param name="effectiveness">The effect effectiveness</param>
+    /// <returns>The effect duration in milliseconds</returns>
+    protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
+    {
+        return Spell.Duration;
+    }
 
-		// constructor
-		public StyleSpeedDecrease(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) {}
-	}
+    /// <summary>
+    /// When an applied effect expires.
+    /// Duration spells only.
+    /// </summary>
+    /// <param name="effect">The expired effect</param>
+    /// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
+    /// <returns>immunity duration in milliseconds</returns>
+    public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+    {
+        base.OnEffectExpires(effect, noMessages);
+        return 0;
+    }
+
+    // constructor
+    public StyleSpeedDecrease(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
+    }
 }

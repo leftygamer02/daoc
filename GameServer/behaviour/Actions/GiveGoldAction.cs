@@ -16,36 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 using DOL.Database;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.GiveGold)]
+public class GiveGoldAction : AbstractAction<long, Unused>
 {
-    [ActionAttribute(ActionType = eActionType.GiveGold)]
-    public class GiveGoldAction : AbstractAction<long,Unused>
-    {               
-
-        public GiveGoldAction(GameNPC defaultNPC,  Object p, Object q)
-            : base(defaultNPC, eActionType.GiveGold, p, q)
-        {                
-        }
+    public GiveGoldAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.GiveGold, p, q)
+    {
+    }
 
 
-        public GiveGoldAction(GameNPC defaultNPC, long p)
-            : this(defaultNPC,  (object)p,(object) null) { }
-        
+    public GiveGoldAction(GameNPC defaultNPC, long p)
+        : this(defaultNPC, (object) p, (object) null)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            player.AddMoney(P);
-            InventoryLogging.LogInventoryAction(NPC, player, eInventoryActionType.Quest, P);
-        }
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        player.AddMoney(P);
+        InventoryLogging.LogInventoryAction(NPC, player, eInventoryActionType.Quest, P);
     }
 }

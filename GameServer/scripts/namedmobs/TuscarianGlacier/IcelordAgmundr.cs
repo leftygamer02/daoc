@@ -12,14 +12,15 @@ namespace DOL.GS
         public Agmundr() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
 
@@ -27,11 +28,13 @@ namespace DOL.GS
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -44,15 +47,15 @@ namespace DOL.GS
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162346);
@@ -66,9 +69,10 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
+            var template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 19, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.TwoHanded);
@@ -78,23 +82,23 @@ namespace DOL.GS
 
             AgmundrBrain.IsChanged = false;
             AgmundrBrain.IsPulled = false;
-            AgmundrBrain sbrain = new AgmundrBrain();
+            var sbrain = new AgmundrBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public override void Die(GameObject killer)
         {
-            BroadcastMessage(String.Format("To come this far... only to face a terrible death!"));
+            BroadcastMessage(string.Format("To come this far... only to face a terrible death!"));
             base.Die(killer);
         }
     }
@@ -118,28 +122,33 @@ namespace DOL.AI.Brain
         public static bool IsPulled = false;
         public static bool IsChanged = false;
         private bool PulledText = false;
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
-            if(!PulledText && Body.TargetObject != null)
+            if (!PulledText && Body.TargetObject != null)
             {
-                BroadcastMessage(String.Format("My seer's told me that you were coming {0}! Since you posed no threat I haven't asked for reinforcements!", Body.TargetObject.Name));
+                BroadcastMessage(string.Format(
+                    "My seer's told me that you were coming {0}! Since you posed no threat I haven't asked for reinforcements!",
+                    Body.TargetObject.Name));
                 PulledText = true;
             }
+
             base.OnAttackedByEnemy(ad);
         }
+
         public override void AttackMostWanted()
         {
             if (Util.Chance(15) && Body.TargetObject != null)
-                Body.CastSpell(AgmundrDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells),false);
+                Body.CastSpell(AgmundrDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
             base.AttackMostWanted();
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -150,28 +159,28 @@ namespace DOL.AI.Brain
                 IsPulled = false;
                 PulledText = false;
             }
-            if(HasAggro && Body.TargetObject != null)
+
+            if (HasAggro && Body.TargetObject != null)
             {
-                IsChanged = false;//reset IsChanged flag here
-                if(IsPulled==false)
-                { 
-                    foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+                IsChanged = false; //reset IsChanged flag here
+                if (IsPulled == false)
+                    foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     {
                         if (npc == null) continue;
                         if (!npc.IsAlive || npc.PackageID != "AgmundrBaf") continue;
                         AddAggroListTo(npc.Brain as StandardMobBrain); // add to aggro mobs with CryptLordBaf PackageID
-                        SetMobstats();//setting mob stats here
+                        SetMobstats(); //setting mob stats here
                     }
-                }
             }
             else
             {
                 if (IsChanged == false)
                 {
                     LoadBAFTemplate();
-                    IsChanged = true;//to stop mob 'blink' effect
+                    IsChanged = true; //to stop mob 'blink' effect
                 }
             }
+
             if (Body.IsOutOfTetherRange)
             {
                 Body.Health = Body.MaxHealth;
@@ -181,15 +190,16 @@ namespace DOL.AI.Brain
             {
                 Body.Health = Body.MaxHealth;
             }
+
             base.Think();
         }
 
         private void SetMobstats()
         {
-            foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+            foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
             {
                 if (npc == null) continue;
-                if (npc.NPCTemplate == null) continue;//check for nontemplated mobs
+                if (npc.NPCTemplate == null) continue; //check for nontemplated mobs
                 if (!npc.IsAlive || npc.PackageID != "AgmundrBaf") continue;
                 if (npc.TargetObject != Body.TargetObject) continue;
                 npc.MaxDistance = 10000; //set mob distance to make it reach target
@@ -201,33 +211,34 @@ namespace DOL.AI.Brain
                 else
                 {
                     npc.MaxSpeedBase = npc.NPCTemplate.MaxSpeed; //return speed to normal
-                    IsPulled = true;//to stop mob adjusting stats nonstop
+                    IsPulled = true; //to stop mob adjusting stats nonstop
                 }
             }
         }
+
         private void LoadBAFTemplate()
         {
-            foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+            foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
             {
                 if (npc == null) continue;
-                if (npc.NPCTemplate == null) continue;//check if mob got npctemplate
+                if (npc.NPCTemplate == null) continue; //check if mob got npctemplate
                 INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(npc.NPCTemplate.TemplateId);
                 if (npcTemplate == null)
                     return;
                 if (!npc.IsAlive || npc.PackageID != "AgmundrBaf") continue;
-                if (npc.NPCTemplate != null)//check again if got npctemplate
-                {
+                if (npc.NPCTemplate != null) //check again if got npctemplate
                     npc.LoadTemplate(npcTemplate);
-                }
             }
         }
+
         private Spell m_AgmundrDD;
+
         private Spell AgmundrDD
         {
             get
             {
                 if (m_AgmundrDD != null) return m_AgmundrDD;
-                DBSpell spell = new DBSpell();
+                var spell = new DBSpell();
                 spell.AllowAdd = false;
                 spell.CastTime = 3;
                 spell.RecastDelay = Util.Random(10, 15);

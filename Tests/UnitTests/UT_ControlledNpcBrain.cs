@@ -16,24 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.AI.Brain;
 using NUnit.Framework;
 
-namespace DOL.Tests.Unit.Gameserver
-{  
-    [TestFixture]
-    class UT_ControlledNpcBrain
+namespace DOL.Tests.Unit.Gameserver;
+
+[TestFixture]
+internal class UT_ControlledNpcBrain
+{
+    [Test]
+    public void GetPlayerOwner_InitWithPlayer_Player()
     {
-        [Test]
-        public void GetPlayerOwner_InitWithPlayer_Player()
-        {
-            var player = new FakePlayer();
-            var brain = new ControlledNpcBrain(player);
+        var player = new FakePlayer();
+        var brain = new ControlledNpcBrain(player);
 
-            var actual = brain.GetPlayerOwner();
+        var actual = brain.GetPlayerOwner();
 
-            var expected = player;
-            Assert.AreEqual(expected, actual);
-        }
+        var expected = player;
+        Assert.AreEqual(expected, actual);
     }
 }

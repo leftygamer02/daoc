@@ -16,33 +16,44 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.Language;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute(
-		"&range",
-		ePrivLevel.Player,
-		"Gives a range to a target",
-		"/range")]
-	public class RangeCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "range"))
-				return;
+namespace DOL.GS.Commands;
 
-			GameLiving living = client.Player.TargetObject as GameLiving;
-			if (client.Player.TargetObject == null)
-				DisplayMessage(client, (LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.NeedTarget")));
-			else if (living == null || (living != null && client.Account.PrivLevel > 1))
-			{
-				int range = client.Player.GetDistanceTo( client.Player.TargetObject );
-				DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.Result", range, (client.Player.TargetInView ? "" : LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.NotVisible"))));
-			}
-			else
-				DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.InvalidObject"));
-		}
-	}
+[CmdAttribute(
+    "&range",
+    ePrivLevel.Player,
+    "Gives a range to a target",
+    "/range")]
+public class RangeCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "range"))
+            return;
+
+        var living = client.Player.TargetObject as GameLiving;
+        if (client.Player.TargetObject == null)
+        {
+            DisplayMessage(client,
+                LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.NeedTarget"));
+        }
+        else if (living == null || (living != null && client.Account.PrivLevel > 1))
+        {
+            var range = client.Player.GetDistanceTo(client.Player.TargetObject);
+            DisplayMessage(client,
+                LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.Result", range,
+                    client.Player.TargetInView
+                        ? ""
+                        : LanguageMgr.GetTranslation(client.Account.Language,
+                            "Scripts.Players.Range.NotVisible")));
+        }
+        else
+        {
+            DisplayMessage(client,
+                LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Range.InvalidObject"));
+        }
+    }
 }

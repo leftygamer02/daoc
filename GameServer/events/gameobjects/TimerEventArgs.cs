@@ -16,32 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the Timer event of GameObjects
+/// </summary>
+public class TimerEventArgs : SourceEventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the Timer event of GameObjects
-	/// </summary>
-	public class TimerEventArgs : SourceEventArgs
-	{		
-        private string timerId;
+    private string timerId;
 
-		/// <summary>
-		/// Constructs a new TimerEventArgs
-		/// </summary>
-		public TimerEventArgs(GameLiving source, string timerId) : base (source)
-		{
-			this.timerId = timerId;
-		}
+    /// <summary>
+    /// Constructs a new TimerEventArgs
+    /// </summary>
+    public TimerEventArgs(GameLiving source, string timerId) : base(source)
+    {
+        this.timerId = timerId;
+    }
 
-		/// <summary>
-		/// Gets the id of timer
-		/// </summary>
-		public string TimerID
-		{
-			get { return timerId; }
-		}
-	}
+    /// <summary>
+    /// Gets the id of timer
+    /// </summary>
+    public string TimerID => timerId;
 }

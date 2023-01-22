@@ -9,14 +9,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+
 public class ArosState : StandardMobState
 {
     protected new ArosBrain _brain = null;
+
     public ArosState(FSM fsm, ArosBrain brain) : base(fsm, brain)
     {
         _brain = brain;
     }
-
 }
 
 public class ArosState_IDLE : ArosState
@@ -29,9 +30,8 @@ public class ArosState_IDLE : ArosState
     public override void Enter()
     {
         if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
             Console.WriteLine($"Aros the Spiritmaster {_brain.Body} has entered IDLE");
-        }
+
         base.Enter();
     }
 
@@ -69,10 +69,8 @@ public class ArosState_IDLE : ArosState
         // If Aros the Spiritmaster has run out of tether range, clear aggro list and let it 
         // return to its spawn point.
         if (_brain.CheckTether())
-        {
             //set state to RETURN TO SPAWN
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-        }
     }
 }
 
@@ -86,9 +84,9 @@ public class ArosState_AGGRO : ArosState
     public override void Enter()
     {
         if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
-            Console.WriteLine($"Aros the Spiritmaster {_brain.Body} has entered AGGRO on target {_brain.Body.TargetObject}");
-        }
+            Console.WriteLine(
+                $"Aros the Spiritmaster {_brain.Body} has entered AGGRO on target {_brain.Body.TargetObject}");
+
         base.Enter();
     }
 
@@ -100,12 +98,9 @@ public class ArosState_AGGRO : ArosState
         // If Aros the Spiritmaster has run out of tether range, or has clear aggro list, 
         // let it return to its spawn point.
         if (_brain.CheckTether() || !_brain.CheckProximityAggro())
-        {
             //set state to RETURN TO SPAWN
             _brain.FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-        }
     }
-
 }
 
 public class ArosState_RETURN_TO_SPAWN : ArosState
@@ -118,9 +113,8 @@ public class ArosState_RETURN_TO_SPAWN : ArosState
     public override void Enter()
     {
         if (ECS.Debug.Diagnostics.StateMachineDebugEnabled)
-        {
             Console.WriteLine($"Aros the Spiritmaster {_brain.Body} is returning to spawn");
-        }
+
         _brain.Body.StopFollowing();
         _brain.ClearAggroList();
         _brain.Body.WalkToSpawn();

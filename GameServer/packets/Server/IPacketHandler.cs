@@ -16,22 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 
-namespace DOL.GS.PacketHandler
+namespace DOL.GS.PacketHandler;
+
+/// <summary>
+/// The interface for all received packets
+/// </summary>
+public interface IPacketHandler
 {
-	/// <summary>
-	/// The interface for all received packets
-	/// </summary>
-	public interface IPacketHandler
-	{
-		/// <summary>
-		/// Handles every received packet
-		/// </summary>
-		/// <param name="client">The client that sent the packet</param>
-		/// <param name="packet">The received packet data</param>
-		/// <returns></returns>
-		void HandlePacket(GameClient client, GSPacketIn packet);
-	}
+    /// <summary>
+    /// Handles every received packet
+    /// </summary>
+    /// <param name="client">The client that sent the packet</param>
+    /// <param name="packet">The received packet data</param>
+    /// <returns></returns>
+    void HandlePacket(GameClient client, GSPacketIn packet);
 }

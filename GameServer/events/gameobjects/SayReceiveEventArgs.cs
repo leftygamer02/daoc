@@ -16,46 +16,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the SayReceive event of GameLivings
+/// </summary>
+public class SayReceiveEventArgs : SourceEventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the SayReceive event of GameLivings
-	/// </summary>
-	public class SayReceiveEventArgs : SourceEventArgs
-	{
-		
-		private GameLiving target;
-		private string text;
+    private GameLiving target;
+    private string text;
 
-		/// <summary>
-		/// Constructs a new SayReceiveEventArgs
-		/// </summary>
-		/// <param name="source">the source that is saying something</param>
-		/// <param name="target">the target that listened to the say</param>
-		/// <param name="text">the text being said</param>
-		public SayReceiveEventArgs(GameLiving source, GameLiving target,  string text) : base(source)
-		{			
-			this.target = target;
-			this.text = text;
-		}		
-		
-		/// <summary>
-		/// Gets the GameLiving target who listened to the say
-		/// </summary>
-		public GameLiving Target
-		{
-			get { return target; }
-		}
+    /// <summary>
+    /// Constructs a new SayReceiveEventArgs
+    /// </summary>
+    /// <param name="source">the source that is saying something</param>
+    /// <param name="target">the target that listened to the say</param>
+    /// <param name="text">the text being said</param>
+    public SayReceiveEventArgs(GameLiving source, GameLiving target, string text) : base(source)
+    {
+        this.target = target;
+        this.text = text;
+    }
 
-		/// <summary>
-		/// Gets the text being said
-		/// </summary>
-		public string Text
-		{
-			get { return text; }
-		}
-	}
+    /// <summary>
+    /// Gets the GameLiving target who listened to the say
+    /// </summary>
+    public GameLiving Target => target;
+
+    /// <summary>
+    /// Gets the text being said
+    /// </summary>
+    public string Text => text;
 }

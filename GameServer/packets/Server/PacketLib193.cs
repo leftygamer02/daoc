@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  *
  * This program is free software; you can redistribute it and/or
@@ -16,42 +16,42 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Reflection;
 using log4net;
 
-namespace DOL.GS.PacketHandler
+namespace DOL.GS.PacketHandler;
+
+[PacketLib(193, GameClient.eClientVersion.Version193)]
+public class PacketLib193 : PacketLib192
 {
-	[PacketLib(193, GameClient.eClientVersion.Version193)]
-	public class PacketLib193 : PacketLib192
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>
-		/// Constructs a new PacketLib for Version 1.93 clients
-		/// </summary>
-		/// <param name="client">the gameclient this lib is associated with</param>
-		public PacketLib193(GameClient client)
-			: base(client)
-		{
-		}
+    /// <summary>
+    /// Constructs a new PacketLib for Version 1.93 clients
+    /// </summary>
+    /// <param name="client">the gameclient this lib is associated with</param>
+    public PacketLib193(GameClient client)
+        : base(client)
+    {
+    }
 
-		public override void SendBlinkPanel(byte flag)
-		{
-			using (GSTCPPacketOut pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.VisualEffect)))
-			{
-				GamePlayer player = base.m_gameClient.Player;
-	
-				pak.WriteShort((ushort)player.ObjectID);
-				pak.WriteByte((byte)8);
-				pak.WriteByte((byte)flag);
-				pak.WriteByte((byte)0);
-	
-				SendTCP(pak);
-			}
-		}
-	}
+    public override void SendBlinkPanel(byte flag)
+    {
+        using (var pak = new GSTCPPacketOut(GetPacketCode(eServerPackets.VisualEffect)))
+        {
+            var player = m_gameClient.Player;
+
+            pak.WriteShort((ushort) player.ObjectID);
+            pak.WriteByte((byte) 8);
+            pak.WriteByte((byte) flag);
+            pak.WriteByte((byte) 0);
+
+            SendTCP(pak);
+        }
+    }
 }

@@ -1,6 +1,3 @@
-
-
-
 using System;
 using System.Reflection;
 using DOL.GS.PacketHandler;
@@ -10,47 +7,43 @@ using log4net;
 using DOL.AI.Brain;
 
 
+namespace DOL.GS.Scripts;
 
-namespace DOL.GS.Scripts
+public class PotionMerchant : GameBountyMerchant
 {
-    public class PotionMerchant : GameBountyMerchant
+    #region Constructor
+
+    public PotionMerchant()
+        : base()
     {
-        #region Constructor
+        SetOwnBrain(new BlankBrain());
+    }
 
-        public PotionMerchant()
-            : base()
-        {
-            SetOwnBrain(new BlankBrain());
-        }
+    #endregion Constructor
 
-        #endregion Constructor
+    #region AddToWorld
 
-        #region AddToWorld
+    public override bool AddToWorld()
+    {
+        Level = 60;
+        Name = "Potion Merchant";
+        GuildName = "Potions";
+        Model = 1903;
 
-        public override bool AddToWorld()
-        {
+        MaxSpeedBase = 0;
+        Realm = 0;
 
-           
-            Level = 60;
-            Name = "Potion Merchant";
-            GuildName = "Potions";
-            Model = 1903;
-         
-            MaxSpeedBase = 0;
-            Realm = 0;
-   
-            TradeItems = new MerchantTradeItems("potion_merchant");
+        TradeItems = new MerchantTradeItems("potion_merchant");
 
-            return base.AddToWorld();
-        }
+        return base.AddToWorld();
+    }
 
-        #endregion AddToWorld
-        public override bool Interact(GamePlayer player)
-        {
-            TradeItems = new MerchantTradeItems("potion_merchant");
-            player.Out.SendMerchantWindow(TradeItems, eMerchantWindowType.Normal);
-            return true;
-        }
-    }  
- }
+    #endregion AddToWorld
 
+    public override bool Interact(GamePlayer player)
+    {
+        TradeItems = new MerchantTradeItems("potion_merchant");
+        player.Out.SendMerchantWindow(TradeItems, eMerchantWindowType.Normal);
+        return true;
+    }
+}

@@ -16,25 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 
-namespace DOL.Events
-{
-    /// <summary>
-    /// This class holds the old and the new target for
-    /// GameLiving.SwitchedTargetEvent.
-    /// <author>Aredhel</author>
-    /// </summary>
-    public class SwitchedTargetEventArgs : EventArgs
-    {
-        public SwitchedTargetEventArgs(GameObject previousTarget, GameObject newTarget)
-        {
-            PreviousTarget = previousTarget;
-            NewTarget = newTarget;
-        }
+namespace DOL.Events;
 
-        public GameObject PreviousTarget { get; private set; }
-        public GameObject NewTarget { get; private set; }
+/// <summary>
+/// This class holds the old and the new target for
+/// GameLiving.SwitchedTargetEvent.
+/// <author>Aredhel</author>
+/// </summary>
+public class SwitchedTargetEventArgs : EventArgs
+{
+    public SwitchedTargetEventArgs(GameObject previousTarget, GameObject newTarget)
+    {
+        PreviousTarget = previousTarget;
+        NewTarget = newTarget;
     }
+
+    public GameObject PreviousTarget { get; private set; }
+    public GameObject NewTarget { get; private set; }
 }

@@ -16,37 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Reflection;
 using DOL.Database;
 using DOL.GS.Housing;
 using log4net;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.SetMarketPrice,
+    "Set Market/Consignment Merchant Price.", eClientStatus.PlayerInGame)]
+public class PlayerSetMarketPriceHandler : IPacketHandler
 {
-    [PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.SetMarketPrice, "Set Market/Consignment Merchant Price.", eClientStatus.PlayerInGame)]
-    public class PlayerSetMarketPriceHandler : IPacketHandler
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+    public void HandlePacket(GameClient client, GSPacketIn packet)
     {
-        /// <summary>
-        /// Defines a logger for this class.
-        /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        if (client == null || client.Player == null)
+            return;
 
-        public void HandlePacket(GameClient client, GSPacketIn packet)
-        {
-            if (client == null || client.Player == null)
-                return;
+        var slot = packet.ReadByte();
+        var unk1 = packet.ReadByte();
+        var unk2 = packet.ReadShort();
+        var price = packet.ReadInt();
 
-			int slot = packet.ReadByte();
-			int unk1 = packet.ReadByte();
-			ushort unk2 = packet.ReadShort();
-			uint price = packet.ReadInt();
+        // only IGameInventoryObjects can handle set price commands
+        if (client.Player.TargetObject == null || client.Player.TargetObject is IGameInventoryObject == false)
+            return;
 
-			// only IGameInventoryObjects can handle set price commands
-			if (client.Player.TargetObject == null || (client.Player.TargetObject is IGameInventoryObject) == false)
-				return;
-
-			(client.Player.TargetObject as IGameInventoryObject).SetSellPrice(client.Player, (ushort)slot, price);
-        }
+        (client.Player.TargetObject as IGameInventoryObject).SetSellPrice(client.Player, (ushort) slot, price);
     }
 }

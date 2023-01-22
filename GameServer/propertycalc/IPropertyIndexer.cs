@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.GS.PropertyCalc
+
+namespace DOL.GS.PropertyCalc;
+
+/// <summary>
+/// Interface for properties that are added to get final value
+/// </summary>
+public interface IPropertyIndexer
 {
-	/// <summary>
-	/// Interface for properties that are added to get final value
-	/// </summary>
-	public interface IPropertyIndexer
-	{
-		int this[int index] { get; set; }
-		int this[eProperty index] { get; set; }
-	}
+    int this[int index] { get; set; }
+    int this[eProperty index] { get; set; }
 }

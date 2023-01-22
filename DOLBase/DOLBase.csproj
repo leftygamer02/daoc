@@ -2,7 +2,7 @@
     <PropertyGroup>
         <BaseIntermediateOutputPath>..\build\DOLBase\$(Configuration)\</BaseIntermediateOutputPath>
     </PropertyGroup>
-    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -30,9 +30,9 @@
         <RegisterForComInterop>False</RegisterForComInterop>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="SharpZipLib" Version="1.4.1" />
-        <PackageReference Include="log4net" Version="2.0.13" />
-        <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+        <PackageReference Include="SharpZipLib" Version="1.4.1"/>
+        <PackageReference Include="log4net" Version="2.0.13"/>
+        <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0"/>
     </ItemGroup>
-    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/>
 </Project>

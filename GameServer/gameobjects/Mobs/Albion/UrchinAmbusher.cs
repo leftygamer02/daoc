@@ -1,17 +1,17 @@
 ﻿using DOL.AI.Brain;
 using System;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class UrchinAmbusher : StealtherMob
 {
-    public class UrchinAmbusher : StealtherMob
+    public UrchinAmbusher() : base()
     {
-        public UrchinAmbusher() : base()
-        {
-            SetOwnBrain(new UrchinAmbusherBrain());
-        }
-        public void LeaveStealth()
-        {
-            Flags &= eFlags.STEALTH;
-        }
+        SetOwnBrain(new UrchinAmbusherBrain());
+    }
+
+    public void LeaveStealth()
+    {
+        Flags &= eFlags.STEALTH;
     }
 }

@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -17,41 +17,42 @@
  *
  */
 
- using DOL.Database;
+using DOL.Database;
 
- namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&release", new string[] {"&rel"},
+    ePrivLevel.Player,
+    "When you are dead you can '/release'. This will bring you back to your bindpoint!",
+    "/release")]
+public class ReleaseCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&release", new string[] { "&rel" },
-		ePrivLevel.Player,
-		"When you are dead you can '/release'. This will bring you back to your bindpoint!",
-		"/release")]
-	public class ReleaseCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (client.Player.CurrentRegion.IsRvR && !client.Player.CurrentRegion.IsDungeon || ServerProperties.Properties.EVENT_THIDRANKI || ServerProperties.Properties.EVENT_TUTORIAL)
-			{
-				client.Player.Release(eReleaseType.RvR, false);
-				return;
-			}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if ((client.Player.CurrentRegion.IsRvR && !client.Player.CurrentRegion.IsDungeon) ||
+            ServerProperties.Properties.EVENT_THIDRANKI || ServerProperties.Properties.EVENT_TUTORIAL)
+        {
+            client.Player.Release(eReleaseType.RvR, false);
+            return;
+        }
 
-            if (args.Length > 1 && args[1].ToLower() == "city")
-            {
-	            if (ServerProperties.Properties.EVENT_THIDRANKI || ServerProperties.Properties.EVENT_TUTORIAL)
-		            return;
-				client.Player.Release(eReleaseType.City, false);
-					return;
-			}
-
-            if (args.Length > 1 && args[1].ToLower() == "house")
-            {
-	            if (ServerProperties.Properties.EVENT_THIDRANKI || ServerProperties.Properties.EVENT_TUTORIAL)
-		            return;
-                client.Player.Release(eReleaseType.House, false);
+        if (args.Length > 1 && args[1].ToLower() == "city")
+        {
+            if (ServerProperties.Properties.EVENT_THIDRANKI || ServerProperties.Properties.EVENT_TUTORIAL)
                 return;
-            }
-			client.Player.Release(eReleaseType.Normal, false);
-		}
-	}
+            client.Player.Release(eReleaseType.City, false);
+            return;
+        }
+
+        if (args.Length > 1 && args[1].ToLower() == "house")
+        {
+            if (ServerProperties.Properties.EVENT_THIDRANKI || ServerProperties.Properties.EVENT_TUTORIAL)
+                return;
+            client.Player.Release(eReleaseType.House, false);
+            return;
+        }
+
+        client.Player.Release(eReleaseType.Normal, false);
+    }
 }

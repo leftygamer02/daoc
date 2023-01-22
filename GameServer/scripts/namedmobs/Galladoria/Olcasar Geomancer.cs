@@ -18,39 +18,40 @@ namespace DOL.GS
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100  * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override void OnAttackEnemy(AttackData ad)
         {
-            if(ad != null)
-            {
-                if(Util.Chance(35))
+            if (ad != null)
+                if (Util.Chance(35))
                     CastSpell(OGDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-            }
+
             base.OnAttackEnemy(ad);
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
 
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
@@ -61,6 +62,7 @@ namespace DOL.GS
             // 85% ABS is cap.
             return 0.20;
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -68,17 +70,16 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override void Die(GameObject killer)
         {
             foreach (GameNPC npc in GetNPCsInRadius(8000))
-            {
                 if (npc.Brain is OGAddsBrain)
-                {
                     npc.RemoveFromWorld();
-                }
-            }
+
             base.Die(killer);
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60164613);
@@ -91,7 +92,7 @@ namespace DOL.GS
             Intelligence = npcTemplate.Intelligence;
             Charisma = npcTemplate.Charisma;
             Empathy = npcTemplate.Empathy;
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
+            var template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 19, 0, 0, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.TwoHanded);
@@ -99,10 +100,11 @@ namespace DOL.GS
             VisibleActiveWeaponSlots = 34;
             MeleeDamageType = eDamageType.Crush;
 
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(96);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
-            OlcasarGeomancerBrain sBrain = new OlcasarGeomancerBrain();
+            var sBrain = new OlcasarGeomancerBrain();
             SetOwnBrain(sBrain);
             SaveIntoDatabase();
             LoadedFromScript = false;
@@ -121,7 +123,7 @@ namespace DOL.GS
                 log.Warn("Olcasar Geomancer not found, creating it...");
 
                 log.Warn("Initializing Olcasar Geomancer...");
-                OlcasarGeomancer OG = new OlcasarGeomancer();
+                var OG = new OlcasarGeomancer();
                 OG.Name = "Olcasar Geomancer";
                 OG.Model = 925;
                 OG.Realm = 0;
@@ -147,7 +149,7 @@ namespace DOL.GS
                 OG.MaxSpeedBase = 300;
                 OG.Heading = 2033;
 
-                OlcasarGeomancerBrain ubrain = new OlcasarGeomancerBrain();
+                var ubrain = new OlcasarGeomancerBrain();
                 ubrain.AggroLevel = 100;
                 ubrain.AggroRange = 500;
                 OG.SetOwnBrain(ubrain);
@@ -158,17 +160,21 @@ namespace DOL.GS
                 OG.SaveIntoDatabase();
             }
             else
+            {
                 log.Warn(
                     "Olcasar Geomancer exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
+
         private Spell m_OGDD;
+
         private Spell OGDD
         {
             get
             {
                 if (m_OGDD == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 3;
@@ -183,10 +189,11 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Matter;
+                    spell.DamageType = (int) eDamageType.Matter;
                     m_OGDD = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OGDD);
                 }
+
                 return m_OGDD;
             }
         }
@@ -206,15 +213,16 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 500;
         }
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public static bool spawnadds = false;
         private bool RemoveAdds = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -230,103 +238,103 @@ namespace DOL.AI.Brain
                 if (!RemoveAdds)
                 {
                     foreach (GameNPC npc in Body.GetNPCsInRadius(8000))
-                    {
                         if (npc.Brain is OGAddsBrain)
-                        {
                             npc.RemoveFromWorld();
-                        }
-                    }
+
                     RemoveAdds = true;
                 }
             }
-            if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
-            {
-                Body.Health = Body.MaxHealth;
-            }
+
+            if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000)) Body.Health = Body.MaxHealth;
+
             if (HasAggro && Body.TargetObject != null)
             {
                 RemoveAdds = false;
                 if (StartCastRoot == false)
                 {
-                    new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget2), Util.Random(25000, 35000));
+                    new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickRandomTarget2),
+                        Util.Random(25000, 35000));
                     StartCastRoot = true;
                 }
-                if(spawnadds ==false)
+
+                if (spawnadds == false)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastEffectBubble), 25000);
                     spawnadds = true;
                 }
+
                 if (Util.Chance(15))
-                {
                     if (OGDS.TargetHasEffect(Body) == false)
-                    {
                         Body.CastSpell(OGDS, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                    }
-                }
-                if(CanCastAoeSnare == false &&  Body.HealthPercent <= 80)
+
+                if (CanCastAoeSnare == false && Body.HealthPercent <= 80)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastAoeSnare), 5000);
                     CanCastAoeSnare = true;
                 }
             }
+
             base.Think();
         }
+
         #region Cast root on random target
+
         public static bool CanCast2 = false;
         public static bool StartCastRoot = false;
         public static GamePlayer randomtarget2 = null;
+
         public static GamePlayer RandomTarget2
         {
-            get { return randomtarget2; }
-            set { randomtarget2 = value; }
+            get => randomtarget2;
+            set => randomtarget2 = value;
         }
-        List<GamePlayer> Enemys_To_Root = new List<GamePlayer>();
+
+        private List<GamePlayer> Enemys_To_Root = new();
+
         public int PickRandomTarget2(ECSGameTimer timer)
         {
             if (HasAggro)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(2000))
-                {
                     if (player != null)
-                    {
                         if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
                             if (!Enemys_To_Root.Contains(player))
-                            {
                                 Enemys_To_Root.Add(player);
-                            }
-                        }
-                    }
-                }
+
                 if (Enemys_To_Root.Count > 0)
-                {
                     if (CanCast2 == false)
                     {
-                        GamePlayer Target = (GamePlayer)Enemys_To_Root[Util.Random(0, Enemys_To_Root.Count - 1)];//pick random target from list
-                        RandomTarget2 = Target;//set random target to static RandomTarget
+                        var Target =
+                            (GamePlayer) Enemys_To_Root[
+                                Util.Random(0, Enemys_To_Root.Count - 1)]; //pick random target from list
+                        RandomTarget2 = Target; //set random target to static RandomTarget
                         new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastRoot), 2000);
                         CanCast2 = true;
                     }
-                }
             }
+
             return 0;
         }
+
         public int CastRoot(ECSGameTimer timer)
         {
             if (HasAggro && RandomTarget2 != null)
             {
-                GameLiving oldTarget = Body.TargetObject as GameLiving;//old target
+                var oldTarget = Body.TargetObject as GameLiving; //old target
                 if (RandomTarget2 != null && RandomTarget2.IsAlive)
                 {
                     Body.TargetObject = RandomTarget2;
                     Body.TurnTo(RandomTarget2);
                     Body.CastSpell(OGRoot, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
                 }
-                if (oldTarget != null) Body.TargetObject = oldTarget;//return to old target
+
+                if (oldTarget != null) Body.TargetObject = oldTarget; //return to old target
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetRoot), 5000);
             }
+
             return 0;
         }
+
         public int ResetRoot(ECSGameTimer timer)
         {
             RandomTarget2 = null;
@@ -334,29 +342,34 @@ namespace DOL.AI.Brain
             StartCastRoot = false;
             return 0;
         }
+
         #endregion
+
         public int CastEffectBubble(ECSGameTimer timer)
         {
             Body.CastSpell(OGBubbleEffect, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-            BroadcastMessage(String.Format("Olcasar tears off a chunk of himself and tosses it to the ground."));
+            BroadcastMessage(string.Format("Olcasar tears off a chunk of himself and tosses it to the ground."));
             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Spawn), 2000);
             return 0;
         }
+
         public int Spawn(ECSGameTimer timer)
         {
             if (Body.IsAlive && HasAggro && Body.TargetObject != null)
             {
-                OGAdds Add = new OGAdds();
+                var Add = new OGAdds();
                 Add.X = Body.X + Util.Random(-50, 80);
                 Add.Y = Body.Y + Util.Random(-50, 80);
                 Add.Z = Body.Z;
                 Add.CurrentRegion = Body.CurrentRegion;
                 Add.Heading = Body.Heading;
-                Add.AddToWorld();             
+                Add.AddToWorld();
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetSpawn), Util.Random(45000, 60000));
             }
+
             return 0;
         }
+
         public int ResetSpawn(ECSGameTimer timer)
         {
             spawnadds = false;
@@ -364,6 +377,7 @@ namespace DOL.AI.Brain
         }
 
         public static bool CanCastAoeSnare = false;
+
         public int CastAoeSnare(ECSGameTimer timer)
         {
             if (Body.IsAlive && HasAggro)
@@ -371,22 +385,27 @@ namespace DOL.AI.Brain
                 Body.CastSpell(OGAoeSnare, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetAoeSnare), Util.Random(45000, 60000));
             }
+
             return 0;
         }
+
         public int ResetAoeSnare(ECSGameTimer timer)
         {
             CanCastAoeSnare = false;
             return 0;
         }
+
         #region Spells
+
         private Spell m_OGDS;
+
         private Spell OGDS
         {
             get
             {
                 if (m_OGDS == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 30;
@@ -405,17 +424,20 @@ namespace DOL.AI.Brain
                     m_OGDS = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OGDS);
                 }
+
                 return m_OGDS;
             }
         }
+
         private Spell m_OGRoot;
+
         private Spell OGRoot
         {
             get
             {
                 if (m_OGRoot == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 60;
@@ -434,17 +456,20 @@ namespace DOL.AI.Brain
                     m_OGRoot = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OGRoot);
                 }
+
                 return m_OGRoot;
             }
         }
+
         private Spell m_OGAoeSnare;
+
         private Spell OGAoeSnare
         {
             get
             {
                 if (m_OGAoeSnare == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 0;
@@ -461,21 +486,24 @@ namespace DOL.AI.Brain
                     spell.Type = eSpellType.SpeedDecrease.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Matter;
+                    spell.DamageType = (int) eDamageType.Matter;
                     m_OGAoeSnare = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OGAoeSnare);
                 }
+
                 return m_OGAoeSnare;
             }
         }
+
         private Spell m_OGBubbleEffect;
+
         private Spell OGBubbleEffect
         {
             get
             {
                 if (m_OGBubbleEffect == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 0;
@@ -492,9 +520,11 @@ namespace DOL.AI.Brain
                     m_OGBubbleEffect = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OGBubbleEffect);
                 }
+
                 return m_OGBubbleEffect;
             }
         }
+
         #endregion
     }
 }
@@ -508,6 +538,7 @@ namespace DOL.GS
         public OGAdds() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -518,34 +549,35 @@ namespace DOL.GS
                 default: return 35; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 200;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.15;
         }
-        public override int MaxHealth
-        {
-            get { return 10000; }
-        }
+
+        public override int MaxHealth => 10000;
 
         public override void DropLoot(GameObject killer) //no loot
         {
         }
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public override void Die(GameObject killer)
         {
-            BroadcastMessage(String.Format("As Olcasar minion falls to the ground, he begins to mutter some strange words and his slain minion rises back from the dead."));
-            OGAdds Add = new OGAdds();
+            BroadcastMessage(string.Format(
+                "As Olcasar minion falls to the ground, he begins to mutter some strange words and his slain minion rises back from the dead."));
+            var Add = new OGAdds();
             Add.X = killer.X + Util.Random(-50, 80);
             Add.Y = killer.Y + Util.Random(-50, 80);
             Add.Z = killer.Z;
@@ -554,24 +586,28 @@ namespace DOL.GS
             Add.AddToWorld();
             base.Die(null); // null to not gain experience
         }
-        public override short Strength { get => base.Strength; set => base.Strength = 300; }
-        public override short Quickness { get => base.Quickness; set => base.Quickness = 80; } 
+
+        public override short Strength
+        {
+            get => base.Strength;
+            set => base.Strength = 300;
+        }
+
+        public override short Quickness
+        {
+            get => base.Quickness;
+            set => base.Quickness = 80;
+        }
+
         public override bool AddToWorld()
         {
             foreach (GamePlayer ppl in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-            {
                 if (ppl != null)
-                {
                     foreach (GameNPC boss in GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                    {
                         if (boss != null)
-                        {
                             if (boss.IsAlive && boss.Brain is OlcasarGeomancerBrain)
                                 ppl.Out.SendSpellEffectAnimation(this, boss, 5126, 0, false, 0x01);
-                        }
-                    }
-                }
-            }
+
             Model = 925;
             Name = "geomancer minion";
             RespawnInterval = -1;
@@ -583,7 +619,7 @@ namespace DOL.GS
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
             BodyType = 8;
             Realm = eRealm.None;
-            OGAddsBrain adds = new OGAddsBrain();
+            var adds = new OGAddsBrain();
             LoadedFromScript = true;
             SetOwnBrain(adds);
             base.AddToWorld();
@@ -591,6 +627,7 @@ namespace DOL.GS
         }
     }
 }
+
 namespace DOL.AI.Brain
 {
     public class OGAddsBrain : StandardMobBrain
@@ -604,26 +641,24 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 1500;
         }
+
         public override void Think()
         {
-            if(HasAggro && Body.TargetObject != null)
+            if (HasAggro && Body.TargetObject != null)
             {
-                GameLiving target = Body.TargetObject as GameLiving;
-                if (!target.effectListComponent.ContainsEffectForEffectType(eEffect.Stun) && !target.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity) && target != null && target.IsAlive)
-                {
+                var target = Body.TargetObject as GameLiving;
+                if (!target.effectListComponent.ContainsEffectForEffectType(eEffect.Stun) &&
+                    !target.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity) && target != null &&
+                    target.IsAlive)
                     Body.CastSpell(addstun, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                }
             }
+
             foreach (GamePlayer player in Body.GetPlayersInRadius(2000))
-            {
                 if (player != null && player.IsAlive && player.Client.Account.PrivLevel == 1)
                 {
                     if (player.CharacterClass.ID is 48 or 47 or 42 or 46) //bard,druid,menta,warden
                     {
-                        if (Body.TargetObject != player)
-                        {
-                            AddToAggroList(player, 200);
-                        }
+                        if (Body.TargetObject != player) AddToAggroList(player, 200);
                     }
                     else
                     {
@@ -631,17 +666,19 @@ namespace DOL.AI.Brain
                         AddToAggroList(player, 200);
                     }
                 }
-            }
+
             base.Think();
         }
+
         private Spell m_addstun;
+
         private Spell addstun
         {
             get
             {
                 if (m_addstun == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 0;
@@ -661,10 +698,11 @@ namespace DOL.AI.Brain
                     spell.Type = "StyleStun";
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Body;
+                    spell.DamageType = (int) eDamageType.Body;
                     m_addstun = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_addstun);
                 }
+
                 return m_addstun;
             }
         }

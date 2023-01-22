@@ -16,42 +16,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Scarab proc spell handler
+/// Snare and morph target. Cecity is a subspell.
+/// </summary>
+[SpellHandlerAttribute("ScarabProc")]
+public class ScarabProc : UnbreakableSpeedDecreaseSpellHandler
 {
-    /// <summary>
-    /// Scarab proc spell handler
-    /// Snare and morph target. Cecity is a subspell.
-    /// </summary>
-    [SpellHandlerAttribute("ScarabProc")]
-    public class ScarabProc : UnbreakableSpeedDecreaseSpellHandler
+    public override int CalculateSpellResistChance(GameLiving target)
     {
- 		public override int CalculateSpellResistChance(GameLiving target)
-		{
-			return 0;
-		}
-        public override void OnEffectStart(GameSpellEffect effect)
-        {        	           
-            if(effect.Owner is GamePlayer)
-            {
-            	GamePlayer player = effect.Owner as GamePlayer;
-            	player.Model = (ushort)Spell.LifeDrainReturn; // 1200 is official id
-            }     
-            base.OnEffectStart(effect);
-        }
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+        return 0;
+    }
+
+    public override void OnEffectStart(GameSpellEffect effect)
+    {
+        if (effect.Owner is GamePlayer)
         {
-            if(effect.Owner is GamePlayer)
-            {
-            	GamePlayer player = effect.Owner as GamePlayer;
- 				player.Model = player.CreationModel;     
-            }                       
-            return base.OnEffectExpires(effect, noMessages);
+            var player = effect.Owner as GamePlayer;
+            player.Model = (ushort) Spell.LifeDrainReturn; // 1200 is official id
         }
-        public ScarabProc(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        base.OnEffectStart(effect);
+    }
+
+    public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+    {
+        if (effect.Owner is GamePlayer)
+        {
+            var player = effect.Owner as GamePlayer;
+            player.Model = player.CreationModel;
+        }
+
+        return base.OnEffectExpires(effect, noMessages);
+    }
+
+    public ScarabProc(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
     }
 }

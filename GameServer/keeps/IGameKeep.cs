@@ -16,37 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using DOL.Database;
 
 
-namespace DOL.GS.Keeps
-{
-	public interface IGameKeep
-	{
-		List<IGameKeepComponent> SentKeepComponents { get; }
-		
-		Dictionary<string, GameKeepGuard> Guards { get; }
-		Dictionary<string, GameKeepBanner> Banners { get; }
+namespace DOL.GS.Keeps;
 
-		void LoadFromDatabase(DataObject keep);
-		void SaveIntoDatabase();
-		
-		
-		ushort KeepID { get; }
-		
-		int X { get; }
-		int Y { get; }
-		int Z { get; }
-		ushort Heading { get; }
-		Region CurrentRegion { get; }
-		
-		Guild Guild { get; }
-		eRealm Realm { get; }
-		byte Level { get; }
-		
-		byte EffectiveLevel(byte level);		
-	}
+public interface IGameKeep
+{
+    List<IGameKeepComponent> SentKeepComponents { get; }
+
+    Dictionary<string, GameKeepGuard> Guards { get; }
+    Dictionary<string, GameKeepBanner> Banners { get; }
+
+    void LoadFromDatabase(DataObject keep);
+    void SaveIntoDatabase();
+
+
+    ushort KeepID { get; }
+
+    int X { get; }
+    int Y { get; }
+    int Z { get; }
+    ushort Heading { get; }
+    Region CurrentRegion { get; }
+
+    Guild Guild { get; }
+    eRealm Realm { get; }
+    byte Level { get; }
+
+    byte EffectiveLevel(byte level);
 }

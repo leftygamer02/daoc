@@ -140,8 +140,9 @@ public class Utils
         {
             topRP = new List<Player.PlayerInfo>();
 
-            var topRpPlayers = DOLDB<DOLCharacters>.SelectObjects(DB.Column("RealmPoints").IsLessThan(7000000)).OrderByDescending(x => x.RealmPoints).Take(10).ToDictionary(x => x.Name, x => x.RealmPoints);
-            
+            var topRpPlayers = DOLDB<DOLCharacters>.SelectObjects(DB.Column("RealmPoints").IsLessThan(7000000))
+                .OrderByDescending(x => x.RealmPoints).Take(10).ToDictionary(x => x.Name, x => x.RealmPoints);
+
             foreach (var player in topRpPlayers)
             {
                 var thisPlayer = _player.GetPlayerInfo(player.Key);
@@ -156,18 +157,17 @@ public class Utils
 
     public IDictionary<string, ClientStatus> GetAllClientStatuses()
     {
-        Dictionary<string, ClientStatus> playersOnline = new Dictionary<string, ClientStatus>();
-        List<GameClient> clients = (List<GameClient>)WorldMgr.GetAllClients();
+        var playersOnline = new Dictionary<string, ClientStatus>();
+        var clients = (List<GameClient>) WorldMgr.GetAllClients();
 
-        foreach (GameClient client in clients)
+        foreach (var client in clients)
         {
-            if (client?.Account == null || client?.Account?.Name == null || client?.Account?.PrivLevel == null)
-            {
-                continue;
-            }
-            ClientStatus clientStatus = new ClientStatus();
+            if (client?.Account == null || client?.Account?.Name == null ||
+                client?.Account?.PrivLevel == null) continue;
+
+            var clientStatus = new ClientStatus();
             clientStatus.PrivLevel = client?.Account?.PrivLevel ?? 1;
-            clientStatus.State = (int)client.ClientState;
+            clientStatus.State = (int) client.ClientState;
             clientStatus.IsTester = client.Account.IsTester;
             playersOnline.TryAdd(client?.Account?.Name, clientStatus);
         }

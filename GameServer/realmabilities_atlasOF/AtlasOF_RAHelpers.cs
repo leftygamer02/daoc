@@ -1,167 +1,166 @@
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+public static class AtlasRAHelpers
 {
-    public static class AtlasRAHelpers
+    /// <summary>
+    /// 6 stat points per level (Augmented Str, Dex, etc).
+    /// </summary>
+    public static int GetStatEnhancerAmountForLevel(int level)
     {
-        /// <summary>
-        /// 6 stat points per level (Augmented Str, Dex, etc).
-        /// </summary>
-        public static int GetStatEnhancerAmountForLevel(int level)
+        if (level < 1) return 0;
+
+        switch (level)
         {
-            if (level < 1) return 0;
-
-            switch (level)
-            {
-                case 1: return 6;
-                case 2: return 12;
-                case 3: return 18;
-                case 4: return 24;
-                case 5: return 30;
-                default: return 30;
-            }
+            case 1: return 6;
+            case 2: return 12;
+            case 3: return 18;
+            case 4: return 24;
+            case 5: return 30;
+            default: return 30;
         }
+    }
 
-        /// <summary>
-        /// 3% per level.
-        /// </summary>
-        public static int GetPropertyEnhancer3AmountForLevel(int level)
+    /// <summary>
+    /// 3% per level.
+    /// </summary>
+    public static int GetPropertyEnhancer3AmountForLevel(int level)
+    {
+        if (level < 1) return 0;
+
+        switch (level)
         {
-            if (level < 1) return 0;
-
-            switch (level)
-            {
-                case 1: return 3;
-                case 2: return 6;
-                case 3: return 9;
-                case 4: return 12;
-                case 5: return 15;
-                default: return 15;
-            }
+            case 1: return 3;
+            case 2: return 6;
+            case 3: return 9;
+            case 4: return 12;
+            case 5: return 15;
+            default: return 15;
         }
+    }
 
-        /// <summary>
-        /// 5% per level.
-        /// </summary>
-        public static int GetPropertyEnhancer5AmountForLevel(int level)
+    /// <summary>
+    /// 5% per level.
+    /// </summary>
+    public static int GetPropertyEnhancer5AmountForLevel(int level)
+    {
+        if (level < 1) return 0;
+
+        switch (level)
         {
-            if (level < 1) return 0;
-
-            switch (level)
-            {
-                case 1: return 5;
-                case 2: return 10;
-                case 3: return 15;
-                case 4: return 20;
-                case 5: return 25;
-                default: return 25;
-            }
+            case 1: return 5;
+            case 2: return 10;
+            case 3: return 15;
+            case 4: return 20;
+            case 5: return 25;
+            default: return 25;
         }
+    }
 
-        
-        /// <summary>
-        /// Shared by almost all passive OF Realm Abilities.
-        /// </summary>
-        public static int GetCommonUpgradeCostFor5LevelsRA(int currentLevel)
+
+    /// <summary>
+    /// Shared by almost all passive OF Realm Abilities.
+    /// </summary>
+    public static int GetCommonUpgradeCostFor5LevelsRA(int currentLevel)
+    {
+        switch (currentLevel)
         {
-            switch (currentLevel)
-            {
-                case 0: return 1;
-                case 1: return 3;
-                case 2: return 6;
-                case 3: return 10;
-                case 4: return 14;
-                default: return 1000;
-            }
+            case 0: return 1;
+            case 1: return 3;
+            case 2: return 6;
+            case 3: return 10;
+            case 4: return 14;
+            default: return 1000;
         }
+    }
 
-        /// <summary>
-        /// Shared by almost all active OF Realm Abilities (that have more than one level).
-        /// </summary>
-        public static int GetCommonUpgradeCostFor3LevelsRA(int currentLevel)
+    /// <summary>
+    /// Shared by almost all active OF Realm Abilities (that have more than one level).
+    /// </summary>
+    public static int GetCommonUpgradeCostFor3LevelsRA(int currentLevel)
+    {
+        switch (currentLevel)
         {
-            switch (currentLevel)
-            {
-                case 0: return 3;
-                case 1: return 6;
-                case 2: return 10;
-                default: return 1000;
-            }
+            case 0: return 3;
+            case 1: return 6;
+            case 2: return 10;
+            default: return 1000;
         }
+    }
 
-        public static int GetAugDexLevel(GamePlayer player)
-        {
-            AtlasOF_RADexterityEnhancer augDex = player.GetAbility<AtlasOF_RADexterityEnhancer>();
-            if (augDex == null)
-                return 0;
+    public static int GetAugDexLevel(GamePlayer player)
+    {
+        var augDex = player.GetAbility<AtlasOF_RADexterityEnhancer>();
+        if (augDex == null)
+            return 0;
 
-            return player.CalculateSkillLevel(augDex);
-        }
+        return player.CalculateSkillLevel(augDex);
+    }
 
-        public static int GetAugStrLevel(GamePlayer player)
-        {
-            AtlasOF_RAStrengthEnhancer augStr = player.GetAbility<AtlasOF_RAStrengthEnhancer>();
-            if (augStr == null)
-                return 0;
+    public static int GetAugStrLevel(GamePlayer player)
+    {
+        var augStr = player.GetAbility<AtlasOF_RAStrengthEnhancer>();
+        if (augStr == null)
+            return 0;
 
-            return player.CalculateSkillLevel(augStr);
-        }
+        return player.CalculateSkillLevel(augStr);
+    }
 
-        public static int GetAugConLevel(GamePlayer player)
-        {
-            AtlasOF_RAConstitutionEnhancer augCon = player.GetAbility<AtlasOF_RAConstitutionEnhancer>();
-            if (augCon == null)
-                return 0;
+    public static int GetAugConLevel(GamePlayer player)
+    {
+        var augCon = player.GetAbility<AtlasOF_RAConstitutionEnhancer>();
+        if (augCon == null)
+            return 0;
 
-            return player.CalculateSkillLevel(augCon);
-        }
+        return player.CalculateSkillLevel(augCon);
+    }
 
-        public static int GetAugAcuityLevel(GamePlayer player)
-        {
-            AtlasOF_RAAcuityEnhancer augAcuity = player.GetAbility<AtlasOF_RAAcuityEnhancer>();
+    public static int GetAugAcuityLevel(GamePlayer player)
+    {
+        var augAcuity = player.GetAbility<AtlasOF_RAAcuityEnhancer>();
 
-            if (augAcuity == null)
-                return 0;
+        if (augAcuity == null)
+            return 0;
 
-            return player.CalculateSkillLevel(augAcuity);
-        }
+        return player.CalculateSkillLevel(augAcuity);
+    }
 
-        public static int GetAugQuiLevel(GamePlayer player)
-        {
-            AtlasOF_RAQuicknessEnhancer augQui = player.GetAbility<AtlasOF_RAQuicknessEnhancer>();
+    public static int GetAugQuiLevel(GamePlayer player)
+    {
+        var augQui = player.GetAbility<AtlasOF_RAQuicknessEnhancer>();
 
-            if (augQui == null)
-                return 0;
+        if (augQui == null)
+            return 0;
 
-            return player.CalculateSkillLevel(augQui);
-        }
+        return player.CalculateSkillLevel(augQui);
+    }
 
-        public static int GetSerenityLevel(GamePlayer player)
-        {
-            AtlasOF_SerenityAbility raSerenity = player.GetAbility<AtlasOF_SerenityAbility>();
+    public static int GetSerenityLevel(GamePlayer player)
+    {
+        var raSerenity = player.GetAbility<AtlasOF_SerenityAbility>();
 
-            if (raSerenity == null)
-                return 0;
+        if (raSerenity == null)
+            return 0;
 
-            return player.CalculateSkillLevel(raSerenity);
-        }
+        return player.CalculateSkillLevel(raSerenity);
+    }
 
-        public static int GetFirstAidLevel(GamePlayer player)
-        {
-            AtlasOF_FirstAid raFirstAid = player.GetAbility<AtlasOF_FirstAid>();
+    public static int GetFirstAidLevel(GamePlayer player)
+    {
+        var raFirstAid = player.GetAbility<AtlasOF_FirstAid>();
 
-            if (raFirstAid == null)
-                return 0;
+        if (raFirstAid == null)
+            return 0;
 
-            return player.CalculateSkillLevel(raFirstAid);
-        }
+        return player.CalculateSkillLevel(raFirstAid);
+    }
 
-        public static int GetLongshotLevel(GamePlayer player)
-        {
-            AtlasOF_Longshot raLongshot = player.GetAbility<AtlasOF_Longshot>();
+    public static int GetLongshotLevel(GamePlayer player)
+    {
+        var raLongshot = player.GetAbility<AtlasOF_Longshot>();
 
-            if (raLongshot == null)
-                return 0;
+        if (raLongshot == null)
+            return 0;
 
-            return player.CalculateSkillLevel(raLongshot);
-        }
+        return player.CalculateSkillLevel(raLongshot);
     }
 }

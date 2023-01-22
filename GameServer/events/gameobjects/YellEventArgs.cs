@@ -16,19 +16,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.Events
+
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the Yell event of GameLivings
+/// </summary>
+public class YellEventArgs : SayEventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the Yell event of GameLivings
-	/// </summary>
-	public class YellEventArgs : SayEventArgs
-	{
-		/// <summary>
-		/// Constructs a new YellEventArgs
-		/// </summary>
-		/// <param name="text">the text being yelled</param>
-		public YellEventArgs(string text) : base(text)
-		{
-		}
-	}
+    /// <summary>
+    /// Constructs a new YellEventArgs
+    /// </summary>
+    /// <param name="text">the text being yelled</param>
+    public YellEventArgs(string text) : base(text)
+    {
+    }
 }

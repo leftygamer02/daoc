@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 using DOL.GS.PacketHandler;
@@ -28,110 +29,112 @@ using DOL.GS.Quests;
 using DOL.GS.PacketHandler.Client.v168;
 using log4net;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+/// <summary>
+/// A command to manage teleport destinations.
+/// </summary>
+/// <author>Aredhel</author>
+[CmdAttribute(
+    "&teleport",
+    ePrivLevel.GM,
+    "Manage teleport destinations",
+    "'/teleport add <ID> <type>' add a teleport destination",
+    "'/teleport reload' reload all teleport locations from the db")]
+public class TeleportCommandHandler : AbstractCommandHandler, ICommandHandler
 {
+    private static readonly ILog log =
+        LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
     /// <summary>
-    /// A command to manage teleport destinations.
+    /// Handle command.
     /// </summary>
-    /// <author>Aredhel</author>
-	[CmdAttribute(
-		"&teleport",
-		ePrivLevel.GM,
-        "Manage teleport destinations",
-        "'/teleport add <ID> <type>' add a teleport destination",
-		"'/teleport reload' reload all teleport locations from the db")]
-    public class TeleportCommandHandler : AbstractCommandHandler, ICommandHandler
+    /// <param name="client"></param>
+    /// <param name="args"></param>
+    public void OnCommand(GameClient client, string[] args)
     {
-		private static readonly ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-		/// <summary>
-        /// Handle command.
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="args"></param>
-        public void OnCommand(GameClient client, string[] args)
+        if (args.Length < 2)
         {
-            if (args.Length < 2)
+            DisplaySyntax(client);
+            return;
+        }
+
+        switch (args[1].ToLower())
+        {
+            case "add":
             {
-                DisplaySyntax(client);
-                return;
-            }
-
-            switch (args[1].ToLower())
-            {
-                case "add":
-                    {
-                        if (args.Length < 3)
-                        {
-                            DisplaySyntax(client);
-                            return;
-                        }
-
-                        if (args[2] == "")
-                        {
-                            client.Out.SendMessage("You must specify a teleport ID.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                            return;
-                        }
-
-                        String teleportType = (args.Length < 4)
-                            ? "" : args[3];
-
-                        AddTeleport(client, args[2], teleportType);
-                    }
-                    break;
-
-				case "reload":
-
-					string results = WorldMgr.LoadTeleports();
-					log.Info(results);
-					client.Out.SendMessage(results, eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					break;
-
-                default:
+                if (args.Length < 3)
+                {
                     DisplaySyntax(client);
-                    break;
-            }    
-        }
+                    return;
+                }
 
-        /// <summary>
-        /// Add a new teleport destination in memory and save to database, if
-        /// successful.
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="teleportID"></param>
-        /// <param name="type"></param>
-        private void AddTeleport(GameClient client, String teleportID, String type)
+                if (args[2] == "")
+                {
+                    client.Out.SendMessage("You must specify a teleport ID.", eChatType.CT_System,
+                        eChatLoc.CL_SystemWindow);
+                    return;
+                }
+
+                var teleportType = args.Length < 4
+                    ? ""
+                    : args[3];
+
+                AddTeleport(client, args[2], teleportType);
+            }
+                break;
+
+            case "reload":
+
+                var results = WorldMgr.LoadTeleports();
+                log.Info(results);
+                client.Out.SendMessage(results, eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                break;
+
+            default:
+                DisplaySyntax(client);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Add a new teleport destination in memory and save to database, if
+    /// successful.
+    /// </summary>
+    /// <param name="client"></param>
+    /// <param name="teleportID"></param>
+    /// <param name="type"></param>
+    private void AddTeleport(GameClient client, string teleportID, string type)
+    {
+        var player = client.Player;
+        var realm = player.Realm;
+
+        if (WorldMgr.GetTeleportLocation(realm, string.Format("{0}:{1}", type, teleportID)) != null)
         {
-            GamePlayer player = client.Player;
-            eRealm realm = player.Realm;
-
-            if (WorldMgr.GetTeleportLocation(realm, String.Format("{0}:{1}", type, teleportID)) != null)
-            {
-                client.Out.SendMessage(String.Format("Teleport ID [{0}] already exists!", teleportID), 
-                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return;
-            }
-
-            Teleport teleport = new Teleport();
-            teleport.TeleportID = teleportID;
-            teleport.Realm = (int)realm;
-            teleport.RegionID = player.CurrentRegion.ID;
-            teleport.X = player.X;
-            teleport.Y = player.Y;
-            teleport.Z = player.Z;
-            teleport.Heading = player.Heading;
-            teleport.Type = type;
-
-            if (!WorldMgr.AddTeleportLocation(teleport))
-            {
-                client.Out.SendMessage(String.Format("Failed to add teleport ID [{0}] in memory!", teleportID), 
-                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
-                return;
-            }
-
-            GameServer.Database.AddObject(teleport);
-            client.Out.SendMessage(String.Format("Teleport ID [{0}] successfully added.", teleportID),
+            client.Out.SendMessage(string.Format("Teleport ID [{0}] already exists!", teleportID),
                 eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return;
         }
+
+        var teleport = new Teleport();
+        teleport.TeleportID = teleportID;
+        teleport.Realm = (int) realm;
+        teleport.RegionID = player.CurrentRegion.ID;
+        teleport.X = player.X;
+        teleport.Y = player.Y;
+        teleport.Z = player.Z;
+        teleport.Heading = player.Heading;
+        teleport.Type = type;
+
+        if (!WorldMgr.AddTeleportLocation(teleport))
+        {
+            client.Out.SendMessage(string.Format("Failed to add teleport ID [{0}] in memory!", teleportID),
+                eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return;
+        }
+
+        GameServer.Database.AddObject(teleport);
+        client.Out.SendMessage(string.Format("Teleport ID [{0}] successfully added.", teleportID),
+            eChatType.CT_System, eChatLoc.CL_SystemWindow);
     }
 }

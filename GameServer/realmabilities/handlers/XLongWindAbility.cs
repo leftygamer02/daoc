@@ -4,29 +4,30 @@ using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using DOL.GS.SkillHandler;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+/// <summary>
+/// Long Wind
+/// </summary>
+public class XLongWindAbility : RAPropertyEnhancer
 {
-	/// <summary>
-	/// Long Wind
-	/// </summary>
-	public class XLongWindAbility : RAPropertyEnhancer
-	{
-		public XLongWindAbility(DBAbility dba, int level) : base(dba, level, eProperty.Undefined) { }
+    public XLongWindAbility(DBAbility dba, int level) : base(dba, level, eProperty.Undefined)
+    {
+    }
 
-        protected override string ValueUnit { get { return "%"; } }
+    protected override string ValueUnit => "%";
 
-		public override int GetAmountForLevel(int level)
-		{
-            //return level;
-            switch (level)
-            {
-                case 1: return 20;
-                case 2: return 40;
-                case 3: return 60;
-                case 4: return 80;
-                case 5: return 100;
-                default: return 0;
-            }
+    public override int GetAmountForLevel(int level)
+    {
+        //return level;
+        switch (level)
+        {
+            case 1: return 20;
+            case 2: return 40;
+            case 3: return 60;
+            case 4: return 80;
+            case 5: return 100;
+            default: return 0;
         }
-	}
+    }
 }

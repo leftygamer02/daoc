@@ -18,7 +18,7 @@ namespace DOL.GS
 
         public override bool AddToWorld()
         {
-            BeliathanInitBrain hi = new BeliathanInitBrain();
+            var hi = new BeliathanInitBrain();
             SetOwnBrain(hi);
             base.AddToWorld();
             return true;
@@ -34,7 +34,7 @@ namespace DOL.GS
                 log.Warn("Beliathan Initializator not found, creating it...");
 
                 log.Warn("Initializing Beliathan Initializator...");
-                BeliathanInit CO = new BeliathanInit();
+                var CO = new BeliathanInit();
                 CO.Name = "Beliathan Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
                 CO.RespawnInterval = 5000;
@@ -52,15 +52,17 @@ namespace DOL.GS
                 CO.X = 22699;
                 CO.Y = 18684;
                 CO.Z = 15174;
-                BeliathanInitBrain ubrain = new BeliathanInitBrain();
+                var ubrain = new BeliathanInitBrain();
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
                 CO.SaveIntoDatabase();
                 CO.Brain.Start();
             }
             else
+            {
                 log.Warn(
                     "Beliathan Initializator exists in game, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -89,26 +91,19 @@ namespace DOL.AI.Brain
             bool beliSpawned;
 
             if (beliathan.Length == 0)
-            {
                 beliSpawned = false;
-            }
             else
-            {
                 beliSpawned = true;
-            }
 
             if (!beliSpawned)
             {
-                foreach (GameNPC npc in princeStatus)
+                foreach (var npc in princeStatus)
                 {
                     if (!npc.Name.ToLower().Contains("prince")) continue;
                     princeCount++;
                 }
 
-                if (princeCount == 0)
-                {
-                    SpawnBeliathan();
-                }
+                if (princeCount == 0) SpawnBeliathan();
             }
 
             base.Think();
@@ -117,7 +112,7 @@ namespace DOL.AI.Brain
         public void SpawnBeliathan()
         {
             BroadcastMessage("The tunnels rumble and shake..");
-            Beliathan Add = new Beliathan();
+            var Add = new Beliathan();
             Add.X = Body.X;
             Add.Y = Body.Y;
             Add.Z = Body.Z;
@@ -126,12 +121,10 @@ namespace DOL.AI.Brain
             Add.AddToWorld();
         }
 
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
-            foreach (GameClient client in WorldMgr.GetClientsOfRegion(Body.CurrentRegionID))
-            {
+            foreach (var client in WorldMgr.GetClientsOfRegion(Body.CurrentRegionID))
                 client.Player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
     }
 }
@@ -156,14 +149,17 @@ namespace DOL.GS
         public static void ScriptUnloaded(DOLEvent e, object sender, EventArgs args)
         {
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackSpeed(InventoryItem mainWeapon, InventoryItem leftWeapon = null)
         {
             return base.AttackSpeed(mainWeapon, leftWeapon) * 2;
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -174,29 +170,32 @@ namespace DOL.GS
                 default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override short MaxSpeedBase
         {
-            get => (short) (191 + (Level * 2));
+            get => (short) (191 + Level * 2);
             set => m_maxSpeedBase = value;
         }
+
         public override int AttackRange
         {
             get => 180;
             set { }
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60158351);
@@ -212,7 +211,7 @@ namespace DOL.GS
             Piety = npcTemplate.Piety;
             Intelligence = npcTemplate.Intelligence;
             RespawnInterval = -1;
-            BeliathanBrain sBrain = new BeliathanBrain();
+            var sBrain = new BeliathanBrain();
             SetOwnBrain(sBrain);
             sBrain.AggroLevel = 100;
             sBrain.AggroRange = 500;
@@ -232,31 +231,28 @@ namespace DOL.GS
             base.Die(killer);
 
             foreach (GameNPC npc in GetNPCsInRadius(4000))
-            {
                 if (npc.Brain is BeliathanMinionBrain)
-                {
                     npc.RemoveFromWorld();
-                }
-            }
         }
+
         private static void PlayerKilledByBeliathan(DOLEvent e, object sender, EventArgs args)
         {
-            GamePlayer player = sender as GamePlayer;
+            var player = sender as GamePlayer;
 
             if (player == null)
                 return;
 
-            DyingEventArgs eArgs = args as DyingEventArgs;
+            var eArgs = args as DyingEventArgs;
 
             if (eArgs?.Killer?.Name != "Beliathan")
                 return;
 
-            GameNPC beliathan = eArgs.Killer as GameNPC;
+            var beliathan = eArgs.Killer as GameNPC;
 
             if (beliathan == null)
                 return;
 
-            BeliathanMinion sMinion = new BeliathanMinion();
+            var sMinion = new BeliathanMinion();
             sMinion.X = player.X;
             sMinion.Y = player.Y;
             sMinion.Z = player.Z;
@@ -276,6 +272,7 @@ namespace DOL.AI.Brain
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private bool RemoveAdds = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -285,15 +282,13 @@ namespace DOL.AI.Brain
                 if (!RemoveAdds)
                 {
                     foreach (GameNPC npc in Body.GetNPCsInRadius(4000))
-                    {
                         if (npc.Brain is BeliathanMinionBrain)
-                        {
                             npc.RemoveFromWorld();
-                        }
-                    }
+
                     RemoveAdds = true;
                 }
             }
+
             if (HasAggro && Body.TargetObject != null)
                 RemoveAdds = false;
             base.Think();
@@ -305,10 +300,7 @@ namespace DOL.GS
 {
     public class BeliathanMinion : GameNPC
     {
-        public override int MaxHealth
-        {
-            get { return 550; }
-        }
+        public override int MaxHealth => 550;
 
         public override bool AddToWorld()
         {
@@ -324,7 +316,7 @@ namespace DOL.GS
             TetherRange = 2000;
             IsWorthReward = false; // worth no reward
             Realm = eRealm.None;
-            BeliathanMinionBrain adds = new BeliathanMinionBrain();
+            var adds = new BeliathanMinionBrain();
             LoadedFromScript = true;
             SetOwnBrain(adds);
 
@@ -337,10 +329,13 @@ namespace DOL.GS
             base.AddToWorld();
             return true;
         }
+
         public override void DropLoot(GameObject killer) //no loot
         {
         }
+
         public override long ExperienceValue => 0;
+
         public override void Die(GameObject killer)
         {
             base.Die(null); // null to not gain experience

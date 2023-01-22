@@ -16,18 +16,18 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.Database.Transaction
+
+namespace DOL.Database.Transaction;
+
+/// <summary>
+/// Connection isolation levels
+/// </summary>
+public enum IsolationLevel
 {
-	/// <summary>
-	/// Connection isolation levels
-	/// </summary>
-	public enum IsolationLevel
-	{
-		DEFAULT,
-		SERIALIZABLE,
-	    REPEATABLE_READ,
-		READ_COMMITTED,
-	    READ_UNCOMMITTED,
-		SNAPSHOT
-	}
+    DEFAULT,
+    SERIALIZABLE,
+    REPEATABLE_READ,
+    READ_COMMITTED,
+    READ_UNCOMMITTED,
+    SNAPSHOT
 }

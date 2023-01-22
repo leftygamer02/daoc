@@ -16,36 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute(
-		"&autoloot",
-		ePrivLevel.Player,
-		"automaticly pick up any loot that drops in your area",
-		"/autoloot <on/off>")]
-	public class AutolootCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (args.Length < 2)
-			{
-				DisplaySyntax(client);
-				return;
-			}
+namespace DOL.GS.Commands;
 
-			if (args[1].ToLower().Equals("on"))
-			{
-				client.Player.Autoloot = true;
-				DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Autoloot.On"));
-            }
-			else if (args[1].ToLower().Equals("off"))
-			{
-				client.Player.Autoloot = false;
-				DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Autoloot.Off"));
-            }
-		}
-	}
+[CmdAttribute(
+    "&autoloot",
+    ePrivLevel.Player,
+    "automaticly pick up any loot that drops in your area",
+    "/autoloot <on/off>")]
+public class AutolootCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (args.Length < 2)
+        {
+            DisplaySyntax(client);
+            return;
+        }
+
+        if (args[1].ToLower().Equals("on"))
+        {
+            client.Player.Autoloot = true;
+            DisplayMessage(client,
+                LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Autoloot.On"));
+        }
+        else if (args[1].ToLower().Equals("off"))
+        {
+            client.Player.Autoloot = false;
+            DisplayMessage(client,
+                LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Players.Autoloot.Off"));
+        }
+    }
 }

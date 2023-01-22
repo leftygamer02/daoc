@@ -8,13 +8,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-
-
 public class StandardMobFSM : FSM
 {
     public StandardMobFSM() : base()
     {
-
     }
 
     public void Add(StandardMobState state)
@@ -24,16 +21,13 @@ public class StandardMobFSM : FSM
 
     public StandardMobState GetState(eFSMStateType key)
     {
-        return (StandardMobState)GetState((int) key);
+        return (StandardMobState) GetState((int) key);
     }
 
     public void SetCurrentState(eFSMStateType stateKey)
     {
-        State state = m_states[(int)stateKey];
-        if (state != null)
-        {
-            SetCurrentState(state);
-        }
+        var state = m_states[(int) stateKey];
+        if (state != null) SetCurrentState(state);
     }
 
     public new void Think()
@@ -47,6 +41,3 @@ public class StandardMobFSM : FSM
         base.KillFSM();
     }
 }
-
-
-

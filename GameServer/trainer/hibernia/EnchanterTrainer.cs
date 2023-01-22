@@ -16,84 +16,86 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Language;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Trainer
+namespace DOL.GS.Trainer;
+
+/// <summary>
+/// Enchanter Trainer
+/// </summary>
+[NPCGuildScript("Enchanter Trainer",
+    eRealm.Hibernia)] // this attribute instructs DOL to use this script for all "Enchanter Trainer" NPC's in Albion (multiple guilds are possible for one script)
+public class EnchanterTrainer : GameTrainer
 {
-	/// <summary>
-	/// Enchanter Trainer
-	/// </summary>
-	[NPCGuildScript("Enchanter Trainer", eRealm.Hibernia)]		// this attribute instructs DOL to use this script for all "Enchanter Trainer" NPC's in Albion (multiple guilds are possible for one script)
-	public class EnchanterTrainer : GameTrainer
-	{
-		public override eCharacterClass TrainedClass
-		{
-			get { return eCharacterClass.Enchanter; }
-		}
+    public override eCharacterClass TrainedClass => eCharacterClass.Enchanter;
 
-		public const string WEAPON_ID1 = "enchanter_item";
+    public const string WEAPON_ID1 = "enchanter_item";
 
-		public EnchanterTrainer() : base()
-		{
-		}
+    public EnchanterTrainer() : base()
+    {
+    }
 
-		/// <summary>
-		/// Interact with trainer
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public override bool Interact(GamePlayer player)
-		{
-			if (!base.Interact(player)) return false;
-			
-			// check if class matches.
-			if (player.CharacterClass.ID == (int) TrainedClass)
-			{
-				player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "EnchanterTrainer.Interact.Text2", this.Name, player.GetName(0, false)), eChatType.CT_Say, eChatLoc.CL_ChatWindow);
-			}
-			else
-			{
-				// perhaps player can be promoted
-				if (CanPromotePlayer(player))
-				{
-					player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "EnchanterTrainer.Interact.Text1", this.Name), eChatType.CT_System, eChatLoc.CL_PopupWindow);
-					if (!player.IsLevelRespecUsed)
-					{
-						OfferRespecialize(player);
-					}
-				}
-				else
-				{
-					CheckChampionTraining(player);
-				}
-			}
-			return true;
-		}
+    /// <summary>
+    /// Interact with trainer
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
+    public override bool Interact(GamePlayer player)
+    {
+        if (!base.Interact(player)) return false;
 
-		/// <summary>
-		/// Talk to trainer
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public override bool WhisperReceive(GameLiving source, string text)
-		{
-			if (!base.WhisperReceive(source, text)) return false;
-			GamePlayer player = source as GamePlayer;
-			String lowerCase = text.ToLower();
+        // check if class matches.
+        if (player.CharacterClass.ID == (int) TrainedClass)
+        {
+            player.Out.SendMessage(
+                LanguageMgr.GetTranslation(player.Client.Account.Language, "EnchanterTrainer.Interact.Text2",
+                    Name, player.GetName(0, false)), eChatType.CT_Say, eChatLoc.CL_ChatWindow);
+        }
+        else
+        {
+            // perhaps player can be promoted
+            if (CanPromotePlayer(player))
+            {
+                player.Out.SendMessage(
+                    LanguageMgr.GetTranslation(player.Client.Account.Language, "EnchanterTrainer.Interact.Text1",
+                        Name), eChatType.CT_System, eChatLoc.CL_PopupWindow);
+                if (!player.IsLevelRespecUsed) OfferRespecialize(player);
+            }
+            else
+            {
+                CheckChampionTraining(player);
+            }
+        }
 
-			if (lowerCase == LanguageMgr.GetTranslation(player.Client.Account.Language, "EnchanterTrainer.WhisperReceiveCase.Text1"))
-			{
-				// promote player to other class
-				if (CanPromotePlayer(player))
-				{
-					PromotePlayer(player, (int)eCharacterClass.Enchanter, LanguageMgr.GetTranslation(player.Client.Account.Language, "EnchanterTrainer.WhisperReceive.Text1", player.GetName(0, false)), null);
-					player.ReceiveItem(this, WEAPON_ID1);
-				}
-			}
-			return true;
-		}
-	}
+        return true;
+    }
+
+    /// <summary>
+    /// Talk to trainer
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public override bool WhisperReceive(GameLiving source, string text)
+    {
+        if (!base.WhisperReceive(source, text)) return false;
+        var player = source as GamePlayer;
+        var lowerCase = text.ToLower();
+
+        if (lowerCase == LanguageMgr.GetTranslation(player.Client.Account.Language,
+                "EnchanterTrainer.WhisperReceiveCase.Text1"))
+            // promote player to other class
+            if (CanPromotePlayer(player))
+            {
+                PromotePlayer(player, (int) eCharacterClass.Enchanter,
+                    LanguageMgr.GetTranslation(player.Client.Account.Language,
+                        "EnchanterTrainer.WhisperReceive.Text1", player.GetName(0, false)), null);
+                player.ReceiveItem(this, WEAPON_ID1);
+            }
+
+        return true;
+    }
 }

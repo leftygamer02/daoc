@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using DOL.GS.PacketHandler;
@@ -24,89 +25,87 @@ using DOL.Events;
 using DOL.Language;
 using System.Collections.Generic;
 
-namespace DOL.GS.Effects
+namespace DOL.GS.Effects;
+
+/// <summary>
+/// The helper class for the berserk ability
+/// </summary>
+public class BerserkEffect : TimedEffect, IGameEffect
 {
-	/// <summary>
-	/// The helper class for the berserk ability
-	/// </summary>
-	public class BerserkEffect : TimedEffect, IGameEffect
-	{
-		protected ushort m_startModel = 0;
-		/// <summary>
-		/// Creates a new berserk effect
-		/// </summary>
-		public BerserkEffect()
-			: base(BerserkAbilityHandler.DURATION)
-		{
-		}
+    protected ushort m_startModel = 0;
 
-		/// <summary>
-		/// Start the berserk on a living
-		/// </summary>
-		public override void Start(GameLiving living)
-		{
-			base.Start(living);
-			m_startModel = living.Model;
+    /// <summary>
+    /// Creates a new berserk effect
+    /// </summary>
+    public BerserkEffect()
+        : base(BerserkAbilityHandler.DURATION)
+    {
+    }
 
-			if(living is GamePlayer)
-			{
-				(living as GamePlayer).Out.SendMessage(LanguageMgr.GetTranslation((living as GamePlayer).Client, "Effects.BerserkEffect.GoBerserkerFrenzy"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				living.Emote(eEmote.MidgardFrenzy);
-				//TODO differentiate model between Dwarves and other races
-				if ((living as GamePlayer).Race == (int)eRace.Dwarf)
-				{
-					living.Model = 12;
-				}
-				else
-				{
-					living.Model = 3;
-				}
-			}
-		}
+    /// <summary>
+    /// Start the berserk on a living
+    /// </summary>
+    public override void Start(GameLiving living)
+    {
+        base.Start(living);
+        m_startModel = living.Model;
 
-		public override void Stop()
-		{
-			base.Stop();
-			m_owner.Model = m_startModel;
+        if (living is GamePlayer)
+        {
+            (living as GamePlayer).Out.SendMessage(
+                LanguageMgr.GetTranslation((living as GamePlayer).Client,
+                    "Effects.BerserkEffect.GoBerserkerFrenzy"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            living.Emote(eEmote.MidgardFrenzy);
+            //TODO differentiate model between Dwarves and other races
+            if ((living as GamePlayer).Race == (int) eRace.Dwarf)
+                living.Model = 12;
+            else
+                living.Model = 3;
+        }
+    }
 
-			// there is no animation on end of the effect
-			if(m_owner is GamePlayer)
-				(m_owner as GamePlayer).Out.SendMessage(LanguageMgr.GetTranslation((m_owner as GamePlayer).Client, "Effects.BerserkEffect.BerserkerFrenzyEnds"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-		}
+    public override void Stop()
+    {
+        base.Stop();
+        m_owner.Model = m_startModel;
 
-		/// <summary>
-		/// Name of the effect
-		/// </summary>
-		public override string Name
-		{
-			get
-			{
-				return LanguageMgr.GetTranslation(((GamePlayer)Owner).Client, "Effects.BerserkEffect.Name");
-			}
-		}
+        // there is no animation on end of the effect
+        if (m_owner is GamePlayer)
+            (m_owner as GamePlayer).Out.SendMessage(
+                LanguageMgr.GetTranslation((m_owner as GamePlayer).Client,
+                    "Effects.BerserkEffect.BerserkerFrenzyEnds"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+    }
 
-		/// <summary>
-		/// Delve Info
-		/// </summary>
-		public override IList<string> DelveInfo
-		{
-			get
-			{
-				var delveInfoList = new List<string>();
-				delveInfoList.Add(LanguageMgr.GetTranslation(((GamePlayer)Owner).Client, "Effects.BerserkEffect.InfoEffect"));
+    /// <summary>
+    /// Name of the effect
+    /// </summary>
+    public override string Name =>
+        LanguageMgr.GetTranslation(((GamePlayer) Owner).Client, "Effects.BerserkEffect.Name");
 
-				int seconds = RemainingTime / 1000;
-				if(seconds > 0)
-				{
-					delveInfoList.Add(" "); //empty line
-					if(seconds > 60)
-						delveInfoList.Add(LanguageMgr.GetTranslation(((GamePlayer)Owner).Client, "Effects.DelveInfo.MinutesRemaining", (seconds / 60), ((seconds % 60).ToString("00"))));
-					else
-						delveInfoList.Add(LanguageMgr.GetTranslation(((GamePlayer)Owner).Client, "Effects.DelveInfo.SecondsRemaining", seconds));
-				}
+    /// <summary>
+    /// Delve Info
+    /// </summary>
+    public override IList<string> DelveInfo
+    {
+        get
+        {
+            var delveInfoList = new List<string>();
+            delveInfoList.Add(LanguageMgr.GetTranslation(((GamePlayer) Owner).Client,
+                "Effects.BerserkEffect.InfoEffect"));
 
-				return delveInfoList;
-			}
-		}
-	}
+            var seconds = RemainingTime / 1000;
+            if (seconds > 0)
+            {
+                delveInfoList.Add(" "); //empty line
+                if (seconds > 60)
+                    delveInfoList.Add(LanguageMgr.GetTranslation(((GamePlayer) Owner).Client,
+                        "Effects.DelveInfo.MinutesRemaining", seconds / 60, (seconds % 60).ToString("00")));
+                else
+                    delveInfoList.Add(LanguageMgr.GetTranslation(((GamePlayer) Owner).Client,
+                        "Effects.DelveInfo.SecondsRemaining", seconds));
+            }
+
+            return delveInfoList;
+        }
+    }
 }

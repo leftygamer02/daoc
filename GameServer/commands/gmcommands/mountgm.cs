@@ -16,32 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&mountgm",
+    ePrivLevel.GM,
+    "Mount a steed",
+    "/mountgm")]
+public class RideMountGmCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&mountgm",
-		ePrivLevel.GM,
-		"Mount a steed",
-		"/mountgm")]
-	public class RideMountGmCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (client.Player.IsRiding)
-			{
-				DisplayMessage(client, "You are already riding a steed!");
-				return;
-			}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (client.Player.IsRiding)
+        {
+            DisplayMessage(client, "You are already riding a steed!");
+            return;
+        }
 
-			if (client.Player.TargetObject == null || !(client.Player.TargetObject is GameNPC))
-			{
-				DisplayMessage(client, "You can't ride THIS!");
-				return;
-			}
+        if (client.Player.TargetObject == null || !(client.Player.TargetObject is GameNPC))
+        {
+            DisplayMessage(client, "You can't ride THIS!");
+            return;
+        }
 
-			client.Player.MountSteed((GameNPC) client.Player.TargetObject, false);
-		}
-	}
+        client.Player.MountSteed((GameNPC) client.Player.TargetObject, false);
+    }
 }

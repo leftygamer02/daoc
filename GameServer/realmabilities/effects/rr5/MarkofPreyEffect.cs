@@ -16,148 +16,156 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using DOL.Events;
 
-namespace DOL.GS.Effects
+namespace DOL.GS.Effects;
+
+/// <summary>
+/// The helper class for the guard ability
+/// </summary>
+public class MarkofPreyEffect : TimedEffect
 {
-	/// <summary>
-	/// The helper class for the guard ability
-	/// </summary>
-	public class MarkofPreyEffect : TimedEffect
-	{
-		private GamePlayer EffectOwner;
-		private GamePlayer EffectCaster;
-		private Group m_playerGroup;
+    private GamePlayer EffectOwner;
+    private GamePlayer EffectCaster;
+    private Group m_playerGroup;
 
-		public MarkofPreyEffect()
-			: base(RealmAbilities.MarkOfPreyAbility.DURATION)
-		{ }
+    public MarkofPreyEffect()
+        : base(RealmAbilities.MarkOfPreyAbility.DURATION)
+    {
+    }
 
-		/// <summary>
-		/// Start guarding the player
-		/// </summary>
-		/// <param name="Caster"></param>
-		/// <param name="CasterTarget"></param>
-		public void Start(GamePlayer Caster, GamePlayer CasterTarget)
-		{
-			if (Caster == null || CasterTarget == null)
-				return;
+    /// <summary>
+    /// Start guarding the player
+    /// </summary>
+    /// <param name="Caster"></param>
+    /// <param name="CasterTarget"></param>
+    public void Start(GamePlayer Caster, GamePlayer CasterTarget)
+    {
+        if (Caster == null || CasterTarget == null)
+            return;
 
-			m_playerGroup = Caster.Group;
-			if (m_playerGroup != CasterTarget.Group)
-				return;
+        m_playerGroup = Caster.Group;
+        if (m_playerGroup != CasterTarget.Group)
+            return;
 
-			EffectCaster = Caster;
-			EffectOwner = CasterTarget;
-			foreach (GamePlayer p in EffectOwner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-			{
-				p.Out.SendSpellEffectAnimation(EffectCaster, EffectOwner, 7090, 0, false, 1);
-			}
-			GameEventMgr.AddHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
-			if (m_playerGroup != null)
-				GameEventMgr.AddHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback));
-			GameEventMgr.AddHandler(EffectOwner, GamePlayerEvent.AttackFinished, new DOLEventHandler(AttackFinished));
-			EffectOwner.Out.SendMessage("Your weapon begins channeling the strength of the vampiir!", DOL.GS.PacketHandler.eChatType.CT_Spell, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
-			base.Start(CasterTarget);
-		}
+        EffectCaster = Caster;
+        EffectOwner = CasterTarget;
+        foreach (GamePlayer p in EffectOwner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+            p.Out.SendSpellEffectAnimation(EffectCaster, EffectOwner, 7090, 0, false, 1);
 
-		public override void Stop()
-		{
-			if (EffectOwner != null)
-			{
-				if (m_playerGroup != null)
-					GameEventMgr.RemoveHandler(m_playerGroup, GroupEvent.MemberDisbanded, new DOLEventHandler(GroupDisbandCallback));
-				GameEventMgr.RemoveHandler(EffectOwner, GamePlayerEvent.AttackFinished, new DOLEventHandler(AttackFinished));
-				GameEventMgr.RemoveHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
-				m_playerGroup = null;
-			}
-			EffectOwner.Out.SendMessage("Your weapon returns to normal.", DOL.GS.PacketHandler.eChatType.CT_SpellExpires, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
-			base.Stop();
-		}
+        GameEventMgr.AddHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
+        if (m_playerGroup != null)
+            GameEventMgr.AddHandler(m_playerGroup, GroupEvent.MemberDisbanded,
+                new DOLEventHandler(GroupDisbandCallback));
+        GameEventMgr.AddHandler(EffectOwner, GameLivingEvent.AttackFinished, new DOLEventHandler(AttackFinished));
+        EffectOwner.Out.SendMessage("Your weapon begins channeling the strength of the vampiir!",
+            PacketHandler.eChatType.CT_Spell, PacketHandler.eChatLoc.CL_SystemWindow);
+        base.Start(CasterTarget);
+    }
 
-		/// <summary>
-		/// Called when a player is inflicted in an combat action
-		/// </summary>
-		/// <param name="e">The event which was raised</param>
-		/// <param name="sender">Sender of the event</param>
-		/// <param name="args">EventArgs associated with the event</param>
-		private void AttackFinished(DOLEvent e, object sender, EventArgs args)
-		{
-			AttackFinishedEventArgs atkArgs = args as AttackFinishedEventArgs;
-			if (atkArgs == null) return;
-			if (atkArgs.AttackData.AttackResult != eAttackResult.HitUnstyled
-				&& atkArgs.AttackData.AttackResult != eAttackResult.HitStyle) return;
-			if (atkArgs.AttackData.Target == null) return;
-			GameLiving target = atkArgs.AttackData.Target;
-			if (target == null) return;
-			if (target.ObjectState != GameObject.eObjectState.Active) return;
-			if (target.IsAlive == false) return;
-			GameLiving attacker = sender as GameLiving;
-			if (attacker == null) return;
-			if (attacker.ObjectState != GameObject.eObjectState.Active) return;
-			if (attacker.IsAlive == false) return;
-			double dpsCap;
-			dpsCap = (1.2 + 0.3 * attacker.Level) * 0.7;
+    public override void Stop()
+    {
+        if (EffectOwner != null)
+        {
+            if (m_playerGroup != null)
+                GameEventMgr.RemoveHandler(m_playerGroup, GroupEvent.MemberDisbanded,
+                    new DOLEventHandler(GroupDisbandCallback));
+            GameEventMgr.RemoveHandler(EffectOwner, GameLivingEvent.AttackFinished,
+                new DOLEventHandler(AttackFinished));
+            GameEventMgr.RemoveHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
+            m_playerGroup = null;
+        }
 
-			double dps = Math.Min(RealmAbilities.MarkOfPreyAbility.VALUE, dpsCap);
-			double damage = dps * atkArgs.AttackData.WeaponSpeed * 0.1;
-			double damageResisted = damage * target.GetResist(eDamageType.Heat) * -0.01;
+        EffectOwner.Out.SendMessage("Your weapon returns to normal.",
+            PacketHandler.eChatType.CT_SpellExpires, PacketHandler.eChatLoc.CL_SystemWindow);
+        base.Stop();
+    }
 
-			AttackData ad = new AttackData();
-			ad.Attacker = attacker;
-			ad.Target = target;
-			ad.Damage = (int)(damage + damageResisted);
-			ad.Modifier = (int)damageResisted;
-			ad.DamageType = eDamageType.Heat;
-			ad.AttackType = AttackData.eAttackType.Spell;
-			ad.AttackResult = eAttackResult.HitUnstyled;
-			target.OnAttackedByEnemy(ad);
-			EffectCaster.ChangeMana(EffectOwner, eManaChangeType.Spell, (int)ad.Damage);
-			if (attacker is GamePlayer)
-				(attacker as GamePlayer).Out.SendMessage(string.Format("You hit {0} for {1} extra damage!", target.Name, ad.Damage), DOL.GS.PacketHandler.eChatType.CT_Spell, DOL.GS.PacketHandler.eChatLoc.CL_SystemWindow);
-			attacker.DealDamage(ad);
-		}
+    /// <summary>
+    /// Called when a player is inflicted in an combat action
+    /// </summary>
+    /// <param name="e">The event which was raised</param>
+    /// <param name="sender">Sender of the event</param>
+    /// <param name="args">EventArgs associated with the event</param>
+    private void AttackFinished(DOLEvent e, object sender, EventArgs args)
+    {
+        var atkArgs = args as AttackFinishedEventArgs;
+        if (atkArgs == null) return;
+        if (atkArgs.AttackData.AttackResult != eAttackResult.HitUnstyled
+            && atkArgs.AttackData.AttackResult != eAttackResult.HitStyle) return;
+        if (atkArgs.AttackData.Target == null) return;
+        var target = atkArgs.AttackData.Target;
+        if (target == null) return;
+        if (target.ObjectState != GameObject.eObjectState.Active) return;
+        if (target.IsAlive == false) return;
+        var attacker = sender as GameLiving;
+        if (attacker == null) return;
+        if (attacker.ObjectState != GameObject.eObjectState.Active) return;
+        if (attacker.IsAlive == false) return;
+        double dpsCap;
+        dpsCap = (1.2 + 0.3 * attacker.Level) * 0.7;
 
-		/// <summary>
-		/// Cancels effect if one of players disbands
-		/// </summary>
-		/// <param name="e"></param>
-		/// <param name="sender">The group</param>
-		/// <param name="args"></param>
-		protected void GroupDisbandCallback(DOLEvent e, object sender, EventArgs args)
-		{
-			MemberDisbandedEventArgs eArgs = args as MemberDisbandedEventArgs;
-			if (eArgs == null) return;
-			if (eArgs.Member == EffectOwner)
-			{
-				Cancel(false);
-			}
-		}
-		/// <summary>
-		/// Called when a player leaves the game
-		/// </summary>
-		/// <param name="e">The event which was raised</param>
-		/// <param name="sender">Sender of the event</param>
-		/// <param name="args">EventArgs associated with the event</param>
-		protected void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
-		{
-			Cancel(false);
-		}
+        var dps = Math.Min(RealmAbilities.MarkOfPreyAbility.VALUE, dpsCap);
+        var damage = dps * atkArgs.AttackData.WeaponSpeed * 0.1;
+        var damageResisted = damage * target.GetResist(eDamageType.Heat) * -0.01;
 
-		public override string Name { get { return "Mark Of Prey"; } }
-		public override ushort Icon { get { return 3089; } }
+        var ad = new AttackData();
+        ad.Attacker = attacker;
+        ad.Target = target;
+        ad.Damage = (int) (damage + damageResisted);
+        ad.Modifier = (int) damageResisted;
+        ad.DamageType = eDamageType.Heat;
+        ad.AttackType = AttackData.eAttackType.Spell;
+        ad.AttackResult = eAttackResult.HitUnstyled;
+        target.OnAttackedByEnemy(ad);
+        EffectCaster.ChangeMana(EffectOwner, eManaChangeType.Spell, (int) ad.Damage);
+        if (attacker is GamePlayer)
+            (attacker as GamePlayer).Out.SendMessage(
+                string.Format("You hit {0} for {1} extra damage!", target.Name, ad.Damage),
+                PacketHandler.eChatType.CT_Spell, PacketHandler.eChatLoc.CL_SystemWindow);
+        attacker.DealDamage(ad);
+    }
 
-		// Delve Info
-		public override IList<string> DelveInfo
-		{
-			get
-			{
-				var list = new List<string>();
-				list.Add("Grants a 30 second damage add that stacks with all other forms of damage add. All damage done via the damage add will be returned to the Vampiir as power.");
-				return list;
-			}
-		}
-	}
+    /// <summary>
+    /// Cancels effect if one of players disbands
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="sender">The group</param>
+    /// <param name="args"></param>
+    protected void GroupDisbandCallback(DOLEvent e, object sender, EventArgs args)
+    {
+        var eArgs = args as MemberDisbandedEventArgs;
+        if (eArgs == null) return;
+        if (eArgs.Member == EffectOwner) Cancel(false);
+    }
+
+    /// <summary>
+    /// Called when a player leaves the game
+    /// </summary>
+    /// <param name="e">The event which was raised</param>
+    /// <param name="sender">Sender of the event</param>
+    /// <param name="args">EventArgs associated with the event</param>
+    protected void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
+    {
+        Cancel(false);
+    }
+
+    public override string Name => "Mark Of Prey";
+
+    public override ushort Icon => 3089;
+
+    // Delve Info
+    public override IList<string> DelveInfo
+    {
+        get
+        {
+            var list = new List<string>();
+            list.Add(
+                "Grants a 30 second damage add that stacks with all other forms of damage add. All damage done via the damage add will be returned to the Vampiir as power.");
+            return list;
+        }
+    }
 }

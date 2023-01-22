@@ -16,116 +16,116 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Text;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// The base class for all timed region actions
+/// </summary>
+public abstract class RegionAction : GameTimer
 {
-	/// <summary>
-	/// The base class for all timed region actions
-	/// </summary>
-	public abstract class RegionAction : GameTimer
-	{
-		/// <summary>
-		/// The source of the action
-		/// </summary>
-		protected readonly GameObject m_actionSource;
+    /// <summary>
+    /// The source of the action
+    /// </summary>
+    protected readonly GameObject m_actionSource;
 
-		/// <summary>
-		/// Constructs a new region action
-		/// </summary>
-		/// <param name="actionSource">The action source</param>
-		public RegionAction(GameObject actionSource) : base(actionSource.CurrentRegion.TimeManager)
-		{
-			if (actionSource == null)
-				throw new ArgumentNullException("actionSource");
-			m_actionSource = actionSource;
-		}
+    /// <summary>
+    /// Constructs a new region action
+    /// </summary>
+    /// <param name="actionSource">The action source</param>
+    public RegionAction(GameObject actionSource) : base(actionSource.CurrentRegion.TimeManager)
+    {
+        if (actionSource == null)
+            throw new ArgumentNullException("actionSource");
+        m_actionSource = actionSource;
+    }
 
-		/// <summary>
-		/// Returns short information about the timer
-		/// </summary>
-		/// <returns>Short info about the timer</returns>
-		public override string ToString()
-		{
-			return new StringBuilder(base.ToString(), 128)
-				.Append(" actionSource: (").Append(m_actionSource.ToString())
-				.Append(')')
-				.ToString();
-		}
-	}
+    /// <summary>
+    /// Returns short information about the timer
+    /// </summary>
+    /// <returns>Short info about the timer</returns>
+    public override string ToString()
+    {
+        return new StringBuilder(base.ToString(), 128)
+            .Append(" actionSource: (").Append(m_actionSource.ToString())
+            .Append(')')
+            .ToString();
+    }
+}
 
-	public abstract class RegionECSAction : ECSGameTimer
-	{
-		/// <summary>
-		/// The source of the action
-		/// </summary>
-		protected readonly GameObject m_actionSource;
+public abstract class RegionECSAction : ECSGameTimer
+{
+    /// <summary>
+    /// The source of the action
+    /// </summary>
+    protected readonly GameObject m_actionSource;
 
-		/// <summary>
-		/// Constructs a new region action
-		/// </summary>
-		/// <param name="actionSource">The action source</param>
-		public RegionECSAction(GameObject actionSource) : base(actionSource)
-		{
-			if (actionSource == null)
-				throw new ArgumentNullException("actionSource");
-			m_actionSource = actionSource;
+    /// <summary>
+    /// Constructs a new region action
+    /// </summary>
+    /// <param name="actionSource">The action source</param>
+    public RegionECSAction(GameObject actionSource) : base(actionSource)
+    {
+        if (actionSource == null)
+            throw new ArgumentNullException("actionSource");
+        m_actionSource = actionSource;
 
-			TimerOwner = actionSource;
-			Callback = new ECSTimerCallback(OnTick);
-		}
+        TimerOwner = actionSource;
+        Callback = new ECSTimerCallback(OnTick);
+    }
 
-		protected abstract int OnTick(ECSGameTimer timer);
+    protected abstract int OnTick(ECSGameTimer timer);
 
 
-		/// <summary>
-		/// Returns short information about the timer
-		/// </summary>
-		/// <returns>Short info about the timer</returns>
-		public override string ToString()
-		{
-			return new StringBuilder(base.ToString(), 128)
-				.Append(" actionSource: (").Append(m_actionSource.ToString())
-				.Append(')')
-				.ToString();
-		}
-	}
+    /// <summary>
+    /// Returns short information about the timer
+    /// </summary>
+    /// <returns>Short info about the timer</returns>
+    public override string ToString()
+    {
+        return new StringBuilder(base.ToString(), 128)
+            .Append(" actionSource: (").Append(m_actionSource.ToString())
+            .Append(')')
+            .ToString();
+    }
+}
 
-	public abstract class AuxRegionECSAction : AuxECSGameTimer
-	{
-		/// <summary>
-		/// The source of the action
-		/// </summary>
-		protected readonly GameObject m_actionSource;
+public abstract class AuxRegionECSAction : AuxECSGameTimer
+{
+    /// <summary>
+    /// The source of the action
+    /// </summary>
+    protected readonly GameObject m_actionSource;
 
-		/// <summary>
-		/// Constructs a new region action
-		/// </summary>
-		/// <param name="actionSource">The action source</param>
-		public AuxRegionECSAction(GameObject actionSource) : base(actionSource)
-		{
-			if (actionSource == null)
-				throw new ArgumentNullException("actionSource");
-			m_actionSource = actionSource;
+    /// <summary>
+    /// Constructs a new region action
+    /// </summary>
+    /// <param name="actionSource">The action source</param>
+    public AuxRegionECSAction(GameObject actionSource) : base(actionSource)
+    {
+        if (actionSource == null)
+            throw new ArgumentNullException("actionSource");
+        m_actionSource = actionSource;
 
-			TimerOwner = actionSource;
-			Callback = new AuxECSTimerCallback(OnTick);
-		}
+        TimerOwner = actionSource;
+        Callback = new AuxECSTimerCallback(OnTick);
+    }
 
-		protected abstract int OnTick(AuxECSGameTimer timer);
+    protected abstract int OnTick(AuxECSGameTimer timer);
 
 
-		/// <summary>
-		/// Returns short information about the timer
-		/// </summary>
-		/// <returns>Short info about the timer</returns>
-		public override string ToString()
-		{
-			return new StringBuilder(base.ToString(), 128)
-				.Append(" actionSource: (").Append(m_actionSource.ToString())
-				.Append(')')
-				.ToString();
-		}
-	}
+    /// <summary>
+    /// Returns short information about the timer
+    /// </summary>
+    /// <returns>Short info about the timer</returns>
+    public override string ToString()
+    {
+        return new StringBuilder(base.ToString(), 128)
+            .Append(" actionSource: (").Append(m_actionSource.ToString())
+            .Append(')')
+            .ToString();
+    }
 }

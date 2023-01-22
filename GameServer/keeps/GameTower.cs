@@ -19,77 +19,79 @@
 
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Keeps
+namespace DOL.GS.Keeps;
+
+/// <summary>
+/// GameKeepTower is the tower in New frontiere link to keep
+/// </summary>
+public class GameKeepTower : AbstractGameKeep
 {
-	/// <summary>
-	/// GameKeepTower is the tower in New frontiere link to keep
-	/// </summary>
-	public class GameKeepTower : AbstractGameKeep
-	{
-		private GameKeep m_keep;
-		/// <summary>
-		/// The towers keep
-		/// </summary>
-		public GameKeep Keep
-		{
-			set { m_keep = value; }
-			get { return m_keep; }
-		}
+    private GameKeep m_keep;
 
-		private int m_ownerKeepID;
+    /// <summary>
+    /// The towers keep
+    /// </summary>
+    public GameKeep Keep
+    {
+        set => m_keep = value;
+        get => m_keep;
+    }
 
-		/// <summary>
-		/// This is the computed ID of the keep that owns this tower.
-		/// Owner Keep may not exist but this number is needed to find tower doors
-		/// </summary>
-		public int OwnerKeepID
-		{
-			set { m_ownerKeepID = value; }
-			get { return m_ownerKeepID; }
-		}
+    private int m_ownerKeepID;
 
-		/// <summary>
-		/// The time for a tower to upgrade
-		/// </summary>
-		/// <returns></returns>
-		public override int CalculateTimeToUpgrade()
-		{
-			return 12 * 60 * 1000;
-		}
+    /// <summary>
+    /// This is the computed ID of the keep that owns this tower.
+    /// Owner Keep may not exist but this number is needed to find tower doors
+    /// </summary>
+    public int OwnerKeepID
+    {
+        set => m_ownerKeepID = value;
+        get => m_ownerKeepID;
+    }
 
-		/// <summary>
-		/// The checks we need to run before we allow a player to claim
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public override bool CheckForClaim(GamePlayer player)
-		{
-			//let gms do everything
-			if (player.Client.Account.PrivLevel > 1)
-				return true;
+    /// <summary>
+    /// The time for a tower to upgrade
+    /// </summary>
+    /// <returns></returns>
+    public override int CalculateTimeToUpgrade()
+    {
+        return 12 * 60 * 1000;
+    }
 
-			if (player.Group == null)
-			{
-				player.Out.SendMessage("You must be in a group to claim.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				return false;
-			}
+    /// <summary>
+    /// The checks we need to run before we allow a player to claim
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
+    public override bool CheckForClaim(GamePlayer player)
+    {
+        //let gms do everything
+        if (player.Client.Account.PrivLevel > 1)
+            return true;
 
-			if (player.Group.MemberCount < ServerProperties.Properties.CLAIM_NUM / 2)
-			{
-				player.Out.SendMessage("You need " + ServerProperties.Properties.CLAIM_NUM / 2 + " players to claim.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				return false;
-			}
+        if (player.Group == null)
+        {
+            player.Out.SendMessage("You must be in a group to claim.", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            return false;
+        }
 
-			return base.CheckForClaim(player);
-		}
+        if (player.Group.MemberCount < ServerProperties.Properties.CLAIM_NUM / 2)
+        {
+            player.Out.SendMessage("You need " + ServerProperties.Properties.CLAIM_NUM / 2 + " players to claim.",
+                eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            return false;
+        }
 
-		/// <summary>
-		/// The RP reward for claiming based on difficulty level
-		/// </summary>
-		/// <returns></returns>
-		public override int CalculRP()
-		{
-			return ServerProperties.Properties.TOWER_RP_CLAIM_MULTIPLIER * DifficultyLevel;
-		}
-	}
+        return base.CheckForClaim(player);
+    }
+
+    /// <summary>
+    /// The RP reward for claiming based on difficulty level
+    /// </summary>
+    /// <returns></returns>
+    public override int CalculRP()
+    {
+        return ServerProperties.Properties.TOWER_RP_CLAIM_MULTIPLIER * DifficultyLevel;
+    }
 }

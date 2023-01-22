@@ -6,33 +6,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using ECS.Debug;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public static class CraftingService
 {
-    public static class CraftingService
+    private const string ServiceName = "CraftingService";
+
+    static CraftingService()
     {
-        private const string ServiceName = "CraftingService";
+        EntityManager.AddService(typeof(CraftingService));
+    }
 
-        static CraftingService()
+    public static void Tick(long tick)
+    {
+        Diagnostics.StartPerfCounter(ServiceName);
+
+        var arr = EntityManager.GetLivingByComponent(typeof(CraftComponent));
+        Parallel.ForEach(arr, p =>
         {
-            EntityManager.AddService(typeof(CraftingService));
-        }
+            if (p == null || p.craftComponent == null) return;
 
-        public static void Tick(long tick)
-        {
-            Diagnostics.StartPerfCounter(ServiceName);
+            p.craftComponent.Tick(tick);
+        });
 
-            GameLiving[] arr = EntityManager.GetLivingByComponent(typeof(CraftComponent));
-            Parallel.ForEach(arr, p =>
-            {
-                if (p == null || p.craftComponent == null)
-                {
-                    return;
-                }
-                p.craftComponent.Tick(tick);
-            });
-
-            Diagnostics.StopPerfCounter(ServiceName);
-        }
-
+        Diagnostics.StopPerfCounter(ServiceName);
     }
 }

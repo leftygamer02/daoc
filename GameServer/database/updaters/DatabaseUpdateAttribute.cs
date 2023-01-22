@@ -16,24 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.DatabaseUpdate
-{
-	/// <summary>
-	/// Attribute that denotes a class as a database converter
-	/// from previous version to the specified in attribute
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple=false)]
-	public class DatabaseUpdateAttribute : Attribute
-	{
-		//private int m_targetVersion;
+namespace DOL.GS.DatabaseUpdate;
 
-		/// <summary>
-		/// Constructs new attribute for database updater classes
-		/// </summary>
-		public DatabaseUpdateAttribute()
-		{
-		}
-	}
+/// <summary>
+/// Attribute that denotes a class as a database converter
+/// from previous version to the specified in attribute
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class DatabaseUpdateAttribute : Attribute
+{
+    //private int m_targetVersion;
+
+    /// <summary>
+    /// Constructs new attribute for database updater classes
+    /// </summary>
+    public DatabaseUpdateAttribute()
+    {
+    }
 }

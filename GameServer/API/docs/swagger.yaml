@@ -339,7 +339,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["1", "2", "3"]
+            enum: [ "1", "2", "3" ]
           description: >
             Enums:
              * 1 - Albion
@@ -367,7 +367,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: ["0", "1", "2"]
+            enum: [ "0", "1", "2" ]
           description: >
             Enums:
              * 0 - RvR
@@ -403,18 +403,18 @@ components:
         currentRealm:
           type: string
           example: Albion
-          enum: [Albion, Midgard, Hibernia, None]
+          enum: [ Albion, Midgard, Hibernia, None ]
         underSiege:
           type: integer
           example: 0
-          enum: [0, 1]
+          enum: [ 0, 1 ]
     bgkeeps:
       type: array
       items:
         $ref: '#/components/schemas/bgkeep'
     df:
       type: string
-      enum: [Albion, Midgard, Hibernia]
+      enum: [ Albion, Midgard, Hibernia ]
       example: Midgard
     guild:
       type: object
@@ -430,7 +430,7 @@ components:
         realm:
           type: string
           example: Albion
-          enum: [Albion, Midgard, Hibernia]
+          enum: [ Albion, Midgard, Hibernia ]
         emblem:
           type: integer
           example: 0
@@ -452,11 +452,11 @@ components:
         originalRealm:
           type: string
           example: Midgard
-          enum: [Albion, Midgard, Hibernia]
+          enum: [ Albion, Midgard, Hibernia ]
         currentRealm:
           type: string
           example: Albion
-          enum: [Albion, Midgard, Hibernia, None]
+          enum: [ Albion, Midgard, Hibernia, None ]
         claimingGuild:
           type: string
           example: Cotswold Clan
@@ -466,7 +466,7 @@ components:
         underSiege:
           type: integer
           example: 0
-          enum: [0, 1]
+          enum: [ 0, 1 ]
     news:
       type: array
       items:
@@ -480,11 +480,11 @@ components:
         Type:
           type: string
           example: RvR
-          enum: [RvR, PlayerRP, PlayerXP]
+          enum: [ RvR, PlayerRP, PlayerXP ]
         Realm:
           type: string
           example: Albion
-          enum: [Albion, Midgard, Hibernia, None]
+          enum: [ Albion, Midgard, Hibernia, None ]
         Text:
           type: string
           example: The forces of Albion have captured Dun Crauchon!
@@ -505,7 +505,7 @@ components:
         realm:
           type: string
           example: Hibernia
-          enum: [Albion, Midgard, Hibernia, None]
+          enum: [ Albion, Midgard, Hibernia, None ]
         realmID:
           type: integer
           example: '3'
@@ -577,7 +577,7 @@ components:
         realm:
           type: string
           example: Hibernia
-          enum: [Albion, Midgard, Hibernia, None]
+          enum: [ Albion, Midgard, Hibernia, None ]
         class:
           example: Enchanter
           type: string
@@ -585,7 +585,7 @@ components:
           example: Lurikeen
           type: string
         specializations:
-          example: {"Light": 1, "Mana": 48,"Enchantments": 24}
+          example: { "Light": 1, "Mana": 48,"Enchantments": 24 }
           type: array
           items:
             type: object
@@ -597,7 +597,7 @@ components:
                 type: integer
                 example: 48
         realmAbilities:
-          example: {"AtlasOF_LongWind": 1,"AtlasOF_AugDex": 3,"AtlasOF_AugAcuity": 3,"AtlasOF_WildPower": 1,"AtlasOF_Serenity": 1,"AtlasOF_Concentration":1}
+          example: { "AtlasOF_LongWind": 1,"AtlasOF_AugDex": 3,"AtlasOF_AugAcuity": 3,"AtlasOF_WildPower": 1,"AtlasOF_Serenity": 1,"AtlasOF_Concentration": 1 }
           type: array
           items:
             type: object
@@ -613,7 +613,7 @@ components:
       properties:
         tradeskills:
           type: array
-          example: {"Weaponcraft": 1250,"Armorcraft": 1250,"Siegecraft": 1250,"Alchemy": 1250,"Metalworking": 1250,"Leathercrafting": 1250,"Clothworking": 1250,"Gemcutting": 1250,"Herbcraft": 1250,"Tailoring": 1250,"Fletching": 1250,"Spellcrafting": 1250,"Woodworking": 1250,"Basic Crafting": 1250}
+          example: { "Weaponcraft": 1250,"Armorcraft": 1250,"Siegecraft": 1250,"Alchemy": 1250,"Metalworking": 1250,"Leathercrafting": 1250,"Clothworking": 1250,"Gemcutting": 1250,"Herbcraft": 1250,"Tailoring": 1250,"Fletching": 1250,"Spellcrafting": 1250,"Woodworking": 1250,"Basic Crafting": 1250 }
           items:
             type: object
             properties:
@@ -635,14 +635,14 @@ components:
           example: Scabbard of Excalibur
         Type:
           type: string
-          enum: [Strength, Magic]
+          enum: [ Strength, Magic ]
         originalRealm:
           type: string
-          enum: [Albion, Midgard, Hibernia]
+          enum: [ Albion, Midgard, Hibernia ]
         currentRealm:
           type: string
           example: Midgard
-          enum: [Albion, Midgard, Hibernia]
+          enum: [ Albion, Midgard, Hibernia ]
     serverUptime:
       type: object
       properties:

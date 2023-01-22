@@ -18,7 +18,6 @@
  */
 
 using System;
-
 using System.Collections.Generic;
 using DOL.AI.Brain;
 using DOL.Events;
@@ -31,11 +30,10 @@ using DOL.GS.Styles;
 
 namespace DOL.GS.Spells
 {
-    
-   [SpellHandler("AstralPetSummon")]
+    [SpellHandler("AstralPetSummon")]
     public class AstralPetSummon : SummonSpellHandler
     {
-    	//Graveen: Not implemented property - can be interesting
+        //Graveen: Not implemented property - can be interesting
         /* 
         public bool Controllable
         {
@@ -54,23 +52,32 @@ namespace DOL.GS.Spells
             m_pet.TempProperties.setProperty("target", target);
             (m_pet.Brain as IOldAggressiveBrain).AddToAggroList(target, 1);
             (m_pet.Brain as ProcPetBrain).Think();
-
         }
 
-        protected override GamePet GetGamePet(INpcTemplate template) { return new AstralPet(template); }
-        protected override IControlledBrain GetPetBrain(GameLiving owner) { return new ProcPetBrain(owner); }
-        protected override void SetBrainToOwner(IControlledBrain brain) {}
+        protected override GamePet GetGamePet(INpcTemplate template)
+        {
+            return new AstralPet(template);
+        }
+
+        protected override IControlledBrain GetPetBrain(GameLiving owner)
+        {
+            return new ProcPetBrain(owner);
+        }
+
+        protected override void SetBrainToOwner(IControlledBrain brain)
+        {
+        }
 
         protected override void OnNpcReleaseCommand(DOLEvent e, object sender, EventArgs arguments)
         {
             if (!(sender is GameNPC) || !((sender as GameNPC).Brain is IControlledBrain))
                 return;
-            GameNPC pet = sender as GameNPC;
-            IControlledBrain brain = pet.Brain as IControlledBrain;
+            var pet = sender as GameNPC;
+            var brain = pet.Brain as IControlledBrain;
 
             GameEventMgr.RemoveHandler(pet, GameLivingEvent.PetReleased, new DOLEventHandler(OnNpcReleaseCommand));
 
-            DOL.GS.Effects.GameSpellEffect effect = FindEffectOnTarget(pet, this);
+            var effect = FindEffectOnTarget(pet, this);
             if (effect != null)
                 effect.Cancel(false);
         }
@@ -81,8 +88,10 @@ namespace DOL.GS.Spells
             heading = Caster.Heading;
         }
 
-         public AstralPetSummon(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line) { }
+        public AstralPetSummon(GameLiving caster, Spell spell, SpellLine line)
+            : base(caster, spell, line)
+        {
+        }
     }
 }
 
@@ -90,12 +99,14 @@ namespace DOL.GS
 {
     public class AstralPet : GamePet
     {
-        public override int MaxHealth
+        public override int MaxHealth => Level * 10;
+
+        public override void OnAttackedByEnemy(AttackData ad)
         {
-            get { return Level * 10; }
         }
 
-        public override void OnAttackedByEnemy(AttackData ad) { }
-        public AstralPet(INpcTemplate npcTemplate) : base(npcTemplate) { }
+        public AstralPet(INpcTemplate npcTemplate) : base(npcTemplate)
+        {
+        }
     }
 }

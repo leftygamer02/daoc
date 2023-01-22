@@ -16,81 +16,83 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.AI.Brain;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+[SpellHandler("TurretsRelease")]
+public class TurretsReleaseSpellHandler : SpellHandler
 {
-	[SpellHandler("TurretsRelease")]
-	public class TurretsReleaseSpellHandler : SpellHandler
-	{
-		public TurretsReleaseSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
-		{
-		}
+    public TurretsReleaseSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
+    }
 
-		public override bool CheckBeginCast(GameLiving selectedTarget)
-		{
-			if(!(Caster is GamePlayer))
-			{
-				return false;
-			}
+    public override bool CheckBeginCast(GameLiving selectedTarget)
+    {
+        if (!(Caster is GamePlayer)) return false;
 
-			if(selectedTarget == null)
-			{
-                if (Caster is GamePlayer)
-                    MessageToCaster(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "TurretsRelease.CheckBeginCast.NoSelectedTarget"), eChatType.CT_SpellResisted);
-                return false;
-			}
-			GameNPC target = selectedTarget as GameNPC;
-			if(target == null || !(target.Brain is TurretBrain) || !Caster.IsControlledNPC(target))
-			{
-                if (Caster is GamePlayer)
-                    MessageToCaster(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "TurretsRelease.CheckBeginCast.NoSelectedTarget"), eChatType.CT_SpellResisted);
-                return false;
-			}
-			if((target.Brain is TurretBrain) && !Caster.IsControlledNPC(target))
-			{
-                if (Caster is GamePlayer)
-                    MessageToCaster(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "TurretsRelease.CheckBeginCast.NoSelectedTarget"), eChatType.CT_SpellResisted);
-                return false;
-			}
-            if ( !Caster.IsWithinRadius( target, Spell.Range ) )
-			{
-                if (Caster is GamePlayer)
-                    MessageToCaster(LanguageMgr.GetTranslation((Caster as GamePlayer).Client, "TurretsRelease.CheckBeginCast.TargetTooFarAway"), eChatType.CT_SpellResisted);
-                return false;
-			}
-			return base.CheckBeginCast(selectedTarget);
-		}
+        if (selectedTarget == null)
+        {
+            if (Caster is GamePlayer)
+                MessageToCaster(
+                    LanguageMgr.GetTranslation((Caster as GamePlayer).Client,
+                        "TurretsRelease.CheckBeginCast.NoSelectedTarget"), eChatType.CT_SpellResisted);
+            return false;
+        }
 
-		public override void FinishSpellCast(GameLiving target)
-		{
-			m_caster.Mana -= PowerCost(target);
-			base.FinishSpellCast(target);
-		}
+        var target = selectedTarget as GameNPC;
+        if (target == null || !(target.Brain is TurretBrain) || !Caster.IsControlledNPC(target))
+        {
+            if (Caster is GamePlayer)
+                MessageToCaster(
+                    LanguageMgr.GetTranslation((Caster as GamePlayer).Client,
+                        "TurretsRelease.CheckBeginCast.NoSelectedTarget"), eChatType.CT_SpellResisted);
+            return false;
+        }
 
-		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
-		{
-			if (target != null && target.CurrentRegion != null)
-			{
-				foreach (GameNPC npc in target.CurrentRegion.GetNPCsInRadius(target.X, target.Y, target.Z, (ushort)Spell.Radius, false, true))
-				{
-					if (npc == null || !npc.IsAlive)
-					{
-						continue;
-					}
-					if (!(npc is TurretPet))
-					{
-						continue;
-					}
-					if (Caster.IsControlledNPC(npc))
-					{
-						//PetCounter is decremented when pet die.
-						npc.Die(Caster);
-					}
-				}
-			}
-		}
-	}
+        if (target.Brain is TurretBrain && !Caster.IsControlledNPC(target))
+        {
+            if (Caster is GamePlayer)
+                MessageToCaster(
+                    LanguageMgr.GetTranslation((Caster as GamePlayer).Client,
+                        "TurretsRelease.CheckBeginCast.NoSelectedTarget"), eChatType.CT_SpellResisted);
+            return false;
+        }
+
+        if (!Caster.IsWithinRadius(target, Spell.Range))
+        {
+            if (Caster is GamePlayer)
+                MessageToCaster(
+                    LanguageMgr.GetTranslation((Caster as GamePlayer).Client,
+                        "TurretsRelease.CheckBeginCast.TargetTooFarAway"), eChatType.CT_SpellResisted);
+            return false;
+        }
+
+        return base.CheckBeginCast(selectedTarget);
+    }
+
+    public override void FinishSpellCast(GameLiving target)
+    {
+        m_caster.Mana -= PowerCost(target);
+        base.FinishSpellCast(target);
+    }
+
+    public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
+    {
+        if (target != null && target.CurrentRegion != null)
+            foreach (GameNPC npc in target.CurrentRegion.GetNPCsInRadius(target.X, target.Y, target.Z,
+                         (ushort) Spell.Radius, false, true))
+            {
+                if (npc == null || !npc.IsAlive) continue;
+
+                if (!(npc is TurretPet)) continue;
+
+                if (Caster.IsControlledNPC(npc))
+                    //PetCounter is decremented when pet die.
+                    npc.Die(Caster);
+            }
+    }
 }

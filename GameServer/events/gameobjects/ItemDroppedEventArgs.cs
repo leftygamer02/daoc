@@ -16,40 +16,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 using DOL.GS;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the ItemEquipped event of PlayerInventory
+/// </summary>
+public class ItemDroppedEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the ItemEquipped event of PlayerInventory
-	/// </summary>
-	public class ItemDroppedEventArgs : EventArgs
-	{
-		private InventoryItem m_sourceItem;
-		private WorldInventoryItem m_groundItem;
+    private InventoryItem m_sourceItem;
+    private WorldInventoryItem m_groundItem;
 
-		public ItemDroppedEventArgs(InventoryItem sourceItem, WorldInventoryItem groundItem)
-		{
-			m_sourceItem = sourceItem;
-			m_groundItem = groundItem;
-		}
+    public ItemDroppedEventArgs(InventoryItem sourceItem, WorldInventoryItem groundItem)
+    {
+        m_sourceItem = sourceItem;
+        m_groundItem = groundItem;
+    }
 
-		/// <summary>
-		/// Gets the source item
-		/// </summary>
-		public InventoryItem SourceItem
-		{
-			get { return m_sourceItem; }
-		}
+    /// <summary>
+    /// Gets the source item
+    /// </summary>
+    public InventoryItem SourceItem => m_sourceItem;
 
-		/// <summary>
-		/// Gets the ground item
-		/// </summary>
-		public WorldInventoryItem GroundItem
-		{
-			get { return m_groundItem; }
-		}
-	}
+    /// <summary>
+    /// Gets the ground item
+    /// </summary>
+    public WorldInventoryItem GroundItem => m_groundItem;
 }

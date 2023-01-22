@@ -16,60 +16,58 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 using DOL.Database;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+public class TestInventory : GameLivingInventory
 {
-	public class TestInventory : GameLivingInventory
-	{
-	}
+}
 
-	[TestFixture]
-	public class GameLivingInventoryTest : ServerTests
-	{
-		public GameLivingInventoryTest() : base()
-		{
-			
-		}
+[TestFixture]
+public class GameLivingInventoryTest : ServerTests
+{
+    public GameLivingInventoryTest() : base()
+    {
+    }
 
-		[Test]
-		public void TestAddTemplate()
-		{
-			GameLivingInventory gameLivingInventory = new TestInventory();
+    [Test]
+    public void TestAddTemplate()
+    {
+        GameLivingInventory gameLivingInventory = new TestInventory();
 
-			ItemTemplate template = new ItemTemplate();
-			Random rand = new Random();
-			template.Id_nb = "blankItem" + rand.Next().ToString();
-			template.Name = "a blank item";
-			template.MaxCount = 10;
-			if (template == null)
-				Console.WriteLine("template null");
-			if (gameLivingInventory.AddTemplate(GameInventoryItem.Create(template), 7, eInventorySlot.RightHandWeapon, eInventorySlot.FourthQuiver))
-				Console.WriteLine("addtemplate 7 blank item");
-			else
-				Console.WriteLine("can not add 7 blank item");
-			Console.WriteLine("----PRINT AFTER FIRST ADD 7 TEMPLATE-----");
-			PrintInventory(gameLivingInventory);
+        var template = new ItemTemplate();
+        var rand = new Random();
+        template.Id_nb = "blankItem" + rand.Next().ToString();
+        template.Name = "a blank item";
+        template.MaxCount = 10;
+        if (template == null)
+            Console.WriteLine("template null");
+        if (gameLivingInventory.AddTemplate(GameInventoryItem.Create(template), 7, eInventorySlot.RightHandWeapon,
+                eInventorySlot.FourthQuiver))
+            Console.WriteLine("addtemplate 7 blank item");
+        else
+            Console.WriteLine("can not add 7 blank item");
+        Console.WriteLine("----PRINT AFTER FIRST ADD 7 TEMPLATE-----");
+        PrintInventory(gameLivingInventory);
 
-			if (gameLivingInventory.AddTemplate(GameInventoryItem.Create(template), 4, eInventorySlot.RightHandWeapon, eInventorySlot.FourthQuiver))
-				Console.WriteLine("addtemplate 4 blank item");
-			else
-				Console.WriteLine("can not add 4 blank item");
-			Console.WriteLine("----PRINT AFTER SECOND ADD 4 TEMPLATE-----");
-			PrintInventory(gameLivingInventory);
-			//here must have 10 item in a slot and 1 in another
-			
-		}
-		
-		public void PrintInventory(GameLivingInventory gameLivingInventory)
-		{
-			foreach(InventoryItem myitem in gameLivingInventory.AllItems)
-			{
-				Console.WriteLine("item ["+ myitem.SlotPosition +"] : " + myitem.Name + "(" +myitem.Count +")");
-			}
-		}
-	}
+        if (gameLivingInventory.AddTemplate(GameInventoryItem.Create(template), 4, eInventorySlot.RightHandWeapon,
+                eInventorySlot.FourthQuiver))
+            Console.WriteLine("addtemplate 4 blank item");
+        else
+            Console.WriteLine("can not add 4 blank item");
+        Console.WriteLine("----PRINT AFTER SECOND ADD 4 TEMPLATE-----");
+        PrintInventory(gameLivingInventory);
+        //here must have 10 item in a slot and 1 in another
+    }
+
+    public void PrintInventory(GameLivingInventory gameLivingInventory)
+    {
+        foreach (var myitem in gameLivingInventory.AllItems)
+            Console.WriteLine("item [" + myitem.SlotPosition + "] : " + myitem.Name + "(" + myitem.Count + ")");
+    }
 }

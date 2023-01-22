@@ -16,24 +16,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-using System.Collections.Generic;
 
+using System.Collections.Generic;
 using DOL.Database;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class DOLDB<T> where T : DataObject
 {
-    public class DOLDB<T> where T : DataObject
+    public static IList<T> SelectAllObjects()
     {
-        public static IList<T> SelectAllObjects()
-            => GameServer.Database.SelectAllObjects<T>();
+        return GameServer.Database.SelectAllObjects<T>();
+    }
 
-        public static T SelectObject(WhereClause whereClause) 
-            => GameServer.Database.SelectObject<T>(whereClause);
+    public static T SelectObject(WhereClause whereClause)
+    {
+        return GameServer.Database.SelectObject<T>(whereClause);
+    }
 
-        public static IList<T> SelectObjects(WhereClause whereClause)
-            => GameServer.Database.SelectObjects<T>(whereClause);
+    public static IList<T> SelectObjects(WhereClause whereClause)
+    {
+        return GameServer.Database.SelectObjects<T>(whereClause);
+    }
 
-        public static IList<IList<T>> MultipleSelectObjects(IEnumerable<WhereClause> whereClauseBatch)
-            => GameServer.Database.MultipleSelectObjects<T>(whereClauseBatch);
+    public static IList<IList<T>> MultipleSelectObjects(IEnumerable<WhereClause> whereClauseBatch)
+    {
+        return GameServer.Database.MultipleSelectObjects<T>(whereClauseBatch);
     }
 }

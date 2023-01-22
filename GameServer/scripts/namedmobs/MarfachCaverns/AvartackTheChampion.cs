@@ -5,6 +5,7 @@ using DOL.Database;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
+
 namespace DOL.GS
 {
     public class Avartack : GameEpicBoss
@@ -12,6 +13,7 @@ namespace DOL.GS
         public Avartack() : base()
         {
         }
+
         public static int TauntID = 292;
         public static int TauntClassID = 45;
         public static Style Taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
@@ -19,14 +21,17 @@ namespace DOL.GS
         public static int BackStyleID = 304;
         public static int BackStyleClassID = 45;
         public static Style BackStyle = SkillBase.GetStyleByID(BackStyleID, BackStyleClassID);
+
         public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
             base.OnAttackedByEnemy(ad);
         }
+
         public override void OnAttackEnemy(AttackData ad) //on enemy actions
         {
             base.OnAttackEnemy(ad);
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -37,19 +42,20 @@ namespace DOL.GS
                 default: return 30; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 30000; }
-        }
+
+        public override int MaxHealth => 30000;
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
@@ -64,11 +70,11 @@ namespace DOL.GS
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System,
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
                                 eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
@@ -80,15 +86,18 @@ namespace DOL.GS
                 }
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -96,6 +105,7 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(8820);
@@ -109,11 +119,12 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Humanoid;
+            RespawnInterval =
+                ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Humanoid;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 667, 0, 0, 6);//modelID,color,effect,extension
+            var template = new GameNpcInventoryTemplate();
+            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 667, 0, 0, 6); //modelID,color,effect,extension
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 410, 0);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 409, 0);
             template.AddNPCEquipment(eInventorySlot.HandsArmor, 411, 0, 0, 4);
@@ -129,7 +140,7 @@ namespace DOL.GS
                 Styles.Add(BackStyle);
             VisibleActiveWeaponSlots = 34;
             MeleeDamageType = eDamageType.Crush;
-            AvartackBrain sbrain = new AvartackBrain();
+            var sbrain = new AvartackBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
@@ -141,20 +152,22 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Avartack the Champion", 276, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Avartack the Champion", 276, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Avartack the Champion not found, creating it...");
 
                 log.Warn("Initializing Avartack the Champion...");
-                Avartack HOC = new Avartack();
+                var HOC = new Avartack();
                 HOC.Name = "Avartack the Champion";
                 HOC.Model = 320;
                 HOC.Realm = 0;
                 HOC.Level = 65;
                 HOC.Size = 50;
                 HOC.CurrentRegionID = 276; //marfach caverns
-                HOC.RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+                HOC.RespawnInterval =
+                    ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL *
+                    60000; //1min is 60000 miliseconds
                 HOC.Faction = FactionMgr.GetFactionByID(187);
                 HOC.Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
 
@@ -162,14 +175,17 @@ namespace DOL.GS
                 HOC.Y = 35755;
                 HOC.Z = 15065;
                 HOC.Heading = 2552;
-                AvartackBrain ubrain = new AvartackBrain();
+                var ubrain = new AvartackBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
                 HOC.SaveIntoDatabase();
                 HOC.Brain.Start();
             }
             else
-                log.Warn("Avartack the Champion exist ingame, remove it and restart server if you want to add by script code.");
+            {
+                log.Warn(
+                    "Avartack the Champion exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -188,6 +204,7 @@ namespace DOL.AI.Brain
             AggroRange = 400;
             ThinkInterval = 1500;
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -196,11 +213,12 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
             }
+
             if (Body.InCombat && HasAggro && Body.TargetObject != null)
             {
                 if (Body.TargetObject != null)
                 {
-                    float angle = Body.TargetObject.GetAngle(Body);
+                    var angle = Body.TargetObject.GetAngle(Body);
                     if (angle >= 160 && angle <= 200)
                     {
                         Body.styleComponent.NextCombatBackupStyle = Avartack.Taunt;
@@ -211,21 +229,25 @@ namespace DOL.AI.Brain
                         Body.styleComponent.NextCombatStyle = Avartack.Taunt;
                     }
                 }
+
                 Body.CastSpell(AvartackDD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             }
+
             base.Think();
         }
+
         private Spell m_AvartackDD;
+
         private Spell AvartackDD
         {
             get
             {
                 if (m_AvartackDD == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
-                    spell.RecastDelay = Util.Random(15,25);
+                    spell.RecastDelay = Util.Random(15, 25);
                     spell.ClientEffect = 5435;
                     spell.Icon = 5435;
                     spell.TooltipId = 5435;
@@ -237,14 +259,13 @@ namespace DOL.AI.Brain
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Body;
+                    spell.DamageType = (int) eDamageType.Body;
                     m_AvartackDD = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_AvartackDD);
                 }
+
                 return m_AvartackDD;
             }
         }
     }
 }
-
-

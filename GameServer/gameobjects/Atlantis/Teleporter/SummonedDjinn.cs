@@ -16,262 +16,267 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Ancient bound djinn (Atlantis teleporter).
+/// This is the type that is summoned through the djinn stone.
+/// </summary>
+/// <author>Aredhel</author>
+public class SummonedDjinn : AncientBoundDjinn
 {
+    private const int SummonSpellEffect = 0x1818;
+    private const int InvisibleModel = 0x29a;
+    private object m_syncObject = new();
+
     /// <summary>
-    /// Ancient bound djinn (Atlantis teleporter).
-    /// This is the type that is summoned through the djinn stone.
+    /// Creates a new SummonedDjinn.
     /// </summary>
-    /// <author>Aredhel</author>
-    public class SummonedDjinn : AncientBoundDjinn
+    /// <param name="djinnStone"></param>
+    public SummonedDjinn(DjinnStone djinnStone)
+        : base(djinnStone)
     {
-        private const int SummonSpellEffect = 0x1818;
-        private const int InvisibleModel = 0x29a;
-        private object m_syncObject = new object();
+        m_timer = new SummonTimer(this);
+    }
 
-        /// <summary>
-        /// Creates a new SummonedDjinn.
-        /// </summary>
-        /// <param name="djinnStone"></param>
-        public SummonedDjinn(DjinnStone djinnStone)
-            : base(djinnStone)
+    private SummonTimer m_timer;
+
+    /// <summary>
+    /// Starts the summon.
+    /// </summary>
+    public override void Summon()
+    {
+        lock (m_syncObject)
         {
-            m_timer = new SummonTimer(this);
+            if (CurrentRegion == null || IsSummoned)
+                return;
+
+            if (m_timer == null)
+                m_timer = new SummonTimer(this);
+
+            m_summoned = true;
+            m_timer.Start(1, 100, true, DjinnEvent.Summoning);
         }
+    }
 
-        private SummonTimer m_timer;
+    private bool m_summoned = false;
 
-        /// <summary>
-        /// Starts the summon.
-        /// </summary>
-        public override void Summon()
+    /// <summary>
+    /// Returns true if djinn has been summoned, else false.
+    /// </summary>
+    public override bool IsSummoned
+    {
+        get
         {
             lock (m_syncObject)
             {
-                if (CurrentRegion == null || IsSummoned)
-                    return;
-
-                if (m_timer == null)
-                    m_timer = new SummonTimer(this);
-
-                m_summoned = true;
-                m_timer.Start(1, 100, true, DjinnEvent.Summoning);
+                return m_summoned;
             }
         }
+    }
 
-        private bool m_summoned = false;
-
-        /// <summary>
-        /// Returns true if djinn has been summoned, else false.
-        /// </summary>
-        public override bool IsSummoned
+    /// <summary>
+    /// Interacting with the djinn resets the timer.
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
+    public override bool Interact(GamePlayer player)
+    {
+        lock (m_syncObject)
         {
-            get
-            {
-                lock (m_syncObject)
-                    return m_summoned;
-            }
+            m_timer.Restart();
         }
 
-        /// <summary>
-        /// Interacting with the djinn resets the timer.
-        /// </summary>
-        /// <param name="player"></param>
-        /// <returns></returns>
-        public override bool Interact(GamePlayer player)
-        {
-            lock (m_syncObject)
-                m_timer.Restart();
+        return base.Interact(player);
+    }
 
-            return base.Interact(player);
+    /// <summary>
+    /// Talking to the djinn resets the timer.
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public override bool WhisperReceive(GameLiving source, string text)
+    {
+        lock (m_syncObject)
+        {
+            m_timer.Restart();
         }
 
-        /// <summary>
-        /// Talking to the djinn resets the timer.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        public override bool WhisperReceive(GameLiving source, String text)
+        return base.WhisperReceive(source, text);
+    }
+
+    /// <summary>
+    /// Processes events coming from the timer.
+    /// </summary>
+    /// <param name="e"></param>
+    public override void Notify(DOLEvent e)
+    {
+        if (e == DjinnEvent.Summoning)
         {
             lock (m_syncObject)
-                m_timer.Restart();
+            {
+                Model = InvisibleModel;
+                AddToWorld();
+                m_timer.Start(7, 1000, true, DjinnEvent.Summoned);
+            }
 
-            return base.WhisperReceive(source, text);
+            return; // Event is private, no need to propagate.
+        }
+        else if (e == DjinnEvent.Summoned)
+        {
+            // Show ourselves.
+
+            lock (m_syncObject)
+            {
+                Model = VisibleModel;
+
+                foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                    player.Out.SendModelChange(this, Model);
+
+                Say("Greetings, great one.");
+                m_timer.Start(150, 1000, false, DjinnEvent.Vanishing); // 2.5mins to hiding again.
+            }
+
+            return;
+        }
+        else if (e == DjinnEvent.Vanishing)
+        {
+            // Go into hiding and show the smoke again.
+
+            lock (m_syncObject)
+            {
+                Say("My time here is done.");
+                Model = InvisibleModel;
+
+                foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                    player.Out.SendModelChange(this, Model);
+
+                m_timer.Start(5, 1000, true, DjinnEvent.Vanished);
+            }
+
+            return;
+        }
+        else if (e == DjinnEvent.Vanished)
+        {
+            lock (m_syncObject)
+            {
+                RemoveFromWorld();
+                m_summoned = false;
+            }
+
+            return;
+        }
+
+        base.Notify(e); // Not handled here.
+    }
+
+    /// <summary>
+    /// Provides a timer for summoning.
+    /// </summary>
+    private class SummonTimer : GameTimer
+    {
+        private GameObject m_owner;
+        private int m_maxTicks = 0;
+        private int m_ticks = 0;
+        private bool m_smoke = false;
+        private DjinnEvent m_event;
+
+        /// <summary>
+        /// Constructs a new SummonTimer.
+        /// </summary>
+        /// <param name="owner">The owner of this timer (the djinn).</param>
+        public SummonTimer(GameObject owner)
+            : base(owner.CurrentRegion.TimeManager)
+        {
+            m_owner = owner;
+        }
+
+        private bool m_isRunning = false;
+
+        /// <summary>
+        /// Whether the timer is running or not.
+        /// </summary>
+        public bool IsRunning
+        {
+            get => m_isRunning;
+            private set => m_isRunning = value;
         }
 
         /// <summary>
-        /// Processes events coming from the timer.
+        /// Restarts the timer.
         /// </summary>
-        /// <param name="e"></param>
-        public override void Notify(DOLEvent e)
+        public void Restart()
         {
-            if (e == DjinnEvent.Summoning)
+            if (IsRunning)
             {
-                lock (m_syncObject)
-                {
-                    this.Model = InvisibleModel;
-                    this.AddToWorld();
-                    m_timer.Start(7, 1000, true, DjinnEvent.Summoned);
-                }
-
-                return; // Event is private, no need to propagate.
-            }
-            else if (e == DjinnEvent.Summoned)
-            {
-                // Show ourselves.
-
-                lock (m_syncObject)
-                {
-                    this.Model = VisibleModel;
-
-                    foreach (GamePlayer player in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                        player.Out.SendModelChange(this, this.Model);
-
-                    Say("Greetings, great one.");
-                    m_timer.Start(150, 1000, false, DjinnEvent.Vanishing);   // 2.5mins to hiding again.
-                }
-
-                return;
-            }
-            else if (e == DjinnEvent.Vanishing)
-            {
-                // Go into hiding and show the smoke again.
-
-                lock (m_syncObject)
-                {
-                    Say("My time here is done.");
-                    this.Model = InvisibleModel;
-
-                    foreach (GamePlayer player in this.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                        player.Out.SendModelChange(this, this.Model);
-
-                    m_timer.Start(5, 1000, true, DjinnEvent.Vanished);
-                }
-
-                return;
-            }
-            else if (e == DjinnEvent.Vanished)
-            {
-                lock (m_syncObject)
-                {
-                    this.RemoveFromWorld();
-                    m_summoned = false;
-                }
-
-                return;
-            }
-
-            base.Notify(e); // Not handled here.
-        }
-
-        /// <summary>
-        /// Provides a timer for summoning.
-        /// </summary>
-        private class SummonTimer : GameTimer
-        {
-            private GameObject m_owner;
-            private int m_maxTicks = 0;
-            private int m_ticks = 0;
-            private bool m_smoke = false;
-            private DjinnEvent m_event;
-
-            /// <summary>
-            /// Constructs a new SummonTimer.
-            /// </summary>
-            /// <param name="owner">The owner of this timer (the djinn).</param>
-            public SummonTimer(GameObject owner)
-                : base(owner.CurrentRegion.TimeManager)
-            {
-                m_owner = owner;
-            }
-
-            private bool m_isRunning = false;
-
-            /// <summary>
-            /// Whether the timer is running or not.
-            /// </summary>
-            public bool IsRunning
-            {
-                get { return m_isRunning; }
-                private set { m_isRunning = value; }
-            }
-
-            /// <summary>
-            /// Restarts the timer.
-            /// </summary>
-            public void Restart()
-            {
-                if (IsRunning)
-                {
-                    this.Stop();
-                    m_ticks = 0;
-                    this.Start(100);
-                }
-            }
-
-            /// <summary>
-            /// Starts the timer
-            /// </summary>
-            /// <param name="maxTicks">Number of ticks before the timer stops.</param>
-            /// <param name="interval">Time between individual ticks.</param>
-            /// <param name="smoke">Whether to show smoke spell effect on each tick or not.</param>
-            /// <param name="e">The event to send when timer is stopped.</param>
-            public void Start(int maxTicks, int interval, bool smoke, DjinnEvent e)
-            {
-                m_maxTicks = maxTicks;
-                Interval = interval;
-                m_smoke = smoke;
-                m_event = e;
+                Stop();
                 m_ticks = 0;
-                this.Start(100);
-                IsRunning = true;
-            }
-
-            /// <summary>
-            /// Called on every timer tick.
-            /// </summary>
-            protected override void OnTick()
-            {
-                m_ticks++;
-
-                if (m_ticks < m_maxTicks)
-                {
-                    if (m_smoke)
-                    {
-                        // Send smoke animation to players in visibility range.
-
-                        foreach (GamePlayer player in m_owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                            player.Out.SendSpellEffectAnimation(m_owner, m_owner, SummonSpellEffect, 0, false, 0x01);
-                    }
-                }
-                else
-                {
-                    // We're done, stop the timer and notify owner.
-
-                    this.Stop();
-                    IsRunning = false;
-                    m_owner.Notify(m_event);
-                }
+                Start(100);
             }
         }
 
         /// <summary>
-        /// Event for summoning/vanishing.
+        /// Starts the timer
         /// </summary>
-        private class DjinnEvent : GameLivingEvent
+        /// <param name="maxTicks">Number of ticks before the timer stops.</param>
+        /// <param name="interval">Time between individual ticks.</param>
+        /// <param name="smoke">Whether to show smoke spell effect on each tick or not.</param>
+        /// <param name="e">The event to send when timer is stopped.</param>
+        public void Start(int maxTicks, int interval, bool smoke, DjinnEvent e)
         {
-            protected DjinnEvent(String name) : base(name) { }
-
-            public static readonly DjinnEvent Summoning = new DjinnEvent("DjinnEvent.Summoning");
-            public static readonly DjinnEvent Summoned = new DjinnEvent("DjinnEvent.Summoned");
-            public static readonly DjinnEvent Vanishing = new DjinnEvent("DjinnEvent.Vanishing");
-            public static readonly DjinnEvent Vanished = new DjinnEvent("DjinnEvent.Vanished");
+            m_maxTicks = maxTicks;
+            Interval = interval;
+            m_smoke = smoke;
+            m_event = e;
+            m_ticks = 0;
+            Start(100);
+            IsRunning = true;
         }
+
+        /// <summary>
+        /// Called on every timer tick.
+        /// </summary>
+        protected override void OnTick()
+        {
+            m_ticks++;
+
+            if (m_ticks < m_maxTicks)
+            {
+                if (m_smoke)
+                    // Send smoke animation to players in visibility range.
+                    foreach (GamePlayer player in m_owner.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                        player.Out.SendSpellEffectAnimation(m_owner, m_owner, SummonSpellEffect, 0, false, 0x01);
+            }
+            else
+            {
+                // We're done, stop the timer and notify owner.
+
+                Stop();
+                IsRunning = false;
+                m_owner.Notify(m_event);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Event for summoning/vanishing.
+    /// </summary>
+    private class DjinnEvent : GameLivingEvent
+    {
+        protected DjinnEvent(string name) : base(name)
+        {
+        }
+
+        public static readonly DjinnEvent Summoning = new("DjinnEvent.Summoning");
+        public static readonly DjinnEvent Summoned = new("DjinnEvent.Summoned");
+        public static readonly DjinnEvent Vanishing = new("DjinnEvent.Vanishing");
+        public static readonly DjinnEvent Vanished = new("DjinnEvent.Vanished");
     }
 }

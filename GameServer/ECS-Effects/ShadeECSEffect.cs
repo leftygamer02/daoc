@@ -6,35 +6,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class ShadeECSGameEffect : ECSGameAbilityEffect
 {
-    public class ShadeECSGameEffect : ECSGameAbilityEffect
+    public ShadeECSGameEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public ShadeECSGameEffect(ECSGameEffectInitParams initParams)
-            : base(initParams)
-        {
-            EffectType = eEffect.Shade;
-            EffectService.RequestStartEffect(this);
-        }
+        EffectType = eEffect.Shade;
+        EffectService.RequestStartEffect(this);
+    }
 
-        public override ushort Icon { get { return 0x193; } }
-        public override string Name { get { return LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.ShadeEffect.Name"); } }
-        public override bool HasPositiveEffect { get { return false; } }
+    public override ushort Icon => 0x193;
 
-        public override void OnStartEffect()
+    public override string Name => LanguageMgr.GetTranslation(OwnerPlayer.Client, "Effects.ShadeEffect.Name");
+
+    public override bool HasPositiveEffect => false;
+
+    public override void OnStartEffect()
+    {
+        if (OwnerPlayer != null) OwnerPlayer.Out.SendUpdatePlayer();
+    }
+
+    public override void OnStopEffect()
+    {
+        if (OwnerPlayer != null)
         {
-            if (OwnerPlayer != null)
-            {
-                OwnerPlayer.Out.SendUpdatePlayer();
-            }
-        }
-        public override void OnStopEffect()
-        {
-            if (OwnerPlayer != null)
-            {
-                OwnerPlayer.Shade(false);
-                OwnerPlayer.Out.SendUpdatePlayer();
-            }
+            OwnerPlayer.Shade(false);
+            OwnerPlayer.Out.SendUpdatePlayer();
         }
     }
 }

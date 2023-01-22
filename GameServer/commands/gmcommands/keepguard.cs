@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,495 +28,596 @@ using DOL.GS.PacketHandler;
 using DOL.GS.Movement;
 using DOL.Language;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+/// <summary>
+/// Various keep guard commands
+/// </summary>
+[CmdAttribute(
+    "&keepguard",
+    ePrivLevel.GM,
+    "GMCommands.KeepGuard.Description",
+    "GMCommands.KeepGuard.Information",
+    "GMCommands.KeepGuard.Usage.Create",
+    "GMCommands.KeepGuard.Usage.Position.Add",
+    "GMCommands.KeepGuard.Usage.Position.Remove",
+    "GMCommands.KeepGuard.Usage.Path.Create",
+    "GMCommands.KeepGuard.Usage.Path.Add",
+    "GMCommands.KeepGuard.Usage.Path.Save")]
+public class KeepGuardCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	/// <summary>
-	/// Various keep guard commands
-	/// </summary>
-	[CmdAttribute(
-		"&keepguard",
-		ePrivLevel.GM,
-		"GMCommands.KeepGuard.Description",
-		"GMCommands.KeepGuard.Information",
-		"GMCommands.KeepGuard.Usage.Create",
-		"GMCommands.KeepGuard.Usage.Position.Add",
-		"GMCommands.KeepGuard.Usage.Position.Remove",
-		"GMCommands.KeepGuard.Usage.Path.Create",
-		"GMCommands.KeepGuard.Usage.Path.Add",
-		"GMCommands.KeepGuard.Usage.Path.Save")]
-	public class KeepGuardCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		/// <summary>
-		/// The command handler itself
-		/// </summary>
-		/// <param name="client">The client using the command</param>
-		/// <param name="args">The command arguments</param>
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (args.Length == 1)
-			{
-				DisplaySyntax(client);
-				return;
-			}
+    /// <summary>
+    /// The command handler itself
+    /// </summary>
+    /// <param name="client">The client using the command</param>
+    /// <param name="args">The command arguments</param>
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (args.Length == 1)
+        {
+            DisplaySyntax(client);
+            return;
+        }
 
-			switch (args[1].ToLower())
-			{
-				#region Create
-				case "create":
-					{
-						GameKeepGuard guard = null;
-						if (args.Length < 3)
-						{
-							DisplaySyntax(client);
-							return;
-						}
-						
-						switch (args[2].ToLower())
-						{
-							#region Lord
-							case "lord":
-								{
-									guard = new GuardLord();
-									break;
-								}
-							#endregion Lord
-							#region Fighter
-							case "fighter":
-								{
-									guard = new GuardFighter();
-									break;
-								}
-							#endregion Fighter
-							#region Commander
-							case "commander":
-								{
-									guard = new GuardCommander();
-									break;
-								}
-							#endregion Commander
-							#region Archer
-							case "archer":
-								{
-									if (args.Length > 3)
-										guard = new GuardStaticArcher();
-									else
-										guard = new GuardArcher();
-									break;
-								}
-							#endregion Archer
-							#region Healer
-							case "healer":
-								{
-									guard = new GuardHealer();
-									break;
-								}
-							#endregion Healer
-							#region Stealther
-							case "stealther":
-								{
-									guard = new GuardStealther();
-									break;
-								}
-							#endregion Stealther
-							#region Caster
-							case "caster":
-								{
-									if (args.Length > 3)
-										guard = new GuardStaticCaster();
-									else
-										guard = new GuardCaster();
-									break;
-								}
-							#endregion Caster
-							#region Merchant
-							case "merchant":
-							{
-								guard = new GuardMerchant();
-								break;
-							}
-							#endregion Merchant
-							#region CurrencyMerchant
-							case "currencymerchant":
-							{
-								guard = new GuardCurrencyMerchant();
-								break;
-							}
-							#endregion CurrencyMerchant
-							#region Hastener
-							case "hastener":
-								{
-									guard = new FrontierHastener();
-									break;
-								}
-							#endregion Hastener
-							#region Mission
-							case "mission":
-								{
-									guard = new MissionMaster();
-									break;
-								}
-							#endregion Mission
-							#region Patrol
-							case "patrol":
-								{
-									if (args.Length < 4)
-									{
-										DisplayMessage(client, "You need to provide a name for this patrol.");
-										return;
-									}
+        switch (args[1].ToLower())
+        {
+            #region Create
 
-									AbstractGameKeep.eKeepType keepType = AbstractGameKeep.eKeepType.Any;
+            case "create":
+            {
+                GameKeepGuard guard = null;
+                if (args.Length < 3)
+                {
+                    DisplaySyntax(client);
+                    return;
+                }
 
-									if (args.Length < 5)
-									{
-										DisplayMessage(client, "You need to provide the type of keep this patrol works with.");
-										int i = 0;
-										foreach (string str in Enum.GetNames(typeof(Keeps.AbstractGameKeep.eKeepType)))
-										{
-											DisplayMessage(client, "#" + i + ": " + str);
-											i++;
-										}
-										return;
-									}
+                switch (args[2].ToLower())
+                {
+                    #region Lord
 
-									try
-									{
-										keepType = (AbstractGameKeep.eKeepType)Convert.ToInt32(args[4]);
-									}
-									catch
-									{
-										DisplayMessage(client, "Type of keep specified was not valid.");
-										return;
-									}
+                    case "lord":
+                    {
+                        guard = new GuardLord();
+                        break;
+                    }
+
+                    #endregion Lord
+
+                    #region Fighter
+
+                    case "fighter":
+                    {
+                        guard = new GuardFighter();
+                        break;
+                    }
+
+                    #endregion Fighter
+
+                    #region Commander
+
+                    case "commander":
+                    {
+                        guard = new GuardCommander();
+                        break;
+                    }
+
+                    #endregion Commander
+
+                    #region Archer
+
+                    case "archer":
+                    {
+                        if (args.Length > 3)
+                            guard = new GuardStaticArcher();
+                        else
+                            guard = new GuardArcher();
+                        break;
+                    }
+
+                    #endregion Archer
+
+                    #region Healer
+
+                    case "healer":
+                    {
+                        guard = new GuardHealer();
+                        break;
+                    }
+
+                    #endregion Healer
+
+                    #region Stealther
+
+                    case "stealther":
+                    {
+                        guard = new GuardStealther();
+                        break;
+                    }
+
+                    #endregion Stealther
+
+                    #region Caster
+
+                    case "caster":
+                    {
+                        if (args.Length > 3)
+                            guard = new GuardStaticCaster();
+                        else
+                            guard = new GuardCaster();
+                        break;
+                    }
+
+                    #endregion Caster
+
+                    #region Merchant
+
+                    case "merchant":
+                    {
+                        guard = new GuardMerchant();
+                        break;
+                    }
+
+                    #endregion Merchant
+
+                    #region CurrencyMerchant
+
+                    case "currencymerchant":
+                    {
+                        guard = new GuardCurrencyMerchant();
+                        break;
+                    }
+
+                    #endregion CurrencyMerchant
+
+                    #region Hastener
+
+                    case "hastener":
+                    {
+                        guard = new FrontierHastener();
+                        break;
+                    }
+
+                    #endregion Hastener
+
+                    #region Mission
+
+                    case "mission":
+                    {
+                        guard = new MissionMaster();
+                        break;
+                    }
+
+                    #endregion Mission
+
+                    #region Patrol
+
+                    case "patrol":
+                    {
+                        if (args.Length < 4)
+                        {
+                            DisplayMessage(client, "You need to provide a name for this patrol.");
+                            return;
+                        }
+
+                        var keepType = AbstractGameKeep.eKeepType.Any;
+
+                        if (args.Length < 5)
+                        {
+                            DisplayMessage(client, "You need to provide the type of keep this patrol works with.");
+                            var i = 0;
+                            foreach (var str in Enum.GetNames(typeof(AbstractGameKeep.eKeepType)))
+                            {
+                                DisplayMessage(client, "#" + i + ": " + str);
+                                i++;
+                            }
+
+                            return;
+                        }
+
+                        try
+                        {
+                            keepType = (AbstractGameKeep.eKeepType) Convert.ToInt32(args[4]);
+                        }
+                        catch
+                        {
+                            DisplayMessage(client, "Type of keep specified was not valid.");
+                            return;
+                        }
 
 
-									if (client.Player.TargetObject is GameKeepComponent == false)
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Create.NoKCompTarget"));
-										return;
-									}
-									GameKeepComponent c = client.Player.TargetObject as GameKeepComponent;;
-									Patrol p = new Patrol(c);
-									p.PatrolID = args[3];
-									p.KeepType = keepType;
-									p.SpawnPosition = PositionMgr.CreatePatrolPosition(p.PatrolID, c, client.Player, keepType);
-									p.PatrolID = p.SpawnPosition.TemplateID;
-									p.InitialiseGuards();
-									DisplayMessage(client, "Patrol created for Keep Type " + Enum.GetName(typeof(AbstractGameKeep.eKeepType), keepType));
-									return;
-								}
-							#endregion Patrol
-							#region CorpseSummoner
-                            case "corpsesummoner":
-                                {
-                                    guard = new GuardCorpseSummoner();
-                                    break;
-                                }
-                            #endregion CorpseSummoner
-                            #region GateKeeper
-                            case "gatekeeperin":
-                                {
-                                    guard = new GateKeeperIn();
-                                    break;
-                                }
-                            case "gatekeeperout":
-                                {
-                                    guard = new GateKeeperOut();
-                                    break;
-                                }
-                            #endregion GateKeeper
-						}
+                        if (client.Player.TargetObject is GameKeepComponent == false)
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Create.NoKCompTarget"));
+                            return;
+                        }
 
-						if (guard == null)
-						{
-							DisplaySyntax(client);
-							return;
-						}
+                        var c = client.Player.TargetObject as GameKeepComponent;
+                        ;
+                        var p = new Patrol(c);
+                        p.PatrolID = args[3];
+                        p.KeepType = keepType;
+                        p.SpawnPosition = PositionMgr.CreatePatrolPosition(p.PatrolID, c, client.Player, keepType);
+                        p.PatrolID = p.SpawnPosition.TemplateID;
+                        p.InitialiseGuards();
+                        DisplayMessage(client,
+                            "Patrol created for Keep Type " +
+                            Enum.GetName(typeof(AbstractGameKeep.eKeepType), keepType));
+                        return;
+                    }
 
-						GameKeepComponent component = client.Player.TargetObject as GameKeepComponent;
-						if (component != null)
-						{
-							int height = component.Height;
-							if (args.Length > 4)
-								int.TryParse(args[4], out height);
+                    #endregion Patrol
 
-							DBKeepPosition pos = PositionMgr.CreatePosition(guard.GetType(), height, client.Player, Guid.NewGuid().ToString(), component);
-							//PositionMgr.AddPosition(pos);
-							//PositionMgr.FillPositions();
-							DBKeepPosition[] list = component.Positions[pos.TemplateID] as DBKeepPosition[];
-							if (list == null)
-							{
-								list = new DBKeepPosition[4];
-								component.Positions[pos.TemplateID] = list;
-							}
-								
-							list[pos.Height] = pos;
-							component.LoadPositions();
-							component.FillPositions();
-						}
-						else
-						{
-							guard.CurrentRegion = client.Player.CurrentRegion;
-							guard.X = client.Player.X;
-							guard.Y = client.Player.Y;
-							guard.Z = client.Player.Z;
-							guard.Heading = client.Player.Heading;
-							guard.Realm = guard.CurrentZone.Realm;
-                            guard.LoadedFromScript = false;
-                            guard.SaveIntoDatabase();
-							
-							foreach (AbstractArea area in guard.CurrentAreas)
-							{
-								if (area is KeepArea)
-								{
-									AbstractGameKeep keep = (area as KeepArea).Keep;
-									guard.Component = new GameKeepComponent();
-									guard.Component.Keep = keep;
-									break;
-								}
-							}
+                    #region CorpseSummoner
 
-							guard.RefreshTemplate();
-							guard.AddToWorld();
+                    case "corpsesummoner":
+                    {
+                        guard = new GuardCorpseSummoner();
+                        break;
+                    }
 
-							if (guard.Component != null && guard.Component.Keep != null)
-								guard.Component.Keep.Guards.Add(DOL.Database.UniqueID.IDGenerator.GenerateID(), guard);
-						}
+                    #endregion CorpseSummoner
 
-						PositionMgr.FillPositions();
+                    #region GateKeeper
 
-						DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Create.GuardAdded"));
-						break;
-					}
-				#endregion Create
-				#region Position
-				case "position":
-					{
-						switch (args[2].ToLower())
-						{
-							#region Add
-							case "add":
-								{
-									if (!(client.Player.TargetObject is GameKeepGuard))
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Position.TargetGuard"));
-										return;
-									}
+                    case "gatekeeperin":
+                    {
+                        guard = new GateKeeperIn();
+                        break;
+                    }
+                    case "gatekeeperout":
+                    {
+                        guard = new GateKeeperOut();
+                        break;
+                    }
 
-									if (args.Length != 4)
-									{
-										DisplaySyntax(client);
-										return;
-									}
+                    #endregion GateKeeper
+                }
 
-									byte height = byte.Parse(args[3]);
-									//height = KeepMgr.GetHeightFromLevel(height);
-									GameKeepGuard guard = client.Player.TargetObject as GameKeepGuard;
-									
-									if (PositionMgr.GetPosition(guard) != null)
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Position.PAlreadyAss", height));
-										return;
-									}
+                if (guard == null)
+                {
+                    DisplaySyntax(client);
+                    return;
+                }
 
-									DBKeepPosition pos = PositionMgr.CreatePosition(guard.GetType(), height, client.Player, guard.TemplateID, guard.Component);
-									PositionMgr.AddPosition(pos);
-									PositionMgr.FillPositions();
+                var component = client.Player.TargetObject as GameKeepComponent;
+                if (component != null)
+                {
+                    var height = component.Height;
+                    if (args.Length > 4)
+                        int.TryParse(args[4], out height);
 
-									DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Position.GuardPAdded"));
-									break;
-								}
-							#endregion Add
-							#region Remove
-							case "remove":
-								{
-									if (!(client.Player.TargetObject is GameKeepGuard))
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Position.TargetGuard"));
-										return;
-									}
+                    var pos = PositionMgr.CreatePosition(guard.GetType(), height, client.Player,
+                        Guid.NewGuid().ToString(), component);
+                    //PositionMgr.AddPosition(pos);
+                    //PositionMgr.FillPositions();
+                    var list = component.Positions[pos.TemplateID] as DBKeepPosition[];
+                    if (list == null)
+                    {
+                        list = new DBKeepPosition[4];
+                        component.Positions[pos.TemplateID] = list;
+                    }
 
-									GameKeepGuard guard = client.Player.TargetObject as GameKeepGuard;
-									DBKeepPosition pos = guard.Position;
-									if (pos != null)
-									{
-										PositionMgr.RemovePosition(pos);
+                    list[pos.Height] = pos;
+                    component.LoadPositions();
+                    component.FillPositions();
+                }
+                else
+                {
+                    guard.CurrentRegion = client.Player.CurrentRegion;
+                    guard.X = client.Player.X;
+                    guard.Y = client.Player.Y;
+                    guard.Z = client.Player.Z;
+                    guard.Heading = client.Player.Heading;
+                    guard.Realm = guard.CurrentZone.Realm;
+                    guard.LoadedFromScript = false;
+                    guard.SaveIntoDatabase();
 
-										if (guard.LoadedFromScript)
-										{
-											if (guard.PatrolGroup != null)
-											{
-												foreach (GameKeepGuard g in guard.PatrolGroup.PatrolGuards)
-												{
-													g.Delete();
-												}
-											}
-											else
-											{
-												guard.Delete();
-											}
-										}
-									}
+                    foreach (AbstractArea area in guard.CurrentAreas)
+                        if (area is KeepArea)
+                        {
+                            var keep = (area as KeepArea).Keep;
+                            guard.Component = new GameKeepComponent();
+                            guard.Component.Keep = keep;
+                            break;
+                        }
 
-									PositionMgr.FillPositions();
+                    guard.RefreshTemplate();
+                    guard.AddToWorld();
 
-									DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Position.GuardRemoved"));
-									break;
-								}
-							#endregion Remove
-							#region Default
-							default:
-								{
-									DisplaySyntax(client);
-									return;
-								}
-							#endregion Default
-						}
-						break;
-					}
-				#endregion Position
-				#region Path
-				case "path":
-					{
-						switch (args[2].ToLower())
-						{
-							#region Create
-							case "create":
-								{
-									RemoveAllTempPathObjects(client);
+                    if (guard.Component != null && guard.Component.Keep != null)
+                        guard.Component.Keep.Guards.Add(Database.UniqueID.IDGenerator.GenerateID(), guard);
+                }
 
-									PathPoint startpoint = new PathPoint(client.Player.X, client.Player.Y, client.Player.Z, 100000, ePathType.Once);
-									client.Player.TempProperties.setProperty(TEMP_PATH_FIRST, startpoint);
-									client.Player.TempProperties.setProperty(TEMP_PATH_LAST, startpoint);
-									client.Player.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.CreationStarted"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-									CreateTempPathObject(client, startpoint, "TMP PP 1");
-									break;
-								}
-							#endregion Create
-							#region Add
-							case "add":
-								{
-									PathPoint path = (PathPoint)client.Player.TempProperties.getProperty<object>(TEMP_PATH_LAST, null);
-									if (path == null)
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.NoPathCreatedYet"));
-										return;
-									}
+                PositionMgr.FillPositions();
 
-									int speedlimit = 1000;
-									if (args.Length == 4)
-									{
-										try
-										{
-											speedlimit = int.Parse(args[3]);
-										}
-										catch
-										{
-											DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.NoValidSpLimit", args[2]));
-											return;
-										}
-									}
+                DisplayMessage(client,
+                    LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Create.GuardAdded"));
+                break;
+            }
 
-									PathPoint newpp = new PathPoint(client.Player.X, client.Player.Y, client.Player.Z, speedlimit, path.Type);
-									path.Next = newpp;
-									newpp.Prev = path;
-									client.Player.TempProperties.setProperty(TEMP_PATH_LAST, newpp);
+            #endregion Create
 
-									int len = 0;
-									while (path.Prev != null)
-									{
-										len++;
-										path = path.Prev;
-									}
-									len += 2;
+            #region Position
 
-									CreateTempPathObject(client, newpp, "TMP PP " + len);
-									DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.PPAdded", len));
-									break;
-								}
-							#endregion Add
-							#region Save
-							case "save":
-								{
-									PathPoint path = (PathPoint)client.Player.TempProperties.getProperty<object>(TEMP_PATH_LAST, null);
-									if (path == null)
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.NoPathCreatedYet"));
-										return;
-									}
+            case "position":
+            {
+                switch (args[2].ToLower())
+                {
+                    #region Add
 
-									GameKeepGuard guard = client.Player.TargetObject as GameKeepGuard;
-									if (guard == null || guard.PatrolGroup == null)
-									{
-										DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.TargPatrolGuard"));
-										return;
-									}
+                    case "add":
+                    {
+                        if (!(client.Player.TargetObject is GameKeepGuard))
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Position.TargetGuard"));
+                            return;
+                        }
 
-									path.Type = ePathType.Loop;
-									PositionMgr.SavePatrolPath(guard.TemplateID, path, guard.Component);
-									DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.Saved"));
-									RemoveAllTempPathObjects(client);
-									guard.PatrolGroup.InitialiseGuards();
+                        if (args.Length != 4)
+                        {
+                            DisplaySyntax(client);
+                            return;
+                        }
 
-									PositionMgr.FillPositions();
+                        var height = byte.Parse(args[3]);
+                        //height = KeepMgr.GetHeightFromLevel(height);
+                        var guard = client.Player.TargetObject as GameKeepGuard;
 
-									DisplayMessage(client, "Patrol groups initialized!");
+                        if (PositionMgr.GetPosition(guard) != null)
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Position.PAlreadyAss", height));
+                            return;
+                        }
 
-									break;
-								}
-							#endregion Save
-							#region Default
-							default:
-								{
-									DisplaySyntax(client);
-									return;
-								}
-							#endregion Default
-						}
-						break;
-					}
-				#endregion Path
-				#region Default
-				default:
-					{
-						DisplaySyntax(client);
-						return;
-					}
-				#endregion Default
-			}
-		}
+                        var pos = PositionMgr.CreatePosition(guard.GetType(), height, client.Player,
+                            guard.TemplateID, guard.Component);
+                        PositionMgr.AddPosition(pos);
+                        PositionMgr.FillPositions();
 
-		protected string TEMP_PATH_FIRST = "TEMP_PATH_FIRST";
-		protected string TEMP_PATH_LAST = "TEMP_PATH_LAST";
-		protected string TEMP_PATH_OBJS = "TEMP_PATH_OBJS";
+                        DisplayMessage(client,
+                            LanguageMgr.GetTranslation(client.Account.Language,
+                                "GMCommands.KeepGuard.Position.GuardPAdded"));
+                        break;
+                    }
 
-		private void CreateTempPathObject(GameClient client, PathPoint pp, string name)
-		{
-			GameStaticItem obj = new GameStaticItem();
-			obj.X = pp.X;
-			obj.Y = pp.Y;
-			obj.Z = pp.Z;
-			obj.CurrentRegion = client.Player.CurrentRegion;
-			obj.Heading = client.Player.Heading;
-			obj.Name = name;
-			obj.Model = 488;
-			obj.Emblem = 0;
-			obj.AddToWorld();
-			ArrayList objs = (ArrayList)client.Player.TempProperties.getProperty<object>(TEMP_PATH_OBJS, null);
-			if (objs == null)
-				objs = new ArrayList();
-			objs.Add(obj);
-			client.Player.TempProperties.setProperty(TEMP_PATH_OBJS, objs);
-		}
+                    #endregion Add
 
-		private void RemoveAllTempPathObjects(GameClient client)
-		{
-			ArrayList objs = (ArrayList)client.Player.TempProperties.getProperty<object>(TEMP_PATH_OBJS, null);
-			if (objs == null)
-				return;
-			foreach (GameStaticItem obj in objs)
-				obj.Delete();
-			client.Player.TempProperties.setProperty(TEMP_PATH_OBJS, null);
-		}
-	}
+                    #region Remove
+
+                    case "remove":
+                    {
+                        if (!(client.Player.TargetObject is GameKeepGuard))
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Position.TargetGuard"));
+                            return;
+                        }
+
+                        var guard = client.Player.TargetObject as GameKeepGuard;
+                        var pos = guard.Position;
+                        if (pos != null)
+                        {
+                            PositionMgr.RemovePosition(pos);
+
+                            if (guard.LoadedFromScript)
+                            {
+                                if (guard.PatrolGroup != null)
+                                    foreach (var g in guard.PatrolGroup.PatrolGuards)
+                                        g.Delete();
+                                else
+                                    guard.Delete();
+                            }
+                        }
+
+                        PositionMgr.FillPositions();
+
+                        DisplayMessage(client,
+                            LanguageMgr.GetTranslation(client.Account.Language,
+                                "GMCommands.KeepGuard.Position.GuardRemoved"));
+                        break;
+                    }
+
+                    #endregion Remove
+
+                    #region Default
+
+                    default:
+                    {
+                        DisplaySyntax(client);
+                        return;
+                    }
+
+                    #endregion Default
+                }
+
+                break;
+            }
+
+            #endregion Position
+
+            #region Path
+
+            case "path":
+            {
+                switch (args[2].ToLower())
+                {
+                    #region Create
+
+                    case "create":
+                    {
+                        RemoveAllTempPathObjects(client);
+
+                        var startpoint = new PathPoint(client.Player.X, client.Player.Y, client.Player.Z,
+                            100000, ePathType.Once);
+                        client.Player.TempProperties.setProperty(TEMP_PATH_FIRST, startpoint);
+                        client.Player.TempProperties.setProperty(TEMP_PATH_LAST, startpoint);
+                        client.Player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(client.Account.Language,
+                                "GMCommands.KeepGuard.Path.CreationStarted"), eChatType.CT_System,
+                            eChatLoc.CL_SystemWindow);
+                        CreateTempPathObject(client, startpoint, "TMP PP 1");
+                        break;
+                    }
+
+                    #endregion Create
+
+                    #region Add
+
+                    case "add":
+                    {
+                        var path =
+                            (PathPoint) client.Player.TempProperties.getProperty<object>(TEMP_PATH_LAST, null);
+                        if (path == null)
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Path.NoPathCreatedYet"));
+                            return;
+                        }
+
+                        var speedlimit = 1000;
+                        if (args.Length == 4)
+                            try
+                            {
+                                speedlimit = int.Parse(args[3]);
+                            }
+                            catch
+                            {
+                                DisplayMessage(client,
+                                    LanguageMgr.GetTranslation(client.Account.Language,
+                                        "GMCommands.KeepGuard.Path.NoValidSpLimit", args[2]));
+                                return;
+                            }
+
+                        var newpp = new PathPoint(client.Player.X, client.Player.Y, client.Player.Z,
+                            speedlimit, path.Type);
+                        path.Next = newpp;
+                        newpp.Prev = path;
+                        client.Player.TempProperties.setProperty(TEMP_PATH_LAST, newpp);
+
+                        var len = 0;
+                        while (path.Prev != null)
+                        {
+                            len++;
+                            path = path.Prev;
+                        }
+
+                        len += 2;
+
+                        CreateTempPathObject(client, newpp, "TMP PP " + len);
+                        DisplayMessage(client,
+                            LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.PPAdded",
+                                len));
+                        break;
+                    }
+
+                    #endregion Add
+
+                    #region Save
+
+                    case "save":
+                    {
+                        var path =
+                            (PathPoint) client.Player.TempProperties.getProperty<object>(TEMP_PATH_LAST, null);
+                        if (path == null)
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Path.NoPathCreatedYet"));
+                            return;
+                        }
+
+                        var guard = client.Player.TargetObject as GameKeepGuard;
+                        if (guard == null || guard.PatrolGroup == null)
+                        {
+                            DisplayMessage(client,
+                                LanguageMgr.GetTranslation(client.Account.Language,
+                                    "GMCommands.KeepGuard.Path.TargPatrolGuard"));
+                            return;
+                        }
+
+                        path.Type = ePathType.Loop;
+                        PositionMgr.SavePatrolPath(guard.TemplateID, path, guard.Component);
+                        DisplayMessage(client,
+                            LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.KeepGuard.Path.Saved"));
+                        RemoveAllTempPathObjects(client);
+                        guard.PatrolGroup.InitialiseGuards();
+
+                        PositionMgr.FillPositions();
+
+                        DisplayMessage(client, "Patrol groups initialized!");
+
+                        break;
+                    }
+
+                    #endregion Save
+
+                    #region Default
+
+                    default:
+                    {
+                        DisplaySyntax(client);
+                        return;
+                    }
+
+                    #endregion Default
+                }
+
+                break;
+            }
+
+            #endregion Path
+
+            #region Default
+
+            default:
+            {
+                DisplaySyntax(client);
+                return;
+            }
+
+            #endregion Default
+        }
+    }
+
+    protected string TEMP_PATH_FIRST = "TEMP_PATH_FIRST";
+    protected string TEMP_PATH_LAST = "TEMP_PATH_LAST";
+    protected string TEMP_PATH_OBJS = "TEMP_PATH_OBJS";
+
+    private void CreateTempPathObject(GameClient client, PathPoint pp, string name)
+    {
+        var obj = new GameStaticItem();
+        obj.X = pp.X;
+        obj.Y = pp.Y;
+        obj.Z = pp.Z;
+        obj.CurrentRegion = client.Player.CurrentRegion;
+        obj.Heading = client.Player.Heading;
+        obj.Name = name;
+        obj.Model = 488;
+        obj.Emblem = 0;
+        obj.AddToWorld();
+        var objs = (ArrayList) client.Player.TempProperties.getProperty<object>(TEMP_PATH_OBJS, null);
+        if (objs == null)
+            objs = new ArrayList();
+        objs.Add(obj);
+        client.Player.TempProperties.setProperty(TEMP_PATH_OBJS, objs);
+    }
+
+    private void RemoveAllTempPathObjects(GameClient client)
+    {
+        var objs = (ArrayList) client.Player.TempProperties.getProperty<object>(TEMP_PATH_OBJS, null);
+        if (objs == null)
+            return;
+        foreach (GameStaticItem obj in objs)
+            obj.Delete();
+        client.Player.TempProperties.setProperty(TEMP_PATH_OBJS, null);
+    }
 }

@@ -97,65 +97,57 @@ namespace DOL.GS.Commands
                         if (radius > 5000) radius = 5000;
 
                         foreach (GameNPC npc in client.Player.GetNPCsInRadius(radius))
-                            if (npc.Realm == eRealm.None && (npc is SpamMob.SpamMobNPC))
+                            if (npc.Realm == eRealm.None && npc is SpamMob.SpamMobNPC)
                                 remove(npc);
                     }
                     else
+                    {
                         DisplayMessage(client.Player, "Radius not valid");
+                    }
                 }
-                
+
                 if (args[1].Equals("create"))
                 {
-                    int temp = 0;
+                    var temp = 0;
                     int.TryParse(args[2], out temp);
                     if (temp == 0)
                     {
                         DisplayMessage(client.Player, "Amount not valid, using default value of 1");
                         temp = 1;
                     }
+
                     SpawnSpamMob(client, temp);
                 }
                 //create multiple mobs
             }
-            
+
             if (args.Length == 4)
-            {
                 if (args[1].Equals("create"))
                 {
-                    int temp = 0;
+                    var temp = 0;
                     int.TryParse(args[2], out temp);
-                    if (temp == 0)
-                    {
-                        temp = 1;
-                    }
-                    
+                    if (temp == 0) temp = 1;
+
                     int radius;
                     if (int.TryParse(args[3], out radius))
-                    {
                         SpawnSpamMob(client, temp, radius);
-                    }
                     else
-                    {
                         DisplayMessage(client.Player, "Radius not valid");
-                    }
-                    
                 }
-                //create multiple mobs
-            }
+            //create multiple mobs
         }
 
         public void SpawnSpamMob(GameClient client, int number, int radius = 0)
         {
-            for (int i = 0; i < number; i++)
+            for (var i = 0; i < number; i++)
             {
-                string theType = "DOL.GS.SpamMob.SpamMobNPC";
+                var theType = "DOL.GS.SpamMob.SpamMobNPC";
                 byte realm = 0;
 
                 //Create a new mob
                 GameNPC mob = null;
 
-                foreach (Assembly script in ScriptMgr.GameServerScripts)
-                {
+                foreach (var script in ScriptMgr.GameServerScripts)
                     try
                     {
                         client.Out.SendDebugMessage(script.FullName);
@@ -168,7 +160,6 @@ namespace DOL.GS.Commands
                     {
                         client.Out.SendMessage(e.ToString(), eChatType.CT_System, eChatLoc.CL_PopupWindow);
                     }
-                }
 
                 if (mob == null)
                 {
@@ -202,7 +193,7 @@ namespace DOL.GS.Commands
                 //client.Out.SendMessage("The mob has been created with the peace flag, so it can't be attacked, to remove type /mob peace", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
             }
         }
-        
+
         private void remove(GameNPC targetMob)
         {
             targetMob.StopAttack();
@@ -231,11 +222,11 @@ namespace DOL.GS.SpamMob
             if (Body.IsCasting)
                 return true;
 
-            bool casted = false;
+            var casted = false;
 
             if (Body != null && Body.Spells != null && Body.Spells.Count > 0)
             {
-                ArrayList spell_rec = new ArrayList();
+                var spell_rec = new ArrayList();
                 Spell spellToCast = null;
 
                 if (type == eCheckSpellType.Defensive)
@@ -255,21 +246,15 @@ namespace DOL.GS.SpamMob
                 else if (type == eCheckSpellType.Offensive)
                 {
                     foreach (Spell spell in Body.Spells)
-                    {
                         if (Body.GetSkillDisabledDuration(spell) == 0)
-                        {
                             if (spell.CastTime > 0)
-                            {
                                 if (spell.Target.ToLower() == "enemy" || spell.Target.ToLower() == "area" ||
                                     spell.Target.ToLower() == "cone")
                                     spell_rec.Add(spell);
-                            }
-                        }
-                    }
 
                     if (spell_rec.Count > 0)
                     {
-                        spellToCast = (Spell) spell_rec[Util.Random((spell_rec.Count - 1))];
+                        spellToCast = (Spell) spell_rec[Util.Random(spell_rec.Count - 1)];
 
 
                         if (spellToCast.Uninterruptible && CheckOffensiveSpells(spellToCast))
@@ -290,157 +275,176 @@ namespace DOL.GS.SpamMob
             if (spell == null) return false;
             if (Body.GetSkillDisabledDuration(spell) > 0) return false;
 
-            bool casted = false;
+            var casted = false;
 
             // clear current target, set target based on spell type, cast spell, return target to original target
-            GameObject lastTarget = Body.TargetObject;
+            var lastTarget = Body.TargetObject;
 
             Body.TargetObject = null;
             switch (spell.SpellType)
             {
                 #region Buffs
-                case (byte)eSpellType.AcuityBuff:
-                case (byte)eSpellType.AFHitsBuff:
-                case (byte)eSpellType.AllMagicResistBuff:
-                case (byte)eSpellType.ArmorAbsorptionBuff:
-                case (byte)eSpellType.ArmorFactorBuff:
-                case (byte)eSpellType.BodyResistBuff:
-                case (byte)eSpellType.BodySpiritEnergyBuff:
-                case (byte)eSpellType.Buff:
-                case (byte)eSpellType.CelerityBuff:
-                case (byte)eSpellType.ColdResistBuff:
-                case (byte)eSpellType.CombatSpeedBuff:
-                case (byte)eSpellType.ConstitutionBuff:
-                case (byte)eSpellType.CourageBuff:
-                case (byte)eSpellType.CrushSlashTrustBuff:
-                case (byte)eSpellType.DexterityBuff:
-                case (byte)eSpellType.DexterityQuicknessBuff:
-                case (byte)eSpellType.EffectivenessBuff:
-                case (byte)eSpellType.EnduranceRegenBuff:
-                case (byte)eSpellType.EnergyResistBuff:
-                case (byte)eSpellType.FatigueConsumptionBuff:
-                case (byte)eSpellType.FlexibleSkillBuff:
-                case (byte)eSpellType.HasteBuff:
-                case (byte)eSpellType.HealthRegenBuff:
-                case (byte)eSpellType.HeatColdMatterBuff:
-                case (byte)eSpellType.HeatResistBuff:
-                case (byte)eSpellType.HeroismBuff:
-                case (byte)eSpellType.KeepDamageBuff:
-                case (byte)eSpellType.MagicResistBuff:
-                case (byte)eSpellType.MatterResistBuff:
-                case (byte)eSpellType.MeleeDamageBuff:
-                case (byte)eSpellType.MesmerizeDurationBuff:
-                case (byte)eSpellType.MLABSBuff:
-                case (byte)eSpellType.PaladinArmorFactorBuff:
-                case (byte)eSpellType.ParryBuff:
-                case (byte)eSpellType.PowerHealthEnduranceRegenBuff:
-                case (byte)eSpellType.PowerRegenBuff:
-                case (byte)eSpellType.SavageCombatSpeedBuff:
-                case (byte)eSpellType.SavageCrushResistanceBuff:
-                case (byte)eSpellType.SavageDPSBuff:
-                case (byte)eSpellType.SavageParryBuff:
-                case (byte)eSpellType.SavageSlashResistanceBuff:
-                case (byte)eSpellType.SavageThrustResistanceBuff:
-                case (byte)eSpellType.SpiritResistBuff:
-                case (byte)eSpellType.StrengthBuff:
-                case (byte)eSpellType.StrengthConstitutionBuff:
-                case (byte)eSpellType.SuperiorCourageBuff:
-                case (byte)eSpellType.ToHitBuff:
-                case (byte)eSpellType.WeaponSkillBuff:
-                case (byte)eSpellType.DamageAdd:
-                case (byte)eSpellType.OffensiveProc:
-                case (byte)eSpellType.DefensiveProc:
-                case (byte)eSpellType.DamageShield:
-                case (byte)eSpellType.DamageOverTime:
+
+                case (byte) eSpellType.AcuityBuff:
+                case (byte) eSpellType.AFHitsBuff:
+                case (byte) eSpellType.AllMagicResistBuff:
+                case (byte) eSpellType.ArmorAbsorptionBuff:
+                case (byte) eSpellType.ArmorFactorBuff:
+                case (byte) eSpellType.BodyResistBuff:
+                case (byte) eSpellType.BodySpiritEnergyBuff:
+                case (byte) eSpellType.Buff:
+                case (byte) eSpellType.CelerityBuff:
+                case (byte) eSpellType.ColdResistBuff:
+                case (byte) eSpellType.CombatSpeedBuff:
+                case (byte) eSpellType.ConstitutionBuff:
+                case (byte) eSpellType.CourageBuff:
+                case (byte) eSpellType.CrushSlashTrustBuff:
+                case (byte) eSpellType.DexterityBuff:
+                case (byte) eSpellType.DexterityQuicknessBuff:
+                case (byte) eSpellType.EffectivenessBuff:
+                case (byte) eSpellType.EnduranceRegenBuff:
+                case (byte) eSpellType.EnergyResistBuff:
+                case (byte) eSpellType.FatigueConsumptionBuff:
+                case (byte) eSpellType.FlexibleSkillBuff:
+                case (byte) eSpellType.HasteBuff:
+                case (byte) eSpellType.HealthRegenBuff:
+                case (byte) eSpellType.HeatColdMatterBuff:
+                case (byte) eSpellType.HeatResistBuff:
+                case (byte) eSpellType.HeroismBuff:
+                case (byte) eSpellType.KeepDamageBuff:
+                case (byte) eSpellType.MagicResistBuff:
+                case (byte) eSpellType.MatterResistBuff:
+                case (byte) eSpellType.MeleeDamageBuff:
+                case (byte) eSpellType.MesmerizeDurationBuff:
+                case (byte) eSpellType.MLABSBuff:
+                case (byte) eSpellType.PaladinArmorFactorBuff:
+                case (byte) eSpellType.ParryBuff:
+                case (byte) eSpellType.PowerHealthEnduranceRegenBuff:
+                case (byte) eSpellType.PowerRegenBuff:
+                case (byte) eSpellType.SavageCombatSpeedBuff:
+                case (byte) eSpellType.SavageCrushResistanceBuff:
+                case (byte) eSpellType.SavageDPSBuff:
+                case (byte) eSpellType.SavageParryBuff:
+                case (byte) eSpellType.SavageSlashResistanceBuff:
+                case (byte) eSpellType.SavageThrustResistanceBuff:
+                case (byte) eSpellType.SpiritResistBuff:
+                case (byte) eSpellType.StrengthBuff:
+                case (byte) eSpellType.StrengthConstitutionBuff:
+                case (byte) eSpellType.SuperiorCourageBuff:
+                case (byte) eSpellType.ToHitBuff:
+                case (byte) eSpellType.WeaponSkillBuff:
+                case (byte) eSpellType.DamageAdd:
+                case (byte) eSpellType.OffensiveProc:
+                case (byte) eSpellType.DefensiveProc:
+                case (byte) eSpellType.DamageShield:
+                case (byte) eSpellType.DamageOverTime:
+                {
+                    // Buff self, if not in melee, but not each and every mob
+                    // at the same time, because it looks silly.
+                    if (!LivingHasEffect(Body, spell) && !Body.attackComponent.AttackState && Util.Chance(40) &&
+                        spell.Target.ToLower() != "pet")
                     {
-                        // Buff self, if not in melee, but not each and every mob
-                        // at the same time, because it looks silly.
-                        if (!LivingHasEffect(Body, spell) && !Body.attackComponent.AttackState && Util.Chance(40) && spell.Target.ToLower() != "pet")
-                        {
-                            Body.TargetObject = Body;
-                            break;
-                        }
-                        if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null && Util.Chance(40) && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range && !LivingHasEffect(Body.ControlledBrain.Body, spell) && spell.Target.ToLower() != "self")
-                        {
-                            Body.TargetObject = Body.ControlledBrain.Body;
-                            break;
-                        }
+                        Body.TargetObject = Body;
                         break;
                     }
+
+                    if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null && Util.Chance(40) &&
+                        Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range &&
+                        !LivingHasEffect(Body.ControlledBrain.Body, spell) && spell.Target.ToLower() != "self")
+                    {
+                        Body.TargetObject = Body.ControlledBrain.Body;
+                        break;
+                    }
+
+                    break;
+                }
+
                 #endregion Buffs
 
                 #region Disease Cure/Poison Cure/Summon
-                case (byte)eSpellType.CureDisease:
+
+                case (byte) eSpellType.CureDisease:
                     if (Body.IsDiseased)
                     {
                         Body.TargetObject = Body;
                         break;
                     }
-                    if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null && Body.ControlledBrain.Body.IsDiseased
-                        && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range && spell.Target.ToLower() != "self")
+
+                    if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null &&
+                        Body.ControlledBrain.Body.IsDiseased
+                        && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range &&
+                        spell.Target.ToLower() != "self")
                     {
                         Body.TargetObject = Body.ControlledBrain.Body;
                         break;
                     }
+
                     break;
-                case (byte)eSpellType.CurePoison:
+                case (byte) eSpellType.CurePoison:
                     if (LivingIsPoisoned(Body))
                     {
                         Body.TargetObject = Body;
                         break;
                     }
-                    if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null && LivingIsPoisoned(Body.ControlledBrain.Body)
-                        && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range && spell.Target.ToLower() != "self")
+
+                    if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null &&
+                        LivingIsPoisoned(Body.ControlledBrain.Body)
+                        && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range &&
+                        spell.Target.ToLower() != "self")
                     {
                         Body.TargetObject = Body.ControlledBrain.Body;
                         break;
                     }
+
                     break;
-                case (byte)eSpellType.Summon:
+                case (byte) eSpellType.Summon:
                     Body.TargetObject = Body;
                     break;
-                case (byte)eSpellType.SummonMinion:
+                case (byte) eSpellType.SummonMinion:
                     //If the list is null, lets make sure it gets initialized!
                     if (Body.ControlledNpcList == null)
+                    {
                         Body.InitControlledBrainArray(2);
+                    }
                     else
                     {
                         //Let's check to see if the list is full - if it is, we can't cast another minion.
                         //If it isn't, let them cast.
-                        IControlledBrain[] icb = Body.ControlledNpcList;
-                        int numberofpets = 0;
-                        for (int i = 0; i < icb.Length; i++)
-                        {
+                        var icb = Body.ControlledNpcList;
+                        var numberofpets = 0;
+                        for (var i = 0; i < icb.Length; i++)
                             if (icb[i] != null)
                                 numberofpets++;
-                        }
+
                         if (numberofpets >= icb.Length)
                             break;
                     }
+
                     Body.TargetObject = Body;
                     break;
+
                 #endregion Disease Cure/Poison Cure/Summon
 
                 #region Heals
-                case (byte)eSpellType.CombatHeal:
-                case (byte)eSpellType.Heal:
-                case (byte)eSpellType.HealOverTime:
-                case (byte)eSpellType.MercHeal:
-                case (byte)eSpellType.OmniHeal:
-                case (byte)eSpellType.PBAoEHeal:
-                case (byte)eSpellType.SpreadHeal:
+
+                case (byte) eSpellType.CombatHeal:
+                case (byte) eSpellType.Heal:
+                case (byte) eSpellType.HealOverTime:
+                case (byte) eSpellType.MercHeal:
+                case (byte) eSpellType.OmniHeal:
+                case (byte) eSpellType.PBAoEHeal:
+                case (byte) eSpellType.SpreadHeal:
                     if (spell.Target.ToLower() == "self")
                     {
                         // if we have a self heal and health is less than 75% then heal, otherwise return false to try another spell or do nothing
-                        if (Body.HealthPercent < DOL.GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD)
-                        {
+                        if (Body.HealthPercent < ServerProperties.Properties.NPC_HEAL_THRESHOLD)
                             Body.TargetObject = Body;
-                        }
+
                         break;
                     }
 
                     // Chance to heal self when dropping below 30%, do NOT spam it.
-                    if (Body.HealthPercent < (DOL.GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD / 2.0)
+                    if (Body.HealthPercent < ServerProperties.Properties.NPC_HEAL_THRESHOLD / 2.0
                         && Util.Chance(10) && spell.Target.ToLower() != "pet")
                     {
                         Body.TargetObject = Body;
@@ -448,25 +452,28 @@ namespace DOL.GS.SpamMob
                     }
 
                     if (Body.ControlledBrain != null && Body.ControlledBrain.Body != null
-                        && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range
-                        && Body.ControlledBrain.Body.HealthPercent < DOL.GS.ServerProperties.Properties.NPC_HEAL_THRESHOLD
-                        && spell.Target.ToLower() != "self")
+                                                     && Body.GetDistanceTo(Body.ControlledBrain.Body) <= spell.Range
+                                                     && Body.ControlledBrain.Body.HealthPercent <
+                                                     ServerProperties.Properties.NPC_HEAL_THRESHOLD
+                                                     && spell.Target.ToLower() != "self")
                     {
                         Body.TargetObject = Body.ControlledBrain.Body;
                         break;
                     }
+
                     break;
+
                 #endregion
 
                 //case "SummonAnimistFnF":
                 //case "SummonAnimistPet":
-                case (byte)eSpellType.SummonCommander:
-                case (byte)eSpellType.SummonDruidPet:
-                case (byte)eSpellType.SummonHunterPet:
-                case (byte)eSpellType.SummonNecroPet:
-                case (byte)eSpellType.SummonUnderhill:
-                case (byte)eSpellType.SummonSimulacrum:
-                case (byte)eSpellType.SummonSpiritFighter:
+                case (byte) eSpellType.SummonCommander:
+                case (byte) eSpellType.SummonDruidPet:
+                case (byte) eSpellType.SummonHunterPet:
+                case (byte) eSpellType.SummonNecroPet:
+                case (byte) eSpellType.SummonUnderhill:
+                case (byte) eSpellType.SummonSimulacrum:
+                case (byte) eSpellType.SummonSpiritFighter:
                     //case "SummonTheurgistPet":
                     if (Body.ControlledBrain != null)
                         break;
@@ -478,7 +485,9 @@ namespace DOL.GS.SpamMob
                     break;
             }
 
-            if (Body.TargetObject != null && (spell.Duration == 0 || (Body.TargetObject is GameLiving living && LivingHasEffect(living, spell) == false)))
+            if (Body.TargetObject != null && (spell.Duration == 0 ||
+                                              (Body.TargetObject is GameLiving living &&
+                                               LivingHasEffect(living, spell) == false)))
             {
                 casted = Body.CastSpell(spell, m_mobSpellLine);
 
@@ -511,7 +520,7 @@ namespace DOL.GS.SpamMob
         {
             if (dot == null)
             {
-                DBSpell spell = new DBSpell();
+                var spell = new DBSpell();
                 spell.AllowAdd = false;
                 spell.CastTime = 3;
                 spell.Concentration = 0;
@@ -536,7 +545,7 @@ namespace DOL.GS.SpamMob
 
             if (af == null)
             {
-                DBSpell spell = new DBSpell();
+                var spell = new DBSpell();
                 spell.AllowAdd = false;
                 spell.CastTime = 3;
                 spell.Concentration = 0;
@@ -559,7 +568,7 @@ namespace DOL.GS.SpamMob
 
             if (str == null)
             {
-                DBSpell spell = new DBSpell();
+                var spell = new DBSpell();
                 spell.AllowAdd = false;
                 spell.CastTime = 3;
                 spell.Concentration = 0;
@@ -581,7 +590,7 @@ namespace DOL.GS.SpamMob
 
             if (con == null)
             {
-                DBSpell spell = new DBSpell();
+                var spell = new DBSpell();
                 spell.AllowAdd = false;
                 spell.CastTime = 3;
                 spell.Concentration = 0;
@@ -603,7 +612,7 @@ namespace DOL.GS.SpamMob
 
             if (dex == null)
             {
-                DBSpell spell = new DBSpell();
+                var spell = new DBSpell();
                 spell.AllowAdd = false;
                 spell.CastTime = 3;
                 spell.Concentration = 0;
@@ -634,6 +643,7 @@ namespace DOL.GS.SpamMob
         }
 
         public override bool IsBeingInterrupted => false;
+
         public override bool CastSpell(Spell spell, SpellLine line)
         {
             return castingComponent.StartCastSpell(spell, line);

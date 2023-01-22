@@ -1,68 +1,68 @@
 ﻿<Project>
-  <PropertyGroup>
-    <BaseIntermediateOutputPath>..\build\GameServer\$(Configuration)\</BaseIntermediateOutputPath>
-  </PropertyGroup>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <AssemblyName>GameServer</AssemblyName>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-    <IntermediateOutputPath>..\build\GameServer\$(Configuration)\obj\</IntermediateOutputPath>
-    <OutputPath>..\$(Configuration)\lib\</OutputPath>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>false</Deterministic>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <ServerGarbageCollection>true</ServerGarbageCollection>
-    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>Full</DebugType>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <Optimize>False</Optimize>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>None</DebugType>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>True</Optimize>
-    <DebugSymbols>false</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
-    <RegisterForComInterop>False</RegisterForComInterop>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="discord-webhook-client" Version="3.1.0" />
-    <PackageReference Include="log4net" Version="2.0.13" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
-    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="2.0.226801" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0" />
-    <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase" />
-    <ProjectReference Include="..\DOLDatabase\DOLDatabase.csproj" Name="DOLDatabase" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include=".\config\*" />
-    <TranslationFiles Include=".\language\**\*.txt" />
-    <APIDocs Include=".\API\docs\*" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="API\docs\index.css" />
-    <Content Include="API\docs\index.html" />
-    <Content Include="API\docs\oauth2-redirect.html" />
-    <Content Include="API\docs\swagger-initializer.js" />
-    <Content Include="API\docs\swagger-ui-bundle.js" />
-    <Content Include="API\docs\swagger-ui-es-bundle-core.js" />
-    <Content Include="API\docs\swagger-ui-es-bundle.js" />
-    <Content Include="API\docs\swagger-ui-standalone-preset.js" />
-    <Content Include="API\docs\swagger-ui.css" />
-    <Content Include="API\docs\swagger-ui.js" />
-  </ItemGroup>
-  <Target Name="CopyFiles" AfterTargets="AfterBuild">
-    <Copy SourceFiles="@(TranslationFiles)" DestinationFiles="@(TranslationFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\languages\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(APIDocs)" DestinationFiles="@(APIDocs->'$(MSBuildProjectDirectory)\..\$(Configuration)\wwwroot\docs\%(RecursiveDir)%(Filename)%(Extension)')" />
-  </Target>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+    <PropertyGroup>
+        <BaseIntermediateOutputPath>..\build\GameServer\$(Configuration)\</BaseIntermediateOutputPath>
+    </PropertyGroup>
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <AssemblyName>GameServer</AssemblyName>
+        <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+        <IntermediateOutputPath>..\build\GameServer\$(Configuration)\obj\</IntermediateOutputPath>
+        <OutputPath>..\$(Configuration)\lib\</OutputPath>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <Deterministic>false</Deterministic>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DebugType>Full</DebugType>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <Optimize>False</Optimize>
+        <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>None</DebugType>
+        <DefineConstants>TRACE</DefineConstants>
+        <Optimize>True</Optimize>
+        <DebugSymbols>false</DebugSymbols>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+        <RegisterForComInterop>False</RegisterForComInterop>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="discord-webhook-client" Version="3.1.0"/>
+        <PackageReference Include="log4net" Version="2.0.13"/>
+        <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8"/>
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1"/>
+        <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="2.0.226801"/>
+        <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0"/>
+        <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase"/>
+        <ProjectReference Include="..\DOLDatabase\DOLDatabase.csproj" Name="DOLDatabase"/>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include=".\config\*"/>
+        <TranslationFiles Include=".\language\**\*.txt"/>
+        <APIDocs Include=".\API\docs\*"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="API\docs\index.css"/>
+        <Content Include="API\docs\index.html"/>
+        <Content Include="API\docs\oauth2-redirect.html"/>
+        <Content Include="API\docs\swagger-initializer.js"/>
+        <Content Include="API\docs\swagger-ui-bundle.js"/>
+        <Content Include="API\docs\swagger-ui-es-bundle-core.js"/>
+        <Content Include="API\docs\swagger-ui-es-bundle.js"/>
+        <Content Include="API\docs\swagger-ui-standalone-preset.js"/>
+        <Content Include="API\docs\swagger-ui.css"/>
+        <Content Include="API\docs\swagger-ui.js"/>
+    </ItemGroup>
+    <Target Name="CopyFiles" AfterTargets="AfterBuild">
+        <Copy SourceFiles="@(TranslationFiles)" DestinationFiles="@(TranslationFiles->'$(MSBuildProjectDirectory)\..\$(Configuration)\languages\%(RecursiveDir)%(Filename)%(Extension)')"/>
+        <Copy SourceFiles="@(APIDocs)" DestinationFiles="@(APIDocs->'$(MSBuildProjectDirectory)\..\$(Configuration)\wwwroot\docs\%(RecursiveDir)%(Filename)%(Extension)')"/>
+    </Target>
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/>
 </Project>

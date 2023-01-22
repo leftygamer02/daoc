@@ -16,30 +16,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Description of LiveCareerSpecialization.
+/// </summary>
+public class LiveCareerSpecialization : CareerSpecialization
 {
-	/// <summary>
-	/// Description of LiveCareerSpecialization.
-	/// </summary>
-	public class LiveCareerSpecialization : CareerSpecialization
-	{
-		public LiveCareerSpecialization(string keyname, string displayname, ushort icon, int ID)
-			: base(keyname, displayname, icon, ID)
-		{
-		}
-	}
-	
-	/// <summary>
-	/// Special Career for handling base ability and special Event For all players (sprint for example)
-	/// </summary>
-	public class LiveWideCareerSpecialization : LiveCareerSpecialization
-	{
-		public LiveWideCareerSpecialization(string keyname, string displayname, ushort icon, int ID)
-			: base(keyname, displayname, icon, ID)
-		{
-		}
-	}
+    public LiveCareerSpecialization(string keyname, string displayname, ushort icon, int ID)
+        : base(keyname, displayname, icon, ID)
+    {
+    }
+}
+
+/// <summary>
+/// Special Career for handling base ability and special Event For all players (sprint for example)
+/// </summary>
+public class LiveWideCareerSpecialization : LiveCareerSpecialization
+{
+    public LiveWideCareerSpecialization(string keyname, string displayname, ushort icon, int ID)
+        : base(keyname, displayname, icon, ID)
+    {
+    }
 }

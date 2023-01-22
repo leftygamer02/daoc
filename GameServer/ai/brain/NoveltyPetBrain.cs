@@ -21,80 +21,122 @@
 
 using DOL.GS;
 
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+public class NoveltyPetBrain : ABrain, IControlledBrain
 {
-	public class NoveltyPetBrain : DOL.AI.ABrain, IControlledBrain
-	{
-		public const string HAS_PET = "HasNoveltyPet";
+    public const string HAS_PET = "HasNoveltyPet";
 
-		private GamePlayer m_owner;
+    private GamePlayer m_owner;
 
-		public NoveltyPetBrain(GamePlayer owner)
-			: base()
-		{
-			m_owner = owner;
-		}
+    public NoveltyPetBrain(GamePlayer owner)
+        : base()
+    {
+        m_owner = owner;
+    }
 
-        public virtual GameNPC GetNPCOwner()
+    public virtual GameNPC GetNPCOwner()
+    {
+        return null;
+    }
+
+    public virtual GameLiving GetLivingOwner()
+    {
+        var player = GetPlayerOwner();
+        if (player != null)
+            return player;
+
+        var npc = GetNPCOwner();
+        if (npc != null)
+            return npc;
+
+        return null;
+    }
+
+    #region Think
+
+    public override int ThinkInterval => 5000;
+
+    public override void Think()
+    {
+        if (m_owner == null ||
+            m_owner.IsAlive == false ||
+            m_owner.Client.ClientState != GameClient.eClientState.Playing ||
+            Body.IsWithinRadius(m_owner, WorldMgr.VISIBILITY_DISTANCE) == false)
         {
-            return null;
+            Body.Delete();
+            Body = null;
+            if (m_owner != null && m_owner.TempProperties.getProperty<bool>(HAS_PET, false))
+                m_owner.TempProperties.setProperty(HAS_PET, false);
+
+            m_owner = null;
         }
-        public virtual GameLiving GetLivingOwner()
-        {
-            GamePlayer player = GetPlayerOwner();
-            if (player != null)
-                return player;
+    }
 
-            GameNPC npc = GetNPCOwner();
-            if (npc != null)
-                return npc;
+    #endregion Think
 
-            return null;
-        }
+    #region IControlledBrain Members
 
-		#region Think
+    public void SetAggressionState(eAggressionState state)
+    {
+    }
 
-		public override int ThinkInterval
-		{
-			get { return 5000; }
-		}
+    public eWalkState WalkState => eWalkState.Follow;
 
-		public override void Think()
-		{
+    public eAggressionState AggressionState
+    {
+        get => eAggressionState.Passive;
+        set { }
+    }
 
-			if (m_owner == null || 
-				m_owner.IsAlive == false || 
-				m_owner.Client.ClientState != GameClient.eClientState.Playing || 
-				Body.IsWithinRadius(m_owner, WorldMgr.VISIBILITY_DISTANCE) == false)
-			{
-				Body.Delete();
-				Body = null;
-				if (m_owner != null && m_owner.TempProperties.getProperty<bool>(HAS_PET, false))
-				{
-					m_owner.TempProperties.setProperty(HAS_PET, false);
-				}
-				m_owner = null;
-			}
-		}
+    public GameLiving Owner => m_owner;
 
-		#endregion Think
+    public void Attack(GameObject target)
+    {
+    }
 
-		#region IControlledBrain Members
-		public void SetAggressionState(eAggressionState state) { }
-		public eWalkState WalkState { get { return eWalkState.Follow; } }
-		public eAggressionState AggressionState { get { return eAggressionState.Passive; } set { } }
-		public GameLiving Owner { get { return m_owner; } }
-		public void Attack(GameObject target) { }
-		public void Disengage() { }
-		public void Follow(GameObject target) { }
-		public void FollowOwner() { }
-		public void Stay() { }
-		public void ComeHere() { }
-		public void Goto(GameObject target) { }
-		public void UpdatePetWindow() { }
-		public GamePlayer GetPlayerOwner() { return m_owner as GamePlayer; }
-		public bool IsMainPet { get { return false; } set { } }
-		public override void KillFSM(){ }
-		#endregion
-	}
+    public void Disengage()
+    {
+    }
+
+    public void Follow(GameObject target)
+    {
+    }
+
+    public void FollowOwner()
+    {
+    }
+
+    public void Stay()
+    {
+    }
+
+    public void ComeHere()
+    {
+    }
+
+    public void Goto(GameObject target)
+    {
+    }
+
+    public void UpdatePetWindow()
+    {
+    }
+
+    public GamePlayer GetPlayerOwner()
+    {
+        return m_owner as GamePlayer;
+    }
+
+    public bool IsMainPet
+    {
+        get => false;
+        set { }
+    }
+
+    public override void KillFSM()
+    {
+    }
+
+    #endregion
 }

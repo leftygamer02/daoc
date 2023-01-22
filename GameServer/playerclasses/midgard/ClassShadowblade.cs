@@ -16,48 +16,45 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Collections.Generic;
 using DOL.GS.Realm;
 
-namespace DOL.GS.PlayerClass
+namespace DOL.GS.PlayerClass;
+
+[CharacterClass((int) eCharacterClass.Shadowblade, "Shadowblade", "MidgardRogue")]
+public class ClassShadowblade : ClassMidgardRogue
 {
-	[CharacterClass((int)eCharacterClass.Shadowblade, "Shadowblade", "MidgardRogue")]
-	public class ClassShadowblade : ClassMidgardRogue
-	{
-		private static readonly string[] AutotrainableSkills = new[] { Specs.Stealth };
+    private static readonly string[] AutotrainableSkills = new[] {Specs.Stealth};
 
-		public ClassShadowblade()
-			: base()
-		{
-			m_profession = "PlayerClass.Profession.Loki";
-			m_specializationMultiplier = 22;
-			m_primaryStat = eStat.DEX;
-			m_secondaryStat = eStat.QUI;
-			m_tertiaryStat = eStat.STR;
-			m_baseHP = 760;
-		}
+    public ClassShadowblade()
+        : base()
+    {
+        m_profession = "PlayerClass.Profession.Loki";
+        m_specializationMultiplier = 22;
+        m_primaryStat = eStat.DEX;
+        m_secondaryStat = eStat.QUI;
+        m_tertiaryStat = eStat.STR;
+        m_baseHP = 760;
+    }
 
-		/// <summary>
-		/// Checks whether player has ability to use lefthanded weapons
-		/// </summary>
-		public override bool CanUseLefthandedWeapon
-		{
-			get { return true; }
-		}
+    /// <summary>
+    /// Checks whether player has ability to use lefthanded weapons
+    /// </summary>
+    public override bool CanUseLefthandedWeapon => true;
 
-		public override IList<string> GetAutotrainableSkills()
-		{
-			return AutotrainableSkills;
-		}
+    public override IList<string> GetAutotrainableSkills()
+    {
+        return AutotrainableSkills;
+    }
 
-		public override bool HasAdvancedFromBaseClass()
-		{
-			return true;
-		}
+    public override bool HasAdvancedFromBaseClass()
+    {
+        return true;
+    }
 
-		public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-		{
-			 PlayerRace.Kobold, PlayerRace.Norseman, PlayerRace.Valkyn,
-		};
-	}
+    public override List<PlayerRace> EligibleRaces => new()
+    {
+        PlayerRace.Kobold, PlayerRace.Norseman, PlayerRace.Valkyn
+    };
 }

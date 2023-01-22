@@ -18,192 +18,217 @@
  */
 
 using System.Collections.Generic;
-
 using DOL.Database;
 using DOL.Database.Attributes;
 using log4net;
 
-namespace DOL.GS.DatabaseUpdate
+namespace DOL.GS.DatabaseUpdate;
+
+[DatabaseUpdate]
+public class LanguageSystemUpdate : IDatabaseUpdater
 {
-    [DatabaseUpdate]
-    public class LanguageSystemUpdate : IDatabaseUpdater
+    #region DBLanguage table structure
+
+    private class language : DataObject
     {
-        #region DBLanguage table structure
-        private class language : DataObject
+        protected string m_translationid;
+        protected string m_EN = "";
+        protected string m_DE = "";
+        protected string m_FR = "";
+        protected string m_IT = "";
+        protected string m_CU = "";
+        protected string m_packageID;
+
+        public language()
         {
-            protected string m_translationid;
-            protected string m_EN = "";
-            protected string m_DE = "";
-            protected string m_FR = "";
-            protected string m_IT = "";
-            protected string m_CU = "";
-            protected string m_packageID;
+        }
 
-            public language() { }
-
-            [DataElement(AllowDbNull = false, Unique = true)]
-            public string TranslationID
+        [DataElement(AllowDbNull = false, Unique = true)]
+        public string TranslationID
+        {
+            get => m_translationid;
+            set
             {
-                get { return m_translationid; }
-                set { Dirty = true; m_translationid = value; }
-            }
-
-            [DataElement(AllowDbNull = false)]
-            public string EN
-            {
-                get { return m_EN; }
-                set { Dirty = true; m_EN = value; }
-            }
-
-            [DataElement(AllowDbNull = true)]
-            public string DE
-            {
-                get { return m_DE; }
-                set { Dirty = true; m_DE = value; }
-            }
-
-            [DataElement(AllowDbNull = true)]
-            public string FR
-            {
-                get { return m_FR; }
-                set { Dirty = true; m_FR = value; }
-            }
-
-            [DataElement(AllowDbNull = true)]
-            public string IT
-            {
-                get { return m_IT; }
-                set { Dirty = true; m_IT = value; }
-            }
-
-            [DataElement(AllowDbNull = true)]
-            public string CU
-            {
-                get { return m_CU; }
-                set { Dirty = true; m_CU = value; }
-            }
-
-            [DataElement(AllowDbNull = true)]
-            public string PackageID
-            {
-                get { return m_packageID; }
-                set { Dirty = true; m_packageID = value; }
+                Dirty = true;
+                m_translationid = value;
             }
         }
-        #endregion DBLanguage table structure
 
-        /// <summary>
-        /// Defines a logger for this class.
-        /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public void Update()
+        [DataElement(AllowDbNull = false)]
+        public string EN
         {
-            log.Info("Updating the LanguageSystem table (this can take a few minutes)...");
-
-            if (GameServer.Database.GetObjectCount<DBLanguageSystem>() < 1 && ServerProperties.Properties.USE_DBLANGUAGE)
+            get => m_EN;
+            set
             {
-                var objs = GameServer.Database.SelectAllObjects<language>();
-                if (objs.Count > 0)
+                Dirty = true;
+                m_EN = value;
+            }
+        }
+
+        [DataElement(AllowDbNull = true)]
+        public string DE
+        {
+            get => m_DE;
+            set
+            {
+                Dirty = true;
+                m_DE = value;
+            }
+        }
+
+        [DataElement(AllowDbNull = true)]
+        public string FR
+        {
+            get => m_FR;
+            set
+            {
+                Dirty = true;
+                m_FR = value;
+            }
+        }
+
+        [DataElement(AllowDbNull = true)]
+        public string IT
+        {
+            get => m_IT;
+            set
+            {
+                Dirty = true;
+                m_IT = value;
+            }
+        }
+
+        [DataElement(AllowDbNull = true)]
+        public string CU
+        {
+            get => m_CU;
+            set
+            {
+                Dirty = true;
+                m_CU = value;
+            }
+        }
+
+        [DataElement(AllowDbNull = true)]
+        public string PackageID
+        {
+            get => m_packageID;
+            set
+            {
+                Dirty = true;
+                m_packageID = value;
+            }
+        }
+    }
+
+    #endregion DBLanguage table structure
+
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log =
+        LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+    public void Update()
+    {
+        log.Info("Updating the LanguageSystem table (this can take a few minutes)...");
+
+        if (GameServer.Database.GetObjectCount<DBLanguageSystem>() < 1 &&
+            ServerProperties.Properties.USE_DBLANGUAGE)
+        {
+            var objs = GameServer.Database.SelectAllObjects<language>();
+            if (objs.Count > 0)
+            {
+                var lngObjs = new List<DBLanguageSystem>();
+
+                foreach (var obj in objs)
                 {
-                    List<DBLanguageSystem> lngObjs = new List<DBLanguageSystem>();
+                    if (Util.IsEmpty(obj.TranslationID))
+                        continue;
 
-                    foreach (language obj in objs)
-                    {
-                        if (Util.IsEmpty(obj.TranslationID))
-                            continue;
+                    // This kind of row will later be readded by the LanguageMgr
+                    // with it's updated values.
+                    if (obj.TranslationID.Contains("System.LanguagesName."))
+                        continue;
 
-                        // This kind of row will later be readded by the LanguageMgr
-                        // with it's updated values.
-                        if (obj.TranslationID.Contains("System.LanguagesName."))
-                            continue;
+                    DBLanguageSystem lngObj = null;
 
-                        DBLanguageSystem lngObj = null;
-
-                        if (!Util.IsEmpty(obj.EN))
+                    if (!Util.IsEmpty(obj.EN))
+                        if (!ListContainsObjectData(lngObjs, "EN", obj.TranslationID)) // Ignore duplicates
                         {
-                            if (!ListContainsObjectData(lngObjs, "EN", obj.TranslationID)) // Ignore duplicates
-                            {
-                                lngObj = new DBLanguageSystem();
-                                lngObj.TranslationId = obj.TranslationID;
-                                lngObj.Language = "EN";
-                                lngObj.Text = obj.EN;
-                                lngObj.Tag = obj.PackageID;
-                                lngObjs.Add(lngObj);
-                            }
+                            lngObj = new DBLanguageSystem();
+                            lngObj.TranslationId = obj.TranslationID;
+                            lngObj.Language = "EN";
+                            lngObj.Text = obj.EN;
+                            lngObj.Tag = obj.PackageID;
+                            lngObjs.Add(lngObj);
                         }
 
-                        if (!Util.IsEmpty(obj.DE))
+                    if (!Util.IsEmpty(obj.DE))
+                        if (!ListContainsObjectData(lngObjs, "DE", obj.TranslationID)) // Ignore duplicates
                         {
-                            if (!ListContainsObjectData(lngObjs, "DE", obj.TranslationID)) // Ignore duplicates
-                            {
-                                lngObj = new DBLanguageSystem();
-                                lngObj.TranslationId = obj.TranslationID;
-                                lngObj.Language = "DE";
-                                lngObj.Text = obj.DE;
-                                lngObj.Tag = obj.PackageID;
-                                lngObjs.Add(lngObj);
-                            }
+                            lngObj = new DBLanguageSystem();
+                            lngObj.TranslationId = obj.TranslationID;
+                            lngObj.Language = "DE";
+                            lngObj.Text = obj.DE;
+                            lngObj.Tag = obj.PackageID;
+                            lngObjs.Add(lngObj);
                         }
 
-                        if (!Util.IsEmpty(obj.FR))
+                    if (!Util.IsEmpty(obj.FR))
+                        if (!ListContainsObjectData(lngObjs, "FR", obj.TranslationID)) // Ignore duplicates
                         {
-                            if (!ListContainsObjectData(lngObjs, "FR", obj.TranslationID)) // Ignore duplicates
-                            {
-                                lngObj = new DBLanguageSystem();
-                                lngObj.TranslationId = obj.TranslationID;
-                                lngObj.Language = "FR";
-                                lngObj.Text = obj.FR;
-                                lngObj.Tag = obj.PackageID;
-                                lngObjs.Add(lngObj);
-                            }
+                            lngObj = new DBLanguageSystem();
+                            lngObj.TranslationId = obj.TranslationID;
+                            lngObj.Language = "FR";
+                            lngObj.Text = obj.FR;
+                            lngObj.Tag = obj.PackageID;
+                            lngObjs.Add(lngObj);
                         }
 
-                        if (!Util.IsEmpty(obj.IT))
+                    if (!Util.IsEmpty(obj.IT))
+                        if (!ListContainsObjectData(lngObjs, "IT", obj.TranslationID)) // Ignore duplicates
                         {
-                            if (!ListContainsObjectData(lngObjs, "IT", obj.TranslationID)) // Ignore duplicates
-                            {
-                                lngObj = new DBLanguageSystem();
-                                lngObj.TranslationId = obj.TranslationID;
-                                lngObj.Language = "IT";
-                                lngObj.Text = obj.IT;
-                                lngObj.Tag = obj.PackageID;
-                                lngObjs.Add(lngObj);
-                            }
+                            lngObj = new DBLanguageSystem();
+                            lngObj.TranslationId = obj.TranslationID;
+                            lngObj.Language = "IT";
+                            lngObj.Text = obj.IT;
+                            lngObj.Tag = obj.PackageID;
+                            lngObjs.Add(lngObj);
                         }
 
-                        // CU will be ignored!
-                    }
+                    // CU will be ignored!
+                }
 
-                    foreach (DBLanguageSystem lngObj in lngObjs)
-                    {
-                        GameServer.Database.AddObject(lngObj);
+                foreach (var lngObj in lngObjs)
+                {
+                    GameServer.Database.AddObject(lngObj);
 
-                        if (log.IsWarnEnabled)
-                            log.Warn("Moving sentence from 'language' to 'languagesystem'. ( Language <" + lngObj.Language +
-                                     "> - TranslationId <" + lngObj.TranslationId + "> )");
-                    }
+                    if (log.IsWarnEnabled)
+                        log.Warn("Moving sentence from 'language' to 'languagesystem'. ( Language <" +
+                                 lngObj.Language +
+                                 "> - TranslationId <" + lngObj.TranslationId + "> )");
                 }
             }
         }
+    }
 
-        private bool ListContainsObjectData(List<DBLanguageSystem> list, string language, string translationId)
+    private bool ListContainsObjectData(List<DBLanguageSystem> list, string language, string translationId)
+    {
+        var contains = false;
+
+        foreach (var lngObj in list)
         {
-            bool contains = false;
+            if (lngObj.TranslationId != translationId)
+                continue;
 
-            foreach (DBLanguageSystem lngObj in list)
-            {
-                if (lngObj.TranslationId != translationId)
-                    continue;
+            if (lngObj.Language != language)
+                continue;
 
-                if (lngObj.Language != language)
-                    continue;
-
-                contains = true;
-                break;
-            }
-
-            return contains;
+            contains = true;
+            break;
         }
+
+        return contains;
     }
 }

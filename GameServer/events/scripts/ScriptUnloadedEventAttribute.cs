@@ -16,22 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// This attribute can be applied to static methods to automatically
+/// register them with the GameServer's global script unloaded event
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class ScriptUnloadedEventAttribute : Attribute
 {
-	/// <summary>
-	/// This attribute can be applied to static methods to automatically
-	/// register them with the GameServer's global script unloaded event
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
-	public class ScriptUnloadedEventAttribute : Attribute
-	{
-		/// <summary>
-		/// Constructs a new ScriptUnloadedEventAttribute
-		/// </summary>
-		public ScriptUnloadedEventAttribute()
-		{
-		}
-	}
+    /// <summary>
+    /// Constructs a new ScriptUnloadedEventAttribute
+    /// </summary>
+    public ScriptUnloadedEventAttribute()
+    {
+    }
 }

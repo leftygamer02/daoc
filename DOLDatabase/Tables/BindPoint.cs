@@ -16,59 +16,59 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+/// <summary>
+/// Table of BindPoint where player pop when they die and released
+/// </summary>
+[DataTable(TableName = "BindPoint")]
+public class BindPoint : DataObject
 {
-	/// <summary>
-	/// Table of BindPoint where player pop when they die and released
-	/// </summary>
-	[DataTable(TableName="BindPoint")]
-	public class BindPoint : DataObject
-	{
-		//This needs to be uint and ushort!
+    //This needs to be uint and ushort!
 
-	    /// <summary>
-		/// Create a bind point
-		/// </summary>
-		public BindPoint()
-		{
-		}
+    /// <summary>
+    /// Create a bind point
+    /// </summary>
+    public BindPoint()
+    {
+    }
 
-		/// <summary>
-		/// The X position of bind
-		/// </summary>
-		[DataElement(AllowDbNull=false)]
-		public int X { get; set; }
+    /// <summary>
+    /// The X position of bind
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int X { get; set; }
 
-	    /// <summary>
-		/// The Y position of bind
-		/// </summary>
-		[DataElement(AllowDbNull=false)]
-		public int Y { get; set; }
+    /// <summary>
+    /// The Y position of bind
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Y { get; set; }
 
-	    /// <summary>
-		/// The Z position of bind
-		/// </summary>
-		[DataElement(AllowDbNull=false)]
-		public int Z { get; set; }
+    /// <summary>
+    /// The Z position of bind
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Z { get; set; }
 
-	    /// <summary>
-		/// The radius of bind
-		/// </summary>
-		[DataElement(AllowDbNull=false)]
-		public ushort Radius { get; set; }
+    /// <summary>
+    /// The radius of bind
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public ushort Radius { get; set; }
 
-	    /// <summary>
-		/// The region of bind
-		/// </summary>
-		[DataElement(AllowDbNull=false)]
-		public int Region { get; set; }
+    /// <summary>
+    /// The region of bind
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Region { get; set; }
 
-	    /// <summary>
-		/// The realm of this bind
-		/// </summary>
-		[DataElement(AllowDbNull=false)]
-		public int Realm { get; set; }
-	}
+    /// <summary>
+    /// The realm of this bind
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Realm { get; set; }
 }

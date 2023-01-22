@@ -16,42 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 using DOL.GS;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+/// <summary>
+/// Unit test for the LootMgr Class
+/// </summary>
+[TestFixture]
+public class LootManagerTest : ServerTests
 {
-	/// <summary>
-	/// Unit test for the LootMgr Class
-	/// </summary>
-	[TestFixture]
-	public class LootManagerTest : ServerTests
-	{
-		public LootManagerTest()
-		{
-			
-		}
+    public LootManagerTest()
+    {
+    }
 
-		[Test] 
-		public void TestLootGenerator()
-		{						
-			GameNPC mob = new GameNPC();
-			mob.Level = 6;
-			mob.Name="impling";
+    [Test]
+    public void TestLootGenerator()
+    {
+        var mob = new GameNPC();
+        mob.Level = 6;
+        mob.Name = "impling";
 
-			for (int i=0;i< 15; i++) 
-			{
-				Console.WriteLine("Loot "+i);
-				ItemTemplate[] loot = LootMgr.GetLoot(mob, null);
-				foreach (ItemTemplate item in loot)
-				{
-					Console.WriteLine(mob.Name+" drops "+item.Name);
-				}	
-			}
-			
-			Console.WriteLine("Drops finished");
-		}
-	}
+        for (var i = 0; i < 15; i++)
+        {
+            Console.WriteLine("Loot " + i);
+            var loot = LootMgr.GetLoot(mob, null);
+            foreach (var item in loot) Console.WriteLine(mob.Name + " drops " + item.Name);
+        }
+
+        Console.WriteLine("Drops finished");
+    }
 }

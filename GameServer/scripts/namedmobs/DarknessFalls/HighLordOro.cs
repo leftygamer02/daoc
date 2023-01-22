@@ -10,8 +10,8 @@ namespace DOL.GS
 {
     public class HighLordOro : GameEpicBoss
     {
-        private static readonly log4net.ILog log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
@@ -24,10 +24,12 @@ namespace DOL.GS
         public static void ScriptUnloaded(DOLEvent e, object sender, EventArgs args)
         {
         }
+
         public HighLordOro()
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -38,19 +40,20 @@ namespace DOL.GS
                 default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162132);
@@ -66,25 +69,29 @@ namespace DOL.GS
 
             // demon
             BodyType = 2;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(191);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(191));
 
-            OroBrain sBrain = new OroBrain();
+            var sBrain = new OroBrain();
             SetOwnBrain(sBrain);
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -92,15 +99,13 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override void Die(GameObject killer)
         {
             foreach (GameNPC npc in GetNPCsInRadius(5000))
-            {
                 if (npc.Brain is OroCloneBrain)
-                {
                     npc.Die(killer);
-                }
-            }
+
             base.Die(killer);
         }
     }
@@ -112,7 +117,7 @@ namespace DOL.AI.Brain
     {
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        bool isPulled;
+        private bool isPulled;
 
         public OroBrain()
             : base()
@@ -124,19 +129,17 @@ namespace DOL.AI.Brain
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (!isPulled)
-            {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
-                {
                     if (npc?.Brain is OroCloneBrain && npc.IsAlive)
                     {
                         if (npc.InCombat) continue;
                         AddAggroListTo(npc.Brain as OroCloneBrain); // add to aggro mobs with CryptLordBaf PackageID
                         isPulled = true;
                     }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -154,6 +157,7 @@ namespace DOL.AI.Brain
                     player.UpdateHealthManaEndu();
                 }
             }
+
             base.Think();
         }
     }
@@ -163,13 +167,14 @@ namespace DOL.GS
 {
     public class HighLordOroClone : GameNPC
     {
-        private static readonly log4net.ILog log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public HighLordOroClone()
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -180,28 +185,31 @@ namespace DOL.GS
                 default: return 35; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
-        public override int MaxHealth
-        {
-            get { return 30000; }
-        }
+
+        public override int MaxHealth => 30000;
+
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 250;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.50;
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(90162132);
@@ -221,7 +229,7 @@ namespace DOL.GS
             Faction = FactionMgr.GetFactionByID(191);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(191));
 
-            OroCloneBrain sBrain = new OroCloneBrain();
+            var sBrain = new OroCloneBrain();
             SetOwnBrain(sBrain);
 
             IsWorthReward = false;
@@ -236,11 +244,11 @@ namespace DOL.AI.Brain
 {
     public class OroCloneBrain : StandardMobBrain
     {
-        private static readonly log4net.ILog log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        bool isPulled;
-        bool isPulled2;
+        private bool isPulled;
+        private bool isPulled2;
 
         public OroCloneBrain()
             : base()
@@ -248,32 +256,27 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 800;
         }
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (!isPulled)
-            {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(2500))
-                {
                     if (npc?.Brain is OroCloneBrain)
                     {
                         if (npc.InCombat || !npc.IsAlive) continue;
                         AddAggroListTo(npc.Brain as OroCloneBrain); // add to aggro mobs with CryptLordBaf PackageID
                         isPulled = true;
                     }
-                }
-            }
-            if(!isPulled2)
-            {
+
+            if (!isPulled2)
                 foreach (GameNPC npc2 in Body.GetNPCsInRadius(2500))
-                {
                     if (npc2?.Brain is OroBrain)
                     {
                         if (npc2.InCombat || !npc2.IsAlive) continue;
                         AddAggroListTo(npc2.Brain as OroBrain); // add to aggro mobs with CryptLordBaf PackageID
                         isPulled2 = true;
                     }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
 
@@ -295,6 +298,7 @@ namespace DOL.AI.Brain
                     player.UpdateHealthManaEndu();
                 }
             }
+
             base.Think();
         }
     }

@@ -16,71 +16,79 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 using DOL.Events;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Alvarus spell handler
+/// Water breathing is a subspell
+/// </summary>
+[SpellHandlerAttribute("AlvarusMorph")]
+public class AlvarusMorph : Morph
 {
-    /// <summary>
-    /// Alvarus spell handler
-    /// Water breathing is a subspell
-    /// </summary>
-    [SpellHandlerAttribute("AlvarusMorph")]
-    public class AlvarusMorph : Morph
+    private GameSpellEffect m_effect = null;
+
+    public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
     {
-    	GameSpellEffect m_effect = null;
-        public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
+        var targetPlayer = target as GamePlayer;
+
+        if (targetPlayer == null)
+            return;
+
+        if (!targetPlayer.IsUnderwater)
         {
-            GamePlayer targetPlayer = target as GamePlayer;
+            MessageToCaster("You must be under water to use this ability.", eChatType.CT_SpellResisted);
+            return;
+        }
 
-			if (targetPlayer == null)
-				return;
-
-            if (!targetPlayer.IsUnderwater)
+        foreach (var Effect in targetPlayer.EffectList.GetAllOfType<GameSpellEffect>())
+            if (
+                Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") ||
+                Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
+                Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
+                Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
+                Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
+                Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph"))
             {
-                MessageToCaster("You must be under water to use this ability.", eChatType.CT_SpellResisted);
+                targetPlayer.Out.SendMessage("You already have an active morph!",
+                    eChatType.CT_SpellResisted, eChatLoc.CL_ChatWindow);
                 return;
             }
-			foreach (GameSpellEffect Effect in targetPlayer.EffectList.GetAllOfType<GameSpellEffect>())
-            {
-                if (
-                    Effect.SpellHandler.Spell.SpellType.Equals("ShadesOfMist") || 
-                    Effect.SpellHandler.Spell.SpellType.Equals("TraitorsDaggerProc") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("DreamMorph") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("DreamGroupMorph") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("MaddeningScalars") ||
-                    Effect.SpellHandler.Spell.SpellType.Equals("AtlantisTabletMorph"))
-                {
-                    targetPlayer.Out.SendMessage("You already have an active morph!", DOL.GS.PacketHandler.eChatType.CT_SpellResisted, DOL.GS.PacketHandler.eChatLoc.CL_ChatWindow);
-                    return;
-                }
-            }
-            base.ApplyEffectOnTarget(target, effectiveness);
-        }
-        public override void OnEffectStart(GameSpellEffect effect)
-        {
-            m_effect = effect;
-            base.OnEffectStart(effect);
-            GamePlayer player = effect.Owner as GamePlayer;
-            if (player == null) return;
-            GameEventMgr.AddHandler((GamePlayer)effect.Owner, GamePlayerEvent.SwimmingStatus, new DOLEventHandler(SwimmingStatusChange));
 
-        }
-        public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-        {
-            GamePlayer player = effect.Owner as GamePlayer;
-            if (player == null) return base.OnEffectExpires(effect, noMessages);
-            GameEventMgr.RemoveHandler((GamePlayer)effect.Owner, GamePlayerEvent.SwimmingStatus, new DOLEventHandler(SwimmingStatusChange));  
-            return base.OnEffectExpires(effect, noMessages);
-        }        
-        private void SwimmingStatusChange(DOLEvent e, object sender, EventArgs args)
-        {
-            OnEffectExpires(m_effect, true);
-        }        
-        public AlvarusMorph(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        base.ApplyEffectOnTarget(target, effectiveness);
+    }
 
+    public override void OnEffectStart(GameSpellEffect effect)
+    {
+        m_effect = effect;
+        base.OnEffectStart(effect);
+        var player = effect.Owner as GamePlayer;
+        if (player == null) return;
+        GameEventMgr.AddHandler((GamePlayer) effect.Owner, GamePlayerEvent.SwimmingStatus,
+            new DOLEventHandler(SwimmingStatusChange));
+    }
+
+    public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+    {
+        var player = effect.Owner as GamePlayer;
+        if (player == null) return base.OnEffectExpires(effect, noMessages);
+        GameEventMgr.RemoveHandler((GamePlayer) effect.Owner, GamePlayerEvent.SwimmingStatus,
+            new DOLEventHandler(SwimmingStatusChange));
+        return base.OnEffectExpires(effect, noMessages);
+    }
+
+    private void SwimmingStatusChange(DOLEvent e, object sender, EventArgs args)
+    {
+        OnEffectExpires(m_effect, true);
+    }
+
+    public AlvarusMorph(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
     }
 }

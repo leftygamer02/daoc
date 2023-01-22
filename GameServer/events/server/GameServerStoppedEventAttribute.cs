@@ -16,22 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// This attribute can be applied to static methods to automatically
+/// register them with the GameServer's global stop event
+/// </summary>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class GameServerStoppedEventAttribute : Attribute
 {
-	/// <summary>
-	/// This attribute can be applied to static methods to automatically
-	/// register them with the GameServer's global stop event
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
-	public class GameServerStoppedEventAttribute : Attribute
-	{
-		/// <summary>
-		/// Constructs a new GameServerStoppedEventAttribute
-		/// </summary>
-		public GameServerStoppedEventAttribute()
-		{
-		}
-	}
+    /// <summary>
+    /// Constructs a new GameServerStoppedEventAttribute
+    /// </summary>
+    public GameServerStoppedEventAttribute()
+    {
+    }
 }

@@ -16,50 +16,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.Keeps;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// GameMovingObject is a base class for boats and siege weapons.
+/// </summary>
+public class GameSiegeTrebuchet : GameSiegeCatapult
 {
-	/// <summary>
-	/// GameMovingObject is a base class for boats and siege weapons.
-	/// </summary>
-	public class GameSiegeTrebuchet : GameSiegeCatapult
-	{
+    public GameSiegeTrebuchet()
+        : base()
+    {
+        MeleeDamageType = eDamageType.Crush;
+        Name = "trebuchet";
+        AmmoType = 0x3A;
+        EnableToMove = false;
+        Model = 0xA2E;
+        Effect = 0x89C;
+        ActionDelay = new int[]
+        {
+            0, //none
+            5000, //aiming
+            15000, //arming
+            0, //loading
+            1000 //fireing base delay
+        }; //en ms
+        BaseDamage = 100;
+        MinAttackRange = 2000;
+        MaxAttackRange = 5000;
+        AttackRadius = 150;
+    }
 
-		public GameSiegeTrebuchet()
-			: base()
-		{
-			MeleeDamageType = eDamageType.Crush;
-			Name = "trebuchet";
-			AmmoType = 0x3A;
-			EnableToMove = false;
-			this.Model = 0xA2E;
-			this.Effect = 0x89C;
-			ActionDelay = new int[]
-			{
-				0,//none
-				5000,//aiming
-				15000,//arming
-				0,//loading
-				1000//fireing base delay
-			};//en ms
-			BaseDamage = 100;
-			MinAttackRange = 2000;
-			MaxAttackRange = 5000;
-			AttackRadius = 150;
-		}
-
-		/// <summary>
-		/// Calculates the damage based on the target type (door, siege, player)
-		/// <summary>
-		public override int CalcDamageToTarget(GameLiving target)
-		{
-			//Trebs are better against doors but lower damage against players/npcs/other objects
-			if(target is GameKeepDoor || target is GameRelicDoor)
-				return BaseDamage * 3;
-			else
-				return BaseDamage;
-		}
-	}
+    /// <summary>
+    /// Calculates the damage based on the target type (door, siege, player)
+    /// <summary>
+    public override int CalcDamageToTarget(GameLiving target)
+    {
+        //Trebs are better against doors but lower damage against players/npcs/other objects
+        if (target is GameKeepDoor || target is GameRelicDoor)
+            return BaseDamage * 3;
+        else
+            return BaseDamage;
+    }
 }

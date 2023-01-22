@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,327 +24,305 @@ using System.Reflection;
 using DOL.GS.Styles;
 using log4net;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.UseSkill, "Handles Player Use Skill Request.",
+    eClientStatus.PlayerInGame)]
+public class UseSkillHandler : IPacketHandler
 {
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.UseSkill, "Handles Player Use Skill Request.", eClientStatus.PlayerInGame)]
-	public class UseSkillHandler : IPacketHandler
-	{
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			if (client.Version >= GameClient.eClientVersion.Version1124)
-			{
-				client.Player.X = (int)packet.ReadFloatLowEndian();
-				client.Player.Y = (int)packet.ReadFloatLowEndian();
-				client.Player.Z = (int)packet.ReadFloatLowEndian();
-				client.Player.CurrentSpeed = (short)packet.ReadFloatLowEndian();
-				client.Player.Heading = packet.ReadShort();
-			}
-			int flagSpeedData = packet.ReadShort();
-			int index = packet.ReadByte();
-			int type = packet.ReadByte();
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        if (client.Version >= GameClient.eClientVersion.Version1124)
+        {
+            client.Player.X = (int) packet.ReadFloatLowEndian();
+            client.Player.Y = (int) packet.ReadFloatLowEndian();
+            client.Player.Z = (int) packet.ReadFloatLowEndian();
+            client.Player.CurrentSpeed = (short) packet.ReadFloatLowEndian();
+            client.Player.Heading = packet.ReadShort();
+        }
 
-			// new UseSkillAction(client.Player, flagSpeedData, index, type).Start(1);
+        int flagSpeedData = packet.ReadShort();
+        var index = packet.ReadByte();
+        var type = packet.ReadByte();
 
-			ProcessPacket(client.Player, flagSpeedData, index, type);
-		}
+        // new UseSkillAction(client.Player, flagSpeedData, index, type).Start(1);
+
+        ProcessPacket(client.Player, flagSpeedData, index, type);
+    }
 
 
-		public void ProcessPacket(GamePlayer player, int flagSpeedData, int index, int type)
-		{
-			
-			if (player == null)
-					return;
+    public void ProcessPacket(GamePlayer player, int flagSpeedData, int index, int type)
+    {
+        if (player == null)
+            return;
 
-				if ((flagSpeedData & 0x200) != 0)
-				{
-					player.CurrentSpeed = (short)(-(flagSpeedData & 0x1ff)); // backward movement
-				}
-				else
-				{
-					player.CurrentSpeed = (short)(flagSpeedData & 0x1ff); // forwardmovement
-				}
+        if ((flagSpeedData & 0x200) != 0)
+            player.CurrentSpeed = (short) -(flagSpeedData & 0x1ff); // backward movement
+        else
+            player.CurrentSpeed = (short) (flagSpeedData & 0x1ff); // forwardmovement
 
-				player.IsStrafing = (flagSpeedData & 0x4000) != 0;
-				player.TargetInView = (flagSpeedData & 0xa000) != 0; // why 2 bits? that has to be figured out
-				player.GroundTargetInView = ((flagSpeedData & 0x1000) != 0);
+        player.IsStrafing = (flagSpeedData & 0x4000) != 0;
+        player.TargetInView = (flagSpeedData & 0xa000) != 0; // why 2 bits? that has to be figured out
+        player.GroundTargetInView = (flagSpeedData & 0x1000) != 0;
 
-				List<Tuple<Skill, Skill>> snap = player.GetAllUsableSkills();
-				
-				Skill sk = null;
-				Skill sksib = null;
-				
-				// we're not using a spec !
-				if (type > 0)
-				{
-					
-					// find the first non-specialization index.
-					int begin = Math.Max(0, snap.FindIndex(it => (it.Item1 is Specialization) == false));
-					
-					// are we in list ?
-					if (index + begin < snap.Count)
-					{
-						sk = snap[index + begin].Item1;
-						sksib = snap[index + begin].Item2;
-					}
-					
-				}
-				else
-				{
-					// mostly a spec !
-					if (index < snap.Count)
-					{
-						sk = snap[index].Item1;
-						sksib = snap[index].Item2;
-					}
-				}
+        var snap = player.GetAllUsableSkills();
 
-				// we really got a skill !
-				if (sk != null)
-				{
-					// Test if we can use it !
-					int reuseTime = player.GetSkillDisabledDuration(sk);
-					if (reuseTime > 60000)
-					{
-						player.Out.SendMessage(
-							string.Format("You must wait {0} minutes {1} seconds to use this ability!", reuseTime/60000, reuseTime%60000/1000),
-							eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						
-						if (player.Client.Account.PrivLevel < 2)
-							return;
-					}
-					else if (reuseTime > 0)
-					{
-						// Allow Pulse Spells to be canceled while they are on reusetimer
-						if (sk is Spell && (sk as Spell).IsPulsing && player.LastPulseCast == (sk as Spell))
-						{
-							ECSPulseEffect effect = EffectListService.GetPulseEffectOnTarget(player);
-							EffectService.RequestImmediateCancelConcEffect(effect);
+        Skill sk = null;
+        Skill sksib = null;
 
-							if ((sk as Spell).InstrumentRequirement == 0)
-								player.Out.SendMessage("You cancel your effect.", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
-							else
-								player.Out.SendMessage("You stop playing your song.", eChatType.CT_Spell, eChatLoc.CL_SystemWindow);
-					}
-						else
-						{
-							player.Out.SendMessage(string.Format("You must wait {0} seconds to use this ability!", reuseTime / 1000 + 1),
-												   eChatType.CT_System, eChatLoc.CL_SystemWindow);							
-						}
+        // we're not using a spec !
+        if (type > 0)
+        {
+            // find the first non-specialization index.
+            var begin = Math.Max(0, snap.FindIndex(it => it.Item1 is Specialization == false));
 
-						if (player.Client.Account.PrivLevel < 2)
-							return;
-				}
+            // are we in list ?
+            if (index + begin < snap.Count)
+            {
+                sk = snap[index + begin].Item1;
+                sksib = snap[index + begin].Item2;
+            }
+        }
+        else
+        {
+            // mostly a spec !
+            if (index < snap.Count)
+            {
+                sk = snap[index].Item1;
+                sksib = snap[index].Item2;
+            }
+        }
 
-					// See what we should do depending on skill type !
+        // we really got a skill !
+        if (sk != null)
+        {
+            // Test if we can use it !
+            var reuseTime = player.GetSkillDisabledDuration(sk);
+            if (reuseTime > 60000)
+            {
+                player.Out.SendMessage(
+                    string.Format("You must wait {0} minutes {1} seconds to use this ability!", reuseTime / 60000,
+                        reuseTime % 60000 / 1000),
+                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
-					
-					if (sk is Specialization)
-					{
-						Specialization spec = (Specialization)sk;
-						ISpecActionHandler handler = SkillBase.GetSpecActionHandler(spec.KeyName);
-						if (handler != null)
-						{
-							handler.Execute(spec, player);
-						}
-					}
-					else if (sk is Ability)
-					{
-						Ability ab = (Ability)sk;
-						IAbilityActionHandler handler = SkillBase.GetAbilityActionHandler(ab.KeyName);
-						if (handler != null)
-						{
-							handler.Execute(ab, player);
-							return;
-						}
-						
-						ab.Execute(player);
-					}
-					else if (sk is Spell)
-					{
-						if (sksib != null && sksib is SpellLine)
-						{
-							
-							if (GameLoop.GameLoopTime > player.TempProperties.getProperty<long>(sk.Name) + GameLoop.TickRate)
-							{
-							//todo How to attach a spell to a player? Casting Service should in theory create spellHandler and add to the player -- not the component
-							//player.CastSpell((Spell)sk, sl);
-							player.castingComponent.StartCastSpell((Spell)sk, (SpellLine)sksib);
-						}
-						}
+                if (player.Client.Account.PrivLevel < 2)
+                    return;
+            }
+            else if (reuseTime > 0)
+            {
+                // Allow Pulse Spells to be canceled while they are on reusetimer
+                if (sk is Spell && (sk as Spell).IsPulsing && player.LastPulseCast == sk as Spell)
+                {
+                    var effect = EffectListService.GetPulseEffectOnTarget(player);
+                    EffectService.RequestImmediateCancelConcEffect(effect);
 
-						player.TempProperties.setProperty(sk.Name, GameLoop.GameLoopTime);
-					}
-					else if (sk is Style)
-					{
-						player.styleComponent.ExecuteWeaponStyle((Style)sk);
-					}
-						
-				}
+                    if ((sk as Spell).InstrumentRequirement == 0)
+                        player.Out.SendMessage("You cancel your effect.", eChatType.CT_Spell,
+                            eChatLoc.CL_SystemWindow);
+                    else
+                        player.Out.SendMessage("You stop playing your song.", eChatType.CT_Spell,
+                            eChatLoc.CL_SystemWindow);
+                }
+                else
+                {
+                    player.Out.SendMessage(
+                        string.Format("You must wait {0} seconds to use this ability!", reuseTime / 1000 + 1),
+                        eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                }
 
-				if (sk == null)
-				{
-					player.Out.SendMessage("Skill is not implemented.", eChatType.CT_Advise, eChatLoc.CL_SystemWindow);
-				}
-		}
+                if (player.Client.Account.PrivLevel < 2)
+                    return;
+            }
 
-		/// <summary>
-		/// Handles player use skill actions
-		/// </summary>
-		protected class UseSkillAction : RegionECSAction
-		{
-			/// <summary>
-			/// The speed and flags data
-			/// </summary>
-			protected readonly int m_flagSpeedData;
+            // See what we should do depending on skill type !
 
-			/// <summary>
-			/// The skill index
-			/// </summary>
-			protected readonly int m_index;
 
-			/// <summary>
-			/// The skill type
-			/// </summary>
-			protected readonly int m_type;
+            if (sk is Specialization)
+            {
+                var spec = (Specialization) sk;
+                var handler = SkillBase.GetSpecActionHandler(spec.KeyName);
+                if (handler != null) handler.Execute(spec, player);
+            }
+            else if (sk is Ability)
+            {
+                var ab = (Ability) sk;
+                var handler = SkillBase.GetAbilityActionHandler(ab.KeyName);
+                if (handler != null)
+                {
+                    handler.Execute(ab, player);
+                    return;
+                }
 
-			/// <summary>
-			/// Constructs a new UseSkillAction
-			/// </summary>
-			/// <param name="actionSource">The action source</param>
-			/// <param name="flagSpeedData">The skill type</param>
-			/// <param name="index">The skill index</param>
-			/// <param name="type">The skill type</param>
-			public UseSkillAction(GamePlayer actionSource, int flagSpeedData, int index, int type)
-				: base(actionSource)
-			{
-				m_flagSpeedData = flagSpeedData;
-				m_index = index;
-				m_type = type;
-			}
+                ab.Execute(player);
+            }
+            else if (sk is Spell)
+            {
+                if (sksib != null && sksib is SpellLine)
+                    if (GameLoop.GameLoopTime >
+                        player.TempProperties.getProperty<long>(sk.Name) + GameLoop.TickRate)
+                        //todo How to attach a spell to a player? Casting Service should in theory create spellHandler and add to the player -- not the component
+                        //player.CastSpell((Spell)sk, sl);
+                        player.castingComponent.StartCastSpell((Spell) sk, (SpellLine) sksib);
 
-			/// <summary>
-			/// Called on every timer tick
-			/// </summary>
-			protected override int OnTick(ECSGameTimer timer)
-			{
-				GamePlayer player = (GamePlayer) m_actionSource;
-				if (player == null)
-					return 0;
+                player.TempProperties.setProperty(sk.Name, GameLoop.GameLoopTime);
+            }
+            else if (sk is Style)
+            {
+                player.styleComponent.ExecuteWeaponStyle((Style) sk);
+            }
+        }
 
-				if ((m_flagSpeedData & 0x200) != 0)
-				{
-					player.CurrentSpeed = (short)(-(m_flagSpeedData & 0x1ff)); // backward movement
-				}
-				else
-				{
-					player.CurrentSpeed = (short)(m_flagSpeedData & 0x1ff); // forwardmovement
-				}
+        if (sk == null)
+            player.Out.SendMessage("Skill is not implemented.", eChatType.CT_Advise, eChatLoc.CL_SystemWindow);
+    }
 
-				player.IsStrafing = (m_flagSpeedData & 0x4000) != 0;
-				player.TargetInView = (m_flagSpeedData & 0xa000) != 0; // why 2 bits? that has to be figured out
-				player.GroundTargetInView = ((m_flagSpeedData & 0x1000) != 0);
+    /// <summary>
+    /// Handles player use skill actions
+    /// </summary>
+    protected class UseSkillAction : RegionECSAction
+    {
+        /// <summary>
+        /// The speed and flags data
+        /// </summary>
+        protected readonly int m_flagSpeedData;
 
-				List<Tuple<Skill, Skill>> snap = player.GetAllUsableSkills();
-				
-				Skill sk = null;
-				Skill sksib = null;
-				
-				// we're not using a spec !
-				if (m_type > 0)
-				{
-					
-					// find the first non-specialization index.
-					int begin = Math.Max(0, snap.FindIndex(it => (it.Item1 is Specialization) == false));
-					
-					// are we in list ?
-					if (m_index + begin < snap.Count)
-					{
-						sk = snap[m_index + begin].Item1;
-						sksib = snap[m_index + begin].Item2;
-					}
-					
-				}
-				else
-				{
-					// mostly a spec !
-					if (m_index < snap.Count)
-					{
-						sk = snap[m_index].Item1;
-						sksib = snap[m_index].Item2;
-					}
-				}
+        /// <summary>
+        /// The skill index
+        /// </summary>
+        protected readonly int m_index;
 
-				// we really got a skill !
-				if (sk != null)
-				{
-					// Test if we can use it !
-					int reuseTime = player.GetSkillDisabledDuration(sk);
-					if (reuseTime > 60000)
-					{
-						player.Out.SendMessage(
-							string.Format("You must wait {0} minutes {1} seconds to use this ability!", reuseTime/60000, reuseTime%60000/1000),
-							eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						
-						if (player.Client.Account.PrivLevel < 2)
-							return 0;
-					}
-					else if (reuseTime > 0)
-					{
-						player.Out.SendMessage(string.Format("You must wait {0} seconds to use this ability!", reuseTime/1000 + 1),
-						                       eChatType.CT_System, eChatLoc.CL_SystemWindow);
-						
-						if (player.Client.Account.PrivLevel < 2) 
-							return 0;
-					}
+        /// <summary>
+        /// The skill type
+        /// </summary>
+        protected readonly int m_type;
 
-					// See what we should do depending on skill type !
+        /// <summary>
+        /// Constructs a new UseSkillAction
+        /// </summary>
+        /// <param name="actionSource">The action source</param>
+        /// <param name="flagSpeedData">The skill type</param>
+        /// <param name="index">The skill index</param>
+        /// <param name="type">The skill type</param>
+        public UseSkillAction(GamePlayer actionSource, int flagSpeedData, int index, int type)
+            : base(actionSource)
+        {
+            m_flagSpeedData = flagSpeedData;
+            m_index = index;
+            m_type = type;
+        }
 
-					
-					if (sk is Specialization)
-					{
-						Specialization spec = (Specialization)sk;
-						ISpecActionHandler handler = SkillBase.GetSpecActionHandler(spec.KeyName);
-						if (handler != null)
-						{
-							handler.Execute(spec, player);
-						}
-					}
-					else if (sk is Ability)
-					{
-						Ability ab = (Ability)sk;
-						IAbilityActionHandler handler = SkillBase.GetAbilityActionHandler(ab.KeyName);
-						if (handler != null)
-						{
-							handler.Execute(ab, player);
-							return 0;
-						}
-						
-						ab.Execute(player);
-					}
-					else if (sk is Spell)
-					{
-						if(sksib != null && sksib is SpellLine)
-							player.CastSpell((Spell)sk, (SpellLine)sksib);
-					}
-					else if (sk is Style)
-					{
-						player.styleComponent.ExecuteWeaponStyle((Style)sk);
-					}
-						
-				}
+        /// <summary>
+        /// Called on every timer tick
+        /// </summary>
+        protected override int OnTick(ECSGameTimer timer)
+        {
+            var player = (GamePlayer) m_actionSource;
+            if (player == null)
+                return 0;
 
-				if (sk == null)
-				{
-					player.Out.SendMessage("Skill is not implemented.", eChatType.CT_Advise, eChatLoc.CL_SystemWindow);
-				}
+            if ((m_flagSpeedData & 0x200) != 0)
+                player.CurrentSpeed = (short) -(m_flagSpeedData & 0x1ff); // backward movement
+            else
+                player.CurrentSpeed = (short) (m_flagSpeedData & 0x1ff); // forwardmovement
 
-				return 0;
-			}
-		}
-	}
+            player.IsStrafing = (m_flagSpeedData & 0x4000) != 0;
+            player.TargetInView = (m_flagSpeedData & 0xa000) != 0; // why 2 bits? that has to be figured out
+            player.GroundTargetInView = (m_flagSpeedData & 0x1000) != 0;
+
+            var snap = player.GetAllUsableSkills();
+
+            Skill sk = null;
+            Skill sksib = null;
+
+            // we're not using a spec !
+            if (m_type > 0)
+            {
+                // find the first non-specialization index.
+                var begin = Math.Max(0, snap.FindIndex(it => it.Item1 is Specialization == false));
+
+                // are we in list ?
+                if (m_index + begin < snap.Count)
+                {
+                    sk = snap[m_index + begin].Item1;
+                    sksib = snap[m_index + begin].Item2;
+                }
+            }
+            else
+            {
+                // mostly a spec !
+                if (m_index < snap.Count)
+                {
+                    sk = snap[m_index].Item1;
+                    sksib = snap[m_index].Item2;
+                }
+            }
+
+            // we really got a skill !
+            if (sk != null)
+            {
+                // Test if we can use it !
+                var reuseTime = player.GetSkillDisabledDuration(sk);
+                if (reuseTime > 60000)
+                {
+                    player.Out.SendMessage(
+                        string.Format("You must wait {0} minutes {1} seconds to use this ability!",
+                            reuseTime / 60000, reuseTime % 60000 / 1000),
+                        eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                    if (player.Client.Account.PrivLevel < 2)
+                        return 0;
+                }
+                else if (reuseTime > 0)
+                {
+                    player.Out.SendMessage(
+                        string.Format("You must wait {0} seconds to use this ability!", reuseTime / 1000 + 1),
+                        eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+                    if (player.Client.Account.PrivLevel < 2)
+                        return 0;
+                }
+
+                // See what we should do depending on skill type !
+
+
+                if (sk is Specialization)
+                {
+                    var spec = (Specialization) sk;
+                    var handler = SkillBase.GetSpecActionHandler(spec.KeyName);
+                    if (handler != null) handler.Execute(spec, player);
+                }
+                else if (sk is Ability)
+                {
+                    var ab = (Ability) sk;
+                    var handler = SkillBase.GetAbilityActionHandler(ab.KeyName);
+                    if (handler != null)
+                    {
+                        handler.Execute(ab, player);
+                        return 0;
+                    }
+
+                    ab.Execute(player);
+                }
+                else if (sk is Spell)
+                {
+                    if (sksib != null && sksib is SpellLine)
+                        player.CastSpell((Spell) sk, (SpellLine) sksib);
+                }
+                else if (sk is Style)
+                {
+                    player.styleComponent.ExecuteWeaponStyle((Style) sk);
+                }
+            }
+
+            if (sk == null)
+                player.Out.SendMessage("Skill is not implemented.", eChatType.CT_Advise, eChatLoc.CL_SystemWindow);
+
+            return 0;
+        }
+    }
 }

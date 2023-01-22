@@ -15,7 +15,7 @@ namespace DOL.GS.Scripts
         {
         }
 
-        public static GameNPC SI_Gnat = new GameNPC();
+        public static GameNPC SI_Gnat = new();
 
         public override bool AddToWorld()
         {
@@ -29,7 +29,7 @@ namespace DOL.GS.Scripts
             MaxDistance = 1500;
             TetherRange = 2000;
             RoamingRange = 400;
-            GnatBrain sBrain = new GnatBrain();
+            var sBrain = new GnatBrain();
             SetOwnBrain(sBrain);
             sBrain.AggroLevel = 100;
             sBrain.AggroRange = 500;
@@ -56,7 +56,6 @@ namespace DOL.AI.Brain
         public override void Think()
         {
             if (Body.InCombat == true && Body.IsAlive && HasAggro)
-            {
                 if (Body.TargetObject != null)
                 {
                     if (Body.HealthPercent < 95 && spawnants == true)
@@ -64,41 +63,29 @@ namespace DOL.AI.Brain
                         Spawn(); //spawn adds here
                         spawnants = false; //we check here to avoid spawning adds multiple times
                         foreach (GamePlayer player in Body.GetPlayersInRadius(2000))
-                        {
                             player.Out.SendMessage("Lets loose a high pitch whistle.", eChatType.CT_Say,
                                 eChatLoc.CL_SystemWindow);
-                        }
                     }
 
                     foreach (GameNPC mob_c in Body.GetNPCsInRadius(2000, false))
-                    {
                         if (mob_c != null)
-                        {
-                            if ((mob_c.Name.ToLower() == "fiery ant") && mob_c.IsAlive && mob_c.IsAvailable)
-                            {
+                            if (mob_c.Name.ToLower() == "fiery ant" && mob_c.IsAlive && mob_c.IsAvailable)
                                 if (mob_c.Brain is GnatAntsBrain && mob_c.RespawnInterval == -1)
-                                {
                                     AddAggroListTo(mob_c.Brain as GnatAntsBrain); //add ants to boss agrro brain
-                                }
-                            }
-                        }
-                    }
                 }
-            }
 
-            if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
-            {
+            if (Body.InCombatInLast(30 * 1000) == false &&
+                Body.InCombatInLast(35 * 1000))
                 spawnants = true; //reset so he can actually spawn adds if player decide to leave combat
-            }
 
             base.Think();
         }
 
         public void Spawn() // We define here adds
         {
-            for (int i = 0; i < 7; i++) //Spawn 8 ants
+            for (var i = 0; i < 7; i++) //Spawn 8 ants
             {
-                GnatAnts Add = new GnatAnts();
+                var Add = new GnatAnts();
                 Add.X = Body.X + Util.Random(50, 80);
                 Add.Y = Body.Y + Util.Random(50, 80);
                 Add.Z = Body.Z;
@@ -119,12 +106,9 @@ namespace DOL.GS
         {
         }
 
-        public static GameNPC SI_Gnatants = new GameNPC();
+        public static GameNPC SI_Gnatants = new();
 
-        public override int MaxHealth
-        {
-            get { return 450 * Constitution / 100; }
-        }
+        public override int MaxHealth => 450 * Constitution / 100;
 
         public override bool AddToWorld()
         {
@@ -139,7 +123,7 @@ namespace DOL.GS
             Size = (byte) Util.Random(8, 12);
             Level = (byte) Util.Random(30, 34);
             Realm = eRealm.None;
-            GnatAntsBrain adds = new GnatAntsBrain();
+            var adds = new GnatAntsBrain();
             LoadedFromScript = true;
             SetOwnBrain(adds);
             base.AddToWorld();

@@ -1,10 +1,9 @@
-﻿namespace DOL.GS
+﻿namespace DOL.GS;
+
+public class StealtherMob : GameNPC
 {
-    public class StealtherMob : GameNPC
+    public StealtherMob() : base()
     {
-        public StealtherMob() : base() 
-        {            
-            Flags = eFlags.STEALTH;
-        }
+        Flags = eFlags.STEALTH;
     }
 }

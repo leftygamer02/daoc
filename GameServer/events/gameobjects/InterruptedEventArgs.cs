@@ -16,23 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS;
 
-namespace DOL.Events
-{
-    /// <summary>
-    /// Holds parameters for InterruptedEvent.
-    /// </summary>
-    public class InterruptedEventArgs : EventArgs
-    {
-        public InterruptedEventArgs(GameLiving attacker)
-        {
-            Attacker = attacker;
-        }
+namespace DOL.Events;
 
-        public GameLiving Attacker { get; private set; }
+/// <summary>
+/// Holds parameters for InterruptedEvent.
+/// </summary>
+public class InterruptedEventArgs : EventArgs
+{
+    public InterruptedEventArgs(GameLiving attacker)
+    {
+        Attacker = attacker;
     }
+
+    public GameLiving Attacker { get; private set; }
 }

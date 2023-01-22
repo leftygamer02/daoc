@@ -1,43 +1,41 @@
 using DOL.GS.PacketHandler;
 using DOL.GS.ServerRules;
 using System;
-namespace DOL.GS.Commands
+
+namespace DOL.GS.Commands;
+
+[Cmd("&dfowner", ePrivLevel.Admin,
+    "Changes the Realm owning access to Darkness Falls", "&dfowner <Realm>")]
+public class DFOwnerCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-    [Cmd("&dfowner", ePrivLevel.Admin,
-        "Changes the Realm owning access to Darkness Falls", "&dfowner <Realm>")]
+    private static readonly log4net.ILog log =
+        log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-    public class DFOwnerCommandHandler : AbstractCommandHandler, ICommandHandler
+    public void OnCommand(GameClient client, string[] args)
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public void OnCommand(GameClient client, string[] args)
-        {
-            if (args.Length == 2)
+        if (args.Length == 2)
+            try
             {
-                try
+                var newRealm = Convert.ToByte(args[1]);
+                var player = client.Player;
+
+                if (newRealm < 0 || newRealm > 3)
                 {
-                    byte newRealm = Convert.ToByte(args[1]);
-                    var player = client.Player;
-
-                    if (newRealm < 0 || newRealm > 3)
-                    {
-                        if (client != null && player != null) 
-                            client.Out.SendMessage(player.Name + "'s realm can only be set to numbers 0-3!", eChatType.CT_Important,
-                                eChatLoc.CL_SystemWindow);
-                        return;
-                    }
-                    DFEnterJumpPoint.SetDFOwner(player, (eRealm)newRealm);
-
+                    if (client != null && player != null)
+                        client.Out.SendMessage(player.Name + "'s realm can only be set to numbers 0-3!",
+                            eChatType.CT_Important,
+                            eChatLoc.CL_SystemWindow);
+                    return;
                 }
 
-                catch (Exception)
-                {
-                    DisplaySyntax(client);
-                }
+                DFEnterJumpPoint.SetDFOwner(player, (eRealm) newRealm);
             }
-            else
-                DisplaySyntax(client);
-        }
 
+            catch (Exception)
+            {
+                DisplaySyntax(client);
+            }
+        else
+            DisplaySyntax(client);
     }
 }

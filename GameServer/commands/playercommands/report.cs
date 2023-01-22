@@ -18,87 +18,95 @@
  */
 
 using System;
-
 using DOL.GS.PacketHandler;
 using DOL.GS.GameEvents;
 using DOL.Database;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&report",
+    ePrivLevel.Player,
+    "'Reports a bug",
+    "'Usage: /report <message>  Please be as detailed as possible.")]
+public class ReportCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&report",
-		ePrivLevel.Player,
-		"'Reports a bug",
-		"'Usage: /report <message>  Please be as detailed as possible.")]
-	public class ReportCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		private const ushort MAX_REPORTS = 100;
-		
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (ServerProperties.Properties.DISABLE_BUG_REPORTS)
-			{
-				DisplayMessage(client, "Bug reporting has been disabled for this server!");
-				return;
-			}
+    private const ushort MAX_REPORTS = 100;
 
-			if (IsSpammingCommand(client.Player, "report"))
-				return;
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (ServerProperties.Properties.DISABLE_BUG_REPORTS)
+        {
+            DisplayMessage(client, "Bug reporting has been disabled for this server!");
+            return;
+        }
 
-			if (args.Length < 2)
-			{
-				DisplaySyntax(client);
-				return;
-			}
+        if (IsSpammingCommand(client.Player, "report"))
+            return;
 
-			if (client.Player.IsMuted)
-			{
-				client.Player.Out.SendMessage("You have been muted and are not allowed to submit bug reports.", eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
-				return;
-			}
+        if (args.Length < 2)
+        {
+            DisplaySyntax(client);
+            return;
+        }
 
-			string message = string.Join(" ", args, 1, args.Length - 1);
-			BugReport report = new BugReport();
+        if (client.Player.IsMuted)
+        {
+            client.Player.Out.SendMessage("You have been muted and are not allowed to submit bug reports.",
+                eChatType.CT_Staff, eChatLoc.CL_SystemWindow);
+            return;
+        }
 
-			if (ServerProperties.Properties.MAX_BUGREPORT_QUEUE > 0)
-			{
-				//Andraste
-				var reports = GameServer.Database.SelectAllObjects<BugReport>();
-				bool found = false; int i = 0;
-				for (i = 0; i < ServerProperties.Properties.MAX_BUGREPORT_QUEUE; i++)
-				{
-					found = false;
-					foreach (BugReport rep in reports) if (rep.ID == i) found = true;
-					if (!found) break;
-				}
-				if (found)
-				{
-					client.Player.Out.SendMessage("There are too many reports, please contact a GM or wait until they are cleaned.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-					return;
-				}
+        var message = string.Join(" ", args, 1, args.Length - 1);
+        var report = new BugReport();
 
-				report.ID = i;
-			}
-			else
-			{
-				// This depends on bugs never being deleted from the report table!
-				report.ID = GameServer.Database.GetObjectCount<BugReport>() + 1;
-			}
-			
-			report.Message = message;
-			report.Submitter = client.Player.Name + " [" + client.Account.Name + "]";
-			GameServer.Database.AddObject(report);
-			client.Player.Out.SendMessage("Report submitted, if this is not a bug report it will be ignored!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+        if (ServerProperties.Properties.MAX_BUGREPORT_QUEUE > 0)
+        {
+            //Andraste
+            var reports = GameServer.Database.SelectAllObjects<BugReport>();
+            var found = false;
+            var i = 0;
+            for (i = 0; i < ServerProperties.Properties.MAX_BUGREPORT_QUEUE; i++)
+            {
+                found = false;
+                foreach (var rep in reports)
+                    if (rep.ID == i)
+                        found = true;
+                if (!found) break;
+            }
 
-			if (ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES.Trim() != "")
-			{
-				if (client.Account.Mail == "")
-					client.Player.Out.SendMessage("If you enter your email address for your account with /email command, your bug reports will send an email to the staff!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-				else
-				{
-					Mail.MailMgr.SendMail(ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES, GameServer.Instance.Configuration.ServerName + " bug report " + report.ID, report.Message, report.Submitter, client.Account.Mail);
-				}
-			}
-		}
-	}
+            if (found)
+            {
+                client.Player.Out.SendMessage(
+                    "There are too many reports, please contact a GM or wait until they are cleaned.",
+                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                return;
+            }
+
+            report.ID = i;
+        }
+        else
+        {
+            // This depends on bugs never being deleted from the report table!
+            report.ID = GameServer.Database.GetObjectCount<BugReport>() + 1;
+        }
+
+        report.Message = message;
+        report.Submitter = client.Player.Name + " [" + client.Account.Name + "]";
+        GameServer.Database.AddObject(report);
+        client.Player.Out.SendMessage("Report submitted, if this is not a bug report it will be ignored!",
+            eChatType.CT_System, eChatLoc.CL_SystemWindow);
+
+        if (ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES.Trim() != "")
+        {
+            if (client.Account.Mail == "")
+                client.Player.Out.SendMessage(
+                    "If you enter your email address for your account with /email command, your bug reports will send an email to the staff!",
+                    eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            else
+                Mail.MailMgr.SendMail(ServerProperties.Properties.BUG_REPORT_EMAIL_ADDRESSES,
+                    GameServer.Instance.Configuration.ServerName + " bug report " + report.ID, report.Message,
+                    report.Submitter, client.Account.Mail);
+        }
+    }
 }

@@ -1,12 +1,11 @@
-namespace DOL.GS
+namespace DOL.GS;
+
+public enum eCastState
 {
-    public enum eCastState
-    {
-        Precast,
-        Casting,
-        Interrupted,
-        Finished,
-        Focusing,
-        Cleanup
-    }
+    Precast,
+    Casting,
+    Interrupted,
+    Finished,
+    Focusing,
+    Cleanup
 }

@@ -16,35 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.RealmAbilities;
 
-namespace DOL.GS.PropertyCalc
+namespace DOL.GS.PropertyCalc;
+
+/// <summary>
+/// The melee damage bonus percent calculator
+/// 
+/// BuffBonusCategory1 is used for buffs
+/// BuffBonusCategory2 unused
+/// BuffBonusCategory3 is used for debuff
+/// BuffBonusCategory4 unused
+/// BuffBonusMultCategory1 unused
+/// </summary>
+[PropertyCalculator(eProperty.SpeedDecreaseDurationReduction)]
+public class SpeedDecreaseDurationPercentCalculator : PropertyCalculator
 {
-	/// <summary>
-	/// The melee damage bonus percent calculator
-	/// 
-	/// BuffBonusCategory1 is used for buffs
-	/// BuffBonusCategory2 unused
-	/// BuffBonusCategory3 is used for debuff
-	/// BuffBonusCategory4 unused
-	/// BuffBonusMultCategory1 unused
-	/// </summary>
-	[PropertyCalculator(eProperty.SpeedDecreaseDurationReduction)]
-	public class SpeedDecreaseDurationPercentCalculator : PropertyCalculator
-	{
-		public override int CalcValue(GameLiving living, eProperty property) 
-		{
-			int percent = 100
-				-living.BaseBuffBonusCategory[(int)property] // buff reduce the duration
-				+living.DebuffCategory[(int)property]
-				-living.ItemBonus[(int)property]
-				-living.AbilityBonus[(int)property];
+    public override int CalcValue(GameLiving living, eProperty property)
+    {
+        var percent = 100
+                      - living.BaseBuffBonusCategory[(int) property] // buff reduce the duration
+                      + living.DebuffCategory[(int) property]
+                      - living.ItemBonus[(int) property]
+                      - living.AbilityBonus[(int) property];
 
-			if (living.HasAbility(Abilities.Stoicism))
-				percent -= 25;
+        if (living.HasAbility(Abilities.Stoicism))
+            percent -= 25;
 
-			return Math.Max(1, percent);
-		}
-	}
+        return Math.Max(1, percent);
+    }
 }

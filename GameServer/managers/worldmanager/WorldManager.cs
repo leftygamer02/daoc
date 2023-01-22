@@ -16,36 +16,36 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// GameServer Manager to Handle World Data and Region events for this GameServer.
+/// </summary>
+public sealed class WorldManager
 {
-	/// <summary>
-	/// GameServer Manager to Handle World Data and Region events for this GameServer.
-	/// </summary>
-	public sealed class WorldManager
-	{
-		/// <summary>
-		/// Reference to the Instanced GameServer
-		/// </summary>
-		private GameServer GameServerInstance { get; set; }
+    /// <summary>
+    /// Reference to the Instanced GameServer
+    /// </summary>
+    private GameServer GameServerInstance { get; set; }
 
-		/// <summary>
-		/// Reference to the World Weather Manager
-		/// </summary>
-		public WeatherManager WeatherManager { get; private set; }
-		
-		/// <summary>
-		/// Create a new instance of <see cref="WorldManager"/>
-		/// </summary>
-		public WorldManager(GameServer GameServerInstance)
-		{
-			if (GameServerInstance == null)
-				throw new ArgumentNullException("GameServerInstance");
+    /// <summary>
+    /// Reference to the World Weather Manager
+    /// </summary>
+    public WeatherManager WeatherManager { get; private set; }
 
-			this.GameServerInstance = GameServerInstance;
-			
-			WeatherManager = new WeatherManager(this.GameServerInstance.Scheduler);
-		}
-	}
+    /// <summary>
+    /// Create a new instance of <see cref="WorldManager"/>
+    /// </summary>
+    public WorldManager(GameServer GameServerInstance)
+    {
+        if (GameServerInstance == null)
+            throw new ArgumentNullException("GameServerInstance");
+
+        this.GameServerInstance = GameServerInstance;
+
+        WeatherManager = new WeatherManager(this.GameServerInstance.Scheduler);
+    }
 }

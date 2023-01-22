@@ -42,7 +42,6 @@ namespace DOL.GS.Scripts
 
         public override bool Interact(GamePlayer player)
         {
-
             if (!base.Interact(player))
                 return false;
 
@@ -55,10 +54,8 @@ namespace DOL.GS.Scripts
                 eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 
             if (player.Level == 50)
-            {
                 player.Out.SendMessage("Let me know when you are ready to [trade]", eChatType.CT_Say,
                     eChatLoc.CL_PopupWindow);
-            }
 
             return true;
         }
@@ -68,10 +65,11 @@ namespace DOL.GS.Scripts
             if (!base.WhisperReceive(source, str))
                 return false;
 
-            GamePlayer player = source as GamePlayer;
-            
+            var player = source as GamePlayer;
+
             const string soloKey = "solo_to_50";
-            var isSolo = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player?.ObjectId).And(DB.Column("KeyName").IsEqualTo(soloKey)));
+            var isSolo = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId")
+                .IsEqualTo(player?.ObjectId).And(DB.Column("KeyName").IsEqualTo(soloKey)));
 
             if (player == null)
                 return false;
@@ -79,17 +77,15 @@ namespace DOL.GS.Scripts
             switch (str)
             {
                 case "reward":
-                    
+
                     var orbAmount = 10000;
-                    if (player.NoHelp || isSolo != null)
-                    {
-                        orbAmount = 25000;
-                    }
+                    if (player.NoHelp || isSolo != null) orbAmount = 25000;
 
                     player.Out.SendMessage(
                         "For every character that you trade, I will deposit some Atlas Orbs in your Account Vault.",
                         eChatType.CT_Say, eChatLoc.CL_PopupWindow);
-                    player.Out.SendMessage($"I think your character is a worthy addition to my collection.\n I'll pay {orbAmount} Atlas Orbs for your character.",
+                    player.Out.SendMessage(
+                        $"I think your character is a worthy addition to my collection.\n I'll pay {orbAmount} Atlas Orbs for your character.",
                         eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 
                     player.Out.SendMessage(
@@ -140,9 +136,12 @@ namespace DOL.GS.Scripts
                     return false;
 
                 case "trade this character":
-                    
-                    if (player.Boosted){
-                        player.Out.SendMessage("At the moment I'm only interested in characters that started from Level 1, sorry.", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+
+                    if (player.Boosted)
+                    {
+                        player.Out.SendMessage(
+                            "At the moment I'm only interested in characters that started from Level 1, sorry.",
+                            eChatType.CT_Say, eChatLoc.CL_PopupWindow);
                         return false;
                     }
 
@@ -161,59 +160,56 @@ namespace DOL.GS.Scripts
         {
             if (response == 1)
             {
+                const string soloKey = "solo_to_50";
+                var isSolo = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId")
+                    .IsEqualTo(player?.ObjectId).And(DB.Column("KeyName").IsEqualTo(soloKey)));
+
+                var orbAmount = 1000;
+                player.Client.Account.CharactersTraded++;
+
+                if (player.NoHelp || isSolo != null)
                 {
-                    const string soloKey = "solo_to_50";
-                    var isSolo = DOLDB<DOLCharactersXCustomParam>.SelectObject(DB.Column("DOLCharactersObjectId").IsEqualTo(player?.ObjectId).And(DB.Column("KeyName").IsEqualTo(soloKey)));
-                    
-                    var orbAmount = 1000;
-                    player.Client.Account.CharactersTraded++;
-                    
-                    if (player.NoHelp || isSolo != null)
-                    {
-                        orbAmount = 2500;
-                        player.Client.Account.SoloCharactersTraded++;
-                    }
-                    
-                    player.Name = "DELETEME" + player.Name;
-                    if (player.Name.Length > 20) player.Name = player.Name.Substring(0, 20);
-                    player.Reset();
-                    player.Level = 2;
-
-                    player.MoveTo(249, 47400, 48686, 25000, 2085);
-
-                    AtlasROGManager.GenerateReward(player, orbAmount);
-
-                    GameServer.Database.SaveObject(player.Client.Account);
-
+                    orbAmount = 2500;
+                    player.Client.Account.SoloCharactersTraded++;
                 }
+
+                player.Name = "DELETEME" + player.Name;
+                if (player.Name.Length > 20) player.Name = player.Name.Substring(0, 20);
+                player.Reset();
+                player.Level = 2;
+
+                player.MoveTo(249, 47400, 48686, 25000, 2085);
+
+                AtlasROGManager.GenerateReward(player, orbAmount);
+
+                GameServer.Database.SaveObject(player.Client.Account);
             }
             else
-            {
                 player.Out.SendMessage("Come back if you change your mind!", eChatType.CT_Say, eChatLoc.CL_PopupWindow);
-            }
         }
     }
 }
 
 #region title
+
 namespace DOL.GS.PlayerTitles
 {
     public class TradeAnyTitleOne : SimplePlayerTitle
     {
-
         public override string GetDescription(GamePlayer player)
         {
             return "Herculean Beetle";
         }
-        
+
         public override string GetValue(GamePlayer source, GamePlayer player)
         {
             return "Herculean Beetle";
         }
-        
+
         public override void OnTitleGained(GamePlayer player)
         {
-            player.Out.SendMessage("You have gained the Herculean Beetle title!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage("You have gained the Herculean Beetle title!", eChatType.CT_Important,
+                eChatLoc.CL_SystemWindow);
         }
 
         public override bool IsSuitable(GamePlayer player)
@@ -221,23 +217,23 @@ namespace DOL.GS.PlayerTitles
             return player.Client.Account.CharactersTraded >= 5;
         }
     }
-    
+
     public class TradeAny10Title : SimplePlayerTitle
     {
-
         public override string GetDescription(GamePlayer player)
         {
             return "Sisyphean Beetle";
         }
-        
+
         public override string GetValue(GamePlayer source, GamePlayer player)
         {
             return "Sisyphean Beetle";
         }
-        
+
         public override void OnTitleGained(GamePlayer player)
         {
-            player.Out.SendMessage("You have gained the Sisyphean Beetle title!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage("You have gained the Sisyphean Beetle title!", eChatType.CT_Important,
+                eChatLoc.CL_SystemWindow);
         }
 
         public override bool IsSuitable(GamePlayer player)
@@ -245,23 +241,23 @@ namespace DOL.GS.PlayerTitles
             return player.Client.Account.CharactersTraded >= 10;
         }
     }
-    
+
     public class TradeSolo5Title : SimplePlayerTitle
     {
-
         public override string GetDescription(GamePlayer player)
         {
             return "The Punished";
         }
-        
+
         public override string GetValue(GamePlayer source, GamePlayer player)
         {
             return "The Punished";
         }
-        
+
         public override void OnTitleGained(GamePlayer player)
         {
-            player.Out.SendMessage("You have gained the The Punished title!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage("You have gained the The Punished title!", eChatType.CT_Important,
+                eChatLoc.CL_SystemWindow);
         }
 
         public override bool IsSuitable(GamePlayer player)
@@ -269,23 +265,23 @@ namespace DOL.GS.PlayerTitles
             return player.Client.Account.SoloCharactersTraded >= 5;
         }
     }
-    
+
     public class TradeSolo10Title : SimplePlayerTitle
     {
-
         public override string GetDescription(GamePlayer player)
         {
             return "The Deranged";
         }
-        
+
         public override string GetValue(GamePlayer source, GamePlayer player)
         {
             return "The Deranged";
         }
-        
+
         public override void OnTitleGained(GamePlayer player)
         {
-            player.Out.SendMessage("You have gained the The Deranged title!", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage("You have gained the The Deranged title!", eChatType.CT_Important,
+                eChatLoc.CL_SystemWindow);
         }
 
         public override bool IsSuitable(GamePlayer player)
@@ -293,6 +289,6 @@ namespace DOL.GS.PlayerTitles
             return player.Client.Account.SoloCharactersTraded >= 10;
         }
     }
-    
 }
+
 #endregion

@@ -16,11 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-
 using DOL.AI.Brain;
 using DOL.Database;
 using DOL.Events;
@@ -39,10 +39,11 @@ namespace DOL.GS.Spells
     public class DexStrConQuiTap : SpellHandler
     {
         private IList<eProperty> m_stats;
+
         public IList<eProperty> Stats
         {
-            get { return m_stats; }
-            set { m_stats = value; }
+            get => m_stats;
+            set => m_stats = value;
         }
 
         public DexStrConQuiTap(GameLiving caster, Spell spell, SpellLine line)
@@ -58,19 +59,21 @@ namespace DOL.GS.Spells
         public override void OnEffectStart(GameSpellEffect effect)
         {
             base.OnEffectStart(effect);
-            foreach (eProperty property in Stats)
+            foreach (var property in Stats)
             {
-                m_caster.BaseBuffBonusCategory[(int)property] += (int)m_spell.Value;
-                m_spellTarget.DebuffCategory[(int)property] -= (int)m_spell.Value;
+                m_caster.BaseBuffBonusCategory[(int) property] += (int) m_spell.Value;
+                m_spellTarget.DebuffCategory[(int) property] -= (int) m_spell.Value;
             }
         }
+
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
-            foreach (eProperty property in Stats)
+            foreach (var property in Stats)
             {
-                m_spellTarget.DebuffCategory[(int)property] += (int)m_spell.Value;
-                m_caster.BaseBuffBonusCategory[(int)property] -= (int)m_spell.Value;
+                m_spellTarget.DebuffCategory[(int) property] += (int) m_spell.Value;
+                m_caster.BaseBuffBonusCategory[(int) property] -= (int) m_spell.Value;
             }
+
             return base.OnEffectExpires(effect, noMessages);
         }
     }
@@ -81,9 +84,13 @@ namespace DOL.GS.Spells
     [SpellHandlerAttribute("ArmorReducingEffectiveness")]
     public class ArmorReducingEffectiveness : DualStatDebuff
     {
-        public override eProperty Property1 { get { return eProperty.ArmorFactor; } }
-        public override eProperty Property2 { get { return eProperty.ArmorAbsorption; } }
-        public ArmorReducingEffectiveness(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public override eProperty Property1 => eProperty.ArmorFactor;
+
+        public override eProperty Property2 => eProperty.ArmorAbsorption;
+
+        public ArmorReducingEffectiveness(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
 
     /// <summary>
@@ -92,12 +99,16 @@ namespace DOL.GS.Spells
     [SpellHandler("SummonHealingElemental")]
     public class SummonHealingElemental : MasterlevelHandling
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        GameNPC summoned = null;
-        GameSpellEffect beffect = null;
+        private GameNPC summoned = null;
+        private GameSpellEffect beffect = null;
+
         public SummonHealingElemental(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line)  {}
+            : base(caster, spell, line)
+        {
+        }
 
         /// <summary>
         /// Apply effect on target or do spell action if non duration spell
@@ -106,11 +117,8 @@ namespace DOL.GS.Spells
         /// <param name="effectiveness">factor from 0..1 (0%-100%)</param>
         public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
         {
-            GamePlayer player = Caster as GamePlayer;
-            if (player == null)
-            {
-                return;
-            }
+            var player = Caster as GamePlayer;
+            if (player == null) return;
 
             INpcTemplate template = NpcTemplateMgr.GetTemplate(Spell.LifeDrainReturn);
             if (template == null)
@@ -126,7 +134,7 @@ namespace DOL.GS.Spells
             {
                 summonloc = target.GetPointFromHeading(target.Heading, 64);
 
-                BrittleBrain controlledBrain = new BrittleBrain(player);
+                var controlledBrain = new BrittleBrain(player);
                 controlledBrain.IsMainPet = false;
                 summoned = new GameNPC(template);
                 summoned.SetOwnBrain(controlledBrain);
@@ -134,7 +142,7 @@ namespace DOL.GS.Spells
                 summoned.Y = summonloc.Y;
                 summoned.Z = target.Z;
                 summoned.CurrentRegion = target.CurrentRegion;
-                summoned.Heading = (ushort)((target.Heading + 2048) % 4096);
+                summoned.Heading = (ushort) ((target.Heading + 2048) % 4096);
                 summoned.Realm = target.Realm;
                 summoned.CurrentSpeed = 0;
                 summoned.Level = Caster.Level;
@@ -159,6 +167,7 @@ namespace DOL.GS.Spells
                 summoned.Health = 0; // to send proper remove packet
                 summoned.Delete();
             }
+
             return base.OnEffectExpires(effect, noMessages);
         }
     }
@@ -175,37 +184,47 @@ namespace DOL.GS.Spells
         {
             //Set pet infos & Brain
             base.ApplyEffectOnTarget(target, effectiveness);
-            ProcPetBrain petBrain = (ProcPetBrain)m_pet.Brain;
+            var petBrain = (ProcPetBrain) m_pet.Brain;
             m_pet.Level = Caster.Level;
             m_pet.Strength = 0;
             petBrain.AddToAggroList(target, 1);
             petBrain.Think();
         }
 
-        protected override GamePet GetGamePet(INpcTemplate template) { return new SummonElementalPet(template); }
-        protected override IControlledBrain GetPetBrain(GameLiving owner) { return new ProcPetBrain(owner); }
-        protected override void SetBrainToOwner(IControlledBrain brain) { }
-        protected override void AddHandlers() { GameEventMgr.AddHandler(m_pet, GameLivingEvent.AttackFinished, EventHandler); }
+        protected override GamePet GetGamePet(INpcTemplate template)
+        {
+            return new SummonElementalPet(template);
+        }
+
+        protected override IControlledBrain GetPetBrain(GameLiving owner)
+        {
+            return new ProcPetBrain(owner);
+        }
+
+        protected override void SetBrainToOwner(IControlledBrain brain)
+        {
+        }
+
+        protected override void AddHandlers()
+        {
+            GameEventMgr.AddHandler(m_pet, GameLivingEvent.AttackFinished, EventHandler);
+        }
 
         protected void EventHandler(DOLEvent e, object sender, EventArgs arguments)
         {
-            AttackFinishedEventArgs args = arguments as AttackFinishedEventArgs;
+            var args = arguments as AttackFinishedEventArgs;
             if (args == null || args.AttackData == null)
                 return;
 
-            if (_trap == null)
-            {
-                _trap = MakeTrap();
-            }
-            if (Util.Chance(99))
-            {
-                _trap.CastSpell(args.AttackData.Target);
-            }
+            if (_trap == null) _trap = MakeTrap();
+
+            if (Util.Chance(99)) _trap.CastSpell(args.AttackData.Target);
         }
+
         // Creates the trap(spell)
         private ISpellHandler MakeTrap()
         {
-            DBSpell dbs = new DBSpell();
+            var dbs = new DBSpell();
             dbs.Name = "irritatin wisp";
             dbs.Icon = 4107;
             dbs.ClientEffect = 5435;
@@ -222,35 +241,43 @@ namespace DOL.GS.Spells
             dbs.Power = 0;
             dbs.CastTime = 0;
             dbs.Range = 1500;
-            Spell s = new Spell(dbs, 50);
-            SpellLine sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
+            var s = new Spell(dbs, 50);
+            var sl = SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells);
             return ScriptMgr.CreateSpellHandler(m_pet, s, sl);
         }
 
         public SummonElemental(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line) { }
-    } 
+            : base(caster, spell, line)
+        {
+        }
+    }
 }
 
 namespace DOL.GS
 {
     public class SummonHealingElementalPet : GamePet
     {
-        public override int MaxHealth
+        public override int MaxHealth => Level * 10;
+
+        public override void OnAttackedByEnemy(AttackData ad)
         {
-            get { return Level * 10; }
         }
-        public override void OnAttackedByEnemy(AttackData ad) { }
-        public SummonHealingElementalPet(INpcTemplate npcTemplate) : base(npcTemplate) { }
+
+        public SummonHealingElementalPet(INpcTemplate npcTemplate) : base(npcTemplate)
+        {
+        }
     }
 
     public class SummonElementalPet : GamePet
     {
-        public override int MaxHealth
+        public override int MaxHealth => Level * 10;
+
+        public override void OnAttackedByEnemy(AttackData ad)
         {
-            get { return Level * 10; }
         }
-        public override void OnAttackedByEnemy(AttackData ad) { }
-        public SummonElementalPet(INpcTemplate npcTemplate) : base(npcTemplate) { }
+
+        public SummonElementalPet(INpcTemplate npcTemplate) : base(npcTemplate)
+        {
+        }
     }
 }

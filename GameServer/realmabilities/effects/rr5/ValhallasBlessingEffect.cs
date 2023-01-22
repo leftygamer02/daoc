@@ -22,60 +22,60 @@ using System.Collections;
 using System.Collections.Generic;
 using DOL.Events;
 
-namespace DOL.GS.Effects
+namespace DOL.GS.Effects;
+
+public class ValhallasBlessingEffect : TimedEffect
 {
+    private GamePlayer EffectOwner;
 
-    public class ValhallasBlessingEffect : TimedEffect
+    public ValhallasBlessingEffect()
+        : base(RealmAbilities.ValhallasBlessingAbility.DURATION)
     {
-        private GamePlayer EffectOwner;
+    }
 
-        public ValhallasBlessingEffect()
-            : base(RealmAbilities.ValhallasBlessingAbility.DURATION)
-        { }
-
-        public override void Start(GameLiving target)
+    public override void Start(GameLiving target)
+    {
+        base.Start(target);
+        if (target is GamePlayer)
         {
-            base.Start(target);
-            if (target is GamePlayer)
-            {
-                EffectOwner = target as GamePlayer;
-                foreach (GamePlayer p in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
-                    p.Out.SendSpellEffectAnimation(target, target, 7087, 0, false, 1);
-                }
-                GameEventMgr.AddHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
-            }
+            EffectOwner = target as GamePlayer;
+            foreach (GamePlayer p in target.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                p.Out.SendSpellEffectAnimation(target, target, 7087, 0, false, 1);
+
+            GameEventMgr.AddHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
         }
-        public override void Stop()
-        {
-            if (EffectOwner != null)
-                GameEventMgr.RemoveHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
-            base.Stop();
-        }
+    }
 
-        /// <summary>
-        /// Called when a player leaves the game
-        /// </summary>
-        /// <param name="e">The event which was raised</param>
-        /// <param name="sender">Sender of the event</param>
-        /// <param name="args">EventArgs associated with the event</param>
-        protected void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
-        {
- 			Cancel(false);
-        }
+    public override void Stop()
+    {
+        if (EffectOwner != null)
+            GameEventMgr.RemoveHandler(EffectOwner, GamePlayerEvent.Quit, new DOLEventHandler(PlayerLeftWorld));
+        base.Stop();
+    }
 
-        public override string Name { get { return "Valhalla's Blessing"; } }
-        public override ushort Icon { get { return 3086; } }
+    /// <summary>
+    /// Called when a player leaves the game
+    /// </summary>
+    /// <param name="e">The event which was raised</param>
+    /// <param name="sender">Sender of the event</param>
+    /// <param name="args">EventArgs associated with the event</param>
+    protected void PlayerLeftWorld(DOLEvent e, object sender, EventArgs args)
+    {
+        Cancel(false);
+    }
 
-        // Delve Info
-        public override IList<string> DelveInfo
+    public override string Name => "Valhalla's Blessing";
+
+    public override ushort Icon => 3086;
+
+    // Delve Info
+    public override IList<string> DelveInfo
+    {
+        get
         {
-            get
-            {
-                var list = new List<string>();
-                list.Add("Spells/Styles have has a chance of not costing power or endurance.");
-                return list;
-            }
+            var list = new List<string>();
+            list.Add("Spells/Styles have has a chance of not costing power or endurance.");
+            return list;
         }
     }
 }

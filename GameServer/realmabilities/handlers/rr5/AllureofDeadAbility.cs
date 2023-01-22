@@ -3,48 +3,48 @@ using System.Collections.Generic;
 using DOL.Database;
 using DOL.GS.Effects;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+/// <summary>
+/// Arms Length Realm Ability
+/// </summary>
+public class AllureOfDeathAbility : RR5RealmAbility
 {
-	/// <summary>
-	/// Arms Length Realm Ability
-	/// </summary>
-	public class AllureOfDeathAbility : RR5RealmAbility
-	{
-		public AllureOfDeathAbility(DBAbility dba, int level) : base(dba, level) { }
+    public AllureOfDeathAbility(DBAbility dba, int level) : base(dba, level)
+    {
+    }
 
-		/// <summary>
-		/// Action
-		/// </summary>
-		/// <param name="living"></param>
-		public override void Execute(GameLiving living)
-		{
-			if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
+    /// <summary>
+    /// Action
+    /// </summary>
+    /// <param name="living"></param>
+    public override void Execute(GameLiving living)
+    {
+        if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
 
 
+        var player = living as GamePlayer;
+        if (player != null)
+        {
+            SendCasterSpellEffectAndCastMessage(player, 7076, true);
+            var effect = new AllureofDeathEffect();
+            effect.Start(player);
+        }
 
-			GamePlayer player = living as GamePlayer;
-			if (player != null)
-			{
-				SendCasterSpellEffectAndCastMessage(player, 7076, true);
-				AllureofDeathEffect effect = new AllureofDeathEffect();
-				effect.Start(player);
-			}
-			DisableSkill(living);
-		}
+        DisableSkill(living);
+    }
 
-		public override int GetReUseDelay(int level)
-		{
-			return 420;
-		}
+    public override int GetReUseDelay(int level)
+    {
+        return 420;
+    }
 
-		public override void AddEffectsInfo(IList<string> list)
-		{
-			list.Add("Allure of Death.");
-			list.Add("");
-			list.Add("Target: Self");
-			list.Add("Duration: 60 seconds");
-			list.Add("Casting time: instant");
-		}
-
-	}
+    public override void AddEffectsInfo(IList<string> list)
+    {
+        list.Add("Allure of Death.");
+        list.Add("");
+        list.Add("Target: Self");
+        list.Add("Duration: 60 seconds");
+        list.Add("Casting time: instant");
+    }
 }

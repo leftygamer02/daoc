@@ -20,106 +20,105 @@
 using System;
 using DOL.GS.Effects;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+/// <summary>
+/// Handles effect cancel requests
+/// </summary>
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.PlayerCancelsEffect,
+    "Handle Player Effect Cancel Request.", eClientStatus.PlayerInGame)]
+public class PlayerCancelsEffectHandler : IPacketHandler
 {
-	/// <summary>
-	/// Handles effect cancel requests
-	/// </summary>
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.PlayerCancelsEffect, "Handle Player Effect Cancel Request.", eClientStatus.PlayerInGame)]
-	public class PlayerCancelsEffectHandler : IPacketHandler
-	{
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			int effectID = packet.ReadShort();
-			if (client.Version <= GameClient.eClientVersion.Version1109)
-				new CancelEffectHandler(client.Player, effectID).Start(1);
-			else
-				new CancelEffectHandler1110(client.Player, effectID).Start(1);
-		}
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        int effectID = packet.ReadShort();
+        if (client.Version <= GameClient.eClientVersion.Version1109)
+            new CancelEffectHandler(client.Player, effectID).Start(1);
+        else
+            new CancelEffectHandler1110(client.Player, effectID).Start(1);
+    }
 
-		/// <summary>
-		/// Handles players cancel effect actions
-		/// </summary>
-		protected class CancelEffectHandler : RegionECSAction
-		{
-			/// <summary>
-			/// The effect Id
-			/// </summary>
-			protected readonly int m_effectId;
+    /// <summary>
+    /// Handles players cancel effect actions
+    /// </summary>
+    protected class CancelEffectHandler : RegionECSAction
+    {
+        /// <summary>
+        /// The effect Id
+        /// </summary>
+        protected readonly int m_effectId;
 
-			/// <summary>
-			/// Constructs a new CancelEffectHandler
-			/// </summary>
-			/// <param name="actionSource">The action source</param>
-			/// <param name="effectId">The effect Id</param>
-			public CancelEffectHandler(GamePlayer actionSource, int effectId) : base(actionSource)
-			{
-				m_effectId = effectId;
-			}
+        /// <summary>
+        /// Constructs a new CancelEffectHandler
+        /// </summary>
+        /// <param name="actionSource">The action source</param>
+        /// <param name="effectId">The effect Id</param>
+        public CancelEffectHandler(GamePlayer actionSource, int effectId) : base(actionSource)
+        {
+            m_effectId = effectId;
+        }
 
-			/// <summary>
-			/// Called on every timer tick
-			/// </summary>
-			protected override int OnTick(ECSGameTimer timer)
-			{
-				GamePlayer player = (GamePlayer) m_actionSource;
+        /// <summary>
+        /// Called on every timer tick
+        /// </summary>
+        protected override int OnTick(ECSGameTimer timer)
+        {
+            var player = (GamePlayer) m_actionSource;
 
-				IGameEffect found = null;
-				lock (player.EffectList)
-				{
-					foreach (IGameEffect effect in player.EffectList)
-					{
-						if (effect.InternalID == m_effectId)
-						{
-							found = effect;
-							break;
-						}
-					}
-				}
-				if (found != null)
-					found.Cancel(true);
-				return 0;
-			}
-		}
+            IGameEffect found = null;
+            lock (player.EffectList)
+            {
+                foreach (var effect in player.EffectList)
+                    if (effect.InternalID == m_effectId)
+                    {
+                        found = effect;
+                        break;
+                    }
+            }
 
-		/// <summary>
-		/// Handles players cancel effect actions
-		/// </summary>
-		protected class CancelEffectHandler1110 : RegionECSAction
-		{
-			/// <summary>
-			/// The effect Id
-			/// </summary>
-			protected readonly int m_effectId;
+            if (found != null)
+                found.Cancel(true);
+            return 0;
+        }
+    }
 
-			/// <summary>
-			/// Constructs a new CancelEffectHandler
-			/// </summary>
-			/// <param name="actionSource">The action source</param>
-			/// <param name="effectId">The effect Id</param>
-			public CancelEffectHandler1110(GamePlayer actionSource, int effectId) : base(actionSource)
-			{
-				m_effectId = effectId;
-			}
+    /// <summary>
+    /// Handles players cancel effect actions
+    /// </summary>
+    protected class CancelEffectHandler1110 : RegionECSAction
+    {
+        /// <summary>
+        /// The effect Id
+        /// </summary>
+        protected readonly int m_effectId;
 
-			/// <summary>
-			/// Called on every timer tick
-			/// </summary>
-			protected override int OnTick(ECSGameTimer timer)
-			{
-				GamePlayer player = (GamePlayer) m_actionSource;
-				EffectListComponent effectListComponent = player.effectListComponent;
-				ECSGameEffect effect = effectListComponent.TryGetEffectFromEffectId(m_effectId);
-				if (effect != null)
-				{
-					if (effect.EffectType == eEffect.Guard)
-						(effect as GuardECSGameEffect).Cancel(true);
-					else
-						EffectService.RequestImmediateCancelEffect(effect, true);
-                }
+        /// <summary>
+        /// Constructs a new CancelEffectHandler
+        /// </summary>
+        /// <param name="actionSource">The action source</param>
+        /// <param name="effectId">The effect Id</param>
+        public CancelEffectHandler1110(GamePlayer actionSource, int effectId) : base(actionSource)
+        {
+            m_effectId = effectId;
+        }
 
-				return 0;
-			}
-		}
-	}
+        /// <summary>
+        /// Called on every timer tick
+        /// </summary>
+        protected override int OnTick(ECSGameTimer timer)
+        {
+            var player = (GamePlayer) m_actionSource;
+            var effectListComponent = player.effectListComponent;
+            var effect = effectListComponent.TryGetEffectFromEffectId(m_effectId);
+            if (effect != null)
+            {
+                if (effect.EffectType == eEffect.Guard)
+                    (effect as GuardECSGameEffect).Cancel(true);
+                else
+                    EffectService.RequestImmediateCancelEffect(effect, true);
+            }
+
+            return 0;
+        }
+    }
 }

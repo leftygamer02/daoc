@@ -6,34 +6,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class ProcECSGameEffect : ECSGameSpellEffect
 {
-    public class ProcECSGameEffect : ECSGameSpellEffect
+    public ProcECSGameEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public ProcECSGameEffect(ECSGameEffectInitParams initParams)
-            : base(initParams) { }
+    }
 
-        public override void OnStartEffect()
-        {
-            eChatType chatType = eChatType.CT_SpellPulse;
-            if (SpellHandler.Spell.Pulse == 0)
-            {
-                chatType = eChatType.CT_Spell;
-            }
-            
-            // "A crystal shield covers you."
-            // "A crystal shield covers {0}'s skin."
-            OnEffectStartsMsg(Owner, true, false, true);
+    public override void OnStartEffect()
+    {
+        var chatType = eChatType.CT_SpellPulse;
+        if (SpellHandler.Spell.Pulse == 0) chatType = eChatType.CT_Spell;
 
-            //GameEventMgr.AddHandler(effect.Owner, EventType, new DOLEventHandler(EventHandler));
-        }
+        // "A crystal shield covers you."
+        // "A crystal shield covers {0}'s skin."
+        OnEffectStartsMsg(Owner, true, false, true);
 
-        public override void OnStopEffect()
-        {
-            // "Your crystal shield fades."
-            // "{0}'s crystal shield fades."
-            OnEffectExpiresMsg(Owner, true, false, true);
+        //GameEventMgr.AddHandler(effect.Owner, EventType, new DOLEventHandler(EventHandler));
+    }
 
-        }
+    public override void OnStopEffect()
+    {
+        // "Your crystal shield fades."
+        // "{0}'s crystal shield fades."
+        OnEffectExpiresMsg(Owner, true, false, true);
     }
 }

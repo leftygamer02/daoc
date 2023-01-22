@@ -18,10 +18,7 @@ namespace DOL.GS.Scripts
         {
         }
 
-        public virtual int OzurDifficulty
-        {
-            get { return ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS; }
-        }
+        public virtual int OzurDifficulty => ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS;
 
         public override double AttackDamage(InventoryItem weapon)
         {
@@ -39,7 +36,8 @@ namespace DOL.GS.Scripts
             Piety = npcTemplate.Piety;
             Intelligence = npcTemplate.Intelligence;
             Empathy = npcTemplate.Empathy;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
 
             Name = "Council Ozur";
             Model = 918;
@@ -49,22 +47,19 @@ namespace DOL.GS.Scripts
             BodyType = 5;
             ScalingFactor = 45;
 
-            OzurBrain sBrain = new OzurBrain();
+            var sBrain = new OzurBrain();
             SetOwnBrain(sBrain);
-            LoadedFromScript = false;//load from database
+            LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
 
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+        public override int MaxHealth => 100000;
 
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
 
@@ -127,12 +122,10 @@ namespace DOL.AI.Brain
             AggroRange = 800;
         }
 
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_ChatWindow);
-            }
         }
 
         private void Resists(bool isNotZerked)
@@ -187,18 +180,13 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
             }
+
             if (Body.TargetObject != null && Body.InCombat && Body.Health != Body.MaxHealth && HasAggro)
             {
-                int countPlayer = 0;
-                foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-                {
-                    countPlayer++;
-                }
+                var countPlayer = 0;
+                foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE)) countPlayer++;
 
-                if (countPlayer <= _GettingNonZerkedStage)
-                {
-                    Resists(true);
-                }
+                if (countPlayer <= _GettingNonZerkedStage) Resists(true);
 
                 if (countPlayer >= _GettingFirstPlayerStage && countPlayer < _GettingSecondPlayerStage)
                 {
@@ -214,20 +202,22 @@ namespace DOL.AI.Brain
                     Weak(true);
                 }
             }
-            if(HasAggro && Body.TargetObject != null)
-            {
-                Body.CastSpell(OzurDisease, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells),false);
-            }
+
+            if (HasAggro && Body.TargetObject != null)
+                Body.CastSpell(OzurDisease, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
+
             base.Think();
         }
+
         private Spell m_OzurDisease;
+
         private Spell OzurDisease
         {
             get
             {
                 if (m_OzurDisease == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 3;
                     spell.RecastDelay = 60;
@@ -247,10 +237,11 @@ namespace DOL.AI.Brain
                     spell.Type = "Disease";
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Energy; //Energy DMG Type
+                    spell.DamageType = (int) eDamageType.Energy; //Energy DMG Type
                     m_OzurDisease = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_OzurDisease);
                 }
+
                 return m_OzurDisease;
             }
         }

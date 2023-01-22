@@ -19,52 +19,54 @@
 
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+[DataTable(TableName = "LanguageArea")]
+public class DBLanguageArea : LanguageDataObject
 {
-    [DataTable(TableName = "LanguageArea")]
-    public class DBLanguageArea : LanguageDataObject
+    #region Variables
+
+    private string m_description;
+    private string m_screenDescription;
+
+    #endregion Variables
+
+    public DBLanguageArea()
+        : base()
     {
-        #region Variables
-        private string m_description;
-        private string m_screenDescription;
-        #endregion Variables
-
-        public DBLanguageArea()
-            : base() { }
-
-        #region Properties
-        public override eTranslationIdentifier TranslationIdentifier
-        {
-            get { return eTranslationIdentifier.eArea; }
-        }
-
-        /// <summary>
-        /// The translated area description
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public string Description
-        {
-            get { return m_description; }
-            set
-            {
-                Dirty = true;
-                m_description = value;
-            }
-        }
-
-        /// <summary>
-        /// The translated area screen description
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public string ScreenDescription
-        {
-            get { return m_screenDescription; }
-            set
-            {
-                Dirty = true;
-                m_screenDescription = value;
-            }
-        }
-        #endregion Properties
     }
+
+    #region Properties
+
+    public override eTranslationIdentifier TranslationIdentifier => eTranslationIdentifier.eArea;
+
+    /// <summary>
+    /// The translated area description
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string Description
+    {
+        get => m_description;
+        set
+        {
+            Dirty = true;
+            m_description = value;
+        }
+    }
+
+    /// <summary>
+    /// The translated area screen description
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string ScreenDescription
+    {
+        get => m_screenDescription;
+        set
+        {
+            Dirty = true;
+            m_screenDescription = value;
+        }
+    }
+
+    #endregion Properties
 }

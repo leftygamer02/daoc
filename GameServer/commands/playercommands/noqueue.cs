@@ -16,31 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute("&Noqueue", //command to handle
+    ePrivLevel.Player, //minimum privelege level
+    "Allows you to disable/enable queuing", "/Noqueue")] //usage
+public class NoqueueCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute("&Noqueue", //command to handle
-	ePrivLevel.Player, //minimum privelege level
-	"Allows you to disable/enable queuing", "/Noqueue")] //usage
-	public class NoqueueCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "noqueue"))
-				return;
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "noqueue"))
+            return;
 
-			client.Player.SpellQueue = !client.Player.SpellQueue;
+        client.Player.SpellQueue = !client.Player.SpellQueue;
 
-			if (client.Player.SpellQueue)
-			{
-				DisplayMessage(client, "You are now using the queuing option! To disable queuing use '/noqueue'.");
-			}
-			else
-			{
-				DisplayMessage(client, "You are no longer using the queuing option! To enable queuing use '/noqueue'.");
-
-			}
-		}
-	}
+        if (client.Player.SpellQueue)
+            DisplayMessage(client, "You are now using the queuing option! To disable queuing use '/noqueue'.");
+        else
+            DisplayMessage(client, "You are no longer using the queuing option! To enable queuing use '/noqueue'.");
+    }
 }

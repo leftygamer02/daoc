@@ -16,49 +16,47 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.Network;
 
-namespace DOL.GS.PacketHandler
+namespace DOL.GS.PacketHandler;
+
+/// <summary>
+/// An outgoing TCP packet
+/// </summary>
+public class GSTCPPacketOut : PacketOut
 {
-	/// <summary>
-	/// An outgoing TCP packet
-	/// </summary>
-	public class GSTCPPacketOut : PacketOut
-	{
-		private byte m_packetCode;
-		
-		/// <summary>
-		/// This Packet Byte Handling Code
-		/// </summary>
-		public byte PacketCode {
-			get { return m_packetCode; }
-		}
-		
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="packetCode">ID of the packet</param>
-		public GSTCPPacketOut(byte packetCode)
-		{
-			m_packetCode = packetCode;
-			base.WriteShort(0x00); //reserved for size
-			base.WriteByte(packetCode);
-		}
+    private byte m_packetCode;
 
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="packetCode">ID of the packet</param>
-		public GSTCPPacketOut(byte packetCode, int startingSize) : base(startingSize + 3)
-		{
-			m_packetCode = packetCode;
-			base.WriteShort(0x00); //reserved for size
-			base.WriteByte(packetCode);
-		}
+    /// <summary>
+    /// This Packet Byte Handling Code
+    /// </summary>
+    public byte PacketCode => m_packetCode;
 
-		public override string ToString()
-		{
-			return base.ToString() + $": Size={Length - 3} ID=0x{m_packetCode:X2}";
-		}
-	}
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="packetCode">ID of the packet</param>
+    public GSTCPPacketOut(byte packetCode)
+    {
+        m_packetCode = packetCode;
+        WriteShort(0x00); //reserved for size
+        base.WriteByte(packetCode);
+    }
+
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="packetCode">ID of the packet</param>
+    public GSTCPPacketOut(byte packetCode, int startingSize) : base(startingSize + 3)
+    {
+        m_packetCode = packetCode;
+        WriteShort(0x00); //reserved for size
+        base.WriteByte(packetCode);
+    }
+
+    public override string ToString()
+    {
+        return base.ToString() + $": Size={Length - 3} ID=0x{m_packetCode:X2}";
+    }
 }

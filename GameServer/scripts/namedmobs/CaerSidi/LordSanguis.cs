@@ -9,41 +9,44 @@ namespace DOL.GS
 {
     public class LordSanguis : GameEpicBoss
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public LordSanguis()
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100  * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
-        public void BroadcastMessage(String message)
+
+        public override int MaxHealth => 100000;
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -51,29 +54,27 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
+
         public override bool AddToWorld()
         {
             Spawn_Lich_Lord = false;
             foreach (GameNPC npc in GetNPCsInRadius(5000))
-            {
                 if (npc != null)
-                {
                     if (npc.IsAlive)
-                    {
                         if (npc.Brain is LichLordSanguisBrain)
                             npc.RemoveFromWorld();
-                    }
-                }
-            }
+
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60163412);
             LoadTemplate(npcTemplate);
             Strength = npcTemplate.Strength;
@@ -84,8 +85,9 @@ namespace DOL.GS
             Intelligence = npcTemplate.Intelligence;
             Empathy = npcTemplate.Empathy;
 
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
-            LordSanguisBrain sbrain = new LordSanguisBrain();
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            var sbrain = new LordSanguisBrain();
             SetOwnBrain(sbrain);
             base.AddToWorld();
             return true;
@@ -95,7 +97,7 @@ namespace DOL.GS
         {
             if (Spawn_Lich_Lord == false)
             {
-                BroadcastMessage(String.Format(this.Name + " comes back to life as Lich Lord Sanguis!"));
+                BroadcastMessage(string.Format(Name + " comes back to life as Lich Lord Sanguis!"));
                 SpawnMages();
                 new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(SpawnLich), 6000);
                 Spawn_Lich_Lord = true;
@@ -108,7 +110,7 @@ namespace DOL.GS
 
         public int SpawnLich(ECSGameTimer timer)
         {
-            LichLordSanguis Add = new LichLordSanguis();
+            var Add = new LichLordSanguis();
             Add.X = X;
             Add.Y = Y;
             Add.Z = Z;
@@ -120,9 +122,9 @@ namespace DOL.GS
 
         public void SpawnMages()
         {
-            for (int i = 0; i < Util.Random(2, 4); i++) // Spawn 2-4 mages
+            for (var i = 0; i < Util.Random(2, 4); i++) // Spawn 2-4 mages
             {
-                BloodMage Add = new BloodMage();
+                var Add = new BloodMage();
                 Add.X = X + Util.Random(-50, 80);
                 Add.Y = Y + Util.Random(-50, 80);
                 Add.Z = Z;
@@ -142,7 +144,7 @@ namespace DOL.GS
                 log.Warn("Lord Sanguis  not found, creating it...");
 
                 log.Warn("Initializing Lord Sanguis...");
-                LordSanguis CO = new LordSanguis();
+                var CO = new LordSanguis();
                 CO.Name = "Lord Sanguis";
                 CO.Model = 952;
                 CO.Realm = 0;
@@ -153,7 +155,9 @@ namespace DOL.GS
                 CO.MeleeDamageType = eDamageType.Crush;
                 CO.Faction = FactionMgr.GetFactionByID(64);
                 CO.Faction.AddFriendFaction(FactionMgr.GetFactionByID(64));
-                CO.RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+                CO.RespawnInterval =
+                    ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL *
+                    60000; //1min is 60000 miliseconds
 
                 CO.X = 34080;
                 CO.Y = 32919;
@@ -163,7 +167,7 @@ namespace DOL.GS
                 CO.MaxSpeedBase = 250;
                 CO.Heading = 4079;
 
-                LordSanguisBrain ubrain = new LordSanguisBrain();
+                var ubrain = new LordSanguisBrain();
                 ubrain.AggroLevel = 100;
                 ubrain.AggroRange = 500;
                 CO.SetOwnBrain(ubrain);
@@ -172,7 +176,9 @@ namespace DOL.GS
                 CO.SaveIntoDatabase();
             }
             else
+            {
                 log.Warn("Lord Sanguis exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -190,7 +196,9 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 500;
         }
+
         private bool RemoveAdds = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -202,30 +210,28 @@ namespace DOL.AI.Brain
                 if (!RemoveAdds)
                 {
                     foreach (GameNPC mages in Body.GetNPCsInRadius(5000))
-                    {
                         if (mages != null)
-                        {
                             if (mages.IsAlive && mages.Brain is BloodMageBrain)
                                 mages.RemoveFromWorld();
-                        }
-                    }
-                    RemoveAdds= true;
+
+                    RemoveAdds = true;
                 }
             }
+
             if (Body.TargetObject != null && HasAggro)
             {
                 RemoveAdds = false;
                 if (Util.Chance(10))
-                {
                     if (BloodMage.MageCount < 2)
                         SpawnMages();
-                }
             }
+
             base.Think();
         }
+
         public void SpawnMages()
         {
-            BloodMage Add = new BloodMage();
+            var Add = new BloodMage();
             Add.X = Body.X + Util.Random(-50, 80);
             Add.Y = Body.Y + Util.Random(-50, 80);
             Add.Z = Body.Z;
@@ -249,11 +255,13 @@ namespace DOL.GS
         {
             return base.AttackDamage(weapon) * Strength / 100;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -261,29 +269,31 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60163267);
@@ -297,7 +307,7 @@ namespace DOL.GS
             ParryChance = npcTemplate.ParryChance;
             Empathy = npcTemplate.Empathy;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
+            var template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 442, 67);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.TwoHanded);
@@ -322,7 +332,7 @@ namespace DOL.GS
             BodyType = 8;
             Realm = eRealm.None;
             LichLordSanguisBrain.set_flag = false;
-            LichLordSanguisBrain adds = new LichLordSanguisBrain();
+            var adds = new LichLordSanguisBrain();
             SetOwnBrain(adds);
             base.AddToWorld();
             return true;
@@ -348,14 +358,15 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 500;
         }
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public static bool set_flag = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -366,15 +377,16 @@ namespace DOL.AI.Brain
                 Body.Flags = GameNPC.eFlags.GHOST;
                 set_flag = false;
             }
+
             if (Body.HealthPercent <= 5)
-            {
                 if (set_flag == false)
                 {
-                    BroadcastMessage(String.Format(Body.Name + " becomes almost untouchable in his last act of agony!"));
+                    BroadcastMessage(
+                        string.Format(Body.Name + " becomes almost untouchable in his last act of agony!"));
                     Body.Flags ^= GameNPC.eFlags.CANTTARGET;
                     set_flag = true;
                 }
-            }
+
             base.Think();
         }
     }
@@ -396,7 +408,7 @@ namespace DOL.GS
 
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
 
@@ -411,10 +423,7 @@ namespace DOL.GS
             return 0.15;
         }
 
-        public override int MaxHealth
-        {
-            get { return 8000; }
-        }
+        public override int MaxHealth => 8000;
 
         public override void Die(GameObject killer)
         {
@@ -423,11 +432,22 @@ namespace DOL.GS
         }
 
         public static int MageCount = 0;
-        public override short Quickness { get => base.Quickness; set => base.Quickness = 80; }
-        public override short Strength { get => base.Strength; set => base.Strength = 150; }   
+
+        public override short Quickness
+        {
+            get => base.Quickness;
+            set => base.Quickness = 80;
+        }
+
+        public override short Strength
+        {
+            get => base.Strength;
+            set => base.Strength = 150;
+        }
+
         public override bool AddToWorld()
         {
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
+            var template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TorsoArmor, 798, 67, 0, 0);
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 141, 67);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 140, 67);
@@ -458,7 +478,7 @@ namespace DOL.GS
             Realm = eRealm.None;
             ++MageCount;
 
-            BloodMageBrain adds = new BloodMageBrain();
+            var adds = new BloodMageBrain();
             SetOwnBrain(adds);
             base.AddToWorld();
             return true;

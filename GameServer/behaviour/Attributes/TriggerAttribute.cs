@@ -16,67 +16,65 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.GS.Behaviour.Attributes
+namespace DOL.GS.Behaviour.Attributes;
+
+[AttributeUsage(AttributeTargets.Class)]
+public class TriggerAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class TriggerAttribute :Attribute
+    private bool global;
+
+    /// <summary>
+    /// Define wether the trigger is registered globaly (doesn't depends on implicity quests notifying of player etc or not
+    /// </summary>
+    public bool Global
     {
+        get => global;
+        set => global = value;
+    }
 
-        private bool global;
 
-        /// <summary>
-        /// Define wether the trigger is registered globaly (doesn't depends on implicity quests notifying of player etc or not
-        /// </summary>
-        public bool Global
-        {
-            get { return global; }
-            set { global = value; }
-        }
-	
+    private eTriggerType triggerType;
 
-        private eTriggerType triggerType;
+    public eTriggerType TriggerType
+    {
+        get => triggerType;
+        set => triggerType = value;
+    }
 
-        public eTriggerType TriggerType
-        {
-            get { return triggerType; }
-            set { triggerType = value; }
-        }
+    private bool isNullableK;
 
-        private bool isNullableK;
+    public bool IsNullableK
+    {
+        get => isNullableK;
+        set => isNullableK = value;
+    }
 
-        public bool IsNullableK
-        {
-            get { return isNullableK; }
-            set { isNullableK = value; }
-        }
+    private bool isNullableI;
 
-        private bool isNullableI;
+    public bool IsNullableI
+    {
+        get => isNullableI;
+        set => isNullableI = value;
+    }
 
-        public bool IsNullableI
-        {
-            get { return isNullableI; }
-            set { isNullableI = value; }
-        }
+    private object defaultValueK;
 
-        private Object defaultValueK;
+    public object DefaultValueK
+    {
+        get => defaultValueK;
+        set => defaultValueK = value;
+    }
 
-        public Object DefaultValueK
-        {
-            get { return defaultValueK; }
-            set { defaultValueK = value; }
-        }
+    private object defaultValueI;
 
-        private Object defaultValueI;
-
-        public Object DefaultValueI
-        {
-            get { return defaultValueI; }
-            set { defaultValueI = value; }
-        }
-	
+    public object DefaultValueI
+    {
+        get => defaultValueI;
+        set => defaultValueI = value;
     }
 }

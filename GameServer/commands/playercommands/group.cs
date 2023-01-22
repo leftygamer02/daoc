@@ -16,46 +16,44 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&group",
+    new string[] {"&g"},
+    ePrivLevel.Player,
+    "Say something to other chat group players",
+    "/g <message>")]
+public class GCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&group",
-		new string[] {"&g"},
-		ePrivLevel.Player,
-		"Say something to other chat group players",
-		"/g <message>")]
-	public class GCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (client.Player.Group == null)
-			{
-				DisplayMessage(client, "You are not part of a group");
-				return;
-			}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (client.Player.Group == null)
+        {
+            DisplayMessage(client, "You are not part of a group");
+            return;
+        }
 
-			if (IsSpammingCommand(client.Player, "group", 500))
-			{
-				DisplayMessage(client, "Slow down! Think before you say each word!");
-				return;
-			}
+        if (IsSpammingCommand(client.Player, "group", 500))
+        {
+            DisplayMessage(client, "Slow down! Think before you say each word!");
+            return;
+        }
 
-			if (args.Length >= 2)
-			{
-				string msg = "";
-				for (int i = 1; i < args.Length; ++i)
-				{
-					msg += args[i] + " ";
-				}
+        if (args.Length >= 2)
+        {
+            var msg = "";
+            for (var i = 1; i < args.Length; ++i) msg += args[i] + " ";
 
-				client.Player.Group.SendMessageToGroupMembers(client.Player, msg, eChatType.CT_Group, eChatLoc.CL_ChatWindow);
-			}
-			else
-			{
-				DisplaySyntax(client);
-			}
-		}
-	}
+            client.Player.Group.SendMessageToGroupMembers(client.Player, msg, eChatType.CT_Group,
+                eChatLoc.CL_ChatWindow);
+        }
+        else
+        {
+            DisplaySyntax(client);
+        }
+    }
 }

@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.IO;
 using System.Linq;
@@ -25,71 +26,69 @@ using DOL.GS;
 using DOL.GS.PacketHandler;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+public class ServerTests
 {
-	public class ServerTests
-	{
-		public ServerTests()
-		{
-		}
+    public ServerTests()
+    {
+    }
 
-		protected GamePlayer CreateMockGamePlayer()
-		{
-			DOLCharacters character= null;
-			var account = GameServer.Database.SelectAllObjects<Account>().FirstOrDefault();
-			Assert.IsNotNull(account);
+    protected GamePlayer CreateMockGamePlayer()
+    {
+        DOLCharacters character = null;
+        var account = GameServer.Database.SelectAllObjects<Account>().FirstOrDefault();
+        Assert.IsNotNull(account);
 
-			foreach (var charact in account.Characters)
-			{
-				if (charact!=null)
-					character = charact;
-			}
-			Assert.IsNotNull(character);
-			
-			var client = new GameClient(GameServer.Instance);
-			client.Version = GameClient.eClientVersion.Version1105;
-			client.Socket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-			client.Account = account;
-			client.PacketProcessor = new PacketProcessor(client);
-			client.Out = new PacketLib1105(client);
-			client.Player = new GamePlayer(client,character);
-			Assert.IsNotNull(client.Player,"GamePlayer instance created");
-			
-			return client.Player;
-		}
-				
-		public void cd()
-		{
-			Console.WriteLine("GC: "+Directory.GetCurrentDirectory());
-		}
-		
-		#region Watch
+        foreach (var charact in account.Characters)
+            if (charact != null)
+                character = charact;
 
-		static long gametick;
+        Assert.IsNotNull(character);
 
-		/// <summary>
-		/// use startWatch to start taking the time
-		/// </summary>
-		public static void StartWatch()
-		{
-			//Tickcount is more accurate than gametimer ticks :)
-			gametick = Environment.TickCount;
-			Console.WriteLine("StartWatch: "+gametick);
-		}
+        var client = new GameClient(GameServer.Instance);
+        client.Version = GameClient.eClientVersion.Version1105;
+        client.Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        client.Account = account;
+        client.PacketProcessor = new PacketProcessor(client);
+        client.Out = new PacketLib1105(client);
+        client.Player = new GamePlayer(client, character);
+        Assert.IsNotNull(client.Player, "GamePlayer instance created");
 
-		/// <summary>
-		/// stop watch will count the Gamticks since last call of startWatch
-		/// 
-		/// Note: This value does not represent the time it will take on a
-		/// actual server since we have no actual user load etc...
-		/// </summary>
-		public static void StopWatch()
-		{
-			Console.WriteLine("Stop watch: "+Environment.TickCount);
-			long elapsed = Environment.TickCount - gametick;
-			Console.WriteLine(elapsed+" ticks(ms) elapsed");
-		}
-		
-		#endregion
-	}
+        return client.Player;
+    }
+
+    public void cd()
+    {
+        Console.WriteLine("GC: " + Directory.GetCurrentDirectory());
+    }
+
+    #region Watch
+
+    private static long gametick;
+
+    /// <summary>
+    /// use startWatch to start taking the time
+    /// </summary>
+    public static void StartWatch()
+    {
+        //Tickcount is more accurate than gametimer ticks :)
+        gametick = Environment.TickCount;
+        Console.WriteLine("StartWatch: " + gametick);
+    }
+
+    /// <summary>
+    /// stop watch will count the Gamticks since last call of startWatch
+    /// 
+    /// Note: This value does not represent the time it will take on a
+    /// actual server since we have no actual user load etc...
+    /// </summary>
+    public static void StopWatch()
+    {
+        Console.WriteLine("Stop watch: " + Environment.TickCount);
+        var elapsed = Environment.TickCount - gametick;
+        Console.WriteLine(elapsed + " ticks(ms) elapsed");
+    }
+
+    #endregion
 }

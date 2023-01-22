@@ -1,10 +1,9 @@
-namespace DOL.GS
+namespace DOL.GS;
+
+public enum eSpellEffect
 {
-    public enum eSpellEffect
-    {
-        Heal,
-        Damage,
-        Snare,
-        Buff,
-    }
+    Heal,
+    Damage,
+    Snare,
+    Buff
 }

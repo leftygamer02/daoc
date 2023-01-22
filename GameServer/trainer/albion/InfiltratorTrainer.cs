@@ -16,76 +16,79 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.Trainer
+namespace DOL.GS.Trainer;
+
+/// <summary>
+/// Infiltrator Trainer
+/// </summary>
+[NPCGuildScript("Infiltrator Trainer",
+    eRealm.Albion)] // this attribute instructs DOL to use this script for all "Infiltrator Trainer" NPC's in Albion (multiple guilds are possible for one script)
+public class InfiltratorTrainer : GameTrainer
 {
-	/// <summary>
-	/// Infiltrator Trainer
-	/// </summary>
-	[NPCGuildScript("Infiltrator Trainer", eRealm.Albion)]		// this attribute instructs DOL to use this script for all "Infiltrator Trainer" NPC's in Albion (multiple guilds are possible for one script)
-	public class InfiltratorTrainer : GameTrainer
-	{
-		public override eCharacterClass TrainedClass
-		{
-			get { return eCharacterClass.Infiltrator; }
-		}
+    public override eCharacterClass TrainedClass => eCharacterClass.Infiltrator;
 
-		/// <summary>
-		/// Interact with trainer
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public override bool Interact(GamePlayer player)
-		{
-			if (!base.Interact(player)) return false;
-			
-			// check if class matches.
-			if (player.CharacterClass.ID == (int)TrainedClass)
-			{
-				OfferTraining(player);
-			}
-			else
-			{
-				// perhaps player can be promoted
-				if (CanPromotePlayer(player))
-				{
-					player.Out.SendMessage(this.Name + " says, \"You have come far to find us! Is it your wish to [join the Guild of Shadows] and become our dagger of the night? An Infiltrator!\"",eChatType.CT_Say,eChatLoc.CL_PopupWindow);
-					if (!player.IsLevelRespecUsed)
-					{
-						OfferRespecialize(player);
-					}
-				}
-				else
-				{
-					CheckChampionTraining(player);
-				}
-			}
-			return true;
-		}
+    /// <summary>
+    /// Interact with trainer
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
+    public override bool Interact(GamePlayer player)
+    {
+        if (!base.Interact(player)) return false;
 
-		/// <summary>
-		/// Talk to trainer
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public override bool WhisperReceive(GameLiving source, string text)
-		{
-			if (!base.WhisperReceive(source, text)) return false;
-			GamePlayer player = source as GamePlayer;
-			
-			switch (text) {
-				case "join the Guild of Shadows":
-					// promote player to other class
-					if (CanPromotePlayer(player)) {
-						PromotePlayer(player, (int)eCharacterClass.Infiltrator, "TODO: (correct text) You joined the Guild of Shadows as an Infiltrator.", null);	// TODO: gifts
-					}
-					break;
-			}
-			return true;
-		}
-	}
+        // check if class matches.
+        if (player.CharacterClass.ID == (int) TrainedClass)
+        {
+            OfferTraining(player);
+        }
+        else
+        {
+            // perhaps player can be promoted
+            if (CanPromotePlayer(player))
+            {
+                player.Out.SendMessage(
+                    Name +
+                    " says, \"You have come far to find us! Is it your wish to [join the Guild of Shadows] and become our dagger of the night? An Infiltrator!\"",
+                    eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+                if (!player.IsLevelRespecUsed) OfferRespecialize(player);
+            }
+            else
+            {
+                CheckChampionTraining(player);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Talk to trainer
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public override bool WhisperReceive(GameLiving source, string text)
+    {
+        if (!base.WhisperReceive(source, text)) return false;
+        var player = source as GamePlayer;
+
+        switch (text)
+        {
+            case "join the Guild of Shadows":
+                // promote player to other class
+                if (CanPromotePlayer(player))
+                    PromotePlayer(player, (int) eCharacterClass.Infiltrator,
+                        "TODO: (correct text) You joined the Guild of Shadows as an Infiltrator.",
+                        null); // TODO: gifts
+
+                break;
+        }
+
+        return true;
+    }
 }

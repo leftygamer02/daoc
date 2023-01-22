@@ -5,18 +5,16 @@ namespace DOL.GS.Scripts
 {
     public class Changeling : GameNPC
     {
-
         public Changeling() : base()
         {
         }
-        
+
         public override bool AddToWorld()
         {
             var brain = new ChangelingBrain();
             SetOwnBrain(brain);
             return base.AddToWorld();
         }
-        
     }
 }
 
@@ -27,7 +25,6 @@ namespace DOL.AI.Brain
         public ChangelingBrain()
             : base()
         {
-
         }
 
         public void SetModel()
@@ -54,19 +51,14 @@ namespace DOL.AI.Brain
                     break;
             }
 
-            var size = (byte)Util.Random(25, 55);
+            var size = (byte) Util.Random(25, 55);
             Body.Size = size;
-
         }
 
         public override void Think()
         {
             base.Think();
-            if (Util.Chance(10))
-            {
-                SetModel();
-            }
+            if (Util.Chance(10)) SetModel();
         }
-
     }
 }

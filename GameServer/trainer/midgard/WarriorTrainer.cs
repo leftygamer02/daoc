@@ -16,79 +16,83 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.Trainer
+namespace DOL.GS.Trainer;
+
+/// <summary>
+/// Warrior Trainer
+/// </summary>	
+[NPCGuildScript("Warrior Trainer",
+    eRealm.Midgard)] // this attribute instructs DOL to use this script for all "Warrior Trainer" NPC's in Albion (multiple guilds are possible for one script)
+public class WarriorTrainer : GameTrainer
 {
-	/// <summary>
-	/// Warrior Trainer
-	/// </summary>	
-	[NPCGuildScript("Warrior Trainer", eRealm.Midgard)]		// this attribute instructs DOL to use this script for all "Warrior Trainer" NPC's in Albion (multiple guilds are possible for one script)
-	public class WarriorTrainer : GameTrainer
-	{
-		public override eCharacterClass TrainedClass
-		{
-			get { return eCharacterClass.Warrior; }
-		}
+    public override eCharacterClass TrainedClass => eCharacterClass.Warrior;
 
-        public const string WEAPON_ID = "warrior_item";
+    public const string WEAPON_ID = "warrior_item";
 
-		/// <summary>
-		/// Interact with trainer
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
- 		public override bool Interact(GamePlayer player)
- 		{		
- 			if (!base.Interact(player)) return false;
-								
-			// check if class matches.				
-			if (player.CharacterClass.ID == (int)TrainedClass)
-			{
-				OfferTraining(player);
-			}
-			else
-			{
-				// perhaps player can be promoted
-				if (CanPromotePlayer(player))
-				{
-					player.Out.SendMessage(this.Name + " says, \"Do you desire to [join the House of Tyr] and defend our realm as a Warrior?\"",eChatType.CT_Say,eChatLoc.CL_PopupWindow);
-					if (!player.IsLevelRespecUsed)
-					{
-						OfferRespecialize(player);
-					}
-				}
-				else
-				{
-					CheckChampionTraining(player);
-				}
-			}
-			return true;
- 		}
+    /// <summary>
+    /// Interact with trainer
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
+    public override bool Interact(GamePlayer player)
+    {
+        if (!base.Interact(player)) return false;
 
-		/// <summary>
-		/// Talk to trainer
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public override bool WhisperReceive(GameLiving source, string text)
-		{				
-			if (!base.WhisperReceive(source, text)) return false;			
-			GamePlayer player = source as GamePlayer;			
-	
-			switch (text) {
-			case "join the House of Tyr":
-				// promote player to other class
-				if (CanPromotePlayer(player)) {
-					PromotePlayer(player, (int)eCharacterClass.Warrior, "Welcome young Warrior! May your time in Midgard army be rewarding!", null);
+        // check if class matches.				
+        if (player.CharacterClass.ID == (int) TrainedClass)
+        {
+            OfferTraining(player);
+        }
+        else
+        {
+            // perhaps player can be promoted
+            if (CanPromotePlayer(player))
+            {
+                player.Out.SendMessage(
+                    Name +
+                    " says, \"Do you desire to [join the House of Tyr] and defend our realm as a Warrior?\"",
+                    eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+                if (!player.IsLevelRespecUsed) OfferRespecialize(player);
+            }
+            else
+            {
+                CheckChampionTraining(player);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Talk to trainer
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public override bool WhisperReceive(GameLiving source, string text)
+    {
+        if (!base.WhisperReceive(source, text)) return false;
+        var player = source as GamePlayer;
+
+        switch (text)
+        {
+            case "join the House of Tyr":
+                // promote player to other class
+                if (CanPromotePlayer(player))
+                {
+                    PromotePlayer(player, (int) eCharacterClass.Warrior,
+                        "Welcome young Warrior! May your time in Midgard army be rewarding!", null);
                     player.ReceiveItem(this, WEAPON_ID);
-				}
-				break;
-			}
-			return true;		
-		}
-	}
+                }
+
+                break;
+        }
+
+        return true;
+    }
 }

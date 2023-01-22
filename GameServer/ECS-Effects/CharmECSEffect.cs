@@ -5,165 +5,176 @@ using DOL.GS.Spells;
 using System.Linq;
 using DOL.Language;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class CharmECSGameEffect : ECSGameSpellEffect
 {
-    public class CharmECSGameEffect : ECSGameSpellEffect
+    public CharmECSGameEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public CharmECSGameEffect(ECSGameEffectInitParams initParams)
-            : base(initParams) { }
+    }
 
-        public override void OnStartEffect()
+    public override void OnStartEffect()
+    {
+        var casterPlayer = SpellHandler.Caster as GamePlayer;
+        var charmMob = Owner as GameNPC;
+
+        if (casterPlayer != null && charmMob != null)
         {
-            GamePlayer casterPlayer = SpellHandler.Caster as GamePlayer;
-            GameNPC charmMob = Owner as GameNPC;
-
-            if (casterPlayer != null && charmMob != null)
+            if (((CharmSpellHandler) SpellHandler).m_controlledBrain == null &&
+                !(charmMob.Brain is ControlledNpcBrain))
             {
-                if (((CharmSpellHandler)SpellHandler).m_controlledBrain == null && !(charmMob.Brain is ControlledNpcBrain))
-                {
-                    ((CharmSpellHandler)SpellHandler).m_controlledBrain = new ControlledNpcBrain(casterPlayer);
-                }
+                ((CharmSpellHandler) SpellHandler).m_controlledBrain = new ControlledNpcBrain(casterPlayer);
+            }
+            else
+            {
+                ((CharmSpellHandler) SpellHandler).m_controlledBrain = charmMob.Brain as ControlledNpcBrain;
+                ((CharmSpellHandler) SpellHandler).m_isBrainSet = true;
+            }
+
+            if (!((CharmSpellHandler) SpellHandler).m_isBrainSet &&
+                !((CharmSpellHandler) SpellHandler).m_controlledBrain.IsActive)
+            {
+                charmMob.AddBrain(((CharmSpellHandler) SpellHandler).m_controlledBrain);
+                ((CharmSpellHandler) SpellHandler).m_isBrainSet = true;
+
+                GameEventMgr.AddHandler(charmMob, GameLivingEvent.PetReleased,
+                    ((CharmSpellHandler) SpellHandler).ReleaseEventHandler);
+            }
+
+            if (casterPlayer.ControlledBrain != ((CharmSpellHandler) SpellHandler).m_controlledBrain)
+            {
+                if (!string.IsNullOrEmpty(SpellHandler.Spell.Message1))
+                    // Message: "{0}The slough serpent} is now enthralled!"
+                    Message.SystemToArea(charmMob,
+                        Util.MakeSentence(SpellHandler.Spell.Message1, charmMob.GetName(0, true)),
+                        eChatType.CT_System, charmMob, casterPlayer);
+
+                if (!string.IsNullOrEmpty(SpellHandler.Spell.Message2))
+                    // Message: {0} is now under your control.
+                    ((CharmSpellHandler) SpellHandler).MessageToCaster(
+                        Util.MakeSentence(SpellHandler.Spell.Message2, charmMob.GetName(0, true)),
+                        eChatType.CT_Spell);
                 else
+                    // Message: {0} is now under your control.
+                    ((CharmSpellHandler) SpellHandler).MessageToCaster(
+                        LanguageMgr.GetTranslation(casterPlayer.Client,
+                            "GamePlayer.GamePet.StartSpell.UnderControl", charmMob.GetName(0, true)),
+                        eChatType.CT_Spell);
+
+                casterPlayer.SetControlledBrain(((CharmSpellHandler) SpellHandler).m_controlledBrain);
+
+                foreach (GamePlayer player in charmMob.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
                 {
-                    ((CharmSpellHandler)SpellHandler).m_controlledBrain = charmMob.Brain as ControlledNpcBrain;
-                    ((CharmSpellHandler)SpellHandler).m_isBrainSet = true;
+                    player.Out.SendNPCCreate(charmMob);
+
+                    if (charmMob.Inventory != null)
+                        player.Out.SendLivingEquipmentUpdate(charmMob);
+
+                    // 'SendNPCCreate' should already call 'SendObjectGuildID'
+                    //player.Out.SendObjectGuildID(charmMob, casterPlayer.Guild);
                 }
-
-                if (!((CharmSpellHandler)SpellHandler).m_isBrainSet &&
-                    !((CharmSpellHandler)SpellHandler).m_controlledBrain.IsActive)
-                {
-
-                    charmMob.AddBrain(((CharmSpellHandler)SpellHandler).m_controlledBrain);
-                    ((CharmSpellHandler)SpellHandler).m_isBrainSet = true;
-
-                    GameEventMgr.AddHandler(charmMob, GameLivingEvent.PetReleased, (((CharmSpellHandler)SpellHandler).ReleaseEventHandler));
-                }
-
-                if (casterPlayer.ControlledBrain != ((CharmSpellHandler)SpellHandler).m_controlledBrain)
-                {
-
-                    if (!string.IsNullOrEmpty(SpellHandler.Spell.Message1))
-                        // Message: "{0}The slough serpent} is now enthralled!"
-                        Message.SystemToArea(charmMob, Util.MakeSentence(SpellHandler.Spell.Message1, charmMob.GetName(0, true)), eChatType.CT_System, charmMob, casterPlayer);
-
-                    if (!string.IsNullOrEmpty(SpellHandler.Spell.Message2))
-                        // Message: {0} is now under your control.
-                        ((CharmSpellHandler)SpellHandler).MessageToCaster(Util.MakeSentence(SpellHandler.Spell.Message2, charmMob.GetName(0, true)), eChatType.CT_Spell);
-                    else
-                        // Message: {0} is now under your control.
-                        ((CharmSpellHandler)SpellHandler).MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "GamePlayer.GamePet.StartSpell.UnderControl", charmMob.GetName(0, true)), eChatType.CT_Spell);
-                    
-                    casterPlayer.SetControlledBrain(((CharmSpellHandler)SpellHandler).m_controlledBrain);
-
-                    foreach (GamePlayer player in charmMob.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                    {
-                        player.Out.SendNPCCreate(charmMob);
-
-                        if (charmMob.Inventory != null)
-                            player.Out.SendLivingEquipmentUpdate(charmMob);
-
-                        // 'SendNPCCreate' should already call 'SendObjectGuildID'
-                        //player.Out.SendObjectGuildID(charmMob, casterPlayer.Guild);
-                    }
-                }
-                ((CharmSpellHandler)SpellHandler).SendEffectAnimation(charmMob, 0, false, 1);
             }
-        }
 
-        public override void OnStopEffect()
+            ((CharmSpellHandler) SpellHandler).SendEffectAnimation(charmMob, 0, false, 1);
+        }
+    }
+
+    public override void OnStopEffect()
+    {
+        var casterPlayer = SpellHandler.Caster as GamePlayer;
+        var charmMob = Owner as GameNPC;
+
+        if (casterPlayer != null && charmMob != null)
         {
-            GamePlayer casterPlayer = SpellHandler.Caster as GamePlayer;
-            GameNPC charmMob = Owner as GameNPC;
+            GameEventMgr.RemoveHandler(charmMob, GameLivingEvent.PetReleased,
+                ((CharmSpellHandler) SpellHandler).ReleaseEventHandler);
+            var oldBrain = (ControlledNpcBrain) casterPlayer.ControlledBrain;
+            casterPlayer.SetControlledBrain(null);
 
-            if (casterPlayer != null && charmMob != null)
+            // Message: You lose control of {0}!
+            //((CharmSpellHandler) SpellHandler).MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "GamePlayer.GamePet.SpellEnd.YouLoseControl", charmMob.GetName(0, false)), eChatType.CT_SpellExpires);
+
+            lock (charmMob.BrainSync)
             {
-                GameEventMgr.RemoveHandler(charmMob, GameLivingEvent.PetReleased, (((CharmSpellHandler) SpellHandler).ReleaseEventHandler));
-                ControlledNpcBrain oldBrain = (ControlledNpcBrain)casterPlayer.ControlledBrain;
-                casterPlayer.SetControlledBrain(null);
-                
-                // Message: You lose control of {0}!
-                //((CharmSpellHandler) SpellHandler).MessageToCaster(LanguageMgr.GetTranslation(casterPlayer.Client, "GamePlayer.GamePet.SpellEnd.YouLoseControl", charmMob.GetName(0, false)), eChatType.CT_SpellExpires);
+                var immunityEffects = charmMob.effectListComponent.GetSpellEffects().Where(e => e.TriggersImmunity)
+                    .ToArray();
+                for (var i = 0; i < immunityEffects.Length; i++)
+                    EffectService.RequestImmediateCancelEffect(immunityEffects[i]);
 
-                lock (charmMob.BrainSync)
+                charmMob.StopAttack();
+                charmMob.RemoveBrain(oldBrain);
+
+                charmMob.AddBrain(new StandardMobBrain());
+                ((CharmSpellHandler) SpellHandler).m_isBrainSet = false;
+
+                if (charmMob.Brain != null && charmMob.Brain is IOldAggressiveBrain)
                 {
-                    var immunityEffects = charmMob.effectListComponent.GetSpellEffects().Where(e => e.TriggersImmunity).ToArray();
-                    for (int i = 0; i < immunityEffects.Length; i++)
-                    {
-                        EffectService.RequestImmediateCancelEffect(immunityEffects[i]);
-                    }
+                    ((IOldAggressiveBrain) charmMob.Brain).ClearAggroList();
 
-                    charmMob.StopAttack();
-                    charmMob.RemoveBrain(oldBrain);
-
-                    charmMob.AddBrain(new StandardMobBrain());
-                    ((CharmSpellHandler) SpellHandler).m_isBrainSet = false;
-
-                    if (charmMob.Brain != null && charmMob.Brain is IOldAggressiveBrain)
-                    {
-
-                        ((IOldAggressiveBrain)charmMob.Brain).ClearAggroList();
-
-                        if (SpellHandler.Spell.Pulse != 0 && SpellHandler.Caster.ObjectState == GameObject.eObjectState.Active && SpellHandler.Caster.IsAlive
+                    if (SpellHandler.Spell.Pulse != 0 &&
+                        SpellHandler.Caster.ObjectState == GameObject.eObjectState.Active &&
+                        SpellHandler.Caster.IsAlive
                         && !SpellHandler.Caster.IsStealthed)
-                        {
-                            ((IOldAggressiveBrain)charmMob.Brain).AddToAggroList(SpellHandler.Caster, SpellHandler.Caster.Level * 10);
-                            charmMob.StartAttack(SpellHandler.Caster);
-                            charmMob.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
-                        }
-                        else if (charmMob.IsWithinRadius(charmMob.SpawnPoint, 5000))
-                        {
-                            charmMob.WalkToSpawn();
-                        }
-                        else
-                        {
-                            charmMob.Brain.Stop();
-                            //casterPlayer.Notify(GameNPCEvent.PetLost);
-                            charmMob.Die(null);
-                        }
-                    }
-                }
-
-                // remove NPC with new brain from all attackers aggro list
-                lock (charmMob.attackComponent.Attackers)
-                    foreach (GameObject attacker in charmMob.attackComponent.Attackers)
                     {
-                        if (attacker == null || !(attacker is GameNPC))
-                            continue;
-
-                        if (((GameNPC)attacker).Brain != null && ((GameNPC)attacker).Brain is IOldAggressiveBrain)
-                        {
-                            ((IOldAggressiveBrain) ((GameNPC) attacker).Brain).RemoveFromAggroList(charmMob);
-                            ((IOldAggressiveBrain) ((GameNPC) attacker).Brain).AddToAggroList(casterPlayer, casterPlayer.Level * 10);
-                            ((GameNPC) attacker).StartAttack(casterPlayer);
-                            ((GameNPC) attacker).LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
-                        }
+                        ((IOldAggressiveBrain) charmMob.Brain).AddToAggroList(SpellHandler.Caster,
+                            SpellHandler.Caster.Level * 10);
+                        charmMob.StartAttack(SpellHandler.Caster);
+                        charmMob.LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
                     }
-
-                ((CharmSpellHandler) SpellHandler)?.m_controlledBrain?.ClearAggroList();
-                charmMob.StopFollowing();
-
-                charmMob.TempProperties.setProperty(GameNPC.CHARMED_TICK_PROP, charmMob.CurrentRegion.Time);
-
-
-                foreach (GamePlayer ply in charmMob.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
-                    if (charmMob.IsAlive)
+                    else if (charmMob.IsWithinRadius(charmMob.SpawnPoint, 5000))
                     {
-                        ply.Out.SendNPCCreate(charmMob);
-
-                        if (charmMob.Inventory != null)
-                            ply.Out.SendLivingEquipmentUpdate(charmMob);
-
-                        ply.Out.SendObjectGuildID(charmMob, null);
+                        charmMob.WalkToSpawn();
+                    }
+                    else
+                    {
+                        charmMob.Brain.Stop();
+                        //casterPlayer.Notify(GameNPCEvent.PetLost);
+                        charmMob.Die(null);
                     }
                 }
             }
-            ECSPulseEffect song = EffectListService.GetPulseEffectOnTarget(casterPlayer);
-            if (charmMob != null && song != null)
+
+            // remove NPC with new brain from all attackers aggro list
+            lock (charmMob.attackComponent.Attackers)
             {
-                EffectService.RequestImmediateCancelConcEffect(song);
+                foreach (var attacker in charmMob.attackComponent.Attackers)
+                {
+                    if (attacker == null || !(attacker is GameNPC))
+                        continue;
+
+                    if (((GameNPC) attacker).Brain != null && ((GameNPC) attacker).Brain is IOldAggressiveBrain)
+                    {
+                        ((IOldAggressiveBrain) ((GameNPC) attacker).Brain).RemoveFromAggroList(charmMob);
+                        ((IOldAggressiveBrain) ((GameNPC) attacker).Brain).AddToAggroList(casterPlayer,
+                            casterPlayer.Level * 10);
+                        ((GameNPC) attacker).StartAttack(casterPlayer);
+                        ((GameNPC) attacker).LastAttackedByEnemyTickPvE = GameLoop.GameLoopTime;
+                    }
+                }
             }
-            ((CharmSpellHandler) SpellHandler).m_controlledBrain = null;
+
+            ((CharmSpellHandler) SpellHandler)?.m_controlledBrain?.ClearAggroList();
+            charmMob.StopFollowing();
+
+            charmMob.TempProperties.setProperty(GameNPC.CHARMED_TICK_PROP, charmMob.CurrentRegion.Time);
+
+
+            foreach (GamePlayer ply in charmMob.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                if (charmMob.IsAlive)
+                {
+                    ply.Out.SendNPCCreate(charmMob);
+
+                    if (charmMob.Inventory != null)
+                        ply.Out.SendLivingEquipmentUpdate(charmMob);
+
+                    ply.Out.SendObjectGuildID(charmMob, null);
+                }
         }
+
+        var song = EffectListService.GetPulseEffectOnTarget(casterPlayer);
+        if (charmMob != null && song != null) EffectService.RequestImmediateCancelConcEffect(song);
+
+        ((CharmSpellHandler) SpellHandler).m_controlledBrain = null;
     }
 }

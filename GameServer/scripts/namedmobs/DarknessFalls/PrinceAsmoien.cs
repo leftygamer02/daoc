@@ -12,8 +12,8 @@ namespace DOL.GS
 {
     public class PrinceAsmoien : GameEpicBoss
     {
-        private static readonly log4net.ILog log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog log =
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
@@ -21,14 +21,17 @@ namespace DOL.GS
             if (log.IsInfoEnabled)
                 log.Info("Prince Asmoien initialized..");
         }
+
         [ScriptUnloadedEvent]
         public static void ScriptUnloaded(DOLEvent e, object sender, EventArgs args)
         {
         }
+
         public PrinceAsmoien()
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -39,19 +42,20 @@ namespace DOL.GS
                 default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60165030);
@@ -67,23 +71,26 @@ namespace DOL.GS
 
             // demon
             BodyType = 2;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
+            RespawnInterval =
+                Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(191);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(191));
 
-            AsmoienBrain sBrain = new AsmoienBrain();
+            var sBrain = new AsmoienBrain();
             SetOwnBrain(sBrain);
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            return base.AttackDamage(weapon) * Strength / 100 * Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
 

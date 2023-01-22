@@ -16,22 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.PacketHandler
-{
-	public enum eEncryptionState
-	{
-		NotEncrypted = 0,
-		RSAEncrypted = 1,
-		PseudoRC4Encrypted = 2
-	}
+namespace DOL.GS.PacketHandler;
 
-	public interface IPacketEncoding
-	{
-		eEncryptionState EncryptionState { get; set; }
-		byte[] DecryptPacket(byte[] content, int offset, bool udpPacket);
-		byte[] EncryptPacket(byte[] content, int offset, bool udpPacket);
-		byte[] SBox { get; set; }
-	}
+public enum eEncryptionState
+{
+    NotEncrypted = 0,
+    RSAEncrypted = 1,
+    PseudoRC4Encrypted = 2
+}
+
+public interface IPacketEncoding
+{
+    eEncryptionState EncryptionState { get; set; }
+    byte[] DecryptPacket(byte[] content, int offset, bool udpPacket);
+    byte[] EncryptPacket(byte[] content, int offset, bool udpPacket);
+    byte[] SBox { get; set; }
 }

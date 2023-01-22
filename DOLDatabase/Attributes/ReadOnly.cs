@@ -16,22 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Database.Attributes
+namespace DOL.Database.Attributes;
+
+/// <summary>
+/// Attribute to indicate the column is read only once created
+/// </summary>
+/// 
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+public class ReadOnly : Attribute
 {
-	/// <summary>
-	/// Attribute to indicate the column is read only once created
-	/// </summary>
-	/// 
-	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-	public class ReadOnly : Attribute
-	{
-		/// <summary>
-		/// Constructor for Attribute
-		/// </summary>
-		public ReadOnly()
-		{
-		}
-	}
+    /// <summary>
+    /// Constructor for Attribute
+    /// </summary>
+    public ReadOnly()
+    {
+    }
 }

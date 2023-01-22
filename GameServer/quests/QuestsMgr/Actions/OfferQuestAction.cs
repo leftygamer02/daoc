@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,26 +25,26 @@ using DOL.Events;
 using DOL.GS.Behaviour.Attributes;
 using DOL.GS.Behaviour;
 
-namespace DOL.GS.Quests.Actions
+namespace DOL.GS.Quests.Actions;
+
+[ActionAttribute(ActionType = eActionType.OfferQuest)]
+public class OfferQuestAction : AbstractAction<Type, string>
 {
-    [ActionAttribute(ActionType = eActionType.OfferQuest)]
-    public class OfferQuestAction : AbstractAction<Type,String>
-    {               
+    public OfferQuestAction(GameNPC defaultNPC, eActionType actionType, object p, object q)
+        : base(defaultNPC, eActionType.OfferQuest, p, q)
+    {
+    }
 
-        public OfferQuestAction(GameNPC defaultNPC, eActionType actionType, Object p, Object q)
-            : base(defaultNPC, eActionType.OfferQuest, p, q)
-        {                
-        }
+    public OfferQuestAction(GameNPC defaultNPC, Type questType, string offerMessage)
+        : this(defaultNPC, eActionType.OfferQuest, (object) questType, (object) offerMessage)
+    {
+    }
 
-        public OfferQuestAction(GameNPC defaultNPC, Type questType, String offerMessage)
-            : this(defaultNPC, eActionType.OfferQuest, (object)questType, (object)offerMessage) { }
-        
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            string message = BehaviourUtils.GetPersonalizedMessage(Q, player);
-            QuestMgr.ProposeQuestToPlayer(P, message, player, NPC);
-        }
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        var message = BehaviourUtils.GetPersonalizedMessage(Q, player);
+        QuestMgr.ProposeQuestToPlayer(P, message, player, NPC);
     }
 }

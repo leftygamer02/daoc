@@ -16,24 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+/// <summary>
+/// Unit tests for the new Training System
+/// </summary>
+[TestFixture]
+public class Train1105 : ServerTests
 {
-	/// <summary>
-	/// Unit tests for the new Training System
-	/// </summary>
-	[TestFixture]
-	public class Train1105 : ServerTests
-	{
-		[Test, Explicit]
-		public void TrainNow()
-		{
-			GamePlayer player = CreateMockGamePlayer();
-			Assert.IsNotNull(player);
-			player.Out.SendTrainerWindow();
-			return;
-		}
-	}
+    [Test]
+    [Explicit]
+    public void TrainNow()
+    {
+        var player = CreateMockGamePlayer();
+        Assert.IsNotNull(player);
+        player.Out.SendTrainerWindow();
+        return;
+    }
 }

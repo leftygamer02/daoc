@@ -16,58 +16,60 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+public enum ePathType : int
 {
-	public enum ePathType : int
-	{
-		Once = 1,
-		Path_Reverse = 2,
-		Loop = 3,
-	}
+    Once = 1,
+    Path_Reverse = 2,
+    Loop = 3
+}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	[DataTable(TableName="Path")]
-	public class DBPath : DataObject
-	{
-		protected ushort m_region = 0;
-		protected string m_pathID = "invalid";
-		protected int m_type;//etype
-		
-		public DBPath()
-		{
-		}
+/// <summary>
+/// 
+/// </summary>
+[DataTable(TableName = "Path")]
+public class DBPath : DataObject
+{
+    protected ushort m_region = 0;
+    protected string m_pathID = "invalid";
+    protected int m_type; //etype
 
-		public DBPath(string pathid, ePathType type)
-		{
-			m_pathID = pathid;
-			m_type = (int)type;
-		}
+    public DBPath()
+    {
+    }
 
-		[DataElement(AllowDbNull = false,Unique=true)]
-		public string PathID {
-			get { return m_pathID; }
-			set { m_pathID = value; }
-		}
+    public DBPath(string pathid, ePathType type)
+    {
+        m_pathID = pathid;
+        m_type = (int) type;
+    }
 
-		[DataElement(AllowDbNull = false)]
-		public int PathType {
-			get { return m_type; }
-			set { m_type = value; }
-		}
+    [DataElement(AllowDbNull = false, Unique = true)]
+    public string PathID
+    {
+        get => m_pathID;
+        set => m_pathID = value;
+    }
 
-		/// <summary>
-		/// Used in PathDesigner tool, only. Not in DoL code
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public ushort RegionID
-		{
-			get { return m_region; }
-			set { m_region = value; }
-		}
-	}
+    [DataElement(AllowDbNull = false)]
+    public int PathType
+    {
+        get => m_type;
+        set => m_type = value;
+    }
+
+    /// <summary>
+    /// Used in PathDesigner tool, only. Not in DoL code
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public ushort RegionID
+    {
+        get => m_region;
+        set => m_region = value;
+    }
 }

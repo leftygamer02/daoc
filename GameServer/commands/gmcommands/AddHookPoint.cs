@@ -16,53 +16,57 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 using DOL.GS.Keeps;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&addhookpoint",
+    ePrivLevel.GM,
+    "GMCommands.HookPoint.Description",
+    "GMCommands.HookPoint.Usage")]
+public class HookPointCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		 "&addhookpoint",
-		 ePrivLevel.GM,
-		 "GMCommands.HookPoint.Description",
-		 "GMCommands.HookPoint.Usage")]
-	public class HookPointCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (args.Length < 3)
-			{
-				DisplaySyntax(client);
-				return;
-			}
-			int id = 0;
-			int skin = 0;
-			try
-			{
-				GameKeepComponent comp = client.Player.TargetObject as GameKeepComponent;
-				if (comp == null)
-				{
-					DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.HookPoint.NoGKCTarget"));
-					return;
-				}
-				skin = Convert.ToInt32(args[1]);
-				id = Convert.ToInt32(args[2]);
-				DBKeepHookPoint dbkeephp = new DBKeepHookPoint();
-				dbkeephp.HookPointID = id;
-				dbkeephp.KeepComponentSkinID = skin;
-				dbkeephp.X = client.Player.X - comp.X;
-				dbkeephp.Y = client.Player.Y - comp.Y;
-				dbkeephp.Z = client.Player.Z - comp.Z;
-				dbkeephp.Heading = client.Player.Heading - comp.Heading;
-				GameServer.Database.AddObject(dbkeephp);
-			}
-			catch (Exception e)
-			{
-				DisplayMessage(client, LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Error", e.Message));
-			}
-		}
-	}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (args.Length < 3)
+        {
+            DisplaySyntax(client);
+            return;
+        }
+
+        var id = 0;
+        var skin = 0;
+        try
+        {
+            var comp = client.Player.TargetObject as GameKeepComponent;
+            if (comp == null)
+            {
+                DisplayMessage(client,
+                    LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.HookPoint.NoGKCTarget"));
+                return;
+            }
+
+            skin = Convert.ToInt32(args[1]);
+            id = Convert.ToInt32(args[2]);
+            var dbkeephp = new DBKeepHookPoint();
+            dbkeephp.HookPointID = id;
+            dbkeephp.KeepComponentSkinID = skin;
+            dbkeephp.X = client.Player.X - comp.X;
+            dbkeephp.Y = client.Player.Y - comp.Y;
+            dbkeephp.Z = client.Player.Z - comp.Z;
+            dbkeephp.Heading = client.Player.Heading - comp.Heading;
+            GameServer.Database.AddObject(dbkeephp);
+        }
+        catch (Exception e)
+        {
+            DisplayMessage(client,
+                LanguageMgr.GetTranslation(client.Account.Language, "GMCommands.Error", e.Message));
+        }
+    }
 }

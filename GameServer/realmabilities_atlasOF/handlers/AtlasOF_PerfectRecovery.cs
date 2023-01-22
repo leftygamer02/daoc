@@ -9,86 +9,96 @@ using DOL.GS.Spells;
 using DOL.Events;
 using DOL.Database;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+public class AtlasOF_PerfectRecovery : TimedRealmAbility, ISpellCastingAbilityHandler
 {
-	public class AtlasOF_PerfectRecovery : TimedRealmAbility, ISpellCastingAbilityHandler
+    public AtlasOF_PerfectRecovery(DBAbility dba, int level) : base(dba, level)
     {
-		public AtlasOF_PerfectRecovery(DBAbility dba, int level) : base(dba, level) { }
+    }
 
-        // ISpellCastingAbilityHandler
-        public Spell Spell { get { return m_spell; } }
-        public SpellLine SpellLine { get { return m_spellline; } }
-        public Ability Ability { get { return this; } }
+    // ISpellCastingAbilityHandler
+    public Spell Spell => m_spell;
 
-        private DBSpell m_dbspell;
-        private Spell m_spell = null;
-        private SpellLine m_spellline;
+    public SpellLine SpellLine => m_spellline;
 
-        private bool LastTargetLetRequestExpire = false;
-        private const string RESURRECT_CASTER_PROPERTY = "RESURRECT_CASTER";
+    public Ability Ability => this;
 
-        public override int MaxLevel { get { return 1; } }
-        public override int CostForUpgrade(int level) { return 14; }
-        public override int GetReUseDelay(int level) { return 1800; } // 30 mins
+    private DBSpell m_dbspell;
+    private Spell m_spell = null;
+    private SpellLine m_spellline;
 
-        private void CreateRezSpell(GamePlayer caster)
-        {
-            m_dbspell = new DBSpell();
-            m_dbspell.Name = "Perfect Recovery Rez";
-            m_dbspell.Icon = 0;
-            m_dbspell.ClientEffect = 7019;
-            m_dbspell.Damage = 0;
-            m_dbspell.Target = "corpse"; // Rez spells are of that type so that they only work on dead realm members.
-            m_dbspell.Radius = 0;
-            m_dbspell.Type = eSpellType.Resurrect.ToString();
-            m_dbspell.Value = 0;
-            m_dbspell.Duration = 0;
-            m_dbspell.Pulse = 0;
-            m_dbspell.PulsePower = 0;
-            m_dbspell.Power = 0;
-            m_dbspell.CastTime = 0;
-            m_dbspell.EffectGroup = 0;
-            m_dbspell.Range = 1500;
-            m_dbspell.RecastDelay = GetReUseDelay(0); // Spell code is responsible for disabling this ability and will use this value.
-            m_dbspell.ResurrectHealth = 100;
-            m_dbspell.ResurrectMana = 100;
-            m_spell = new Spell(m_dbspell, caster.Level);
-            m_spellline = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", false);
-        }
+    private bool LastTargetLetRequestExpire = false;
+    private const string RESURRECT_CASTER_PROPERTY = "RESURRECT_CASTER";
 
-        public override void Execute(GameLiving living)
-        {
-            if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
-            GamePlayer m_caster = living as GamePlayer;
-            if (m_caster == null || m_caster.castingComponent == null)
-                return;
+    public override int MaxLevel => 1;
 
-            GameLiving m_target = m_caster.TargetObject as GameLiving;
-            if (m_target == null)
-                return;
+    public override int CostForUpgrade(int level)
+    {
+        return 14;
+    }
 
-            CreateRezSpell(m_caster);
+    public override int GetReUseDelay(int level)
+    {
+        return 1800;
+    } // 30 mins
 
-            if (m_spell != null)
-            {
-                m_caster.castingComponent.StartCastSpell(m_spell, m_spellline, this);
-            }
+    private void CreateRezSpell(GamePlayer caster)
+    {
+        m_dbspell = new DBSpell();
+        m_dbspell.Name = "Perfect Recovery Rez";
+        m_dbspell.Icon = 0;
+        m_dbspell.ClientEffect = 7019;
+        m_dbspell.Damage = 0;
+        m_dbspell.Target = "corpse"; // Rez spells are of that type so that they only work on dead realm members.
+        m_dbspell.Radius = 0;
+        m_dbspell.Type = eSpellType.Resurrect.ToString();
+        m_dbspell.Value = 0;
+        m_dbspell.Duration = 0;
+        m_dbspell.Pulse = 0;
+        m_dbspell.PulsePower = 0;
+        m_dbspell.Power = 0;
+        m_dbspell.CastTime = 0;
+        m_dbspell.EffectGroup = 0;
+        m_dbspell.Range = 1500;
+        m_dbspell.RecastDelay =
+            GetReUseDelay(0); // Spell code is responsible for disabling this ability and will use this value.
+        m_dbspell.ResurrectHealth = 100;
+        m_dbspell.ResurrectMana = 100;
+        m_spell = new Spell(m_dbspell, caster.Level);
+        m_spellline = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", false);
+    }
 
-            // Cleanup
-            m_spell = null;
-            m_dbspell = null;
-            m_spellline = null;
+    public override void Execute(GameLiving living)
+    {
+        if (CheckPreconditions(living, DEAD | SITTING | MEZZED | STUNNED)) return;
+        var m_caster = living as GamePlayer;
+        if (m_caster == null || m_caster.castingComponent == null)
+            return;
 
-            // We do not need to handle disabling the skill here. This ability casts a spell and is linked to that spell.
-            // The spell casting code will disable this ability in SpellHandler's FinishSpellcast().
-        }
+        var m_target = m_caster.TargetObject as GameLiving;
+        if (m_target == null)
+            return;
 
-        public void OnRezDeclined(GamePlayer rezzer)
-        {
-            rezzer.DisableSkill(this, 0); // Re-enable PR;
-        }
+        CreateRezSpell(m_caster);
 
-        // Override base DOL behavior to re-enable PR if rez target does not accept it in time.
+        if (m_spell != null) m_caster.castingComponent.StartCastSpell(m_spell, m_spellline, this);
+
+        // Cleanup
+        m_spell = null;
+        m_dbspell = null;
+        m_spellline = null;
+
+        // We do not need to handle disabling the skill here. This ability casts a spell and is linked to that spell.
+        // The spell casting code will disable this ability in SpellHandler's FinishSpellcast().
+    }
+
+    public void OnRezDeclined(GamePlayer rezzer)
+    {
+        rezzer.DisableSkill(this, 0); // Re-enable PR;
+    }
+
+    // Override base DOL behavior to re-enable PR if rez target does not accept it in time.
 //         protected override int ResurrectExpiredCallback(RegionTimer callingTimer)
 //         {
 //             GamePlayer target = (GamePlayer)callingTimer.Properties.getProperty<object>("targetPlayer", null);
@@ -111,10 +121,10 @@ namespace DOL.GS.RealmAbilities
 //             return 0;
 //         }
 
-        // Override base DOL behavior in order to allow resetting the cooldown if the target lets the rez request expire (15 seconds).
-        // Without the LastTargetLetRequestExpire early-out below, subsequent requests on the same target that let the rez expire result
-        // in ResurrectResponceHandler being called immediately when the rezzer casts PR on that target again, and it gets immediately declined
-        // and we enter this loop where the rezzer cannot ever PR this person because we process this auto-decline response.
+    // Override base DOL behavior in order to allow resetting the cooldown if the target lets the rez request expire (15 seconds).
+    // Without the LastTargetLetRequestExpire early-out below, subsequent requests on the same target that let the rez expire result
+    // in ResurrectResponceHandler being called immediately when the rezzer casts PR on that target again, and it gets immediately declined
+    // and we enter this loop where the rezzer cannot ever PR this person because we process this auto-decline response.
 //         protected override void ResurrectResponceHandler(GamePlayer player, byte response)
 //         {
 //             if (LastTargetLetRequestExpire)
@@ -161,5 +171,4 @@ namespace DOL.GS.RealmAbilities
 //             }
 //             player.TempProperties.removeProperty(RESURRECT_CASTER_PROPERTY);
 //         }
-    }
 }

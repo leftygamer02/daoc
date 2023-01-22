@@ -16,6 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 *
 */
+
 using System;
 using System.Reflection;
 using DOL.Database;
@@ -24,24 +25,20 @@ using System.Collections.Generic;
 using log4net;
 
 
-namespace DOL.GS.PacketHandler
+namespace DOL.GS.PacketHandler;
+
+[PacketLib(1107, GameClient.eClientVersion.Version1107)]
+public class PacketLib1107 : PacketLib1106
 {
-    [PacketLib(1107, GameClient.eClientVersion.Version1107)]
-    public class PacketLib1107 : PacketLib1106
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+    /// <summary>
+    /// Constructs a new PacketLib for Client Version 1.107
+    /// Untested stub to allow connects
+    /// </summary>
+    /// <param name="client">the gameclient this lib is associated with</param>
+    public PacketLib1107(GameClient client)
+        : base(client)
     {
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        /// <summary>
-        /// Constructs a new PacketLib for Client Version 1.107
-		/// Untested stub to allow connects
-        /// </summary>
-        /// <param name="client">the gameclient this lib is associated with</param>
-        public PacketLib1107(GameClient client)
-            : base(client)
-        {
-
-        }
-
-
     }
 }

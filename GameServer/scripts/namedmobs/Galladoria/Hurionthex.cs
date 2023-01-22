@@ -31,14 +31,15 @@ namespace DOL.GS
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
 
@@ -47,14 +48,11 @@ namespace DOL.GS
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+        public override int MaxHealth => 100000;
 
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
 
@@ -106,11 +104,12 @@ namespace DOL.GS
             Intelligence = npcTemplate.Intelligence;
             Charisma = npcTemplate.Charisma;
             Empathy = npcTemplate.Empathy;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(96);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(96));
 
-            HurionthexBrain sbrain = new HurionthexBrain();
+            var sbrain = new HurionthexBrain();
             SetOwnBrain(sbrain);
             SaveIntoDatabase();
             LoadedFromScript = false;
@@ -129,7 +128,7 @@ namespace DOL.GS
                 log.Warn("Hurionthex not found, creating it...");
 
                 log.Warn("Initializing Hurionthex...");
-                Hurionthex Hurion = new Hurionthex();
+                var Hurion = new Hurionthex();
                 Hurion.Name = "Hurionthex";
                 Hurion.Model = 889;
 
@@ -157,7 +156,7 @@ namespace DOL.GS
                 Hurion.MaxSpeedBase = 300;
                 Hurion.Heading = 1035;
 
-                HurionthexBrain ubrain = new HurionthexBrain();
+                var ubrain = new HurionthexBrain();
                 ubrain.AggroLevel = 100;
                 ubrain.AggroRange = 500;
                 Hurion.SetOwnBrain(ubrain);
@@ -168,8 +167,10 @@ namespace DOL.GS
                 Hurion.SaveIntoDatabase();
             }
             else
+            {
                 log.Warn(
                     "Hurionthex already exists in-game! Remove it and restart the server if you want to add any scripts.");
+            }
         }
     }
 }
@@ -198,12 +199,10 @@ namespace DOL.AI.Brain
         public static bool GranidonFormCheck = false;
         public static bool SwitchForm = false;
 
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
         //todo = Randomization of chosen form
         //todo = Timer for switching between forms
@@ -334,14 +333,14 @@ namespace DOL.AI.Brain
                 SwitchForm = false;
                 reset_checks = false;
 
-                int randomform = Util.Random(1, 4);
+                var randomform = Util.Random(1, 4);
                 switch (randomform)
                 {
                     case 1:
                     {
                         if (IsGranidonForm == false)
                         {
-                            BroadcastMessage(String.Format("Hurionthex casts a spell!"));
+                            BroadcastMessage(string.Format("Hurionthex casts a spell!"));
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Change_Granidon), 2000);
                             IsGranidonForm = true;
                         }
@@ -351,7 +350,7 @@ namespace DOL.AI.Brain
                     {
                         if (IsTreantForm == false)
                         {
-                            BroadcastMessage(String.Format("Hurionthex casts a spell!"));
+                            BroadcastMessage(string.Format("Hurionthex casts a spell!"));
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Change_Treant), 2000);
                             IsTreantForm = true;
                         }
@@ -361,7 +360,7 @@ namespace DOL.AI.Brain
                     {
                         if (IsSaiyanForm == false)
                         {
-                            BroadcastMessage(String.Format("Hurionthex casts a spell!"));
+                            BroadcastMessage(string.Format("Hurionthex casts a spell!"));
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Change_Saiyan), 2000);
                             IsSaiyanForm = true;
                         }
@@ -371,7 +370,7 @@ namespace DOL.AI.Brain
                     {
                         if (IsBaseForm == false)
                         {
-                            BroadcastMessage(String.Format("Hurionthex casts a spell!"));
+                            BroadcastMessage(string.Format("Hurionthex casts a spell!"));
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(Change_Base), 2000);
                             IsBaseForm = true;
                         }
@@ -388,11 +387,9 @@ namespace DOL.AI.Brain
             if (IsBaseForm == true && BaseFormCheck == false)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
                     player.Out.SendSpellEffectAnimation(Body, Body, 208, 0, false, 0x01);
-                }
 
-                BroadcastMessage(String.Format("Hurionthex returns to his natural form."));
+                BroadcastMessage(string.Format("Hurionthex returns to his natural form."));
                 FormBase();
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(FormDuration), 2000);
                 BaseFormCheck = true;
@@ -406,11 +403,9 @@ namespace DOL.AI.Brain
             if (IsGranidonForm == true && GranidonFormCheck == false)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
                     player.Out.SendSpellEffectAnimation(Body, Body, 208, 0, false, 0x01);
-                }
 
-                BroadcastMessage(String.Format("A ring of magical energy emanates from Hurionthex."));
+                BroadcastMessage(string.Format("A ring of magical energy emanates from Hurionthex."));
                 FormGranidon();
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(FormDuration), 2000);
                 GranidonFormCheck = true;
@@ -424,11 +419,9 @@ namespace DOL.AI.Brain
             if (IsTreantForm == true && TreantFormCheck == false)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
                     player.Out.SendSpellEffectAnimation(Body, Body, 208, 0, false, 0x01);
-                }
 
-                BroadcastMessage(String.Format("A ring of magical energy emanates from Hurionthex."));
+                BroadcastMessage(string.Format("A ring of magical energy emanates from Hurionthex."));
                 FormTreant();
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(FormDuration), 2000);
                 TreantFormCheck = true;
@@ -442,11 +435,9 @@ namespace DOL.AI.Brain
             if (IsSaiyanForm == true && SaiyanFormCheck == false)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
                     player.Out.SendSpellEffectAnimation(Body, Body, 208, 0, false, 0x01);
-                }
 
-                BroadcastMessage(String.Format("A ring of magical energy emanates from Hurionthex."));
+                BroadcastMessage(string.Format("A ring of magical energy emanates from Hurionthex."));
                 FormSaiyan();
                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(FormDuration), 2000);
                 SaiyanFormCheck = true;
@@ -458,14 +449,12 @@ namespace DOL.AI.Brain
         public int FormDuration(ECSGameTimer timer)
         {
             if (SwitchForm == false)
-            {
                 if (BaseFormCheck == true || GranidonFormCheck == true || TreantFormCheck == true ||
                     SaiyanFormCheck == true)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetChecks), 2000);
                     SwitchForm = true;
                 }
-            }
 
             return 0;
         }
@@ -541,7 +530,7 @@ namespace DOL.AI.Brain
                 cast_DS = false;
             }
 
-            if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
+            if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
             {
                 ClearAggroList();
                 FormBase();
@@ -554,65 +543,43 @@ namespace DOL.AI.Brain
             }
 
             if (Body.InCombat && HasAggro)
-            {
                 if (Body.TargetObject != null)
-                {
                     //todo = Change switch case to form, make it dependent on timer trigger
                     if (StartForms == false)
                     {
                         new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ChangeForm), 2000);
                         StartForms = true;
                     }
-                }
-            }
 
             if (Body.InCombat && HasAggro)
             {
                 if (Body.Model == 844) //cast disease as mokney form
-                {
                     if (Util.Chance(100) && Body.TargetObject != null)
-                    {
                         if (BlackPlague.TargetHasEffect(Body.TargetObject) == false &&
                             Body.TargetObject.IsVisibleTo(Body))
-                        {
                             if (cast_disease == false)
                             {
                                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastBlackPlague), 2000);
                                 cast_disease = true;
                             }
-                        }
-                    }
-                }
 
                 if (Body.Model == 946) //cast damage add as tree
-                {
                     if (Util.Chance(100) && Body.TargetObject != null)
-                    {
                         if (!Body.effectListComponent.ContainsEffectForEffectType(eEffect.DamageAdd))
-                        {
                             if (cast_DA == false)
                             {
                                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastDamageAdd), 2000);
                                 cast_DA = true;
                             }
-                        }
-                    }
-                }
 
                 if (Body.Model == 925) //cast damage shield as sanidon
-                {
                     if (Util.Chance(100) && Body.TargetObject != null)
-                    {
                         if (!Body.effectListComponent.ContainsEffectForEffectType(eEffect.DamageReturn))
-                        {
                             if (cast_DS == false)
                             {
                                 new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(CastDamageShield), 2000);
                                 cast_DS = true;
                             }
-                        }
-                    }
-                }
             }
 
             base.Think();
@@ -626,7 +593,7 @@ namespace DOL.AI.Brain
             {
                 if (m_black_plague == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 40;
@@ -662,7 +629,7 @@ namespace DOL.AI.Brain
             {
                 if (m_damage_add == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 24;
@@ -694,7 +661,7 @@ namespace DOL.AI.Brain
             {
                 if (m_damage_shield == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 24;

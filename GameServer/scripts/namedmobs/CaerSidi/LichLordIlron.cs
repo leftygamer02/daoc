@@ -12,12 +12,13 @@ namespace DOL.GS.Scripts
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
@@ -31,12 +32,12 @@ namespace DOL.GS.Scripts
 
         public override short MaxSpeedBase
         {
-            get => (short) (191 + (Level * 2));
+            get => (short) (191 + Level * 2);
             set => m_maxSpeedBase = value;
         }
 
         public override int MaxHealth => 100000;
-        
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
@@ -47,6 +48,7 @@ namespace DOL.GS.Scripts
             get => 180;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == "CCImmunity")
@@ -54,6 +56,7 @@ namespace DOL.GS.Scripts
 
             return base.HasAbility(keyName);
         }
+
         public override bool AddToWorld()
         {
             Level = 79;
@@ -62,7 +65,8 @@ namespace DOL.GS.Scripts
             MaxDistance = 1500;
             TetherRange = 2000;
             RoamingRange = 400;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(64);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(64));
 
@@ -76,13 +80,13 @@ namespace DOL.GS.Scripts
             Intelligence = npcTemplate.Intelligence;
             Empathy = npcTemplate.Empathy;
 
-            LichLordIlronBrain sBrain = new LichLordIlronBrain();
+            var sBrain = new LichLordIlronBrain();
             SetOwnBrain(sBrain);
             sBrain.AggroLevel = 100;
             sBrain.AggroRange = 500;
 
             LichLordIlronBrain.spawnimages = true;
-            LoadedFromScript = false;//load from database
+            LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
@@ -93,10 +97,8 @@ namespace DOL.GS.Scripts
             base.Die(killer);
 
             foreach (GameNPC npc in GetNPCsInRadius(4000))
-            {
                 if (npc.Brain is IlronImagesBrain)
                     npc.RemoveFromWorld();
-            }
         }
 
         [ScriptLoadedEvent]
@@ -125,11 +127,10 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 spawnimages = true;
                 foreach (GameNPC npc in Body.GetNPCsInRadius(4000))
-                {
                     if (npc.Brain is IlronImagesBrain)
                         npc.RemoveFromWorld();
-                }
             }
+
             base.Think();
         }
 
@@ -140,30 +141,24 @@ namespace DOL.AI.Brain
             {
                 Spawn(); // spawn images
                 foreach (GameNPC mob_c in Body.GetNPCsInRadius(2000, false))
-                {
                     if (mob_c?.Brain is IlronImagesBrain && mob_c.IsAlive && mob_c.IsAvailable)
-                    {
                         AddAggroListTo(mob_c.Brain as IlronImagesBrain);
-                    }
-                }
+
                 spawnimages = false; // check to avoid spawning adds multiple times
             }
+
             base.OnAttackedByEnemy(ad);
         }
 
         public void Spawn()
         {
             foreach (GameNPC npc in Body.GetNPCsInRadius(4000))
-            {
                 if (npc.Brain is IlronImagesBrain)
-                {
                     return;
-                }
-            }
 
-            for (int i = 0; i < 4; i++) // Spawn 5 images
+            for (var i = 0; i < 4; i++) // Spawn 5 images
             {
-                IlronImages Add = new IlronImages();
+                var Add = new IlronImages();
                 Add.X = Body.X + Util.Random(-100, 100);
                 Add.Y = Body.Y + Util.Random(-100, 100);
                 Add.Z = Body.Z;
@@ -182,10 +177,8 @@ namespace DOL.GS
 {
     public class IlronImages : GameNPC
     {
-        public override int MaxHealth
-        {
-            get { return 10000; }
-        }
+        public override int MaxHealth => 10000;
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -196,6 +189,7 @@ namespace DOL.GS
                 default: return 25; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 200;
@@ -206,6 +200,7 @@ namespace DOL.GS
             // 85% ABS is cap.
             return 0.15;
         }
+
         public override bool AddToWorld()
         {
             Model = 441;
@@ -221,7 +216,7 @@ namespace DOL.GS
             IsWorthReward = false; // worth no reward
             Flags ^= eFlags.GHOST;
             Realm = eRealm.None;
-            IlronImagesBrain adds = new IlronImagesBrain();
+            var adds = new IlronImagesBrain();
             LoadedFromScript = true;
             SetOwnBrain(adds);
             base.AddToWorld();
@@ -271,7 +266,7 @@ namespace DOL.AI.Brain
             {
                 if (m_mezSpell == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.ClientEffect = 1681;
@@ -299,10 +294,8 @@ namespace DOL.AI.Brain
 
         public override void Think()
         {
-            if (Util.Chance(3))
-            {
-                Body.CastSpell(Mezz, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-            }
+            if (Util.Chance(3)) Body.CastSpell(Mezz, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
+
             base.Think();
         }
     }

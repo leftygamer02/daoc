@@ -12,17 +12,19 @@ namespace DOL.GS;
 
 public class SubObjective
 {
-    private ushort FlagCaptureRadius = ServerProperties.Properties.FLAG_CAPTURE_RADIUS; //how far away can we capture flag from
+    private ushort
+        FlagCaptureRadius = ServerProperties.Properties.FLAG_CAPTURE_RADIUS; //how far away can we capture flag from
+
     private static int FlagCaptureTime = ServerProperties.Properties.FLAG_CAPTURE_TIME; //how long to capture flag
-    uint fullCycleTime = (uint) ServerProperties.Properties.MAX_CONQUEST_TASK_DURATION;
+    private uint fullCycleTime = (uint) ServerProperties.Properties.MAX_CONQUEST_TASK_DURATION;
 
     private int ObjectiveNumber = 0;
-    
+
     public GameStaticItemTimed FlagObject;
     private ECSGameTimer CaptureTimer = null;
     private int CaptureSeconds = FlagCaptureTime;
 
-    private HashSet<GamePlayer> RecentCaps = new HashSet<GamePlayer>();
+    private HashSet<GamePlayer> RecentCaps = new();
 
     private eRealm CapturingRealm;
     public eRealm OwningRealm;
@@ -67,7 +69,7 @@ public class SubObjective
         CaptureTimer?.Stop();
         CaptureTimer = null;
     }
-    
+
     private int CaptureCallback(ECSGameTimer timer)
     {
         if (CaptureSeconds > 0)
@@ -97,10 +99,11 @@ public class SubObjective
 
         foreach (var player in nearbyPlayers)
         {
-            if(!RecentCaps.Contains(player) && player.Realm == CapturingRealm)
+            if (!RecentCaps.Contains(player) && player.Realm == CapturingRealm)
                 player.GainRealmPoints(50, false);
             else
-                player.Out.SendMessage($"You've recently captured this flag and are awarded no realm points.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+                player.Out.SendMessage($"You've recently captured this flag and are awarded no realm points.",
+                    eChatType.CT_System, eChatLoc.CL_SystemWindow);
 
             RecentCaps.Add(player);
         }
@@ -115,15 +118,17 @@ public class SubObjective
     {
         foreach (GamePlayer player in FlagObject.GetPlayersInRadius(750, false))
         {
-            if(secondsLeft%5 == 0)
-                player.Out.SendMessage($"{secondsLeft} seconds until capture", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-            player.Out.SendMessage($"{secondsLeft} seconds until capture", eChatType.CT_System, eChatLoc.CL_SystemWindow);
+            if (secondsLeft % 5 == 0)
+                player.Out.SendMessage($"{secondsLeft} seconds until capture", eChatType.CT_ScreenCenter,
+                    eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage($"{secondsLeft} seconds until capture", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
         }
-        
-        if(secondsLeft%5 == 0)
+
+        if (secondsLeft % 5 == 0)
             FlagObject.BroadcastUpdate();
     }
-    
+
     private void BroadcastCapture()
     {
         Parallel.ForEach(FlagObject.GetPlayersInRadius(750, false).OfType<GamePlayer>(), player =>
@@ -141,20 +146,18 @@ public class SubObjective
                     break;
             }
         });
-        
+
         Parallel.ForEach(FlagObject.GetPlayersInRadius(50000, false).OfType<GamePlayer>(), player =>
         {
             if (player.Realm == CapturingRealm)
-            {
-                player.Out.SendMessage($"An ally has captured flag {ObjectiveNumber}!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);    
-            }
+                player.Out.SendMessage($"An ally has captured flag {ObjectiveNumber}!", eChatType.CT_ScreenCenter,
+                    eChatLoc.CL_SystemWindow);
             else
-            {
-                player.Out.SendMessage($"An enemy has captured flag {ObjectiveNumber}!", eChatType.CT_ScreenCenter, eChatLoc.CL_SystemWindow);
-            }
+                player.Out.SendMessage($"An enemy has captured flag {ObjectiveNumber}!", eChatType.CT_ScreenCenter,
+                    eChatLoc.CL_SystemWindow);
         });
     }
-    
+
     private ushort GetModelIDForRealm(eRealm realm)
     {
         ushort modelID = 0;
@@ -173,24 +176,20 @@ public class SubObjective
 
         return modelID;
     }
-    
+
     public void CheckNearbyPlayers()
     {
-        Dictionary<eRealm, int> playersOfRealmDict = new Dictionary<eRealm, int>();
-       // Console.WriteLine($"Flag Object {FlagObject} {FlagObject.CurrentZone.Description} {FlagObject.Realm} {FlagObject.CurrentRegion.Description} players nearby {FlagObject.GetPlayersInRadius(true, 1000, true)}");
-       var nearbyPlayers = FlagObject.GetPlayersInRadius(750, true);
+        var playersOfRealmDict = new Dictionary<eRealm, int>();
+        // Console.WriteLine($"Flag Object {FlagObject} {FlagObject.CurrentZone.Description} {FlagObject.Realm} {FlagObject.CurrentRegion.Description} players nearby {FlagObject.GetPlayersInRadius(true, 1000, true)}");
+        var nearbyPlayers = FlagObject.GetPlayersInRadius(750, true);
         foreach (GamePlayer player in nearbyPlayers)
         {
             if (!player.IsAlive || player.IsStealthed) continue;
-           //Console.WriteLine($"Player near flag: {player.Name}");
+            //Console.WriteLine($"Player near flag: {player.Name}");
             if (playersOfRealmDict.ContainsKey(player.Realm))
-            {
                 playersOfRealmDict[player.Realm]++;
-            }
             else
-            {
-                playersOfRealmDict.Add(player.Realm, 1);    
-            }
+                playersOfRealmDict.Add(player.Realm, 1);
         }
 
         if (playersOfRealmDict.Keys.Count is > 1 or 0 && CaptureTimer != null)
@@ -200,16 +199,17 @@ public class SubObjective
         else if (playersOfRealmDict.Keys.Count == 1 && playersOfRealmDict.First().Key != OwningRealm)
         {
             StartCaptureTimer(playersOfRealmDict.First().Key);
-            ConquestService.ConquestManager.AddContributors(FlagObject.GetPlayersInRadius(750, true).OfType<GamePlayer>().Where(x=> x.Realm == playersOfRealmDict.First().Key).ToList());
+            ConquestService.ConquestManager.AddContributors(FlagObject.GetPlayersInRadius(750, true)
+                .OfType<GamePlayer>().Where(x => x.Realm == playersOfRealmDict.First().Key).ToList());
         }
     }
-    
+
     public int GetNearbyPlayerCount()
     {
         return FlagObject.GetPlayersInRadiusCount(750);
     }
 
-    public String GetOwnerRealmName()
+    public string GetOwnerRealmName()
     {
         switch (OwningRealm)
         {

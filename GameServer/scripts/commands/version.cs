@@ -16,22 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Reflection;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&version",
+    ePrivLevel.Player,
+    "Get the version of the GameServer",
+    "/version")]
+public class VersionCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&version",
-		ePrivLevel.Player,
-		"Get the version of the GameServer",
-		"/version")]
-	public class VersionCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			AssemblyName an = Assembly.GetAssembly(typeof(GameServer)).GetName();
-			client.Out.SendMessage("Dawn of Light " + an.Name + " Version: " + an.Version, eChatType.CT_System, eChatLoc.CL_SystemWindow);
-		}
-	}
+    public void OnCommand(GameClient client, string[] args)
+    {
+        var an = Assembly.GetAssembly(typeof(GameServer)).GetName();
+        client.Out.SendMessage("Dawn of Light " + an.Name + " Version: " + an.Version, eChatType.CT_System,
+            eChatLoc.CL_SystemWindow);
+    }
 }

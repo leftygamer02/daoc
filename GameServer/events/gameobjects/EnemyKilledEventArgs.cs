@@ -16,35 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
-namespace DOL.Events
+
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the EnemyKilled event of GameLivings
+/// </summary>
+public class EnemyKilledEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the EnemyKilled event of GameLivings
-	/// </summary>
-	public class EnemyKilledEventArgs : EventArgs
-	{
+    /// <summary>
+    /// the attacker of attack
+    /// </summary>
+    private readonly GameLiving m_target;
 
-		/// <summary>
-		/// the attacker of attack
-		/// </summary>
-		private readonly GameLiving m_target;
+    /// <summary>
+    /// Constructs a new EnemyKilledEventArgs
+    /// </summary>
+    public EnemyKilledEventArgs(GameLiving target)
+    {
+        m_target = target;
+    }
 
-		/// <summary>
-		/// Constructs a new EnemyKilledEventArgs
-		/// </summary>
-		public EnemyKilledEventArgs(GameLiving target)
-		{
-			this.m_target=target;
-		}
-
-		/// <summary>
-		/// Gets the attacker of attack
-		/// </summary>
-		public GameLiving Target
-		{
-			get { return m_target; }
-		}
-	}
+    /// <summary>
+    /// Gets the attacker of attack
+    /// </summary>
+    public GameLiving Target => m_target;
 }

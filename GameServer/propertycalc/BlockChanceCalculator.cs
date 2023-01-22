@@ -16,41 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.PropertyCalc
+namespace DOL.GS.PropertyCalc;
+
+/// <summary>
+/// The block chance calculator. Returns 0 .. 1000 chance.
+/// 
+/// BuffBonusCategory1 unused
+/// BuffBonusCategory2 unused
+/// BuffBonusCategory3 unused
+/// BuffBonusCategory4 unused
+/// BuffBonusMultCategory1 unused
+/// </summary>
+[PropertyCalculator(eProperty.BlockChance)]
+public class BlockChanceCalculator : PropertyCalculator
 {
-	/// <summary>
-	/// The block chance calculator. Returns 0 .. 1000 chance.
-	/// 
-	/// BuffBonusCategory1 unused
-	/// BuffBonusCategory2 unused
-	/// BuffBonusCategory3 unused
-	/// BuffBonusCategory4 unused
-	/// BuffBonusMultCategory1 unused
-	/// </summary>
-	[PropertyCalculator(eProperty.BlockChance)]
-	public class BlockChanceCalculator : PropertyCalculator
-	{
-		public override int CalcValue(GameLiving living, eProperty property)
-		{
-			GamePlayer player = living as GamePlayer;
-			if (player != null)
-			{
-				int shield = (player.GetModifiedSpecLevel(Specs.Shields) - 1) * (10 / 2);
-				int ability = player.AbilityBonus[(int)property] * 10;
-				int chance = 50 + shield + ((player.Dexterity * 2 - 100) / 4) + ability;
-				
-                return chance;
-			}
+    public override int CalcValue(GameLiving living, eProperty property)
+    {
+        var player = living as GamePlayer;
+        if (player != null)
+        {
+            var shield = (player.GetModifiedSpecLevel(Specs.Shields) - 1) * (10 / 2);
+            var ability = player.AbilityBonus[(int) property] * 10;
+            var chance = 50 + shield + (player.Dexterity * 2 - 100) / 4 + ability;
 
-			GameNPC npc = living as GameNPC;
-			if (npc != null)
-			{
-				return npc.BlockChance * 10;
-			}
+            return chance;
+        }
 
-			return 0;
-		}
-	}
+        var npc = living as GameNPC;
+        if (npc != null) return npc.BlockChance * 10;
+
+        return 0;
+    }
 }

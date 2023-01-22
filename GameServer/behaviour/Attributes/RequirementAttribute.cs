@@ -16,53 +16,53 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.GS.Behaviour.Attributes
+namespace DOL.GS.Behaviour.Attributes;
+
+[AttributeUsage(AttributeTargets.Class)]
+public class RequirementAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class RequirementAttribute :Attribute
+    private eRequirementType requirementType;
+
+    public eRequirementType RequirementType
     {
-        private eRequirementType requirementType;
+        get => requirementType;
+        set => requirementType = value;
+    }
 
-        public eRequirementType RequirementType
-        {
-            get { return requirementType; }
-            set { requirementType = value; }
-        }        
+    private bool isNullableN;
 
-        private bool isNullableN;
+    public bool IsNullableN
+    {
+        get => isNullableN;
+        set => isNullableN = value;
+    }
 
-        public bool IsNullableN
-        {
-            get { return isNullableN; }
-            set { isNullableN = value; }
-        }
+    private bool isNullableV;
 
-        private bool isNullableV;
+    public bool IsNullableV
+    {
+        get => isNullableV;
+        set => isNullableV = value;
+    }
 
-        public bool IsNullableV
-        {
-            get { return isNullableV; }
-            set { isNullableV = value; }
-        }
+    private object defaultValueN;
 
-        private Object defaultValueN;
+    public object DefaultValueN
+    {
+        get => defaultValueN;
+        set => defaultValueN = value;
+    }
 
-        public Object DefaultValueN
-        {
-            get { return defaultValueN; }
-            set { defaultValueN = value; }
-        }
+    private object defaultValueV;
 
-        private Object defaultValueV;
-
-        public Object DefaultValueV
-        {
-            get { return defaultValueV; }
-            set { defaultValueV = value; }
-        }
+    public object DefaultValueV
+    {
+        get => defaultValueV;
+        set => defaultValueV = value;
     }
 }

@@ -16,27 +16,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Net
+namespace DOL.Tests.Integration.Net;
+
+[TestFixture]
+public class uPnP
 {
-	[TestFixture]
-	public class uPnP
-	{
-		UPnPNat upnp;
-		
-		public uPnP(){}
-		
-		[OneTimeSetUp]
-		public void init()
-		{
-			upnp = new UPnPNat();
-		}
-		
-		[Test, Explicit]
-		public void Discover()
-		{
-			Assert.IsTrue(upnp.Discover());
-		}
-	}
+    private UPnPNat upnp;
+
+    public uPnP()
+    {
+    }
+
+    [OneTimeSetUp]
+    public void init()
+    {
+        upnp = new UPnPNat();
+    }
+
+    [Test]
+    [Explicit]
+    public void Discover()
+    {
+        Assert.IsTrue(upnp.Discover());
+    }
 }

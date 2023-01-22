@@ -16,35 +16,37 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.GS.Spells
+
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Palading heal chant works only in combat
+/// </summary>
+[SpellHandlerAttribute("CombatHeal")]
+public class CombatHealSpellHandler : HealSpellHandler
 {
-	/// <summary>
-	/// Palading heal chant works only in combat
-	/// </summary>
-	[SpellHandlerAttribute("CombatHeal")]
-	public class CombatHealSpellHandler : HealSpellHandler
-	{
-		public CombatHealSpellHandler(GameLiving caster, Spell spell, SpellLine spellLine) : base(caster, spell, spellLine) { }
+    public CombatHealSpellHandler(GameLiving caster, Spell spell, SpellLine spellLine) : base(caster, spell,
+        spellLine)
+    {
+    }
 
-		/// <summary>
-		/// Execute heal spell
-		/// </summary>
-		/// <param name="target"></param>
-		public override bool StartSpell(GameLiving target)
-		{
-			m_startReuseTimer = true;
+    /// <summary>
+    /// Execute heal spell
+    /// </summary>
+    /// <param name="target"></param>
+    public override bool StartSpell(GameLiving target)
+    {
+        m_startReuseTimer = true;
 
-			foreach (GameLiving member in GetGroupAndPets(Spell))
-			{
-				new CombatHealECSEffect(new ECSGameEffectInitParams(member, Spell.Frequency, Caster.Effectiveness, this));
-			}
+        foreach (var member in GetGroupAndPets(Spell))
+            new CombatHealECSEffect(
+                new ECSGameEffectInitParams(member, Spell.Frequency, Caster.Effectiveness, this));
 
-			GamePlayer player = Caster as GamePlayer;
+        var player = Caster as GamePlayer;
 
-			if (!Caster.InCombat && (player==null || player.Group==null || !player.Group.IsGroupInCombat()))
-				return false; // Do not start healing if not in combat
+        if (!Caster.InCombat && (player == null || player.Group == null || !player.Group.IsGroupInCombat()))
+            return false; // Do not start healing if not in combat
 
-			return base.StartSpell(target);
-		}
-	}
+        return base.StartSpell(target);
+    }
 }

@@ -16,46 +16,47 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Text;
 using System.Reflection;
 using DOL.Database;
 
-namespace DOL.GS.Quests
+namespace DOL.GS.Quests;
+
+public class QuestBuilder
 {
-    public class QuestBuilder
+    private Type questType;
+
+    private MethodInfo addActionMethod;
+
+    public Type QuestType
     {
-        private Type questType;
+        get => questType;
+        set => questType = value;
+    }
 
-        private MethodInfo addActionMethod;        
+    public QuestBuilder(Type questType)
+    {
+        this.questType = questType;
+        addActionMethod = questType.GetMethod("AddBehaviour",
+            BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);
+    }
 
-        public Type QuestType
-        {
-            get { return questType; }
-            set { questType = value; }
-        }
+    public void AddBehaviour(QuestBehaviour questPart)
+    {
+        addActionMethod.Invoke(null, new object[] {questPart});
+    }
 
-        public QuestBuilder(Type questType)
-        {
-            this.questType = questType;
-            this.addActionMethod = questType.GetMethod("AddBehaviour", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy);            
-        }                
+    public QuestBehaviour CreateBehaviour(GameNPC npc)
+    {
+        var questPart = new QuestBehaviour(questType, npc);
+        return questPart;
+    }
 
-        public void AddBehaviour(QuestBehaviour questPart)
-        {            
-            addActionMethod.Invoke(null, new object[] { questPart });
-        }        
-
-        public QuestBehaviour CreateBehaviour(GameNPC npc)
-        {
-            QuestBehaviour questPart =  new QuestBehaviour(questType, npc);            
-            return questPart;
-        }
-
-        public QuestBehaviour CreateBehaviour(GameNPC npc, int maxExecutions)
-        {
-            QuestBehaviour questPart = new QuestBehaviour(questType, npc,maxExecutions);
-            return questPart;
-        }
+    public QuestBehaviour CreateBehaviour(GameNPC npc, int maxExecutions)
+    {
+        var questPart = new QuestBehaviour(questType, npc, maxExecutions);
+        return questPart;
     }
 }

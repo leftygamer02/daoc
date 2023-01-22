@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public enum eXPLogState : int
 {
-    public enum eXPLogState : int {
-        Off = 0,
-        On = 1,
-        Verbose = 2
-    }
+    Off = 0,
+    On = 1,
+    Verbose = 2
 }

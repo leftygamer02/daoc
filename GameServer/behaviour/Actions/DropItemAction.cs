@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -26,30 +27,31 @@ using DOL.GS.Behaviour;
 using DOL.Database;
 using DOL.Language;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.DropItem)]
+public class DropItemAction : AbstractAction<ItemTemplate, Unused>
 {
-    [ActionAttribute(ActionType = eActionType.DropItem)]
-    public class DropItemAction : AbstractAction<ItemTemplate,Unused>
-    {               
-
-        public DropItemAction(GameNPC defaultNPC,  Object p, Object q)
-            : base(defaultNPC, eActionType.DropItem, p, q)
-        {                
-        }
+    public DropItemAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.DropItem, p, q)
+    {
+    }
 
 
-        public DropItemAction(GameNPC defaultNPC, ItemTemplate itemTemplate)
-            : this(defaultNPC, (object) itemTemplate,(object) null) { }
-        
+    public DropItemAction(GameNPC defaultNPC, ItemTemplate itemTemplate)
+        : this(defaultNPC, (object) itemTemplate, (object) null)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-			InventoryItem inventoryItem = GameInventoryItem.Create(P as ItemTemplate);
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        InventoryItem inventoryItem = GameInventoryItem.Create(P as ItemTemplate);
 
-            player.CreateItemOnTheGround(inventoryItem);
-            player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Behaviour.DropItemAction.DropsFrontYou", inventoryItem.Name), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
-        }
+        player.CreateItemOnTheGround(inventoryItem);
+        player.Out.SendMessage(
+            LanguageMgr.GetTranslation(player.Client.Account.Language, "Behaviour.DropItemAction.DropsFrontYou",
+                inventoryItem.Name), eChatType.CT_Loot, eChatLoc.CL_SystemWindow);
     }
 }

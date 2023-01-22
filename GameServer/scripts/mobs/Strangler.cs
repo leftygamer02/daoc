@@ -15,7 +15,6 @@ namespace DOL.GS.Scripts
             SetOwnBrain(brain);
             return base.AddToWorld();
         }
-
     }
 }
 
@@ -23,10 +22,7 @@ namespace DOL.AI.Brain
 {
     public class StranglerBrain : StandardMobBrain
     {
-        public override int ThinkInterval
-        {
-            get { return 3000; }
-        }
+        public override int ThinkInterval => 3000;
 
         public override void Think()
         {

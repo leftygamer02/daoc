@@ -16,45 +16,45 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 *
 */
+
 using System;
 using System.Collections;
-
 using DOL.GS.Quests;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.RemoveQuestRequest, "Quest Remove request Handler.",
+    eClientStatus.PlayerInGame)]
+public class QuestRemoveRequestHandler : IPacketHandler
 {
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.RemoveQuestRequest, "Quest Remove request Handler.", eClientStatus.PlayerInGame)]
-	public class QuestRemoveRequestHandler : IPacketHandler
-	{
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			ushort unk1 = packet.ReadShort();
-			ushort questIndex = packet.ReadShort();
-			ushort unk2 = packet.ReadShort();
-			ushort unk3 = packet.ReadShort();
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        var unk1 = packet.ReadShort();
+        var questIndex = packet.ReadShort();
+        var unk2 = packet.ReadShort();
+        var unk3 = packet.ReadShort();
 
-			AbstractQuest quest = null;
+        AbstractQuest quest = null;
 
-			int index = 0;
-			lock (client.Player.QuestList)
-			{
-				foreach (AbstractQuest q in client.Player.QuestList)
-				{
-					// ignore completed quests
-					if (q.Step == -1)
-						continue;
+        var index = 0;
+        lock (client.Player.QuestList)
+        {
+            foreach (var q in client.Player.QuestList)
+            {
+                // ignore completed quests
+                if (q.Step == -1)
+                    continue;
 
-					if (index == questIndex)
-					{
-						quest = q;
-						break;
-					}
+                if (index == questIndex)
+                {
+                    quest = q;
+                    break;
+                }
 
-				index++;
-				}
-			}
+                index++;
+            }
+        }
 
-			quest?.AbortQuest();
-		}
-	}
+        quest?.AbortQuest();
+    }
 }

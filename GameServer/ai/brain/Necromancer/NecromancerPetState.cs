@@ -23,7 +23,7 @@ public class NecromancerPetState_DEFENSIVE : ControlledNPCState_DEFENSIVE
 
     public override void Think()
     {
-        NecromancerPetBrain brain = _brain as NecromancerPetBrain;
+        var brain = _brain as NecromancerPetBrain;
 
         // If spells are queued then handle them first.
         if (brain.SpellsQueued)
@@ -42,7 +42,7 @@ public class NecromancerPetState_AGGRO : ControlledNPCState_AGGRO
 
     public override void Think()
     {
-        NecromancerPetBrain brain = _brain as NecromancerPetBrain;
+        var brain = _brain as NecromancerPetBrain;
 
         // If spells are queued then handle them first.
         if (brain.SpellsQueued)
@@ -61,7 +61,7 @@ public class NecromancerPetState_PASSIVE : ControlledNPCState_PASSIVE
 
     public override void Think()
     {
-        NecromancerPetBrain brain = _brain as NecromancerPetBrain;
+        var brain = _brain as NecromancerPetBrain;
 
         // If spells are queued then handle them first.
         if (brain.SpellsQueued)

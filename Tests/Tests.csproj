@@ -2,7 +2,7 @@
     <PropertyGroup>
         <BaseIntermediateOutputPath>..\build\Tests\$(Configuration)\</BaseIntermediateOutputPath>
     </PropertyGroup>
-    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -32,29 +32,29 @@
         <RegisterForComInterop>False</RegisterForComInterop>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-        <PackageReference Include="NUnit" Version="3.13.2" />
-        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
-        <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase" />
-        <ProjectReference Include="..\DOLDatabase\DOLDatabase.csproj" Name="DOLDatabase" />
-        <ProjectReference Include="..\DOLServer\DOLServer.csproj" Name="DOLServer" />
-        <ProjectReference Include="..\GameServer\GameServer.csproj" Name="GameServer" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/>
+        <PackageReference Include="NUnit" Version="3.13.2"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.1.0"/>
+        <ProjectReference Include="..\DOLBase\DOLBase.csproj" Name="DOLBase"/>
+        <ProjectReference Include="..\DOLDatabase\DOLDatabase.csproj" Name="DOLDatabase"/>
+        <ProjectReference Include="..\DOLServer\DOLServer.csproj" Name="DOLServer"/>
+        <ProjectReference Include="..\GameServer\GameServer.csproj" Name="GameServer"/>
     </ItemGroup>
     <ItemGroup>
-        <ScriptFiles Include="..\GameServerScripts\**\*.cs" />
-        <DbUpdaterFiles Include="..\GameServerScripts\dbupdater\**\*.xml" />
-        <TranslationFiles Include="..\GameServer\language\**\*.txt" />
+        <ScriptFiles Include="..\GameServerScripts\**\*.cs"/>
+        <DbUpdaterFiles Include="..\GameServerScripts\dbupdater\**\*.xml"/>
+        <TranslationFiles Include="..\GameServer\language\**\*.txt"/>
     </ItemGroup>
     <Target Name="CopyFiles" AfterTargets="AfterBuild">
         <Copy
-          SourceFiles="@(ScriptFiles)"
-          DestinationFiles="@(ScriptFiles->'$(MSBuildProjectDirectory)\$(OutputPath)\..\scripts\%(RecursiveDir)%(Filename)%(Extension)')"/>
+                SourceFiles="@(ScriptFiles)"
+                DestinationFiles="@(ScriptFiles->'$(MSBuildProjectDirectory)\$(OutputPath)\..\scripts\%(RecursiveDir)%(Filename)%(Extension)')"/>
         <Copy
-          SourceFiles="@(DbUpdaterFiles)"
-          DestinationFiles="@(DbUpdaterFiles->'$(MSBuildProjectDirectory)\$(OutputPath)\..\scripts\dbupdater\%(RecursiveDir)%(Filename)%(Extension)')"/>
+                SourceFiles="@(DbUpdaterFiles)"
+                DestinationFiles="@(DbUpdaterFiles->'$(MSBuildProjectDirectory)\$(OutputPath)\..\scripts\dbupdater\%(RecursiveDir)%(Filename)%(Extension)')"/>
         <Copy
-          SourceFiles="@(TranslationFiles)"
-          DestinationFiles="@(TranslationFiles->'$(MSBuildProjectDirectory)\$(OutputPath)\..\languages\%(RecursiveDir)%(Filename)%(Extension)')"/>
+                SourceFiles="@(TranslationFiles)"
+                DestinationFiles="@(TranslationFiles->'$(MSBuildProjectDirectory)\$(OutputPath)\..\languages\%(RecursiveDir)%(Filename)%(Extension)')"/>
     </Target>
-    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/>
 </Project>

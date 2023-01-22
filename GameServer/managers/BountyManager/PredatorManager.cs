@@ -90,9 +90,8 @@ public class PredatorManager
 
         //if anyone is currently hunting, put them back in the queue
         foreach (var active in ActiveBounties)
-        {
-            if (!QueuedPlayers.Contains(active.Predator)) QueuedPlayers.Add(active.Predator);
-        }
+            if (!QueuedPlayers.Contains(active.Predator))
+                QueuedPlayers.Add(active.Predator);
 
         ActiveBounties.Clear();
         InsertQueuedPlayers();
@@ -108,14 +107,14 @@ public class PredatorManager
                 eChatLoc.CL_SystemWindow);
             return;
         }
-        
+
         if (DisqualifiedPlayers.Keys.Contains(player))
         {
             if (DisqualifiedPlayers[player] + Properties.PREDATOR_ABUSE_TIMEOUT * 60000 >=
                 GameLoop.GameLoopTime)
             {
-                long timeLeft = Math.Abs(Properties.PREDATOR_ABUSE_TIMEOUT * 60000 + DisqualifiedPlayers[player] -
-                                         GameLoop.GameLoopTime);
+                var timeLeft = Math.Abs(Properties.PREDATOR_ABUSE_TIMEOUT * 60000 + DisqualifiedPlayers[player] -
+                                        GameLoop.GameLoopTime);
                 player.Out.SendMessage("You recently abandoned the hunt. " +
                                        "Your body needs " + TimeSpan.FromMilliseconds(timeLeft).Minutes + "m "
                                        + TimeSpan.FromMilliseconds(timeLeft).Seconds + "s" +
@@ -123,16 +122,20 @@ public class PredatorManager
                     eChatLoc.CL_SystemWindow);
                 return;
             }
+
             DisqualifiedPlayers.Remove(player);
         }
 
         if (!ConquestService.ConquestManager.IsPlayerInConquestArea(player))
         {
-            player.Out.SendMessage($"You must hunt within the active conquest zone. Try again after entering the active frontier.", eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
+            player.Out.SendMessage(
+                $"You must hunt within the active conquest zone. Try again after entering the active frontier.",
+                eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
             return;
         }
-        
-        player.Out.SendMessage($"You tune your senses to the pulse of nature. New prey is sure to arrive soon.", eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
+
+        player.Out.SendMessage($"You tune your senses to the pulse of nature. New prey is sure to arrive soon.",
+            eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
         QueuedPlayers.Add(player);
     }
 
@@ -140,13 +143,9 @@ public class PredatorManager
     {
         RemoveActivePlayer(player);
         if (DisqualifiedPlayers.ContainsKey(player))
-        {
             DisqualifiedPlayers[player] = GameLoop.GameLoopTime;
-        }
         else
-        {
             DisqualifiedPlayers.Add(player, GameLoop.GameLoopTime);
-        }
 
         if (PlayerKillTallyDict.ContainsKey(player))
             PlayerKillTallyDict.Remove(player);
@@ -161,8 +160,8 @@ public class PredatorManager
         if (bountyCheck == null || killerPlayer == null || bountyCheck.Prey != killerPlayer) return 0;
 
         double reward = killerPlayer.RealmPointsValue;
-        reward = reward * (1.0 - killerPlayer.Health / (double)killerPlayer.MaxHealth);
-        return (int)reward;
+        reward = reward * (1.0 - killerPlayer.Health / (double) killerPlayer.MaxHealth);
+        return (int) reward;
     }
 
     public static void StartTimeoutCountdownFor(GamePlayer player)
@@ -172,14 +171,17 @@ public class PredatorManager
         player.PredatorTimeoutTimer.Properties.setProperty(TimeoutTickKey, GameLoop.GameLoopTime);
         player.PredatorTimeoutTimer.Callback = new ECSGameTimer.ECSTimerCallback(TimeoutTimerCallback);
         player.PredatorTimeoutTimer.Start(1000);
-        
-        player.Out.SendMessage($"You are outside of a valid hunting zone and will be removed from the pool in {Properties.OUT_OF_BOUNDS_TIMEOUT} seconds.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+
+        player.Out.SendMessage(
+            $"You are outside of a valid hunting zone and will be removed from the pool in {Properties.OUT_OF_BOUNDS_TIMEOUT} seconds.",
+            eChatType.CT_Important, eChatLoc.CL_SystemWindow);
     }
-    
+
     public static void StopTimeoutCountdownFor(GamePlayer player)
     {
         player.PredatorTimeoutTimer.Stop();
-        player.Out.SendMessage($"You are once again inside a valid hunting zone.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
+        player.Out.SendMessage($"You are once again inside a valid hunting zone.", eChatType.CT_Important,
+            eChatLoc.CL_SystemWindow);
     }
 
     public static void RemoveActivePlayer(GamePlayer player)
@@ -188,7 +190,7 @@ public class PredatorManager
         {
             ActiveBounties.Remove(ActiveBounties.First(x => x.Predator == player));
 
-            PredatorBounty PreyBounty = ActiveBounties.FirstOrDefault(x => x.Prey == player);
+            var PreyBounty = ActiveBounties.FirstOrDefault(x => x.Prey == player);
             if (PreyBounty != null)
             {
                 PreyBounty.Predator.Out.SendMessage(
@@ -204,8 +206,8 @@ public class PredatorManager
 
     public static bool PlayerIsActive(GamePlayer player)
     {
-        return (ActiveBounties.FirstOrDefault(bounty => bounty.Predator == player) != null ||
-                ActiveBounties.FirstOrDefault(bounty => bounty.Prey == player) != null);
+        return ActiveBounties.FirstOrDefault(bounty => bounty.Predator == player) != null ||
+               ActiveBounties.FirstOrDefault(bounty => bounty.Prey == player) != null;
     }
 
     public static void InsertQueuedPlayers()
@@ -215,14 +217,14 @@ public class PredatorManager
         //make a new bounty with no prey for each queued player and add them to main list
         foreach (var queuedPlayer in QueuedPlayers?.ToList())
         {
-            PredatorBounty newPred = new PredatorBounty(queuedPlayer, FindPreyForPlayer(queuedPlayer));
+            var newPred = new PredatorBounty(queuedPlayer, FindPreyForPlayer(queuedPlayer));
             newPred.AddReward(GetScaledReward(newPred.Prey));
             AddOrOverwriteBounty(newPred);
         }
 
         QueuedPlayers.Clear();
     }
-    
+
     public static void InsertFreshKillers()
     {
         if (FreshKillers.Count < 1) return;
@@ -230,7 +232,7 @@ public class PredatorManager
         //make a new bounty with no prey for each queued player and add them to main list
         foreach (var killer in FreshKillers?.ToList())
         {
-            PredatorBounty newPred = new PredatorBounty(killer, FindPreyForPlayer(killer));
+            var newPred = new PredatorBounty(killer, FindPreyForPlayer(killer));
             newPred.AddReward(GetScaledReward(newPred.Prey));
             AddOrOverwriteBounty(newPred);
         }
@@ -241,20 +243,17 @@ public class PredatorManager
     public static void TryFillEmptyPrey()
     {
         var PreylessHunters = ActiveBounties.Where(x => x.Prey == null);
-        List<PredatorBounty> PredatorsToCreate = new List<PredatorBounty>();
+        var PredatorsToCreate = new List<PredatorBounty>();
 
         foreach (var preylessHunter in PreylessHunters)
         {
-            PredatorBounty newPred =
+            var newPred =
                 new PredatorBounty(preylessHunter.Predator, FindPreyForPlayer(preylessHunter.Predator));
             newPred.AddReward(GetScaledReward(newPred.Prey));
             PredatorsToCreate.Add(newPred);
         }
 
-        foreach (var predatorBounty in PredatorsToCreate)
-        {
-            AddOrOverwriteBounty(predatorBounty);
-        }
+        foreach (var predatorBounty in PredatorsToCreate) AddOrOverwriteBounty(predatorBounty);
     }
 
     /*
@@ -341,14 +340,14 @@ public class PredatorManager
 
     private static void ConstructNewList()
     {
-        Stack<GamePlayer> AlbPlayers = new Stack<GamePlayer>();
-        Stack<GamePlayer> HibPlayers = new Stack<GamePlayer>();
-        Stack<GamePlayer> MidPlayers = new Stack<GamePlayer>();
+        var AlbPlayers = new Stack<GamePlayer>();
+        var HibPlayers = new Stack<GamePlayer>();
+        var MidPlayers = new Stack<GamePlayer>();
 
         //create a stack of each realms hunters
         foreach (var bounty in ActiveBounties.ToArray())
         {
-            GamePlayer currentplayer = bounty.Predator;
+            var currentplayer = bounty.Predator;
             switch (currentplayer.Realm)
             {
                 case eRealm.Albion:
@@ -366,13 +365,13 @@ public class PredatorManager
             }
         }
 
-        List<eRealm> validRealms = new List<eRealm>();
+        var validRealms = new List<eRealm>();
         if (HibPlayers.Count > 0) validRealms.Add(eRealm.Hibernia);
         if (MidPlayers.Count > 0) validRealms.Add(eRealm.Midgard);
         if (AlbPlayers.Count > 0) validRealms.Add(eRealm.Albion);
         if (validRealms.Count < 2) return; //bail if not enough realms
 
-        eRealm loopRealm = validRealms[Util.Random(validRealms.Count - 1)];
+        var loopRealm = validRealms[Util.Random(validRealms.Count - 1)];
 
         GamePlayer LastPredator = null;
 
@@ -381,11 +380,11 @@ public class PredatorManager
             if (AlbPlayers.Count == 0 && validRealms.Contains(eRealm.Albion)) validRealms.Remove(eRealm.Albion);
             if (MidPlayers.Count == 0 && validRealms.Contains(eRealm.Midgard)) validRealms.Remove(eRealm.Midgard);
             if (HibPlayers.Count == 0 && validRealms.Contains(eRealm.Hibernia)) validRealms.Remove(eRealm.Hibernia);
-           // Console.WriteLine(
-              //  $"ValidRealms {validRealms.Count} Hibs {HibPlayers.Count} Mids {MidPlayers.Count} Albs {AlbPlayers.Count} startrealm {loopRealm}");
+            // Console.WriteLine(
+            //  $"ValidRealms {validRealms.Count} Hibs {HibPlayers.Count} Mids {MidPlayers.Count} Albs {AlbPlayers.Count} startrealm {loopRealm}");
 
             GamePlayer NextPredator = null;
-            List<GamePlayer> PotentialTargets = new List<GamePlayer>();
+            var PotentialTargets = new List<GamePlayer>();
             switch (loopRealm)
             {
                 case eRealm.Albion:
@@ -410,17 +409,17 @@ public class PredatorManager
             LastPredator = NextPredator;
             if (PotentialTargets.Count < 1 || NextPredator == null) break;
 
-            GamePlayer NextPrey = PotentialTargets[Util.Random(PotentialTargets.Count - 1)];
+            var NextPrey = PotentialTargets[Util.Random(PotentialTargets.Count - 1)];
             loopRealm = NextPrey.Realm;
             //Console.WriteLine($"NextPrey {NextPrey} nextRealm {loopRealm}");
 
-            PredatorBounty NewBounty = new PredatorBounty(NextPredator, NextPrey);
+            var NewBounty = new PredatorBounty(NextPredator, NextPrey);
             NewBounty.AddReward(GetScaledReward(NextPrey));
             AddOrOverwriteBounty(NewBounty);
         }
 
         //try to find a target for the last player to be iterated on
-        PredatorBounty lastBounty = new PredatorBounty(LastPredator, FindPreyForPlayer(LastPredator));
+        var lastBounty = new PredatorBounty(LastPredator, FindPreyForPlayer(LastPredator));
         lastBounty.AddReward(GetScaledReward(lastBounty.Prey));
         AddOrOverwriteBounty(lastBounty);
     }
@@ -434,20 +433,15 @@ public class PredatorManager
 
     private static GamePlayer FindPreyForPlayer(GamePlayer player)
     {
-        Dictionary<GamePlayer, GamePlayer> predatorMap = new Dictionary<GamePlayer, GamePlayer>();
-        foreach (var bounty in ActiveBounties.ToArray())
-        {
-            predatorMap.Add(bounty.Predator, bounty.Prey);
-            //Console.WriteLine($"mapping predator {bounty.Predator} prey {bounty.Prey}");
-        }
-
-        List<GamePlayer> Prey = new List<GamePlayer>();
-        List<GamePlayer> Untargetted = new List<GamePlayer>();
+        var predatorMap = new Dictionary<GamePlayer, GamePlayer>();
+        foreach (var bounty in ActiveBounties.ToArray()) predatorMap.Add(bounty.Predator, bounty.Prey);
+        //Console.WriteLine($"mapping predator {bounty.Predator} prey {bounty.Prey}");
+        var Prey = new List<GamePlayer>();
+        var Untargetted = new List<GamePlayer>();
 
         foreach (var pred in predatorMap.Keys)
-        {
-            if (!predatorMap.Values.Contains(pred) && pred.Realm != player.Realm) Untargetted.Add(pred);
-        }
+            if (!predatorMap.Values.Contains(pred) && pred.Realm != player.Realm)
+                Untargetted.Add(pred);
 
         //Console.WriteLine($"Prey {Untargetted.FirstOrDefault()} found for predator {player}");
         return Untargetted.FirstOrDefault();
@@ -456,44 +450,35 @@ public class PredatorManager
 
     private static void AddOrOverwriteBounty(PredatorBounty bounty)
     {
-        List<PredatorBounty> bountyToRemove = new List<PredatorBounty>();
+        var bountyToRemove = new List<PredatorBounty>();
 
         //find any existing predatorbounty with this player as the hunter
         foreach (var existingBounty in ActiveBounties?.ToList())
-        {
             if (existingBounty.Predator == bounty.Predator)
-            {
                 bountyToRemove.Add(existingBounty);
-            }
-        }
 
         //remove everything to make sure we only have one at the end
         if (bountyToRemove.Count > 0)
-        {
             foreach (var remover in bountyToRemove)
-            {
                 ActiveBounties.Remove(remover);
-            }
-        }
 
         //Console.WriteLine($"Adding predator {bounty.Predator} prey {bounty.Prey}");
         //insert that shiz
         ActiveBounties.Add(bounty);
 
         if (bounty.Predator != null && bounty.Prey != null)
-        {
-            bounty.Predator.Out.SendMessage($"Your primal instincts tingle. New prey has been selected.", eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
-        }
+            bounty.Predator.Out.SendMessage($"Your primal instincts tingle. New prey has been selected.",
+                eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
     }
 
     public static IList<string> GetActivePrey(GamePlayer predator)
     {
         if (!PlayerIsActive(predator)) return null;
 
-        List<string> temp = new List<string>();
+        var temp = new List<string>();
         temp.Clear();
 
-        PredatorBounty activeBounty = ActiveBounties.First(x => x.Predator == predator);
+        var activeBounty = ActiveBounties.First(x => x.Predator == predator);
 
         if (activeBounty.Prey == null)
         {
@@ -503,7 +488,7 @@ public class PredatorManager
         }
         else
         {
-            GamePlayer prey = activeBounty.Prey;
+            var prey = activeBounty.Prey;
 
             temp.Add($"Your senses sharpen, and primal instincts guide you to the location of your prey. \n" +
                      $"\n" +
@@ -515,33 +500,33 @@ public class PredatorManager
 
         return temp;
     }
-    
+
     public static IList<string> GetStatus()
     {
-        List<string> temp = new List<string>();
+        var temp = new List<string>();
         temp.Clear();
-        
-        temp.Add($"Active Hunters: {ActiveBounties.Count} | Queued: {QueuedPlayers.Count} | Killers: {FreshKillers.Count} \n");
+
+        temp.Add(
+            $"Active Hunters: {ActiveBounties.Count} | Queued: {QueuedPlayers.Count} | Killers: {FreshKillers.Count} \n");
 
         foreach (var activeBounty in ActiveBounties)
-        {
-            temp.Add($"Predator: {activeBounty.Predator?.Name} | Prey: {activeBounty.Prey?.Name} | Reward: {activeBounty.Reward}");
-        }
+            temp.Add(
+                $"Predator: {activeBounty.Predator?.Name} | Prey: {activeBounty.Prey?.Name} | Reward: {activeBounty.Reward}");
 
         return temp;
     }
 
     private static void PreyKilled(DOLEvent e, object sender, EventArgs args)
     {
-        GamePlayer killedPlayer = sender as GamePlayer;
+        var killedPlayer = sender as GamePlayer;
 
         if (killedPlayer == null) return;
 
         if (e != GameLivingEvent.Dying) return;
 
-        DyingEventArgs eArgs = args as DyingEventArgs;
+        var eArgs = args as DyingEventArgs;
 
-        GamePlayer killerPlayer = eArgs.Killer as GamePlayer;
+        var killerPlayer = eArgs.Killer as GamePlayer;
 
         if (killerPlayer == null) return;
 
@@ -550,16 +535,18 @@ public class PredatorManager
         var predatorBounty = ActiveBounties.FirstOrDefault(x => x.Predator == killerPlayer);
 
         if (predatorBounty is null || killedPlayer != predatorBounty.Prey) return;
-        
+
         //Console.WriteLine($"bounty {predatorBounty} pred {predatorBounty.Predator} prey {predatorBounty.Prey} ");
 
         ActiveBounties.Remove(predatorBounty);
-        predatorBounty.Predator.Out.SendMessage($"You unleash a primal roar as the thrill of the hunt overtakes you. A feast of {predatorBounty.Reward} RPs is awarded.", eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
+        predatorBounty.Predator.Out.SendMessage(
+            $"You unleash a primal roar as the thrill of the hunt overtakes you. A feast of {predatorBounty.Reward} RPs is awarded.",
+            eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
         BroadcastKill(predatorBounty.Prey);
         killerPlayer.GainRealmPoints(predatorBounty.Reward, false);
         FreshKillers.Add(predatorBounty.Predator);
-        
-        if(PlayerKillTallyDict.ContainsKey(predatorBounty.Predator))
+
+        if (PlayerKillTallyDict.ContainsKey(predatorBounty.Predator))
             PlayerKillTallyDict[predatorBounty.Predator]++;
         else
             PlayerKillTallyDict.Add(predatorBounty.Predator, 1);
@@ -572,7 +559,6 @@ public class PredatorManager
     public static Dictionary<GamePlayer, int> GetTopKillers()
     {
         return PlayerKillTallyDict;
-        
     }
 
     public static void BroadcastKill(GamePlayer deadGuy)
@@ -587,18 +573,14 @@ public class PredatorManager
     private static void JoinedGroup(DOLEvent dolEvent, object sender, EventArgs arguments)
     {
         if (sender is Group g)
-        {
-            foreach (GamePlayer groupmate in g.GetPlayersInTheGroup())
-            {
-                if(PlayerIsActive(groupmate))
+            foreach (var groupmate in g.GetPlayersInTheGroup())
+                if (PlayerIsActive(groupmate))
                     DisqualifyPlayer(groupmate);
-            }
-        }
     }
-    
+
     private static void StartCooldownOnQuit(DOLEvent e, object sender, EventArgs arguments)
     {
-        if(sender is GamePlayer p && PlayerIsActive(p))
+        if (sender is GamePlayer p && PlayerIsActive(p))
             DisqualifyPlayer(p);
     }
 
@@ -606,17 +588,19 @@ public class PredatorManager
     {
         if (timer.TimerOwner is GamePlayer pl)
         {
-            if (!PredatorManager.PlayerIsActive(pl)) return 0;
-            
-            long TimerStartTime = timer.Properties.getProperty<long>(TimeoutTickKey);
+            if (!PlayerIsActive(pl)) return 0;
 
-            long secondsleft = OutOfBoundsTimeout - (GameLoop.GameLoopTime - TimerStartTime + 500) / 1000; // 500 is for rounding
+            var TimerStartTime = timer.Properties.getProperty<long>(TimeoutTickKey);
+
+            var secondsleft =
+                OutOfBoundsTimeout - (GameLoop.GameLoopTime - TimerStartTime + 500) / 1000; // 500 is for rounding
             if (secondsleft > 0)
             {
-                if (secondsleft == 120 || secondsleft == 90 || secondsleft == 60 || secondsleft == 30 || secondsleft == 10 || secondsleft < 5)
-                {
-                    pl.Out.SendMessage($"You are outside of a valid hunting zone and will be removed from the pool in {secondsleft} seconds.", eChatType.CT_Important, eChatLoc.CL_SystemWindow);
-                }
+                if (secondsleft == 120 || secondsleft == 90 || secondsleft == 60 || secondsleft == 30 ||
+                    secondsleft == 10 || secondsleft < 5)
+                    pl.Out.SendMessage(
+                        $"You are outside of a valid hunting zone and will be removed from the pool in {secondsleft} seconds.",
+                        eChatType.CT_Important, eChatLoc.CL_SystemWindow);
 
                 return 1000;
             }

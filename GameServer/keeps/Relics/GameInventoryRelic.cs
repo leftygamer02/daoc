@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Reflection;
 using System.Collections;
@@ -26,43 +27,39 @@ using DOL.Database;
 using DOL.GS.Spells;
 using log4net;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// This class represents a relic in a players inventory
+/// </summary>
+public class GameInventoryRelic : GameInventoryItem
 {
-	/// <summary>
-	/// This class represents a relic in a players inventory
-	/// </summary>
-	public class GameInventoryRelic : GameInventoryItem
-	{
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-		public GameInventoryRelic()
-			: base()
-		{
-		}
+    public GameInventoryRelic()
+        : base()
+    {
+    }
 
-		public GameInventoryRelic(ItemTemplate template)
-			: base(template)
-		{
-		}
+    public GameInventoryRelic(ItemTemplate template)
+        : base(template)
+    {
+    }
 
-		public GameInventoryRelic(ItemUnique template)
-			: base(template)
-		{
-		}
+    public GameInventoryRelic(ItemUnique template)
+        : base(template)
+    {
+    }
 
-		public GameInventoryRelic(InventoryItem item)
-			: base(item)
-		{
-			OwnerID = item.OwnerID;
-			ObjectId = item.ObjectId;
-		}
+    public GameInventoryRelic(InventoryItem item)
+        : base(item)
+    {
+        OwnerID = item.OwnerID;
+        ObjectId = item.ObjectId;
+    }
 
-		/// <summary>
-		/// Can this item be saved or loaded from the database?
-		/// </summary>
-		public override bool CanPersist
-		{
-			get { return false; } // relics can never be saved
-		}
-	}
+    /// <summary>
+    /// Can this item be saved or loaded from the database?
+    /// </summary>
+    public override bool CanPersist => false; // relics can never be saved
 }

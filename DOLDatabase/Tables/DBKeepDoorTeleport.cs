@@ -1,179 +1,154 @@
 ﻿using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+/// <summary>
+/// DB KeepdoorTeleport is database of keepdoor teleport
+/// </summary>
+[DataTable(TableName = "Keepdoorteleport")]
+public class DBKeepDoorTeleport : DataObject
 {
-    /// <summary>
-    /// DB KeepdoorTeleport is database of keepdoor teleport
-    /// </summary>
-    [DataTable(TableName = "Keepdoorteleport")]
-    public class DBKeepDoorTeleport : DataObject
+    private ushort m_region;
+    private int m_x;
+    private int m_y;
+    private int m_z;
+    private ushort m_heading;
+    private int m_keepID;
+    private string m_teleportText;
+    private string m_createInfo;
+    private string m_teleportType;
+
+    public DBKeepDoorTeleport()
     {
-        private ushort m_region;
-        private int m_x;
-        private int m_y;
-        private int m_z;
-        private ushort m_heading;
-        private int m_keepID;
-        private string m_teleportText;
-        private string m_createInfo;
-        private string m_teleportType;
+        m_region = 0;
+        ;
+        m_x = 1;
+        m_y = 1;
+        m_z = 1;
+        m_heading = 0;
+        m_keepID = 0;
+        m_teleportText = "";
+        m_createInfo = "";
+        m_teleportType = "";
+    }
 
-        public DBKeepDoorTeleport()
+    /// <summary>
+    /// Region to move players
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public ushort Region
+    {
+        get => m_region;
+        set
         {
-            m_region = 0;;
-            m_x = 1;
-            m_y = 1;
-            m_z = 1;
-            m_heading = 0;
-            m_keepID = 0;
-            m_teleportText = "";
-            m_createInfo = "";
-            m_teleportType = "";
+            Dirty = true;
+            m_region = value;
         }
+    }
 
-        /// <summary>
-        /// Region to move players
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public ushort Region
+    /// <summary>
+    /// X position to move players
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int X
+    {
+        get => m_x;
+        set
         {
-            get
-            {
-                return m_region;
-            }
-            set
-            {
-                Dirty = true;
-                m_region = value;
-            }
+            Dirty = true;
+            m_x = value;
         }
+    }
 
-        /// <summary>
-        /// X position to move players
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public int X
+    /// <summary>
+    /// Y position to move players
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Y
+    {
+        get => m_y;
+        set
         {
-            get
-            {
-                return m_x;
-            }
-            set
-            {
-                Dirty = true;
-                m_x = value;
-            }
+            Dirty = true;
+            m_y = value;
         }
+    }
 
-        /// <summary>
-        /// Y position to move players
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public int Y
+    /// <summary>
+    /// Z to move players
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Z
+    {
+        get => m_z;
+        set
         {
-            get
-            {
-                return m_y;
-            }
-            set
-            {
-                Dirty = true;
-                m_y = value;
-            }
+            Dirty = true;
+            m_z = value;
         }
+    }
 
-        /// <summary>
-        /// Z to move players
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public int Z
+    /// <summary>
+    /// heading to move players
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public ushort Heading
+    {
+        get => m_heading;
+        set
         {
-            get
-            {
-                return m_z;
-            }
-            set
-            {
-                Dirty = true;
-                m_z = value;
-            }
+            Dirty = true;
+            m_heading = value;
         }
+    }
 
-        /// <summary>
-        /// heading to move players
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public ushort Heading
+    /// <summary>
+    /// Index of keep to move players
+    /// </summary>
+    [PrimaryKey]
+    public int KeepID
+    {
+        get => m_keepID;
+        set
         {
-            get
-            {
-                return m_heading;
-            }
-            set
-            {
-                Dirty = true;
-                m_heading = value;
-            }
+            Dirty = true;
+            m_keepID = value;
         }
+    }
 
-        /// <summary>
-        /// Index of keep to move players
-        /// </summary>
-        [PrimaryKey]
-        public int KeepID
+    /// <summary>
+    /// Text to Whisper
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string Text
+    {
+        get => m_teleportText;
+        set
         {
-            get
-            {
-                return m_keepID;
-            }
-            set
-            {
-                Dirty = true;
-                m_keepID = value;
-            }
+            Dirty = true;
+            m_teleportText = value;
         }
+    }
 
-        /// <summary>
-        /// Text to Whisper
-        /// </summary>
-        [DataElement(AllowDbNull = false)]
-        public string Text
+    [DataElement(AllowDbNull = false, Varchar = 255)]
+    public string CreateInfo
+    {
+        get => m_createInfo;
+        set
         {
-            get
-            {
-                return m_teleportText;
-            }
-            set
-            {
-                Dirty = true;
-                m_teleportText = value;
-            }
+            Dirty = true;
+            m_createInfo = value;
         }
+    }
 
-        [DataElement(AllowDbNull = false, Varchar = 255)]
-        public string CreateInfo
+    [DataElement(AllowDbNull = false, Varchar = 255)]
+    public string TeleportType
+    {
+        get => m_teleportType;
+        set
         {
-            get
-            {
-                return m_createInfo;
-            }
-            set
-            {
-                Dirty = true; m_createInfo = value;
-            }
-        }
-
-        [DataElement(AllowDbNull = false, Varchar = 255)]
-        public string TeleportType
-        {
-            get
-            {
-                return m_teleportType;
-            }
-            set
-            {
-                Dirty = true; m_teleportType = value;
-            }
+            Dirty = true;
+            m_teleportType = value;
         }
     }
 }

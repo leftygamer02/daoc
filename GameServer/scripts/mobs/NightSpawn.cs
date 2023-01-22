@@ -9,12 +9,13 @@ namespace DOL.GS
     {
         public override bool AddToWorld()
         {
-            NightSpawnBrain sBrain = new NightSpawnBrain();
+            var sBrain = new NightSpawnBrain();
             if (NPCTemplate != null)
             {
                 sBrain.AggroLevel = NPCTemplate.AggroLevel;
                 sBrain.AggroRange = NPCTemplate.AggroRange;
             }
+
             SetOwnBrain(sBrain);
             base.AddToWorld();
             return true;
@@ -36,14 +37,13 @@ namespace DOL.AI.Brain
         private static readonly log4net.ILog log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        ushort oldModel;
-        GameNPC.eFlags oldFlags;
-        bool changed;
+        private ushort oldModel;
+        private GameNPC.eFlags oldFlags;
+        private bool changed;
 
         public override void Think()
         {
             if (!Body.CurrentRegion.IsNightTime)
-            {
                 if (!changed)
                 {
                     oldFlags = Body.Flags;
@@ -51,16 +51,13 @@ namespace DOL.AI.Brain
                     Body.Flags |= GameNPC.eFlags.DONTSHOWNAME;
                     Body.Flags |= GameNPC.eFlags.PEACE;
 
-                    if (oldModel == 0)
-                    {
-                        oldModel = Body.Model;
-                    }
+                    if (oldModel == 0) oldModel = Body.Model;
 
                     Body.Model = 1;
 
                     changed = true;
                 }
-            }
+
             if (Body.CurrentRegion.IsNightTime)
             {
                 if (changed)
@@ -69,7 +66,7 @@ namespace DOL.AI.Brain
                     Body.Model = oldModel;
                     changed = false;
                 }
-                
+
                 if (Body.Name == "shadow")
                     Body.Flags |= GameNPC.eFlags.GHOST;
             }

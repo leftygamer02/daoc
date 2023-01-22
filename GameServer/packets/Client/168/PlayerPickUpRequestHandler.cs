@@ -16,38 +16,46 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using DOL.Language;
 using DOL.GS;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.PickUpRequest, "Handles Pick up object request",
+    eClientStatus.PlayerInGame)]
+public class PlayerPickUpRequestHandler : IPacketHandler
 {
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.PickUpRequest, "Handles Pick up object request", eClientStatus.PlayerInGame)]
-	public class PlayerPickUpRequestHandler : IPacketHandler
-	{
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			if (client.Player == null)
-				return;
-			uint X = packet.ReadInt();
-			uint Y = packet.ReadInt();
-			ushort id = packet.ReadShort();
-			ushort obj = packet.ReadShort();
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        if (client.Player == null)
+            return;
+        var X = packet.ReadInt();
+        var Y = packet.ReadInt();
+        var id = packet.ReadShort();
+        var obj = packet.ReadShort();
 
-			GameObject target = client.Player.TargetObject;
-			if (target == null)
-			{
-				client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "PlayerPickUpRequestHandler.HandlePacket.Target"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				return;
-			}
-			if (target.ObjectState != GameObject.eObjectState.Active)
-			{
-				client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "PlayerPickUpRequestHandler.HandlePacket.InvalidTarget"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				return;
-			}
+        var target = client.Player.TargetObject;
+        if (target == null)
+        {
+            client.Out.SendMessage(
+                LanguageMgr.GetTranslation(client.Account.Language,
+                    "PlayerPickUpRequestHandler.HandlePacket.Target"), eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            return;
+        }
 
-			client.Player.PickupObject(target, false);
-		}
-	}
+        if (target.ObjectState != GameObject.eObjectState.Active)
+        {
+            client.Out.SendMessage(
+                LanguageMgr.GetTranslation(client.Account.Language,
+                    "PlayerPickUpRequestHandler.HandlePacket.InvalidTarget"), eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            return;
+        }
+
+        client.Player.PickupObject(target, false);
+    }
 }

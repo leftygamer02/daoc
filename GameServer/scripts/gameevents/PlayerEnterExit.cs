@@ -16,126 +16,126 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Events;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.GameEvents
+namespace DOL.GS.GameEvents;
+
+/// <summary>
+/// Spams everyone online with player enter/exit messages
+/// </summary>
+public class PlayerEnterExit
 {
-	/// <summary>
-	/// Spams everyone online with player enter/exit messages
-	/// </summary>
-	public class PlayerEnterExit
-	{
-		/// <summary>
-		/// Event handler fired when server is started
-		/// </summary>
-		[GameServerStartedEvent]
-		public static void OnServerStart(DOLEvent e, object sender, EventArgs arguments)
-		{
-			GameEventMgr.AddHandler(GamePlayerEvent.GameEntered, new DOLEventHandler(PlayerEntered));
-			GameEventMgr.AddHandler(GamePlayerEvent.Quit, new DOLEventHandler(PlayerQuit));
-		}
+    /// <summary>
+    /// Event handler fired when server is started
+    /// </summary>
+    [GameServerStartedEvent]
+    public static void OnServerStart(DOLEvent e, object sender, EventArgs arguments)
+    {
+        GameEventMgr.AddHandler(GamePlayerEvent.GameEntered, new DOLEventHandler(PlayerEntered));
+        GameEventMgr.AddHandler(GamePlayerEvent.Quit, new DOLEventHandler(PlayerQuit));
+    }
 
-		/// <summary>
-		/// Event handler fired when server is stopped
-		/// </summary>
-		[GameServerStoppedEvent]
-		public static void OnServerStop(DOLEvent e, object sender, EventArgs arguments)
-		{
-			GameEventMgr.RemoveHandler(GamePlayerEvent.GameEntered, new DOLEventHandler(PlayerEntered));
-			GameEventMgr.RemoveHandler(GamePlayerEvent.Quit, new DOLEventHandler(PlayerQuit));
-		}
+    /// <summary>
+    /// Event handler fired when server is stopped
+    /// </summary>
+    [GameServerStoppedEvent]
+    public static void OnServerStop(DOLEvent e, object sender, EventArgs arguments)
+    {
+        GameEventMgr.RemoveHandler(GamePlayerEvent.GameEntered, new DOLEventHandler(PlayerEntered));
+        GameEventMgr.RemoveHandler(GamePlayerEvent.Quit, new DOLEventHandler(PlayerQuit));
+    }
 
-		/// <summary>
-		/// Event handler fired when players enters the game
-		/// </summary>
-		/// <param name="e"></param>
-		/// <param name="sender"></param>
-		/// <param name="arguments"></param>
-		private static void PlayerEntered(DOLEvent e, object sender, EventArgs arguments)
-		{
-			if (ServerProperties.Properties.SHOW_LOGINS == false)
-				return;
+    /// <summary>
+    /// Event handler fired when players enters the game
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="sender"></param>
+    /// <param name="arguments"></param>
+    private static void PlayerEntered(DOLEvent e, object sender, EventArgs arguments)
+    {
+        if (ServerProperties.Properties.SHOW_LOGINS == false)
+            return;
 
-			GamePlayer player = sender as GamePlayer;
-			if (player == null) return;
-			if (player.IsAnonymous) return;
+        var player = sender as GamePlayer;
+        if (player == null) return;
+        if (player.IsAnonymous) return;
 
-			foreach (GameClient pclient in WorldMgr.GetAllPlayingClients())
-			{
-				if (player.Client == pclient)
-					continue;
+        foreach (var pclient in WorldMgr.GetAllPlayingClients())
+        {
+            if (player.Client == pclient)
+                continue;
 
-				string message = LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Entered", player.Name);
+            var message =
+                LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Entered", player.Name);
 
-				if (player.Client.Account.PrivLevel > 1)
-				{
-					message = LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Staff", message);
-				}
-				else
-				{
-					string realm = "";
-					if (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_Normal)
-					{
-						realm = "[" + GlobalConstants.RealmToName(player.Realm) + "] ";
-					}
-					message = realm + message;
-				}
+            if (player.Client.Account.PrivLevel > 1)
+            {
+                message = LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Staff", message);
+            }
+            else
+            {
+                var realm = "";
+                if (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_Normal)
+                    realm = "[" + GlobalConstants.RealmToName(player.Realm) + "] ";
 
-				eChatType chatType = eChatType.CT_System;
+                message = realm + message;
+            }
 
-				if (Enum.IsDefined(typeof(eChatType), ServerProperties.Properties.SHOW_LOGINS_CHANNEL))
-					chatType = (eChatType)ServerProperties.Properties.SHOW_LOGINS_CHANNEL;
+            var chatType = eChatType.CT_System;
 
-				pclient.Out.SendMessage(message, chatType, eChatLoc.CL_SystemWindow);
-			}
-		}
+            if (Enum.IsDefined(typeof(eChatType), ServerProperties.Properties.SHOW_LOGINS_CHANNEL))
+                chatType = (eChatType) ServerProperties.Properties.SHOW_LOGINS_CHANNEL;
 
-		/// <summary>
-		/// Event handler fired when player leaves the game
-		/// </summary>
-		/// <param name="e"></param>
-		/// <param name="sender"></param>
-		/// <param name="arguments"></param>
-		private static void PlayerQuit(DOLEvent e, object sender, EventArgs arguments)
-		{
-			if (ServerProperties.Properties.SHOW_LOGINS == false)
-				return;
+            pclient.Out.SendMessage(message, chatType, eChatLoc.CL_SystemWindow);
+        }
+    }
 
-			GamePlayer player = sender as GamePlayer;
-			if (player == null) return;
-			if (player.IsAnonymous) return;
+    /// <summary>
+    /// Event handler fired when player leaves the game
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="sender"></param>
+    /// <param name="arguments"></param>
+    private static void PlayerQuit(DOLEvent e, object sender, EventArgs arguments)
+    {
+        if (ServerProperties.Properties.SHOW_LOGINS == false)
+            return;
 
-			foreach (GameClient pclient in WorldMgr.GetAllPlayingClients())
-			{
-				if (player.Client == pclient)
-					continue;
+        var player = sender as GamePlayer;
+        if (player == null) return;
+        if (player.IsAnonymous) return;
 
-				string message = LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Left", player.Name);
+        foreach (var pclient in WorldMgr.GetAllPlayingClients())
+        {
+            if (player.Client == pclient)
+                continue;
 
-				if (player.Client.Account.PrivLevel > 1)
-				{
-					message = LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Staff", message);
-				}
-				else
-				{
-					string realm = "";
-					if (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_Normal)
-					{
-						realm = "[" + GlobalConstants.RealmToName(player.Realm) + "] ";
-					}
-					message = realm + message;
-				}
+            var message =
+                LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Left", player.Name);
 
-				eChatType chatType = eChatType.CT_System;
+            if (player.Client.Account.PrivLevel > 1)
+            {
+                message = LanguageMgr.GetTranslation(pclient, "Scripts.Events.PlayerEnterExit.Staff", message);
+            }
+            else
+            {
+                var realm = "";
+                if (GameServer.Instance.Configuration.ServerType == eGameServerType.GST_Normal)
+                    realm = "[" + GlobalConstants.RealmToName(player.Realm) + "] ";
 
-				if (Enum.IsDefined(typeof(eChatType), ServerProperties.Properties.SHOW_LOGINS_CHANNEL))
-					chatType = (eChatType)ServerProperties.Properties.SHOW_LOGINS_CHANNEL;
+                message = realm + message;
+            }
 
-				pclient.Out.SendMessage(message, chatType, eChatLoc.CL_SystemWindow);
-			}
-		}
-	}
+            var chatType = eChatType.CT_System;
+
+            if (Enum.IsDefined(typeof(eChatType), ServerProperties.Properties.SHOW_LOGINS_CHANNEL))
+                chatType = (eChatType) ServerProperties.Properties.SHOW_LOGINS_CHANNEL;
+
+            pclient.Out.SendMessage(message, chatType, eChatLoc.CL_SystemWindow);
+        }
+    }
 }

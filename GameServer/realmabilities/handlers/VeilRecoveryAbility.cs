@@ -2,48 +2,43 @@ using System;
 using DOL.Database;
 using DOL.GS.PropertyCalc;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+public class VeilRecoveryAbility : RAPropertyEnhancer
 {
-	public class VeilRecoveryAbility : RAPropertyEnhancer
-	{
-		public VeilRecoveryAbility(DBAbility dba, int level)
-			: base(dba, level, eProperty.ResIllnessReduction)
-		{
-		}
+    public VeilRecoveryAbility(DBAbility dba, int level)
+        : base(dba, level, eProperty.ResIllnessReduction)
+    {
+    }
 
-		protected override string ValueUnit { get { return "%"; } }
+    protected override string ValueUnit => "%";
 
-		public override int GetAmountForLevel(int level)
-		{
-			if (level < 1) return 0;
-            if (ServerProperties.Properties.USE_NEW_PASSIVES_RAS_SCALING)
+    public override int GetAmountForLevel(int level)
+    {
+        if (level < 1) return 0;
+        if (ServerProperties.Properties.USE_NEW_PASSIVES_RAS_SCALING)
+            switch (level)
             {
-                switch (level)
-                {
-                    case 1: return 10;
-                    case 2: return 15;
-                    case 3: return 20;
-                    case 4: return 30;
-                    case 5: return 40;
-                    case 6: return 50;
-                    case 7: return 60;
-                    case 8: return 70;
-                    case 9: return 80;
-                    default: return 80;
-                }
+                case 1: return 10;
+                case 2: return 15;
+                case 3: return 20;
+                case 4: return 30;
+                case 5: return 40;
+                case 6: return 50;
+                case 7: return 60;
+                case 8: return 70;
+                case 9: return 80;
+                default: return 80;
             }
-            else
+        else
+            switch (level)
             {
-                switch (level)
-                {
-                    case 1: return 10;
-                    case 2: return 20;
-                    case 3: return 40;
-                    case 4: return 60;
-                    case 5: return 80;
-                    default: return 0;
-                }
+                case 1: return 10;
+                case 2: return 20;
+                case 3: return 40;
+                case 4: return 60;
+                case 5: return 80;
+                default: return 0;
             }
-		}
-	}
+    }
 }

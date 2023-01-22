@@ -16,16 +16,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Database.MySQL
+namespace DOL.Tests.Integration.Database.MySQL;
+
+[TestFixture]
+[Explicit]
+public class MySQLDBCustomParamsTest : CustomParamsTest
 {
-	[TestFixture, Explicit]
-	public class MySQLDBCustomParamsTest : CustomParamsTest
-	{
-		public MySQLDBCustomParamsTest()
-		{
-			Database = MySQLDBSetUp.Database;
-		}
-	}
+    public MySQLDBCustomParamsTest()
+    {
+        Database = MySQLDBSetUp.Database;
+    }
 }

@@ -33,14 +33,14 @@ public class ConquestManager
     public long LastConquestStopTime;
     public long LastConquestWindowStart;
 
-    public eRealm ActiveConquestRealm = (eRealm)Util.Random(1, 3);
+    public eRealm ActiveConquestRealm = (eRealm) Util.Random(1, 3);
 
-    private HashSet<GamePlayer> ContributedPlayers = new HashSet<GamePlayer>();
-    private HashSet<GamePlayer> ActiveDefenders = new HashSet<GamePlayer>();
+    private HashSet<GamePlayer> ContributedPlayers = new();
+    private HashSet<GamePlayer> ActiveDefenders = new();
 
-    int HiberniaContribution = 0;
-    int AlbionContribution = 0;
-    int MidgardContribution = 0;
+    private int HiberniaContribution = 0;
+    private int AlbionContribution = 0;
+    private int MidgardContribution = 0;
 
     public ConquestObjective ActiveObjective
     {
@@ -96,20 +96,12 @@ public class ConquestManager
         _hiberniaObjectives.Clear();
         _midgardObjectives.Clear();
 
-        foreach (var keep in _albionKeeps)
-        {
-            _albionObjectives.Add(new ConquestObjective(keep), GetConquestValue(keep));
-        }
+        foreach (var keep in _albionKeeps) _albionObjectives.Add(new ConquestObjective(keep), GetConquestValue(keep));
 
         foreach (var keep in _hiberniaKeeps)
-        {
             _hiberniaObjectives.Add(new ConquestObjective(keep), GetConquestValue(keep));
-        }
 
-        foreach (var keep in _midgardKeeps)
-        {
-            _midgardObjectives.Add(new ConquestObjective(keep), GetConquestValue(keep));
-        }
+        foreach (var keep in _midgardKeeps) _midgardObjectives.Add(new ConquestObjective(keep), GetConquestValue(keep));
     }
 
     private int GetConquestValue(AbstractGameKeep keep)
@@ -159,7 +151,7 @@ public class ConquestManager
         AwardContributorsForRealm(CapturedKeep.Realm, true);
         RotateKeepsOnCapture(CapturedKeep);
     }
-    
+
     public void ConquestSubCapture(AbstractGameKeep CapturedKeep)
     {
         BroadcastConquestMessageToRvRPlayers(
@@ -180,7 +172,7 @@ public class ConquestManager
         ActiveHiberniaObjective = null;
         ActiveMidgardObjective = null;
     }
-    
+
     public void ResetConquestWindow()
     {
         LastConquestWindowStart = GameLoop.GameLoopTime;
@@ -196,10 +188,7 @@ public class ConquestManager
     public void AddContributors(List<GamePlayer> contributors)
     {
         ContributedPlayers ??= new HashSet<GamePlayer>();
-        foreach (var player in contributors)
-        {
-           AddContributor(player);
-        }
+        foreach (var player in contributors) AddContributor(player);
     }
 
     private void ResetContributors()
@@ -212,14 +201,11 @@ public class ConquestManager
     {
         return ContributedPlayers.ToList();
     }
-    
+
     public void AddDefenders(List<GamePlayer> contributors)
     {
         ActiveDefenders ??= new HashSet<GamePlayer>();
-        foreach (var player in contributors)
-        {
-           AddDefender(player);
-        }
+        foreach (var player in contributors) AddDefender(player);
     }
 
     public void AddDefender(GamePlayer player)
@@ -242,101 +228,102 @@ public class ConquestManager
     {
         foreach (var player in ContributedPlayers?.ToList()?.Where(player => player.Realm == realmToAward))
         {
-            int awardBase = ServerProperties.Properties.CONQUEST_CAPTURE_AWARD;
-            if (!primaryObjective) awardBase = (int)(awardBase * 0.75);
-            int numFlags = ActiveObjective.GetNumFlagsOwnedByRealm(player.Realm);
-            player.GainRealmPoints((long)(awardBase + (numFlags * 200)), false);
-            AtlasROGManager.GenerateReward(player, (int)(awardBase + (numFlags * 200)));
+            var awardBase = ServerProperties.Properties.CONQUEST_CAPTURE_AWARD;
+            if (!primaryObjective) awardBase = (int) (awardBase * 0.75);
+            var numFlags = ActiveObjective.GetNumFlagsOwnedByRealm(player.Realm);
+            player.GainRealmPoints((long) (awardBase + numFlags * 200), false);
+            AtlasROGManager.GenerateReward(player, (int) (awardBase + numFlags * 200));
         }
     }
-    
+
     //defenders gain 1%-5% of the RPs from all kills made by other defenders
     public void AwardDefenders(int playerRpValue, GamePlayer source)
     {
         foreach (var player in ActiveDefenders.ToList())
         {
             if (player == source) continue; //don't double award the killer
-            
+
             var loyalDays = LoyaltyManager.GetPlayerRealmLoyalty(player).Days;
             if (loyalDays > 30) loyalDays = 30;
-            
-            double RPFraction = 0.05 * (loyalDays / 30.0);
+
+            var RPFraction = 0.05 * (loyalDays / 30.0);
             if (RPFraction < 0.01) RPFraction = 0.01;
-            
-            player.Out.SendMessage($"You have been awarded for helping to defend your keep!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            player.GainRealmPoints((long)(playerRpValue * RPFraction), false);
+
+            player.Out.SendMessage($"You have been awarded for helping to defend your keep!", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            player.GainRealmPoints((long) (playerRpValue * RPFraction), false);
         }
     }
 
     public bool IsPlayerInConquestArea(GamePlayer player)
     {
-        bool nearby = player.CurrentRegion.ID == ActiveObjective.Keep.CurrentRegion.ID;
+        var nearby = player.CurrentRegion.ID == ActiveObjective.Keep.CurrentRegion.ID;
 
         if (!nearby) return nearby; //bail early to skip the GetAreas call if unneeded
-        
-        AbstractArea area = player.CurrentZone.GetAreasOfSpot(player.X, player.Y, player.Z)
+
+        var area = player.CurrentZone.GetAreasOfSpot(player.X, player.Y, player.Z)
             .FirstOrDefault() as AbstractArea;
 
-        if (((!player.CurrentZone.IsRvR && area is not {Description: "Druim Ligen"}) || player.CurrentZone.ID == 249))
+        if ((!player.CurrentZone.IsRvR && area is not {Description: "Druim Ligen"}) || player.CurrentZone.ID == 249)
             nearby = false;
 
         return nearby;
     }
-    
+
     public bool IsPlayerInSafeZone(GamePlayer player)
     {
-        AbstractArea area = player.CurrentZone.GetAreasOfSpot(player.X, player.Y, player.Z)
+        var area = player.CurrentZone.GetAreasOfSpot(player.X, player.Y, player.Z)
             .FirstOrDefault() as AbstractArea;
 
-        if (area?.Description is "Druim Ligen" or "Druim Cain" or "Svasud Faste" or "Vindsaul Faste" or "Castle Sauvage" or "Snowdonia Fortress" || !player.CurrentZone.IsOF)
-        {
+        if (area?.Description is "Druim Ligen" or "Druim Cain" or "Svasud Faste" or "Vindsaul Faste" or "Castle Sauvage"
+                or "Snowdonia Fortress" || !player.CurrentZone.IsOF)
             return true;
-        }
 
         return false;
     }
-    
+
     public bool IsPlayerNearFlag(GamePlayer player)
     {
-        bool nearby = false;
+        var nearby = false;
 
         if (ActiveObjective?.ObjectiveOne?.FlagObject.GetDistance(player) <= 750)
             nearby = true;
-        
+
         if (ActiveObjective?.ObjectiveTwo?.FlagObject.GetDistance(player) <= 750)
             nearby = true;
-        
+
         if (ActiveObjective?.ObjectiveThree?.FlagObject.GetDistance(player) <= 750)
             nearby = true;
-        
+
         if (ActiveObjective?.ObjectiveFour?.FlagObject.GetDistance(player) <= 750)
             nearby = true;
 
         return nearby;
     }
-    
+
     public bool IsPlayerNearConquestObjective(GamePlayer player)
     {
-        if (ActiveAlbionObjective == null || ActiveHiberniaObjective == null || ActiveMidgardObjective == null || ActiveObjective == null || ActiveObjective.Keep == null) return false;
-        
-        bool nearby = player.GetDistance(new Point2D(ActiveObjective.Keep.X, ActiveObjective.Keep.Y)) <= 50000;
+        if (ActiveAlbionObjective == null || ActiveHiberniaObjective == null || ActiveMidgardObjective == null ||
+            ActiveObjective == null || ActiveObjective.Keep == null) return false;
+
+        var nearby = player.GetDistance(new Point2D(ActiveObjective.Keep.X, ActiveObjective.Keep.Y)) <= 50000;
 
         foreach (var secondaryObjective in GetSecondaryObjectives())
-        {
             if (player.GetDistance(new Point2D(secondaryObjective.Keep.X, secondaryObjective.Keep.Y)) <= 10000)
                 nearby = true;
-        }
 
         if (ActiveObjective.ObjectiveOne != null && ActiveObjective.ObjectiveOne.FlagObject?.GetDistance(player) <= 750)
             nearby = true;
-        
+
         if (ActiveObjective.ObjectiveTwo != null && ActiveObjective.ObjectiveTwo.FlagObject?.GetDistance(player) <= 750)
             nearby = true;
-        
-        if (ActiveObjective.ObjectiveThree != null &&ActiveObjective.ObjectiveThree.FlagObject?.GetDistance(player) <= 750)
+
+        if (ActiveObjective.ObjectiveThree != null &&
+            ActiveObjective.ObjectiveThree.FlagObject?.GetDistance(player) <= 750)
             nearby = true;
-        
-        if (ActiveObjective.ObjectiveFour != null &&ActiveObjective.ObjectiveFour.FlagObject?.GetDistance(player) <= 750)
+
+        if (ActiveObjective.ObjectiveFour != null &&
+            ActiveObjective.ObjectiveFour.FlagObject?.GetDistance(player) <= 750)
             nearby = true;
 
         return nearby;
@@ -344,7 +331,8 @@ public class ConquestManager
 
     public bool IsValidDefender(GamePlayer player)
     {
-        return player.GetDistance(new Point2D(ActiveObjective.Keep.X, ActiveObjective.Keep.Y)) <= 2000 && player.Realm == ActiveObjective.Keep.Realm;
+        return player.GetDistance(new Point2D(ActiveObjective.Keep.X, ActiveObjective.Keep.Y)) <= 2000 &&
+               player.Realm == ActiveObjective.Keep.Realm;
     }
 
     private string GetStringFromRealm(eRealm realm)
@@ -364,7 +352,6 @@ public class ConquestManager
 
     private void RotateKeepsOnCapture(AbstractGameKeep capturedKeep)
     {
-        
         ActiveObjective.ConquestCapture();
         SetKeepForCapturedRealm(capturedKeep);
         ActiveObjective.StartConquest();
@@ -378,23 +365,16 @@ public class ConquestManager
         ActiveMidgardObjective = null;
         //find next realm, set active objective to that realm
         if (ActiveConquestRealm == eRealm.Albion)
-        {
             ActiveConquestRealm = eRealm.Hibernia;
-        }
         else if (ActiveConquestRealm == eRealm.Hibernia)
-        {
             ActiveConquestRealm = eRealm.Midgard;
-        }
-        else if (ActiveConquestRealm == eRealm.Midgard)
-        {
-            ActiveConquestRealm = eRealm.Albion;
-        }
+        else if (ActiveConquestRealm == eRealm.Midgard) ActiveConquestRealm = eRealm.Albion;
 
         if ((int) ActiveConquestRealm < 1 || (int) ActiveConquestRealm > 3)
-            ActiveConquestRealm = (eRealm)Util.Random(1, 3);
-        
+            ActiveConquestRealm = (eRealm) Util.Random(1, 3);
+
         PredatorManager.PlayerKillTallyDict.Clear();
-        
+
         StartConquest();
     }
 
@@ -414,22 +394,22 @@ public class ConquestManager
         LastConquestStopTime = GameLoop.GameLoopTime;
     }
 
-    private void BroadcastConquestMessageToRvRPlayers(String message)
+    private void BroadcastConquestMessageToRvRPlayers(string message)
     {
         //notify everyone an objective was captured
         foreach (var client in WorldMgr.GetAllPlayingClients())
-        {
-            if ((client.Player.CurrentZone.IsRvR || client.Player.Level >= 40 ) && !client.Player.CurrentZone.IsBG)
+            if ((client.Player.CurrentZone.IsRvR || client.Player.Level >= 40) && !client.Player.CurrentZone.IsBG)
                 client.Player.Out.SendMessage(message, eChatType.CT_ScreenCenterSmaller_And_CT_System,
                     eChatLoc.CL_SystemWindow);
-        }
     }
 
     private void SetKeepForCapturedRealm(AbstractGameKeep keep)
     {
-        if (keep.Realm != keep.OriginalRealm && ((ConquestService.IsOverHalfwayDone() && keep.CurrentRegion.ID == ActiveObjective.Keep.CurrentRegion.ID) || keep.CurrentRegion.ID != ActiveObjective.Keep.CurrentRegion.ID))
+        if (keep.Realm != keep.OriginalRealm &&
+            ((ConquestService.IsOverHalfwayDone() && keep.CurrentRegion.ID == ActiveObjective.Keep.CurrentRegion.ID) ||
+             keep.CurrentRegion.ID != ActiveObjective.Keep.CurrentRegion.ID))
         {
-            Dictionary<ConquestObjective, int> keepDict = new Dictionary<ConquestObjective, int>();
+            var keepDict = new Dictionary<ConquestObjective, int>();
             switch (keep.OriginalRealm)
             {
                 case eRealm.Albion:
@@ -445,20 +425,14 @@ public class ConquestManager
 
             //check if all keeps of the captured tier are captured
             //e.g. if a tier2 keep is captured, check for other tier 2 keeps
-            bool allKeepsOfTierAreCaptured = true;
+            var allKeepsOfTierAreCaptured = true;
             foreach (var conquestVal in keepDict.Values.ToImmutableSortedSet())
-            {
                 if (conquestVal == GetConquestValue(keep))
-                {
                     foreach (var conq in keepDict.Keys.Where(x => keepDict[x] == GetConquestValue(keep)))
-                    {
                         if (conq.Keep.Realm == conq.Keep.OriginalRealm)
                             allKeepsOfTierAreCaptured = false;
-                    }
-                }
-            }
-            
-            int objectiveWeight = GetConquestValue(keep);
+
+            var objectiveWeight = GetConquestValue(keep);
             //pick an assault target in next tier if all are captured
             if (allKeepsOfTierAreCaptured && objectiveWeight < 3) objectiveWeight++;
 
@@ -467,30 +441,36 @@ public class ConquestManager
             switch (keep.OriginalRealm)
             {
                 case eRealm.Albion:
-                    List<ConquestObjective> albKeepsSort =
+                    var albKeepsSort =
                         new List<ConquestObjective>(keepDict.Keys.Where(x =>
-                            keepDict[x] == objectiveWeight && x.Keep.Realm != keep.Realm)); //get a list of all keeps with the current weight
+                            keepDict[x] == objectiveWeight &&
+                            x.Keep.Realm != keep.Realm)); //get a list of all keeps with the current weight
                     if (albKeepsSort.Count < 1)
-                        albKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x => keepDict[x] == objectiveWeight)); 
-                    
+                        albKeepsSort =
+                            new List<ConquestObjective>(keepDict.Keys.Where(x => keepDict[x] == objectiveWeight));
+
                     ActiveAlbionObjective =
                         albKeepsSort[Util.Random(albKeepsSort.Count() - 1)]; //pick one at random
                     break;
                 case eRealm.Hibernia:
-                    List<ConquestObjective> hibKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
-                        keepDict[x] == objectiveWeight && x.Keep.Realm != keep.Realm)); //get a list of all keeps with the current weight
+                    var hibKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
+                        keepDict[x] == objectiveWeight &&
+                        x.Keep.Realm != keep.Realm)); //get a list of all keeps with the current weight
                     if (hibKeepsSort.Count < 1)
-                        hibKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x => keepDict[x] == objectiveWeight)); 
-                    
+                        hibKeepsSort =
+                            new List<ConquestObjective>(keepDict.Keys.Where(x => keepDict[x] == objectiveWeight));
+
                     ActiveHiberniaObjective =
                         hibKeepsSort[Util.Random(hibKeepsSort.Count() - 1)]; //pick one at random
                     break;
                 case eRealm.Midgard:
-                    List<ConquestObjective> midKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
-                        keepDict[x] == objectiveWeight && x.Keep.Realm != keep.Realm)); //get a list of all keeps with the current weight
+                    var midKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
+                        keepDict[x] == objectiveWeight &&
+                        x.Keep.Realm != keep.Realm)); //get a list of all keeps with the current weight
                     if (midKeepsSort.Count < 1)
-                        midKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x => keepDict[x] == objectiveWeight)); 
-                    
+                        midKeepsSort =
+                            new List<ConquestObjective>(keepDict.Keys.Where(x => keepDict[x] == objectiveWeight));
+
                     ActiveMidgardObjective =
                         midKeepsSort[Util.Random(midKeepsSort.Count() - 1)]; //pick one at random
                     break;
@@ -504,14 +484,14 @@ public class ConquestManager
 
     private int GetFrontierPlayerCount()
     {
-        int frontiers = 0;
-        IList<GameClient> clients = WorldMgr.GetAllClients();
-        foreach (GameClient c in clients)
+        var frontiers = 0;
+        var clients = WorldMgr.GetAllClients();
+        foreach (var c in clients)
         {
             if (c == null || c.Player == null || c.Player.CurrentZone == null)
                 continue;
-            
-            if (c.Player.CurrentZone.IsOF && c.Account.PrivLevel == (uint)ePrivLevel.Player)
+
+            if (c.Player.CurrentZone.IsOF && c.Account.PrivLevel == (uint) ePrivLevel.Player)
                 frontiers++;
         }
 
@@ -520,7 +500,7 @@ public class ConquestManager
 
     private void SetDefensiveKeepForRealm(eRealm realm, int minimumValue)
     {
-        Dictionary<ConquestObjective, int> keepDict = new Dictionary<ConquestObjective, int>();
+        var keepDict = new Dictionary<ConquestObjective, int>();
         switch (realm)
         {
             case eRealm.Albion:
@@ -534,15 +514,11 @@ public class ConquestManager
                 break;
         }
 
-        int objectiveWeight = minimumValue;
+        var objectiveWeight = minimumValue;
 
         foreach (var objective in keepDict)
-        {
             if (objective.Key.Keep.OriginalRealm != objective.Key.Keep.Realm && objective.Value > objectiveWeight)
-            {
                 objectiveWeight = objective.Value;
-            }
-        }
 
         switch (realm)
         {
@@ -553,7 +529,7 @@ public class ConquestManager
                 }
                 else
                 {
-                    List<ConquestObjective> albKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
+                    var albKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
                         keepDict[x] == objectiveWeight &&
                         x.Keep.OriginalRealm != x.Keep.Realm)); //get a list of all keeps with the current weight
                     ActiveAlbionObjective = albKeepsSort[Util.Random(albKeepsSort.Count() - 1)]; //pick one at random
@@ -567,7 +543,7 @@ public class ConquestManager
                 }
                 else
                 {
-                    List<ConquestObjective> hibKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
+                    var hibKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
                         keepDict[x] == objectiveWeight &&
                         x.Keep.OriginalRealm != x.Keep.Realm)); //get a list of all keeps with the current weight
                     ActiveHiberniaObjective = hibKeepsSort[Util.Random(hibKeepsSort.Count() - 1)]; //pick one at random
@@ -581,7 +557,7 @@ public class ConquestManager
                 }
                 else
                 {
-                    List<ConquestObjective> midKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
+                    var midKeepsSort = new List<ConquestObjective>(keepDict.Keys.Where(x =>
                         keepDict[x] == objectiveWeight &&
                         x.Keep.OriginalRealm != x.Keep.Realm)); //get a list of all keeps with the current weight
                     ActiveMidgardObjective = midKeepsSort[Util.Random(midKeepsSort.Count() - 1)]; //pick one at random
@@ -620,17 +596,18 @@ public class ConquestManager
 
     public IList<string> GetTextList(GamePlayer player)
     {
-        List<string> temp = new List<string>();
-        
+        var temp = new List<string>();
+
         //TimeSpan.FromMilliseconds(timeSinceTaskStart).Minutes + "m " +
         //TimeSpan.FromMilliseconds(timeSinceTaskStart).Seconds + "s
 
-        ArrayList playerCount = new ArrayList();
+        var playerCount = new ArrayList();
         playerCount = ActiveObjective.Keep.CurrentZone.GetObjectsInRadius(Zone.eGameObjectType.PLAYER,
             ActiveObjective.Keep.X,
             ActiveObjective.Keep.Y, ActiveObjective.Keep.Z, 10000, playerCount, true);
 
-        temp.Add($"{GetStringFromRealm(ActiveObjective.Keep.OriginalRealm).ToUpper()} - {ActiveObjective.Keep.CurrentZone.Description}");
+        temp.Add(
+            $"{GetStringFromRealm(ActiveObjective.Keep.OriginalRealm).ToUpper()} - {ActiveObjective.Keep.CurrentZone.Description}");
         temp.Add($"{ActiveObjective.Keep.Name} | Owner: {GetStringFromRealm(ActiveObjective.Keep.Realm)}");
         temp.Add($"Players Nearby: {playerCount.Count}");
         temp.Add("");
@@ -645,23 +622,28 @@ public class ConquestManager
             var locs = ActiveObjective.GetPlayerCoordsForKeep(ActiveObjective.Keep);
             temp.Add($"Capture Points | /faceflag [1 | 2 | 3 | 4]");
             temp.Add($"Owner | Nearby |   /loc   | Description");
-            temp.Add($"1 | {ActiveObjective.ObjectiveOne.GetOwnerRealmName()} | {ActiveObjective.ObjectiveOne.GetNearbyPlayerCount()} | {locs[0]}");
-            temp.Add($"2 | {ActiveObjective.ObjectiveTwo.GetOwnerRealmName()} | {ActiveObjective.ObjectiveTwo.GetNearbyPlayerCount()} | {locs[1]}");
-            temp.Add($"3 | {ActiveObjective.ObjectiveThree.GetOwnerRealmName()} | {ActiveObjective.ObjectiveThree.GetNearbyPlayerCount()} | {locs[2]}");
-            temp.Add($"4 | {ActiveObjective.ObjectiveFour.GetOwnerRealmName()} | {ActiveObjective.ObjectiveFour.GetNearbyPlayerCount()} | {locs[3]}");
+            temp.Add(
+                $"1 | {ActiveObjective.ObjectiveOne.GetOwnerRealmName()} | {ActiveObjective.ObjectiveOne.GetNearbyPlayerCount()} | {locs[0]}");
+            temp.Add(
+                $"2 | {ActiveObjective.ObjectiveTwo.GetOwnerRealmName()} | {ActiveObjective.ObjectiveTwo.GetNearbyPlayerCount()} | {locs[1]}");
+            temp.Add(
+                $"3 | {ActiveObjective.ObjectiveThree.GetOwnerRealmName()} | {ActiveObjective.ObjectiveThree.GetNearbyPlayerCount()} | {locs[2]}");
+            temp.Add(
+                $"4 | {ActiveObjective.ObjectiveFour.GetOwnerRealmName()} | {ActiveObjective.ObjectiveFour.GetNearbyPlayerCount()} | {locs[3]}");
         }
-        
-        //45 minute window, three 15-minute sub-windows with a tick in between each
-        long timeUntilReset = ConquestService.GetTicksUntilContributionReset();
-        long timeUntilAward = ConquestService.GetTicksUntilNextAward();
 
-        long timeSinceTaskStart = GameLoop.GameLoopTime - ConquestService.ConquestManager.LastConquestStartTime;
-        temp.Add("" );
+        //45 minute window, three 15-minute sub-windows with a tick in between each
+        var timeUntilReset = ConquestService.GetTicksUntilContributionReset();
+        var timeUntilAward = ConquestService.GetTicksUntilNextAward();
+
+        var timeSinceTaskStart = GameLoop.GameLoopTime - ConquestService.ConquestManager.LastConquestStartTime;
+        temp.Add("");
         temp.Add("" + TimeSpan.FromMilliseconds(timeSinceTaskStart).Hours + "h " +
                  TimeSpan.FromMilliseconds(timeSinceTaskStart).Minutes + "m " +
-                 TimeSpan.FromMilliseconds(timeSinceTaskStart).Seconds + "s elapsed | " + ServerProperties.Properties.MAX_CONQUEST_TASK_DURATION + "m Max");
+                 TimeSpan.FromMilliseconds(timeSinceTaskStart).Seconds + "s elapsed | " +
+                 ServerProperties.Properties.MAX_CONQUEST_TASK_DURATION + "m Max");
         temp.Add("" + TimeSpan.FromMilliseconds(timeUntilReset).Minutes + "m " +
-                   TimeSpan.FromMilliseconds(timeUntilReset).Seconds + "s contribution reset");
+                 TimeSpan.FromMilliseconds(timeUntilReset).Seconds + "s contribution reset");
         temp.Add("" + TimeSpan.FromMilliseconds(timeUntilAward).Minutes + "m " +
                  TimeSpan.FromMilliseconds(timeUntilAward).Seconds + "s next award");
         temp.Add(ContributedPlayers.Contains(player) ? "Contribution: Qualified" : "Contribution: Not Yet Qualified");
@@ -677,11 +659,11 @@ public class ConquestManager
         {
             var topKills = killers.OrderByDescending(x => x.Value);
             var enumer = topKills.GetEnumerator();
-            int output = 0;
-                     
-            while(enumer.MoveNext() && output < topNum)
+            var output = 0;
+
+            while (enumer.MoveNext() && output < topNum)
             {
-                output++; 
+                output++;
                 temp.Add($"{output} | {enumer.Current.Key.Name} | {enumer.Current.Value} kills");
             }
         }
@@ -689,10 +671,12 @@ public class ConquestManager
         {
             temp.Add($"--- No prey has yet been killed ---");
         }
+
         temp.Add($"--- Join the hunt with /predator ---");
         temp.Add("");
         temp.Add("Conquest Details:");
-        temp.Add("Capture and hold field objectives around the keep to gain periodic realm point rewards and kill players near the keep or field objectives to contribute to the conquest.\n");
+        temp.Add(
+            "Capture and hold field objectives around the keep to gain periodic realm point rewards and kill players near the keep or field objectives to contribute to the conquest.\n");
         temp.Add(
             "Capture the keep objective to gain an immediate orb and RP reward, or defend the keep to earn a 10% bonus to RP gains as well as increased periodic rewards.");
         /*

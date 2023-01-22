@@ -15,16 +15,18 @@ namespace DOL.GS
         public Steinvor() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
@@ -32,7 +34,7 @@ namespace DOL.GS
 
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
 
@@ -43,39 +45,42 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override void Die(GameObject killer) //on kill generate orbs
         {
             SpawnSeers();
             base.Die(killer);
         }
+
         public void SpawnSeers()
         {
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
-                HrimthursaSeer Add1 = new HrimthursaSeer();
+                var Add1 = new HrimthursaSeer();
                 Add1.X = 29996 + Util.Random(-100, 100);
                 Add1.Y = 52911 + Util.Random(-100, 100);
                 Add1.Z = 11890;
-                Add1.CurrentRegion = this.CurrentRegion;
+                Add1.CurrentRegion = CurrentRegion;
                 Add1.Heading = 2032;
                 Add1.PackageID = "SteinvorDeathAdds";
                 Add1.RespawnInterval = -1;
                 Add1.AddToWorld();
             }
         }
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162350);
@@ -89,15 +94,16 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
             SteinvorBrain.PlayerX = 0;
             SteinvorBrain.PlayerY = 0;
             SteinvorBrain.PlayerZ = 0;
             SteinvorBrain.RandomTarget = null;
             SteinvorBrain.PickedTarget = false;
 
-            SteinvorBrain sbrain = new SteinvorBrain();
+            var sbrain = new SteinvorBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
@@ -109,13 +115,13 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Steinvor", 160, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Steinvor", 160, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Icelord Steinvor not found, creating it...");
 
                 log.Warn("Initializing Icelord Steinvor ...");
-                Steinvor TG = new Steinvor();
+                var TG = new Steinvor();
                 TG.Name = "Icelord Steinvor";
                 TG.Model = 918;
                 TG.Realm = 0;
@@ -128,20 +134,23 @@ namespace DOL.GS
                     60000; //1min is 60000 miliseconds
                 TG.Faction = FactionMgr.GetFactionByID(140);
                 TG.Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-                TG.BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
+                TG.BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
 
                 TG.X = 25405;
                 TG.Y = 57241;
                 TG.Z = 11359;
                 TG.Heading = 1939;
-                SteinvorBrain ubrain = new SteinvorBrain();
+                var ubrain = new SteinvorBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
                 TG.SaveIntoDatabase();
                 TG.Brain.Start();
             }
             else
-                log.Warn("Icelord Steinvor exist ingame, remove it and restart server if you want to add by script code.");
+            {
+                log.Warn(
+                    "Icelord Steinvor exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -162,25 +171,23 @@ namespace DOL.AI.Brain
         }
 
         public static bool IsPulled = false;
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (IsPulled == false)
-            {
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
+                foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     if (npc != null)
-                    {
                         if (npc.IsAlive && npc.Brain is SkufBrain)
                         {
                             AddAggroListTo(npc.Brain as SkufBrain);
                             IsPulled = true;
                         }
-                    }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
+
         private bool RemoveAdds = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -197,22 +204,17 @@ namespace DOL.AI.Brain
                 Body.Health = Body.MaxHealth;
                 ClearAggroList();
             }
-            else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
+            else if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
             {
                 Body.Health = Body.MaxHealth;
                 if (!RemoveAdds)
                 {
                     foreach (GameNPC mob in Body.GetNPCsInRadius(5000))
-                    {
                         if (mob != null)
-                        {
                             if (mob.IsAlive)
-                            {
                                 if (mob.Brain is EffectMobBrain)
                                     mob.RemoveFromWorld();
-                            }
-                        }
-                    }
+
                     RemoveAdds = true;
                 }
             }
@@ -226,15 +228,18 @@ namespace DOL.AI.Brain
                     PickedTarget = true;
                 }
             }
+
             base.Think();
         }
 
         public static GamePlayer randomtarget = null;
+
         public static GamePlayer RandomTarget
         {
-            get { return randomtarget; }
-            set { randomtarget = value; }
+            get => randomtarget;
+            set => randomtarget = value;
         }
+
         public static bool PickedTarget = false;
         public static int PlayerX = 0;
         public static int PlayerY = 0;
@@ -246,22 +251,18 @@ namespace DOL.AI.Brain
             {
                 IList enemies = new ArrayList(AggroTable.Keys);
                 foreach (GamePlayer player in Body.GetPlayersInRadius(1100))
-                {
                     if (player != null)
-                    {
                         if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
                             if (!AggroTable.ContainsKey(player))
                                 AggroTable.Add(player, 1);
-                        }
-                    }
-                }
+
                 if (enemies.Count == 0)
-                {}
+                {
+                }
                 else
                 {
-                    List<GameLiving> damage_enemies = new List<GameLiving>();
-                    for (int i = 0; i < enemies.Count; i++)
+                    var damage_enemies = new List<GameLiving>();
+                    for (var i = 0; i < enemies.Count; i++)
                     {
                         if (enemies[i] == null)
                             continue;
@@ -272,47 +273,46 @@ namespace DOL.AI.Brain
                         GameLiving living = null;
                         living = enemies[i] as GameLiving;
                         if (living.IsVisibleTo(Body) && Body.TargetInView && living is GamePlayer)
-                        {
                             damage_enemies.Add(enemies[i] as GameLiving);
-                        }
                     }
+
                     if (damage_enemies.Count > 0)
                     {
-                        GamePlayer PortTarget = (GamePlayer)damage_enemies[Util.Random(0, damage_enemies.Count - 1)];
+                        var PortTarget = (GamePlayer) damage_enemies[Util.Random(0, damage_enemies.Count - 1)];
                         RandomTarget = PortTarget;
                         PlayerX = RandomTarget.X;
                         PlayerY = RandomTarget.Y;
                         PlayerZ = RandomTarget.Z;
                         SpawnEffectMob();
-                        BroadcastMessage(String.Format(Body.Name + " says, '" + RandomTarget.Name +" you are not going anywhere'"));
+                        BroadcastMessage(string.Format(Body.Name + " says, '" + RandomTarget.Name +
+                                                       " you are not going anywhere'"));
                         new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(EffectTimer), 8000);
                     }
                 }
             }
+
             return 0;
         }
 
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public int EffectTimer(ECSGameTimer timer) //pick and remove effect mob
         {
             if (Body.IsAlive)
             {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
-                {
                     if (npc != null)
-                    {
                         if (npc.IsAlive && npc.Brain is EffectMobBrain)
                             npc.RemoveFromWorld();
-                    }
-                }
-                new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(RestartEffectTimer), Util.Random(10000, 15000));
+
+                new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(RestartEffectTimer),
+                    Util.Random(10000, 15000));
             }
+
             return 0;
         }
 
@@ -326,11 +326,13 @@ namespace DOL.AI.Brain
                 RandomTarget = null;
                 PickedTarget = false;
             }
+
             return 0;
         }
+
         public void SpawnEffectMob() //spawn mob to show effect on ground
         {
-            EffectMob npc = new EffectMob();
+            var npc = new EffectMob();
             npc.X = PlayerX;
             npc.Y = PlayerY;
             npc.Z = PlayerZ;
@@ -350,14 +352,15 @@ namespace DOL.GS
         public Skuf() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
 
@@ -368,7 +371,7 @@ namespace DOL.GS
 
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
 
@@ -379,24 +382,27 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+
+        public override int MaxHealth => 100000;
+
         public override void Die(GameObject killer) //on kill generate orbs
         {
             base.Die(killer);
         }
+
         public static bool Spawn_Snakes = false;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162349);
@@ -410,10 +416,11 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            RespawnInterval =ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
 
-            SkufBrain sbrain = new SkufBrain();
+            var sbrain = new SkufBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
@@ -425,13 +432,13 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Skuf", 160, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Icelord Skuf", 160, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Icelord Skuf not found, creating it...");
 
                 log.Warn("Initializing Icelord Skuf ...");
-                Skuf TG = new Skuf();
+                var TG = new Skuf();
                 TG.Name = "Icelord Skuf";
                 TG.Model = 918;
                 TG.Realm = 0;
@@ -444,20 +451,22 @@ namespace DOL.GS
                     60000; //1min is 60000 miliseconds
                 TG.Faction = FactionMgr.GetFactionByID(140);
                 TG.Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-                TG.BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
+                TG.BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
 
                 TG.X = 25405;
                 TG.Y = 57241;
                 TG.Z = 11359;
                 TG.Heading = 1939;
-                SkufBrain ubrain = new SkufBrain();
+                var ubrain = new SkufBrain();
                 TG.SetOwnBrain(ubrain);
                 TG.AddToWorld();
                 TG.SaveIntoDatabase();
                 TG.Brain.Start();
             }
             else
+            {
                 log.Warn("Icelord Skuf exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -476,23 +485,20 @@ namespace DOL.AI.Brain
             AggroRange = 600;
             ThinkInterval = 1500;
         }
+
         public static bool IsPulled2 = false;
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (IsPulled2 == false)
-            {
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
+                foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     if (npc != null)
-                    {
                         if (npc.IsAlive && npc.Brain is SteinvorBrain)
                         {
                             AddAggroListTo(npc.Brain as SteinvorBrain);
                             IsPulled2 = true;
                         }
-                    }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
 
@@ -511,10 +517,11 @@ namespace DOL.AI.Brain
                 Body.Health = Body.MaxHealth;
                 ClearAggroList();
             }
-            else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
+            else if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
             {
                 Body.Health = Body.MaxHealth;
             }
+
             base.Think();
         }
     }
@@ -528,6 +535,7 @@ namespace DOL.GS
         public HrimthursaSeer() : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -542,10 +550,9 @@ namespace DOL.GS
         public override void WalkToSpawn()
         {
             if (CurrentRegionID == 160) //if region is TG
-            {
                 if (IsAlive)
                     return;
-            }
+
             base.WalkToSpawn();
         }
 
@@ -553,30 +560,43 @@ namespace DOL.GS
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 200;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.15;
         }
-        public override int MaxHealth
-        {
-            get { return 20000; }
-        }
+
+        public override int MaxHealth => 20000;
+
         public override void Die(GameObject killer)
         {
             base.Die(killer);
         }
-        public override short Quickness { get => base.Quickness; set => base.Quickness = 80; }
-        public override short Strength { get => base.Strength; set => base.Strength = 150; }
+
+        public override short Quickness
+        {
+            get => base.Quickness;
+            set => base.Quickness = 80;
+        }
+
+        public override short Strength
+        {
+            get => base.Strength;
+            set => base.Strength = 150;
+        }
+
         public override bool AddToWorld()
         {
             Model = 918;
@@ -585,17 +605,17 @@ namespace DOL.GS
             MaxDistance = 3500;
             TetherRange = 3800;
             Size = 60;
-            Level = (byte)Util.Random(73, 75);
+            Level = (byte) Util.Random(73, 75);
             MaxSpeedBase = 270;
 
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
             Realm = eRealm.None;
             RespawnInterval = -1;
 
             HrimthursaSeerBrain.walkto_point = false;
-            HrimthursaSeerBrain adds = new HrimthursaSeerBrain();
+            var adds = new HrimthursaSeerBrain();
             SetOwnBrain(adds);
             LoadedFromScript = false;
             base.AddToWorld();
@@ -620,15 +640,15 @@ namespace DOL.AI.Brain
         }
 
         public static bool walkto_point = false;
+
         public void Walk_To_Room()
         {
-            Point3D point1 = new Point3D();
+            var point1 = new Point3D();
             point1.X = 29986;
             point1.Y = 50345;
             point1.Z = 11377;
 
             if (!Body.InCombat && !HasAggro)
-            {
                 if (Body.CurrentRegionID == 160) //TG
                 {
                     if (!Body.IsWithinRadius(point1, 30) && walkto_point == false)
@@ -636,8 +656,8 @@ namespace DOL.AI.Brain
                     else
                         walkto_point = true;
                 }
-            }
         }
+
         public override void Think()
         {
             Walk_To_Room();
@@ -654,20 +674,22 @@ namespace DOL.GS
         public EffectMob() : base()
         {
         }
+
         public override void StartAttack(GameObject target)
         {
         }
+
         public int Show_Effect(ECSGameTimer timer)
         {
             if (IsAlive)
             {
-                foreach (GamePlayer player in this.GetPlayersInRadius(8000))
-                {
+                foreach (GamePlayer player in GetPlayersInRadius(8000))
                     if (player != null)
                         player.Out.SendSpellEffectAnimation(this, this, 177, 0, false, 0x01);
-                }
+
                 new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(DoCast), 500);
             }
+
             return 0;
         }
 
@@ -680,6 +702,7 @@ namespace DOL.GS
                 GroundTarget.Z = Z;
                 CastSpell(Icelord_Gtaoe, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             }
+
             return 0;
         }
 
@@ -690,33 +713,32 @@ namespace DOL.GS
             MaxSpeedBase = 0;
             Name = "Pillar of Ice";
             Level = 80;
-            Flags = GameNPC.eFlags.DONTSHOWNAME;
-            Flags = GameNPC.eFlags.CANTTARGET;
-            Flags = GameNPC.eFlags.STATUE;
+            Flags = eFlags.DONTSHOWNAME;
+            Flags = eFlags.CANTTARGET;
+            Flags = eFlags.STATUE;
 
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
             Realm = eRealm.None;
             RespawnInterval = -1;
 
-            EffectMobBrain adds = new EffectMobBrain();
+            var adds = new EffectMobBrain();
             SetOwnBrain(adds);
-            bool success = base.AddToWorld();
-            if (success)
-            {
-                new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 3000);
-            }
+            var success = base.AddToWorld();
+            if (success) new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(Show_Effect), 3000);
+
             return success;
         }
 
         private Spell m_Icelord_Gtaoe;
+
         private Spell Icelord_Gtaoe
         {
             get
             {
                 if (m_Icelord_Gtaoe == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 10;
@@ -732,10 +754,11 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Cold;
+                    spell.DamageType = (int) eDamageType.Cold;
                     m_Icelord_Gtaoe = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Icelord_Gtaoe);
                 }
+
                 return m_Icelord_Gtaoe;
             }
         }
@@ -756,22 +779,16 @@ namespace DOL.AI.Brain
             AggroRange = 0;
             ThinkInterval = 1500;
         }
+
         public override void Think()
         {
             if (Body.IsAlive)
-            {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(2500))
-                {
                     if (player != null)
-                    {
                         if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
                             if (!AggroTable.ContainsKey(player))
                                 AggroTable.Add(player, 100);
-                        }
-                    }
-                }
-            }
+
             base.Think();
         }
     }

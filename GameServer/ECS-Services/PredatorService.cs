@@ -10,8 +10,8 @@ public class PredatorService
 {
     private const string ServiceName = "Predator Service";
 
-     private static long _updateInterval = 3000; // 3secs
-     private static long _messageBroadcastInterval = 15000; // 15secs
+    private static long _updateInterval = 3000; // 3secs
+    private static long _messageBroadcastInterval = 15000; // 15secs
     private static long _insertInterval = ServerProperties.Properties.QUEUED_PLAYER_INSERT_INTERVAL * 1000;
 
     private static long _lastUpdate;
@@ -33,31 +33,31 @@ public class PredatorService
             //Console.WriteLine($"Predator || Queued Players: {PredatorManager.QueuedPlayers.Count} | Active Players: {PredatorManager.ActivePredators.Count}");
             foreach (var activePreds in PredatorManager.ActiveBounties.ToList())
             {
-                GamePlayer activePlayer = activePreds.Predator;
-                
+                var activePlayer = activePreds.Predator;
+
                 if (activePlayer == null) continue;
 
-                AbstractArea area = activePlayer.CurrentZone?.GetAreasOfSpot(activePlayer.X, activePlayer.Y, activePlayer.Z)
+                var area = activePlayer.CurrentZone
+                    ?.GetAreasOfSpot(activePlayer.X, activePlayer.Y, activePlayer.Z)
                     .FirstOrDefault() as AbstractArea;
-                
+
                 //if user is not in an RvR zone, or is in DF
                 if (ConquestService.ConquestManager.IsPlayerInSafeZone(activePlayer))
                 {
-                    if(!activePlayer.PredatorTimeoutTimer.IsAlive)
+                    if (!activePlayer.PredatorTimeoutTimer.IsAlive)
                         PredatorManager.StartTimeoutCountdownFor(activePlayer);
                 }
-                else if(activePlayer.PredatorTimeoutTimer.IsAlive)
+                else if (activePlayer.PredatorTimeoutTimer.IsAlive)
                 {
                     PredatorManager.StopTimeoutCountdownFor(activePlayer);
                 }
             }
         }
-        
+
         if (tick - _lastMessage > _messageBroadcastInterval)
         {
             _lastMessage = tick;
             foreach (var activePreds in PredatorManager.ActiveBounties.ToList())
-            {
                 if (activePreds.Predator != null && activePreds.Prey != null &&
                     activePreds.Predator.GetDistance(activePreds.Prey) <= WorldMgr.VISIBILITY_DISTANCE)
                 {
@@ -73,9 +73,8 @@ public class PredatorService
                     //activePreds.Predator.Out.SendMessage($"Your prey is within sight.", eChatType.CT_ScreenCenterSmaller_And_CT_System, eChatLoc.CL_SystemWindow);
                     //TODO: figure out compass coordinate readouts here
                 }
-            }
         }
-        
+
         if (tick - _lastInsert > _insertInterval)
         {
             _lastInsert = tick;

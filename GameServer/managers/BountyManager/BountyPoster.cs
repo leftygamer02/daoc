@@ -18,10 +18,9 @@ public class BountyPoster
         Reward = reward;
         PostedTime = GameLoop.GameLoopTime;
     }
-    
+
     public void AddReward(int contributionValue)
     {
         Reward += contributionValue;
     }
-    
 }

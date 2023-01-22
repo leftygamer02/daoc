@@ -16,32 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.GS.PropertyCalc
+
+namespace DOL.GS.PropertyCalc;
+
+using System;
+
+/// <summary>
+/// [Freya] Nidel. 
+/// The ArcaneSyphon calculator: 25% cap like live server: http://www.camelotherald.com/more/3202.shtml
+///
+/// BuffBonusCategory1 unused
+/// BuffBonusCategory2 unused
+/// BuffBonusCategory3 unused
+/// BuffBonusCategory4 unused
+/// BuffBonusMultCategory1 unused
+/// </summary>
+[PropertyCalculator(eProperty.ArcaneSyphon)]
+public class ArcaneSyphonCalculator : PropertyCalculator
 {
-    using System;
-
-    /// <summary>
-    /// [Freya] Nidel. 
-    /// The ArcaneSyphon calculator: 25% cap like live server: http://www.camelotherald.com/more/3202.shtml
-    ///
-    /// BuffBonusCategory1 unused
-    /// BuffBonusCategory2 unused
-    /// BuffBonusCategory3 unused
-    /// BuffBonusCategory4 unused
-    /// BuffBonusMultCategory1 unused
-    /// </summary>
-    [PropertyCalculator(eProperty.ArcaneSyphon)]
-    public class ArcaneSyphonCalculator : PropertyCalculator
+    public override int CalcValue(GameLiving living, eProperty property)
     {
-        public override int CalcValue(GameLiving living, eProperty property)
-        {
-            GamePlayer player = living as GamePlayer;
-            if(player == null)
-            {
-                return 0;
-            }
+        var player = living as GamePlayer;
+        if (player == null) return 0;
 
-            return Math.Min(living.ItemBonus[(int) property], 25);
-        }
+        return Math.Min(living.ItemBonus[(int) property], 25);
     }
 }

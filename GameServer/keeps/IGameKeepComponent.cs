@@ -16,93 +16,90 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-using System;
 
+using System;
 using System.Collections.Generic;
 
-namespace DOL.GS.Keeps
+namespace DOL.GS.Keeps;
+
+/// <summary>
+/// Interface implementing needed methods for sending Game Keep Component over network.
+/// </summary>
+public interface IGameKeepComponent
 {
-	
-	/// <summary>
-	/// Interface implementing needed methods for sending Game Keep Component over network.
-	/// </summary>
-	public interface IGameKeepComponent
-	{
-		/// <summary>
-		/// Reference to owning Keep
-		/// </summary>
-		AbstractGameKeep Keep { get; }
-		
-		/// <summary>
-		/// Hook point Collection
-		/// </summary>
-		Dictionary<int, GameKeepHookPoint> HookPoints { get; }
-		
-		/// <summary>
-		/// Keep Component ID.
-		/// </summary>
-		int ID { get; }
-		
-		/// <summary>
-		/// GameObject ObjectID.
-		/// </summary>
-		int ObjectID { get; }
-		
-		/// <summary>
-		/// Keep Component Skin ID.
-		/// </summary>
-		int Skin { get; }
-		
-		/// <summary>
-		/// Keep Component X.
-		/// </summary>
-		int ComponentX { get; }
-		
-		/// <summary>
-		/// Keep Component Y.
-		/// </summary>
-		int ComponentY { get; }
-		
-		/// <summary>
-		/// Keep Component Heading.
-		/// </summary>
-		int ComponentHeading { get; }
-		
-		/// <summary>
-		/// Keep Component Height
-		/// </summary>
-		int Height { get; }
-		
-		/// <summary>
-		/// GameLiving Health Percent
-		/// </summary>
-		byte HealthPercent { get; }
-		
-		/// <summary>
-		/// Status of GameComponent (Flag)
-		/// </summary>
-		byte Status { get; }
-		
-		/// <summary>
-		/// Is Tower Componetn Raized ?
-		/// </summary>
-		bool IsRaized { get; }
-		
-		/// <summary>
-		/// Enable component Climbing.
-		/// </summary>
-		bool Climbing { get; }
-		
-		/// <summary>
-		/// GameObject AddToWorld Method
-		/// </summary>
-		/// <returns></returns>
-		bool AddToWorld();
-		
-		/// <summary>
-		/// GameLiving IsAlive.
-		/// </summary>
-		bool IsAlive { get; }
-		
-	}
+    /// <summary>
+    /// Reference to owning Keep
+    /// </summary>
+    AbstractGameKeep Keep { get; }
+
+    /// <summary>
+    /// Hook point Collection
+    /// </summary>
+    Dictionary<int, GameKeepHookPoint> HookPoints { get; }
+
+    /// <summary>
+    /// Keep Component ID.
+    /// </summary>
+    int ID { get; }
+
+    /// <summary>
+    /// GameObject ObjectID.
+    /// </summary>
+    int ObjectID { get; }
+
+    /// <summary>
+    /// Keep Component Skin ID.
+    /// </summary>
+    int Skin { get; }
+
+    /// <summary>
+    /// Keep Component X.
+    /// </summary>
+    int ComponentX { get; }
+
+    /// <summary>
+    /// Keep Component Y.
+    /// </summary>
+    int ComponentY { get; }
+
+    /// <summary>
+    /// Keep Component Heading.
+    /// </summary>
+    int ComponentHeading { get; }
+
+    /// <summary>
+    /// Keep Component Height
+    /// </summary>
+    int Height { get; }
+
+    /// <summary>
+    /// GameLiving Health Percent
+    /// </summary>
+    byte HealthPercent { get; }
+
+    /// <summary>
+    /// Status of GameComponent (Flag)
+    /// </summary>
+    byte Status { get; }
+
+    /// <summary>
+    /// Is Tower Componetn Raized ?
+    /// </summary>
+    bool IsRaized { get; }
+
+    /// <summary>
+    /// Enable component Climbing.
+    /// </summary>
+    bool Climbing { get; }
+
+    /// <summary>
+    /// GameObject AddToWorld Method
+    /// </summary>
+    /// <returns></returns>
+    bool AddToWorld();
+
+    /// <summary>
+    /// GameLiving IsAlive.
+    /// </summary>
+    bool IsAlive { get; }
 }

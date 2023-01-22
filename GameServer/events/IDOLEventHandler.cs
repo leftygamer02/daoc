@@ -16,15 +16,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Objects Able to handle Notifications from DOLEvents.
+/// </summary>
+public interface IDOLEventHandler
 {
-	/// <summary>
-	/// Objects Able to handle Notifications from DOLEvents.
-	/// </summary>
-	public interface IDOLEventHandler
-	{
-		void Notify(DOL.Events.DOLEvent e, object sender, EventArgs args);
-	}
+    void Notify(DOLEvent e, object sender, EventArgs args);
 }

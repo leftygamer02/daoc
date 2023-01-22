@@ -16,32 +16,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS;
-namespace DOL.Events
+
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the FollowLostTarget event of GameNpc
+/// </summary>
+public class FollowLostTargetEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the FollowLostTarget event of GameNpc
-	/// </summary>
-	public class FollowLostTargetEventArgs : EventArgs
-	{
-		private readonly GameObject m_lostTarget;
+    private readonly GameObject m_lostTarget;
 
-		/// <summary>
-		/// Constructs new FollowLostTargetEventArgs
-		/// </summary>
-		/// <param name="lostTarget">The lost follow target</param>
-		public FollowLostTargetEventArgs(GameObject lostTarget)
-		{
-			m_lostTarget = lostTarget;
-		}
+    /// <summary>
+    /// Constructs new FollowLostTargetEventArgs
+    /// </summary>
+    /// <param name="lostTarget">The lost follow target</param>
+    public FollowLostTargetEventArgs(GameObject lostTarget)
+    {
+        m_lostTarget = lostTarget;
+    }
 
-		/// <summary>
-		/// Gets the lost follow target
-		/// </summary>
-		public GameObject LostTarget
-		{
-			get { return m_lostTarget; }
-		}
-	}
+    /// <summary>
+    /// Gets the lost follow target
+    /// </summary>
+    public GameObject LostTarget => m_lostTarget;
 }

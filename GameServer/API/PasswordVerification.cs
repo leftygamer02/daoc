@@ -6,7 +6,6 @@ public class PasswordVerification
 {
     public PasswordVerification()
     {
-
     }
 
     public bool VerifyAPIPassword(string password)

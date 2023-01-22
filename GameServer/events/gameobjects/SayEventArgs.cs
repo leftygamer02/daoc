@@ -16,32 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Holds the arguments for the Say event of GameLivings
+/// </summary>
+public class SayEventArgs : EventArgs
 {
-	/// <summary>
-	/// Holds the arguments for the Say event of GameLivings
-	/// </summary>
-	public class SayEventArgs : EventArgs
-	{
-		private string text;
+    private string text;
 
-		/// <summary>
-		/// Constructs a new SayEventArgs
-		/// </summary>
-		/// <param name="text">the text being said</param>
-		public SayEventArgs(string text)
-		{
-			this.text = text;
-		}
+    /// <summary>
+    /// Constructs a new SayEventArgs
+    /// </summary>
+    /// <param name="text">the text being said</param>
+    public SayEventArgs(string text)
+    {
+        this.text = text;
+    }
 
-		/// <summary>
-		/// Gets the text being said
-		/// </summary>
-		public string Text
-		{
-			get { return text; }
-		}
-	}
+    /// <summary>
+    /// Gets the text being said
+    /// </summary>
+    public string Text => text;
 }

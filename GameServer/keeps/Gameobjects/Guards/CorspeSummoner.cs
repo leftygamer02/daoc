@@ -4,8 +4,8 @@ namespace DOL.GS.Keeps
 {
     public class GuardCorpseSummoner : GameKeepGuard
     {
-
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private eRealm m_lastRealm = eRealm.None;
 
@@ -13,13 +13,7 @@ namespace DOL.GS.Keeps
         /// <summary>
         /// Lord needs more health at the moment
         /// </summary>
-        public override int MaxHealth
-        {
-            get
-            {
-                return base.MaxHealth * 3;
-            }
-        }
+        public override int MaxHealth => base.MaxHealth * 3;
 
 
         public virtual void StartModifiedRespawn()
@@ -28,11 +22,11 @@ namespace DOL.GS.Keeps
             if (Brain is IControlledBrain)
                 return;
 
-            int respawnInt = 60 * 1000;
+            var respawnInt = 60 * 1000;
 
             if (respawnInt > 0)
             {
-                int reloadrespawntimer = 0;
+                var reloadrespawntimer = 0;
                 lock (m_respawnTimerLock)
                 {
                     if (m_respawnTimer != null)
@@ -51,6 +45,7 @@ namespace DOL.GS.Keeps
                 }
             }
         }
+
         protected virtual int ModdedRespawnTimerCallback(AuxECSGameTimer respawnTimer)
         {
             lock (m_respawnTimerLock)
@@ -66,17 +61,18 @@ namespace DOL.GS.Keeps
             //TODO some real respawn handling
             if (IsAlive) return 0;
             if (ObjectState == eObjectState.Active) return 0;
-            if (this.Component.Keep.Level < 10)
+            if (Component.Keep.Level < 10)
             {
-                this.StartModifiedRespawn();
+                StartModifiedRespawn();
                 return 0;
             }
+
             //Heal this mob, move it to the spawnlocation
             Health = MaxHealth;
             Mana = MaxMana;
             Endurance = MaxEndurance;
-            int origSpawnX = m_spawnPoint.X;
-            int origSpawnY = m_spawnPoint.Y;
+            var origSpawnX = m_spawnPoint.X;
+            var origSpawnY = m_spawnPoint.Y;
             //X=(m_spawnX+Random(750)-350); //new SpawnX = oldSpawn +- 350 coords
             //Y=(m_spawnY+Random(750)-350);	//new SpawnX = oldSpawn +- 350 coords
             X = m_spawnPoint.X;
@@ -88,13 +84,15 @@ namespace DOL.GS.Keeps
             m_spawnPoint.Y = origSpawnY;
             return 0;
         }
+
         public override bool AddToWorld()
         {
-            if (this.Component.Keep.Level < 10)
+            if (Component.Keep.Level < 10)
             {
-                this.StartModifiedRespawn();
+                StartModifiedRespawn();
                 return false;
             }
+
             if (base.AddToWorld())
             {
                 Name = "Corpse Summoner";
@@ -108,15 +106,12 @@ namespace DOL.GS.Keeps
             }
 
             return false;
- 
         }
-
     }
 }
 
 namespace DOL.AI.Brain
 {
-    
     public class CorpseSummonerBrain : KeepGuardBrain
     {
         public CorpseSummonerBrain()

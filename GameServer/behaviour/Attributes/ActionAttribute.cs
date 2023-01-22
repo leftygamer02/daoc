@@ -16,56 +16,53 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.GS.Behaviour.Attributes
-{    
+namespace DOL.GS.Behaviour.Attributes;
 
-    [AttributeUsage(AttributeTargets.Class)]
-    public class ActionAttribute :Attribute
+[AttributeUsage(AttributeTargets.Class)]
+public class ActionAttribute : Attribute
+{
+    private eActionType actionType;
+
+    public eActionType ActionType
     {
+        get => actionType;
+        set => actionType = value;
+    }
 
-        private eActionType actionType;
+    private bool isNullableP;
 
-        public eActionType ActionType
-        {
-            get { return actionType; }
-            set { actionType = value; }
-        }
+    public bool IsNullableP
+    {
+        get => isNullableP;
+        set => isNullableP = value;
+    }
 
-        private bool isNullableP;
+    private bool isNullableQ;
 
-        public bool IsNullableP
-        {
-            get { return isNullableP; }
-            set { isNullableP = value; }
-        }
+    public bool IsNullableQ
+    {
+        get => isNullableQ;
+        set => isNullableQ = value;
+    }
 
-        private bool isNullableQ;
+    private object defaultValueP;
 
-        public bool IsNullableQ
-        {
-            get { return isNullableQ; }
-            set { isNullableQ = value; }
-        }
+    public object DefaultValueP
+    {
+        get => defaultValueP;
+        set => defaultValueP = value;
+    }
 
-        private Object defaultValueP;
+    private object defaultValueQ;
 
-        public Object DefaultValueP
-        {
-            get { return defaultValueP; }
-            set { defaultValueP = value; }
-        }
-
-        private Object defaultValueQ;
-
-        public Object DefaultValueQ
-        {
-            get { return defaultValueQ; }
-            set { defaultValueQ = value; }
-        }
-        
+    public object DefaultValueQ
+    {
+        get => defaultValueQ;
+        set => defaultValueQ = value;
     }
 }

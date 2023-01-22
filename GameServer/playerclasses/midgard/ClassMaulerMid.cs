@@ -16,50 +16,44 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Collections.Generic;
 using DOL.GS.Realm;
 
-namespace DOL.GS.PlayerClass
+namespace DOL.GS.PlayerClass;
+
+[CharacterClass((int) eCharacterClass.MaulerMid, "Mauler", "Viking")]
+public class ClassMaulerMid : ClassViking
 {
-	[CharacterClass((int)eCharacterClass.MaulerMid, "Mauler", "Viking")]
-	public class ClassMaulerMid : ClassViking
-	{
-		public ClassMaulerMid()
-			: base()
-		{
-			m_profession = "PlayerClass.Profession.TempleofIronFist";
-			m_specializationMultiplier = 15;
-			m_wsbase = 440;
-			m_baseHP = 600;
-			m_primaryStat = eStat.STR;
-			m_secondaryStat = eStat.CON;
-			m_tertiaryStat = eStat.QUI;
-            m_manaStat = eStat.STR;
-		}
+    public ClassMaulerMid()
+        : base()
+    {
+        m_profession = "PlayerClass.Profession.TempleofIronFist";
+        m_specializationMultiplier = 15;
+        m_wsbase = 440;
+        m_baseHP = 600;
+        m_primaryStat = eStat.STR;
+        m_secondaryStat = eStat.CON;
+        m_tertiaryStat = eStat.QUI;
+        m_manaStat = eStat.STR;
+    }
 
-		public override bool CanUseLefthandedWeapon
-		{
-			get { return true; }
-		}
-		
-		public override eClassType ClassType
-		{
-			get { return eClassType.Hybrid; }
-		}
+    public override bool CanUseLefthandedWeapon => true;
 
-		public override GameTrainer.eChampionTrainerType ChampionTrainerType()
-		{
-			return GameTrainer.eChampionTrainerType.Viking;
-		}
+    public override eClassType ClassType => eClassType.Hybrid;
 
-		public override bool HasAdvancedFromBaseClass()
-		{
-			return true;
-		}
+    public override GameTrainer.eChampionTrainerType ChampionTrainerType()
+    {
+        return GameTrainer.eChampionTrainerType.Viking;
+    }
 
-		public override List<PlayerRace> EligibleRaces => new List<PlayerRace>()
-		{
-			// PlayerRace.Kobold, PlayerRace.Deifrang, PlayerRace.Norseman,
-		};
-	}
+    public override bool HasAdvancedFromBaseClass()
+    {
+        return true;
+    }
+
+    public override List<PlayerRace> EligibleRaces => new()
+    {
+        // PlayerRace.Kobold, PlayerRace.Deifrang, PlayerRace.Norseman,
+    };
 }

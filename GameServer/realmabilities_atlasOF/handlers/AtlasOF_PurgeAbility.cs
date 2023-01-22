@@ -6,87 +6,98 @@ using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.Language;
 
-namespace DOL.GS.RealmAbilities
+namespace DOL.GS.RealmAbilities;
+
+public class AtlasOF_PurgeAbility : PurgeAbility
 {
-    public class AtlasOF_PurgeAbility : PurgeAbility
+    public AtlasOF_PurgeAbility(DBAbility dba, int level) : base(dba, level)
     {
-        public AtlasOF_PurgeAbility(DBAbility dba, int level) : base(dba, level) { }
-
-        public override void Execute(GameLiving living)
-        {
-            if (CheckPreconditions(living, DEAD | SITTING)) return;
-
-            SendCastMessage(living);
-            if (RemoveNegativeEffects(living, this))
-            {
-                DisableSkill(living);
-            }
-        }
-
-        public override int MaxLevel { get { return 1; } }
-        public override int GetReUseDelay(int level) { return 1800; } // 30 min
-        public override int CostForUpgrade(int level) { return 10; }
     }
 
-    /// <summary>
-    /// This class exists because there is no way to get a player context when CostForUpgrade is called
-    /// so we cannot dynamically change the cost based on class type (pure tank vs hybrid vs casters).
-    /// </summary>
-    public class AtlasOF_PurgeAbilityReduced : AtlasOF_PurgeAbility
+    public override void Execute(GameLiving living)
     {
-        public AtlasOF_PurgeAbilityReduced(DBAbility dba, int level) : base(dba, level) { }
-        public override int CostForUpgrade(int level) { return 4; }
+        if (CheckPreconditions(living, DEAD | SITTING)) return;
+
+        SendCastMessage(living);
+        if (RemoveNegativeEffects(living, this)) DisableSkill(living);
     }
 
-    /// <summary>
-    /// Group Purge Ability, removes negative effects from the caster and all group members 
-    /// </summary>
-    public class AtlasOF_GroupPurge : AtlasOF_PurgeAbility
+    public override int MaxLevel => 1;
+
+    public override int GetReUseDelay(int level)
     {
-        public AtlasOF_GroupPurge(DBAbility dba, int level) : base(dba, level) { }
+        return 1800;
+    } // 30 min
 
-        public override int MaxLevel { get { return 1; } }
-        public override int GetReUseDelay(int level) { return 1800; } // 30 min
-        public override int CostForUpgrade(int level) { return 14; }
+    public override int CostForUpgrade(int level)
+    {
+        return 10;
+    }
+}
 
-        int m_range = 1500;
+/// <summary>
+/// This class exists because there is no way to get a player context when CostForUpgrade is called
+/// so we cannot dynamically change the cost based on class type (pure tank vs hybrid vs casters).
+/// </summary>
+public class AtlasOF_PurgeAbilityReduced : AtlasOF_PurgeAbility
+{
+    public AtlasOF_PurgeAbilityReduced(DBAbility dba, int level) : base(dba, level)
+    {
+    }
 
-        public override void Execute(GameLiving living)
-        {
-            if (CheckPreconditions(living, DEAD | SITTING)) return;
+    public override int CostForUpgrade(int level)
+    {
+        return 4;
+    }
+}
 
-            GamePlayer player = living as GamePlayer;
+/// <summary>
+/// Group Purge Ability, removes negative effects from the caster and all group members 
+/// </summary>
+public class AtlasOF_GroupPurge : AtlasOF_PurgeAbility
+{
+    public AtlasOF_GroupPurge(DBAbility dba, int level) : base(dba, level)
+    {
+    }
 
-            if (player == null)
-                return;
+    public override int MaxLevel => 1;
 
-            ArrayList targets = new ArrayList();
-            if (player.Group == null)
-                targets.Add(player);
-            else
-            {
-                foreach (GamePlayer grpplayer in player.Group.GetPlayersInTheGroup())
-                {
-                    if (player.IsWithinRadius(grpplayer, m_range) && grpplayer.IsAlive)
-                        targets.Add(grpplayer);
-                }
-            }
+    public override int GetReUseDelay(int level)
+    {
+        return 1800;
+    } // 30 min
 
-            SendCastMessage(player);
+    public override int CostForUpgrade(int level)
+    {
+        return 14;
+    }
 
-            bool AtLeastOneEffectRemoved = false;
-            foreach (GamePlayer target in targets)
-            {                   
-                if (target != null)
-                {
-                    AtLeastOneEffectRemoved |= RemoveNegativeEffects(target, this, /* isFromGroupPurge = */ true);
-                }
-            }
+    private int m_range = 1500;
 
-            if (AtLeastOneEffectRemoved)
-            {
-                DisableSkill(living);
-            }
-        }
+    public override void Execute(GameLiving living)
+    {
+        if (CheckPreconditions(living, DEAD | SITTING)) return;
+
+        var player = living as GamePlayer;
+
+        if (player == null)
+            return;
+
+        var targets = new ArrayList();
+        if (player.Group == null)
+            targets.Add(player);
+        else
+            foreach (var grpplayer in player.Group.GetPlayersInTheGroup())
+                if (player.IsWithinRadius(grpplayer, m_range) && grpplayer.IsAlive)
+                    targets.Add(grpplayer);
+
+        SendCastMessage(player);
+
+        var AtLeastOneEffectRemoved = false;
+        foreach (GamePlayer target in targets)
+            if (target != null)
+                AtLeastOneEffectRemoved |= RemoveNegativeEffects(target, this, /* isFromGroupPurge = */ true);
+
+        if (AtLeastOneEffectRemoved) DisableSkill(living);
     }
 }

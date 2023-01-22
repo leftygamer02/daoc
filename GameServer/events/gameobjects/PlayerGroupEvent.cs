@@ -16,31 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.Events
-{
-	/// <summary>
-	/// This class holds all possible player group events.
-	/// Only constants defined here!
-	/// </summary>
-	public class GroupEvent : DOLEvent
-	{
-		/// <summary>
-		/// Constructs a new PlayerGroup event
-		/// </summary>
-		/// <param name="name">the event name</param>
-		public GroupEvent(string name) : base (name)
-		{
-		}
+namespace DOL.Events;
 
-		/// <summary>
-		/// The PlayerJoined event is fired whenever player joins the group
-		/// </summary>
-		public static readonly GroupEvent MemberJoined = new GroupEvent("Group.MemberJoined");
-		/// <summary>
-		/// The PlayerDisbanded event is fired whenever player disbands
-		/// </summary>
-		public static readonly GroupEvent MemberDisbanded = new GroupEvent("Group.MemberDisbanded");
-	}
+/// <summary>
+/// This class holds all possible player group events.
+/// Only constants defined here!
+/// </summary>
+public class GroupEvent : DOLEvent
+{
+    /// <summary>
+    /// Constructs a new PlayerGroup event
+    /// </summary>
+    /// <param name="name">the event name</param>
+    public GroupEvent(string name) : base(name)
+    {
+    }
+
+    /// <summary>
+    /// The PlayerJoined event is fired whenever player joins the group
+    /// </summary>
+    public static readonly GroupEvent MemberJoined = new("Group.MemberJoined");
+
+    /// <summary>
+    /// The PlayerDisbanded event is fired whenever player disbands
+    /// </summary>
+    public static readonly GroupEvent MemberDisbanded = new("Group.MemberDisbanded");
 }

@@ -16,21 +16,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 
-namespace DOL.GS.SkillHandler
+namespace DOL.GS.SkillHandler;
+
+/// <summary>
+/// Handler for Sprint Ability clicks
+/// </summary>
+[SkillHandlerAttribute(Abilities.Sprint)]
+public class SprintAbilityHandler : IAbilityActionHandler
 {
-	/// <summary>
-	/// Handler for Sprint Ability clicks
-	/// </summary>
-	[SkillHandlerAttribute(Abilities.Sprint)]
-	public class SprintAbilityHandler : IAbilityActionHandler
-	{
-		public void Execute(Ability ab, GamePlayer player)
-		{
-			player.Sprint(!player.IsSprinting);
-		}
-	}
+    public void Execute(Ability ab, GamePlayer player)
+    {
+        player.Sprint(!player.IsSprinting);
+    }
 }

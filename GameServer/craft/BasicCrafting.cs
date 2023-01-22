@@ -16,49 +16,36 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
-
 using DOL.Database;
 using DOL.Language;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class BasicCrafting : AbstractProfession
 {
-	public class BasicCrafting : AbstractProfession
-	{
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		public BasicCrafting()
-		{
-			Icon = 0x0F;
-            Name = LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "Crafting.Name.BasicCrafting");
-            eSkill = eCraftingSkill.BasicCrafting;
-		}
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    public BasicCrafting()
+    {
+        Icon = 0x0F;
+        Name = LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "Crafting.Name.BasicCrafting");
+        eSkill = eCraftingSkill.BasicCrafting;
+    }
 
-        protected override String Profession
+    protected override string Profession => "CraftersProfession.BasicCrafter";
+
+    public override string CRAFTER_TITLE_PREFIX => "Crafter's";
+
+    public override void GainCraftingSkillPoints(GamePlayer player, Recipe recipe)
+    {
+        if (Util.Chance(CalculateChanceToGainPoint(player, recipe.Level)))
         {
-            get
-            {
-                return "CraftersProfession.BasicCrafter";
-            }
+            player.GainCraftingSkill(eCraftingSkill.BasicCrafting, 1);
+            player.Out.SendUpdateCraftingSkills();
         }
-
-        public override string CRAFTER_TITLE_PREFIX
-		{
-			get
-			{
-				return "Crafter's";
-            }
-		}
-
-		public override void GainCraftingSkillPoints(GamePlayer player, Recipe recipe)
-		{
-			if (Util.Chance(CalculateChanceToGainPoint(player, recipe.Level)))
-			{
-				player.GainCraftingSkill(eCraftingSkill.BasicCrafting, 1);
-				player.Out.SendUpdateCraftingSkills();
-			}
-		}
-	}
+    }
 }

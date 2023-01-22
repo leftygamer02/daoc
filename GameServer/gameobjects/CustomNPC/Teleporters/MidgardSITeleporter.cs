@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,114 +28,110 @@ using log4net;
 using System.Reflection;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Midgard SI teleporter.
+/// </summary>
+/// <author>Aredhel</author>
+public class MidgardSITeleporter : GameTeleporter
 {
-	/// <summary>
-	/// Midgard SI teleporter.
-	/// </summary>
-	/// <author>Aredhel</author>
-	public class MidgardSITeleporter : GameTeleporter
-	{
-		/// <summary>
-		/// Add equipment to the teleporter.
-		/// </summary>
-		/// <returns></returns>
-		public override bool AddToWorld()
-		{
-			GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-			template.AddNPCEquipment(eInventorySlot.TorsoArmor, 983, 26);
-			template.AddNPCEquipment(eInventorySlot.HandsArmor, 986, 26);
-			template.AddNPCEquipment(eInventorySlot.LegsArmor, 984, 26);
-			template.AddNPCEquipment(eInventorySlot.FeetArmor, 987, 26);
-			template.AddNPCEquipment(eInventorySlot.Cloak, 57, 26);
-			Inventory = template.CloseTemplate();
+    /// <summary>
+    /// Add equipment to the teleporter.
+    /// </summary>
+    /// <returns></returns>
+    public override bool AddToWorld()
+    {
+        var template = new GameNpcInventoryTemplate();
+        template.AddNPCEquipment(eInventorySlot.TorsoArmor, 983, 26);
+        template.AddNPCEquipment(eInventorySlot.HandsArmor, 986, 26);
+        template.AddNPCEquipment(eInventorySlot.LegsArmor, 984, 26);
+        template.AddNPCEquipment(eInventorySlot.FeetArmor, 987, 26);
+        template.AddNPCEquipment(eInventorySlot.Cloak, 57, 26);
+        Inventory = template.CloseTemplate();
 
-			SwitchWeapon(eActiveWeaponSlot.TwoHanded);
-			VisibleActiveWeaponSlots = 34;
-			return base.AddToWorld();
-		}
-		
-		private String[] m_destination = { 
-			"Aegirhamn",
-			"Bjarken",
-			"Hagall",
-			"Knarr" };
-		
-		/// <summary>
-		/// Display the teleport indicator around this teleporters feet
-		/// </summary>
-		public override bool ShowTeleporterIndicator
-		{
-			get
-			{
-				return true;
-			}
-		}
-		/// <summary>
-		/// Player right-clicked the teleporter.
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public override bool Interact(GamePlayer player)
-		{
-			if (!base.Interact(player))
-				return false;
+        SwitchWeapon(eActiveWeaponSlot.TwoHanded);
+        VisibleActiveWeaponSlots = 34;
+        return base.AddToWorld();
+    }
 
-			List<String> playerAreaList = new List<String>();
-			foreach (AbstractArea area in player.CurrentAreas)
-				playerAreaList.Add(area.Description);
+    private string[] m_destination =
+    {
+        "Aegirhamn",
+        "Bjarken",
+        "Hagall",
+        "Knarr"
+    };
 
-			SayTo(player, "Greetings. Where can I send you?");
-			foreach (String destination in m_destination)
-				if (!playerAreaList.Contains(destination))
-					player.Out.SendMessage(String.Format("[{0}]", destination),
-						eChatType.CT_Say, eChatLoc.CL_PopupWindow);
+    /// <summary>
+    /// Display the teleport indicator around this teleporters feet
+    /// </summary>
+    public override bool ShowTeleporterIndicator => true;
 
-			return true;
-		}
+    /// <summary>
+    /// Player right-clicked the teleporter.
+    /// </summary>
+    /// <param name="player"></param>
+    /// <returns></returns>
+    public override bool Interact(GamePlayer player)
+    {
+        if (!base.Interact(player))
+            return false;
 
-		/// <summary>
-		/// Player has picked a destination.
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="destination"></param>
-		protected override void OnDestinationPicked(GamePlayer player, Teleport destination)
-		{
-			// Not porting to where we already are.
+        var playerAreaList = new List<string>();
+        foreach (AbstractArea area in player.CurrentAreas)
+            playerAreaList.Add(area.Description);
 
-			List<String> playerAreaList = new List<String>();
-			foreach (AbstractArea area in player.CurrentAreas)
-				playerAreaList.Add(area.Description);
+        SayTo(player, "Greetings. Where can I send you?");
+        foreach (var destination in m_destination)
+            if (!playerAreaList.Contains(destination))
+                player.Out.SendMessage(string.Format("[{0}]", destination),
+                    eChatType.CT_Say, eChatLoc.CL_PopupWindow);
 
-			if (playerAreaList.Contains(destination.TeleportID))
-				return;
+        return true;
+    }
 
-			switch (destination.TeleportID.ToLower())
-			{
-				case "aegirhamn":
-					break;
-				case "bjarken":
-					break;
-				case "hagall":
-					break;
-				case "knarr":
-					break;
-				default:
-					return;
-			}
+    /// <summary>
+    /// Player has picked a destination.
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="destination"></param>
+    protected override void OnDestinationPicked(GamePlayer player, Teleport destination)
+    {
+        // Not porting to where we already are.
 
-			SayTo(player, "Have a safe journey!");
-			base.OnDestinationPicked(player, destination);
-		}
+        var playerAreaList = new List<string>();
+        foreach (AbstractArea area in player.CurrentAreas)
+            playerAreaList.Add(area.Description);
 
-		/// <summary>
-		/// Teleport the player to the designated coordinates.
-		/// </summary>
-		/// <param name="player"></param>
-		/// <param name="destination"></param>
-		protected override void OnTeleport(GamePlayer player, Teleport destination)
-		{
-			OnTeleportSpell(player, destination);
-		}
-	}
+        if (playerAreaList.Contains(destination.TeleportID))
+            return;
+
+        switch (destination.TeleportID.ToLower())
+        {
+            case "aegirhamn":
+                break;
+            case "bjarken":
+                break;
+            case "hagall":
+                break;
+            case "knarr":
+                break;
+            default:
+                return;
+        }
+
+        SayTo(player, "Have a safe journey!");
+        base.OnDestinationPicked(player, destination);
+    }
+
+    /// <summary>
+    /// Teleport the player to the designated coordinates.
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="destination"></param>
+    protected override void OnTeleport(GamePlayer player, Teleport destination)
+    {
+        OnTeleportSpell(player, destination);
+    }
 }

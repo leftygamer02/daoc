@@ -16,55 +16,49 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using DOL.Database;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// MobAmbientBehaviourManager handles Mob Ambient Behaviour Lazy Loading
+/// </summary>
+public sealed class MobAmbientBehaviourManager
 {
     /// <summary>
-    /// MobAmbientBehaviourManager handles Mob Ambient Behaviour Lazy Loading
+    /// Mob X Ambient Behaviour Cache indexed by Mob Name
     /// </summary>
-    public sealed class MobAmbientBehaviourManager
+    private Dictionary<string, MobXAmbientBehaviour[]> AmbientBehaviour { get; }
+
+    /// <summary>
+    /// Retrieve MobXambiemtBehaviour Objects from Mob Name
+    /// </summary>
+    public MobXAmbientBehaviour[] this[string index]
     {
-        /// <summary>
-        /// Mob X Ambient Behaviour Cache indexed by Mob Name
-        /// </summary>
-        private Dictionary<string, MobXAmbientBehaviour[]> AmbientBehaviour { get; }
-
-        /// <summary>
-        /// Retrieve MobXambiemtBehaviour Objects from Mob Name
-        /// </summary>
-        public MobXAmbientBehaviour[] this[string index]
+        get
         {
-            get
-            {
-                if (string.IsNullOrEmpty(index))
-                {
-                    return new MobXAmbientBehaviour[0];
-                }
+            if (string.IsNullOrEmpty(index)) return new MobXAmbientBehaviour[0];
 
-                var lower = index.ToLower();
-                return AmbientBehaviour.ContainsKey(lower)
-                    ? AmbientBehaviour[lower]
-                    : new MobXAmbientBehaviour[0];
-            }
+            var lower = index.ToLower();
+            return AmbientBehaviour.ContainsKey(lower)
+                ? AmbientBehaviour[lower]
+                : new MobXAmbientBehaviour[0];
         }
+    }
 
-        /// <summary>
-        /// Create a new Instance of <see cref="MobAmbientBehaviourManager"/>
-        /// </summary>
-        public MobAmbientBehaviourManager(IObjectDatabase database)
-        {
-            if (database == null)
-            {
-                throw new ArgumentNullException(nameof(database));
-            }
+    /// <summary>
+    /// Create a new Instance of <see cref="MobAmbientBehaviourManager"/>
+    /// </summary>
+    public MobAmbientBehaviourManager(IObjectDatabase database)
+    {
+        if (database == null) throw new ArgumentNullException(nameof(database));
 
-            AmbientBehaviour = database.SelectAllObjects<MobXAmbientBehaviour>()
-                .GroupBy(x => x.Source)
-                .ToDictionary(key => key.Key.ToLower(), value => value.ToArray());
-        }
+        AmbientBehaviour = database.SelectAllObjects<MobXAmbientBehaviour>()
+            .GroupBy(x => x.Source)
+            .ToDictionary(key => key.Key.ToLower(), value => value.ToArray());
     }
 }

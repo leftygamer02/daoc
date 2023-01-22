@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -17,24 +17,20 @@
  *
  */
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute("&stuck",
-		ePrivLevel.Player, //minimum privelege level
-		"Removes the player from the world and put it to a safe location", //command description
-		"/stuck")] //usage
-	public class StuckCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "stuck"))
-				return;
+namespace DOL.GS.Commands;
 
-			client.Player.Stuck = true;
-			if (!client.Player.Quit(false))
-			{
-				client.Player.Stuck = false;
-			}
-		}
-	}
+[CmdAttribute("&stuck",
+    ePrivLevel.Player, //minimum privelege level
+    "Removes the player from the world and put it to a safe location", //command description
+    "/stuck")] //usage
+public class StuckCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "stuck"))
+            return;
+
+        client.Player.Stuck = true;
+        if (!client.Player.Quit(false)) client.Player.Stuck = false;
+    }
 }

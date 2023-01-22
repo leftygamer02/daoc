@@ -16,45 +16,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Collections.Generic;
 using System.Linq;
 using DOL.Database;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// The TempPropertiesManager hold TempProperties when a player disconnect
+/// </summary>
+public abstract class TempPropertiesManager
 {
-    /// <summary>
-    /// The TempPropertiesManager hold TempProperties when a player disconnect
-    /// </summary>
-    public abstract class TempPropertiesManager
+    public static ReaderWriterList<TempPropContainer> TempPropContainerList = new();
+
+    public class TempPropContainer
     {
-        public static ReaderWriterList<TempPropContainer> TempPropContainerList = new ReaderWriterList<TempPropContainer>();
+        private string m_ownerid;
 
-        public class TempPropContainer
+        public string OwnerID => m_ownerid;
+
+        private string m_tempropstring;
+
+        public string TempPropString => m_tempropstring;
+
+        private string m_value;
+
+        public string Value
         {
-            private string m_ownerid;
-            public string OwnerID
-            {
-                get { return m_ownerid; }
-            }
+            get => m_value;
+            set => m_value = value;
+        }
 
-            private string m_tempropstring;
-            public string TempPropString
-            {
-                get { return m_tempropstring; }
-            }
-
-            private string m_value;
-            public string Value
-            {
-                get { return m_value; }
-                set { m_value = value; }
-            }
-            public TempPropContainer(string ownerid, string tempropstring, string value)
-            {
-                m_ownerid = ownerid;
-                m_tempropstring = tempropstring;
-                m_value = value;
-            }
+        public TempPropContainer(string ownerid, string tempropstring, string value)
+        {
+            m_ownerid = ownerid;
+            m_tempropstring = tempropstring;
+            m_value = value;
         }
     }
 }

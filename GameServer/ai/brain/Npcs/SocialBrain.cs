@@ -16,32 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS;
 
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+/// <summary>
+/// Proof of concept.
+/// A brain that will BAF (Bring-A-Friend) when nearby livings
+/// are attacked.
+/// <author>Aredhel</author>
+/// </summary>
+public class SocialBrain : AggressiveBrain
 {
     /// <summary>
-    /// Proof of concept.
-    /// A brain that will BAF (Bring-A-Friend) when nearby livings
-    /// are attacked.
-    /// <author>Aredhel</author>
+    /// Come to this living's aid.
     /// </summary>
-    public class SocialBrain : AggressiveBrain
+    /// <param name="target"></param>
+    /// <param name="attacker"></param>
+    protected override void OnLivingAttacked(GameLiving target, GameLiving attacker)
     {
-        /// <summary>
-        /// Come to this living's aid.
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="attacker"></param>
-        protected override void OnLivingAttacked(GameLiving target, GameLiving attacker)
-        {
-            base.OnLivingAttacked(target, attacker);
+        base.OnLivingAttacked(target, attacker);
 
-            if (target.IsWithinRadius(Body, AggressionRange))
-                EngageOn(attacker);
-        }
+        if (target.IsWithinRadius(Body, AggressionRange))
+            EngageOn(attacker);
     }
 }

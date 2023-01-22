@@ -16,27 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Event to signal time remaining until pet is lost.
+/// </summary>
+internal class TetherEventArgs : EventArgs
 {
-    /// <summary>
-    /// Event to signal time remaining until pet is lost.
-    /// </summary>
-    class TetherEventArgs : EventArgs
+    private int m_seconds;
+
+    public TetherEventArgs(int seconds)
     {
-        private int m_seconds;
-
-        public TetherEventArgs(int seconds)
-        {
-            m_seconds = seconds;
-        }
-
-        public int Seconds
-        {
-            get { return m_seconds; }
-        }
+        m_seconds = seconds;
     }
+
+    public int Seconds => m_seconds;
 }

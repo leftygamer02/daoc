@@ -16,26 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.ServerRules
+namespace DOL.GS.ServerRules;
+
+/// <summary>
+/// Denotes a class as a server rules handler for a given server type
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class ServerRulesAttribute : Attribute
 {
-	/// <summary>
-	/// Denotes a class as a server rules handler for a given server type
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class ServerRulesAttribute : Attribute
-	{
-		protected eGameServerType m_serverType;
+    protected eGameServerType m_serverType;
 
-		public eGameServerType ServerType
-		{
-			get { return m_serverType; }
-		}
+    public eGameServerType ServerType => m_serverType;
 
-		public ServerRulesAttribute(eGameServerType serverType)
-		{
-			m_serverType = serverType;
-		}
-	}
+    public ServerRulesAttribute(eGameServerType serverType)
+    {
+        m_serverType = serverType;
+    }
 }

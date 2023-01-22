@@ -16,76 +16,76 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&spacing",
+    ePrivLevel.Player,
+    "Change the spacing of your pets!", "/spacing {normal, big, huge}")]
+public class SpacingHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&spacing",
-		ePrivLevel.Player,
-		"Change the spacing of your pets!", "/spacing {normal, big, huge}")]
-	public class SpacingHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "spacing"))
-				return;
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "spacing"))
+            return;
 
-			GamePlayer player = client.Player;
+        var player = client.Player;
 
-			//No one else needs to use this spell
-			if (player.CharacterClass.ID != (int)eCharacterClass.Bonedancer)
-			{
-				DisplayMessage(player, "Only Bonedancers can use this command!");
-				return;
-			}
+        //No one else needs to use this spell
+        if (player.CharacterClass.ID != (int) eCharacterClass.Bonedancer)
+        {
+            DisplayMessage(player, "Only Bonedancers can use this command!");
+            return;
+        }
 
-			//Help display
-			if (args.Length == 1)
-			{
-				DisplayMessage(player, "Spacing commands:");
-				DisplayMessage(player, "'/spacing normal' Use normal spacing between minions.");
-				DisplayMessage(player, "'/spacing big' Use a larger spacing between minions.");
-				DisplayMessage(player, "'/spacing huge' Use a very large spacing between minions.");
-				return;
-			}
+        //Help display
+        if (args.Length == 1)
+        {
+            DisplayMessage(player, "Spacing commands:");
+            DisplayMessage(player, "'/spacing normal' Use normal spacing between minions.");
+            DisplayMessage(player, "'/spacing big' Use a larger spacing between minions.");
+            DisplayMessage(player, "'/spacing huge' Use a very large spacing between minions.");
+            return;
+        }
 
-			//Check to see if the BD has a commander and minions
-			if (player.ControlledBrain == null)
-			{
-				DisplayMessage(player, "You don't have a commander!");
-				return;
-			}
-			bool haveminion = false;
-			foreach (AI.Brain.IControlledBrain icb in player.ControlledBrain.Body.ControlledNpcList)
-			{
-				if (icb != null)
-					haveminion = true;
-			}
-			if (!haveminion)
-			{
-				DisplayMessage(player, "You don't have any minions!");
-				return;
-			}
+        //Check to see if the BD has a commander and minions
+        if (player.ControlledBrain == null)
+        {
+            DisplayMessage(player, "You don't have a commander!");
+            return;
+        }
 
-			switch (args[1].ToLower())
-			{
-				//Triangle Formation
-				case "normal":
-					player.ControlledBrain.Body.FormationSpacing = 1;
-					break;
-				//Line formation
-				case "big":
-					player.ControlledBrain.Body.FormationSpacing = 2;
-					break;
-				//Protect formation
-				case "huge":
-					player.ControlledBrain.Body.FormationSpacing = 3;
-					break;
-				default:
-					DisplayMessage(player, "Unrecognized argument: " + args[1]);
-					break;
-			}
-		}
-	}
+        var haveminion = false;
+        foreach (var icb in player.ControlledBrain.Body.ControlledNpcList)
+            if (icb != null)
+                haveminion = true;
+
+        if (!haveminion)
+        {
+            DisplayMessage(player, "You don't have any minions!");
+            return;
+        }
+
+        switch (args[1].ToLower())
+        {
+            //Triangle Formation
+            case "normal":
+                player.ControlledBrain.Body.FormationSpacing = 1;
+                break;
+            //Line formation
+            case "big":
+                player.ControlledBrain.Body.FormationSpacing = 2;
+                break;
+            //Protect formation
+            case "huge":
+                player.ControlledBrain.Body.FormationSpacing = 3;
+                break;
+            default:
+                DisplayMessage(player, "Unrecognized argument: " + args[1]);
+                break;
+        }
+    }
 }

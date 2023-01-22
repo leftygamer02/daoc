@@ -16,44 +16,44 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.GS;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+/// <summary>
+/// Unit Test for Default Invalid Names Startup Behavior.
+/// Need Ressource InvalidNames.txt set to Default.
+/// </summary>
+[TestFixture]
+public class InvalidNamesStartupTest
 {
-	/// <summary>
-	/// Unit Test for Default Invalid Names Startup Behavior.
-	/// Need Ressource InvalidNames.txt set to Default.
-	/// </summary>
-	[TestFixture]
-	public class InvalidNamesStartupTest
-	{
-		public InvalidNamesStartupTest()
-		{
-		}
-		
-		[Test]
-		public void InvalidNamesStartup_CheckDefaultConstraintOneString_Match()
-		{
-			Assert.IsTrue(GameServer.Instance.PlayerManager.InvalidNames["fuck"]);
-		}
-		
-		[Test]
-		public void InvalidNamesStartup_CheckDefaultConstraintOneString_NoMatch()
-		{
-			Assert.IsFalse(GameServer.Instance.PlayerManager.InvalidNames["unicorn"]);
-		}
-		
-		[Test]
-		public void InvalidNamesStartup_CheckDefaultConstraintTwoString_Match()
-		{
-			Assert.IsTrue(GameServer.Instance.PlayerManager.InvalidNames["fu", "ck"]);
-		}
-		
-		[Test]
-		public void InvalidNamesStartup_CheckDefaultConstraintTwoString_NoMatch()
-		{
-			Assert.IsFalse(GameServer.Instance.PlayerManager.InvalidNames["uni", "corn"]);
-		}
-	}
+    public InvalidNamesStartupTest()
+    {
+    }
+
+    [Test]
+    public void InvalidNamesStartup_CheckDefaultConstraintOneString_Match()
+    {
+        Assert.IsTrue(GameServer.Instance.PlayerManager.InvalidNames["fuck"]);
+    }
+
+    [Test]
+    public void InvalidNamesStartup_CheckDefaultConstraintOneString_NoMatch()
+    {
+        Assert.IsFalse(GameServer.Instance.PlayerManager.InvalidNames["unicorn"]);
+    }
+
+    [Test]
+    public void InvalidNamesStartup_CheckDefaultConstraintTwoString_Match()
+    {
+        Assert.IsTrue(GameServer.Instance.PlayerManager.InvalidNames["fu", "ck"]);
+    }
+
+    [Test]
+    public void InvalidNamesStartup_CheckDefaultConstraintTwoString_NoMatch()
+    {
+        Assert.IsFalse(GameServer.Instance.PlayerManager.InvalidNames["uni", "corn"]);
+    }
 }

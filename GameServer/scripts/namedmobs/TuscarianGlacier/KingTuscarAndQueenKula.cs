@@ -12,68 +12,76 @@ namespace DOL.GS
 {
     public class QueenKula : GameEpicBoss
     {
-        public QueenKula() : base() { }
+        public QueenKula() : base()
+        {
+        }
+
         public static int TauntID = 178;
         public static int TauntClassID = 23;
         public static Style taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
+
         #region Award Epic Encounter Kill
+
         protected void ReportNews(GameObject killer)
         {
-            int numPlayers = AwardEpicEncounterKillPoint();
-            String message = String.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
+            var numPlayers = AwardEpicEncounterKillPoint();
+            var message = string.Format("{0} has been slain by a force of {1} warriors!", Name, numPlayers);
             NewsMgr.CreateNews(message, killer.Realm, eNewsType.PvE, true);
 
             if (Properties.GUILD_MERIT_ON_DRAGON_KILL > 0)
-            {
                 foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
                     if (player.IsEligibleToGiveMeritPoints)
-                    {
                         GuildEventHandler.MeritForNPCKilled(player, this, Properties.GUILD_MERIT_ON_DRAGON_KILL);
-                    }
-                }
-            }
         }
+
         protected int AwardEpicEncounterKillPoint()
         {
-            int count = 0;
+            var count = 0;
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
                 player.KillsEpicBoss++;
                 player.Achieve(AchievementUtils.AchievementNames.Epic_Boss_Kills);
                 count++;
             }
+
             return count;
         }
+
         #endregion
+
         #region Resists & TakeDamage()
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
             {
                 if (IsOutOfTetherRange)
                 {
-                    if (damageType == eDamageType.Body || damageType == eDamageType.Cold || damageType == eDamageType.Energy || damageType == eDamageType.Heat
-                        || damageType == eDamageType.Matter || damageType == eDamageType.Spirit || damageType == eDamageType.Crush || damageType == eDamageType.Thrust
+                    if (damageType == eDamageType.Body || damageType == eDamageType.Cold ||
+                        damageType == eDamageType.Energy || damageType == eDamageType.Heat
+                        || damageType == eDamageType.Matter || damageType == eDamageType.Spirit ||
+                        damageType == eDamageType.Crush || damageType == eDamageType.Thrust
                         || damageType == eDamageType.Slash)
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System, eChatLoc.CL_ChatWindow);
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
+                                eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
                     }
@@ -82,40 +90,40 @@ namespace DOL.GS
                 {
                     GamePlayer truc;
                     if (source is GamePlayer)
-                        truc = (source as GamePlayer);
+                        truc = source as GamePlayer;
                     else
-                        truc = ((source as GamePet).Owner as GamePlayer);
+                        truc = (source as GamePet).Owner as GamePlayer;
 
 
-                    foreach (GameNPC npc in this.GetNPCsInRadius(5000))
-                    {
+                    foreach (GameNPC npc in GetNPCsInRadius(5000))
                         if (npc != null)
-                        {
                             if (npc.IsAlive)
-                            {
                                 if (npc.Brain is KingTuscarBrain && npc.HealthPercent < 100)
                                 {
                                     npc.Health += damageAmount + criticalAmount;
                                     if (truc != null)
-                                        truc.Out.SendMessage("Your damage is healing King Tuscar!", eChatType.CT_System, eChatLoc.CL_ChatWindow);
+                                        truc.Out.SendMessage("Your damage is healing King Tuscar!", eChatType.CT_System,
+                                            eChatLoc.CL_ChatWindow);
                                 }
-                            }
-                        }
-                    }
+
                     base.TakeDamage(source, damageType, damageAmount, criticalAmount);
                 }
             }
         }
+
         #endregion
+
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            return base.AttackDamage(weapon) * Strength / 100 * Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -123,57 +131,60 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 300000; }
-        }
+
+        public override int MaxHealth => 300000;
+
         #region BroadcastMessage & Die()
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public static int QueenKulaCount = 0;
-        public override void Die(GameObject killer)//on kill generate orbs
+
+        public override void Die(GameObject killer) //on kill generate orbs
         {
-            if(KingTuscar.KingTuscarCount > 0)
-                BroadcastMessage(String.Format("As the Queen Kula dies, King Tuscar scream in rage and gather more strength!"));
+            if (KingTuscar.KingTuscarCount > 0)
+                BroadcastMessage(
+                    string.Format("As the Queen Kula dies, King Tuscar scream in rage and gather more strength!"));
 
             --QueenKulaCount;
-            bool canReportNews = true;
+            var canReportNews = true;
             // due to issues with attackers the following code will send a notify to all in area in order to force quest credit
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.VISIBILITY_DISTANCE))
             {
                 player.Notify(GameLivingEvent.EnemyKilled, killer, new EnemyKilledEventArgs(this));
 
                 if (canReportNews && GameServer.ServerRules.CanGenerateNews(player) == false)
-                {
-                    if (player.Client.Account.PrivLevel == (int)ePrivLevel.Player)
+                    if (player.Client.Account.PrivLevel == (int) ePrivLevel.Player)
                         canReportNews = false;
-                }
             }
-            if (canReportNews)
-            {
-                ReportNews(killer);
-            }
+
+            if (canReportNews) ReportNews(killer);
+
             base.Die(killer);
         }
+
         #endregion
+
         #region AddToWorld
+
         public override bool AddToWorld()
         {
-            INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60165083); 
+            INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60165083);
             LoadTemplate(npcTemplate);
             Strength = npcTemplate.Strength;
             Dexterity = npcTemplate.Dexterity;
@@ -184,13 +195,13 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
+            RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
             if (!Styles.Contains(taunt))
                 Styles.Add(taunt);
             ++QueenKulaCount;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
+            var template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.RightHandWeapon, 316, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.Standard);
@@ -200,39 +211,43 @@ namespace DOL.GS
 
             VisibleActiveWeaponSlots = 16;
             MeleeDamageType = eDamageType.Slash;
-            QueenKulaBrain sbrain = new QueenKulaBrain();
+            var sbrain = new QueenKulaBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false;//load from database
+            LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
         }
+
         #endregion
 
-        public override void OnAttackedByEnemy(AttackData ad)// on Boss actions
+        public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
             if (ad != null && ad.Damage > 0 && ad.Attacker != null && ad.Attacker.IsAlive && ad.Attacker is GamePlayer)
             {
-                if(KingTuscar.KingTuscarCount == 0 || HealthPercent <= 50)
-                {
+                if (KingTuscar.KingTuscarCount == 0 || HealthPercent <= 50)
                     if (Util.Chance(50))
                         CastSpell(Cold_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                }
+
                 if (KingTuscar.KingTuscarCount > 0 || HealthPercent > 50)
                     if (Util.Chance(10))
-                    CastSpell(Cold_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
+                        CastSpell(Cold_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             }
+
             base.OnAttackedByEnemy(ad);
         }
+
         #region Spells
+
         private Spell m_Cold_DD;
+
         private Spell Cold_DD
         {
             get
             {
                 if (m_Cold_DD == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 2;
@@ -247,21 +262,26 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Energy;
+                    spell.DamageType = (int) eDamageType.Energy;
                     m_Cold_DD = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Cold_DD);
                 }
+
                 return m_Cold_DD;
             }
         }
+
         #endregion
     }
 }
+
 namespace DOL.AI.Brain
 {
     public class QueenKulaBrain : StandardMobBrain
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public QueenKulaBrain()
             : base()
         {
@@ -269,131 +289,135 @@ namespace DOL.AI.Brain
             AggroRange = 600;
             ThinkInterval = 1500;
         }
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         #region Teleport Player & PlayerInCenter()
+
         public static GamePlayer randomtarget = null;
+
         public static GamePlayer RandomTarget
         {
-            get { return randomtarget; }
-            set { randomtarget = value; }
+            get => randomtarget;
+            set => randomtarget = value;
         }
+
         public static bool IsTargetPicked = false;
-        List<GamePlayer> Port_Enemys = new List<GamePlayer>();
+        private List<GamePlayer> Port_Enemys = new();
+
         public int PickPlayer(ECSGameTimer timer)
         {
             if (Body.IsAlive)
             {
                 foreach (GamePlayer player in Body.GetPlayersInRadius(2500))
-                {
                     if (player != null)
-                    {
                         if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
                             if (!Port_Enemys.Contains(player))
-                            {
-                                if (!player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez) && !player.effectListComponent.ContainsEffectForEffectType(eEffect.MovementSpeedDebuff)
-                                    && (!player.effectListComponent.ContainsEffectForEffectType(eEffect.MezImmunity) || !player.effectListComponent.ContainsEffectForEffectType(eEffect.SnareImmunity))
+                                if (!player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez) &&
+                                    !player.effectListComponent.ContainsEffectForEffectType(eEffect.MovementSpeedDebuff)
+                                    && (!player.effectListComponent.ContainsEffectForEffectType(eEffect.MezImmunity) ||
+                                        !player.effectListComponent.ContainsEffectForEffectType(eEffect.SnareImmunity))
                                     && player != Body.TargetObject)
-                                {
                                     Port_Enemys.Add(player);
-                                }
-                            }
-                        }
-                    }
-                }
+
                 if (Port_Enemys.Count == 0)
                 {
-                    RandomTarget = null;//reset random target to null
+                    RandomTarget = null; //reset random target to null
                     IsTargetPicked = false;
                 }
                 else
                 {
                     if (Port_Enemys.Count > 0)
                     {
-                        GamePlayer Target = (GamePlayer)Port_Enemys[Util.Random(0, Port_Enemys.Count - 1)];
+                        var Target = (GamePlayer) Port_Enemys[Util.Random(0, Port_Enemys.Count - 1)];
                         RandomTarget = Target;
                         if (RandomTarget.IsAlive && RandomTarget != null)
                         {
                             RandomTarget.MoveTo(160, 34128, 56095, 11898, 2124);
                             Port_Enemys.Remove(RandomTarget);
-                            RandomTarget = null;//reset random target to null
+                            RandomTarget = null; //reset random target to null
                             IsTargetPicked = false;
                         }
                     }
                 }
             }
+
             return 0;
         }
+
         public static bool message1 = false;
+
         public void PlayerInCenter()
         {
-            Point3D FrostPoint = new Point3D();
-            FrostPoint.X = 34128; FrostPoint.Y = 56095; FrostPoint.Z = 11989;
-            foreach(GamePlayer player in Body.GetPlayersInRadius(8000))
-            {
+            var FrostPoint = new Point3D();
+            FrostPoint.X = 34128;
+            FrostPoint.Y = 56095;
+            FrostPoint.Z = 11989;
+            foreach (GamePlayer player in Body.GetPlayersInRadius(8000))
                 if (player != null)
-                {
                     if (player.IsAlive && player.IsWithinRadius(FrostPoint, 300))
                     {
-                        GameLiving oldTarget = Body.TargetObject as GameLiving;//old target
-                        Body.TargetObject = player;//set target to randomly picked
+                        var oldTarget = Body.TargetObject as GameLiving; //old target
+                        Body.TargetObject = player; //set target to randomly picked
                         switch (Util.Random(1, 2))
                         {
                             case 1:
-                                {//check here if target is not already mezzed or rotted or got mezzimmunity
-                                    if (!player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez) && !player.effectListComponent.ContainsEffectForEffectType(eEffect.MezImmunity)
-                                    && !player.effectListComponent.ContainsEffectForEffectType(eEffect.MovementSpeedDebuff))
-                                    {
-                                        Body.CastSpell(Mezz, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//cast mezz
-                                    }
-                                }
+                            {
+                                //check here if target is not already mezzed or rotted or got mezzimmunity
+                                if (!player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez) &&
+                                    !player.effectListComponent.ContainsEffectForEffectType(eEffect.MezImmunity)
+                                    && !player.effectListComponent.ContainsEffectForEffectType(
+                                        eEffect.MovementSpeedDebuff))
+                                    Body.CastSpell(Mezz,
+                                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //cast mezz
+                            }
                                 break;
                             case 2:
-                                {//check here if target is not mezzed already or rooted or got snare immunity
-                                    if (!player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez) && !player.effectListComponent.ContainsEffectForEffectType(eEffect.MovementSpeedDebuff) 
+                            {
+                                //check here if target is not mezzed already or rooted or got snare immunity
+                                if (!player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez) &&
+                                    !player.effectListComponent.ContainsEffectForEffectType(eEffect.MovementSpeedDebuff)
                                     && !player.effectListComponent.ContainsEffectForEffectType(eEffect.SnareImmunity))
-                                    {
-                                        Body.CastSpell(Root, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//cast root
-                                    }
-                                }
+                                    Body.CastSpell(Root,
+                                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //cast root
+                            }
                                 break;
                         }
-                        if (oldTarget != null) Body.TargetObject = oldTarget;//return to old target
-                        Body.StartAttack(oldTarget);//start attack old target
+
+                        if (oldTarget != null) Body.TargetObject = oldTarget; //return to old target
+                        Body.StartAttack(oldTarget); //start attack old target
                     }
-                }
-            }
         }
+
         #endregion
+
         #region OnAttackedByEnemy()
+
         public static bool IsPulled1 = false;
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (HasAggro && Body.TargetObject != null)
-            {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
-                {
                     if (npc != null)
                     {
-                        GameLiving target = Body.TargetObject as GameLiving;
+                        var target = Body.TargetObject as GameLiving;
                         if (npc.IsAlive && npc.Brain is KingTuscarBrain brain)
-                        {
                             if (brain != null && !brain.HasAggro && target != null && target.IsAlive)
                                 brain.AddToAggroList(target, 10);
-                        }
                     }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
+
         #endregion
+
         #region Think()
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -403,84 +427,89 @@ namespace DOL.AI.Brain
                 Body.Health = Body.MaxHealth;
                 INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60165083);
                 Body.Strength = npcTemplate.Strength;
-                IsTargetPicked =false;
+                IsTargetPicked = false;
                 IsPulled1 = false;
             }
+
             if (Body.IsOutOfTetherRange)
             {
                 Body.Health = Body.MaxHealth;
             }
-            else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
+            else if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
             {
                 Body.Health = Body.MaxHealth;
                 message1 = false;
             }
+
             if (Body.TargetObject != null && HasAggro)
             {
-                PlayerInCenter();//method that check if player enter to frozen circle
+                PlayerInCenter(); //method that check if player enter to frozen circle
                 if (message1 == false)
                 {
-                    BroadcastMessage(String.Format("Queen Kula grins maliciously, 'So you got past all my Hrimthursa Guardians!" +
+                    BroadcastMessage(string.Format(
+                        "Queen Kula grins maliciously, 'So you got past all my Hrimthursa Guardians!" +
                         " These Hrimthursa are useless and arrogant! I'm going to show you what I've been wanting to teach you for a long time." +
                         " The merciless who are not afraid of death will survive in this brutal world! I am merciless I'm not afraid of death!'"));
                     message1 = true;
                 }
+
                 if (IsTargetPicked == false)
                 {
                     if (KingTuscar.KingTuscarCount == 1)
-                    {
-                        new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickPlayer), Util.Random(15000, 25000));//timer to port and pick player
-                    }
-                    else if(KingTuscar.KingTuscarCount == 0)
-                    {
-                        new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickPlayer), Util.Random(8000, 12000));//timer to port and pick player
-                    }
+                        new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickPlayer),
+                            Util.Random(15000, 25000)); //timer to port and pick player
+                    else if (KingTuscar.KingTuscarCount == 0)
+                        new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(PickPlayer),
+                            Util.Random(8000, 12000)); //timer to port and pick player
+
                     IsTargetPicked = true;
                 }
-                if(Body.TargetObject != null)
+
+                if (Body.TargetObject != null)
                 {
                     if (Body.TargetObject is GamePlayer)
                     {
-                        GamePlayer player = Body.TargetObject as GamePlayer;
+                        var player = Body.TargetObject as GamePlayer;
                         if (player.effectListComponent.ContainsEffectForEffectType(eEffect.Mez))
-                        {
                             RemoveFromAggroList(player);
-                        }
+
                         if (player.effectListComponent.ContainsEffectForEffectType(eEffect.MovementSpeedDebuff))
-                        {
                             RemoveFromAggroList(player);
-                        }
                     }
-                    if (KingTuscar.KingTuscarCount == 1)
-                    {
-                        Body.Strength = 350;//if king is up it will deal less dmg
-                    }
-                    if (KingTuscar.KingTuscarCount == 0 || Body.HealthPercent <= 50)
-                    {
-                        Body.Strength = 500;//king is dead so more dmg
-                    }
+
+                    if (KingTuscar.KingTuscarCount == 1) Body.Strength = 350; //if king is up it will deal less dmg
+
+                    if (KingTuscar.KingTuscarCount == 0 ||
+                        Body.HealthPercent <= 50) Body.Strength = 500; //king is dead so more dmg
+
                     Body.styleComponent.NextCombatStyle = QueenKula.taunt;
                 }
             }
+
             base.Think();
         }
+
         #endregion
+
         #region Spells
+
         protected Spell m_mezSpell;
+
         protected Spell Mezz
         {
             get
             {
                 if (m_mezSpell == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 5;
                     spell.ClientEffect = 3308;
                     spell.Icon = 3308;
                     spell.Name = "Mesmerize";
-                    spell.Description = "Target is mesmerized and cannot move or take any other action for the duration of the spell. If the target suffers any damage or other negative effect the spell will break.";
+                    spell.Description =
+                        "Target is mesmerized and cannot move or take any other action for the duration of the spell. If the target suffers any damage or other negative effect the spell will break.";
                     spell.TooltipId = 3308;
                     spell.Range = 1500;
                     spell.SpellID = 11750;
@@ -489,21 +518,24 @@ namespace DOL.AI.Brain
                     spell.Type = "Mesmerize";
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Spirit; //Spirit DMG Type
+                    spell.DamageType = (int) eDamageType.Spirit; //Spirit DMG Type
                     m_mezSpell = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_mezSpell);
                 }
+
                 return m_mezSpell;
             }
         }
+
         protected Spell m_RootSpell;
+
         protected Spell Root
         {
             get
             {
                 if (m_RootSpell == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 5;
@@ -520,25 +552,32 @@ namespace DOL.AI.Brain
                     spell.Type = eSpellType.SpeedDecrease.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Spirit; //Spirit DMG Type
+                    spell.DamageType = (int) eDamageType.Spirit; //Spirit DMG Type
                     m_RootSpell = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_RootSpell);
                 }
+
                 return m_RootSpell;
             }
         }
+
         #endregion
     }
 }
+
 ///////////////////////////////////////////////////////////////////King Tuscar////////////////////////////////////////////////////////////
 namespace DOL.GS
 {
     public class KingTuscar : GameEpicBoss
     {
-        public KingTuscar() : base() { }
+        public KingTuscar() : base()
+        {
+        }
+
         #region Styles declaration
+
         public static int TauntID = 167;
-        public static int TauntClassID = 22;//warrior
+        public static int TauntClassID = 22; //warrior
         public static Style taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
 
         public static int AfterParryID = 173;
@@ -552,35 +591,42 @@ namespace DOL.GS
         public static int AfterBlockID = 302;
         public static int AfterBlockClassID = 44;
         public static Style after_block = SkillBase.GetStyleByID(AfterBlockID, AfterBlockClassID);
+
         #endregion
+
         #region Resists and TakeDamage()
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
             {
                 if (IsOutOfTetherRange)
                 {
-                    if (damageType == eDamageType.Body || damageType == eDamageType.Cold || damageType == eDamageType.Energy || damageType == eDamageType.Heat
-                        || damageType == eDamageType.Matter || damageType == eDamageType.Spirit || damageType == eDamageType.Crush || damageType == eDamageType.Thrust
+                    if (damageType == eDamageType.Body || damageType == eDamageType.Cold ||
+                        damageType == eDamageType.Energy || damageType == eDamageType.Heat
+                        || damageType == eDamageType.Matter || damageType == eDamageType.Spirit ||
+                        damageType == eDamageType.Crush || damageType == eDamageType.Thrust
                         || damageType == eDamageType.Slash)
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System, eChatLoc.CL_ChatWindow);
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
+                                eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
                     }
@@ -589,39 +635,39 @@ namespace DOL.GS
                 {
                     GamePlayer truc;
                     if (source is GamePlayer)
-                        truc = (source as GamePlayer);
+                        truc = source as GamePlayer;
                     else
-                        truc = ((source as GamePet).Owner as GamePlayer);
-                    
+                        truc = (source as GamePet).Owner as GamePlayer;
+
                     foreach (GameNPC npc in GetNPCsInRadius(5000))
-                    {
                         if (npc != null)
-                        {
                             if (npc.IsAlive)
-                            {
                                 if (npc.Brain is QueenKulaBrain && npc.HealthPercent < 100)
                                 {
                                     npc.Health += damageAmount + criticalAmount;
                                     if (truc != null)
-                                        truc.Out.SendMessage("Your damage is healing Queen Kula!", eChatType.CT_System, eChatLoc.CL_ChatWindow);
+                                        truc.Out.SendMessage("Your damage is healing Queen Kula!", eChatType.CT_System,
+                                            eChatLoc.CL_ChatWindow);
                                 }
-                            }
-                        }
-                    }
+
                     base.TakeDamage(source, damageType, damageAmount, criticalAmount);
                 }
             }
         }
+
         #endregion
+
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            return base.AttackDamage(weapon) * Strength / 100 * Properties.EPICS_DMG_MULTIPLIER;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -629,76 +675,88 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 300000; }
-        }
+
+        public override int MaxHealth => 300000;
+
         public static int KingTuscarCount = 0;
-        public override void Die(GameObject killer)//on kill generate orbs
+
+        public override void Die(GameObject killer) //on kill generate orbs
         {
             --KingTuscarCount;
             base.Die(killer);
         }
+
         #region Styles
-        public override void OnAttackedByEnemy(AttackData ad)// on Boss actions
+
+        public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
-            if(ad != null && ad.AttackResult == eAttackResult.Parried)
+            if (ad != null && ad.AttackResult == eAttackResult.Parried)
             {
-                styleComponent.NextCombatBackupStyle = after_parry;//boss parried so prepare after parry style backup style
-                styleComponent.NextCombatStyle = parry_followup;//main style after parry followup
+                styleComponent.NextCombatBackupStyle =
+                    after_parry; //boss parried so prepare after parry style backup style
+                styleComponent.NextCombatStyle = parry_followup; //main style after parry followup
             }
+
             base.OnAttackedByEnemy(ad);
         }
-        public override void OnAttackEnemy(AttackData ad)//on enemy actions
+
+        public override void OnAttackEnemy(AttackData ad) //on enemy actions
         {
             if (ad != null && ad.AttackResult == eAttackResult.HitStyle)
             {
-                styleComponent.NextCombatBackupStyle = taunt;//taunt as backup style
-                styleComponent.NextCombatStyle = parry_followup;//after parry style as main
+                styleComponent.NextCombatBackupStyle = taunt; //taunt as backup style
+                styleComponent.NextCombatStyle = parry_followup; //after parry style as main
             }
+
             if (ad != null && ad.AttackResult == eAttackResult.HitUnstyled)
-            {
-                styleComponent.NextCombatStyle = taunt;//boss hit unstyled so taunt
-            }
+                styleComponent.NextCombatStyle = taunt; //boss hit unstyled so taunt
+
             if (ad != null && ad.AttackResult == eAttackResult.Blocked)
             {
-                styleComponent.NextCombatStyle = after_block;//target blocked boss attack so use after block style
-                if(Util.Chance(50))
-                    CastSpell(Hammers_aoe2, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//aoe mjolnirs after style big dmg
-            }
-            if (ad != null && ad.AttackResult == eAttackResult.Parried)
-            {
+                styleComponent.NextCombatStyle = after_block; //target blocked boss attack so use after block style
                 if (Util.Chance(50))
-                    CastSpell(Thunder_aoe2, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//aoe mjolnirs after style big dmg
+                    CastSpell(Hammers_aoe2,
+                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //aoe mjolnirs after style big dmg
             }
-            if (QueenKula.QueenKulaCount == 0 || (HealthPercent <= 50 && KingTuscarBrain.TuscarRage==true))
+
+            if (ad != null && ad.AttackResult == eAttackResult.Parried)
+                if (Util.Chance(50))
+                    CastSpell(Thunder_aoe2,
+                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //aoe mjolnirs after style big dmg
+
+            if (QueenKula.QueenKulaCount == 0 || (HealthPercent <= 50 && KingTuscarBrain.TuscarRage == true))
             {
                 if (ad.AttackResult == eAttackResult.HitStyle && ad.Style.ID == 175 && ad.Style.ClassID == 22)
-                {
-                    CastSpell(Hammers_aoe, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//aoe mjolnirs after style big dmg
-                }
+                    CastSpell(Hammers_aoe,
+                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //aoe mjolnirs after style big dmg
+
                 if (ad.AttackResult == eAttackResult.HitStyle && ad.Style.ID == 302 && ad.Style.ClassID == 44)
-                {
-                    CastSpell(Thunder_aoe, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//aoe lightining after style medium dmg
-                }
+                    CastSpell(Thunder_aoe,
+                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //aoe lightining after style medium dmg
+
                 if (ad.AttackResult == eAttackResult.HitStyle && ad.Style.ID == 173 && ad.Style.ClassID == 22)
-                {
-                    CastSpell(Bleed, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));//bleed after style low dot bleed dmg
-                }
+                    CastSpell(Bleed,
+                        SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells)); //bleed after style low dot bleed dmg
             }
+
             base.OnAttackEnemy(ad);
         }
+
         #endregion
+
         #region AddToWorld
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(60162909);
@@ -712,9 +770,9 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(140);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(140));
-            RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000;//1min is 60000 miliseconds
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Giant;
-            if(!Styles.Contains(taunt))
+            RespawnInterval = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Giant;
+            if (!Styles.Contains(taunt))
                 Styles.Add(taunt);
             if (!Styles.Contains(after_parry))
                 Styles.Add(after_parry);
@@ -724,7 +782,7 @@ namespace DOL.GS
                 Styles.Add(after_block);
             ++KingTuscarCount;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
+            var template = new GameNpcInventoryTemplate();
             template.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 575, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.TwoHanded);
@@ -734,23 +792,27 @@ namespace DOL.GS
 
             VisibleActiveWeaponSlots = 34;
             MeleeDamageType = eDamageType.Crush;
-            KingTuscarBrain sbrain = new KingTuscarBrain();
+            var sbrain = new KingTuscarBrain();
             SetOwnBrain(sbrain);
-            LoadedFromScript = false;//load from database
+            LoadedFromScript = false; //load from database
             SaveIntoDatabase();
             base.AddToWorld();
             return true;
-        }       
+        }
+
         #endregion
+
         #region Spells
+
         private Spell m_Hammers_aoe;
+
         private Spell Hammers_aoe
         {
             get
             {
                 if (m_Hammers_aoe == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 3;
@@ -766,21 +828,24 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Energy;
+                    spell.DamageType = (int) eDamageType.Energy;
                     m_Hammers_aoe = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Hammers_aoe);
                 }
+
                 return m_Hammers_aoe;
             }
         }
+
         private Spell m_Thunder_aoe;
+
         private Spell Thunder_aoe
         {
             get
             {
                 if (m_Thunder_aoe == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 2;
@@ -796,21 +861,24 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Energy;
+                    spell.DamageType = (int) eDamageType.Energy;
                     m_Thunder_aoe = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Thunder_aoe);
                 }
+
                 return m_Thunder_aoe;
             }
         }
+
         private Spell m_Hammers_aoe2;
+
         private Spell Hammers_aoe2
         {
             get
             {
                 if (m_Hammers_aoe2 == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 5;
@@ -826,21 +894,24 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Energy;
+                    spell.DamageType = (int) eDamageType.Energy;
                     m_Hammers_aoe2 = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Hammers_aoe2);
                 }
+
                 return m_Hammers_aoe2;
             }
         }
+
         private Spell m_Thunder_aoe2;
+
         private Spell Thunder_aoe2
         {
             get
             {
                 if (m_Thunder_aoe2 == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 5;
@@ -856,21 +927,24 @@ namespace DOL.GS
                     spell.Type = eSpellType.DirectDamageNoVariance.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Energy;
+                    spell.DamageType = (int) eDamageType.Energy;
                     m_Thunder_aoe2 = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Thunder_aoe2);
                 }
+
                 return m_Thunder_aoe2;
             }
         }
+
         private Spell m_Bleed;
+
         private Spell Bleed
         {
             get
             {
                 if (m_Bleed == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 2;
@@ -890,21 +964,26 @@ namespace DOL.GS
                     spell.Type = eSpellType.StyleBleeding.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Body;
+                    spell.DamageType = (int) eDamageType.Body;
                     m_Bleed = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Bleed);
                 }
+
                 return m_Bleed;
             }
         }
+
         #endregion
     }
 }
+
 namespace DOL.AI.Brain
 {
     public class KingTuscarBrain : StandardMobBrain
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public KingTuscarBrain()
             : base()
         {
@@ -912,38 +991,38 @@ namespace DOL.AI.Brain
             AggroRange = 600;
             ThinkInterval = 1500;
         }
+
         #region BroadcastMessage & OnAttackedByEnemy()
-        public void BroadcastMessage(String message)
+
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in Body.GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
+
         public static bool message2 = false;
         public static bool TuscarRage = false;
         public static bool IsPulled2 = false;
+
         public override void OnAttackedByEnemy(AttackData ad)
         {
             if (HasAggro && Body.TargetObject != null)
-            {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(5000))
-                {
                     if (npc != null)
                     {
-                        GameLiving target = Body.TargetObject as GameLiving;
+                        var target = Body.TargetObject as GameLiving;
                         if (npc.IsAlive && npc.Brain is QueenKulaBrain brain)
-                        {
                             if (brain != null && !brain.HasAggro && target != null && target.IsAlive)
                                 brain.AddToAggroList(target, 10);
-                        }
                     }
-                }
-            }
+
             base.OnAttackedByEnemy(ad);
         }
+
         #endregion
+
         #region Think()
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -956,43 +1035,45 @@ namespace DOL.AI.Brain
                 TuscarRage = false;
                 IsPulled2 = false;
             }
+
             if (Body.IsOutOfTetherRange)
             {
                 Body.Health = Body.MaxHealth;
             }
-            else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
+            else if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
             {
                 Body.Health = Body.MaxHealth;
                 message2 = false;
             }
+
             if (Body.InCombat && HasAggro)
             {
                 if (message2 == false)
                 {
-                    BroadcastMessage(String.Format("King Tuscar raises his weapon and yells, 'Kula wields the finest weapon I have ever made!" +
+                    BroadcastMessage(string.Format(
+                        "King Tuscar raises his weapon and yells, 'Kula wields the finest weapon I have ever made!" +
                         " And the weapon I forged for myself is almost as good in combat! Death comes swiftly with these two weapons!'"));
                     message2 = true;
                 }
-                if(Body.HealthPercent<=50 && TuscarRage==false)
+
+                if (Body.HealthPercent <= 50 && TuscarRage == false)
                 {
-                    BroadcastMessage(String.Format("King Tuscar rages and gains strength from Odin!"));
+                    BroadcastMessage(string.Format("King Tuscar rages and gains strength from Odin!"));
                     TuscarRage = true;
                 }
+
                 if (Body.TargetObject != null)
                 {
-                    GameLiving living = Body.TargetObject as GameLiving;
-                    if(QueenKula.QueenKulaCount == 1)
-                    {
-                        Body.Strength = 350;
-                    }
-                    if (QueenKula.QueenKulaCount == 0 || Body.HealthPercent <= 50)
-                    {
-                        Body.Strength = 500;
-                    }
+                    var living = Body.TargetObject as GameLiving;
+                    if (QueenKula.QueenKulaCount == 1) Body.Strength = 350;
+
+                    if (QueenKula.QueenKulaCount == 0 || Body.HealthPercent <= 50) Body.Strength = 500;
                 }
             }
+
             base.Think();
         }
+
         #endregion
     }
 }

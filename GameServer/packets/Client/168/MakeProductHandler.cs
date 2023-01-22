@@ -16,21 +16,22 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+/// <summary>
+/// makeproducthandler handle the crafted product start
+/// </summary>
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.CraftRequest, "Handles the crafted product answer",
+    eClientStatus.PlayerInGame)]
+public class MakeProductHandler : IPacketHandler
 {
-	/// <summary>
-	/// makeproducthandler handle the crafted product start
-	/// </summary>
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.CraftRequest, "Handles the crafted product answer", eClientStatus.PlayerInGame)]
-	public class MakeProductHandler : IPacketHandler
-	{
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			ushort ItemID = packet.ReadShort();
-			client.Player.CraftItem(ItemID);
-		}
-	}
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        var ItemID = packet.ReadShort();
+        client.Player.CraftItem(ItemID);
+    }
 }

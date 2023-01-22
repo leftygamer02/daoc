@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+public interface IAggressiveBrain
 {
-    public interface IAggressiveBrain
-    {
-    }
 }

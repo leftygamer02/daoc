@@ -13,34 +13,30 @@ namespace DOL.GS
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
-        public virtual int COifficulty
-        {
-            get { return ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS; }
-        }
+
+        public virtual int COifficulty => ServerProperties.Properties.SET_DIFFICULTY_ON_EPIC_ENCOUNTERS;
 
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+        public override int MaxHealth => 100000;
 
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
 
@@ -66,10 +62,9 @@ namespace DOL.GS
         public override void WalkToSpawn()
         {
             if (CurrentRegionID == 60) //if region is caer sidi
-            {
                 if (IsAlive)
                     return;
-            }
+
             base.WalkToSpawn();
         }
 
@@ -84,11 +79,12 @@ namespace DOL.GS
             Piety = npcTemplate.Piety;
             Intelligence = npcTemplate.Intelligence;
             Empathy = npcTemplate.Empathy;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             Faction = FactionMgr.GetFactionByID(64);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(64));
 
-            CryptLordBrain adds = new CryptLordBrain();
+            var adds = new CryptLordBrain();
             SetOwnBrain(adds);
             base.AddToWorld();
             return true;
@@ -120,23 +116,23 @@ namespace DOL.AI.Brain
 
         public void LordPath()
         {
-            Point3D point1 = new Point3D();
+            var point1 = new Point3D();
             point1.X = 28461;
             point1.Y = 40166;
             point1.Z = 15373;
-            Point3D point2 = new Point3D();
+            var point2 = new Point3D();
             point2.X = 28494;
             point2.Y = 43144;
             point2.Z = 15373;
-            Point3D point3 = new Point3D();
+            var point3 = new Point3D();
             point3.X = 26751;
             point3.Y = 43111;
             point3.Z = 15373;
-            Point3D point4 = new Point3D();
+            var point4 = new Point3D();
             point4.X = 26741;
             point4.Y = 40147;
             point4.Z = 15373;
-            Point3D spawn = new Point3D();
+            var spawn = new Point3D();
             spawn.X = 24891;
             spawn.Y = 40139;
             spawn.Z = 15372;
@@ -197,20 +193,14 @@ namespace DOL.AI.Brain
         public void BafMobAggro() //if baf mob aggro and boss is near it will pull boss+ rest of mobs
         {
             foreach (GameNPC npc in Body.GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
-            {
                 if (npc != null && npc.IsAlive && npc.PackageID == "CryptLordBaf")
-                {
                     if (npc.InCombat && npc.TargetObject != null)
                     {
-                        GameLiving target = npc.TargetObject as GameLiving;
+                        var target = npc.TargetObject as GameLiving;
                         if (Body.IsAlive && target != null && target.IsAlive)
-                        {
                             if (npc.IsWithinRadius(Body, 800)) //the range that mob will bring Boss and rest mobs
                                 AddToAggroList(target, 100);
-                        }
                     }
-                }
-            }
         }
 
         public void SetMobstats()
@@ -218,12 +208,10 @@ namespace DOL.AI.Brain
             if (Body.TargetObject != null && HasAggro) //if in combat
             {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(10000))
-                {
                     if (npc != null)
-                    {
                         if (npc.IsAlive && npc.PackageID == "CryptLordBaf")
-                        {
-                            if (npc.TargetObject == Body.TargetObject && npc.NPCTemplate != null)//check if npc got NpcTemplate!
+                            if (npc.TargetObject == Body.TargetObject &&
+                                npc.NPCTemplate != null) //check if npc got NpcTemplate!
                             {
                                 npc.MaxDistance = 10000; //set mob distance to make it reach target
                                 npc.TetherRange = 10000; //set tether to not return to home
@@ -232,71 +220,48 @@ namespace DOL.AI.Brain
                                 else
                                     npc.MaxSpeedBase = npc.NPCTemplate.MaxSpeed; //return speed to normal
                             }
-                        }
-                    }
-                }
             }
             else //if not in combat
             {
                 foreach (GameNPC npc in Body.GetNPCsInRadius(10000))
-                {
                     if (npc != null)
-                    {
-                        if (npc.IsAlive && npc.PackageID == "CryptLordBaf" && npc.NPCTemplate != null)//check if npc got NpcTemplate!
-                        {
+                        if (npc.IsAlive && npc.PackageID == "CryptLordBaf" &&
+                            npc.NPCTemplate != null) //check if npc got NpcTemplate!
                             if (!HasAggro)
                             {
                                 npc.MaxDistance = npc.NPCTemplate.MaxDistance; //return distance to normal
                                 npc.TetherRange = npc.NPCTemplate.TetherRange; //return tether to normal
                                 npc.MaxSpeedBase = npc.NPCTemplate.MaxSpeed; //return speed to normal
                             }
-                        }
-                    }
-                }
             }
         }
 
         public override void Think()
         {
-            if(Body.IsMoving)
-            {
-                foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange))
-                {
+            if (Body.IsMoving)
+                foreach (GamePlayer player in Body.GetPlayersInRadius((ushort) AggroRange))
                     if (player != null)
-                    {
                         if (player.IsAlive && player.Client.Account.PrivLevel == 1)
-                        {
-                            AddToAggroList(player, 10);//aggro players if roaming
-                        }
-                    }
-                   /* if(player == null || !player.IsAlive || player.Client.Account.PrivLevel != 1)
-                    {
-                        if(AggroTable.Count>0)
-                        {
-                            ClearAggroList();//clear list if it contain any aggroed players
-                        }
-                    }*/
-                }
-            }
-            if (Body.InCombatInLast(60 * 1000) == false && this.Body.InCombatInLast(65 * 1000))
-            {
-                Body.Health = Body.MaxHealth;
-            }
+                            AddToAggroList(player, 10); //aggro players if roaming
+            /* if(player == null || !player.IsAlive || player.Client.Account.PrivLevel != 1)
+                     {
+                         if(AggroTable.Count>0)
+                         {
+                             ClearAggroList();//clear list if it contain any aggroed players
+                         }
+                     }*/
+            if (Body.InCombatInLast(60 * 1000) == false && Body.InCombatInLast(65 * 1000)) Body.Health = Body.MaxHealth;
+
             if (HasAggro && Body.TargetObject != null) //bring mobs from rooms if mobs got set PackageID="CryptLordBaf"
             {
-                GameLiving target = Body.TargetObject as GameLiving;
+                var target = Body.TargetObject as GameLiving;
                 foreach (GameNPC npc in Body.GetNPCsInRadius(10000))
-                {
                     if (npc != null)
-                    {
-                        if (npc.IsAlive && npc.PackageID == "CryptLordBaf" && AggroTable.Count > 0 && npc.Brain is StandardMobBrain brain)
-                        {
+                        if (npc.IsAlive && npc.PackageID == "CryptLordBaf" && AggroTable.Count > 0 &&
+                            npc.Brain is StandardMobBrain brain)
                             if (brain != null && !brain.HasAggro && target != null && target.IsAlive)
                                 brain.AddToAggroList(target, 10);
-                        }
-                            //AddAggroListTo(npc.Brain as StandardMobBrain); // add to aggro mobs with CryptLordBaf PackageID
-                    }
-                }
+                //AddAggroListTo(npc.Brain as StandardMobBrain); // add to aggro mobs with CryptLordBaf PackageID
             }
 
             SetMobstats(); //setting mob distance+tether+speed

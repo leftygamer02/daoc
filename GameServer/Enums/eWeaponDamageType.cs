@@ -17,23 +17,22 @@
  *
  */
 
-namespace DOL.GS
-{
-    /// <summary>
-    /// Holds the weapon damage type
-    /// </summary>
-    public enum eWeaponDamageType : byte
-	{
-		Elemental = 0,
-		Crush = 1,
-		Slash = 2,
-		Thrust = 3,
+namespace DOL.GS;
 
-		Body = 10,
-		Cold = 11,
-		Energy = 12,
-		Heat = 13,
-		Matter = 14,
-		Spirit = 15,
-	}
+/// <summary>
+/// Holds the weapon damage type
+/// </summary>
+public enum eWeaponDamageType : byte
+{
+    Elemental = 0,
+    Crush = 1,
+    Slash = 2,
+    Thrust = 3,
+
+    Body = 10,
+    Cold = 11,
+    Energy = 12,
+    Heat = 13,
+    Matter = 14,
+    Spirit = 15
 }

@@ -16,27 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// denotes a class as a spelltype handler for given spell type
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class SpellHandlerAttribute : Attribute
 {
-	/// <summary>
-	/// denotes a class as a spelltype handler for given spell type
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class SpellHandlerAttribute : Attribute
-	{
-		string m_type;
+    private string m_type;
 
-		public SpellHandlerAttribute(string spellType) {
-			m_type = spellType;
-		}
+    public SpellHandlerAttribute(string spellType)
+    {
+        m_type = spellType;
+    }
 
-		/// <summary>
-		/// Spell type name of the denoted handler
-		/// </summary>
-		public string SpellType {
-			get { return m_type; }
-		}
-	}
+    /// <summary>
+    /// Spell type name of the denoted handler
+    /// </summary>
+    public string SpellType => m_type;
 }

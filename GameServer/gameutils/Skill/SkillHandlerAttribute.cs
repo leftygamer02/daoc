@@ -16,26 +16,23 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Skill Attribute
+/// </summary>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class SkillHandlerAttribute : Attribute
 {
-	/// <summary>
-	/// Skill Attribute
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-	public class SkillHandlerAttribute : Attribute
-	{
-		protected string m_keyName;
+    protected string m_keyName;
 
-		public SkillHandlerAttribute(string keyName)
-		{
-			m_keyName = keyName;
-		}
+    public SkillHandlerAttribute(string keyName)
+    {
+        m_keyName = keyName;
+    }
 
-		public string KeyName
-		{
-			get { return m_keyName; }
-		}
-	}
+    public string KeyName => m_keyName;
 }

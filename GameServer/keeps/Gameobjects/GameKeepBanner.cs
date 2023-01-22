@@ -16,241 +16,257 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database;
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Keeps
+namespace DOL.GS.Keeps;
+
+public class GameKeepBanner : GameStaticItem, IKeepItem
 {
-	public class GameKeepBanner : GameStaticItem , IKeepItem
-	{
-		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+    private static readonly log4net.ILog log =
+        log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public enum eBannerType : int 
-		{
-			Realm = 0,
-			Guild = 1,
-		}
+    public enum eBannerType : int
+    {
+        Realm = 0,
+        Guild = 1
+    }
 
-		public eBannerType BannerType;
+    public eBannerType BannerType;
 
 
-		/// <summary>
-		/// No Realm banner model (PvE)
-		/// </summary>
-		public const ushort NoRealmModel = 555;
-		/// <summary>
-		/// Albion unclaimed banner model
-		/// </summary>
-		public const ushort AlbionModel = 464;
-		/// <summary>
-		/// Midgard unclaimed banner model
-		/// </summary>
-		public const ushort MidgardModel = 465;
-		/// <summary>
-		/// Hibernia unclaimed banner model
-		/// </summary>
-		public const ushort HiberniaModel = 466;
-		/// <summary>
-		/// Albion claimed banner model
-		/// </summary>
-		public const ushort AlbionGuildModel = 679;
-		/// <summary>
-		/// Midgard claimed banner model
-		/// </summary>
-		public const ushort MidgardGuildModel = 681;
-		/// <summary>
-		/// Hibernia claimed banner model
-		/// </summary>
-		public const ushort HiberniaGuildModel = 680;
+    /// <summary>
+    /// No Realm banner model (PvE)
+    /// </summary>
+    public const ushort NoRealmModel = 555;
 
-		protected string m_templateID = "";
-		public string TemplateID
-		{
-			get { return m_templateID; }
-		}
+    /// <summary>
+    /// Albion unclaimed banner model
+    /// </summary>
+    public const ushort AlbionModel = 464;
 
-		protected GameKeepComponent m_component;
-		public GameKeepComponent Component
-		{
-			get { return m_component; }
-			set { m_component = value; }
-		}
+    /// <summary>
+    /// Midgard unclaimed banner model
+    /// </summary>
+    public const ushort MidgardModel = 465;
 
-		protected DBKeepPosition m_position;
-		public DBKeepPosition Position
-		{
-			get { return m_position; }
-			set { m_position = value; }
-		}
+    /// <summary>
+    /// Hibernia unclaimed banner model
+    /// </summary>
+    public const ushort HiberniaModel = 466;
 
-		public void DeleteObject()
-		{
-			if (Component != null)
-			{
-				if (Component.Keep != null)
-				{
-					Component.Keep.Banners.Remove(ObjectID.ToString());
-				}
+    /// <summary>
+    /// Albion claimed banner model
+    /// </summary>
+    public const ushort AlbionGuildModel = 679;
 
-				Component.Delete();
-			}
+    /// <summary>
+    /// Midgard claimed banner model
+    /// </summary>
+    public const ushort MidgardGuildModel = 681;
 
-			Component = null;
-			Position = null;
+    /// <summary>
+    /// Hibernia claimed banner model
+    /// </summary>
+    public const ushort HiberniaGuildModel = 680;
 
-			base.Delete();
-			CurrentRegion = null;
-		}
+    protected string m_templateID = "";
 
-		public override void LoadFromDatabase(DataObject obj)
-		{
-			if (obj == null) return;
-			
-			base.LoadFromDatabase(obj);
-			string sKey = this.InternalID; // InternalID is set to obj.ObjectID by base.LoadFromDatabase()
+    public string TemplateID => m_templateID;
 
-			foreach (AbstractArea area in this.CurrentAreas)
-			{
-				if (area is KeepArea keepArea && keepArea.Keep is AbstractGameKeep keep)
-				{
-					Component = new GameKeepComponent();
-					Component.Keep = keep;
+    protected GameKeepComponent m_component;
 
-					if (keep.Banners.ContainsKey(sKey) == false)
-					{
-						Component.Keep.Banners.Add(sKey, this);
-						if (this.Model == AlbionGuildModel || this.Model == MidgardGuildModel || this.Model == HiberniaGuildModel)
-							BannerType = eBannerType.Guild;
-						else BannerType = eBannerType.Realm;
-						if (BannerType == eBannerType.Guild && Component.Keep.Guild != null)
-							ChangeGuild();
-						else ChangeRealm();
-						break;
-					}
-					else if (log.IsWarnEnabled)
-						log.Warn($"LoadFromDatabase(): KeepID {keep.KeepID} already a banner using ObjectID {sKey}");
-				}
-			}// foreach
-		}
+    public GameKeepComponent Component
+    {
+        get => m_component;
+        set => m_component = value;
+    }
 
-		public override void DeleteFromDatabase()
-		{
-			string sKey = this.InternalID;
-			foreach (AbstractArea area in this.CurrentAreas)
-			{
-				if (area is KeepArea)
-				{
-					Component.Keep.Banners.Remove(sKey);
-					// break; This is a bad idea.  If there are multiple KeepAreas, we could end up with a banner on left on one of them that has been deleted from the DB
-				}
-			}
-			base.DeleteFromDatabase();
-		}
+    protected DBKeepPosition m_position;
 
-		public virtual void LoadFromPosition(DBKeepPosition pos, GameKeepComponent component)
-		{
-			if (pos == null || component == null) return;
-			
-			m_templateID = pos.TemplateID;
-			m_component = component;
-			BannerType = (eBannerType)pos.TemplateType;
+    public DBKeepPosition Position
+    {
+        get => m_position;
+        set => m_position = value;
+    }
 
-			PositionMgr.LoadKeepItemPosition(pos, this);
-			string sKey = this.TemplateID;
-			if (component.Keep.Banners.ContainsKey(sKey) == false)
-			{
-				component.Keep.Banners.Add(sKey, this);
-				if (BannerType == eBannerType.Guild)
-				{
-					if (component.Keep.Guild != null)
-					{
-						ChangeGuild();
-						Z += 1500;
-						this.AddToWorld();
-					}
-				}
-				else
-				{
-					ChangeRealm();
-					Z += 1000;	// this works around an issue where all banners are at keep level instead of on top
-							// with a z value > height of the keep the banners show correctly - tolakram
-					this.AddToWorld();
-				}
-			}
-			else if (log.IsWarnEnabled)
-				log.Warn($"LoadFromPosition(): There is already a Banner with TemplateID {this.TemplateID} on KeepID {component.Keep.KeepID}, not adding Banner for KeepPosition_ID {pos.ObjectId} on KeepComponent_ID {component.InternalID}");
-		}
+    public void DeleteObject()
+    {
+        if (Component != null)
+        {
+            if (Component.Keep != null) Component.Keep.Banners.Remove(ObjectID.ToString());
 
-		public void MoveToPosition(DBKeepPosition position)
-		{
-			PositionMgr.LoadKeepItemPosition(position, this);
-			int zAdd = 1000;
-			if (BannerType == eBannerType.Guild)
-				zAdd = 1500;
+            Component.Delete();
+        }
 
-			this.MoveTo(this.CurrentRegionID, this.X, this.Y, this.Z + zAdd, this.Heading);
-		}
+        Component = null;
+        Position = null;
 
-		public void ChangeRealm()
-		{
-			this.Realm = Component.Keep.Realm;
+        base.Delete();
+        CurrentRegion = null;
+    }
 
-			switch (Realm)
-			{
-				case eRealm.None:
-					{
-						Model = NoRealmModel;
-						break;
-					}
-				case eRealm.Albion:
-					{
-						Model = AlbionModel;
-						break;
-					}
-				case eRealm.Midgard:
-					{
-						Model = MidgardModel;
-						break;
-					}
-				case eRealm.Hibernia:
-					{
-						Model = HiberniaModel;
-						break;
-					}
-			}
-			Name = GlobalConstants.RealmToName(Component.Keep.Realm) + " Banner";
-		}
+    public override void LoadFromDatabase(DataObject obj)
+    {
+        if (obj == null) return;
 
-		/// <summary>
-		/// This function when keep is claimed to change guild for banner
-		/// </summary>
-		public void ChangeGuild()
-		{
-			if (BannerType != eBannerType.Guild)
-				return;
-			var guild = Component.Keep.Guild;
+        base.LoadFromDatabase(obj);
+        var sKey = InternalID; // InternalID is set to obj.ObjectID by base.LoadFromDatabase()
 
-			int emblem = 0;
-			if (guild != null)
-			{
-				emblem = guild.Emblem;
-				this.AddToWorld();
-			}
-			else this.RemoveFromWorld();
+        foreach (AbstractArea area in CurrentAreas)
+            if (area is KeepArea keepArea && keepArea.Keep is AbstractGameKeep keep)
+            {
+                Component = new GameKeepComponent();
+                Component.Keep = keep;
 
-			ushort model = AlbionGuildModel;
-			switch (Component.Keep.Realm)
-			{
-				case eRealm.None: model = AlbionGuildModel; break;
-				case eRealm.Albion: model = AlbionGuildModel; break;
-				case eRealm.Midgard: model = MidgardGuildModel; break;
-				case eRealm.Hibernia: model = HiberniaGuildModel; break;
-			}
-			this.Model = model;
-			this.Emblem = emblem;
-			this.Name = GlobalConstants.RealmToName(Component.Keep.Realm) + " Guild Banner";
-		}
+                if (keep.Banners.ContainsKey(sKey) == false)
+                {
+                    Component.Keep.Banners.Add(sKey, this);
+                    if (Model == AlbionGuildModel || Model == MidgardGuildModel ||
+                        Model == HiberniaGuildModel)
+                        BannerType = eBannerType.Guild;
+                    else BannerType = eBannerType.Realm;
+                    if (BannerType == eBannerType.Guild && Component.Keep.Guild != null)
+                        ChangeGuild();
+                    else ChangeRealm();
+                    break;
+                }
+                else if (log.IsWarnEnabled)
+                {
+                    log.Warn($"LoadFromDatabase(): KeepID {keep.KeepID} already a banner using ObjectID {sKey}");
+                }
+            } // foreach
+    }
 
-	}
+    public override void DeleteFromDatabase()
+    {
+        var sKey = InternalID;
+        foreach (AbstractArea area in CurrentAreas)
+            if (area is KeepArea)
+                Component.Keep.Banners.Remove(sKey);
+        // break; This is a bad idea.  If there are multiple KeepAreas, we could end up with a banner on left on one of them that has been deleted from the DB
+        base.DeleteFromDatabase();
+    }
+
+    public virtual void LoadFromPosition(DBKeepPosition pos, GameKeepComponent component)
+    {
+        if (pos == null || component == null) return;
+
+        m_templateID = pos.TemplateID;
+        m_component = component;
+        BannerType = (eBannerType) pos.TemplateType;
+
+        PositionMgr.LoadKeepItemPosition(pos, this);
+        var sKey = TemplateID;
+        if (component.Keep.Banners.ContainsKey(sKey) == false)
+        {
+            component.Keep.Banners.Add(sKey, this);
+            if (BannerType == eBannerType.Guild)
+            {
+                if (component.Keep.Guild != null)
+                {
+                    ChangeGuild();
+                    Z += 1500;
+                    AddToWorld();
+                }
+            }
+            else
+            {
+                ChangeRealm();
+                Z += 1000; // this works around an issue where all banners are at keep level instead of on top
+                // with a z value > height of the keep the banners show correctly - tolakram
+                AddToWorld();
+            }
+        }
+        else if (log.IsWarnEnabled)
+        {
+            log.Warn(
+                $"LoadFromPosition(): There is already a Banner with TemplateID {TemplateID} on KeepID {component.Keep.KeepID}, not adding Banner for KeepPosition_ID {pos.ObjectId} on KeepComponent_ID {component.InternalID}");
+        }
+    }
+
+    public void MoveToPosition(DBKeepPosition position)
+    {
+        PositionMgr.LoadKeepItemPosition(position, this);
+        var zAdd = 1000;
+        if (BannerType == eBannerType.Guild)
+            zAdd = 1500;
+
+        MoveTo(CurrentRegionID, X, Y, Z + zAdd, Heading);
+    }
+
+    public void ChangeRealm()
+    {
+        Realm = Component.Keep.Realm;
+
+        switch (Realm)
+        {
+            case eRealm.None:
+            {
+                Model = NoRealmModel;
+                break;
+            }
+            case eRealm.Albion:
+            {
+                Model = AlbionModel;
+                break;
+            }
+            case eRealm.Midgard:
+            {
+                Model = MidgardModel;
+                break;
+            }
+            case eRealm.Hibernia:
+            {
+                Model = HiberniaModel;
+                break;
+            }
+        }
+
+        Name = GlobalConstants.RealmToName(Component.Keep.Realm) + " Banner";
+    }
+
+    /// <summary>
+    /// This function when keep is claimed to change guild for banner
+    /// </summary>
+    public void ChangeGuild()
+    {
+        if (BannerType != eBannerType.Guild)
+            return;
+        var guild = Component.Keep.Guild;
+
+        var emblem = 0;
+        if (guild != null)
+        {
+            emblem = guild.Emblem;
+            AddToWorld();
+        }
+        else
+        {
+            RemoveFromWorld();
+        }
+
+        var model = AlbionGuildModel;
+        switch (Component.Keep.Realm)
+        {
+            case eRealm.None:
+                model = AlbionGuildModel;
+                break;
+            case eRealm.Albion:
+                model = AlbionGuildModel;
+                break;
+            case eRealm.Midgard:
+                model = MidgardGuildModel;
+                break;
+            case eRealm.Hibernia:
+                model = HiberniaGuildModel;
+                break;
+        }
+
+        Model = model;
+        Emblem = emblem;
+        Name = GlobalConstants.RealmToName(Component.Keep.Realm) + " Guild Banner";
+    }
 }

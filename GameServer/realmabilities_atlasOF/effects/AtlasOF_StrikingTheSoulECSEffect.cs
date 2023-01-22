@@ -1,35 +1,35 @@
+namespace DOL.GS.Effects;
 
-namespace DOL.GS.Effects
+public class StrikingTheSoulECSEffect : ECSGameAbilityEffect
 {
-    public class StrikingTheSoulECSEffect : ECSGameAbilityEffect
+    public StrikingTheSoulECSEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public StrikingTheSoulECSEffect(ECSGameEffectInitParams initParams)
-            : base(initParams)
-        {
-            EffectType = eEffect.StrikingTheSoul;
-            EffectService.RequestStartEffect(this);
-        }
+        EffectType = eEffect.StrikingTheSoul;
+        EffectService.RequestStartEffect(this);
+    }
 
-        public override ushort Icon { get { return 4271; } }
-        public override string Name { get { return "Striking the Soul"; } }
-        public override bool HasPositiveEffect { get { return true; } }
+    public override ushort Icon => 4271;
 
-        public override void OnStartEffect()
-        {
-            if (OwnerPlayer == null)
-                return;
+    public override string Name => "Striking the Soul";
 
-            OwnerPlayer.BuffBonusCategory4[(int)eProperty.ToHitBonus] += (int)Effectiveness;
-            OwnerPlayer.Out.SendUpdateWeaponAndArmorStats();
-        }
+    public override bool HasPositiveEffect => true;
 
-        public override void OnStopEffect()
-        {
-            if (OwnerPlayer == null)
-                return;
+    public override void OnStartEffect()
+    {
+        if (OwnerPlayer == null)
+            return;
 
-            OwnerPlayer.BuffBonusCategory4[(int)eProperty.ToHitBonus] -= (int)Effectiveness;
-            OwnerPlayer.Out.SendUpdateWeaponAndArmorStats();
-        }
+        OwnerPlayer.BuffBonusCategory4[(int) eProperty.ToHitBonus] += (int) Effectiveness;
+        OwnerPlayer.Out.SendUpdateWeaponAndArmorStats();
+    }
+
+    public override void OnStopEffect()
+    {
+        if (OwnerPlayer == null)
+            return;
+
+        OwnerPlayer.BuffBonusCategory4[(int) eProperty.ToHitBonus] -= (int) Effectiveness;
+        OwnerPlayer.Out.SendUpdateWeaponAndArmorStats();
     }
 }

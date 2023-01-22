@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -25,37 +26,37 @@ using DOL.GS.Behaviour.Attributes;
 using DOL.GS.Behaviour;
 using DOL.Language;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.Teleport, DefaultValueQ = 0)]
+public class TeleportAction : AbstractAction<GameLocation, int>
 {
-    [ActionAttribute(ActionType = eActionType.Teleport,DefaultValueQ=0)]
-    public class TeleportAction : AbstractAction<GameLocation,int>
-    {               
-
-        public TeleportAction(GameNPC defaultNPC,  Object p, Object q)
-            : base(defaultNPC, eActionType.Teleport, p, q)
-        {            
-            }
+    public TeleportAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.Teleport, p, q)
+    {
+    }
 
 
-        public TeleportAction(GameNPC defaultNPC,  GameLocation location, int fuzzyRadius)
-            : this(defaultNPC,  (object)location, (object)fuzzyRadius) { }
-        
+    public TeleportAction(GameNPC defaultNPC, GameLocation location, int fuzzyRadius)
+        : this(defaultNPC, (object) location, (object) fuzzyRadius)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            GameLocation location = P;
-            int radius = Q;
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        var location = P;
+        var radius = Q;
 
-            if (location.Name != null)
-            {
-                player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "Behaviour.TeleportAction.TeleportedToLoc", player, location.Name), eChatType.CT_System, eChatLoc.CL_SystemWindow);
-            }
+        if (location.Name != null)
+            player.Out.SendMessage(
+                LanguageMgr.GetTranslation(player.Client.Account.Language,
+                    "Behaviour.TeleportAction.TeleportedToLoc", player, location.Name), eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
 
-            location.X += Util.Random(-radius, radius);
-            location.Y += Util.Random(-radius, radius);
-            player.MoveTo(location.RegionID, location.X, location.Y, location.Z, location.Heading);
-        }
+        location.X += Util.Random(-radius, radius);
+        location.Y += Util.Random(-radius, radius);
+        player.MoveTo(location.RegionID, location.X, location.Y, location.Z, location.Heading);
     }
 }

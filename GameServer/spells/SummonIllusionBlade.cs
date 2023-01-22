@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.AI.Brain;
 using DOL.Events;
@@ -27,7 +28,8 @@ namespace DOL.GS.Spells
     [SpellHandler("IllusionBladeSummon")]
     public class IllusionBladeSummon : SummonSpellHandler
     {
-        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
         {
@@ -38,12 +40,12 @@ namespace DOL.GS.Spells
             {
                 if (log.IsWarnEnabled)
                     log.WarnFormat("NPC template {0} not found! Spell: {1}", Spell.LifeDrainReturn, Spell.ToString());
-                MessageToCaster("NPC template " + (ushort)Spell.LifeDrainReturn + " not found!", eChatType.CT_System);
+                MessageToCaster("NPC template " + (ushort) Spell.LifeDrainReturn + " not found!", eChatType.CT_System);
                 return;
             }
 
-            GameSpellEffect effect = CreateSpellEffect(target, effectiveness);
-            IControlledBrain brain = GetPetBrain(Caster);
+            var effect = CreateSpellEffect(target, effectiveness);
+            var brain = GetPetBrain(Caster);
             m_pet = GetGamePet(template);
             m_pet.SetOwnBrain(brain as AI.ABrain);
             int x, y, z;
@@ -57,7 +59,7 @@ namespace DOL.GS.Spells
             m_pet.Z = z;
             m_pet.Heading = heading;
             m_pet.CurrentRegion = region;
-           // m_pet.CurrentSpeed = 0;
+            // m_pet.CurrentSpeed = 0;
             m_pet.Realm = Caster.Realm;
             m_pet.Race = 0;
             m_pet.Level = 44; // lowered in patch 1109b, also calls AutoSetStats()
@@ -73,19 +75,36 @@ namespace DOL.GS.Spells
             //Set pet infos & Brain
         }
 
-        protected override GamePet GetGamePet(INpcTemplate template) { return new IllusionBladePet(template); }
-        protected override IControlledBrain GetPetBrain(GameLiving owner) { return new ProcPetBrain(owner); }
-        protected override void SetBrainToOwner(IControlledBrain brain) { }
-        protected override void AddHandlers() { GameEventMgr.AddHandler(m_pet, GameLivingEvent.AttackFinished, EventHandler); }
+        protected override GamePet GetGamePet(INpcTemplate template)
+        {
+            return new IllusionBladePet(template);
+        }
+
+        protected override IControlledBrain GetPetBrain(GameLiving owner)
+        {
+            return new ProcPetBrain(owner);
+        }
+
+        protected override void SetBrainToOwner(IControlledBrain brain)
+        {
+        }
+
+        protected override void AddHandlers()
+        {
+            GameEventMgr.AddHandler(m_pet, GameLivingEvent.AttackFinished, EventHandler);
+        }
 
         protected void EventHandler(DOLEvent e, object sender, EventArgs arguments)
         {
-            AttackFinishedEventArgs args = arguments as AttackFinishedEventArgs;
+            var args = arguments as AttackFinishedEventArgs;
             if (args == null || args.AttackData == null)
                 return;
         }
+
         public IllusionBladeSummon(GameLiving caster, Spell spell, SpellLine line)
-            : base(caster, spell, line) { }
+            : base(caster, spell, line)
+        {
+        }
     }
 }
 
@@ -93,12 +112,14 @@ namespace DOL.GS
 {
     public class IllusionBladePet : GamePet
     {
-        public override int MaxHealth
+        public override int MaxHealth => Level * 10;
+
+        public override void OnAttackedByEnemy(AttackData ad)
         {
-            get { return Level * 10; }
         }
-        public override void OnAttackedByEnemy(AttackData ad) { }
-        public IllusionBladePet(INpcTemplate npcTemplate) : base(npcTemplate) { }
+
+        public IllusionBladePet(INpcTemplate npcTemplate) : base(npcTemplate)
+        {
+        }
     }
 }
-

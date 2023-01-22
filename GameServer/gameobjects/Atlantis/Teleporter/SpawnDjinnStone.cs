@@ -16,29 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Djinn stone (spawns ancient bound djinn).
+/// </summary>
+/// <author>Aredhel</author>
+public class SpawnDjinnStone : DjinnStone
 {
     /// <summary>
-    /// Djinn stone (spawns ancient bound djinn).
+    /// Spawns the djinn as soon as the stone is added to
+    /// the world.
     /// </summary>
-    /// <author>Aredhel</author>
-    public class SpawnDjinnStone : DjinnStone
+    /// <returns></returns>
+    public override bool AddToWorld()
     {
-        /// <summary>
-        /// Spawns the djinn as soon as the stone is added to
-        /// the world.
-        /// </summary>
-        /// <returns></returns>
-        public override bool AddToWorld()
-        {
-            if (Djinn == null)
-                Djinn = new PermanentDjinn(this);
+        if (Djinn == null)
+            Djinn = new PermanentDjinn(this);
 
-            return base.AddToWorld();
-        }
+        return base.AddToWorld();
     }
 }

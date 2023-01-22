@@ -11,11 +11,15 @@ using DOL.Events;
 namespace DOL.GS.Spells
 {
     //http://www.camelotherald.com/masterlevels/ma.php?ml=Battlemaster
+
     #region Battlemaster-1
+
     [SpellHandlerAttribute("MLEndudrain")]
     public class MLEndudrain : MasterlevelHandling
     {
-        public MLEndudrain(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public MLEndudrain(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
 
 
         public override void FinishSpellCast(GameLiving target)
@@ -28,35 +32,45 @@ namespace DOL.GS.Spells
         public override void OnDirectEffect(GameLiving target, double effectiveness)
         {
             if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
+            if (!target.IsAlive || target.ObjectState != GameObject.eObjectState.Active) return;
             //spell damage should 25;
-            int end = (int)(Spell.Damage);
-            target.ChangeEndurance(target, eEnduranceChangeType.Spell, (-end));
+            var end = (int) Spell.Damage;
+            target.ChangeEndurance(target, eEnduranceChangeType.Spell, -end);
 
             if (target is GamePlayer)
-                ((GamePlayer)target).Out.SendMessage(" You lose " + end + " endurance!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
-            (m_caster as GamePlayer).Out.SendMessage("" + target.Name + " loses " + end + " endurance!", eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
+                ((GamePlayer) target).Out.SendMessage(" You lose " + end + " endurance!", eChatType.CT_YouWereHit,
+                    eChatLoc.CL_SystemWindow);
+            (m_caster as GamePlayer).Out.SendMessage("" + target.Name + " loses " + end + " endurance!",
+                eChatType.CT_YouWereHit, eChatLoc.CL_SystemWindow);
 
             target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
         }
     }
+
     #endregion
 
     #region Battlemaster-2
+
     [SpellHandlerAttribute("KeepDamageBuff")]
     public class KeepDamageBuff : MasterlevelBuffHandling
     {
-        public override eProperty Property1 { get { return eProperty.KeepDamage; } }
+        public override eProperty Property1 => eProperty.KeepDamage;
 
-        public KeepDamageBuff(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public KeepDamageBuff(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
+
     #endregion
 
     #region Battlemaster-3
+
     [SpellHandlerAttribute("MLManadrain")]
     public class MLManadrain : MasterlevelHandling
     {
-        public MLManadrain(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public MLManadrain(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
 
         public override void FinishSpellCast(GameLiving target)
         {
@@ -67,22 +81,25 @@ namespace DOL.GS.Spells
         public override void OnDirectEffect(GameLiving target, double effectiveness)
         {
             if (target == null) return;
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
+            if (!target.IsAlive || target.ObjectState != GameObject.eObjectState.Active) return;
 
             //spell damage shood be 50-100 (thats the amount power tapped on use) i recommend 90 i think thats it but cood be wrong
-            int mana = (int)(Spell.Damage);
-            target.ChangeMana(target, eManaChangeType.Spell, (-mana));
+            var mana = (int) Spell.Damage;
+            target.ChangeMana(target, eManaChangeType.Spell, -mana);
 
             target.StartInterruptTimer(target.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
         }
     }
+
     #endregion
 
     #region Battlemaster-4
+
     [SpellHandlerAttribute("Grapple")]
     public class Grapple : MasterlevelHandling
     {
         private int check = 0;
+
         public override bool CheckBeginCast(GameLiving selectedTarget)
         {
             if (selectedTarget is GameNPC == true)
@@ -90,6 +107,7 @@ namespace DOL.GS.Spells
                 MessageToCaster("This spell works only on realm enemys.", eChatType.CT_SpellResisted);
                 return false;
             }
+
             return base.CheckBeginCast(selectedTarget);
         }
 
@@ -97,17 +115,19 @@ namespace DOL.GS.Spells
         {
             if (effect.Owner is GamePlayer)
             {
-                GamePlayer player = effect.Owner as GamePlayer;
-				if (player.EffectList.GetOfType<ChargeEffect>() == null && player != null)
+                var player = effect.Owner as GamePlayer;
+                if (player.EffectList.GetOfType<ChargeEffect>() == null && player != null)
                 {
-                    effect.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, effect, 0);
+                    effect.Owner.BuffBonusMultCategory1.Set((int) eProperty.MaxSpeed, effect, 0);
                     player.Client.Out.SendUpdateMaxSpeed();
                     check = 1;
                 }
+
                 effect.Owner.attackComponent.StopAttack();
                 effect.Owner.StopCurrentSpellcast();
                 effect.Owner.DisarmedTime = effect.Owner.CurrentRegion.Time + Spell.Duration;
             }
+
             base.OnEffectStart(effect);
         }
 
@@ -130,13 +150,15 @@ namespace DOL.GS.Spells
         {
             if (m_spell.SubSpellID > 0)
             {
-                Spell spell = SkillBase.GetSpellByID(m_spell.SubSpellID);
+                var spell = SkillBase.GetSpellByID(m_spell.SubSpellID);
                 if (spell != null && spell.SubSpellID == 0)
                 {
-                    ISpellHandler spellhandler = ScriptMgr.CreateSpellHandler(m_caster, spell, SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
+                    var spellhandler = ScriptMgr.CreateSpellHandler(m_caster, spell,
+                        SkillBase.GetSpellLine(GlobalSpellsLines.Reserved_Spells));
                     spellhandler.StartSpell(Caster);
                 }
             }
+
             base.FinishSpellCast(target);
         }
 
@@ -146,38 +168,44 @@ namespace DOL.GS.Spells
 
             base.OnEffectExpires(effect, noMessages);
 
-            GamePlayer player = effect.Owner as GamePlayer;
+            var player = effect.Owner as GamePlayer;
 
             if (check > 0 && player != null)
             {
-                effect.Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, effect);
+                effect.Owner.BuffBonusMultCategory1.Remove((int) eProperty.MaxSpeed, effect);
                 player.Client.Out.SendUpdateMaxSpeed();
             }
 
             //effect.Owner.IsDisarmed = false;
             return 0;
         }
-		
-		/// <summary>
-		/// Do not trigger SubSpells
-		/// </summary>
-		/// <param name="target"></param>
-		public override void CastSubSpells(GameLiving target)
-		{
-		}
 
-        public Grapple(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        /// <summary>
+        /// Do not trigger SubSpells
+        /// </summary>
+        /// <param name="target"></param>
+        public override void CastSubSpells(GameLiving target)
+        {
+        }
+
+        public Grapple(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
+
     #endregion
 
     //ml5 in database Target shood be Group if PvP..Realm if RvR..Value = spell proc'd (a.k the 80value dd proc)
+
     #region Battlemaster-5
+
     [SpellHandler("EssenceFlamesProc")]
     public class EssenceFlamesProcSpellHandler : OffensiveProcSpellHandler
     {
-		private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		/// <summary>
+        /// <summary>
         /// Handler fired whenever effect target is attacked
         /// </summary>
         /// <param name="e"></param>
@@ -185,90 +213,94 @@ namespace DOL.GS.Spells
         /// <param name="arguments"></param>
         protected override void EventHandler(DOLEvent e, object sender, EventArgs arguments)
         {
-            AttackFinishedEventArgs args = arguments as AttackFinishedEventArgs;
-            if (args == null || args.AttackData == null)
-            {
-                return;
-            }
-            AttackData ad = args.AttackData;
+            var args = arguments as AttackFinishedEventArgs;
+            if (args == null || args.AttackData == null) return;
+
+            var ad = args.AttackData;
             if (ad.AttackResult != eAttackResult.HitUnstyled && ad.AttackResult != eAttackResult.HitStyle)
                 return;
 
-            int baseChance = Spell.Frequency / 100;
+            var baseChance = Spell.Frequency / 100;
 
             if (ad.IsMeleeAttack)
-            {
                 if (sender is GamePlayer)
                 {
-                    GamePlayer player = (GamePlayer)sender;
-                    InventoryItem leftWeapon = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
+                    var player = (GamePlayer) sender;
+                    var leftWeapon = player.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
                     // if we can use left weapon, we have currently a weapon in left hand and we still have endurance,
                     // we can assume that we are using the two weapons.
-                    if (player.attackComponent.CanUseLefthandedWeapon && leftWeapon != null && leftWeapon.Object_Type != (int)eObjectType.Shield)
-                    {
+                    if (player.attackComponent.CanUseLefthandedWeapon && leftWeapon != null &&
+                        leftWeapon.Object_Type != (int) eObjectType.Shield)
                         baseChance /= 2;
-                    }
                 }
-            }
 
             if (baseChance < 1)
                 baseChance = 1;
 
             if (Util.Chance(baseChance))
             {
-                ISpellHandler handler = ScriptMgr.CreateSpellHandler((GameLiving)sender, m_procSpell, m_procSpellLine);
+                var handler = ScriptMgr.CreateSpellHandler((GameLiving) sender, m_procSpell, m_procSpellLine);
                 if (handler != null)
                 {
                     if (m_procSpell.Target.ToLower() == "enemy")
+                    {
                         handler.StartSpell(ad.Target);
+                    }
                     else if (m_procSpell.Target.ToLower() == "self")
+                    {
                         handler.StartSpell(ad.Attacker);
+                    }
                     else if (m_procSpell.Target.ToLower() == "group")
                     {
-                        GamePlayer player = Caster as GamePlayer;
+                        var player = Caster as GamePlayer;
                         if (Caster is GamePlayer)
                         {
                             if (player.Group != null)
                             {
-                                foreach (GameLiving groupPlayer in player.Group.GetMembersInTheGroup())
-                                {
+                                foreach (var groupPlayer in player.Group.GetMembersInTheGroup())
                                     if (player.IsWithinRadius(groupPlayer, m_procSpell.Range))
-                                    {
                                         handler.StartSpell(groupPlayer);
-                                    }
-                                }
                             }
                             else
+                            {
                                 handler.StartSpell(player);
+                            }
                         }
                     }
                     else
                     {
-                        log.Warn("Skipping " + m_procSpell.Target + " proc " + m_procSpell.Name + " on " + ad.Target.Name + "; Realm = " + ad.Target.Realm);
+                        log.Warn("Skipping " + m_procSpell.Target + " proc " + m_procSpell.Name + " on " +
+                                 ad.Target.Name + "; Realm = " + ad.Target.Realm);
                     }
                 }
             }
         }
 
         // constructor
-        public EssenceFlamesProcSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+        public EssenceFlamesProcSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
+
     #endregion
 
-	#region Battlemaster-6
-	// LifeFlight
+    #region Battlemaster-6
+
+    // LifeFlight
     [SpellHandler("ThrowWeapon")]
     public class ThrowWeaponSpellHandler : DirectDamageSpellHandler
- 	{
+    {
         #region Disarm Weapon
+
         protected static Spell Disarm_Weapon;
+
         public static Spell Disarmed
         {
             get
             {
                 if (Disarm_Weapon == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.Uninterruptible = true;
@@ -285,15 +317,19 @@ namespace DOL.GS.Spells
                     Disarm_Weapon = new Spell(spell, 50);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Combat_Styles_Effect, Disarm_Weapon);
                 }
+
                 return Disarm_Weapon;
             }
         }
+
         #endregion
+
         public const string DISABLE = "ThrowWeapon.Shortened.Disable.Timer";
-		public override bool CheckBeginCast(GameLiving selectedTarget)
-		{
-			GamePlayer player = Caster as GamePlayer;
-			if(player == null) 
+
+        public override bool CheckBeginCast(GameLiving selectedTarget)
+        {
+            var player = Caster as GamePlayer;
+            if (player == null)
                 return false;
 
             if (player.IsDisarmed)
@@ -302,28 +338,28 @@ namespace DOL.GS.Spells
                 return false;
             }
 
-			InventoryItem weapon = null;
+            InventoryItem weapon = null;
 
             //assign the weapon the player is using, it can be a twohanded or a standard slot weapon
-			if (player.ActiveWeaponSlot.ToString() == "TwoHanded") 
-                weapon = player.Inventory.GetItem((eInventorySlot)12);
-			if (player.ActiveWeaponSlot.ToString() == "Standard")
-                weapon = player.Inventory.GetItem((eInventorySlot)10);
-            
+            if (player.ActiveWeaponSlot.ToString() == "TwoHanded")
+                weapon = player.Inventory.GetItem((eInventorySlot) 12);
+            if (player.ActiveWeaponSlot.ToString() == "Standard")
+                weapon = player.Inventory.GetItem((eInventorySlot) 10);
+
             //if the weapon is null, ie. they don't have an appropriate weapon active
-			if(weapon == null) 
-            { 
-                MessageToCaster("Equip a weapon before using this spell!",eChatType.CT_SpellResisted); 
-                return false; 
+            if (weapon == null)
+            {
+                MessageToCaster("Equip a weapon before using this spell!", eChatType.CT_SpellResisted);
+                return false;
             }
 
             return base.CheckBeginCast(selectedTarget);
-		}
-		
+        }
+
         //Throw Weapon does not "resist"
-		public override int CalculateSpellResistChance(GameLiving target) 
-        { 
-            return 0; 
+        public override int CalculateSpellResistChance(GameLiving target)
+        {
+            return 0;
         }
 
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
@@ -331,21 +367,21 @@ namespace DOL.GS.Spells
             return base.OnEffectExpires(effect, noMessages);
         }
 
-        
+
         public override void OnDirectEffect(GameLiving target, double effectiveness)
         {
             if (target == null) return;
 
-            if (!target.IsAlive || target.ObjectState != GameLiving.eObjectState.Active) return;
+            if (!target.IsAlive || target.ObjectState != GameObject.eObjectState.Active) return;
 
             // calc damage
-            AttackData ad = CalculateDamageToTarget(target, effectiveness);
+            var ad = CalculateDamageToTarget(target, effectiveness);
             SendDamageMessages(ad);
-            DamageTarget(ad, true);            
+            DamageTarget(ad, true);
             target.StartInterruptTimer(target.SpellInterruptDuration, ad.AttackType, Caster);
         }
-        
-        
+
+
         public override void DamageTarget(AttackData ad, bool showEffectAnimation)
         {
             InventoryItem weapon = null;
@@ -354,33 +390,41 @@ namespace DOL.GS.Spells
             if (showEffectAnimation && ad.Target != null)
             {
                 byte resultByte = 0;
-                int attackersWeapon = (weapon == null) ? 0 : weapon.Model;
-                int defendersWeapon = 0;
+                var attackersWeapon = weapon == null ? 0 : weapon.Model;
+                var defendersWeapon = 0;
 
                 switch (ad.AttackResult)
                 {
-                    case eAttackResult.Missed: resultByte = 0; break;
-                    case eAttackResult.Evaded: resultByte = 3; break;
-                    case eAttackResult.Fumbled: resultByte = 4; break;
-                    case eAttackResult.HitUnstyled: resultByte = 10; break;
-                    case eAttackResult.HitStyle: resultByte = 11; break;
+                    case eAttackResult.Missed:
+                        resultByte = 0;
+                        break;
+                    case eAttackResult.Evaded:
+                        resultByte = 3;
+                        break;
+                    case eAttackResult.Fumbled:
+                        resultByte = 4;
+                        break;
+                    case eAttackResult.HitUnstyled:
+                        resultByte = 10;
+                        break;
+                    case eAttackResult.HitStyle:
+                        resultByte = 11;
+                        break;
                     case eAttackResult.Parried:
                         resultByte = 1;
                         if (ad.Target != null && ad.Target.ActiveWeapon != null)
-                        {
                             defendersWeapon = ad.Target.ActiveWeapon.Model;
-                        }
+
                         break;
                     case eAttackResult.Blocked:
                         resultByte = 2;
                         if (ad.Target != null && ad.Target.Inventory != null)
                         {
-                            InventoryItem lefthand = ad.Target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
-                            if (lefthand != null && lefthand.Object_Type == (int)eObjectType.Shield)
-                            {
+                            var lefthand = ad.Target.Inventory.GetItem(eInventorySlot.LeftHandWeapon);
+                            if (lefthand != null && lefthand.Object_Type == (int) eObjectType.Shield)
                                 defendersWeapon = lefthand.Model;
-                            }
                         }
+
                         break;
                 }
 
@@ -403,8 +447,8 @@ namespace DOL.GS.Spells
                     //We don't need to send the animiation for the throwning, thats been done earlier.
 
                     //this is for the defender, which should show the appropriate animation
-                    player.Out.SendCombatAnimation(null, ad.Target, (ushort)attackersWeapon, (ushort)defendersWeapon, animationId, 0, resultByte, ad.Target.HealthPercent);
-                
+                    player.Out.SendCombatAnimation(null, ad.Target, (ushort) attackersWeapon, (ushort) defendersWeapon,
+                        animationId, 0, resultByte, ad.Target.HealthPercent);
                 }
             }
 
@@ -413,74 +457,132 @@ namespace DOL.GS.Spells
             ad.Attacker.DealDamage(ad);
             if (ad.Damage == 0 && ad.Target is GameNPC)
             {
-                IOldAggressiveBrain aggroBrain = ((GameNPC)ad.Target).Brain as IOldAggressiveBrain;
+                var aggroBrain = ((GameNPC) ad.Target).Brain as IOldAggressiveBrain;
                 if (aggroBrain != null)
                     aggroBrain.AddToAggroList(Caster, 1);
             }
-            
         }
 
         public override void SendDamageMessages(AttackData ad)
         {
-			GameObject target = ad.Target;
-			InventoryItem weapon = ad.Weapon;
-            GamePlayer player = Caster as GamePlayer;
+            GameObject target = ad.Target;
+            var weapon = ad.Weapon;
+            var player = Caster as GamePlayer;
 
-			switch (ad.AttackResult)
-			{
-				case eAttackResult.TargetNotVisible: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NotInView", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.OutOfRange: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.TooFarAway", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.TargetDead: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.AlreadyDead", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.Blocked: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Blocked", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.Parried: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Parried", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.Evaded: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Evaded", ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.NoTarget: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedTarget"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.NoValidTarget: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.CantBeAttacked"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.Missed: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Miss"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
-                case eAttackResult.Fumbled: player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Fumble"), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow); break;
+            switch (ad.AttackResult)
+            {
+                case eAttackResult.TargetNotVisible:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NotInView",
+                            ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.OutOfRange:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.TooFarAway",
+                            ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.TargetDead:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.AlreadyDead",
+                            ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.Blocked:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Blocked",
+                            ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.Parried:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Parried",
+                            ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.Evaded:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Evaded",
+                            ad.Target.GetName(0, true)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.NoTarget:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.NeedTarget"),
+                        eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.NoValidTarget:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.CantBeAttacked"),
+                        eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.Missed:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Miss"),
+                        eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
+                case eAttackResult.Fumbled:
+                    player.Out.SendMessage(
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Fumble"),
+                        eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    break;
                 case eAttackResult.HitStyle:
                 case eAttackResult.HitUnstyled:
-					string modmessage = "";
-					if (ad.Modifier > 0) modmessage = " (+" + ad.Modifier + ")";
-					if (ad.Modifier < 0) modmessage = " (" + ad.Modifier + ")";
+                    var modmessage = "";
+                    if (ad.Modifier > 0) modmessage = " (+" + ad.Modifier + ")";
+                    if (ad.Modifier < 0) modmessage = " (" + ad.Modifier + ")";
 
-					string hitWeapon = "";
+                    var hitWeapon = "";
 
-					switch (ServerProperties.Properties.SERV_LANGUAGE)
-					{
-						case "EN":
-							if (weapon != null)
-								hitWeapon = GlobalConstants.NameToShortName(weapon.Name);
-							break;
-						case "DE":
-							if (weapon != null)
-								hitWeapon = weapon.Name;
-							break;
-						default:
-							if (weapon != null)
-								hitWeapon = GlobalConstants.NameToShortName(weapon.Name);
-							break;
-					}
+                    switch (ServerProperties.Properties.SERV_LANGUAGE)
+                    {
+                        case "EN":
+                            if (weapon != null)
+                                hitWeapon = GlobalConstants.NameToShortName(weapon.Name);
+                            break;
+                        case "DE":
+                            if (weapon != null)
+                                hitWeapon = weapon.Name;
+                            break;
+                        default:
+                            if (weapon != null)
+                                hitWeapon = GlobalConstants.NameToShortName(weapon.Name);
+                            break;
+                    }
 
-					if (hitWeapon.Length > 0)
-						hitWeapon = " " + LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.WithYour") + " " + hitWeapon;
+                    if (hitWeapon.Length > 0)
+                        hitWeapon = " " +
+                                    LanguageMgr.GetTranslation(player.Client.Account.Language,
+                                        "GamePlayer.Attack.WithYour") + " " + hitWeapon;
 
-					string attackTypeMsg = LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.YouAttack");
- 
-					// intercept messages
-					if (target != null && target != ad.Target)
-					{
-                        player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Intercepted", ad.Target.GetName(0, true), target.GetName(0, false)), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
-                        player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.InterceptedHit", attackTypeMsg, target.GetName(0, false), hitWeapon, ad.Target.GetName(0, false), ad.Damage, modmessage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
-					}
-					else
-                        player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.InterceptHit", attackTypeMsg, ad.Target.GetName(0, false), hitWeapon, ad.Damage, modmessage), eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    var attackTypeMsg =
+                        LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.YouAttack");
 
-					// critical hit
-					if (ad.CriticalDamage > 0)
-                        player.Out.SendMessage(LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Critical", ad.Target.GetName(0, false), ad.CriticalDamage) + $" ({ad.Attacker.attackComponent.AttackCriticalChance(ad.Weapon)}%)", eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
-					break;
-			}
+                    // intercept messages
+                    if (target != null && target != ad.Target)
+                    {
+                        player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Intercepted",
+                                ad.Target.GetName(0, true), target.GetName(0, false)), eChatType.CT_YouHit,
+                            eChatLoc.CL_SystemWindow);
+                        player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(player.Client.Account.Language,
+                                "GamePlayer.Attack.InterceptedHit", attackTypeMsg, target.GetName(0, false), hitWeapon,
+                                ad.Target.GetName(0, false), ad.Damage, modmessage), eChatType.CT_YouHit,
+                            eChatLoc.CL_SystemWindow);
+                    }
+                    else
+                    {
+                        player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.InterceptHit",
+                                attackTypeMsg, ad.Target.GetName(0, false), hitWeapon, ad.Damage, modmessage),
+                            eChatType.CT_YouHit, eChatLoc.CL_SystemWindow);
+                    }
+
+                    // critical hit
+                    if (ad.CriticalDamage > 0)
+                        player.Out.SendMessage(
+                            LanguageMgr.GetTranslation(player.Client.Account.Language, "GamePlayer.Attack.Critical",
+                                ad.Target.GetName(0, false), ad.CriticalDamage) +
+                            $" ({ad.Attacker.attackComponent.AttackCriticalChance(ad.Weapon)}%)", eChatType.CT_YouHit,
+                            eChatLoc.CL_SystemWindow);
+                    break;
+            }
         }
 
         public override void FinishSpellCast(GameLiving target)
@@ -488,40 +590,38 @@ namespace DOL.GS.Spells
             base.FinishSpellCast(target);
 
             //we need to make sure the spell is only disabled if the attack was a success
-            int isDisabled = Caster.TempProperties.getProperty<int>(DISABLE);
-            
+            var isDisabled = Caster.TempProperties.getProperty<int>(DISABLE);
+
             //if this value is greater than 0 then we know that their weapon did not damage the target
             //the skill's disable timer should be set to their attackspeed 
             if (isDisabled > 0)
             {
                 Caster.DisableSkill(Spell, isDisabled);
-                
+
                 //remove the temp property
                 Caster.TempProperties.removeProperty(DISABLE);
             }
             else
             {
                 //they disarm them selves.
-                Caster.CastSpell(Disarmed, (SkillBase.GetSpellLine(GlobalSpellsLines.Combat_Styles_Effect)));
+                Caster.CastSpell(Disarmed, SkillBase.GetSpellLine(GlobalSpellsLines.Combat_Styles_Effect));
             }
         }
 
         public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
         {
-            GamePlayer player = target as GamePlayer;
-          
-            foreach (GamePlayer visPlayer in Caster.GetPlayersInRadius((ushort)WorldMgr.VISIBILITY_DISTANCE))
-            {
-                visPlayer.Out.SendCombatAnimation(Caster, target, 0x0000, 0x0000, (ushort)408, 0, 0x00, target.HealthPercent);
-            }
-            
-            OnDirectEffect(target, effectiveness);
+            var player = target as GamePlayer;
 
+            foreach (GamePlayer visPlayer in Caster.GetPlayersInRadius((ushort) WorldMgr.VISIBILITY_DISTANCE))
+                visPlayer.Out.SendCombatAnimation(Caster, target, 0x0000, 0x0000, (ushort) 408, 0, 0x00,
+                    target.HealthPercent);
+
+            OnDirectEffect(target, effectiveness);
         }
 
         public override AttackData CalculateDamageToTarget(GameLiving target, double effectiveness)
         {
-            GamePlayer player = Caster as GamePlayer;
+            var player = Caster as GamePlayer;
 
             if (player == null)
                 return null;
@@ -529,15 +629,15 @@ namespace DOL.GS.Spells
             InventoryItem weapon = null;
 
             if (player.ActiveWeaponSlot.ToString() == "TwoHanded")
-                weapon = player.Inventory.GetItem((eInventorySlot)12);
+                weapon = player.Inventory.GetItem((eInventorySlot) 12);
             if (player.ActiveWeaponSlot.ToString() == "Standard")
-                weapon = player.Inventory.GetItem((eInventorySlot)10);
+                weapon = player.Inventory.GetItem((eInventorySlot) 10);
 
             if (weapon == null)
                 return null;
 
             //create the AttackData
-            AttackData ad = new AttackData();
+            var ad = new AttackData();
             ad.Attacker = player;
             ad.Target = target;
             ad.Damage = 0;
@@ -559,103 +659,122 @@ namespace DOL.GS.Spells
                     ad.AttackType = AttackData.eAttackType.MeleeTwoHand;
                     break;
             }
+
             //Throw Weapon is subject to all the conventional attack results, parry, evade, block, etc.
             ad.AttackResult = ad.Target.attackComponent.CalculateEnemyAttackResult(ad, weapon);
 
             if (ad.AttackResult == eAttackResult.HitUnstyled || ad.AttackResult == eAttackResult.HitStyle)
             {
                 //we only need to calculate the damage if the attack was a success.
-                double damage = player.attackComponent.AttackDamage(weapon) * effectiveness;
+                var damage = player.attackComponent.AttackDamage(weapon) * effectiveness;
 
                 if (target is GamePlayer)
-                    ad.ArmorHitLocation = ((GamePlayer)target).CalculateArmorHitLocation(ad);
+                    ad.ArmorHitLocation = ((GamePlayer) target).CalculateArmorHitLocation(ad);
 
                 InventoryItem armor = null;
                 if (target.Inventory != null)
-                    armor = target.Inventory.GetItem((eInventorySlot)ad.ArmorHitLocation);
+                    armor = target.Inventory.GetItem((eInventorySlot) ad.ArmorHitLocation);
 
                 //calculate the lowerboundary of the damage
-                int lowerboundary = (player.WeaponSpecLevel(weapon) - 1) * 50 / (ad.Target.EffectiveLevel + 1) + 75;
+                var lowerboundary = (player.WeaponSpecLevel(weapon) - 1) * 50 / (ad.Target.EffectiveLevel + 1) + 75;
                 lowerboundary = Math.Max(lowerboundary, 75);
                 lowerboundary = Math.Min(lowerboundary, 125);
 
-                damage *= (player.GetWeaponSkill(weapon) + 90.68) / (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67);
+                damage *= (player.GetWeaponSkill(weapon) + 90.68) /
+                          (ad.Target.GetArmorAF(ad.ArmorHitLocation) + 20 * 4.67);
 
                 //If they have badge of Valor, we need to modify the damage
-				if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
+                if (ad.Attacker.EffectList.GetOfType<BadgeOfValorEffect>() != null)
                     damage *= 1.0 + Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
                 else
                     damage *= 1.0 - Math.Min(0.85, ad.Target.GetArmorAbsorb(ad.ArmorHitLocation));
 
                 damage *= (lowerboundary + Util.Random(50)) * 0.01;
 
-                ad.Modifier = (int)(damage * (ad.Target.GetResist(ad.DamageType) + SkillBase.GetArmorResist(armor, ad.DamageType)) * -0.01);
+                ad.Modifier = (int) (damage *
+                                     (ad.Target.GetResist(ad.DamageType) +
+                                      SkillBase.GetArmorResist(armor, ad.DamageType)) * -0.01);
 
                 damage += ad.Modifier;
 
-                int resist = (int)(damage * ad.Target.GetDamageResist(target.GetResistTypeForDamage(ad.DamageType)) * -0.01);
-                eProperty property = ad.Target.GetResistTypeForDamage(ad.DamageType);
-                int secondaryResistModifier = ad.Target.SpecBuffBonusCategory[(int)property];
-                int resistModifier = 0;
-                resistModifier += (int)((ad.Damage + (double)resistModifier) * (double)secondaryResistModifier * -0.01);
+                var resist = (int) (damage * ad.Target.GetDamageResist(target.GetResistTypeForDamage(ad.DamageType)) *
+                                    -0.01);
+                var property = ad.Target.GetResistTypeForDamage(ad.DamageType);
+                var secondaryResistModifier = ad.Target.SpecBuffBonusCategory[(int) property];
+                var resistModifier = 0;
+                resistModifier +=
+                    (int) ((ad.Damage + (double) resistModifier) * (double) secondaryResistModifier * -0.01);
                 damage += resist;
                 damage += resistModifier;
                 ad.Modifier += resist;
-                ad.Damage = (int)damage;
+                ad.Damage = (int) damage;
                 ad.UncappedDamage = ad.Damage;
-                ad.Damage = Math.Min(ad.Damage, (int)(player.attackComponent.UnstyledDamageCap(weapon) * effectiveness));
-                ad.Damage = (int)((double)ad.Damage * ServerProperties.Properties.PVP_MELEE_DAMAGE);
-                if (ad.Damage == 0) ad.AttackResult = DOL.GS.eAttackResult.Missed;
+                ad.Damage = Math.Min(ad.Damage,
+                    (int) (player.attackComponent.UnstyledDamageCap(weapon) * effectiveness));
+                ad.Damage = (int) ((double) ad.Damage * ServerProperties.Properties.PVP_MELEE_DAMAGE);
+                if (ad.Damage == 0) ad.AttackResult = eAttackResult.Missed;
                 ad.CriticalDamage = player.attackComponent.GetMeleeCriticalDamage(ad, weapon);
             }
             else
             {
                 //They failed, do they do not get disarmed, and the spell is not disabled for the full duration,
                 //just the modified swing speed, this is in milliseconds
-                int attackSpeed = player.AttackSpeed(weapon);
+                var attackSpeed = player.AttackSpeed(weapon);
                 player.TempProperties.setProperty(DISABLE, attackSpeed);
             }
+
             return ad;
         }
-		public ThrowWeaponSpellHandler(GameLiving caster,Spell spell,SpellLine line) : base(caster,spell,line) {}
-	}
-	#endregion
+
+        public ThrowWeaponSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
+    }
+
+    #endregion
 
     //essence debuff
+
     #region Battlemaster-7
+
     [SpellHandlerAttribute("EssenceSearHandler")]
     public class EssenceSearHandler : SpellHandler
     {
-        public override int CalculateSpellResistChance(GameLiving target) { return 0; }
+        public override int CalculateSpellResistChance(GameLiving target)
+        {
+            return 0;
+        }
 
         public override void OnEffectStart(GameSpellEffect effect)
         {
             base.OnEffectStart(effect);
-            GameLiving living = effect.Owner as GameLiving;
+            var living = effect.Owner as GameLiving;
             //value should be 15 to reduce Essence resist
-            living.DebuffCategory[(int)eProperty.Resist_Natural] += (int)m_spell.Value;
+            living.DebuffCategory[(int) eProperty.Resist_Natural] += (int) m_spell.Value;
 
             if (effect.Owner is GamePlayer)
             {
-                GamePlayer player = effect.Owner as GamePlayer;
+                var player = effect.Owner as GamePlayer;
                 player.Out.SendCharStatsUpdate();
                 player.UpdateEncumberance();
                 player.UpdatePlayerStatus();
                 player.Out.SendUpdatePlayer();
             }
         }
+
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
-            GameLiving living = effect.Owner as GameLiving;
-            living.DebuffCategory[(int)eProperty.Resist_Natural] -= (int)m_spell.Value;
+            var living = effect.Owner as GameLiving;
+            living.DebuffCategory[(int) eProperty.Resist_Natural] -= (int) m_spell.Value;
 
             if (effect.Owner is GamePlayer)
             {
-                GamePlayer player = effect.Owner as GamePlayer;
+                var player = effect.Owner as GamePlayer;
                 player.Out.SendCharStatsUpdate();
                 player.UpdatePlayerStatus();
                 player.Out.SendUpdatePlayer();
             }
+
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -672,31 +791,37 @@ namespace DOL.GS.Spells
                 target.LastAttackedByEnemyTickPvP = target.CurrentRegion.Time;
                 Caster.LastAttackTickPvP = Caster.CurrentRegion.Time;
             }
+
             if (target is GameNPC)
             {
-                IOldAggressiveBrain aggroBrain = ((GameNPC)target).Brain as IOldAggressiveBrain;
+                var aggroBrain = ((GameNPC) target).Brain as IOldAggressiveBrain;
                 if (aggroBrain != null)
-                    aggroBrain.AddToAggroList(Caster, (int)Spell.Value);
+                    aggroBrain.AddToAggroList(Caster, (int) Spell.Value);
             }
         }
-        public EssenceSearHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        public EssenceSearHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
+
     #endregion
 
     #region Battlemaster-8
+
     [SpellHandlerAttribute("BodyguardHandler")]
     public class BodyguardHandler : SpellHandler
     {
         public override bool CheckBeginCast(GameLiving selectedTarget)
         {
-        //    if (Caster.Group.MemberCount <= 2)
-        //    {
-        //        MessageToCaster("Your group is to small to use this spell.", eChatType.CT_Important);
-        //        return false;
-        //    }
-              return base.CheckBeginCast(selectedTarget);
-        
+            //    if (Caster.Group.MemberCount <= 2)
+            //    {
+            //        MessageToCaster("Your group is to small to use this spell.", eChatType.CT_Important);
+            //        return false;
+            //    }
+            return base.CheckBeginCast(selectedTarget);
         }
+
         public override IList<string> DelveInfo
         {
             get
@@ -706,50 +831,62 @@ namespace DOL.GS.Spells
                 return list;
             }
         }
-        public BodyguardHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        public BodyguardHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
+
     #endregion
 
     //for ML9 in the database u have to add  EssenceDampenHandler  in type (its a new method customly made) 
+
     #region Battlemaster-9
+
     [SpellHandlerAttribute("EssenceDampenHandler")]
     public class EssenceDampenHandler : SpellHandler
     {
         protected int DexDebuff = 0;
         protected int QuiDebuff = 0;
-        public override int CalculateSpellResistChance(GameLiving target) { return 0; }
+
+        public override int CalculateSpellResistChance(GameLiving target)
+        {
+            return 0;
+        }
 
         public override void OnEffectStart(GameSpellEffect effect)
         {
             base.OnEffectStart(effect);
-            double percentValue = (m_spell.Value) / 100;//15 / 100 = 0.15 a.k (15%) 100dex * 0.15 = 15dex debuff 
-            DexDebuff = (int)((double)effect.Owner.GetModified(eProperty.Dexterity) * percentValue);
-            QuiDebuff = (int)((double)effect.Owner.GetModified(eProperty.Quickness) * percentValue);
-            GameLiving living = effect.Owner as GameLiving;
-            living.DebuffCategory[(int)eProperty.Dexterity] += DexDebuff;
-            living.DebuffCategory[(int)eProperty.Quickness] += QuiDebuff;
+            var percentValue = m_spell.Value / 100; //15 / 100 = 0.15 a.k (15%) 100dex * 0.15 = 15dex debuff 
+            DexDebuff = (int) ((double) effect.Owner.GetModified(eProperty.Dexterity) * percentValue);
+            QuiDebuff = (int) ((double) effect.Owner.GetModified(eProperty.Quickness) * percentValue);
+            var living = effect.Owner as GameLiving;
+            living.DebuffCategory[(int) eProperty.Dexterity] += DexDebuff;
+            living.DebuffCategory[(int) eProperty.Quickness] += QuiDebuff;
 
             if (effect.Owner is GamePlayer)
             {
-                GamePlayer player = effect.Owner as GamePlayer;
+                var player = effect.Owner as GamePlayer;
                 player.Out.SendCharStatsUpdate();
                 player.UpdatePlayerStatus();
                 player.Out.SendUpdatePlayer();
             }
         }
+
         public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
         {
-            GameLiving living = effect.Owner as GameLiving;
-            living.DebuffCategory[(int)eProperty.Dexterity] -= DexDebuff;
-            living.DebuffCategory[(int)eProperty.Quickness] -= QuiDebuff;
+            var living = effect.Owner as GameLiving;
+            living.DebuffCategory[(int) eProperty.Dexterity] -= DexDebuff;
+            living.DebuffCategory[(int) eProperty.Quickness] -= QuiDebuff;
 
             if (effect.Owner is GamePlayer)
             {
-                GamePlayer player = effect.Owner as GamePlayer;
+                var player = effect.Owner as GamePlayer;
                 player.Out.SendCharStatsUpdate();
                 player.UpdatePlayerStatus();
                 player.Out.SendUpdatePlayer();
             }
+
             return base.OnEffectExpires(effect, noMessages);
         }
 
@@ -766,15 +903,20 @@ namespace DOL.GS.Spells
                 target.LastAttackedByEnemyTickPvP = target.CurrentRegion.Time;
                 Caster.LastAttackTickPvP = Caster.CurrentRegion.Time;
             }
+
             if (target is GameNPC)
             {
-                IOldAggressiveBrain aggroBrain = ((GameNPC)target).Brain as IOldAggressiveBrain;
+                var aggroBrain = ((GameNPC) target).Brain as IOldAggressiveBrain;
                 if (aggroBrain != null)
-                    aggroBrain.AddToAggroList(Caster, (int)Spell.Value);
+                    aggroBrain.AddToAggroList(Caster, (int) Spell.Value);
             }
         }
-        public EssenceDampenHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line) { }
+
+        public EssenceDampenHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+        {
+        }
     }
+
     #endregion
 
     //ml10 in database Type shood be RandomBuffShear
@@ -798,8 +940,8 @@ namespace DOL.GS.PropertyCalc
     {
         public override int CalcValue(GameLiving living, eProperty property)
         {
-            int percent = 100
-                +living.BaseBuffBonusCategory[(int)property];
+            var percent = 100
+                          + living.BaseBuffBonusCategory[(int) property];
 
             return percent;
         }

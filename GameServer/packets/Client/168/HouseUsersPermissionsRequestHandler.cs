@@ -16,35 +16,36 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using DOL.Database;
 using DOL.GS.Housing;
 
-namespace DOL.GS.PacketHandler.Client.v168
+namespace DOL.GS.PacketHandler.Client.v168;
+
+[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.HouseUserPermissionRequest,
+    "Handles housing Users permissions requests from menu", eClientStatus.PlayerInGame)]
+public class HouseUsersPermissionsRequestHandler : IPacketHandler
 {
-	[PacketHandlerAttribute(PacketHandlerType.TCP, eClientPackets.HouseUserPermissionRequest, "Handles housing Users permissions requests from menu", eClientStatus.PlayerInGame)]
-	public class HouseUsersPermissionsRequestHandler : IPacketHandler
-	{
-		public void HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			int unk1 = packet.ReadByte();
-			int unk2 = packet.ReadByte();
-			ushort houseNumber = packet.ReadShort();
+    public void HandlePacket(GameClient client, GSPacketIn packet)
+    {
+        var unk1 = packet.ReadByte();
+        var unk2 = packet.ReadByte();
+        var houseNumber = packet.ReadShort();
 
-			// house is null, return
-			var house = HouseMgr.GetHouse(houseNumber);
-			if (house == null)
-				return;
+        // house is null, return
+        var house = HouseMgr.GetHouse(houseNumber);
+        if (house == null)
+            return;
 
-			// player is null, return
-			if (client.Player == null)
-				return;
+        // player is null, return
+        if (client.Player == null)
+            return;
 
-			// player has no owner permissions and isn't a GM or admin, return
-			if (!house.HasOwnerPermissions(client.Player) && client.Account.PrivLevel <= 1)
-				return;
+        // player has no owner permissions and isn't a GM or admin, return
+        if (!house.HasOwnerPermissions(client.Player) && client.Account.PrivLevel <= 1)
+            return;
 
-			// build the packet
-			client.Out.SendHouseUsersPermissions(house);
-		}
-	}
+        // build the packet
+        client.Out.SendHouseUsersPermissions(house);
+    }
 }

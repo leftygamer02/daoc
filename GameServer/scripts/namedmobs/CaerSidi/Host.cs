@@ -24,7 +24,7 @@ namespace DOL.GS
 
         public void StartTimer()
         {
-            Timer myTimer = new Timer();
+            var myTimer = new Timer();
             myTimer.Elapsed += new ElapsedEventHandler(DisplayTimeEvent);
             myTimer.Interval = 1000; // 1000 ms is one second
             myTimer.Start();
@@ -40,16 +40,13 @@ namespace DOL.GS
 
         public void DoStuff()
         {
-            if (this.IsAlive)
+            if (IsAlive)
             {
                 if (Host.HostCount == 0)
                 {
                     pickhostcheck = false;
                     set_realhost = false;
-                    if (ChooseHost.Count > 0)
-                    {
-                        ChooseHost.Clear();
-                    }
+                    if (ChooseHost.Count > 0) ChooseHost.Clear();
                 }
 
                 if (Spawnhost == false && Host.HostCount == 0)
@@ -77,12 +74,12 @@ namespace DOL.GS
             DoRespawnTimer = false;
             for (Host.HostCount = 0; Host.HostCount < 8; Host.HostCount++)
             {
-                Host Add = new Host();
-                Add.X = this.X;
-                Add.Y = this.Y;
-                Add.Z = this.Z;
-                Add.CurrentRegion = this.CurrentRegion;
-                Add.Heading = this.Heading;
+                var Add = new Host();
+                Add.X = X;
+                Add.Y = Y;
+                Add.Z = Z;
+                Add.CurrentRegion = CurrentRegion;
+                Add.Heading = Heading;
                 Add.AddToWorld();
                 Add.OrbsReward = 10;
                 Add.PackageID = "HostCopy" + Host.HostCount;
@@ -93,36 +90,26 @@ namespace DOL.GS
 
         #region Pick real Host
 
-        List<GameNPC> ChooseHost = new List<GameNPC>();
+        private List<GameNPC> ChooseHost = new();
         public static bool set_realhost = false;
         public static bool pickhostcheck = false;
 
         public void PickHost()
         {
             foreach (GameNPC host in GetNPCsInRadius(8000))
-            {
                 if (host != null)
-                {
                     if (host.Brain is HostBrain)
-                    {
                         if (!ChooseHost.Contains(host))
-                        {
                             ChooseHost.Add(host);
-                        }
-                    }
-                }
-            }
 
             if (ChooseHost.Count > 0)
-            {
                 if (set_realhost == false)
                 {
-                    GameNPC RealHost = ChooseHost[Util.Random(0, ChooseHost.Count - 1)];
+                    var RealHost = ChooseHost[Util.Random(0, ChooseHost.Count - 1)];
                     RealHost.PackageID = "HostReal";
                     RealHost.OrbsReward = Properties.EPICBOSS_ORBS;
                     set_realhost = true;
                 }
-            }
         }
 
         #endregion
@@ -137,7 +124,7 @@ namespace DOL.GS
 
         public void RespawnChecker()
         {
-            int time = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000miliseconds        
+            var time = Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000miliseconds        
             new ECSGameTimer(this, new ECSGameTimer.ECSTimerCallback(RespawnTime), time);
         }
 
@@ -148,7 +135,7 @@ namespace DOL.GS
         public override bool AddToWorld()
         {
             StartTimer();
-            HIBrain hi = new HIBrain();
+            var hi = new HIBrain();
             SetOwnBrain(hi);
             base.AddToWorld();
             return true;
@@ -158,13 +145,13 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Host Initializator", 60, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Host Initializator", 60, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Host Initializator not found, creating it...");
 
                 log.Warn("Initializing Host Initializator...");
-                HostInitializator CO = new HostInitializator();
+                var CO = new HostInitializator();
                 CO.Name = "Host Initializator";
                 CO.GuildName = "DO NOT REMOVE!";
                 CO.RespawnInterval = 5000;
@@ -182,15 +169,17 @@ namespace DOL.GS
                 CO.X = 26995;
                 CO.Y = 29733;
                 CO.Z = 17871;
-                HIBrain ubrain = new HIBrain();
+                var ubrain = new HIBrain();
                 CO.SetOwnBrain(ubrain);
                 CO.AddToWorld();
                 CO.SaveIntoDatabase();
                 CO.Brain.Start();
             }
             else
+            {
                 log.Warn(
                     "Host Initializator exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
 
         #endregion
@@ -207,12 +196,12 @@ namespace DOL.AI.Brain
         public HIBrain()
             : base()
         {
-            ThinkInterval = 2000;
+            hinkInterval = 2000;
         }
 
         public override void Think()
         {
-            base.Think();
+            se.Think();
         }
     }
 }
@@ -228,164 +217,394 @@ namespace DOL.GS
 
         public override double AttackDamage(InventoryItem weapon)
         {
-            return base.AttackDamage(weapon) * Strength / 150  * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
+            rn base.AttackDamage(weapon) * Strength / 150 * rverProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
         public override int AttackRange
         {
-            get { return 350; }
+            get
+            {
+                r
+                    t
+                rn 350
+            }
             set { }
         }
 
         public override int GetResist(eDamageType damageType)
         {
-            switch (damageType)
-            {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 50;// dmg reduction for rest resists
-            }
+            (damageType)
+                amageType.Slash: return 40; // dmg  reduction for melee dmg
+            amageType.Crush: return 40; // dmg  reduction for melee dmg
+            amageType.Thrust: return 40; // dmg  reduction for melee dmg
+                : return 50; // dmg  reduction for rest resists
         }
+
         public override int MaxHealth
         {
-            get { return 30000; }
-        }
-        public override double GetArmorAF(eArmorSlot slot)
-        {
-            return 250;
-        }
-        public override double GetArmorAbsorb(eArmorSlot slot)
-        {
-            // 85% ABS is cap.
-            return 0.20;
-        }
-
-        public override void Die(GameObject killer)
-        {
-            if (PackageID == "HostReal")
-            {
-                foreach (GameNPC boss in WorldMgr.GetNPCsByNameFromRegion("Host", this.CurrentRegionID, 0))
-                {
-                    if (boss != null)
-                    {
-                        if (boss.IsAlive)
-                        {
-                            if (boss.Brain is HostBrain)
-                            {
-                                if (boss.PackageID != "HostReal")
-                                {
-                                    boss.Die(killer); //kill rest of copies if real one dies
-                                }
-                            }
-                        }
-                    }
-                }
-
-                HostCount = 0; //reset host count to 0
-                base.Die(killer);
-            }
-            else
-            {
-                --HostCount;
-                base.Die(killer);
-            }
-        }
-
-        public override void WalkToSpawn() //dont walk to spawn
-        {
-            if (IsAlive)
-                return;
-            base.WalkToSpawn();
-        }
-        public static int HostCount = 0;
-
-        public override bool AddToWorld()
-        {
-            Model = 26;
-            MeleeDamageType = eDamageType.Crush;
-            Name = "Host";
-            PackageID = "HostCopy";
-            RespawnInterval = -1;
-            MaxDistance = 0;
-            TetherRange = 0;
-            Size = 60;
-            Level = 79;
-            MaxSpeedBase = 300;
-            Flags = eFlags.GHOST;
-
-            Faction = FactionMgr.GetFactionByID(64);
-            Faction.AddFriendFaction(FactionMgr.GetFactionByID(64));
-            BodyType = 6;
-            Realm = eRealm.None;
-
-            Strength = 5;
-            Dexterity = 200;
-            Constitution = 100;
-            Quickness = 125;
-            Piety = 220;
-            Intelligence = 220;
-            Empathy = 200;
-
-            HostBrain.walkback = false;
-            HostBrain.path1 = false;
-            HostBrain.path11 = false;
-            HostBrain.path21 = false;
-            HostBrain.path31 = false;
-            HostBrain.path41 = false;
-            HostBrain.path51 = false;
-            HostBrain.path2 = false;
-            HostBrain.path12 = false;
-            HostBrain.path22 = false;
-            HostBrain.path32 = false;
-            HostBrain.path42 = false;
-            HostBrain.path3 = false;
-            HostBrain.path13 = false;
-            HostBrain.path23 = false;
-            HostBrain.path33 = false;
-            HostBrain.path43 = false;
-            HostBrain.path4 = false;
-            HostBrain.path14 = false;
-            HostBrain.path24 = false;
-            HostBrain.path34 = false;
-            HostBrain.path44 = false;
-            HostBrain.path5 = false;
-            HostBrain.path15 = false;
-            HostBrain.path25 = false;
-            HostBrain.path35 = false;
-            HostBrain.path45 = false;
-            HostBrain.path6 = false;
-            HostBrain.path16 = false;
-            HostBrain.path26 = false;
-            HostBrain.path36 = false;
-            HostBrain.path46 = false;
-            HostBrain.path7 = false;
-            HostBrain.path17 = false;
-            HostBrain.path27 = false;
-            HostBrain.path37 = false;
-            HostBrain.path47 = false;
-            HostBrain.path8 = false;
-            HostBrain.path18 = false;
-            HostBrain.path28 = false;
-            HostBrain.path38 = false;
-            HostBrain.path48 = false;
-            HostBrain.path9 = false;
-            HostBrain.path19 = false;
-            HostBrain.path29 = false;
-            HostBrain.path39 = false;
-            HostBrain.path49 = false;
-            HostBrain.path10 = false;
-            HostBrain.path20 = false;
-            HostBrain.path30 = false;
-            HostBrain.path40 = false;
-            HostBrain.path50 = false;
-
-            HostBrain adds = new HostBrain();
-            SetOwnBrain(adds);
-            base.AddToWorld();
-            return true;
+            get 30
+            0
+            ;
         }
     }
+
+    public override double GetArmorAF(eArmorSlot slot)
+    {
+        250;
+    }
+
+    public override double GetArmorAbsorb(eArmorSlot slot)
+    {
+        BS is cap.
+        .20;
+    }
+
+    public override void Die(GameObject killer)
+    {
+        geID == "HostReal")
+        GameNPC boss in WorldMgr.GetNPCsByNameFromRegion("Host", this.CurrentRegionID, 0))
+            != null)
+        IsAlive)
+        Brain is HostBrain)
+        PackageID != "HostReal")
+        killer); //kill rest of copies if real one dies
+        = 0; //reset host count to 0
+        killer);
+        nt;
+        killer);
+    }
+
+    public override void WalkToSpawn() //dont walk to spawn
+    {
+        e)
+
+
+        oSpa
+            w
+        n();
+    }
+
+    public static var HostCount = 0;
+
+    public override bool AddToWorld()
+    {
+        Model =
+            e
+        ee
+            Da DamageType.Crus
+            ;
+
+
+        Name
+            =
+            Packa
+        ge py";
+
+
+        Respa
+            wn 1;
+
+        a
+            D
+        i
+            st T
+            t
+        e
+            rR S
+            z
+                =
+                e
+        el
+            =
+            a
+        Sp
+            ee
+
+        F
+            ags
+                = T;
+
+
+        Fact
+            in r.GetFa
+            t
+        onByID(64)
+            ;
+
+        F
+            a
+        ct
+            i
+
+        on ction(F
+            a
+
+        ctionMgr.GetFact
+            i
+        onByID(64)
+            )
+        ;
+
+        B
+            od
+        y
+            T
+        yp R
+        a
+            m
+                = ;
+
+
+        Stre
+            nt D
+            x
+        e
+            ri
+        C
+            nst
+        it
+            Q
+        ick
+            ne
+        P
+            ety
+                =
+                I
+        tel
+            li
+
+        E
+            pat
+        hy
+
+        ost
+            Ba = false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+        ra alse;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        HostB
+            ra false;
+
+
+        Host
+            Ba w HostBra
+        n();
+
+
+        Set
+            O
+        w
+            nB
+
+        base
+            .Ad
+
+        ret
+            u
+        r
+            n
+    }
+}
+
 }
 
 namespace DOL.AI.Brain
@@ -398,10 +617,15 @@ namespace DOL.AI.Brain
         public HostBrain()
             : base()
         {
-            AggroLevel = 100;
-            AggroRange = 400;
-            ThinkInterval = 2500;
+            l = 1 00;
+
+
+            00;
+
+
+            ThinkInter = 20 0;
         }
+
         public static bool BafHost = false;
         public static bool BafMobs = false;
 
@@ -461,215 +685,216 @@ namespace DOL.AI.Brain
         public static bool walkback = false;
 
         #endregion
+
         public void HostPath()
         {
             #region path glocs
 
-            Point3D point1 = new Point3D();
+            var point1 = new Point3D();
             point1.X = 26749;
             point1.Y = 29730;
             point1.Z = 17871; //3th floor
-            Point3D point2 = new Point3D();
+            var point2 = new Point3D();
             point2.X = 26180;
             point2.Y = 30241;
             point2.Z = 17871;
-            Point3D point3 = new Point3D();
+            var point3 = new Point3D();
             point3.X = 25743;
             point3.Y = 30447;
             point3.Z = 17861;
-            Point3D point4 = new Point3D();
+            var point4 = new Point3D();
             point4.X = 25154;
             point4.Y = 30151;
             point4.Z = 17861;
-            Point3D point5 = new Point3D();
+            var point5 = new Point3D();
             point5.X = 24901;
             point5.Y = 29673;
             point5.Z = 17861;
-            Point3D point6 = new Point3D();
+            var point6 = new Point3D();
             point6.X = 25376;
             point6.Y = 29310;
             point6.Z = 17861; // stairs start
-            Point3D point7 = new Point3D();
+            var point7 = new Point3D();
             point7.X = 25360;
             point7.Y = 29635;
             point7.Z = 17866;
-            Point3D point8 = new Point3D();
+            var point8 = new Point3D();
             point8.X = 25608;
             point8.Y = 29967;
             point8.Z = 17702;
-            Point3D point9 = new Point3D();
+            var point9 = new Point3D();
             point9.X = 25984;
             point9.Y = 29902;
             point9.Z = 17534;
-            Point3D point10 = new Point3D();
+            var point10 = new Point3D();
             point10.X = 26121;
             point10.Y = 29617;
             point10.Z = 17405;
-            Point3D point11 = new Point3D();
+            var point11 = new Point3D();
             point11.X = 25889;
             point11.Y = 29309;
             point11.Z = 17251;
-            Point3D point12 = new Point3D();
+            var point12 = new Point3D();
             point12.X = 25453;
             point12.Y = 29390;
             point12.Z = 17051;
-            Point3D point13 = new Point3D();
+            var point13 = new Point3D();
             point13.X = 25372;
             point13.Y = 29775;
             point13.Z = 16897;
-            Point3D point14 = new Point3D();
+            var point14 = new Point3D();
             point14.X = 25946;
             point14.Y = 29958;
             point14.Z = 16638;
-            Point3D point15 = new Point3D();
+            var point15 = new Point3D();
             point15.X = 26116;
             point15.Y = 29523;
             point15.Z = 16495;
-            Point3D point16 = new Point3D();
+            var point16 = new Point3D();
             point16.X = 26106;
             point16.Y = 29305;
             point16.Z = 16495; //start 2nd floor
-            Point3D point17 = new Point3D();
+            var point17 = new Point3D();
             point17.X = 25061;
             point17.Y = 29335;
             point17.Z = 16495;
-            Point3D point18 = new Point3D();
+            var point18 = new Point3D();
             point18.X = 25046;
             point18.Y = 30229;
             point18.Z = 16495;
-            Point3D point19 = new Point3D();
+            var point19 = new Point3D();
             point19.X = 25686;
             point19.Y = 30428;
             point19.Z = 16495;
-            Point3D point20 = new Point3D();
+            var point20 = new Point3D();
             point20.X = 26832;
             point20.Y = 29793;
             point20.Z = 16495;
-            Point3D point21 = new Point3D();
+            var point21 = new Point3D();
             point21.X = 25718;
             point21.Y = 29012;
             point21.Z = 16495;
-            Point3D point22 = new Point3D();
+            var point22 = new Point3D();
             point22.X = 25358;
             point22.Y = 29563;
             point22.Z = 16495; //ebd of 2nd floor/starting stairs
-            Point3D point23 = new Point3D();
+            var point23 = new Point3D();
             point23.X = 25426;
             point23.Y = 29842;
             point23.Z = 16406;
-            Point3D point24 = new Point3D();
+            var point24 = new Point3D();
             point24.X = 25842;
             point24.Y = 29983;
             point24.Z = 16223;
-            Point3D point25 = new Point3D();
+            var point25 = new Point3D();
             point25.X = 26129;
             point25.Y = 29643;
             point25.Z = 16039;
-            Point3D point26 = new Point3D();
+            var point26 = new Point3D();
             point26.X = 25714;
             point26.Y = 29267;
             point26.Z = 15796;
-            Point3D point27 = new Point3D();
+            var point27 = new Point3D();
             point27.X = 25345;
             point27.Y = 29587;
             point27.Z = 15588;
-            Point3D point28 = new Point3D();
+            var point28 = new Point3D();
             point28.X = 25711;
             point28.Y = 29995;
             point28.Z = 15357;
-            Point3D point29 = new Point3D();
+            var point29 = new Point3D();
             point29.X = 26123;
             point29.Y = 29645;
             point29.Z = 15122; //start 1st floor/ end of stairs
-            Point3D point30 = new Point3D();
+            var point30 = new Point3D();
             point30.X = 25796;
             point30.Y = 28979;
             point30.Z = 15120;
-            Point3D point31 = new Point3D();
+            var point31 = new Point3D();
             point31.X = 24729;
             point31.Y = 29725;
             point31.Z = 15119;
-            Point3D point32 = new Point3D();
+            var point32 = new Point3D();
             point32.X = 25695;
             point32.Y = 30592;
             point32.Z = 15119;
-            Point3D point33 = new Point3D();
+            var point33 = new Point3D();
             point33.X = 26792;
             point33.Y = 29721;
             point33.Z = 15119;
-            Point3D point34 = new Point3D();
+            var point34 = new Point3D();
             point34.X = 26102;
             point34.Y = 29302;
             point34.Z = 15120; //end of floor 1// going all way up now
-            Point3D point35 = new Point3D();
+            var point35 = new Point3D();
             point35.X = 26085;
             point35.Y = 29802;
             point35.Z = 15192;
-            Point3D point36 = new Point3D();
+            var point36 = new Point3D();
             point36.X = 25487;
             point36.Y = 29903;
             point36.Z = 15457;
-            Point3D point37 = new Point3D();
+            var point37 = new Point3D();
             point37.X = 25370;
             point37.Y = 29483;
             point37.Z = 15625;
-            Point3D point38 = new Point3D();
+            var point38 = new Point3D();
             point38.X = 25873;
             point38.Y = 29309;
             point38.Z = 15872;
-            Point3D point39 = new Point3D();
+            var point39 = new Point3D();
             point39.X = 26103;
             point39.Y = 29695;
             point39.Z = 16058;
-            Point3D point40 = new Point3D();
+            var point40 = new Point3D();
             point40.X = 25693;
             point40.Y = 29975;
             point40.Z = 16284;
-            Point3D point41 = new Point3D();
+            var point41 = new Point3D();
             point41.X = 25352;
             point41.Y = 29538;
             point41.Z = 16495; //stairs entering 2nd floor
-            Point3D point42 = new Point3D();
+            var point42 = new Point3D();
             point42.X = 25775;
             point42.Y = 29107;
             point42.Z = 16495;
-            Point3D point43 = new Point3D();
+            var point43 = new Point3D();
             point43.X = 26114;
             point43.Y = 29597;
             point43.Z = 16495;
-            Point3D point44 = new Point3D();
+            var point44 = new Point3D();
             point44.X = 25730;
             point44.Y = 29985;
             point44.Z = 16722;
-            Point3D point45 = new Point3D();
+            var point45 = new Point3D();
             point45.X = 25368;
             point45.Y = 29610;
             point45.Z = 16957;
-            Point3D point46 = new Point3D();
+            var point46 = new Point3D();
             point46.X = 25705;
             point46.Y = 29283;
             point46.Z = 17169;
-            Point3D point47 = new Point3D();
+            var point47 = new Point3D();
             point47.X = 26109;
             point47.Y = 29587;
             point47.Z = 17393;
-            Point3D point48 = new Point3D();
+            var point48 = new Point3D();
             point48.X = 25759;
             point48.Y = 30023;
             point48.Z = 17632;
-            Point3D point49 = new Point3D();
+            var point49 = new Point3D();
             point49.X = 25359;
             point49.Y = 29578;
             point49.Z = 17871; //starting 3th floor
-            Point3D point50 = new Point3D();
+            var point50 = new Point3D();
             point50.X = 25809;
             point50.Y = 29142;
             point50.Z = 17871;
-            Point3D point51 = new Point3D();
+            var point51 = new Point3D();
             point51.X = 26344;
             point51.Y = 29391;
             point51.Z = 17871;
-            Point3D spawn = new Point3D();
+            var spawn = new Point3D();
             spawn.X = 26995;
             spawn.Y = 29733;
             spawn.Z = 17871;
@@ -4002,116 +4227,288 @@ namespace DOL.AI.Brain
                 #endregion
             }
         }
+
         #region Set Baf Mob stats
+
         public void SetMobstats()
+            !=
+
+        private od e)
+        private C ro Re
+        null)
+
         {
-            if (Body.TargetObject != null && (Body.InCombat || HasAggro || Body.attackComponent.AttackState == true)) //if in combat
+            if (npc.sAli
+            e && npc.Pa
+            c
+            kageID == "H        pc
+            N
+                PCTe
+            m
+            plate != nul
+                )
+
+
             {
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
+                if (B
+                a
+                fMobs == tr
+                e
+                    & np
+                c
+                    .TargetObject == bj
+
+
                 {
-                    if (npc != null)
+                    npc.
+                        M
+                        axDistance = 10
+                    0
+                    00 an ta
+                    g
+                    et
+                        /
+                        s
+                    et
+                        t
+                    ether t
+                    n
+                        t r
+                        e
+                    turn to h
+                        me
+
+
+                    if (
+                        !n ar
+
+
                     {
-                        if (npc.IsAlive && npc.PackageID == "HostBaf" && npc.NPCTemplate != null)
-                        {
-                            if (BafMobs == true && npc.TargetObject == Body.TargetObject)
-                            {
-                                npc.MaxDistance = 10000; //set mob distance to make it reach target
-                                npc.TetherRange = 10000; //set tether to not return to home
-                                if (!npc.IsWithinRadius(Body.TargetObject, 100))
-                                {
-                                    npc.MaxSpeedBase = 300; //speed is is not near to reach target faster
-                                }
-                                else
-                                    npc.MaxSpeedBase = npc.NPCTemplate.MaxSpeed; //return speed to normal
-                            }
-                        }
+                        n
+                            pc i ste
+                        r
                     }
+
+
+                    npc
+                        M
+                    xSpee
+                        dBase = npc.NPCTemplate.MaxSpeed; //r          
                 }
             }
-            else //if not in combat
+
+
+            if
+            n
+            ot in combat
+
+
             {
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
-                    if (npc != null)
+                foreach (GameNPC npc in .C {
                     {
-                        if (npc.IsAlive && npc.PackageID == "HostBaf" && npc.NPCTemplate != null)
-                        {
-                            if (BafMobs == false)
-                            {
-                                npc.MaxDistance = npc.NPCTemplate.MaxDistance; //return distance to normal
-                                npc.TetherRange = npc.NPCTemplate.TetherRange; //return tether to normal
-                                npc.MaxSpeedBase = npc.NPCTemplate.MaxSpeed; //return speed to normal
-                            }
-                        }
+                        if (npc.IsAlive && npc.Pa NP af e)
+
+
+                        npc.M
+                            xDi
+                        ta
+                            ce = npc
+                                .NPCTemplate.MaxDi
+                        s
+                        tanc
+                            e
+                            ; //return dist
+                        a
+                            nc
+
+                        n
+                        c.
+                            ethe
+                            rR te et
+                        e
+                            r t
+                            o
+                        normal
+
+
+                        pc.
+                            M
+                            axSpeedBase
+                                =
+                                pc.N
+                        PC ur
                     }
                 }
             }
         }
+
         #endregion
 
         public override void Think()
+
+        private Pro
+            x
+
+        private im tyAg
+
+        private ro()
+
+
         {
-            if (!CheckProximityAggro())
-            {
-                BafHost = false;
-                BafMobs = false;
-                Body.Health = Body.MaxHealth;
-            }
-            if (Body.IsMoving)
-            {
-                foreach (GamePlayer player in Body.GetPlayersInRadius((ushort)AggroRange))
-                {
-                    if (player != null)
-                    {
-                        if (player.IsAlive && player.Client.Account.PrivLevel == 1 && !AggroTable.ContainsKey(player))
-                        {
-                            AddToAggroList(player, 10);
-                        }
-                    }
-                }
-            }
-            if (HasAggro && Body.TargetObject != null)
-            {
-                if (BafHost == false)//baf all copies to pulled host
-                {
-                    foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                    {
-                        if (npc != null)
-                        {
-                            if (npc.IsAlive && npc.Brain is HostBrain && Body.PackageID != npc.PackageID)
-                            {
-                                GameLiving target = Body.TargetObject as GameLiving;
-                                HostBrain brain = (HostBrain)npc.Brain;
-                                if (target != null)
-                                {
-                                    brain.AddToAggroList(target, 10);
-                                    npc.StartAttack(target);
-                                }
-                                BafHost = true;
-                            }
-                        }
-                    }
-                }
-                if (BafMobs == false)//baf linked mobs to boss
-                {
-                    foreach (GameNPC npc2 in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                    {
-                        if (npc2 != null)
-                        {
-                            if (npc2.IsAlive && npc2.PackageID == "HostBaf")
-                            {
-                                AddAggroListTo(npc2.Brain as StandardMobBrain);
-                                BafMobs = true;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                HostPath();
-            }
-            base.Think();
+            BafH os t = false;
+
+
+            BafM
+                ea t
+                h Body.MaxHe
+            l
+                h;
+        }
+        if (Body.IsMo in
+        private g
+            ay
+
+        private er i n Body.GetPl
+
+        private y
+            In
+
+        private R
+            ad
+
+        private ius((ushor
+            t
+            ) AggroRa
+            nge))
+
+        {
+            ul v
+            e
+                iv
+            Level == 1 && !AggroTable.Contains
+            ey(playe
+            ))
+
+
+            Ad
+                d
+            T
+                oA ye
         }
     }
+}
+
+
+i
+    f(HasAgg
+        ro ge ul
+    )
+
+
+{
+    false)
+        /
+    baf all co
+        ies to
+        pu
+    led
+        h
+    ost
+
+
+    {
+        PC NP
+        s
+            FromRe
+        io
+            (Bod
+        y.f
+        npc !=
+            null)
+
+
+        {
+            if
+            (
+                np s != npc.Package
+            I
+                D)
+
+
+            ar ar G
+            m
+                eLiving;
+
+
+            br )n
+            c
+                .Brain;
+
+
+            if (targe {
+                brain.A
+                    d
+                dToA
+                    g
+                groList(target,
+                    10 rt
+
+                t
+                    tac
+                    (t
+                        rget
+                    );
+
+
+                Ba
+                Ho
+                    t =
+                        true;
+            }
+
+
+            if (BafMo
+            s == f
+            l
+                e) //
+            b
+                af linked mo
+            s
+                o boss
+
+            foreach
+            GameN
+                C
+            n
+            pc2 in Wo
+                r
+            ldM
+                g
+            r.Get
+                NP D)
+
+
+            ( {
+                if "Ho
+                s
+                    tBaf")
+
+
+                2.Brain
+                a
+                Sta
+                    nd = 
+            }
+        }
+    }
+    {
+        Ho
+        tPath();
+    }
+
+
+    base.Think()
+        ;
+}
+}
 }

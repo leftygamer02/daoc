@@ -5,6 +5,7 @@ using DOL.Database;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
+
 namespace DOL.GS
 {
     public class LieutenantSaxe : GameNPC
@@ -12,6 +13,7 @@ namespace DOL.GS
         public LieutenantSaxe() : base()
         {
         }
+
         public static int TauntID = 240;
         public static int TauntClassID = 10;
         public static Style Taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
@@ -23,29 +25,35 @@ namespace DOL.GS
         public static int EvadeFollowUpID = 242;
         public static int EvadeFollowUpClassID = 10;
         public static Style EvadeFollowUp = SkillBase.GetStyleByID(EvadeFollowUpID, EvadeFollowUpClassID);
+
         public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
             if (ad != null && ad.AttackResult == eAttackResult.Evaded)
             {
-                this.styleComponent.NextCombatBackupStyle = AfterEvade;
-                this.styleComponent.NextCombatStyle = EvadeFollowUp;
+                styleComponent.NextCombatBackupStyle = AfterEvade;
+                styleComponent.NextCombatStyle = EvadeFollowUp;
             }
+
             base.OnAttackedByEnemy(ad);
         }
+
         public override void OnAttackEnemy(AttackData ad) //on enemy actions
         {
             if (ad != null && ad.AttackResult == eAttackResult.HitUnstyled)
             {
-                this.styleComponent.NextCombatBackupStyle = Taunt;
-                this.styleComponent.NextCombatStyle = EvadeFollowUp;
+                styleComponent.NextCombatBackupStyle = Taunt;
+                styleComponent.NextCombatStyle = EvadeFollowUp;
             }
+
             if (ad != null && ad.AttackResult == eAttackResult.HitStyle && ad.Style.ID == 238 && ad.Style.ClassID == 10)
             {
-                this.styleComponent.NextCombatBackupStyle = Taunt;
-                this.styleComponent.NextCombatStyle = EvadeFollowUp;
+                styleComponent.NextCombatBackupStyle = Taunt;
+                styleComponent.NextCombatStyle = EvadeFollowUp;
             }
+
             base.OnAttackEnemy(ad);
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -56,11 +64,12 @@ namespace DOL.GS
                 default: return 25; // dmg reduction for rest resists
             }
         }
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
             {
-                if (this.IsOutOfTetherRange)
+                if (IsOutOfTetherRange)
                 {
                     if (damageType == eDamageType.Body || damageType == eDamageType.Cold ||
                         damageType == eDamageType.Energy || damageType == eDamageType.Heat
@@ -70,11 +79,11 @@ namespace DOL.GS
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System,
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
                                 eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
@@ -86,43 +95,47 @@ namespace DOL.GS
                 }
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 150;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
-            if (this.IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
+            if (IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
                 return true;
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 500;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.35;
         }
-        public override int MaxHealth
-        {
-            get { return 5000; }
-        }
+
+        public override int MaxHealth => 5000;
+
         public override bool AddToWorld()
         {
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Humanoid;
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Humanoid;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 441, 0, 0, 0);//modelID,color,effect,extension
+            var template = new GameNpcInventoryTemplate();
+            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 441, 0, 0, 0); //modelID,color,effect,extension
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 136, 0);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 135, 0);
             template.AddNPCEquipment(eInventorySlot.HandsArmor, 137, 0, 0, 0);
@@ -131,18 +144,12 @@ namespace DOL.GS
             template.AddNPCEquipment(eInventorySlot.TwoHandWeapon, 881, 0, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.TwoHanded);
-            if (!this.Styles.Contains(Taunt))
-            {
-                Styles.Add(Taunt);
-            }
-            if (!this.Styles.Contains(AfterEvade))
-            {
-                Styles.Add(AfterEvade);
-            }
-            if (!this.Styles.Contains(EvadeFollowUp))
-            {
-                Styles.Add(EvadeFollowUp);
-            }
+            if (!Styles.Contains(Taunt)) Styles.Add(Taunt);
+
+            if (!Styles.Contains(AfterEvade)) Styles.Add(AfterEvade);
+
+            if (!Styles.Contains(EvadeFollowUp)) Styles.Add(EvadeFollowUp);
+
             Strength = 70;
             Constitution = 100;
             Dexterity = 200;
@@ -155,7 +162,7 @@ namespace DOL.GS
             Flags = eFlags.GHOST;
             VisibleActiveWeaponSlots = 34;
             MeleeDamageType = eDamageType.Crush;
-            LieutenantSaxeBrain sbrain = new LieutenantSaxeBrain();
+            var sbrain = new LieutenantSaxeBrain();
             SetOwnBrain(sbrain);
             SaveIntoDatabase();
             base.AddToWorld();
@@ -166,13 +173,13 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Saxe", 277, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Saxe", 277, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Lieutenant Saxe not found, creating it...");
 
                 log.Warn("Initializing Lieutenant Saxe...");
-                LieutenantSaxe HOC = new LieutenantSaxe();
+                var HOC = new LieutenantSaxe();
                 HOC.Name = "Lieutenant Saxe";
                 HOC.Model = 8;
                 HOC.Realm = 0;
@@ -191,14 +198,17 @@ namespace DOL.GS
                 HOC.Y = 34750;
                 HOC.Z = 15365;
                 HOC.Heading = 4088;
-                LieutenantSaxeBrain ubrain = new LieutenantSaxeBrain();
+                var ubrain = new LieutenantSaxeBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
                 HOC.SaveIntoDatabase();
                 HOC.Brain.Start();
             }
             else
-                log.Warn("Lieutenant Saxe exist ingame, remove it and restart server if you want to add by script code.");
+            {
+                log.Warn(
+                    "Lieutenant Saxe exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -217,28 +227,23 @@ namespace DOL.AI.Brain
             AggroRange = 400;
             ThinkInterval = 1500;
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
             {
                 //set state to RETURN TO SPAWN
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-                this.Body.Health = this.Body.MaxHealth;
+                Body.Health = Body.MaxHealth;
             }
+
             if (Body.InCombat && HasAggro)
-            {
                 if (Body.TargetObject != null)
                 {
-                    GameLiving living = Body.TargetObject as GameLiving;
+                    var living = Body.TargetObject as GameLiving;
                 }
-            }
+
             base.Think();
         }
     }
 }
-
-
-
-
-
-

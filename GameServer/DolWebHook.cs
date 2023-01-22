@@ -1,6 +1,4 @@
-﻿
-
-/*
+﻿/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  *
  * This program is free software; you can redistribute it and/or
@@ -19,7 +17,7 @@
  *
  */
 
- //Created by Loki 2020
+//Created by Loki 2020
 
 using System;
 using System.Collections.Generic;
@@ -29,37 +27,32 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+internal class DolWebHook
 {
+    private HttpClient Client;
+    private string Url;
+
+    public string Name { get; set; }
 
 
-    class DolWebHook
+    public DolWebHook(string webhookUrl)
     {
-        private HttpClient Client;
-        private string Url;
-
-        public string Name { get; set; }
-
-
-        public DolWebHook(string webhookUrl)
-        {
-            Client = new HttpClient();
-            Url = webhookUrl;
-        }
-
-        public bool SendMessage(string content)
-        {
-            MultipartFormDataContent data = new MultipartFormDataContent();
-
-
-            data.Add(new StringContent(content), "content");
-
-
-
-            var resp = Client.PostAsync(Url, data).Result;
-
-            return resp.StatusCode == HttpStatusCode.NoContent;
-        }
+        Client = new HttpClient();
+        Url = webhookUrl;
     }
 
+    public bool SendMessage(string content)
+    {
+        var data = new MultipartFormDataContent();
+
+
+        data.Add(new StringContent(content), "content");
+
+
+        var resp = Client.PostAsync(Url, data).Result;
+
+        return resp.StatusCode == HttpStatusCode.NoContent;
+    }
 }

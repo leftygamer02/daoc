@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections;
 using System.Reflection;
@@ -24,37 +25,36 @@ using DOL.Database;
 using DOL.GS.PacketHandler;
 using log4net;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Description rÃ©sume de ITradeWindow.
+/// </summary>
+public interface ITradeWindow
 {
-	/// <summary>
-	/// Description résume de ITradeWindow.
-	/// </summary>
-	public interface ITradeWindow
-	{
-		ArrayList TradeItems { get; set;}
-		ArrayList PartnerTradeItems { get; }
+    ArrayList TradeItems { get; set; }
+    ArrayList PartnerTradeItems { get; }
 
-		long TradeMoney { get; set; }
-		long PartnerTradeMoney { get; }
+    long TradeMoney { get; set; }
+    long PartnerTradeMoney { get; }
 
-		GamePlayer Owner { get; }
-		GamePlayer Partner { get; }
+    GamePlayer Owner { get; }
+    GamePlayer Partner { get; }
 
-		int ItemsCount { get; }
-		int PartnerItemsCount { get; }
+    int ItemsCount { get; }
+    int PartnerItemsCount { get; }
 
-		bool Repairing { get; set; }
-		bool Combine { get; set; }
-		
-		bool AddItemToTrade(InventoryItem itemForTrade);
-		void RemoveItemToTrade(InventoryItem itemToRemove);
-		void AddMoneyToTrade(long money);
-		
-		bool AcceptTrade();
-		void TradeUpdate();
-	
-		object Sync { get; }
+    bool Repairing { get; set; }
+    bool Combine { get; set; }
 
-		void CloseTrade();
-	}
+    bool AddItemToTrade(InventoryItem itemForTrade);
+    void RemoveItemToTrade(InventoryItem itemToRemove);
+    void AddMoneyToTrade(long money);
+
+    bool AcceptTrade();
+    void TradeUpdate();
+
+    object Sync { get; }
+
+    void CloseTrade();
 }

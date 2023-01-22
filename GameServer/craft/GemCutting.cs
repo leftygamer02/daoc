@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -25,27 +26,24 @@ using DOL.GS.PacketHandler;
 using DOL.Language;
 using log4net;
 
-namespace DOL.GS
-{
-	public class GemCutting : AbstractCraftingSkill
-	{
-		public GemCutting()
-		{
-			Icon = 0x09;
-			Name = LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "Crafting.Name.Gemcutting");
-			eSkill = eCraftingSkill.GemCutting;
-		}
+namespace DOL.GS;
 
-		public override void GainCraftingSkillPoints(GamePlayer player, Recipe recipe)
-		{
-			if (Util.Chance(CalculateChanceToGainPoint(player, recipe.Level)))
-			{
-                if (player.GetCraftingSkillValue(eCraftingSkill.GemCutting) < subSkillCap)
-                {
-                    player.GainCraftingSkill(eCraftingSkill.GemCutting, 1);
-                    player.Out.SendUpdateCraftingSkills();
-                }
-			}
-		}
-	}
+public class GemCutting : AbstractCraftingSkill
+{
+    public GemCutting()
+    {
+        Icon = 0x09;
+        Name = LanguageMgr.GetTranslation(ServerProperties.Properties.SERV_LANGUAGE, "Crafting.Name.Gemcutting");
+        eSkill = eCraftingSkill.GemCutting;
+    }
+
+    public override void GainCraftingSkillPoints(GamePlayer player, Recipe recipe)
+    {
+        if (Util.Chance(CalculateChanceToGainPoint(player, recipe.Level)))
+            if (player.GetCraftingSkillValue(eCraftingSkill.GemCutting) < subSkillCap)
+            {
+                player.GainCraftingSkill(eCraftingSkill.GemCutting, 1);
+                player.Out.SendUpdateCraftingSkills();
+            }
+    }
 }

@@ -15,83 +15,80 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+/// <summary>
+/// Command handler for the /ignore command
+/// </summary>
+[CmdAttribute(
+    "&ignore",
+    ePrivLevel.Player,
+    "Adds/Removes a player to/from your Ignorelist!",
+    "/ignore <playerName>")]
+public class IgnoreCommandHandler : AbstractCommandHandler, ICommandHandler
 {
     /// <summary>
-    /// Command handler for the /ignore command
+    /// Method to handle the command and any arguments
     /// </summary>
-    [CmdAttribute(
-        "&ignore",
-        ePrivLevel.Player,
-        "Adds/Removes a player to/from your Ignorelist!",
-        "/ignore <playerName>")]
-    public class IgnoreCommandHandler : AbstractCommandHandler, ICommandHandler
+    /// <param name="client"></param>
+    /// <param name="args"></param>
+    public void OnCommand(GameClient client, string[] args)
     {
-        /// <summary>
-        /// Method to handle the command and any arguments
-        /// </summary>
-        /// <param name="client"></param>
-        /// <param name="args"></param>
-        public void OnCommand(GameClient client, string[] args)
+        if (args.Length < 2)
         {
-            if (args.Length < 2)
+            var ignores = client.Player.SerializedIgnoreList;
+            client.Out.SendCustomTextWindow("Ignore List (snapshot)", ignores);
+            return;
+        }
+
+        var name = string.Join(" ", args, 1, args.Length - 1);
+
+        var result = 0;
+        var fclient = WorldMgr.GuessClientByPlayerNameAndRealm(name, 0, false, out result);
+
+        if (fclient == null)
+        {
+            name = args[1];
+            if (client.Player.IgnoreList.Contains(name))
             {
-                string[] ignores = client.Player.SerializedIgnoreList;
-                client.Out.SendCustomTextWindow("Ignore List (snapshot)", ignores);
+                client.Player.ModifyIgnoreList(name, true);
                 return;
             }
-
-            string name = string.Join(" ", args, 1, args.Length - 1);
-
-            int result = 0;
-            GameClient fclient = WorldMgr.GuessClientByPlayerNameAndRealm(name, 0, false, out result);
-
-            if (fclient == null)
+            else
             {
-                name = args[1];
-                if (client.Player.IgnoreList.Contains(name))
-                {
-                    client.Player.ModifyIgnoreList(name, true);
-                    return;
-                }
-                else
-                {
-                    // nothing found
-                    DisplayMessage(client, "No players online with that name.");
-                    return;
-                }
+                // nothing found
+                DisplayMessage(client, "No players online with that name.");
+                return;
             }
+        }
 
-            switch (result)
+        switch (result)
+        {
+            case 2:
             {
-                case 2:
-                    {
-                        // name not unique
-                        DisplayMessage(client, "Character name is not unique.");
-                        break;
-                    }
-                case 3: // exact match
-                case 4: // guessed name
-                    {
-                        if (fclient == client)
-                        {
-                            DisplayMessage(client, "You can't add yourself!");
-                            return;
-                        }
+                // name not unique
+                DisplayMessage(client, "Character name is not unique.");
+                break;
+            }
+            case 3: // exact match
+            case 4: // guessed name
+            {
+                if (fclient == client)
+                {
+                    DisplayMessage(client, "You can't add yourself!");
+                    return;
+                }
 
-                        name = fclient.Player.Name;
-                        if (client.Player.IgnoreList.Contains(name))
-                        {
-                           client.Player.ModifyIgnoreList(name, true);
-                        }
-                        else
-                        {
-                            client.Player.ModifyIgnoreList(name, false);
-                        }
-                        break;
-                    }
+                name = fclient.Player.Name;
+                if (client.Player.IgnoreList.Contains(name))
+                    client.Player.ModifyIgnoreList(name, true);
+                else
+                    client.Player.ModifyIgnoreList(name, false);
+
+                break;
             }
         }
     }

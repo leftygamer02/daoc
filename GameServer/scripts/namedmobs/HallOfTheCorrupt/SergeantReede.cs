@@ -5,6 +5,7 @@ using DOL.Database;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
+
 namespace DOL.GS
 {
     public class SergeantReede : GameNPC
@@ -12,6 +13,7 @@ namespace DOL.GS
         public SergeantReede() : base()
         {
         }
+
         public static int AfterEvadeID = 145;
         public static int AfterEvadeClassID = 9;
         public static Style AfterEvade = SkillBase.GetStyleByID(AfterEvadeID, AfterEvadeClassID);
@@ -20,22 +22,24 @@ namespace DOL.GS
         public static int TauntClassID = 11;
         public static Style Taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
 
-        public static int SideID = 126;//flank
+        public static int SideID = 126; //flank
         public static int SideClassID = 11;
         public static Style Side = SkillBase.GetStyleByID(SideID, SideClassID);
 
-        public static int SideFollowUpID = 128;//shadow's rain flank followup
+        public static int SideFollowUpID = 128; //shadow's rain flank followup
         public static int SideFollowUpClassID = 11;
         public static Style SideFollowUp = SkillBase.GetStyleByID(SideFollowUpID, SideFollowUpClassID);
+
         public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
-
             base.OnAttackedByEnemy(ad);
         }
+
         public override void OnAttackEnemy(AttackData ad) //on enemy actions
         {
             base.OnAttackEnemy(ad);
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -51,7 +55,7 @@ namespace DOL.GS
         {
             if (source is GamePlayer || source is GamePet)
             {
-                if (this.IsOutOfTetherRange)
+                if (IsOutOfTetherRange)
                 {
                     if (damageType == eDamageType.Body || damageType == eDamageType.Cold ||
                         damageType == eDamageType.Energy || damageType == eDamageType.Heat
@@ -61,11 +65,11 @@ namespace DOL.GS
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System,
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
                                 eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
@@ -77,35 +81,39 @@ namespace DOL.GS
                 }
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 150;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
-            if (this.IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
+            if (IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
                 return true;
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 400;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.25;
         }
-        public override int MaxHealth
-        {
-            get { return 5000; }
-        }
+
+        public override int MaxHealth => 5000;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(7715);
@@ -119,10 +127,10 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Humanoid;
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Humanoid;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 186, 0, 0, 0);//modelID,color,effect,extension
+            var template = new GameNpcInventoryTemplate();
+            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 186, 0, 0, 0); //modelID,color,effect,extension
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 188, 0);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 187, 0);
             template.AddNPCEquipment(eInventorySlot.HandsArmor, 189, 0, 0, 0);
@@ -132,26 +140,18 @@ namespace DOL.GS
             template.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 25, 0, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.Standard);
-            if (!this.Styles.Contains(AfterEvade))
-            {
-                Styles.Add(AfterEvade);
-            }
-            if (!this.Styles.Contains(Taunt))
-            {
-                Styles.Add(Taunt);
-            }
-            if (!this.Styles.Contains(Side))
-            {
-                Styles.Add(Side);
-            }
-            if (!this.Styles.Contains(SideFollowUp))
-            {
-                Styles.Add(SideFollowUp);
-            }
+            if (!Styles.Contains(AfterEvade)) Styles.Add(AfterEvade);
+
+            if (!Styles.Contains(Taunt)) Styles.Add(Taunt);
+
+            if (!Styles.Contains(Side)) Styles.Add(Side);
+
+            if (!Styles.Contains(SideFollowUp)) Styles.Add(SideFollowUp);
+
             SergeantReedeBrain.CanWalk = false;
             VisibleActiveWeaponSlots = 16;
             MeleeDamageType = eDamageType.Thrust;
-            SergeantReedeBrain sbrain = new SergeantReedeBrain();
+            var sbrain = new SergeantReedeBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
@@ -163,13 +163,13 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Sergeant Reede", 277, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Sergeant Reede", 277, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Sergeant Reede not found, creating it...");
 
                 log.Warn("Initializing Sergeant Reede...");
-                SergeantReede HOC = new SergeantReede();
+                var HOC = new SergeantReede();
                 HOC.Name = "Sergeant Reede";
                 HOC.Model = 7;
                 HOC.Realm = 0;
@@ -183,14 +183,17 @@ namespace DOL.GS
                 HOC.Y = 34757;
                 HOC.Z = 15366;
                 HOC.Heading = 46;
-                SergeantReedeBrain ubrain = new SergeantReedeBrain();
+                var ubrain = new SergeantReedeBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
                 HOC.SaveIntoDatabase();
                 HOC.Brain.Start();
             }
             else
-                log.Warn("Sergeant Reede exist ingame, remove it and restart server if you want to add by script code.");
+            {
+                log.Warn(
+                    "Sergeant Reede exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
     }
 }
@@ -209,31 +212,32 @@ namespace DOL.AI.Brain
             AggroRange = 400;
             ThinkInterval = 1500;
         }
+
         public static bool CanWalk = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
             {
                 //set state to RETURN TO SPAWN
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-                this.Body.Health = this.Body.MaxHealth;
+                Body.Health = Body.MaxHealth;
                 CanWalk = false;
             }
+
             if (Body.InCombat && HasAggro)
-            {
                 if (Body.TargetObject != null)
                 {
-                    GameLiving living = Body.TargetObject as GameLiving;
-                    float angle = Body.TargetObject.GetAngle(Body);
+                    var living = Body.TargetObject as GameLiving;
+                    var angle = Body.TargetObject.GetAngle(Body);
                     if (living.effectListComponent.ContainsEffectForEffectType(eEffect.Stun))
-                    {
-                        if(CanWalk==false)
+                        if (CanWalk == false)
                         {
                             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(WalkSide), 500);
                             CanWalk = true;
                         }
-                    }
-                    if ((angle >= 45 && angle < 150) || (angle >= 210 && angle < 315))//side
+
+                    if ((angle >= 45 && angle < 150) || (angle >= 210 && angle < 315)) //side
                     {
                         Body.styleComponent.NextCombatBackupStyle = SergeantReede.Side;
                         Body.styleComponent.NextCombatStyle = SergeantReede.SideFollowUp;
@@ -243,35 +247,33 @@ namespace DOL.AI.Brain
                         Body.styleComponent.NextCombatBackupStyle = SergeantReede.Taunt;
                         Body.styleComponent.NextCombatStyle = SergeantReede.AfterEvade;
                     }
-                    if (!living.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity) && !living.effectListComponent.ContainsEffectForEffectType(eEffect.Stun))
-                    {
-                        CanWalk = false;//reset flag 
-                    }
+
+                    if (!living.effectListComponent.ContainsEffectForEffectType(eEffect.StunImmunity) &&
+                        !living.effectListComponent.ContainsEffectForEffectType(eEffect.Stun))
+                        CanWalk = false; //reset flag 
                 }
-            }
+
             base.Think();
         }
+
         public int WalkSide(ECSGameTimer timer)
         {
             if (Body.InCombat && HasAggro && Body.TargetObject != null)
-            {
                 if (Body.TargetObject is GameLiving)
                 {
-                    GameLiving living = Body.TargetObject as GameLiving;
-                    float angle = living.GetAngle(Body);
+                    var living = Body.TargetObject as GameLiving;
+                    var angle = living.GetAngle(Body);
                     Point2D positionalPoint;
-                    positionalPoint = living.GetPointFromHeading((ushort)(living.Heading + (90 * (4096.0 / 360.0))), 65);
+                    positionalPoint =
+                        living.GetPointFromHeading((ushort) (living.Heading + 90 * (4096.0 / 360.0)), 65);
                     //Body.WalkTo(positionalPoint.X, positionalPoint.Y, living.Z, 280);
                     Body.X = positionalPoint.X;
                     Body.Y = positionalPoint.Y;
                     Body.Z = living.Z;
                     Body.Heading = 1250;
                 }
-            }
+
             return 0;
         }
     }
 }
-
-
-

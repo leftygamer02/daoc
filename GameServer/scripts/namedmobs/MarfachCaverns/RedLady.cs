@@ -12,12 +12,14 @@ namespace DOL.GS
         public RedLady() : base()
         {
         }
+
         [ScriptLoadedEvent]
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             if (log.IsInfoEnabled)
                 log.Info("Red Lady initialized..");
         }
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
@@ -32,11 +34,11 @@ namespace DOL.GS
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System,
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
                                 eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
@@ -48,6 +50,7 @@ namespace DOL.GS
                 }
             }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -55,6 +58,7 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -65,24 +69,25 @@ namespace DOL.GS
                 default: return 30; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 30000; }
-        }
+
+        public override int MaxHealth => 30000;
+
         public override bool AddToWorld()
         {
             INpcTemplate npcTemplate = NpcTemplateMgr.GetTemplate(8819);
             LoadTemplate(npcTemplate);
-            
+
             Strength = npcTemplate.Strength;
             Constitution = npcTemplate.Constitution;
             Dexterity = npcTemplate.Dexterity;
@@ -92,11 +97,12 @@ namespace DOL.GS
             Intelligence = npcTemplate.Intelligence;
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             SpecialInnocent.InnocentCount = 0;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 58, 67, 0, 0);//modelID,color,effect,extension
+            var template = new GameNpcInventoryTemplate();
+            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 58, 67, 0, 0); //modelID,color,effect,extension
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 380, 67, 0);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 379, 67);
             template.AddNPCEquipment(eInventorySlot.HandsArmor, 381, 67, 0, 0);
@@ -108,29 +114,26 @@ namespace DOL.GS
 
             VisibleActiveWeaponSlots = 34;
             MeleeDamageType = eDamageType.Crush;
-            RedLadyBrain redladybrain = new RedLadyBrain();
+            var redladybrain = new RedLadyBrain();
             SetOwnBrain(redladybrain);
             base.AddToWorld();
             return true;
         }
+
         public override void Die(GameObject killer)
         {
             base.Die(killer);
 
-            foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(CurrentRegionID))
-            {
+            foreach (var npc in WorldMgr.GetNPCsFromRegion(CurrentRegionID))
                 if (npc.Brain is SpecialInnocentBrain)
-                {
                     npc.RemoveFromWorld();
-                }
-            }
         }
-    }  
+    }
 }
 
 namespace DOL.AI.Brain
 {
-    class RedLadyBrain : StandardMobBrain
+    internal class RedLadyBrain : StandardMobBrain
     {
         private static readonly log4net.ILog log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -141,14 +144,15 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 400;
         }
+
         private bool CanSpawnAdds = false;
+
         private int SpawnAdd(ECSGameTimer timer)
         {
-            for (int i = 0; i < 8; i++)
-            {
+            for (var i = 0; i < 8; i++)
                 if (SpecialInnocent.InnocentCount < 9)
                 {
-                    SpecialInnocent add = new SpecialInnocent();
+                    var add = new SpecialInnocent();
                     add.X = Body.X + Util.Random(-100, 100);
                     add.Y = Body.Y + Util.Random(-100, 100);
                     add.Z = Body.Z;
@@ -157,11 +161,13 @@ namespace DOL.AI.Brain
                     add.Heading = Body.Heading;
                     add.AddToWorld();
                 }
-            }
+
             CanSpawnAdds = false;
             return 0;
         }
+
         private bool RemoveAdds = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -172,43 +178,42 @@ namespace DOL.AI.Brain
                 CanSpawnAdds = false;
                 if (!RemoveAdds)
                 {
-                    foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                    {
+                    foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                         if (npc.Brain is SpecialInnocentBrain)
-                        {
                             npc.RemoveFromWorld();
-                        }
-                    }
+
                     RemoveAdds = true;
                 }
             }
+
             if (HasAggro && Body.InCombat && Body.TargetObject != null)
             {
                 RemoveAdds = false;
-                if(SpecialInnocent.InnocentCount<9 && CanSpawnAdds == false)
+                if (SpecialInnocent.InnocentCount < 9 && CanSpawnAdds == false)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnAdd), Util.Random(20000, 30000));
-                    CanSpawnAdds=true;
+                    CanSpawnAdds = true;
                 }
-                foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                {
+
+                foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                     if (npc.Brain is SpecialInnocentBrain)
-                    {
                         AddAggroListTo(npc.Brain as SpecialInnocentBrain);
-                    }
-                }
+
                 Body.CastSpell(RedLady_DD, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
             }
+
             base.Think();
         }
+
         public Spell m_RedLady_DD;
+
         public Spell RedLady_DD
         {
             get
             {
                 if (m_RedLady_DD == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 3;
                     spell.RecastDelay = Util.Random(25, 35);
@@ -231,15 +236,17 @@ namespace DOL.AI.Brain
                     spell.Type = eSpellType.DamageOverTime.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Matter;
+                    spell.DamageType = (int) eDamageType.Matter;
                     m_RedLady_DD = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_RedLady_DD);
                 }
+
                 return m_RedLady_DD;
             }
         }
     }
 }
+
 /// <summary>
 /// ////////////////////////////////////////////////////////////////Innocents//////////////////////////////////////////////
 /// </summary>
@@ -250,23 +257,24 @@ namespace DOL.GS
         public SpecialInnocent() : base()
         {
         }
+
         public override void OnAttackEnemy(AttackData ad)
         {
             if (Util.Chance(5))
-            {
-                if (ad != null && (ad.AttackResult == eAttackResult.HitUnstyled || ad.AttackResult == eAttackResult.HitStyle))
-                {
+                if (ad != null && (ad.AttackResult == eAttackResult.HitUnstyled ||
+                                   ad.AttackResult == eAttackResult.HitStyle))
                     CastSpell(Innocent_Disease, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                }
-            }
+
             base.OnAttackEnemy(ad);
         }
+
         public static int InnocentCount = 0;
+
         public override bool AddToWorld()
         {
-            Model = (ushort)Util.Random(442, 446);
+            Model = (ushort) Util.Random(442, 446);
             Size = 50;
-            Level = (byte)Util.Random(34, 38);
+            Level = (byte) Util.Random(34, 38);
             Name = "summoned innocent";
             Realm = eRealm.None;
             MaxDistance = 0;
@@ -279,26 +287,31 @@ namespace DOL.GS
             Dexterity = 120;
             Constitution = 100;
             Quickness = 98;
-            SpecialInnocentBrain innocentbrain = new SpecialInnocentBrain();
+            var innocentbrain = new SpecialInnocentBrain();
             SetOwnBrain(innocentbrain);
             base.AddToWorld();
             return true;
         }
+
         public override void Die(GameObject killer)
         {
             --InnocentCount;
             base.Die(killer);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 200;
         }
+
         public override long ExperienceValue => 0;
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.15;
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -309,18 +322,18 @@ namespace DOL.GS
                 default: return 15;
             }
         }
-        public override int MaxHealth
-        {
-            get { return 1000; }
-        }
+
+        public override int MaxHealth => 1000;
+
         public Spell m_Innocent_Disease;
+
         public Spell Innocent_Disease
         {
             get
             {
                 if (m_Innocent_Disease == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 0;
@@ -336,15 +349,17 @@ namespace DOL.GS
                     spell.Type = eSpellType.Disease.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Matter;
+                    spell.DamageType = (int) eDamageType.Matter;
                     m_Innocent_Disease = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Innocent_Disease);
                 }
+
                 return m_Innocent_Disease;
             }
         }
     }
 }
+
 namespace DOL.AI.Brain
 {
     public class SpecialInnocentBrain : StandardMobBrain
@@ -355,6 +370,7 @@ namespace DOL.AI.Brain
             AggroLevel = 100;
             AggroRange = 700;
         }
+
         public override void Think()
         {
             base.Think();

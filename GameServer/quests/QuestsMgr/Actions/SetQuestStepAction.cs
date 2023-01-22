@@ -16,38 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 
-namespace DOL.GS.Quests.Actions
+namespace DOL.GS.Quests.Actions;
+
+[ActionAttribute(ActionType = eActionType.SetQuestStep)]
+public class SetQuestStepAction : AbstractAction<Type, int>
 {
-    [ActionAttribute(ActionType = eActionType.SetQuestStep)]
-    public class SetQuestStepAction: AbstractAction<Type,int>
+    public SetQuestStepAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.SetQuestStep, p, q)
     {
+    }
 
-        public SetQuestStepAction(GameNPC defaultNPC, Object p, Object q)
-            : base(defaultNPC, eActionType.SetQuestStep, p, q) 
-        {
-        }
-
-        public SetQuestStepAction(GameNPC defaultNPC, Type questType, int questStep)
-            : this(defaultNPC, (object)questType, (object)questStep)
-        {
-        }
+    public SetQuestStepAction(GameNPC defaultNPC, Type questType, int questStep)
+        : this(defaultNPC, (object) questType, (object) questStep)
+    {
+    }
 
 
-        public override void Perform(DOLEvent e, object sender, EventArgs args)
-        {
-            GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-            AbstractQuest playerQuest = player.IsDoingQuest(P) as AbstractQuest;
-            if (playerQuest != null)
-            {
-                playerQuest.Step = Q;                
-            }
-        }
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+        var playerQuest = player.IsDoingQuest(P) as AbstractQuest;
+        if (playerQuest != null) playerQuest.Step = Q;
     }
 }

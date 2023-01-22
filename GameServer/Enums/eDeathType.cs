@@ -4,16 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+/// <summary>
+/// Death types ingame
+/// </summary>
+public enum eDeathType
 {
-    /// <summary>
-    /// Death types ingame
-    /// </summary>
-    public enum eDeathType
-    {
-        PvE,
-        RvR,
-        PvP,
-        None,
-    }
+    PvE,
+    RvR,
+    PvP,
+    None
 }

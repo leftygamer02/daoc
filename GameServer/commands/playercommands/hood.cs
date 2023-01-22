@@ -1,4 +1,4 @@
- /*
+/*
  * DAWN OF LIGHT - The first free open source DAoC server emulator
  * 
  * This program is free software; you can redistribute it and/or
@@ -17,20 +17,19 @@
  *
  */
 
-namespace DOL.GS.Commands
-{
-	[CmdAttribute("&hood", //command to handle
-		ePrivLevel.Player, //minimum privelege level
-		"Toggles the hood on and off when wearing a hooded cloak.", //command description
-		"/hood")] //usage
-	public class HoodCommandHandler : AbstractCommandHandler, ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "hood"))
-				return;
+namespace DOL.GS.Commands;
 
-			client.Player.IsCloakHoodUp = !client.Player.IsCloakHoodUp;
-		}
-	}
+[CmdAttribute("&hood", //command to handle
+    ePrivLevel.Player, //minimum privelege level
+    "Toggles the hood on and off when wearing a hooded cloak.", //command description
+    "/hood")] //usage
+public class HoodCommandHandler : AbstractCommandHandler, ICommandHandler
+{
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "hood"))
+            return;
+
+        client.Player.IsCloakHoodUp = !client.Player.IsCloakHoodUp;
+    }
 }

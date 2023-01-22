@@ -335,33 +335,29 @@ public class LostStoneofArawn : BaseQuest
         Nyaegha.AddToWorld();
 
         Nyaegha.StartAttack(player);
-        
+
         GameEventMgr.AddHandler(Nyaegha, GameLivingEvent.Dying, NyaeghaDying);
     }
+
     private void NyaeghaDying(DOLEvent e, object sender, EventArgs arguments)
     {
         var args = (DyingEventArgs) arguments;
-        
+
         var player = args.Killer as GamePlayer;
-        
+
         if (player == null)
             return;
-        
+
         if (player.Group != null)
-        {
             foreach (var gpl in player.Group.GetPlayersInTheGroup())
-            {
                 AdvanceAfterKill(gpl);
-            }
-        }
         else
-        {
             AdvanceAfterKill(player);
-        }
-        
+
         GameEventMgr.RemoveHandler(Nyaegha, GameLivingEvent.Dying, NyaeghaDying);
         Nyaegha.Delete();
     }
+
     private static void AdvanceAfterKill(GamePlayer player)
     {
         var quest = player.IsDoingQuest(typeof(LostStoneofArawn)) as LostStoneofArawn;
@@ -392,7 +388,6 @@ public class LostStoneofArawn : BaseQuest
 
         //only try to spawn him once per trigger even if multiple people enter at the same time
         if (Monitor.TryEnter(spawnLock))
-        {
             try
             {
                 // player near demon           
@@ -405,14 +400,12 @@ public class LostStoneofArawn : BaseQuest
             {
                 Monitor.Exit(spawnLock);
             }
-        }
         else
-        {
             return;
-        }
     }
 
-    static object spawnLock = new object();
+    private static object spawnLock = new();
+
     private static void TalkToHonaytrt(DOLEvent e, object sender, EventArgs args)
     {
         //We get the player from the event arguments and check if he qualifies		
@@ -769,6 +762,7 @@ public class LostStoneofArawn : BaseQuest
                 "Speak with N\'chever in Wearyall Village, he will be able to tell you more about the [Stone of Arawn].");
         }
     }
+
     public override void AbortQuest()
     {
         base.AbortQuest(); //Defined in Quest, changes the state, stores in DB etc ...

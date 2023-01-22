@@ -23,56 +23,59 @@
  * Desc:	Implements /faceloc command
  *
  */
+
 using DOL.GS.PacketHandler;
 
-namespace DOL.GS.Commands
+namespace DOL.GS.Commands;
+
+[CmdAttribute(
+    "&faceloc",
+    ePrivLevel.Player,
+    "Turns and faces your character into the direction of the x, y coordinates provided (using Mythic zone coordinates).",
+    "/faceloc [x] [y]")]
+public class LocFaceCommandHandler : AbstractCommandHandler, ICommandHandler
 {
-	[CmdAttribute(
-		"&faceloc",
-		ePrivLevel.Player,
-		"Turns and faces your character into the direction of the x, y coordinates provided (using Mythic zone coordinates).",
-		"/faceloc [x] [y]")]
-	public class LocFaceCommandHandler : AbstractCommandHandler,ICommandHandler
-	{
-		public void OnCommand(GameClient client, string[] args)
-		{
-			if (IsSpammingCommand(client.Player, "faceloc"))
-				return;
+    public void OnCommand(GameClient client, string[] args)
+    {
+        if (IsSpammingCommand(client.Player, "faceloc"))
+            return;
 
-			if (client.Player.IsTurningDisabled)
-			{
-				DisplayMessage(client, "You can't use this command now!");
-				return;
-			}
+        if (client.Player.IsTurningDisabled)
+        {
+            DisplayMessage(client, "You can't use this command now!");
+            return;
+        }
 
-			if (args.Length < 3)
-			{
-				client.Out.SendMessage
-					(
-					"Please enter X and Y coordinates.",
-					eChatType.CT_System,
-					eChatLoc.CL_SystemWindow
-					);
-				return;
-			}
-			int x = 0;
-			int y = 0;
-			try
-			{
-				x = System.Convert.ToInt32(args[1]);
-				y = System.Convert.ToInt32(args[2]);
-			}
-			catch
-			{
-				client.Out.SendMessage("Please enter a valid X and Y location.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
-				return;
-			}
-			int Xoffset = client.Player.CurrentZone.XOffset;
-			int Yoffset = client.Player.CurrentZone.YOffset;
-            Point2D gloc = new Point2D( Xoffset + x, Yoffset + y );
-			ushort direction = client.Player.GetHeading(gloc);
-			client.Player.Heading = direction;
-			client.Out.SendPlayerJump(true);
-		}
-	}
+        if (args.Length < 3)
+        {
+            client.Out.SendMessage
+            (
+                "Please enter X and Y coordinates.",
+                eChatType.CT_System,
+                eChatLoc.CL_SystemWindow
+            );
+            return;
+        }
+
+        var x = 0;
+        var y = 0;
+        try
+        {
+            x = System.Convert.ToInt32(args[1]);
+            y = System.Convert.ToInt32(args[2]);
+        }
+        catch
+        {
+            client.Out.SendMessage("Please enter a valid X and Y location.", eChatType.CT_System,
+                eChatLoc.CL_SystemWindow);
+            return;
+        }
+
+        var Xoffset = client.Player.CurrentZone.XOffset;
+        var Yoffset = client.Player.CurrentZone.YOffset;
+        var gloc = new Point2D(Xoffset + x, Yoffset + y);
+        var direction = client.Player.GetHeading(gloc);
+        client.Player.Heading = direction;
+        client.Out.SendPlayerJump(true);
+    }
 }

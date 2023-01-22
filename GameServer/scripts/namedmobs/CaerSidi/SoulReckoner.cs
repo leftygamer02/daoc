@@ -15,29 +15,28 @@ namespace DOL.GS
             : base()
         {
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
             {
-                case eDamageType.Slash: return 40;// dmg reduction for melee dmg
-                case eDamageType.Crush: return 40;// dmg reduction for melee dmg
-                case eDamageType.Thrust: return 40;// dmg reduction for melee dmg
-                default: return 70;// dmg reduction for rest resists
+                case eDamageType.Slash: return 40; // dmg reduction for melee dmg
+                case eDamageType.Crush: return 40; // dmg reduction for melee dmg
+                case eDamageType.Thrust: return 40; // dmg reduction for melee dmg
+                default: return 70; // dmg reduction for rest resists
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100 * ServerProperties.Properties.EPICS_DMG_MULTIPLIER;
         }
 
-        public override int MaxHealth
-        {
-            get { return 100000; }
-        }
+        public override int MaxHealth => 100000;
 
         public override int AttackRange
         {
-            get { return 450; }
+            get => 450;
             set { }
         }
 
@@ -73,9 +72,10 @@ namespace DOL.GS
             Empathy = npcTemplate.Empathy;
 
             MeleeDamageType = eDamageType.Spirit;
-            RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            RespawnInterval =
+                ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
             ReckonedSoul.SoulCount = 0;
-            SoulReckonerBrain adds = new SoulReckonerBrain();
+            var adds = new SoulReckonerBrain();
             SetOwnBrain(adds);
             if (CurrentRegionID == 60)
             {
@@ -93,6 +93,7 @@ namespace DOL.GS
                     spawn_souls = true;
                 }
             }
+
             SaveIntoDatabase();
             LoadedFromScript = false;
             base.AddToWorld();
@@ -103,9 +104,9 @@ namespace DOL.GS
 
         public void SpawnSouls()
         {
-            for (int i = 0; i < Util.Random(4, 6); i++) // Spawn 4-6 souls
+            for (var i = 0; i < Util.Random(4, 6); i++) // Spawn 4-6 souls
             {
-                ReckonedSoul Add = new ReckonedSoul();
+                var Add = new ReckonedSoul();
                 Add.X = X + Util.Random(-50, 80);
                 Add.Y = Y + Util.Random(-50, 80);
                 Add.Z = Z;
@@ -118,23 +119,18 @@ namespace DOL.GS
         public override void Die(GameObject killer) //on kill generate orbs
         {
             foreach (GameNPC npc in GetNPCsInRadius(8000))
-            {
                 if (npc != null && npc.IsAlive)
-                {
                     if (npc.Brain is ReckonedSoulBrain)
                         npc.RemoveFromWorld();
-                }
-            }
+
             spawn_souls = false;
             base.Die(killer);
         }
 
-        public void BroadcastMessage(String message)
+        public void BroadcastMessage(string message)
         {
             foreach (GamePlayer player in GetPlayersInRadius(WorldMgr.OBJ_UPDATE_DISTANCE))
-            {
                 player.Out.SendMessage(message, eChatType.CT_Broadcast, eChatLoc.CL_SystemWindow);
-            }
         }
 
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
@@ -145,11 +141,12 @@ namespace DOL.GS
                 {
                     GamePlayer truc;
                     if (source is GamePlayer)
-                        truc = (source as GamePlayer);
+                        truc = source as GamePlayer;
                     else
-                        truc = ((source as GamePet).Owner as GamePlayer);
+                        truc = (source as GamePet).Owner as GamePlayer;
                     if (truc != null)
-                        truc.Out.SendMessage(Name + " brushes off your attack!", eChatType.CT_System,eChatLoc.CL_ChatWindow);
+                        truc.Out.SendMessage(Name + " brushes off your attack!", eChatType.CT_System,
+                            eChatLoc.CL_ChatWindow);
 
                     base.TakeDamage(source, damageType, 0, 0);
                     return;
@@ -158,22 +155,25 @@ namespace DOL.GS
                 {
                     GamePlayer truc;
                     if (source is GamePlayer)
-                        truc = (source as GamePlayer);
+                        truc = source as GamePlayer;
                     else
-                        truc = ((source as GamePet).Owner as GamePlayer);
+                        truc = (source as GamePet).Owner as GamePlayer;
                     if (truc != null)
-                        truc.Out.SendMessage("The " + Name + " flickers briefly", eChatType.CT_System, eChatLoc.CL_ChatWindow);
+                        truc.Out.SendMessage("The " + Name + " flickers briefly", eChatType.CT_System,
+                            eChatLoc.CL_ChatWindow);
 
                     base.TakeDamage(source, damageType, damageAmount, criticalAmount);
                 }
             }
         }
+
         public override void DealDamage(AttackData ad)
         {
-            if(ad != null && ad.DamageType == eDamageType.Body)
+            if (ad != null && ad.DamageType == eDamageType.Body)
                 Health += ad.Damage;
             base.DealDamage(ad);
         }
+
         public override void EnemyKilled(GameLiving enemy)
         {
             Health += MaxHealth / 5; //heals if boss kill enemy
@@ -201,7 +201,7 @@ namespace DOL.AI.Brain
 
         public void AwayFromRoom()
         {
-            Point3D room_radius = new Point3D();
+            var room_radius = new Point3D();
             room_radius.X = 28472;
             room_radius.Y = 35857;
             room_radius.Z = 15370; //room middle point
@@ -209,30 +209,23 @@ namespace DOL.AI.Brain
             if (Body.CurrentRegionID == 60)
             {
                 if (Body.IsWithinRadius(room_radius, 900)) //if is in room
-                {
                     InRoom = true;
-                }
                 else //is out of room
-                {
                     InRoom = false;
-                }
             }
             else
             {
-                Point3D spawnpoint = new Point3D();
+                var spawnpoint = new Point3D();
                 spawnpoint.X = Body.SpawnPoint.X;
                 spawnpoint.Y = Body.SpawnPoint.Y;
                 spawnpoint.Z = Body.SpawnPoint.Z;
                 if (Body.IsWithinRadius(spawnpoint, 900)) //if is in radius of spawnpoint
-                {
                     InRoom = true;
-                }
                 else //is out of room
-                {
                     InRoom = false;
-                }
             }
         }
+
         public static bool BafMobs = false;
 
         public override void Think()
@@ -254,37 +247,37 @@ namespace DOL.AI.Brain
                     Body.TurnTo(Body.TargetObject);
                     Body.CastSpell(Reckoner_Lifetap, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells), false);
                 }
-                if(!Spawn_Souls)
+
+                if (!Spawn_Souls)
                 {
                     new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(SpawnSouls), Util.Random(10000, 15000));
                     Spawn_Souls = true;
                 }
+
                 if (BafMobs == false)
-                {
-                    foreach (GameNPC npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
-                    {
+                    foreach (var npc in WorldMgr.GetNPCsFromRegion(Body.CurrentRegionID))
                         if (npc != null)
-                        {
-                            if (npc.IsAlive && npc.PackageID == "SoulReckonerBaf" && npc.Brain is ReckonedSoulBrain brain)
+                            if (npc.IsAlive && npc.PackageID == "SoulReckonerBaf" &&
+                                npc.Brain is ReckonedSoulBrain brain)
                             {
                                 AddAggroListTo(brain); // add to aggro mobs with CryptLordBaf PackageID
                                 BafMobs = true;
                             }
-                        }
-                    }
-                }
             }
+
             base.Think();
         }
+
         #region Spawn Soul
+
         public static bool Spawn_Souls = false;
+
         private int SpawnSouls(ECSGameTimer timer)
         {
             if (Body.IsAlive && HasAggro)
-            {
-                for (int i = 0; i < Util.Random(1, 2); i++)
+                for (var i = 0; i < Util.Random(1, 2); i++)
                 {
-                    ReckonedSoul Add = new ReckonedSoul();
+                    var Add = new ReckonedSoul();
                     Add.X = Body.X + Util.Random(-50, 80);
                     Add.Y = Body.Y + Util.Random(-50, 80);
                     Add.Z = Body.Z;
@@ -292,29 +285,33 @@ namespace DOL.AI.Brain
                     Add.Heading = Body.Heading;
                     Add.AddToWorld();
                 }
-            }
+
             new ECSGameTimer(Body, new ECSGameTimer.ECSTimerCallback(ResetRespawnSouls), Util.Random(60000, 70000));
             return 0;
         }
+
         private int ResetRespawnSouls(ECSGameTimer timer)
         {
             Spawn_Souls = false;
             return 0;
         }
+
         #endregion
 
         #region Spell
+
         public Spell m_Reckoner_Lifetap;
+
         public Spell Reckoner_Lifetap
         {
             get
             {
                 if (m_Reckoner_Lifetap == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 3;
-                    spell.RecastDelay = Util.Random(8,12);
+                    spell.RecastDelay = Util.Random(8, 12);
                     spell.ClientEffect = 9191;
                     spell.Icon = 710;
                     spell.Damage = 650;
@@ -329,9 +326,11 @@ namespace DOL.AI.Brain
                     m_Reckoner_Lifetap = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Reckoner_Lifetap);
                 }
+
                 return m_Reckoner_Lifetap;
             }
         }
+
         #endregion
     }
 }
@@ -352,7 +351,7 @@ namespace DOL.GS
 
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
 
@@ -367,21 +366,30 @@ namespace DOL.GS
             return 0.15;
         }
 
-        public override int MaxHealth
-        {
-            get { return 20000; }
-        }
+        public override int MaxHealth => 20000;
 
         public override void Die(GameObject killer)
         {
             --SoulCount;
             base.Die(killer);
         }
+
         public override void DropLoot(GameObject killer)
         {
         }
-        public override short Quickness { get => base.Quickness; set => base.Quickness = 80; }
-        public override short Strength { get => base.Strength; set => base.Strength = 150; }
+
+        public override short Quickness
+        {
+            get => base.Quickness;
+            set => base.Quickness = 80;
+        }
+
+        public override short Strength
+        {
+            get => base.Strength;
+            set => base.Strength = 150;
+        }
+
         public static int SoulCount = 0;
 
         public override bool AddToWorld()
@@ -398,7 +406,7 @@ namespace DOL.GS
             Size = 100;
             Level = 75;
             MaxSpeedBase = 230;
-            Flags = eFlags.GHOST;           
+            Flags = eFlags.GHOST;
 
             Faction = FactionMgr.GetFactionByID(64);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(64));
@@ -406,7 +414,7 @@ namespace DOL.GS
             Realm = eRealm.None;
             ++SoulCount;
 
-            ReckonedSoulBrain adds = new ReckonedSoulBrain();
+            var adds = new ReckonedSoulBrain();
             SetOwnBrain(adds);
             LoadedFromScript = true;
             base.AddToWorld();
@@ -429,6 +437,7 @@ namespace DOL.AI.Brain
             AggroRange = 500;
             CanBAF = false;
         }
+
         public override void Think()
         {
             base.Think();

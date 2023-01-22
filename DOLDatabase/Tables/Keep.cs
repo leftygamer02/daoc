@@ -16,395 +16,339 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using DOL.Database.Attributes;
 
-namespace DOL.Database
+namespace DOL.Database;
+
+/// <summary>
+/// Skin types to use for this keep
+/// 0 = any, 1 = old, 2 = new
+/// </summary>
+public enum eKeepSkinType : byte
 {
-	/// <summary>
-	/// Skin types to use for this keep
-	/// 0 = any, 1 = old, 2 = new
-	/// </summary>
-	public enum eKeepSkinType : byte
-	{
-		/// <summary>
-		/// Use server proerty to determine skin
-		/// </summary>
-		Any = 0,
-		/// <summary>
-		/// Use old skins
-		/// </summary>
-		Old = 1,
-		/// <summary>
-		/// Use new skins
-		/// </summary>
-		New = 2,
-	}
+    /// <summary>
+    /// Use server proerty to determine skin
+    /// </summary>
+    Any = 0,
+
+    /// <summary>
+    /// Use old skins
+    /// </summary>
+    Old = 1,
+
+    /// <summary>
+    /// Use new skins
+    /// </summary>
+    New = 2
+}
+
+/// <summary>
+/// DB Keep is database of keep
+/// </summary>
+[DataTable(TableName = "Keep")]
+public class DBKeep : DataObject
+{
+    private string m_name;
+    private ushort m_region;
+    private int m_x;
+    private int m_y;
+    private int m_z;
+    private ushort m_heading;
+    private byte m_realm;
+    private byte m_level;
+    private int m_keepID;
+    private string m_guildName;
+    private int m_albionDifficultyLevel;
+    private int m_midgardDifficultyLevel;
+    private int m_hiberniaDifficultyLevel;
+    private int m_originalRealm;
+    private int m_type;
+    private byte m_baseLevel;
+    private string m_createInfo;
+    private byte m_skinType;
 
 
-	/// <summary>
-	/// DB Keep is database of keep
-	/// </summary>
-	[DataTable(TableName = "Keep")]
-	public class DBKeep : DataObject
-	{
-		private string m_name;
-		private ushort m_region;
-		private int m_x;
-		private int m_y;
-		private int m_z;
-		private ushort m_heading;
-		private byte m_realm;
-		private byte m_level;
-		private int m_keepID;
-		private string m_guildName;
-		private int m_albionDifficultyLevel;
-		private int m_midgardDifficultyLevel;
-		private int m_hiberniaDifficultyLevel;
-		private int m_originalRealm;
-		private int m_type;
-		private byte m_baseLevel;
-		private string m_createInfo;
-		private byte m_skinType;
+    public DBKeep()
+    {
+        m_name = string.Empty;
+        m_albionDifficultyLevel = 1;
+        m_midgardDifficultyLevel = 1;
+        m_hiberniaDifficultyLevel = 1;
+        m_type = 0; // Default = Any
+        m_createInfo = string.Empty;
+    }
 
+    /// <summary>
+    /// Create a keep row
+    /// </summary>
+    public DBKeep(string createInfo)
+    {
+        m_name = string.Empty;
+        m_albionDifficultyLevel = 1;
+        m_midgardDifficultyLevel = 1;
+        m_hiberniaDifficultyLevel = 1;
+        m_type = 0; // Default = Any
+        m_createInfo = createInfo;
+    }
 
-		public DBKeep()
-		{
-			m_name = string.Empty;
-			m_albionDifficultyLevel = 1;
-			m_midgardDifficultyLevel = 1;
-			m_hiberniaDifficultyLevel = 1;
-			m_type = 0; // Default = Any
-			m_createInfo = string.Empty;
-		}
+    /// <summary>
+    /// Index of keep
+    /// </summary>
+    [PrimaryKey]
+    public int KeepID
+    {
+        get => m_keepID;
+        set
+        {
+            Dirty = true;
+            m_keepID = value;
+        }
+    }
 
-		/// <summary>
-		/// Create a keep row
-		/// </summary>
-		public DBKeep(string createInfo)
-		{
-			m_name = string.Empty;
-			m_albionDifficultyLevel = 1;
-			m_midgardDifficultyLevel = 1;
-			m_hiberniaDifficultyLevel = 1;
-			m_type = 0; // Default = Any
-			m_createInfo = createInfo;
-		}
+    /// <summary>
+    /// Name of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public string Name
+    {
+        get => m_name;
+        set
+        {
+            Dirty = true;
+            m_name = value;
+        }
+    }
 
-		/// <summary>
-		/// Index of keep
-		/// </summary>
-		[PrimaryKey]
-		public int KeepID
-		{
-			get
-			{
-				return m_keepID;
-			}
-			set
-			{
-				Dirty = true;
-				m_keepID = value;
-			}
-		}
+    /// <summary>
+    /// Region of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public ushort Region
+    {
+        get => m_region;
+        set
+        {
+            Dirty = true;
+            m_region = value;
+        }
+    }
 
-		/// <summary>
-		/// Name of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public string Name
-		{
-			get
-			{
-				return m_name;
-			}
-			set
-			{
-				Dirty = true;
-				m_name = value;
-			}
-		}
+    /// <summary>
+    /// X position of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int X
+    {
+        get => m_x;
+        set
+        {
+            Dirty = true;
+            m_x = value;
+        }
+    }
 
-		/// <summary>
-		/// Region of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public ushort Region
-		{
-			get
-			{
-				return m_region;
-			}
-			set
-			{
-				Dirty = true;
-				m_region = value;
-			}
-		}
+    /// <summary>
+    /// Y position of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Y
+    {
+        get => m_y;
+        set
+        {
+            Dirty = true;
+            m_y = value;
+        }
+    }
 
-		/// <summary>
-		/// X position of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int X
-		{
-			get
-			{
-				return m_x;
-			}
-			set
-			{
-				Dirty = true;
-				m_x = value;
-			}
-		}
+    /// <summary>
+    /// Z position of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int Z
+    {
+        get => m_z;
+        set
+        {
+            Dirty = true;
+            m_z = value;
+        }
+    }
 
-		/// <summary>
-		/// Y position of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int Y
-		{
-			get
-			{
-				return m_y;
-			}
-			set
-			{
-				Dirty = true;
-				m_y = value;
-			}
-		}
+    /// <summary>
+    /// heading of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public ushort Heading
+    {
+        get => m_heading;
+        set
+        {
+            Dirty = true;
+            m_heading = value;
+        }
+    }
 
-		/// <summary>
-		/// Z position of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int Z
-		{
-			get
-			{
-				return m_z;
-			}
-			set
-			{
-				Dirty = true;
-				m_z = value;
-			}
-		}
+    /// <summary>
+    /// Realm of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public byte Realm
+    {
+        get => m_realm;
+        set
+        {
+            Dirty = true;
+            m_realm = value;
+        }
+    }
 
-		/// <summary>
-		/// heading of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public ushort Heading
-		{
-			get
-			{
-				return m_heading;
-			}
-			set
-			{
-				Dirty = true;
-				m_heading = value;
-			}
-		}
+    /// <summary>
+    /// Level of keep
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public byte Level
+    {
+        get => m_level;
+        set
+        {
+            Dirty = true;
+            m_level = value;
+        }
+    }
 
-		/// <summary>
-		/// Realm of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public byte Realm
-		{
-			get
-			{
-				return m_realm;
-			}
-			set
-			{
-				Dirty = true;
-				m_realm = value;
-			}
-		}
+    /// <summary>
+    /// The guild chich claim this keep
+    /// </summary>
+    [DataElement(AllowDbNull = true)]
+    public string ClaimedGuildName
+    {
+        get => m_guildName;
+        set
+        {
+            Dirty = true;
+            m_guildName = value;
+        }
+    }
 
-		/// <summary>
-		/// Level of keep
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public byte Level
-		{
-			get
-			{
-				return m_level;
-			}
-			set
-			{
-				Dirty = true;
-				m_level = value;
-			}
-		}
+    /// <summary>
+    /// Albion difficulty level
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int AlbionDifficultyLevel
+    {
+        get => m_albionDifficultyLevel;
+        set
+        {
+            Dirty = true;
+            m_albionDifficultyLevel = value;
+        }
+    }
 
-		/// <summary>
-		/// The guild chich claim this keep
-		/// </summary>
-		[DataElement(AllowDbNull = true)]
-		public string ClaimedGuildName
-		{
-			get
-			{
-				return m_guildName;
-			}
-			set
-			{
-				Dirty = true;
-				m_guildName = value;
-			}
-		}
+    /// <summary>
+    /// Midgard difficulty level
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int MidgardDifficultyLevel
+    {
+        get => m_midgardDifficultyLevel;
+        set
+        {
+            Dirty = true;
+            m_midgardDifficultyLevel = value;
+        }
+    }
 
-		/// <summary>
-		/// Albion difficulty level
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int AlbionDifficultyLevel
-		{
-			get
-			{
-				return m_albionDifficultyLevel;
-			}
-			set
-			{
-				Dirty = true;
-				m_albionDifficultyLevel = value;
-			}
-		}
+    /// <summary>
+    /// Hibernia difficulty level
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int HiberniaDifficultyLevel
+    {
+        get => m_hiberniaDifficultyLevel;
+        set
+        {
+            Dirty = true;
+            m_hiberniaDifficultyLevel = value;
+        }
+    }
 
-		/// <summary>
-		/// Midgard difficulty level
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int MidgardDifficultyLevel
-		{
-			get
-			{
-				return m_midgardDifficultyLevel;
-			}
-			set
-			{
-				Dirty = true;
-				m_midgardDifficultyLevel = value;
-			}
-		}
+    /// <summary>
+    /// Realm at start
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int OriginalRealm
+    {
+        get => m_originalRealm;
+        set
+        {
+            Dirty = true;
+            m_originalRealm = value;
+        }
+    }
 
-		/// <summary>
-		/// Hibernia difficulty level
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int HiberniaDifficultyLevel
-		{
-			get
-			{
-				return m_hiberniaDifficultyLevel;
-			}
-			set
-			{
-				Dirty = true;
-				m_hiberniaDifficultyLevel = value;
-			}
-		}
+    /// <summary>
+    /// Keep type
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public int KeepType
+    {
+        get => m_type;
+        set
+        {
+            Dirty = true;
+            m_type = value;
+        }
+    }
 
-		/// <summary>
-		/// Realm at start
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int OriginalRealm
-		{
-			get
-			{
-				return m_originalRealm;
-			}
-			set
-			{
-				Dirty = true;
-				m_originalRealm = value;
-			}
-		}
+    /// <summary>
+    /// The base keep level
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public byte BaseLevel
+    {
+        get => m_baseLevel;
+        set
+        {
+            Dirty = true;
+            m_baseLevel = value;
+        }
+    }
 
-		/// <summary>
-		/// Keep type
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public int KeepType
-		{
-			get
-			{
-				return m_type;
-			}
-			set
-			{
-				Dirty = true;
-				m_type = value;
-			}
-		}
+    /// <summary>
+    /// Use old or new skins for this keep.  0 = any, 1 = old, 2 = new
+    /// Access via KeepSkinType
+    /// </summary>
+    [DataElement(AllowDbNull = false)]
+    public byte SkinType
+    {
+        get => m_skinType;
+        set
+        {
+            Dirty = true;
+            m_skinType = value;
+        }
+    }
 
-		/// <summary>
-		/// The base keep level
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public byte BaseLevel
-		{
-			get
-			{
-				return m_baseLevel;
-			}
-			set
-			{
-				Dirty = true; m_baseLevel = value;
-			}
-		}
+    /// <summary>
+    /// What skin type does this keep use?
+    /// </summary>
+    public eKeepSkinType KeepSkinType
+    {
+        get => (eKeepSkinType) SkinType;
+        set => SkinType = (byte) value;
+    }
 
-		/// <summary>
-		/// Use old or new skins for this keep.  0 = any, 1 = old, 2 = new
-		/// Access via KeepSkinType
-		/// </summary>
-		[DataElement(AllowDbNull = false)]
-		public byte SkinType
-		{
-			get
-			{
-				return m_skinType;
-			}
-			set
-			{
-				Dirty = true; m_skinType = value;
-			}
-		}
-
-		/// <summary>
-		/// What skin type does this keep use?
-		/// </summary>
-		public eKeepSkinType KeepSkinType
-		{
-			get
-			{
-				return (eKeepSkinType)SkinType;
-			}
-			set
-			{
-				SkinType = (byte)value;
-			}
-		}
-
-		[DataElement(AllowDbNull = false, Varchar = 255)]
-		public string CreateInfo
-		{
-			get
-			{
-				return m_createInfo;
-			}
-			set
-			{
-				Dirty = true; m_createInfo = value;
-			}
-		}
-	}
+    [DataElement(AllowDbNull = false, Varchar = 255)]
+    public string CreateInfo
+    {
+        get => m_createInfo;
+        set
+        {
+            Dirty = true;
+            m_createInfo = value;
+        }
+    }
 }

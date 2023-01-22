@@ -5,6 +5,7 @@ using DOL.Database;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
+
 namespace DOL.GS
 {
     public class LieutenantElva : GameNPC
@@ -12,6 +13,7 @@ namespace DOL.GS
         public LieutenantElva() : base()
         {
         }
+
         public static int TauntID = 342;
         public static int TauntClassID = 9;
         public static Style Taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
@@ -27,44 +29,47 @@ namespace DOL.GS
         public static int EvadeFollowUpID = 345;
         public static int EvadeFollowUpClassID = 9;
         public static Style EvadeFollowUp = SkillBase.GetStyleByID(EvadeFollowUpID, EvadeFollowUpClassID);
+
         public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
-            if(ad != null && ad.AttackResult == eAttackResult.Evaded)
+            if (ad != null && ad.AttackResult == eAttackResult.Evaded)
             {
-                this.styleComponent.NextCombatBackupStyle = AfterEvade;
-                this.styleComponent.NextCombatStyle = EvadeFollowUp;
+                styleComponent.NextCombatBackupStyle = AfterEvade;
+                styleComponent.NextCombatStyle = EvadeFollowUp;
             }
+
             base.OnAttackedByEnemy(ad);
         }
+
         public override void OnAttackEnemy(AttackData ad) //on enemy actions
         {
-            if(ad != null && ad.AttackResult == eAttackResult.HitUnstyled)
+            if (ad != null && ad.AttackResult == eAttackResult.HitUnstyled)
             {
-                this.styleComponent.NextCombatBackupStyle = Taunt;
-                this.styleComponent.NextCombatStyle = TauntFollowUp;
+                styleComponent.NextCombatBackupStyle = Taunt;
+                styleComponent.NextCombatStyle = TauntFollowUp;
             }
+
             if (ad != null && ad.AttackResult == eAttackResult.HitStyle && ad.Style.ID == 342 && ad.Style.ClassID == 9)
             {
-                this.styleComponent.NextCombatBackupStyle = Taunt;
-                this.styleComponent.NextCombatStyle = TauntFollowUp;
+                styleComponent.NextCombatBackupStyle = Taunt;
+                styleComponent.NextCombatStyle = TauntFollowUp;
             }
+
             if (ad != null && ad.AttackResult == eAttackResult.HitStyle && ad.Style.ID == 340 && ad.Style.ClassID == 9)
             {
-                this.styleComponent.NextCombatBackupStyle = Taunt;
-                this.styleComponent.NextCombatStyle = EvadeFollowUp;
+                styleComponent.NextCombatBackupStyle = Taunt;
+                styleComponent.NextCombatStyle = EvadeFollowUp;
             }
+
             if (Util.Chance(35))
-            {
                 if (!ad.Target.effectListComponent.ContainsEffectForEffectType(eEffect.DamageOverTime))
-                {
-                    if (ad != null && (ad.AttackResult == eAttackResult.HitUnstyled || ad.AttackResult == eAttackResult.HitStyle))
-                    {
-                        this.CastSpell(Poison, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                    }
-                }
-            }
+                    if (ad != null && (ad.AttackResult == eAttackResult.HitUnstyled ||
+                                       ad.AttackResult == eAttackResult.HitStyle))
+                        CastSpell(Poison, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
+
             base.OnAttackEnemy(ad);
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -80,7 +85,7 @@ namespace DOL.GS
         {
             if (source is GamePlayer || source is GamePet)
             {
-                if (this.IsOutOfTetherRange)
+                if (IsOutOfTetherRange)
                 {
                     if (damageType == eDamageType.Body || damageType == eDamageType.Cold ||
                         damageType == eDamageType.Energy || damageType == eDamageType.Heat
@@ -90,11 +95,11 @@ namespace DOL.GS
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System,
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
                                 eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
@@ -106,43 +111,47 @@ namespace DOL.GS
                 }
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 150;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
-            if (this.IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
+            if (IsAlive && keyName == DOL.GS.Abilities.CCImmunity)
                 return true;
 
             return base.HasAbility(keyName);
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 500;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.35;
         }
-        public override int MaxHealth
-        {
-            get { return 5000; }
-        }
+
+        public override int MaxHealth => 5000;
+
         public override bool AddToWorld()
         {
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Humanoid;
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Humanoid;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 134, 0, 0, 0);//modelID,color,effect,extension
+            var template = new GameNpcInventoryTemplate();
+            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 134, 0, 0, 0); //modelID,color,effect,extension
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 136, 0);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 135, 0);
             template.AddNPCEquipment(eInventorySlot.HandsArmor, 137, 0, 0, 0);
@@ -152,22 +161,14 @@ namespace DOL.GS
             template.AddNPCEquipment(eInventorySlot.LeftHandWeapon, 3, 0, 0);
             Inventory = template.CloseTemplate();
             SwitchWeapon(eActiveWeaponSlot.Standard);
-            if (!this.Styles.Contains(TauntFollowUp))
-            {
-                Styles.Add(TauntFollowUp);
-            }
-            if (!this.Styles.Contains(Taunt))
-            {
-                Styles.Add(Taunt);
-            }
-            if (!this.Styles.Contains(AfterEvade))
-            {
-                Styles.Add(AfterEvade);
-            }
-            if (!this.Styles.Contains(EvadeFollowUp))
-            {
-                Styles.Add(EvadeFollowUp);
-            }
+            if (!Styles.Contains(TauntFollowUp)) Styles.Add(TauntFollowUp);
+
+            if (!Styles.Contains(Taunt)) Styles.Add(Taunt);
+
+            if (!Styles.Contains(AfterEvade)) Styles.Add(AfterEvade);
+
+            if (!Styles.Contains(EvadeFollowUp)) Styles.Add(EvadeFollowUp);
+
             Strength = 50;
             Constitution = 100;
             Dexterity = 200;
@@ -181,7 +182,7 @@ namespace DOL.GS
             Flags = eFlags.GHOST;
             VisibleActiveWeaponSlots = 16;
             MeleeDamageType = eDamageType.Slash;
-            LieutenantElvaBrain sbrain = new LieutenantElvaBrain();
+            var sbrain = new LieutenantElvaBrain();
             SetOwnBrain(sbrain);
             SaveIntoDatabase();
             base.AddToWorld();
@@ -192,13 +193,13 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Elva", 277, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Lieutenant Elva", 277, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Lieutenant Elva not found, creating it...");
 
                 log.Warn("Initializing Lieutenant Elva...");
-                LieutenantElva HOC = new LieutenantElva();
+                var HOC = new LieutenantElva();
                 HOC.Name = "Lieutenant Elva";
                 HOC.Model = 5;
                 HOC.Realm = 0;
@@ -217,15 +218,19 @@ namespace DOL.GS
                 HOC.Y = 35631;
                 HOC.Z = 15365;
                 HOC.Heading = 2044;
-                LieutenantElvaBrain ubrain = new LieutenantElvaBrain();
+                var ubrain = new LieutenantElvaBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
                 HOC.SaveIntoDatabase();
                 HOC.Brain.Start();
             }
             else
-                log.Warn("Lieutenant Elva exist ingame, remove it and restart server if you want to add by script code.");
+            {
+                log.Warn(
+                    "Lieutenant Elva exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
+
         private Spell m_Poison;
 
         private Spell Poison
@@ -234,7 +239,7 @@ namespace DOL.GS
             {
                 if (m_Poison == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 2;
@@ -254,7 +259,7 @@ namespace DOL.GS
                     spell.Type = eSpellType.DamageOverTime.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Body;
+                    spell.DamageType = (int) eDamageType.Body;
                     m_Poison = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Poison);
                 }
@@ -279,27 +284,23 @@ namespace DOL.AI.Brain
             AggroRange = 400;
             ThinkInterval = 1500;
         }
+
         public override void Think()
         {
             if (!CheckProximityAggro())
             {
                 //set state to RETURN TO SPAWN
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
-                this.Body.Health = this.Body.MaxHealth;
+                Body.Health = Body.MaxHealth;
             }
+
             if (Body.InCombat && HasAggro)
-            {
                 if (Body.TargetObject != null)
                 {
-                    GameLiving living = Body.TargetObject as GameLiving;
+                    var living = Body.TargetObject as GameLiving;
                 }
-            }
+
             base.Think();
         }
     }
 }
-
-
-
-
-

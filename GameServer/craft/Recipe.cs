@@ -16,209 +16,216 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
 using log4net;
-
 using DOL.Database;
 using DOL.GS.ServerProperties;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class Recipe
 {
-    public class Recipe
+    protected static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+    private Ingredient[] ingredients;
+
+    public ItemTemplate Product { get; }
+    public eCraftingSkill RequiredCraftingSkill { get; }
+    public int Level { get; }
+    public List<Ingredient> Ingredients => new(ingredients);
+    public bool IsForUniqueProduct { get; private set; } = false;
+
+    public Recipe(ItemTemplate product, List<Ingredient> ingredients)
     {
-        protected static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        this.ingredients = ingredients.ToArray();
+        Product = product;
+    }
 
-        private Ingredient[] ingredients;
+    public Recipe(ItemTemplate product, List<Ingredient> ingredients, eCraftingSkill requiredSkill, int level,
+        bool makeTemplated)
+        : this(product, ingredients)
+    {
+        RequiredCraftingSkill = requiredSkill;
+        Level = level;
+        IsForUniqueProduct = !makeTemplated;
+    }
 
-        public ItemTemplate Product { get; }
-        public eCraftingSkill RequiredCraftingSkill { get; }
-        public int Level { get; }
-        public List<Ingredient> Ingredients => new List<Ingredient>(ingredients);
-        public bool IsForUniqueProduct { get; private set; } = false;
-
-        public Recipe(ItemTemplate product, List<Ingredient> ingredients)
+    public long CostToCraft
+    {
+        get
         {
-            this.ingredients = ingredients.ToArray();
-            Product = product;
+            long result = 0;
+            foreach (var ingredient in ingredients) result += ingredient.Cost;
+
+            return result;
         }
+    }
 
-        public Recipe(ItemTemplate product, List<Ingredient> ingredients, eCraftingSkill requiredSkill, int level, bool makeTemplated)
-            : this(product, ingredients)
-        {
-            RequiredCraftingSkill = requiredSkill;
-            Level = level;
-            IsForUniqueProduct = !makeTemplated;
-        }
+    public void SetRecommendedProductPriceInDB()
+    {
+        var product = Product;
+        var totalPrice = CostToCraft;
+        var updatePrice = !(product.Name.EndsWith("metal bars") ||
+                            product.Name.EndsWith("leather square") ||
+                            product.Name.EndsWith("cloth square") ||
+                            product.Name.EndsWith("wooden boards"));
 
-        public long CostToCraft
+        if (product.PackageID.Contains("NoPriceUpdate"))
+            updatePrice = false;
+
+        if (updatePrice)
         {
-            get
+            long pricetoset;
+            var secondaryCraftingSkills = new List<eCraftingSkill>()
             {
-                long result = 0;
-                foreach (var ingredient in ingredients)
-                {
-                    result += ingredient.Cost;
-                }
-                return result;
-            }
-        }
+                eCraftingSkill.MetalWorking, eCraftingSkill.LeatherCrafting, eCraftingSkill.ClothWorking,
+                eCraftingSkill.WoodWorking
+            };
 
-        public void SetRecommendedProductPriceInDB()
-        {
-            var product = Product;
-            var totalPrice = CostToCraft;
-            bool updatePrice = !(product.Name.EndsWith("metal bars") ||
-                                 product.Name.EndsWith("leather square") ||
-                                 product.Name.EndsWith("cloth square") ||
-                                 product.Name.EndsWith("wooden boards"));
+            if (secondaryCraftingSkills.Contains(RequiredCraftingSkill))
+                pricetoset =
+                    Math.Abs((long) (totalPrice * 2 * Properties.CRAFTING_SECONDARYCRAFT_SELLBACK_PERCENT) / 100);
+            else
+                pricetoset = Math.Abs(totalPrice * 2 * Properties.CRAFTING_SELLBACK_PERCENT / 100);
 
-            if (product.PackageID.Contains("NoPriceUpdate"))
-                updatePrice = false;
-
-            if (updatePrice)
+            if (pricetoset > 0 && product.Price != pricetoset)
             {
-                long pricetoset;
-                var secondaryCraftingSkills = new List<eCraftingSkill>() { 
-                    eCraftingSkill.MetalWorking, eCraftingSkill.LeatherCrafting, eCraftingSkill.ClothWorking, eCraftingSkill.WoodWorking
-                };
-
-                if (secondaryCraftingSkills.Contains(RequiredCraftingSkill))
-                    pricetoset = Math.Abs((long)(totalPrice * 2 * Properties.CRAFTING_SECONDARYCRAFT_SELLBACK_PERCENT) / 100);
+                var currentPrice = product.Price;
+                product.Price = pricetoset;
+                product.AllowUpdate = true;
+                product.Dirty = true;
+                product.Id_nb = product.Id_nb.ToLower();
+                if (GameServer.Database.SaveObject(product))
+                    log.Warn("Craft Price Correction: " + product.Id_nb + " rawmaterials price= " + totalPrice +
+                             " Current Price= " + currentPrice + ". Corrected price to= " + pricetoset);
                 else
-                    pricetoset = Math.Abs(totalPrice * 2 * Properties.CRAFTING_SELLBACK_PERCENT / 100);
-
-                if (pricetoset > 0 && product.Price != pricetoset)
-                {
-                    long currentPrice = product.Price;
-                    product.Price = pricetoset;
-                    product.AllowUpdate = true;
-                    product.Dirty = true;
-                    product.Id_nb = product.Id_nb.ToLower();
-                    if (GameServer.Database.SaveObject(product))
-                        log.Warn("Craft Price Correction: " + product.Id_nb + " rawmaterials price= " + totalPrice + " Current Price= " + currentPrice + ". Corrected price to= " + pricetoset);
-                    else
-                        log.Warn("Craft Price Correction Not SAVED: " + product.Id_nb + " rawmaterials price= " + totalPrice + " Current Price= " + currentPrice + ". Corrected price to= " + pricetoset);
-                    GameServer.Database.UpdateInCache<ItemTemplate>(product.Id_nb);
-                    product.Dirty = false;
-                    product.AllowUpdate = false;
-                }
+                    log.Warn("Craft Price Correction Not SAVED: " + product.Id_nb + " rawmaterials price= " +
+                             totalPrice + " Current Price= " + currentPrice + ". Corrected price to= " +
+                             pricetoset);
+                GameServer.Database.UpdateInCache<ItemTemplate>(product.Id_nb);
+                product.Dirty = false;
+                product.AllowUpdate = false;
             }
         }
     }
+}
 
-    public class Ingredient
+public class Ingredient
+{
+    public int Count { get; }
+    public ItemTemplate Material { get; }
+
+    public Ingredient(int count, ItemTemplate ingredient)
     {
-        public int Count { get; }
-        public ItemTemplate Material { get; }
-
-        public Ingredient(int count, ItemTemplate ingredient)
-        {
-            Count = count;
-            Material = ingredient;
-        }
-
-        public long Cost => Count * Material.Price;
+        Count = count;
+        Material = ingredient;
     }
 
-    public class RecipeDB
+    public long Cost => Count * Material.Price;
+}
+
+public class RecipeDB
+{
+    protected static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+    private static Dictionary<ushort, Recipe> recipeCache = new();
+
+    public static Recipe FindBy(ushort recipeDatabaseID)
     {
-        protected static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private static Dictionary<ushort, Recipe> recipeCache = new Dictionary<ushort, Recipe>();
-
-        public static Recipe FindBy(ushort recipeDatabaseID)
+        Recipe recipe;
+        recipeCache.TryGetValue(recipeDatabaseID, out recipe);
+        if (recipe != null)
         {
-            Recipe recipe;
-            recipeCache.TryGetValue(recipeDatabaseID, out recipe);
-            if (recipe != null)
-            {
-                //avoid repeated DB access for invalid recipes
-                if (recipe.Product != null) return recipeCache[recipeDatabaseID];
-                else throw new KeyNotFoundException("Recipe is marked as invalid. Check your logs for Recipe with ID " + recipeDatabaseID + ".");
-            }
-
-            try
-            {
-                recipe = LoadFromDB(recipeDatabaseID);
-                return recipe;
-            }
-            catch (Exception e)
-            {
-                log.Error(e);
-                recipe = NullRecipe;
-                return recipe;
-            }
-            finally
-            {
-                if (Properties.CRAFTING_ADJUST_PRODUCT_PRICE)
-                    recipe.SetRecommendedProductPriceInDB();
-                recipeCache[recipeDatabaseID] = recipe;
-            }
-
+            //avoid repeated DB access for invalid recipes
+            if (recipe.Product != null) return recipeCache[recipeDatabaseID];
+            else
+                throw new KeyNotFoundException("Recipe is marked as invalid. Check your logs for Recipe with ID " +
+                                               recipeDatabaseID + ".");
         }
 
-        private static Recipe NullRecipe => new Recipe(null, null);
-
-        private static Recipe LoadFromDB(ushort recipeDatabaseID)
+        try
         {
-
-            string craftingDebug = "";
-            
-            var dbRecipe = GameServer.Database.FindObjectByKey<DBCraftedItem>(recipeDatabaseID.ToString());
-            if (dbRecipe == null)
-            {
-                craftingDebug = "[CRAFTING] No DBCraftedItem with ID " + recipeDatabaseID + " exists.";
-                log.Warn(craftingDebug);
-                return null;
-                //throw new ArgumentException(craftingDebug);
-            }
-                
-            
-
-            ItemTemplate product = GameServer.Database.FindObjectByKey<ItemTemplate>(dbRecipe.Id_nb);
-            if (product == null)
-            {
-                craftingDebug = "[CRAFTING] ItemTemplate " + dbRecipe.Id_nb + " for Recipe with ID " + dbRecipe.CraftedItemID + " does not exist.";
-                log.Warn(craftingDebug);
-                return null;
-                //throw new ArgumentException(craftingDebug);
-            }
-
-            var rawMaterials = DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(dbRecipe.Id_nb));
-            if (rawMaterials.Count == 0)
-            {
-                craftingDebug = "[CRAFTING] Recipe with ID " + dbRecipe.CraftedItemID + " has no ingredients.";
-                log.Warn(craftingDebug);
-                return null;
-                //throw new ArgumentException(craftingDebug);
-            }
-
-            bool isRecipeValid = true;
-
-            var ingredients = new List<Ingredient>();
-            foreach (DBCraftedXItem material in rawMaterials)
-            {
-                ItemTemplate template = GameServer.Database.FindObjectByKey<ItemTemplate>(material.IngredientId_nb);
-
-                if (template == null)
-                {
-                    craftingDebug = "[CRAFTING] Cannot find raw material ItemTemplate: " + material.IngredientId_nb + ") needed for recipe: " + dbRecipe.CraftedItemID + "\n";
-                    isRecipeValid = false;
-                }
-                ingredients.Add(new Ingredient(material.Count, template));
-            }
-
-            if (!isRecipeValid)
-            {
-                log.Warn(craftingDebug);
-                return null;
-                //throw new ArgumentException(errorText);
-            }
-
-            var recipe = new Recipe(product, ingredients, (eCraftingSkill)dbRecipe.CraftingSkillType, dbRecipe.CraftingLevel, dbRecipe.MakeTemplated);
+            recipe = LoadFromDB(recipeDatabaseID);
             return recipe;
         }
+        catch (Exception e)
+        {
+            log.Error(e);
+            recipe = NullRecipe;
+            return recipe;
+        }
+        finally
+        {
+            if (Properties.CRAFTING_ADJUST_PRODUCT_PRICE)
+                recipe.SetRecommendedProductPriceInDB();
+            recipeCache[recipeDatabaseID] = recipe;
+        }
+    }
+
+    private static Recipe NullRecipe => new(null, null);
+
+    private static Recipe LoadFromDB(ushort recipeDatabaseID)
+    {
+        var craftingDebug = "";
+
+        var dbRecipe = GameServer.Database.FindObjectByKey<DBCraftedItem>(recipeDatabaseID.ToString());
+        if (dbRecipe == null)
+        {
+            craftingDebug = "[CRAFTING] No DBCraftedItem with ID " + recipeDatabaseID + " exists.";
+            log.Warn(craftingDebug);
+            return null;
+            //throw new ArgumentException(craftingDebug);
+        }
+
+
+        var product = GameServer.Database.FindObjectByKey<ItemTemplate>(dbRecipe.Id_nb);
+        if (product == null)
+        {
+            craftingDebug = "[CRAFTING] ItemTemplate " + dbRecipe.Id_nb + " for Recipe with ID " +
+                            dbRecipe.CraftedItemID + " does not exist.";
+            log.Warn(craftingDebug);
+            return null;
+            //throw new ArgumentException(craftingDebug);
+        }
+
+        var rawMaterials =
+            DOLDB<DBCraftedXItem>.SelectObjects(DB.Column("CraftedItemId_nb").IsEqualTo(dbRecipe.Id_nb));
+        if (rawMaterials.Count == 0)
+        {
+            craftingDebug = "[CRAFTING] Recipe with ID " + dbRecipe.CraftedItemID + " has no ingredients.";
+            log.Warn(craftingDebug);
+            return null;
+            //throw new ArgumentException(craftingDebug);
+        }
+
+        var isRecipeValid = true;
+
+        var ingredients = new List<Ingredient>();
+        foreach (var material in rawMaterials)
+        {
+            var template = GameServer.Database.FindObjectByKey<ItemTemplate>(material.IngredientId_nb);
+
+            if (template == null)
+            {
+                craftingDebug = "[CRAFTING] Cannot find raw material ItemTemplate: " + material.IngredientId_nb +
+                                ") needed for recipe: " + dbRecipe.CraftedItemID + "\n";
+                isRecipeValid = false;
+            }
+
+            ingredients.Add(new Ingredient(material.Count, template));
+        }
+
+        if (!isRecipeValid)
+        {
+            log.Warn(craftingDebug);
+            return null;
+            //throw new ArgumentException(errorText);
+        }
+
+        var recipe = new Recipe(product, ingredients, (eCraftingSkill) dbRecipe.CraftingSkillType,
+            dbRecipe.CraftingLevel, dbRecipe.MakeTemplated);
+        return recipe;
     }
 }

@@ -1,45 +1,44 @@
 using DOL.AI.Brain;
 
-namespace DOL.GS.Effects
+namespace DOL.GS.Effects;
+
+public class AtlasOF_JuggernautECSEffect : ECSGameAbilityEffect
 {
-    public class AtlasOF_JuggernautECSEffect : ECSGameAbilityEffect
+    public AtlasOF_JuggernautECSEffect(ECSGameEffectInitParams initParams)
+        : base(initParams)
     {
-        public AtlasOF_JuggernautECSEffect(ECSGameEffectInitParams initParams)
-            : base(initParams)
-        {
-            EffectType = eEffect.Juggernaut;
-            EffectService.RequestStartEffect(this);
-        }
-        public override ushort Icon => 4261;
+        EffectType = eEffect.Juggernaut;
+        EffectService.RequestStartEffect(this);
+    }
 
-        public override string Name => "Juggernaut";
+    public override ushort Icon => 4261;
 
-        public override bool HasPositiveEffect => true;
+    public override string Name => "Juggernaut";
 
-        public override void OnStartEffect()
-        {
-            SpellLine RAspellLine = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", true);
-            Spell Juggernaut = SkillBase.GetSpellByID(90801);
-            
-            if (Juggernaut != null)
-                Owner.CastSpell(Juggernaut, RAspellLine);
+    public override bool HasPositiveEffect => true;
 
-            base.OnStartEffect();
-        }
+    public override void OnStartEffect()
+    {
+        var RAspellLine = new SpellLine("RAs", "RealmAbilities", "RealmAbilities", true);
+        var Juggernaut = SkillBase.GetSpellByID(90801);
 
-        public override void OnStopEffect()
-        {
-            if (Owner.ControlledBrain is JuggernautBrain juggernautBrain)
-                juggernautBrain.Body.TakeDamage(null, eDamageType.Natural, 9999,0);
+        if (Juggernaut != null)
+            Owner.CastSpell(Juggernaut, RAspellLine);
 
-            base.OnStopEffect();
-        }
-        
-        public void Cancel(bool playerCancel)
-        {
-            EffectService.RequestImmediateCancelEffect(this, playerCancel);
-            OnStopEffect();
-        }
-        
+        base.OnStartEffect();
+    }
+
+    public override void OnStopEffect()
+    {
+        if (Owner.ControlledBrain is JuggernautBrain juggernautBrain)
+            juggernautBrain.Body.TakeDamage(null, eDamageType.Natural, 9999, 0);
+
+        base.OnStopEffect();
+    }
+
+    public void Cancel(bool playerCancel)
+    {
+        EffectService.RequestImmediateCancelEffect(this, playerCancel);
+        OnStopEffect();
     }
 }

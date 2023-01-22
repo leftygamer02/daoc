@@ -16,27 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-using System;
 
+using System;
 using DOL.GS;
 using NUnit.Framework;
 
-namespace DOL.Tests.Integration.Server
+namespace DOL.Tests.Integration.Server;
+
+[TestFixture]
+public class ServerTest
 {
-	[TestFixture]
-	public class ServerTest
-	{
-		public ServerTest()
-		{
-		}
-		
-		[Test]
-		public void TestGameServerStartup()
-		{
-			Console.WriteLine("Test GameServer Startup...");
-			Assert.NotNull(GameServer.Instance);
-			Assert.IsTrue(GameServer.Instance.IsRunning);
-			Assert.AreEqual(GameServer.Instance.ServerStatus, eGameServerStatus.GSS_Open);
-		}
-	}
+    public ServerTest()
+    {
+    }
+
+    [Test]
+    public void TestGameServerStartup()
+    {
+        Console.WriteLine("Test GameServer Startup...");
+        Assert.NotNull(GameServer.Instance);
+        Assert.IsTrue(GameServer.Instance.IsRunning);
+        Assert.AreEqual(GameServer.Instance.ServerStatus, eGameServerStatus.GSS_Open);
+    }
 }

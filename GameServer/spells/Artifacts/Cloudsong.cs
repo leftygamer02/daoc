@@ -16,51 +16,41 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.GS.Spells
+
+namespace DOL.GS.Spells;
+
+[SpellHandler("CloudsongAura")]
+public class CloudsongAuraSpellHandler : DualStatBuff
 {
-    [SpellHandler("CloudsongAura")]
-    public class CloudsongAuraSpellHandler : DualStatBuff
+    public CloudsongAuraSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
     {
-        public CloudsongAuraSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
-        {
-        }
-
-        /// <summary>
-        /// SpecBuffBonusCategory
-        /// </summary>
-		public override eBuffBonusCategory BonusCategory1 { get { return eBuffBonusCategory.SpecBuff; } }
-
-        /// <summary>
-        /// BaseBuffBonusCategory
-        /// </summary>
-		public override eBuffBonusCategory BonusCategory2 { get { return eBuffBonusCategory.BaseBuff; } }
-
-        public override eProperty Property1
-        {
-            get { return eProperty.SpellRange; }
-        }
-
-        public override eProperty Property2
-        {
-            get { return eProperty.ResistPierce; }
-        }
-
     }
 
     /// <summary>
-    /// [Freya] Nidel : Handler for Fall damage reduction.
-    /// Calcul located in PlayerPositionUpdateHandler.cs
+    /// SpecBuffBonusCategory
     /// </summary>
-    [SpellHandler("CloudsongFall")]
-    public class CloudsongFallSpellHandler : SpellHandler
-    {
-        public CloudsongFallSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
-        {
-        }
+    public override eBuffBonusCategory BonusCategory1 => eBuffBonusCategory.SpecBuff;
 
-        public override bool HasPositiveEffect
-        {
-            get { return true; }
-        }
+    /// <summary>
+    /// BaseBuffBonusCategory
+    /// </summary>
+    public override eBuffBonusCategory BonusCategory2 => eBuffBonusCategory.BaseBuff;
+
+    public override eProperty Property1 => eProperty.SpellRange;
+
+    public override eProperty Property2 => eProperty.ResistPierce;
+}
+
+/// <summary>
+/// [Freya] Nidel : Handler for Fall damage reduction.
+/// Calcul located in PlayerPositionUpdateHandler.cs
+/// </summary>
+[SpellHandler("CloudsongFall")]
+public class CloudsongFallSpellHandler : SpellHandler
+{
+    public CloudsongFallSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
+    {
     }
+
+    public override bool HasPositiveEffect => true;
 }

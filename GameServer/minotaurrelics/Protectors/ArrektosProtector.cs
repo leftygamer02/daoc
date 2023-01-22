@@ -36,6 +36,7 @@
  * Classes should inherit from "BaseProtector"
  * 
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -43,68 +44,66 @@ using DOL.GS.Effects;
 using DOL.GS.PacketHandler;
 using DOL.GS.Spells;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+//all classes should inherit from BaseProtector.
+public class ArrektosProtector : BaseProtector
 {
-    //all classes should inherit from BaseProtector.
-    public class ArrektosProtector : BaseProtector
+    public const string ALREADY_GOT_HELP = "ALREADY_GOT_HELP";
+
+    public override bool AddToWorld()
     {
-        public const string ALREADY_GOT_HELP = "ALREADY_GOT_HELP";
+        //foreman fogo doesn't leave the room.
+        TetherRange = 1000;
 
-        public override bool AddToWorld()
+        X = 49293;
+        Y = 42208;
+        Z = 27562;
+        Heading = 2057;
+        CurrentRegionID = 245;
+
+        Flags = 0;
+
+        Level = 56;
+        Model = 2249; //undead Minotaur
+        Name = "Forge Foreman Fogo";
+        Size = 65;
+
+        //get the relic by its ID, and lock it!
+        Relic = MinotaurRelicManager.GetRelic(1);
+        LockRelic();
+
+
+        TempProperties.setProperty(ALREADY_GOT_HELP, false);
+
+        return base.AddToWorld();
+    }
+
+    public void StartAttack(GameObject target)
+    {
+        attackComponent.RequestStartAttack(target);
+
+        if (!TempProperties.getProperty<bool>(ALREADY_GOT_HELP))
         {
-            //foreman fogo doesn't leave the room.
-            TetherRange = 1000;
-
-            X = 49293;
-            Y = 42208;
-            Z = 27562;
-            Heading = 2057;
-            CurrentRegionID = 245;
-
-            Flags = 0;
-
-            Level = 56;
-            Model = 2249; //undead Minotaur
-            Name = "Forge Foreman Fogo";
-            Size = 65;
-
-            //get the relic by its ID, and lock it!
-            Relic = MinotaurRelicManager.GetRelic(1);
-            LockRelic();
-
-
-
-            TempProperties.setProperty(ALREADY_GOT_HELP, false);
-
-            return base.AddToWorld();
-        }
-        public void StartAttack(GameObject target)
-        {
-            attackComponent.RequestStartAttack(target);
-
-            if (!TempProperties.getProperty<bool>(ALREADY_GOT_HELP))
-            {
-                foreach (GameNPC npc in GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
-                {
-                    //on initial attack, all fireborn in range add!
-                    if (npc.Name == "minotaur fireborn")
+            foreach (GameNPC npc in GetNPCsInRadius(WorldMgr.VISIBILITY_DISTANCE))
+                //on initial attack, all fireborn in range add!
+                if (npc.Name == "minotaur fireborn")
                     npc.attackComponent.RequestStartAttack(target);
-                }
 
-                TempProperties.setProperty(ALREADY_GOT_HELP, true);
-            }
+            TempProperties.setProperty(ALREADY_GOT_HELP, true);
         }
-        public override void Die(GameObject killer)
-        {
-            base.Die(killer);
+    }
 
-            TempProperties.setProperty(ALREADY_GOT_HELP, false);
+    public override void Die(GameObject killer)
+    {
+        base.Die(killer);
 
-            //when the protector is dead, the relic should be unlocked!
-            UnlockRelic();
+        TempProperties.setProperty(ALREADY_GOT_HELP, false);
 
-            //another thing is that most of these mobs drop 1 time drops
-            //i haven't added support for this, but someone will eventually.
-        }
+        //when the protector is dead, the relic should be unlocked!
+        UnlockRelic();
+
+        //another thing is that most of these mobs drop 1 time drops
+        //i haven't added support for this, but someone will eventually.
     }
 }

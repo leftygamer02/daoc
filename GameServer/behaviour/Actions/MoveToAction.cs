@@ -16,40 +16,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.GS.PacketHandler;
 using DOL.Events;
-using DOL.GS.Behaviour.Attributes;using DOL.GS.Behaviour;
+using DOL.GS.Behaviour.Attributes;
+using DOL.GS.Behaviour;
 
-namespace DOL.GS.Behaviour.Actions
+namespace DOL.GS.Behaviour.Actions;
+
+[ActionAttribute(ActionType = eActionType.MoveTo)]
+public class MoveToAction : AbstractAction<GameLocation, GameLiving>
 {
-	[ActionAttribute(ActionType = eActionType.MoveTo)]
-	public class MoveToAction : AbstractAction<GameLocation,GameLiving>
-	{
+    public MoveToAction(GameNPC defaultNPC, object p, object q)
+        : base(defaultNPC, eActionType.MoveTo, p, q)
+    {
+    }
 
-		public MoveToAction(GameNPC defaultNPC,  Object p, Object q)
-			: base(defaultNPC, eActionType.MoveTo, p, q)
-		{ }
+    public MoveToAction(GameNPC defaultNPC, GameLocation location, GameLiving npc)
+        : this(defaultNPC, (object) location, (object) npc)
+    {
+    }
 
-		public MoveToAction(GameNPC defaultNPC, GameLocation location, GameLiving npc)
-			: this(defaultNPC, (object)location,(object) npc) { }
-		
-		public override void Perform(DOLEvent e, object sender, EventArgs args)
-		{
-			GameLiving npc = Q;
+    public override void Perform(DOLEvent e, object sender, EventArgs args)
+    {
+        var npc = Q;
 
-			if (P is GameLocation)
-			{
-				GameLocation location = (GameLocation)P;
-				npc.MoveTo(location.RegionID, location.X, location.Y, location.Z, location.Heading);
-			}
-			else
-			{
-				GamePlayer player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
-				npc.MoveTo(player.CurrentRegionID, player.X, player.Y, player.Z, (ushort)player.Heading);
-			}
-		}
-	}
+        if (P is GameLocation)
+        {
+            var location = (GameLocation) P;
+            npc.MoveTo(location.RegionID, location.X, location.Y, location.Z, location.Heading);
+        }
+        else
+        {
+            var player = BehaviourUtils.GuessGamePlayerFromNotify(e, sender, args);
+            npc.MoveTo(player.CurrentRegionID, player.X, player.Y, player.Z, (ushort) player.Heading);
+        }
+    }
 }

@@ -255,7 +255,9 @@ public class Blacksmith : GameNPC
         if (item == null || item.SlotPosition == (int) eInventorySlot.Ground
                          || item.OwnerID == null) return false;
         if (item.Condition == item.MaxCondition) return false;
-        if (item.RepairCost == 0) return false; // skipping items with no template price - hopefully we'll get tickets and we'll adjust the prices
+        if (item.RepairCost == 0)
+            return
+                false; // skipping items with no template price - hopefully we'll get tickets and we'll adjust the prices
 
         return true;
     }
@@ -263,7 +265,7 @@ public class Blacksmith : GameNPC
     private long CalculateCost(InventoryItem item)
     {
         long NeededMoney = 0;
-        NeededMoney = ((item.Template.MaxCondition - item.Condition) * item.Template.Price) /
+        NeededMoney = (item.Template.MaxCondition - item.Condition) * item.Template.Price /
                       item.Template.MaxCondition;
 
         var tax = NeededMoney * REPAIR_ALL_TAX;

@@ -16,34 +16,108 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 
-namespace DOL.GS.PropertyCalc
+namespace DOL.GS.PropertyCalc;
+
+[PropertyCalculator(eProperty.Resist_First, eProperty.Resist_Last)]
+public class ResistCalculator : PropertyCalculator
 {
-	[PropertyCalculator(eProperty.Resist_First, eProperty.Resist_Last)]
-	public class ResistCalculator : PropertyCalculator
-	{
-		public ResistCalculator() { }
+    public ResistCalculator()
+    {
+    }
 
-        public override int CalcValue(GameLiving living, eProperty property)
+    public override int CalcValue(GameLiving living, eProperty property)
+    {
+        var propertyIndex = (int) property;
+
+        // Necromancer pets receive resistances from Avoidance of Magic.
+        GameLiving livingToCheck;
+        if (living is NecromancerPet necroPet && necroPet.Owner is GamePlayer playerOwner)
+            livingToCheck = playerOwner;
+        else
+            livingToCheck = living;
+
+        // Abilities/racials/debuffs.
+        var debuff = Math.Abs(living.DebuffCategory[propertyIndex]);
+        var abilityBonus = livingToCheck.AbilityBonus[propertyIndex];
+        var racialBonus = SkillBase.GetRaceResist(living.Race, (eResist) property);
+
+        // Items and buffs.
+        var itemBonus = CalcValueFromItems(living, property);
+        var buffBonus = CalcValueFromBuffs(living, property);
+
+        switch (property)
         {
-            int propertyIndex = (int)property;
+            case eProperty.Resist_Body:
+            case eProperty.Resist_Cold:
+            case eProperty.Resist_Energy:
+            case eProperty.Resist_Heat:
+            case eProperty.Resist_Matter:
+            case eProperty.Resist_Natural:
+            case eProperty.Resist_Spirit:
+                debuff += Math.Abs(living.DebuffCategory[eProperty.MagicAbsorption]);
+                abilityBonus += living.AbilityBonus[eProperty.MagicAbsorption];
+                buffBonus += living.BaseBuffBonusCategory[eProperty.MagicAbsorption];
+                break;
+        }
 
-            // Necromancer pets receive resistances from Avoidance of Magic.
-            GameLiving livingToCheck;
-            if (living is NecromancerPet necroPet && necroPet.Owner is GamePlayer playerOwner)
-                livingToCheck = playerOwner;
-            else
-                livingToCheck = living;
+        if (living is GameNPC)
+        {
+            double constitutionPerMagicAbsorptionPercent = 8;
+            var constitutionBuffBonus = living.BaseBuffBonusCategory[eProperty.Constitution] +
+                                        living.SpecBuffBonusCategory[eProperty.Constitution];
+            var constitutionDebuffMalus = Math.Abs(living.DebuffCategory[eProperty.Constitution] +
+                                                   living.SpecDebuffCategory[eProperty.Constitution]);
+            var magicAbsorptionFromConstitution = (int) ((constitutionBuffBonus - constitutionDebuffMalus) /
+                                                         constitutionPerMagicAbsorptionPercent);
+            buffBonus += magicAbsorptionFromConstitution;
+        }
 
-            // Abilities/racials/debuffs.
-            int debuff = Math.Abs(living.DebuffCategory[propertyIndex]);
-			int abilityBonus = livingToCheck.AbilityBonus[propertyIndex];
-			int racialBonus = SkillBase.GetRaceResist(living.Race, (eResist)property);
+        buffBonus -= Math.Abs(debuff);
 
-            // Items and buffs.
-            int itemBonus = CalcValueFromItems(living, property);
-            int buffBonus = CalcValueFromBuffs(living, property);
+        // Apply debuffs. 100% Effectiveness for player buffs, but only 50% effectiveness for item bonuses.
+        if (living is GamePlayer && buffBonus < 0)
+        {
+            itemBonus += buffBonus / 2;
+            buffBonus = 0;
+        }
+
+        // Add up and apply hardcap.
+        return Math.Min(itemBonus + buffBonus + abilityBonus + racialBonus, HardCap);
+    }
+
+    public override int CalcValueBase(GameLiving living, eProperty property)
+    {
+        var propertyIndex = (int) property;
+        var debuff = Math.Abs(living.DebuffCategory[propertyIndex]);
+        var racialBonus = living is GamePlayer
+            ? SkillBase.GetRaceResist((living as GamePlayer).Race, (eResist) property)
+            : 0;
+        var itemBonus = CalcValueFromItems(living, property);
+        var buffBonus = CalcValueFromBuffs(living, property);
+
+        switch (property)
+        {
+            case eProperty.Resist_Body:
+            case eProperty.Resist_Cold:
+            case eProperty.Resist_Energy:
+            case eProperty.Resist_Heat:
+            case eProperty.Resist_Matter:
+            case eProperty.Resist_Natural:
+            case eProperty.Resist_Spirit:
+                debuff += Math.Abs(living.DebuffCategory[eProperty.MagicAbsorption]);
+                buffBonus += living.BaseBuffBonusCategory[eProperty.MagicAbsorption];
+                break;
+        }
+
+        if (living is GameNPC)
+        {
+            // NPC buffs effects are halved compared to debuffs, so it takes 2% debuff to mitigate 1% buff.
+            // See PropertyChangingSpell.ApplyNpcEffect() for details.
+            buffBonus <<= 1;
+            var specDebuff = Math.Abs(living.SpecDebuffCategory[property]);
 
             switch (property)
             {
@@ -54,223 +128,160 @@ namespace DOL.GS.PropertyCalc
                 case eProperty.Resist_Matter:
                 case eProperty.Resist_Natural:
                 case eProperty.Resist_Spirit:
-                    debuff += Math.Abs(living.DebuffCategory[eProperty.MagicAbsorption]);
-                    abilityBonus += living.AbilityBonus[eProperty.MagicAbsorption];
-                    buffBonus += living.BaseBuffBonusCategory[eProperty.MagicAbsorption];
+                    specDebuff += Math.Abs(living.SpecDebuffCategory[eProperty.MagicAbsorption]);
                     break;
             }
 
-            if (living is GameNPC)
-            {
-                double constitutionPerMagicAbsorptionPercent = 8;
-                var constitutionBuffBonus = living.BaseBuffBonusCategory[eProperty.Constitution] + living.SpecBuffBonusCategory[eProperty.Constitution];
-                var constitutionDebuffMalus = Math.Abs(living.DebuffCategory[eProperty.Constitution] + living.SpecDebuffCategory[eProperty.Constitution]);
-                var magicAbsorptionFromConstitution = (int)((constitutionBuffBonus - constitutionDebuffMalus) / constitutionPerMagicAbsorptionPercent);
-                buffBonus += magicAbsorptionFromConstitution;
-            }
-
-            buffBonus -= Math.Abs(debuff);
-
-            // Apply debuffs. 100% Effectiveness for player buffs, but only 50% effectiveness for item bonuses.
-            if (living is GamePlayer && buffBonus < 0)
-            {
-                itemBonus += buffBonus / 2;
-                buffBonus = 0;
-            }
-
-            // Add up and apply hardcap.
-            return Math.Min(itemBonus + buffBonus + abilityBonus + racialBonus, HardCap);
-		}
-
-        public override int CalcValueBase(GameLiving living, eProperty property)
-        {
-            int propertyIndex = (int)property;
-            int debuff = Math.Abs(living.DebuffCategory[propertyIndex]);
-            int racialBonus = (living is GamePlayer) ? SkillBase.GetRaceResist(((living as GamePlayer).Race), (eResist)property) : 0;
-            int itemBonus = CalcValueFromItems(living, property);
-            int buffBonus = CalcValueFromBuffs(living, property);
-
-            switch (property)
-            {
-                case eProperty.Resist_Body:
-                case eProperty.Resist_Cold:
-                case eProperty.Resist_Energy:
-                case eProperty.Resist_Heat:
-                case eProperty.Resist_Matter:
-                case eProperty.Resist_Natural:
-                case eProperty.Resist_Spirit:
-                    debuff += Math.Abs(living.DebuffCategory[eProperty.MagicAbsorption]);
-                    buffBonus += living.BaseBuffBonusCategory[eProperty.MagicAbsorption];
-                    break;
-            }
-
-            if (living is GameNPC)
-            {
-                // NPC buffs effects are halved compared to debuffs, so it takes 2% debuff to mitigate 1% buff.
-                // See PropertyChangingSpell.ApplyNpcEffect() for details.
-                buffBonus <<= 1;
-                int specDebuff = Math.Abs(living.SpecDebuffCategory[property]);
-
-                switch (property)
-                {
-                    case eProperty.Resist_Body:
-                    case eProperty.Resist_Cold:
-                    case eProperty.Resist_Energy:
-                    case eProperty.Resist_Heat:
-                    case eProperty.Resist_Matter:
-                    case eProperty.Resist_Natural:
-                    case eProperty.Resist_Spirit:
-                        specDebuff += Math.Abs(living.SpecDebuffCategory[eProperty.MagicAbsorption]);
-                        break;
-                }
-
-                buffBonus -= specDebuff;
-                if (buffBonus > 0)
-                    buffBonus >>= 1;
-            }
-
-            buffBonus -= Math.Abs(debuff);
-
-            if (living is GamePlayer && buffBonus < 0)
-            {
-                itemBonus += buffBonus / 2;
-                buffBonus = 0;
-                if (itemBonus < 0)
-                    itemBonus = 0;
-            }
-            return Math.Min(itemBonus + buffBonus + racialBonus, HardCap);
+            buffBonus -= specDebuff;
+            if (buffBonus > 0)
+                buffBonus >>= 1;
         }
 
-        /// <summary>
-        /// Calculate modified resists from buffs only.
-        /// </summary>
-        /// <param name="living"></param>
-        /// <param name="property"></param>
-        /// <returns></returns>
-        public override int CalcValueFromBuffs(GameLiving living, eProperty property)
+        buffBonus -= Math.Abs(debuff);
+
+        if (living is GamePlayer && buffBonus < 0)
         {
-            // Necromancer pets receive resistances from The Empty Mind.
-            GameLiving livingToCheck;
-            if (living is NecromancerPet necroPet && necroPet.Owner is GamePlayer playerOwner)
-                livingToCheck = playerOwner;
-            else
-                livingToCheck = living;
-
-            int buffBonus = living.BaseBuffBonusCategory[(int)property] + living.BuffBonusCategory4[(int)property];
-            int RACalcHolder = livingToCheck is GameNPC ? buffBonus : Math.Min(buffBonus, BuffBonusCap);
-
-            return RACalcHolder + livingToCheck.SpecBuffBonusCategory[(int)property];
+            itemBonus += buffBonus / 2;
+            buffBonus = 0;
+            if (itemBonus < 0)
+                itemBonus = 0;
         }
 
-        /// <summary>
-        /// Calculate modified resists from items only.
-        /// </summary>
-        /// <param name="living"></param>
-        /// <param name="property"></param>
-        /// <returns></returns>
-        public override int CalcValueFromItems(GameLiving living, eProperty property)
+        return Math.Min(itemBonus + buffBonus + racialBonus, HardCap);
+    }
+
+    /// <summary>
+    /// Calculate modified resists from buffs only.
+    /// </summary>
+    /// <param name="living"></param>
+    /// <param name="property"></param>
+    /// <returns></returns>
+    public override int CalcValueFromBuffs(GameLiving living, eProperty property)
+    {
+        // Necromancer pets receive resistances from The Empty Mind.
+        GameLiving livingToCheck;
+        if (living is NecromancerPet necroPet && necroPet.Owner is GamePlayer playerOwner)
+            livingToCheck = playerOwner;
+        else
+            livingToCheck = living;
+
+        var buffBonus = living.BaseBuffBonusCategory[(int) property] + living.BuffBonusCategory4[(int) property];
+        var RACalcHolder = livingToCheck is GameNPC ? buffBonus : Math.Min(buffBonus, BuffBonusCap);
+
+        return RACalcHolder + livingToCheck.SpecBuffBonusCategory[(int) property];
+    }
+
+    /// <summary>
+    /// Calculate modified resists from items only.
+    /// </summary>
+    /// <param name="living"></param>
+    /// <param name="property"></param>
+    /// <returns></returns>
+    public override int CalcValueFromItems(GameLiving living, eProperty property)
+    {
+        // Necromancer pets receive resistances from their owner's items.
+        GameLiving livingToCheck;
+        if (living is NecromancerPet necroPet && necroPet.Owner is GamePlayer playerOwner)
+            livingToCheck = playerOwner;
+        else
+            livingToCheck = living;
+
+        if (livingToCheck is GameNPC)
+            return 0;
+
+        var itemBonus = livingToCheck.ItemBonus[(int) property];
+
+        // Item bonus cap and cap increase from Mythirians.
+        var itemBonusCap = livingToCheck.Level / 2 + 1;
+        var itemBonusCapIncrease = GetItemBonusCapIncrease(livingToCheck, property);
+
+        return Math.Min(itemBonus, itemBonusCap + itemBonusCapIncrease);
+    }
+
+    /// <summary>
+    /// Returns the resist cap increase for the given living and the given
+    /// resist type. It is hardcapped at 5% for the time being.
+    /// </summary>
+    /// <param name="living">The living the cap increase is to be determined for.</param>
+    /// <param name="property">The resist type.</param>
+    /// <returns></returns>
+    public static int GetItemBonusCapIncrease(GameLiving living, eProperty property)
+    {
+        if (living == null)
+            return 0;
+        return Math.Min(living.ItemBonus[(int) (eProperty.ResCapBonus_First - eProperty.Resist_First + property)],
+            5);
+    }
+
+    /// <summary>
+    /// Cap for player cast resist buffs.
+    /// </summary>
+    public static int BuffBonusCap => 24;
+
+    /// <summary>
+    /// Hard cap for resists.
+    /// </summary>
+    public static int HardCap => 70;
+}
+
+[PropertyCalculator(eProperty.Resist_Natural)]
+public class ResistNaturalCalculator : PropertyCalculator
+{
+    public ResistNaturalCalculator()
+    {
+    }
+
+    public override int CalcValue(GameLiving living, eProperty property)
+    {
+        var propertyIndex = (int) property;
+        var debuff = Math.Abs(living.DebuffCategory[propertyIndex]) +
+                     Math.Abs(living.DebuffCategory[eProperty.MagicAbsorption]);
+        var abilityBonus = living.AbilityBonus[propertyIndex] + living.AbilityBonus[eProperty.MagicAbsorption];
+        var itemBonus = CalcValueFromItems(living, property);
+        var buffBonus = CalcValueFromBuffs(living, property);
+
+        if (living is GameNPC)
         {
-            // Necromancer pets receive resistances from their owner's items.
-            GameLiving livingToCheck;
-            if (living is NecromancerPet necroPet && necroPet.Owner is GamePlayer playerOwner)
-                livingToCheck = playerOwner;
-            else
-                livingToCheck = living;
+            // NPC buffs effects are halved compared to debuffs, so it takes 2% debuff to mitigate 1% buff
+            // See PropertyChangingSpell.ApplyNpcEffect() for details.
+            buffBonus = buffBonus << 1;
+            var specDebuff = Math.Abs(living.SpecDebuffCategory[property]) +
+                             Math.Abs(living.SpecDebuffCategory[eProperty.MagicAbsorption]);
 
-            if (livingToCheck is GameNPC)
-                return 0;
-
-            int itemBonus = livingToCheck.ItemBonus[(int)property];
-
-            // Item bonus cap and cap increase from Mythirians.
-            int itemBonusCap = livingToCheck.Level / 2 + 1;
-            int itemBonusCapIncrease = GetItemBonusCapIncrease(livingToCheck, property);
-
-            return Math.Min(itemBonus, itemBonusCap + itemBonusCapIncrease);
+            buffBonus -= specDebuff;
+            if (buffBonus > 0)
+                buffBonus = buffBonus >> 1;
         }
 
-        /// <summary>
-        /// Returns the resist cap increase for the given living and the given
-        /// resist type. It is hardcapped at 5% for the time being.
-        /// </summary>
-        /// <param name="living">The living the cap increase is to be determined for.</param>
-        /// <param name="property">The resist type.</param>
-        /// <returns></returns>
-        public static int GetItemBonusCapIncrease(GameLiving living, eProperty property)
+        buffBonus -= Math.Abs(debuff);
+
+        if (living is GamePlayer && buffBonus < 0)
         {
-            if (living == null)
-                return 0;
-            return Math.Min(living.ItemBonus[(int)(eProperty.ResCapBonus_First - eProperty.Resist_First + property)], 5);
+            itemBonus += buffBonus / 2;
+            buffBonus = 0;
         }
 
-        /// <summary>
-        /// Cap for player cast resist buffs.
-        /// </summary>
-        public static int BuffBonusCap
-        {
-            get { return 24; }
-        }
+        return itemBonus + buffBonus + abilityBonus;
+    }
 
-        /// <summary>
-        /// Hard cap for resists.
-        /// </summary>
-        public static int HardCap
-        {
-            get { return 70; }
-        }
-	}
-	
-	[PropertyCalculator(eProperty.Resist_Natural)]
-	public class ResistNaturalCalculator : PropertyCalculator
-	{
-		public ResistNaturalCalculator() { }
+    public override int CalcValueFromBuffs(GameLiving living, eProperty property)
+    {
+        var buffBonus = living.BaseBuffBonusCategory[(int) property]
+                        + living.BuffBonusCategory4[(int) property]
+                        + living.BaseBuffBonusCategory[eProperty.MagicAbsorption];
+        if (living is GameNPC)
+            return buffBonus;
+        return Math.Min(buffBonus, BuffBonusCap);
+    }
 
-        public override int CalcValue(GameLiving living, eProperty property)
-        {
-            int propertyIndex = (int)property;
-            int debuff = Math.Abs(living.DebuffCategory[propertyIndex]) + Math.Abs(living.DebuffCategory[eProperty.MagicAbsorption]);
-			int abilityBonus = living.AbilityBonus[propertyIndex] + living.AbilityBonus[eProperty.MagicAbsorption];
-            int itemBonus = CalcValueFromItems(living, property);
-            int buffBonus = CalcValueFromBuffs(living, property);
+    public override int CalcValueFromItems(GameLiving living, eProperty property)
+    {
+        var itemBonus = living.ItemBonus[(int) property];
+        var itemBonusCap = living.Level / 2 + 1;
+        return Math.Min(itemBonus, itemBonusCap);
+    }
 
-            if (living is GameNPC)
-            {
-                // NPC buffs effects are halved compared to debuffs, so it takes 2% debuff to mitigate 1% buff
-                // See PropertyChangingSpell.ApplyNpcEffect() for details.
-                buffBonus = buffBonus << 1;
-                int specDebuff = Math.Abs(living.SpecDebuffCategory[property]) + Math.Abs(living.SpecDebuffCategory[eProperty.MagicAbsorption]);
+    public static int BuffBonusCap => 25;
 
-                buffBonus -= specDebuff;
-                if (buffBonus > 0)
-                    buffBonus = buffBonus >> 1;
-            }
-
-            buffBonus -= Math.Abs(debuff);
-
-            if (living is GamePlayer && buffBonus < 0)
-            {
-                itemBonus += buffBonus / 2;
-                buffBonus = 0;
-            }
-			return (itemBonus + buffBonus + abilityBonus);
-        }
-        public override int CalcValueFromBuffs(GameLiving living, eProperty property)
-        {
-            int buffBonus = living.BaseBuffBonusCategory[(int)property] 
-                + living.BuffBonusCategory4[(int)property]
-                + living.BaseBuffBonusCategory[eProperty.MagicAbsorption];
-            if (living is GameNPC)
-                return buffBonus;
-            return Math.Min(buffBonus, BuffBonusCap);
-        }
-        public override int CalcValueFromItems(GameLiving living, eProperty property)
-        {
-            int itemBonus = living.ItemBonus[(int)property];
-            int itemBonusCap = living.Level / 2 + 1;
-            return Math.Min(itemBonus, itemBonusCap);
-        }
-        public static int BuffBonusCap { get { return 25; } }
-
-        public static int HardCap { get { return 70; } }
-	}
+    public static int HardCap => 70;
 }

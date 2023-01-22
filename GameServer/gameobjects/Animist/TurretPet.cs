@@ -24,116 +24,117 @@
 using DOL.AI.Brain;
 using DOL.GS.ServerProperties;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public class TurretPet : GamePet
 {
-	public class TurretPet : GamePet
-	{
-		public TurretPet(INpcTemplate template)
-			: base(template)
-		{
-		}
+    public TurretPet(INpcTemplate template)
+        : base(template)
+    {
+    }
 
-		private Spell turretSpell;
+    private Spell turretSpell;
 
-		/// <summary>
-		/// Get first spell only
-		/// </summary>
-		public Spell TurretSpell
-		{
-			get { return turretSpell; }
-			set { turretSpell = value; }
-		}
+    /// <summary>
+    /// Get first spell only
+    /// </summary>
+    public Spell TurretSpell
+    {
+        get => turretSpell;
+        set => turretSpell = value;
+    }
 
-		public override int Health { get => base.Health; set => base.Health = value; }
+    public override int Health
+    {
+        get => base.Health;
+        set => base.Health = value;
+    }
 
-		/// <summary>
-		/// Not all summoned turrets 'll throw ambient texts
-		/// let's say 20%
-		/// </summary>
-		protected override void BuildAmbientTexts()
-		{
-			base.BuildAmbientTexts();
-			if (ambientTexts.Count>0)
-				foreach (var at in ambientTexts)
-					at.Chance /= 5;
-		}
+    /// <summary>
+    /// Not all summoned turrets 'll throw ambient texts
+    /// let's say 20%
+    /// </summary>
+    protected override void BuildAmbientTexts()
+    {
+        base.BuildAmbientTexts();
+        if (ambientTexts.Count > 0)
+            foreach (var at in ambientTexts)
+                at.Chance /= 5;
+    }
 
-        // Temporarily modified
-        public override void StartAttack(GameObject attackTarget)
+    // Temporarily modified
+    public override void StartAttack(GameObject attackTarget)
+    {
+        if (attackTarget == null)
+            return;
+
+        if (attackTarget is GameLiving &&
+            GameServer.ServerRules.IsAllowedToAttack(this, (GameLiving) attackTarget, true) == false)
+            return;
+
+        if (Brain is IControlledBrain)
         {
-            if (attackTarget == null)
+            if ((Brain as IControlledBrain).AggressionState == eAggressionState.Passive)
                 return;
-
-            if (attackTarget is GameLiving && GameServer.ServerRules.IsAllowedToAttack(this, (GameLiving)attackTarget, true) == false)
-                return;
-
-            if (Brain is IControlledBrain)
-            {
-                if ((Brain as IControlledBrain).AggressionState == eAggressionState.Passive)
-                    return;
-                GamePlayer playerowner;
-                if ((playerowner = ((IControlledBrain)Brain).GetPlayerOwner()) != null)
-                    playerowner.Stealth(false);
-            }
-
-            TargetObject = attackTarget;
-            if (TargetObject.Realm == 0 || Realm == 0)
-                m_lastAttackTickPvE = GameLoop.GameLoopTime;
-            else
-                m_lastAttackTickPvP = GameLoop.GameLoopTime;
-
-            if (attackComponent.Attackers.Count == 0)
-            {
-                if (SpellTimer == null)
-                    SpellTimer = new SpellAction(this);
-                if (!SpellTimer.IsAlive)
-                    SpellTimer.Start(1);
-            }
-
-            if (Brain is TurretMainPetTankBrain)
-            {
-                attackComponent.RequestStartAttack(TargetObject);
-            }
+            GamePlayer playerowner;
+            if ((playerowner = ((IControlledBrain) Brain).GetPlayerOwner()) != null)
+                playerowner.Stealth(false);
         }
 
-        /// <summary>
-        /// [Ganrod] Nidel: Don't interrupt turret cast.
-        /// </summary>
-        /// <param name="duration"></param>
-        /// <param name="attackType"></param>
-        /// <param name="attacker"></param>
-        public override void StartInterruptTimer(AttackData attack, int duration)
-		{
-			return;
-		}
+        TargetObject = attackTarget;
+        if (TargetObject.Realm == 0 || Realm == 0)
+            m_lastAttackTickPvE = GameLoop.GameLoopTime;
+        else
+            m_lastAttackTickPvP = GameLoop.GameLoopTime;
 
-		public override void AutoSetStats()
-		{
-			Strength = Properties.PET_AUTOSET_STR_BASE;
-			if (Strength < 1)
-				Strength = 1;
+        if (attackComponent.Attackers.Count == 0)
+        {
+            if (SpellTimer == null)
+                SpellTimer = new SpellAction(this);
+            if (!SpellTimer.IsAlive)
+                SpellTimer.Start(1);
+        }
 
-			Constitution = Properties.PET_AUTOSET_CON_BASE;
-			if (Constitution < 1)
-				Constitution = 1;
+        if (Brain is TurretMainPetTankBrain) attackComponent.RequestStartAttack(TargetObject);
+    }
 
-			Quickness = Properties.PET_AUTOSET_QUI_BASE;
-			if (Quickness < 1)
-				Quickness = 1;
+    /// <summary>
+    /// [Ganrod] Nidel: Don't interrupt turret cast.
+    /// </summary>
+    /// <param name="duration"></param>
+    /// <param name="attackType"></param>
+    /// <param name="attacker"></param>
+    public override void StartInterruptTimer(AttackData attack, int duration)
+    {
+        return;
+    }
 
-			Dexterity = Properties.PET_AUTOSET_DEX_BASE;
-			if (Dexterity < 1)
-				Dexterity = 1;
+    public override void AutoSetStats()
+    {
+        Strength = Properties.PET_AUTOSET_STR_BASE;
+        if (Strength < 1)
+            Strength = 1;
 
-			Intelligence = Properties.PET_AUTOSET_INT_BASE;
-			if (Intelligence < 1)
-				Intelligence = 1;
+        Constitution = Properties.PET_AUTOSET_CON_BASE;
+        if (Constitution < 1)
+            Constitution = 1;
 
-			Empathy = 30;
-			Piety = 30;
-			Charisma = 30;
+        Quickness = Properties.PET_AUTOSET_QUI_BASE;
+        if (Quickness < 1)
+            Quickness = 1;
 
-			//base.AutoSetStats();
-		}
-	}
+        Dexterity = Properties.PET_AUTOSET_DEX_BASE;
+        if (Dexterity < 1)
+            Dexterity = 1;
+
+        Intelligence = Properties.PET_AUTOSET_INT_BASE;
+        if (Intelligence < 1)
+            Intelligence = 1;
+
+        Empathy = 30;
+        Piety = 30;
+        Charisma = 30;
+
+        //base.AutoSetStats();
+    }
 }

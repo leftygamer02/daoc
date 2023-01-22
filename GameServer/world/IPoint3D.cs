@@ -16,16 +16,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
-namespace DOL.GS
+
+namespace DOL.GS;
+
+/// <summary>
+/// interface for classes that represent a point in 3d space
+/// </summary>
+public interface IPoint3D : IPoint2D
 {
-	/// <summary>
-	/// interface for classes that represent a point in 3d space
-	/// </summary>
-	public interface IPoint3D : IPoint2D
-	{
-		/// <summary>
-		/// Height Position
-		/// </summary>
-		int Z { get; set; }
-	}
+    /// <summary>
+    /// Height Position
+    /// </summary>
+    int Z { get; set; }
 }

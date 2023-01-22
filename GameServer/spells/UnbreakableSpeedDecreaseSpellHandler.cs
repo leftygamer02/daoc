@@ -16,198 +16,204 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Text;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Effects;
 
-namespace DOL.GS.Spells
+namespace DOL.GS.Spells;
+
+/// <summary>
+/// Spell handler for unbreakable speed decreasing spells
+/// </summary>
+[SpellHandler("UnbreakableSpeedDecrease")]
+public class UnbreakableSpeedDecreaseSpellHandler : ImmunityEffectSpellHandler
 {
-	/// <summary>
-	/// Spell handler for unbreakable speed decreasing spells
-	/// </summary>
-	[SpellHandler("UnbreakableSpeedDecrease")]
-	public class UnbreakableSpeedDecreaseSpellHandler : ImmunityEffectSpellHandler
-	{
-		public override void CreateECSEffect(ECSGameEffectInitParams initParams)
-		{
-			new StatDebuffECSEffect(initParams);
-		}
-		
-		public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
-		{
-			var effect = EffectListService.GetSpellEffectOnTarget(target, eEffect.MovementSpeedDebuff);
-			if (target.HasAbility(Abilities.CCImmunity)||target.HasAbility(Abilities.RootImmunity) || 
-				EffectListService.GetEffectOnTarget(target, eEffect.SnareImmunity) != null ||
-				EffectListService.GetEffectOnTarget(target, eEffect.SpeedOfSound) != null || 
-				(effect != null && effect.SpellHandler.Spell.Value == 99)
-				&& !Spell.Name.Equals("Prevent Flight"))
-			{
-				//EffectService.RequestCancelEffect(effect);
-				MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
-				OnSpellResisted(target);
-				return;
-			}
-			if (target.EffectList.GetOfType<ChargeEffect>() != null)
-			{
-				MessageToCaster(target.Name + " is moving to fast for this spell to have any effect!", eChatType.CT_SpellResisted);
-				return;
-			}
+    public override void CreateECSEffect(ECSGameEffectInitParams initParams)
+    {
+        new StatDebuffECSEffect(initParams);
+    }
 
-			base.ApplyEffectOnTarget(target, effectiveness);
-		}
+    public override void ApplyEffectOnTarget(GameLiving target, double effectiveness)
+    {
+        var effect = EffectListService.GetSpellEffectOnTarget(target, eEffect.MovementSpeedDebuff);
+        if (target.HasAbility(Abilities.CCImmunity) || target.HasAbility(Abilities.RootImmunity) ||
+            EffectListService.GetEffectOnTarget(target, eEffect.SnareImmunity) != null ||
+            EffectListService.GetEffectOnTarget(target, eEffect.SpeedOfSound) != null ||
+            (effect != null && effect.SpellHandler.Spell.Value == 99
+                            && !Spell.Name.Equals("Prevent Flight")))
+        {
+            //EffectService.RequestCancelEffect(effect);
+            MessageToCaster(target.Name + " is immune to this effect!", eChatType.CT_SpellResisted);
+            OnSpellResisted(target);
+            return;
+        }
 
-		/// <summary>
-		/// When an applied effect starts,
-		/// duration spells only
-		/// </summary>
-		/// <param name="effect"></param>
-		public override void OnEffectStart(GameSpellEffect effect)
-		{
-			base.OnEffectStart(effect);
-			effect.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, effect, 1.0-Spell.Value*0.01);
+        if (target.EffectList.GetOfType<ChargeEffect>() != null)
+        {
+            MessageToCaster(target.Name + " is moving to fast for this spell to have any effect!",
+                eChatType.CT_SpellResisted);
+            return;
+        }
 
-			SendUpdates(effect.Owner);
+        base.ApplyEffectOnTarget(target, effectiveness);
+    }
 
-			MessageToLiving(effect.Owner, Spell.Message1, eChatType.CT_Spell);
-			Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)), eChatType.CT_Spell, effect.Owner);
+    /// <summary>
+    /// When an applied effect starts,
+    /// duration spells only
+    /// </summary>
+    /// <param name="effect"></param>
+    public override void OnEffectStart(GameSpellEffect effect)
+    {
+        base.OnEffectStart(effect);
+        effect.Owner.BuffBonusMultCategory1.Set((int) eProperty.MaxSpeed, effect, 1.0 - Spell.Value * 0.01);
 
-			RestoreSpeedTimer timer = new RestoreSpeedTimer(effect);
-			effect.Owner.TempProperties.setProperty(effect, timer);
-			timer.Interval = 650;
-			timer.Start(1 + (effect.Duration >> 1));
+        SendUpdates(effect.Owner);
 
-			effect.Owner.StartInterruptTimer(effect.Owner.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
-		}
+        MessageToLiving(effect.Owner, Spell.Message1, eChatType.CT_Spell);
+        Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message2, effect.Owner.GetName(0, true)),
+            eChatType.CT_Spell, effect.Owner);
 
-		/// <summary>
-		/// When an applied effect expires.
-		/// Duration spells only.
-		/// </summary>
-		/// <param name="effect">The expired effect</param>
-		/// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
-		/// <returns>immunity duration in milliseconds</returns>
-		public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
-		{
-			base.OnEffectExpires(effect,noMessages);
+        var timer = new RestoreSpeedTimer(effect);
+        effect.Owner.TempProperties.setProperty(effect, timer);
+        timer.Interval = 650;
+        timer.Start(1 + (effect.Duration >> 1));
 
-			GameTimer timer = (GameTimer)effect.Owner.TempProperties.getProperty<object>(effect, null);
-			effect.Owner.TempProperties.removeProperty(effect);
-			if(timer!=null) timer.Stop();
+        effect.Owner.StartInterruptTimer(effect.Owner.SpellInterruptDuration, AttackData.eAttackType.Spell, Caster);
+    }
 
-			effect.Owner.BuffBonusMultCategory1.Remove((int)eProperty.MaxSpeed, effect);
+    /// <summary>
+    /// When an applied effect expires.
+    /// Duration spells only.
+    /// </summary>
+    /// <param name="effect">The expired effect</param>
+    /// <param name="noMessages">true, when no messages should be sent to player and surrounding</param>
+    /// <returns>immunity duration in milliseconds</returns>
+    public override int OnEffectExpires(GameSpellEffect effect, bool noMessages)
+    {
+        base.OnEffectExpires(effect, noMessages);
 
-			SendUpdates(effect.Owner);
+        var timer = (GameTimer) effect.Owner.TempProperties.getProperty<object>(effect, null);
+        effect.Owner.TempProperties.removeProperty(effect);
+        if (timer != null) timer.Stop();
 
-			MessageToLiving(effect.Owner, Spell.Message3, eChatType.CT_SpellExpires);
-			Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message4, effect.Owner.GetName(0, true)), eChatType.CT_SpellExpires, effect.Owner);
+        effect.Owner.BuffBonusMultCategory1.Remove((int) eProperty.MaxSpeed, effect);
 
-			return 60000;
-		}
+        SendUpdates(effect.Owner);
 
-		/// <summary>
-		/// Calculates the effect duration in milliseconds
-		/// </summary>
-		/// <param name="target">The effect target</param>
-		/// <param name="effectiveness">The effect effectiveness</param>
-		/// <returns>The effect duration in milliseconds</returns>
-		protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
-		{
-			double duration = base.CalculateEffectDuration(target, effectiveness);
-			duration *= target.GetModified(eProperty.SpeedDecreaseDurationReduction) * 0.01;
+        MessageToLiving(effect.Owner, Spell.Message3, eChatType.CT_SpellExpires);
+        Message.SystemToArea(effect.Owner, Util.MakeSentence(Spell.Message4, effect.Owner.GetName(0, true)),
+            eChatType.CT_SpellExpires, effect.Owner);
 
-			if (duration < 1)
-				duration = 1;
-			else if (duration > (Spell.Duration * 4))
-				duration = (Spell.Duration * 4);
+        return 60000;
+    }
 
-			if (Spell.Name.Equals("Prevent Flight"))
-				duration = Spell.Duration;
-			return (int)duration;
-		}
+    /// <summary>
+    /// Calculates the effect duration in milliseconds
+    /// </summary>
+    /// <param name="target">The effect target</param>
+    /// <param name="effectiveness">The effect effectiveness</param>
+    /// <returns>The effect duration in milliseconds</returns>
+    protected override int CalculateEffectDuration(GameLiving target, double effectiveness)
+    {
+        double duration = base.CalculateEffectDuration(target, effectiveness);
+        duration *= target.GetModified(eProperty.SpeedDecreaseDurationReduction) * 0.01;
 
-		/// <summary>
-		/// Sends updates on effect start/stop
-		/// </summary>
-		/// <param name="owner"></param>
-		public static void SendUpdates(GameLiving owner)
-		{
-			if (owner.IsMezzed || owner.IsStunned)
-				return;
+        if (duration < 1)
+            duration = 1;
+        else if (duration > Spell.Duration * 4)
+            duration = Spell.Duration * 4;
 
-			GamePlayer player = owner as GamePlayer;
-			if (player != null)
-				player.Out.SendUpdateMaxSpeed();
+        if (Spell.Name.Equals("Prevent Flight"))
+            duration = Spell.Duration;
+        return (int) duration;
+    }
 
-			GameNPC npc = owner as GameNPC;
-			if (npc != null)
-			{
-				short maxSpeed = npc.MaxSpeed;
-				if (npc.CurrentSpeed > maxSpeed)
-					npc.CurrentSpeed = maxSpeed;
-			}
-		}
+    /// <summary>
+    /// Sends updates on effect start/stop
+    /// </summary>
+    /// <param name="owner"></param>
+    public static void SendUpdates(GameLiving owner)
+    {
+        if (owner.IsMezzed || owner.IsStunned)
+            return;
 
-		/// <summary>
-		/// Slowly restores the livings speed
-		/// </summary>
-		public sealed class RestoreSpeedTimer : GameTimer
-		{
-			/// <summary>
-			/// The speed changing effect
-			/// </summary>
-			private readonly GameSpellEffect m_effect;
+        var player = owner as GamePlayer;
+        if (player != null)
+            player.Out.SendUpdateMaxSpeed();
 
-			/// <summary>
-			/// Constructs a new RestoreSpeedTimer
-			/// </summary>
-			/// <param name="effect">The speed changing effect</param>
-			public RestoreSpeedTimer(GameSpellEffect effect) : base(effect.Owner.CurrentRegion.TimeManager)
-			{
-				m_effect = effect;
-			}
+        var npc = owner as GameNPC;
+        if (npc != null)
+        {
+            var maxSpeed = npc.MaxSpeed;
+            if (npc.CurrentSpeed > maxSpeed)
+                npc.CurrentSpeed = maxSpeed;
+        }
+    }
 
-			/// <summary>
-			/// Called on every timer tick
-			/// </summary>
-			protected override void OnTick()
-			{
-				GameSpellEffect effect = m_effect;
+    /// <summary>
+    /// Slowly restores the livings speed
+    /// </summary>
+    public sealed class RestoreSpeedTimer : GameTimer
+    {
+        /// <summary>
+        /// The speed changing effect
+        /// </summary>
+        private readonly GameSpellEffect m_effect;
 
-				double factor = 2.0 - (effect.Duration - effect.RemainingTime)/(double)(effect.Duration>>1);
-				if (factor < 0) factor = 0;
-				else if (factor > 1) factor = 1;
+        /// <summary>
+        /// Constructs a new RestoreSpeedTimer
+        /// </summary>
+        /// <param name="effect">The speed changing effect</param>
+        public RestoreSpeedTimer(GameSpellEffect effect) : base(effect.Owner.CurrentRegion.TimeManager)
+        {
+            m_effect = effect;
+        }
 
-				effect.Owner.BuffBonusMultCategory1.Set((int)eProperty.MaxSpeed, effect, 1.0 - effect.Spell.Value*factor*0.01);
+        /// <summary>
+        /// Called on every timer tick
+        /// </summary>
+        protected override void OnTick()
+        {
+            var effect = m_effect;
 
-				SendUpdates(effect.Owner);
+            var factor = 2.0 - (effect.Duration - effect.RemainingTime) / (double) (effect.Duration >> 1);
+            if (factor < 0) factor = 0;
+            else if (factor > 1) factor = 1;
 
-				if (factor <= 0)
-					Stop();
-			}
+            effect.Owner.BuffBonusMultCategory1.Set((int) eProperty.MaxSpeed, effect,
+                1.0 - effect.Spell.Value * factor * 0.01);
+
+            SendUpdates(effect.Owner);
+
+            if (factor <= 0)
+                Stop();
+        }
 
 
-			/// <summary>
-			/// Returns short information about the timer
-			/// </summary>
-			/// <returns>Short info about the timer</returns>
-			public override string ToString()
-			{
-				return new StringBuilder(base.ToString())
-					.Append(" SpeedDecreaseEffect: (").Append(m_effect.ToString()).Append(')')
-					.ToString();
-			}
-		}
+        /// <summary>
+        /// Returns short information about the timer
+        /// </summary>
+        /// <returns>Short info about the timer</returns>
+        public override string ToString()
+        {
+            return new StringBuilder(base.ToString())
+                .Append(" SpeedDecreaseEffect: (").Append(m_effect.ToString()).Append(')')
+                .ToString();
+        }
+    }
 
-		/// <summary>
-		/// Constructs a new UnbreakableSpeedDecreaseSpellHandler
-		/// </summary>
-		/// <param name="caster"></param>
-		/// <param name="spell"></param>
-		/// <param name="line"></param>
-		public UnbreakableSpeedDecreaseSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster, spell, line)
-		{
-		}
-	}
+    /// <summary>
+    /// Constructs a new UnbreakableSpeedDecreaseSpellHandler
+    /// </summary>
+    /// <param name="caster"></param>
+    /// <param name="spell"></param>
+    /// <param name="line"></param>
+    public UnbreakableSpeedDecreaseSpellHandler(GameLiving caster, Spell spell, SpellLine line) : base(caster,
+        spell, line)
+    {
+    }
 }

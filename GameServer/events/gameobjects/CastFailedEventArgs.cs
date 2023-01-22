@@ -16,47 +16,44 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using DOL.Events;
 using DOL.GS.Spells;
 
-namespace DOL.Events
+namespace DOL.Events;
+
+/// <summary>
+/// Arguments for a cast failed event, stating the reason
+/// why a particular spell cast failed.
+/// </summary>
+/// <author>Aredhel</author>
+public class CastFailedEventArgs : CastingEventArgs
 {
-	/// <summary>
-	/// Arguments for a cast failed event, stating the reason
-	/// why a particular spell cast failed.
-	/// </summary>
-	/// <author>Aredhel</author>
-	public class CastFailedEventArgs : CastingEventArgs
-	{
-		public enum Reasons
-		{
-			TargetTooFarAway,
-			TargetNotInView,
-			AlreadyCasting,
-			CrowdControlled,
-			NotEnoughPower,
-		};
-				
-		/// <summary>
-		/// Constructs arguments for a cast failed event.
-		/// </summary>
-		public CastFailedEventArgs(ISpellHandler handler, Reasons reason) 
-			: base(handler)
-		{
-			this.m_reason = reason;
-		}
+    public enum Reasons
+    {
+        TargetTooFarAway,
+        TargetNotInView,
+        AlreadyCasting,
+        CrowdControlled,
+        NotEnoughPower
+    };
 
-		private Reasons m_reason;
+    /// <summary>
+    /// Constructs arguments for a cast failed event.
+    /// </summary>
+    public CastFailedEventArgs(ISpellHandler handler, Reasons reason)
+        : base(handler)
+    {
+        m_reason = reason;
+    }
 
-		/// <summary>
-		/// The reason why the spell cast failed.
-		/// </summary>
-		public Reasons Reason
-		{
-			get { return m_reason; }
-		}
-	}
+    private Reasons m_reason;
+
+    /// <summary>
+    /// The reason why the spell cast failed.
+    /// </summary>
+    public Reasons Reason => m_reason;
 }

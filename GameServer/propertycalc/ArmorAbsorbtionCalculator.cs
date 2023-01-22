@@ -16,26 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Linq;
 
-namespace DOL.GS.PropertyCalc
+namespace DOL.GS.PropertyCalc;
+
+[PropertyCalculator(eProperty.ArmorAbsorption)]
+public class ArmorAbsorptionCalculator : PropertyCalculator
 {
-	[PropertyCalculator(eProperty.ArmorAbsorption)]
-	public class ArmorAbsorptionCalculator : PropertyCalculator
-	{
-		public override int CalcValue(GameLiving living, eProperty property)
-		{
-			int buffBonus = living.BaseBuffBonusCategory[property];
-			int debuffMalus = Math.Abs(living.DebuffCategory[property]);
-			int itemBonus = living.ItemBonus[property];
-			int abilityBonus = living.AbilityBonus[property];
-			int hardCap = 50;
-			if (living is GamePet)
-			{
-				buffBonus += living.effectListComponent.GetAllEffects().Count(e => e is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.IsBuff) * 4;
-			}
-			return Math.Min(hardCap, (buffBonus - debuffMalus + itemBonus + abilityBonus));
-		}
-	}
+    public override int CalcValue(GameLiving living, eProperty property)
+    {
+        var buffBonus = living.BaseBuffBonusCategory[property];
+        var debuffMalus = Math.Abs(living.DebuffCategory[property]);
+        var itemBonus = living.ItemBonus[property];
+        var abilityBonus = living.AbilityBonus[property];
+        var hardCap = 50;
+        if (living is GamePet)
+            buffBonus += living.effectListComponent.GetAllEffects().Count(e =>
+                e is ECSGameSpellEffect spellEffect && spellEffect.SpellHandler.Spell.IsBuff) * 4;
+
+        return Math.Min(hardCap, buffBonus - debuffMalus + itemBonus + abilityBonus);
+    }
 }

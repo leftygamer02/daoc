@@ -4,17 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DOL.GS
+namespace DOL.GS;
+
+public enum eXPSource
 {
-    public enum eXPSource
-    {
-        NPC,
-        Player,
-        Quest,
-        Mission,
-        Task,
-        Praying,
-        GM,
-        Other
-    }
+    NPC,
+    Player,
+    Quest,
+    Mission,
+    Task,
+    Praying,
+    GM,
+    Other
 }

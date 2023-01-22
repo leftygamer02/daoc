@@ -51,23 +51,23 @@ public class BountyManager
 
     public static HybridDictionary GetActiveBounties
     {
-        get { return ActiveBounties; }
+        get => ActiveBounties;
         set { }
     }
 
     private static void GreyPlayerKilled(DOLEvent e, object sender, EventArgs args)
     {
-        GamePlayer player = sender as GamePlayer;
+        var player = sender as GamePlayer;
 
         if (player == null) return;
 
         if (e != GameLivingEvent.Dying) return;
 
-        DyingEventArgs eArgs = args as DyingEventArgs;
+        var eArgs = args as DyingEventArgs;
 
         if (eArgs?.Killer is not GamePlayer) return;
 
-        GamePlayer killer = eArgs.Killer as GamePlayer;
+        var killer = eArgs.Killer as GamePlayer;
 
         if (player.Realm == killer?.Realm) return;
 
@@ -80,15 +80,15 @@ public class BountyManager
 
     private static void BountyKilled(DOLEvent e, object sender, EventArgs args)
     {
-        GamePlayer killedPlayer = sender as GamePlayer;
+        var killedPlayer = sender as GamePlayer;
 
         if (killedPlayer == null) return;
 
         if (e != GameLivingEvent.Dying) return;
 
-        DyingEventArgs eArgs = args as DyingEventArgs;
+        var eArgs = args as DyingEventArgs;
 
-        GamePlayer killerPlayer = eArgs.Killer as GamePlayer;
+        var killerPlayer = eArgs.Killer as GamePlayer;
 
         if (killerPlayer == null) return;
 
@@ -98,20 +98,17 @@ public class BountyManager
 
         if (activeBounties is null || !activeBounties.Any()) return;
 
-        foreach (BountyPoster activeBounty in activeBounties.ToList())
+        foreach (var activeBounty in activeBounties.ToList())
         {
-            List<GamePlayer> playersToAward = new List<GamePlayer>();
+            var playersToAward = new List<GamePlayer>();
 
             var gainerList = killedPlayer.XPGainers;
             foreach (System.Collections.DictionaryEntry de in gainerList)
             {
-                GameLiving living = de.Key as GameLiving;
-                GamePlayer player = living as GamePlayer;
+                var living = de.Key as GameLiving;
+                var player = living as GamePlayer;
                 if (player == null) continue;
-                if (player.Realm == activeBounty.BountyRealm)
-                {
-                    playersToAward.Add(player);
-                }
+                if (player.Realm == activeBounty.BountyRealm) playersToAward.Add(player);
             }
 
             var playersToAwardCount = playersToAward.Count;
@@ -120,24 +117,21 @@ public class BountyManager
 
             var totalReward = activeBounty.Reward;
 
-            var loyaltyHoursReward = (int)(totalReward / 50); // 50g = 1 hour of loyalty
-            
+            var loyaltyHoursReward = (int) (totalReward / 50); // 50g = 1 hour of loyalty
+
             var reward = totalReward / playersToAwardCount * 10000; // *10000 as DOL is expecting the value in copper
-            foreach (GamePlayer player in playersToAward)
+            foreach (var player in playersToAward)
             {
                 var playerLoyalty = LoyaltyManager.GetPlayerRealmLoyalty(player);
 
-                if (playerLoyalty.Days >= 30)
-                {
-                    bountyRate = 1;
-                }
+                if (playerLoyalty.Days >= 30) bountyRate = 1;
 
                 if (playerLoyalty.Days < 3) continue;
-                
-                reward = (int)(reward * bountyRate);
-                
+
+                reward = (int) (reward * bountyRate);
+
                 LoyaltyManager.LoyaltyUpdateAddHours(player, loyaltyHoursReward);
-                player.AddMoney(reward , "You have been rewarded {0} extra for killing a bounty target!");
+                player.AddMoney(reward, "You have been rewarded {0} extra for killing a bounty target!");
             }
 
             BroadcastBountyKill(activeBounty);
@@ -147,13 +141,13 @@ public class BountyManager
 
     private static void PlayerKilled(DOLEvent e, object sender, EventArgs args)
     {
-        GamePlayer player = sender as GamePlayer;
+        var player = sender as GamePlayer;
 
         if (player == null) return;
 
         if (e != GameLivingEvent.EnemyKilled) return;
 
-        EnemyKilledEventArgs eArgs = args as EnemyKilledEventArgs;
+        var eArgs = args as EnemyKilledEventArgs;
 
         if (eArgs?.Target is not GamePlayer) return;
 
@@ -162,16 +156,13 @@ public class BountyManager
         if (activeBounties == null || activeBounties.Count <= 0) return;
         if (player.GetConLevel(eArgs.Target as GamePlayer) != 0) return;
 
-        foreach (BountyPoster activeBounty in activeBounties.ToList())
+        foreach (var activeBounty in activeBounties.ToList())
         {
             var playerLoyalty = LoyaltyManager.GetPlayerRealmLoyalty(player);
-            
-            if (playerLoyalty.Days >= 30)
-            {
-                bountyRate = 1;
-            }
-            
-            int stolenReward = (int) (activeBounty.Reward - (activeBounty.Reward * bountyRate)) * 10000;
+
+            if (playerLoyalty.Days >= 30) bountyRate = 1;
+
+            var stolenReward = (int) (activeBounty.Reward - activeBounty.Reward * bountyRate) * 10000;
             player.AddMoney(stolenReward, "You have stolen {0} from a bounty on you!");
             activeBounty.Reward -= stolenReward;
 
@@ -188,7 +179,7 @@ public class BountyManager
         // comment below for easier debugging
         killed.TempProperties.removeProperty(KILLEDBY);
 
-        BountyPoster poster = new BountyPoster(killed, killer, amount);
+        var poster = new BountyPoster(killed, killer, amount);
 
         ActiveBounties ??= new HybridDictionary();
         if (ActiveBounties.Count > 0)
@@ -197,7 +188,7 @@ public class BountyManager
             {
                 var realmBounties = ActiveBounties[killed.Realm] as List<BountyPoster>;
                 var playerBountyFound = false;
-                foreach (BountyPoster bp in realmBounties)
+                foreach (var bp in realmBounties)
                 {
                     if (bp.Ganked != killed) continue;
                     if (bp.Target != killer)
@@ -213,10 +204,7 @@ public class BountyManager
                     playerBountyFound = true;
                 }
 
-                if (!playerBountyFound)
-                {
-                    realmBounties.Add(poster);
-                }
+                if (!playerBountyFound) realmBounties.Add(poster);
             }
         }
         else
@@ -233,14 +221,12 @@ public class BountyManager
     private static void RemoveBounty(BountyPoster bountyPoster)
     {
         foreach (List<BountyPoster> bPL in ActiveBounties.Values)
+        foreach (var bP in bPL)
         {
-            foreach (BountyPoster bP in bPL)
-            {
-                if (bP == null) continue;
-                if (bP != bountyPoster) continue;
-                bPL.Remove(bP);
-                return;
-            }
+            if (bP == null) continue;
+            if (bP != bountyPoster) continue;
+            bPL.Remove(bP);
+            return;
         }
     }
 
@@ -254,22 +240,19 @@ public class BountyManager
             foreach (List<BountyPoster> bPL in activeBounties)
             {
                 var bountyList = bPL.ToList();
-                foreach (BountyPoster bP in bountyList)
+                foreach (var bP in bountyList)
                 {
                     if (bP == null) continue;
                     if (bP.PostedTime + bountyDuration >= expireTime && expireTime != 0) continue;
                     expireTime = bP.PostedTime + bountyDuration;
                     m_nextPosterToExpire = bP;
                     if (tick <= expireTime) continue;
-                
-                    GamePlayer playerToReimburse = bP.Ganked;
-                
+
+                    var playerToReimburse = bP.Ganked;
+
                     var posterLoyalty = LoyaltyManager.GetPlayerRealmLoyalty(playerToReimburse);
 
-                    if (posterLoyalty.Days >= 30)
-                    {
-                        bountyRate = 1;
-                    }
+                    if (posterLoyalty.Days >= 30) bountyRate = 1;
 
                     var reward =
                         (long) (bP.Reward * 10000 * bountyRate); // *10000 to convert to gold
@@ -280,7 +263,6 @@ public class BountyManager
                     BroadcastExpiration(bP);
                     m_nextPosterToExpire = null;
                 }
-                
             }
         }
         else
@@ -306,13 +288,11 @@ public class BountyManager
         PlayerBounties.Clear();
 
         foreach (List<BountyPoster> bPL in ActiveBounties.Values)
+        foreach (var bP in bPL)
         {
-            foreach (BountyPoster bP in bPL)
-            {
-                if (bP == null) continue;
-                if (bP.Target.Name != player.Name) continue;
-                PlayerBounties.Add(bP);
-            }
+            if (bP == null) continue;
+            if (bP.Target.Name != player.Name) continue;
+            PlayerBounties.Add(bP);
         }
 
         return PlayerBounties;
@@ -324,12 +304,10 @@ public class BountyManager
         PlayerBounties.Clear();
 
         foreach (List<BountyPoster> bPL in ActiveBounties.Values)
+        foreach (var bP in bPL)
         {
-            foreach (BountyPoster bP in bPL)
-            {
-                if (bP == null) continue;
-                PlayerBounties.Add(bP);
-            }
+            if (bP == null) continue;
+            PlayerBounties.Add(bP);
         }
 
         return PlayerBounties;
@@ -338,14 +316,12 @@ public class BountyManager
     private static BountyPoster GetActiveBountyForPlayerForRealm(eRealm realm, GamePlayer player)
     {
         foreach (List<BountyPoster> bPL in ActiveBounties.Values)
+        foreach (var bP in bPL)
         {
-            foreach (BountyPoster bP in bPL)
-            {
-                if (bP == null) continue;
-                if (bP.Target.Name != player.Name) continue;
-                if (bP.Ganked.Realm != realm) continue;
-                return bP;
-            }
+            if (bP == null) continue;
+            if (bP.Target.Name != player.Name) continue;
+            if (bP.Ganked.Realm != realm) continue;
+            return bP;
         }
 
         return ActiveBounties[realm] as BountyPoster;
@@ -423,36 +399,33 @@ public class BountyManager
     public static IList<string> GetTextList(GamePlayer player)
     {
         long timeLeft;
-        List<string> temp = new List<string>();
+        var temp = new List<string>();
         temp.Clear();
 
         var activePosters = GetActiveBountiesForPlayer(player);
 
         if (activePosters != null)
-        {
             if (activePosters.Count > 0)
             {
                 temp.Add($"ATTENTION: You have {activePosters.Count} bounties on your head!");
                 temp.Add("");
-        
+
                 foreach (var bounty in activePosters)
                 {
                     timeLeft = bountyDuration - (GameLoop.GameLoopTime - bounty.PostedTime);
                     temp.Add(
                         $"{GlobalConstants.RealmToName(bounty.BountyRealm)} [{bounty.Reward}g - {TimeSpan.FromMilliseconds(timeLeft).Minutes}m {TimeSpan.FromMilliseconds(timeLeft).Seconds}s]");
                 }
-        
+
                 temp.Add("");
             }
-        }
 
         var count = 0;
         var bountyAvailable = false;
 
         var allBounties = GetAllBounties();
         if (allBounties != null)
-        {
-            foreach (BountyPoster bounty in allBounties)
+            foreach (var bounty in allBounties)
             {
                 if (bounty.BountyRealm != player.Realm) continue;
                 count++;
@@ -461,8 +434,7 @@ public class BountyManager
                 temp.Add(
                     $"{count} - {bounty.Target.Name} the {bounty.Target.CharacterClass.Name}, last seen in {bounty.LastSeenZone.Description} [{bounty.Reward}g - {TimeSpan.FromMilliseconds(timeLeft).Minutes}m {TimeSpan.FromMilliseconds(timeLeft).Seconds}s]");
             }
-        }
-        
+
         if (!bountyAvailable) temp.Add("Your Realm doesn't have any Bounty Hunt posted.");
 
         return temp;

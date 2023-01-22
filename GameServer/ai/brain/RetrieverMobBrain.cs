@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,71 +25,80 @@ using DOL.GS;
 using log4net;
 using System.Reflection;
 
-namespace DOL.AI.Brain
+namespace DOL.AI.Brain;
+
+/// <summary>
+/// A retriever type mob is an NPC that is spawned from a boss-like
+/// mob (its master). Upon spawning, the master mob orders the
+/// retriever to make for a certain location; once the retriever
+/// has reached its target it reports back to its master. The player's
+/// task usually is to prevent the retriever from reaching its target,
+/// because bad things may happen should it succeed.
+/// </summary>
+/// <author>Aredhel</author>
+internal class RetrieverMobBrain : StandardMobBrain
 {
-	/// <summary>
-	/// A retriever type mob is an NPC that is spawned from a boss-like
-	/// mob (its master). Upon spawning, the master mob orders the
-	/// retriever to make for a certain location; once the retriever
-	/// has reached its target it reports back to its master. The player's
-	/// task usually is to prevent the retriever from reaching its target,
-	/// because bad things may happen should it succeed.
-	/// </summary>
-	/// <author>Aredhel</author>
-    class RetrieverMobBrain : StandardMobBrain
+    /// <summary>
+    /// Defines a logger for this class.
+    /// </summary>
+    private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+    private enum State
     {
-		/// <summary>
-		/// Defines a logger for this class.
-		/// </summary>
-		private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        Passive,
+        GettingHelp,
+        Aggressive
+    };
 
-        private enum State { Passive, GettingHelp, Aggressive };
-        private State m_state;
+    private State m_state;
 
-        /// <summary>
-        /// Mob brain main loop.
-        /// </summary>
-        public override void Think()
+    /// <summary>
+    /// Mob brain main loop.
+    /// </summary>
+    public override void Think()
+    {
+        if (m_state != State.Aggressive) return;
+        base.Think();
+    }
+
+    private GameNPC m_master = null;
+
+    /// <summary>
+    /// The NPC that spawned this retriever.
+    /// </summary>
+    public GameNPC Master
+    {
+        get => m_master;
+        set => m_master = value;
+    }
+
+    /// <summary>
+    /// Called whenever the NPC's body sends something to its brain.
+    /// </summary>
+    /// <param name="e">The event that occured.</param>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="args">The event details.</param>
+    public override void Notify(DOLEvent e, object sender, EventArgs args)
+    {
+        // When we get the WalkTo event we start running towards the target
+        // location; once we've arrived we'll tell our master. If someone
+        // attacks us before we can get to the target location, we'll do what
+        // any other mob would do.
+
+        base.Notify(e, sender, args);
+        if (e == GameNPCEvent.WalkTo && m_state == State.Passive)
         {
-            if (m_state != State.Aggressive) return;
-            base.Think();
+            m_state = State.GettingHelp;
         }
-
-        private GameNPC m_master = null;
-
-        /// <summary>
-        /// The NPC that spawned this retriever.
-        /// </summary>
-        public GameNPC Master
+        else if (e == GameNPCEvent.ArriveAtTarget && m_state == State.GettingHelp)
         {
-            get { return m_master; }
-			set { m_master = value; }
+            if (Master != null && Master.Brain != null)
+                Master.Brain.Notify(GameNPCEvent.ArriveAtTarget, Body, new EventArgs());
+            m_state = State.Aggressive;
         }
-
-        /// <summary>
-        /// Called whenever the NPC's body sends something to its brain.
-        /// </summary>
-        /// <param name="e">The event that occured.</param>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="args">The event details.</param>
-        public override void Notify(DOL.Events.DOLEvent e, object sender, EventArgs args)
+        else if (e == GameObjectEvent.TakeDamage)
         {
-            // When we get the WalkTo event we start running towards the target
-            // location; once we've arrived we'll tell our master. If someone
-            // attacks us before we can get to the target location, we'll do what
-            // any other mob would do.
-
-            base.Notify(e, sender, args);
-            if (e == GameNPCEvent.WalkTo && m_state == State.Passive)
-                m_state = State.GettingHelp;
-            else if (e == GameNPCEvent.ArriveAtTarget && m_state == State.GettingHelp)
-            {
-				if (Master != null && Master.Brain != null)
-					Master.Brain.Notify(GameNPCEvent.ArriveAtTarget, this.Body, new EventArgs());
-                m_state = State.Aggressive;
-            }
-            else if (e == GameNPCEvent.TakeDamage)
-                m_state = State.Aggressive;
+            m_state = State.Aggressive;
         }
     }
 }

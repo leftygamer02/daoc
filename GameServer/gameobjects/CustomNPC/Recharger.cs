@@ -35,13 +35,13 @@ public class Recharger : GameNPC
             return false;
 
         TurnTo(player.X, player.Y);
-        
+
         // Message: "I can recharge weapons or armor for you, Just hand me the item you want recharged and I'll see what I can do, for a small fee."
         SayTo(player, eChatLoc.CL_PopupWindow,
-                LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Recharger.Interact"));
+            LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Recharger.Interact"));
         SayTo(player, eChatLoc.CL_PopupWindow,
-            $"If you're in a hurry, I can also [recharge all] your items for an additional {RECHARGE_ALL_TAX*100}% fee.");
-        
+            $"If you're in a hurry, I can also [recharge all] your items for an additional {RECHARGE_ALL_TAX * 100}% fee.");
+
         return true;
     }
 
@@ -178,10 +178,9 @@ public class Recharger : GameNPC
             LanguageMgr.GetTranslation(player.Client.Account.Language,
                 "Scripts.Recharger.RechargerDialogResponse.FullyCharged"));
     }
-    
 
     #endregion Receive item
-    
+
     #region RechargeAll
 
     private void AskRechargeAll(GamePlayer player)
@@ -192,11 +191,11 @@ public class Recharger : GameNPC
             if (!CanBeRecharged(inventoryItem)) continue;
             TotalCost += CalculateCost(inventoryItem);
         }
-        
+
         if (TotalCost > 0)
             player.Client.Out.SendCustomDialog(
-            LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Recharger.ReceiveItem.Cost",
-                Money.GetString(TotalCost)), RechargeAll);
+                LanguageMgr.GetTranslation(player.Client.Account.Language, "Scripts.Recharger.ReceiveItem.Cost",
+                    Money.GetString(TotalCost)), RechargeAll);
         else
             SayTo(player, eChatLoc.CL_PopupWindow,
                 "All items are fully charged already.");
@@ -222,7 +221,7 @@ public class Recharger : GameNPC
 
         if (!player.RemoveMoney(cost))
         {
-            SayTo(player,eChatLoc.CL_PopupWindow,
+            SayTo(player, eChatLoc.CL_PopupWindow,
                 LanguageMgr.GetTranslation(player.Client.Account.Language,
                     "Scripts.Recharger.RechargerDialogResponse.NotMoney"));
             return;
@@ -241,60 +240,50 @@ public class Recharger : GameNPC
             Recharge(inventoryItem);
             player.Out.SendInventoryItemsUpdate(new[] {inventoryItem});
         }
-        
-        SayTo(player,eChatLoc.CL_PopupWindow,
+
+        SayTo(player, eChatLoc.CL_PopupWindow,
             LanguageMgr.GetTranslation(player.Client.Account.Language,
                 "Scripts.Recharger.RechargerDialogResponse.FullyCharged"));
     }
 
     private void Recharge(InventoryItem item)
     {
-        
         if (item == null || item.SlotPosition == (int) eInventorySlot.Ground
                          || item.OwnerID == null) return;
 
         item.Charges = item.MaxCharges;
         item.Charges1 = item.MaxCharges1;
     }
+
     private long CalculateCost(InventoryItem item)
     {
         long NeededMoney = 0;
         if (item.Charges < item.MaxCharges)
-        {
             NeededMoney += (item.MaxCharges - item.Charges) * Money.GetMoney(0, 0, 10, 0, 0);
-        }
+
         if (item.Charges1 < item.MaxCharges1)
-        {
             NeededMoney += (item.MaxCharges1 - item.Charges1) * Money.GetMoney(0, 0, 10, 0, 0);
-        }
 
         var tax = NeededMoney * RECHARGE_ALL_TAX;
-        
-        NeededMoney += (long)tax;
+
+        NeededMoney += (long) tax;
 
         return NeededMoney;
     }
 
     private bool CanBeRecharged(InventoryItem item)
     {
-        if (item.Count != 1)
-        {
-            return false;
-        }
+        if (item.Count != 1) return false;
 
         if ((item.SpellID == 0 && item.SpellID1 == 0) ||
             item.Object_Type == (int) eObjectType.Poison ||
             (item.Object_Type == (int) eObjectType.Magical && (item.Item_Type == 40 || item.Item_Type == 41)))
-        {
             return false;
-        }
 
-        if (item.Charges == item.MaxCharges && item.Charges1 == item.MaxCharges1)
-        {
-            return false;
-        }
+        if (item.Charges == item.MaxCharges && item.Charges1 == item.MaxCharges1) return false;
 
         return true;
     }
+
     #endregion
 }

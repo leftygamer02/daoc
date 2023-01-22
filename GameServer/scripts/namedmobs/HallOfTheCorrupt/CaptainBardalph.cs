@@ -5,6 +5,7 @@ using DOL.Database;
 using DOL.GS;
 using DOL.GS.PacketHandler;
 using DOL.GS.Styles;
+
 namespace DOL.GS
 {
     public class CaptainBardalph : GameEpicBoss
@@ -12,6 +13,7 @@ namespace DOL.GS
         public CaptainBardalph() : base()
         {
         }
+
         public static int AfterEvadeID = 145;
         public static int AfterEvadeClassID = 11;
         public static Style AfterEvade = SkillBase.GetStyleByID(AfterEvadeID, AfterEvadeClassID);
@@ -19,21 +21,22 @@ namespace DOL.GS
         public static int TauntID = 130;
         public static int TauntClassID = 11;
         public static Style Taunt = SkillBase.GetStyleByID(TauntID, TauntClassID);
+
         public override void OnAttackedByEnemy(AttackData ad) // on Boss actions
         {
             base.OnAttackedByEnemy(ad);
         }
+
         public override void OnAttackEnemy(AttackData ad) //on enemy actions
         {
             if (Util.Chance(35))
-            {
-                if (ad != null && (ad.AttackResult == eAttackResult.HitUnstyled || ad.AttackResult == eAttackResult.HitStyle))
-                {
+                if (ad != null && (ad.AttackResult == eAttackResult.HitUnstyled ||
+                                   ad.AttackResult == eAttackResult.HitStyle))
                     CastSpell(Bleed, SkillBase.GetSpellLine(GlobalSpellsLines.Mob_Spells));
-                }
-            }
+
             base.OnAttackEnemy(ad);
         }
+
         public override int GetResist(eDamageType damageType)
         {
             switch (damageType)
@@ -44,19 +47,20 @@ namespace DOL.GS
                 default: return 30; // dmg reduction for rest resists
             }
         }
+
         public override double GetArmorAF(eArmorSlot slot)
         {
             return 350;
         }
+
         public override double GetArmorAbsorb(eArmorSlot slot)
         {
             // 85% ABS is cap.
             return 0.20;
         }
-        public override int MaxHealth
-        {
-            get { return 30000; }
-        }
+
+        public override int MaxHealth => 30000;
+
         public override void TakeDamage(GameObject source, eDamageType damageType, int damageAmount, int criticalAmount)
         {
             if (source is GamePlayer || source is GamePet)
@@ -71,11 +75,11 @@ namespace DOL.GS
                     {
                         GamePlayer truc;
                         if (source is GamePlayer)
-                            truc = (source as GamePlayer);
+                            truc = source as GamePlayer;
                         else
-                            truc = ((source as GamePet).Owner as GamePlayer);
+                            truc = (source as GamePet).Owner as GamePlayer;
                         if (truc != null)
-                            truc.Out.SendMessage(this.Name + " is immune to any damage!", eChatType.CT_System,
+                            truc.Out.SendMessage(Name + " is immune to any damage!", eChatType.CT_System,
                                 eChatLoc.CL_ChatWindow);
                         base.TakeDamage(source, damageType, 0, 0);
                         return;
@@ -87,15 +91,18 @@ namespace DOL.GS
                 }
             }
         }
+
         public override double AttackDamage(InventoryItem weapon)
         {
             return base.AttackDamage(weapon) * Strength / 100;
         }
+
         public override int AttackRange
         {
-            get { return 350; }
+            get => 350;
             set { }
         }
+
         public override bool HasAbility(string keyName)
         {
             if (IsAlive && keyName == GS.Abilities.CCImmunity)
@@ -103,15 +110,17 @@ namespace DOL.GS
 
             return base.HasAbility(keyName);
         }
+
         public override bool AddToWorld()
         {
             Faction = FactionMgr.GetFactionByID(187);
             Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
-            RespawnInterval = ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
-            BodyType = (ushort)NpcTemplateMgr.eBodyType.Humanoid;
+            RespawnInterval =
+                ServerProperties.Properties.SET_EPIC_GAME_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+            BodyType = (ushort) NpcTemplateMgr.eBodyType.Humanoid;
 
-            GameNpcInventoryTemplate template = new GameNpcInventoryTemplate();
-            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 186, 0, 0, 0);//modelID,color,effect,extension
+            var template = new GameNpcInventoryTemplate();
+            template.AddNPCEquipment(eInventorySlot.TorsoArmor, 186, 0, 0, 0); //modelID,color,effect,extension
             template.AddNPCEquipment(eInventorySlot.ArmsArmor, 188, 0);
             template.AddNPCEquipment(eInventorySlot.LegsArmor, 187, 0);
             template.AddNPCEquipment(eInventorySlot.HandsArmor, 189, 0, 0, 0);
@@ -134,7 +143,7 @@ namespace DOL.GS
             Flags = eFlags.GHOST;
             VisibleActiveWeaponSlots = 16;
             MeleeDamageType = eDamageType.Thrust;
-            CaptainBardalphBrain sbrain = new CaptainBardalphBrain();
+            var sbrain = new CaptainBardalphBrain();
             SetOwnBrain(sbrain);
             LoadedFromScript = false; //load from database
             SaveIntoDatabase();
@@ -146,20 +155,22 @@ namespace DOL.GS
         public static void ScriptLoaded(DOLEvent e, object sender, EventArgs args)
         {
             GameNPC[] npcs;
-            npcs = WorldMgr.GetNPCsByNameFromRegion("Captain Bardalph", 277, (eRealm)0);
+            npcs = WorldMgr.GetNPCsByNameFromRegion("Captain Bardalph", 277, (eRealm) 0);
             if (npcs.Length == 0)
             {
                 log.Warn("Captain Heathyr not found, creating it...");
 
                 log.Warn("Initializing Captain Bardalph...");
-                CaptainBardalph HOC = new CaptainBardalph();
+                var HOC = new CaptainBardalph();
                 HOC.Name = "Captain Bardalph";
                 HOC.Model = 55;
                 HOC.Realm = 0;
                 HOC.Level = 65;
                 HOC.Size = 50;
                 HOC.CurrentRegionID = 277; //hall of the corrupt
-                HOC.RespawnInterval = ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL * 60000; //1min is 60000 miliseconds
+                HOC.RespawnInterval =
+                    ServerProperties.Properties.SET_SI_EPIC_ENCOUNTER_RESPAWNINTERVAL *
+                    60000; //1min is 60000 miliseconds
                 HOC.Faction = FactionMgr.GetFactionByID(187);
                 HOC.Faction.AddFriendFaction(FactionMgr.GetFactionByID(187));
 
@@ -173,15 +184,19 @@ namespace DOL.GS
                 HOC.Y = 35842;
                 HOC.Z = 14134;
                 HOC.Heading = 1008;
-                CaptainBardalphBrain ubrain = new CaptainBardalphBrain();
+                var ubrain = new CaptainBardalphBrain();
                 HOC.SetOwnBrain(ubrain);
                 HOC.AddToWorld();
                 HOC.SaveIntoDatabase();
                 HOC.Brain.Start();
             }
             else
-                log.Warn("Captain Bardalph exist ingame, remove it and restart server if you want to add by script code.");
+            {
+                log.Warn(
+                    "Captain Bardalph exist ingame, remove it and restart server if you want to add by script code.");
+            }
         }
+
         private Spell m_Bleed;
 
         private Spell Bleed
@@ -190,7 +205,7 @@ namespace DOL.GS
             {
                 if (m_Bleed == null)
                 {
-                    DBSpell spell = new DBSpell();
+                    var spell = new DBSpell();
                     spell.AllowAdd = false;
                     spell.CastTime = 0;
                     spell.RecastDelay = 2;
@@ -210,10 +225,11 @@ namespace DOL.GS
                     spell.Type = eSpellType.StyleBleeding.ToString();
                     spell.Uninterruptible = true;
                     spell.MoveCast = true;
-                    spell.DamageType = (int)eDamageType.Body;
+                    spell.DamageType = (int) eDamageType.Body;
                     m_Bleed = new Spell(spell, 70);
                     SkillBase.AddScriptedSpell(GlobalSpellsLines.Mob_Spells, m_Bleed);
                 }
+
                 return m_Bleed;
             }
         }
@@ -226,6 +242,7 @@ namespace DOL.AI.Brain
     {
         private static readonly log4net.ILog log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public CaptainBardalphBrain()
             : base()
         {
@@ -233,7 +250,9 @@ namespace DOL.AI.Brain
             AggroRange = 500;
             ThinkInterval = 1500;
         }
+
         public static bool reset_darra = false;
+
         public override void Think()
         {
             if (!CheckProximityAggro())
@@ -242,25 +261,20 @@ namespace DOL.AI.Brain
                 FSM.SetCurrentState(eFSMStateType.RETURN_TO_SPAWN);
                 Body.Health = Body.MaxHealth;
             }
+
             if (Body.IsOutOfTetherRange)
-            {
                 Body.Health = Body.MaxHealth;
-            }
-            else if (Body.InCombatInLast(30 * 1000) == false && this.Body.InCombatInLast(35 * 1000))
-            {
+            else if (Body.InCombatInLast(30 * 1000) == false && Body.InCombatInLast(35 * 1000))
                 Body.Health = Body.MaxHealth;
-            }
+
             if (Body.InCombat && HasAggro)
-            {
                 if (Body.TargetObject != null)
                 {
                     Body.styleComponent.NextCombatBackupStyle = CaptainBardalph.Taunt;
                     Body.styleComponent.NextCombatStyle = CaptainBardalph.AfterEvade;
                 }
-            }
+
             base.Think();
         }
     }
 }
-
-
