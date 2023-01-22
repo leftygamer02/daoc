@@ -62,1619 +62,386 @@ namespace DOL.GS.Housing
 
         public static long GetLotPrice(DBHouse house)
         {
-            var diff = DateTime.Now - house.CreationTime;
+            TimeSpan diff = (DateTime.Now - house.CreationTime);
 
-            var price = Properties.HOUSING_LOT_PRICE_START -
-                        (long) (diff.TotalHours * Properties.HOUSING_LOT_PRICE_PER_HOUR);
-            if (price < Properties.HOUSING_LOT_PRICE_MINIMUM) return Properties.HOUSING_LOT_PRICE_MINIMUM;
+            long price = Properties.HOUSING_LOT_PRICE_START - (long)(diff.TotalHours * Properties.HOUSING_LOT_PRICE_PER_HOUR);
+            if (price < Properties.HOUSING_LOT_PRICE_MINIMUM)
+            {
+                return Properties.HOUSING_LOT_PRICE_MINIMUM;
+            }
 
             return price;
         }
 
         public static MerchantTradeItems GetLotMarkerItems(GameLotMarker marker)
         {
-            witch(GameServer.ServerRules.GetLotMarkerListName(marker.CurrentRegionID).ToLower())
+            switch (GameServer.ServerRules.GetLotMarkerListName(marker.CurrentRegionID).ToLower())
+            {
+                case "housing_alb_lotmarker":
+                    return _albionLotMarkerItems;
+                case "housing_mid_lotmarker":
+                    return _midgardLotMarkerItems;
+                case "housing_hib_lotmarker":
+                    return _hiberniaLotMarkerItems;
+                case "housing_custom_lotmarker":
+                    return _customLotMarkerItems;
+            }
 
-            ase "housing_alb_lotmarker":
-            eturn _albionLotMarkerItems;
-            ase "housing_mid_lotmarker":
-            eturn _midgardLotMarkerItems;
-            ase "housing_hib_lotmarker":
-            eturn _hiberniaLotMarkerItems;
-            ase "housing_custom_lotmarker":
-            eturn _customLotMarkerItems;
-
-
-            eturn new MerchantTradeItems(GameServer.ServerRules.GetLotMarkerListName(marker.CurrentRegionID));
+            return new MerchantTradeItems(GameServer.ServerRules.GetLotMarkerListName(marker.CurrentRegionID));
         }
 
         public static MerchantTradeItems GetNpcShopItems(GamePlayer player)
         {
-            r allRealmsTypes = new[] {eameServerType.GST_PvE, eGameServerType.GST_PvP}
-                (allRealmsTypes.Contains(GameServer.Instance.Configuration.ServerType))
-            turn _indoorNpcShopItemsAll;
+            var allRealmsTypes = new[] { eGameServerType.GST_PvE, eGameServerType.GST_PvP };
 
-            itch(player.Realm)
-            se eRealm.Albion:
-            turn _indoorNpcShopItemsAlb;
-            se eRealm.Hibernia:
-            turn _indoorNpcShopItemsHib;
-            se eRealm.Midgard:
-            turn _indoorNpcShopItemsMid;
+            if (allRealmsTypes.Contains(GameServer.Instance.Configuration.ServerType))
+            {
+                return _indoorNpcShopItemsAll;
+            }
 
-            turn _indoorNpcShopItemsAll;
+            switch (player.Realm)
+            {
+                case eRealm.Albion:
+                    return _indoorNpcShopItemsAlb;
+                case eRealm.Hibernia:
+                    return _indoorNpcShopItemsHib;
+                case eRealm.Midgard:
+                    return _indoorNpcShopItemsMid;
+            }
+
+            return _indoorNpcShopItemsAll;
         }
 
         private static void LoadItemLists()
         {
-            ndoorMenuItems = new MerchantTradeItems("housing_indoor_menu");
-            ndoorShopItems = new MerchantTradeItems("housing_indoor_shop");
-            utdoorMenuItems = new MerchantTradeItems("housing_outdoor_menu");
-            utdoorShopItems = new MerchantTradeItems("housing_outdoor_shop");
-            ndoorVaultShopItems = new MerchantTradeItems("housing_indoor_vault");
-            ndoorVaultShopItemsMid = new MerchantTradeItems("housing_indoor_vault_mid");
-            ndoorVaultShopItemsAlb = new MerchantTradeItems("housing_indoor_vault_alb");
-            ndoorVaultShopItemsHib = new MerchantTradeItems("housing_indoor_vault_hib");
-            ndoorCraftShopItems = new MerchantTradeItems("housing_indoor_craft");
-            ndoorBindstoneShopItems = new MerchantTradeItems("housing_indoor_bindstone");
-            ndoorBindstoneShopItemsMid = new MerchantTradeItems("housing_indoor_bindstone_mid");
-            ndoorBindstoneShopItemsAlb = new MerchantTradeItems("housing_indoor_bindstone_alb");
-            ndoorBindstoneShopItemsHib = new MerchantTradeItems("housing_indoor_bindstone_hib");
-            indoorNpcShopItemsAll = new MerchantTradeItems("housing_indoor_npc");
-            indoorNpcShopItemsAlb = new MerchantTradeItems("housing_indoor_alb_npc");
-            indoorNpcShopItemsHib = new MerchantTradeItems("housing_indoor_hib_npc");
-            indoorNpcShopItemsMid = new MerchantTradeItems("housing_indoor_mid_npc");
-            albionLotMarkerItems = new MerchantTradeItems("housing_alb_lotmarker");
-            midgardLotMarkerItems = new MerchantTradeItems("housing_mid_lotmarker");
-            hiberniaLotMarkerItems = new MerchantTradeItems("housing_hib_lotmarker");
-            customLotMarkerItems = new MerchantTradeItems("housing_custom_lotmarker");
+            IndoorMenuItems = new MerchantTradeItems("housing_indoor_menu");
+            IndoorShopItems = new MerchantTradeItems("housing_indoor_shop");
+            OutdoorMenuItems = new MerchantTradeItems("housing_outdoor_menu");
+            OutdoorShopItems = new MerchantTradeItems("housing_outdoor_shop");
+
+            IndoorVaultShopItems = new MerchantTradeItems("housing_indoor_vault");
+            IndoorVaultShopItemsMid = new MerchantTradeItems("housing_indoor_vault_mid");
+            IndoorVaultShopItemsAlb = new MerchantTradeItems("housing_indoor_vault_alb");
+            IndoorVaultShopItemsHib = new MerchantTradeItems("housing_indoor_vault_hib");
+            IndoorCraftShopItems = new MerchantTradeItems("housing_indoor_craft");
+            IndoorBindstoneShopItems = new MerchantTradeItems("housing_indoor_bindstone");
+            IndoorBindstoneShopItemsMid = new MerchantTradeItems("housing_indoor_bindstone_mid");
+            IndoorBindstoneShopItemsAlb = new MerchantTradeItems("housing_indoor_bindstone_alb");
+            IndoorBindstoneShopItemsHib = new MerchantTradeItems("housing_indoor_bindstone_hib");
+
+            _indoorNpcShopItemsAll = new MerchantTradeItems("housing_indoor_npc");
+            _indoorNpcShopItemsAlb = new MerchantTradeItems("housing_indoor_alb_npc");
+            _indoorNpcShopItemsHib = new MerchantTradeItems("housing_indoor_hib_npc");
+            _indoorNpcShopItemsMid = new MerchantTradeItems("housing_indoor_mid_npc");
+
+            _albionLotMarkerItems = new MerchantTradeItems("housing_alb_lotmarker");
+            _midgardLotMarkerItems = new MerchantTradeItems("housing_mid_lotmarker");
+            _hiberniaLotMarkerItems = new MerchantTradeItems("housing_hib_lotmarker");
+            _customLotMarkerItems = new MerchantTradeItems("housing_custom_lotmarker");
         }
 
         private static void CheckItemTemplates()
         {
-            (!Properties.LOAD_HOUSING_ITEMS)
-            turn;
+            if (!Properties.LOAD_HOUSING_ITEMS)
+                return;
 
-            lot marker
-            eckItemTemplate("Albion cottage deed", "housing_alb_cottage_deed", 498, 0, 10000000, 0, 0, 0, 0, 1);
-            eckItemTemplate("Albion house deed", "housing_alb_house_deed", 498, 0, 50000000, 0, 0, 0, 0, 1);
-            eckItemTemplate("Albion villa deed", "housing_alb_villa_deed", 498, 0, 100000000, 0, 0, 0, 0, 1);
-            eckItemTemplate("Albion mansion deed", "housing_alb_mansion_deed", 498, 0, 250000000, 0, 0, 0, 0, 1);
-            eckItemTemplate("Midgard cottage deed", "housing_mid_cottage_deed", 498, 0, 10000000, 0, 0, 0, 0, 2);
-            eckItemTemplate("Midgard house deed", "housing_mid_house_deed", 498, 0, 50000000, 0, 0, 0, 0, 2);
-            eckItemTemplate("Midgard villa deed", "housing_mid_villa_deed", 498, 0, 100000000, 0, 0, 0, 0, 2);
-            eckItemTemplate("Midgard mansion deed", "housing_mid_mansion_deed", 498, 0, 250000000, 0, 0, 0, 0, 2);
-            eckItemTemplate("Hibernia cottage deed", "housing_hib_cottage_deed", 498, 0, 10000000, 0, 0, 0, 0, 3);
-            eckItemTemplate("Hibernia house deed", "housing_hib_house_deed", 498, 0, 50000000, 0, 0, 0, 0, 3);
-            eckItemTemplate("Hibernia villa deed", "housing_hib_villa_deed", 498, 0, 100000000, 0, 0, 0, 0, 3);
-            eckItemTemplate("Hibernia mansion deed", "housing_hib_mansion_deed", 498, 0, 250000000, 0, 0, 0, 0, 3);
-            eckItemTemplate("Porch deed", "housing_porch_deed", 498, 0, 5000000, 0, 0, 0, 0, 0);
-            eckItemTemplate("Porch remove deed", "housing_porch_remove_deed", 498, 0, 500000, 0, 0, 0, 0, 0);
-            eckItemTemplate("Consignment Merchant", "housing_consignment_deed", 593, 0, 1000000, 0, 0, 0, 0, 0);
-            eckItemTemplate("deed of guild transfer", "housing_deed_of_guild_transfer", 498, 0, 500000, 0, 0, 0, 0, 0);
-            eckItemTemplate("House removal deed", "housing_house_removal_deed", 498, 0, 50000000, 0, 0, 0, 0, 0);
+            //lot marker
+            CheckItemTemplate("Albion cottage deed", "housing_alb_cottage_deed", 498, 0, 10000000, 0, 0, 0, 0, 1);
+            CheckItemTemplate("Albion house deed", "housing_alb_house_deed", 498, 0, 50000000, 0, 0, 0, 0, 1);
+            CheckItemTemplate("Albion villa deed", "housing_alb_villa_deed", 498, 0, 100000000, 0, 0, 0, 0, 1);
+            CheckItemTemplate("Albion mansion deed", "housing_alb_mansion_deed", 498, 0, 250000000, 0, 0, 0, 0, 1);
+            CheckItemTemplate("Midgard cottage deed", "housing_mid_cottage_deed", 498, 0, 10000000, 0, 0, 0, 0, 2);
+            CheckItemTemplate("Midgard house deed", "housing_mid_house_deed", 498, 0, 50000000, 0, 0, 0, 0, 2);
+            CheckItemTemplate("Midgard villa deed", "housing_mid_villa_deed", 498, 0, 100000000, 0, 0, 0, 0, 2);
+            CheckItemTemplate("Midgard mansion deed", "housing_mid_mansion_deed", 498, 0, 250000000, 0, 0, 0, 0, 2);
+            CheckItemTemplate("Hibernia cottage deed", "housing_hib_cottage_deed", 498, 0, 10000000, 0, 0, 0, 0, 3);
+            CheckItemTemplate("Hibernia house deed", "housing_hib_house_deed", 498, 0, 50000000, 0, 0, 0, 0, 3);
+            CheckItemTemplate("Hibernia villa deed", "housing_hib_villa_deed", 498, 0, 100000000, 0, 0, 0, 0, 3);
+            CheckItemTemplate("Hibernia mansion deed", "housing_hib_mansion_deed", 498, 0, 250000000, 0, 0, 0, 0, 3);
+            CheckItemTemplate("Porch deed", "housing_porch_deed", 498, 0, 5000000, 0, 0, 0, 0, 0);
+            CheckItemTemplate("Porch remove deed", "housing_porch_remove_deed", 498, 0, 500000, 0, 0, 0, 0, 0);
+            CheckItemTemplate("Consignment Merchant", "housing_consignment_deed", 593, 0, 1000000, 0, 0, 0, 0, 0);
+            CheckItemTemplate("deed of guild transfer", "housing_deed_of_guild_transfer", 498, 0, 500000, 0, 0, 0, 0, 0);
+            CheckItemTemplate("House removal deed", "housing_house_removal_deed", 498, 0, 50000000, 0, 0, 0, 0, 0);
 
-            default indoor npc
-            eckItemTemplate("Hastener", "housing_hastener", 593, (int) eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID, 0, 0);
-            eckItemTemplate("Smith", "housing_smith", 593, (int) eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 1, 0, 0);
-            eckItemTemplate("Enchanter", "housing_enchanter", 593, (int) eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 2, 0, 0);
-            eckItemTemplate("Emblemer", "housing_emblemer", 593, (int) eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 3, 0, 0);
-            eckItemTemplate("Healer", "housing_healer", 593, (int) eO bjectType.HouseNPC, 30000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 4, 0, 0);
-            eckItemTemplate("Recharger", "housing_recharger", 593, (int) eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 5, 0, 0);
-            eckItemTemplate("Hibernia Teleporter", "housing_hib_teleporter", 593, (int) eO bjectType.HouseNPC, 1000000,
-                0, 0
-            Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, 0, 3);
-            eckItemTemplate("Albion Teleporter", "housing_alb_teleporter", 593, (int) eO bjectType.HouseNPC, 1000000, 0,
-                0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, 0, 1);
-            eckItemTemplate("Midgard Teleporter", "housing_mid_teleporter", 593, (int) eO bjectType.HouseNPC, 1000000,
-                0, 0
-            Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, 0, 2);
-            eckItemTemplate("Apprentice Merchant", "housing_apprentice_merchant", 593, (int) eO bjectType.HouseNPC, 1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 7, 0, 0);
-            eckItemTemplate("Grandmaster Merchant", "housing_grandmaster_merchant", 593, (int) eO bjectType.HouseNPC, 5
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 8, 0, 0);
-            eckItemTemplate("Incantation Merchant", "housing_incantation_merchant", 593, (int) eO bjectType.HouseNPC, 1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 9, 0, 0);
-            eckItemTemplate("Poison and Dye Supplies", "housing_poison_dye_supplies", 593, (int) eO bjectType.HouseNPC,
-                1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 10, 0, 0);
-            eckItemTemplate("Potion, Tincture, and Enchantment Supplies",
-                "housing_potion_tincture_enchantment_supplies", 5
-            3, (int) eO bjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 11, 0, 0);
-            eckItemTemplate("Poison and Potion Supplies", "housing_poison_potion_supplies", 593, (
-                nt) eO bjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 12, 0, 0);
-            eckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_dye_tincture_enchantment_supplies", 593,
-                (
-                    nt) eO bjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 13, 0, 0);
-            eckItemTemplate("Taxidermy Supplies", "housing_taxidermy_supplies", 593, (int) eO bjectType.HouseNPC,
-                1000000, 0
-            0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 14, 0, 0);
-            eckItemTemplate("Siegecraft Supplies", "housing_siegecraft_supplies", 593, (int) eO bjectType.HouseNPC, 1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 15, 0, 0);
-            eckItemTemplate("Vault Keeper", "housing_vault_keeper", 593, (int) eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 16, 0, 0);
-            eckItemTemplate("Dye Supply Master", "housing_dye_supply_master", 593, (int) eO bjectType.HouseNPC, 1000000,
-                0, 0
-            Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 17, 0, 0);
-            eckItemTemplate("Grandmaster Merchant", "housing_mid_grandmaster_merchant", 593,
-                (int) eO bjectType.HouseNPC, 5
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 18, 0, 0);
-            eckItemTemplate("Grandmaster Merchant", "housing_alb_grandmaster_merchant", 593,
-                (int) eO bjectType.HouseNPC, 5
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 19, 0, 0);
-            eckItemTemplate("Grandmaster Merchant", "housing_hib_grandmaster_merchant", 593,
-                (int) eO bjectType.HouseNPC, 5
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 20, 0, 0);
-            eckItemTemplate("Potion, Tincture, and Enchantment Supplies", "
-            ousing_mid_potion_tincture_enchantment_supplies", 593, (int)eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 30, 0, 0);
-            eckItemTemplate("Potion, Tincture, and Enchantment Supplies", "
-            ousing_alb_potion_tincture_enchantment_supplies", 593, (int)eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 31, 0, 0);
-            eckItemTemplate("Potion, Tincture, and Enchantment Supplies", "
-            ousing_hib_potion_tincture_enchantment_supplies", 593, (int)eO bjectType.HouseNPC, 1000000, 0, 0, P
-            operties.HOUSING_STARTING_NPCTEMPLATE_ID + 32, 0, 0);
-            eckItemTemplate("Apprentice Merchant", "housing_mid_apprentice_merchant", 593, (int) eO bjectType.HouseNPC,
-                1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 36, 0, 0);
-            eckItemTemplate("Apprentice Merchant", "housing_alb_apprentice_merchant", 593, (int) eO bjectType.HouseNPC,
-                1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 37, 0, 0);
-            eckItemTemplate("Apprentice Merchant", "housing_hib_apprentice_merchant", 593, (int) eO bjectType.HouseNPC,
-                1
-            00000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 38, 0, 0);
-            eckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_mid_dye_tincture_enchantment_supplies",
-                5
-            3, (int) eO bjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 39, 0, 0);
-            eckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_alb_dye_tincture_enchantment_supplies",
-                5
-            3, (int) eO bjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 40, 0, 0);
-            eckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_hib_dye_tincture_enchantment_supplies",
-                5
-            3, (int) eO bjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 41, 0, 0);
+            //default indoor npc
+            CheckItemTemplate("Hastener", "housing_hastener", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID, 0, 0);
+            CheckItemTemplate("Smith", "housing_smith", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 1, 0, 0);
+            CheckItemTemplate("Enchanter", "housing_enchanter", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 2, 0, 0);
+            CheckItemTemplate("Emblemer", "housing_emblemer", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 3, 0, 0);
+            CheckItemTemplate("Healer", "housing_healer", 593, (int)eObjectType.HouseNPC, 30000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 4, 0, 0);
+            CheckItemTemplate("Recharger", "housing_recharger", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 5, 0, 0);
+            CheckItemTemplate("Hibernia Teleporter", "housing_hib_teleporter", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, 0, 3);
+            CheckItemTemplate("Albion Teleporter", "housing_alb_teleporter", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, 0, 1);
+            CheckItemTemplate("Midgard Teleporter", "housing_mid_teleporter", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, 0, 2);
+            CheckItemTemplate("Apprentice Merchant", "housing_apprentice_merchant", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 7, 0, 0);
+            CheckItemTemplate("Grandmaster Merchant", "housing_grandmaster_merchant", 593, (int)eObjectType.HouseNPC, 5000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 8, 0, 0);
+            CheckItemTemplate("Incantation Merchant", "housing_incantation_merchant", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 9, 0, 0);
+            CheckItemTemplate("Poison and Dye Supplies", "housing_poison_dye_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 10, 0, 0);
+            CheckItemTemplate("Potion, Tincture, and Enchantment Supplies", "housing_potion_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 11, 0, 0);
+            CheckItemTemplate("Poison and Potion Supplies", "housing_poison_potion_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 12, 0, 0);
+            CheckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_dye_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 13, 0, 0);
+            CheckItemTemplate("Taxidermy Supplies", "housing_taxidermy_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 14, 0, 0);
+            CheckItemTemplate("Siegecraft Supplies", "housing_siegecraft_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 15, 0, 0);
+            CheckItemTemplate("Vault Keeper", "housing_vault_keeper", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 16, 0, 0);
+            CheckItemTemplate("Dye Supply Master", "housing_dye_supply_master", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 17, 0, 0);
+            CheckItemTemplate("Grandmaster Merchant", "housing_mid_grandmaster_merchant", 593, (int)eObjectType.HouseNPC, 5000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 18, 0, 0);
+            CheckItemTemplate("Grandmaster Merchant", "housing_alb_grandmaster_merchant", 593, (int)eObjectType.HouseNPC, 5000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 19, 0, 0);
+            CheckItemTemplate("Grandmaster Merchant", "housing_hib_grandmaster_merchant", 593, (int)eObjectType.HouseNPC, 5000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 20, 0, 0);
+            CheckItemTemplate("Potion, Tincture, and Enchantment Supplies", "housing_mid_potion_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 30, 0, 0);
+            CheckItemTemplate("Potion, Tincture, and Enchantment Supplies", "housing_alb_potion_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 31, 0, 0);
+            CheckItemTemplate("Potion, Tincture, and Enchantment Supplies", "housing_hib_potion_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 32, 0, 0);
+            CheckItemTemplate("Apprentice Merchant", "housing_mid_apprentice_merchant", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 36, 0, 0);
+            CheckItemTemplate("Apprentice Merchant", "housing_alb_apprentice_merchant", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 37, 0, 0);
+            CheckItemTemplate("Apprentice Merchant", "housing_hib_apprentice_merchant", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 38, 0, 0);
+            CheckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_mid_dye_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 39, 0, 0);
+            CheckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_alb_dye_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 40, 0, 0);
+            CheckItemTemplate("Dye, Tincture, and Enchantment Supplies", "housing_hib_dye_tincture_enchantment_supplies", 593, (int)eObjectType.HouseNPC, 1000000, 0, 0, Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 41, 0, 0);
 
-            indoor craft
-            eckItemTemplate("alchemy table", "housing_alchemy_table", 1494, (int) eO bjectType.HouseInteriorObject, 1
-            000000, 0, 0, 0, 0, 0);
-            eckItemTemplate("forge", "housing_forge", 1495, (int) eO bjectType.HouseInteriorObject, 10000000, 0, 0, 0,
-                    0, 0
-                ;
-            eckItemTemplate("lathe", "housing_lathe", 1496, (int) eO bjectType.HouseInteriorObject, 10000000, 0, 0, 0,
-                    0, 0
-                ;
+            //indoor craft
+            CheckItemTemplate("alchemy table", "housing_alchemy_table", 1494, (int)eObjectType.HouseInteriorObject, 10000000, 0, 0, 0, 0, 0);
+            CheckItemTemplate("forge", "housing_forge", 1495, (int)eObjectType.HouseInteriorObject, 10000000, 0, 0, 0, 0, 0);
+            CheckItemTemplate("lathe", "housing_lathe", 1496, (int)eObjectType.HouseInteriorObject, 10000000, 0, 0, 0, 0, 0);
 
-            indoor bindstone
-            eckItemTemplate("Albion bindstone", "housing_alb_bindstone", 1488, (int) eO bjectType.HouseBindstone,
-                10000000, 0
-            0, 0, 0, 1);
-            eckItemTemplate("Midgard bindstone", "housing_mid_bindstone", 1492, (int) eO bjectType.HouseBindstone, 1
-            000000, 0, 0, 0, 0, 2);
-            eckItemTemplate("Hibernia bindstone", "housing_hib_bindstone", 1490, (int) eO bjectType.HouseBindstone, 1
-            000000, 0, 0, 0, 0, 3);
+            //indoor bindstone
+            CheckItemTemplate("Albion bindstone", "housing_alb_bindstone", 1488, (int)eObjectType.HouseBindstone, 10000000, 0, 0, 0, 0, 1);
+            CheckItemTemplate("Midgard bindstone", "housing_mid_bindstone", 1492, (int)eObjectType.HouseBindstone, 10000000, 0, 0, 0, 0, 2);
+            CheckItemTemplate("Hibernia bindstone", "housing_hib_bindstone", 1490, (int)eObjectType.HouseBindstone, 10000000, 0, 0, 0, 0, 3);
 
-            indoor vault
-            eckItemTemplate("Albion vault", "housing_alb_vault", 1489, (int) eO bjectType.HouseVault, 10000000, 0, 0, 0,
-                    0, 1
-                ;
-            eckItemTemplate("Midgard vault", "housing_mid_vault", 1493, (int) eO bjectType.HouseVault, 10000000, 0, 0,
-                0, 0
-            2);
-            eckItemTemplate("Hibernia vault", "housing_hib_vault", 1491, (int) eO bjectType.HouseVault, 10000000, 0, 0,
-                0, 0
-            3);
+            //indoor vault
+            CheckItemTemplate("Albion vault", "housing_alb_vault", 1489, (int)eObjectType.HouseVault, 10000000, 0, 0, 0, 0, 1);
+            CheckItemTemplate("Midgard vault", "housing_mid_vault", 1493, (int)eObjectType.HouseVault, 10000000, 0, 0, 0, 0, 2);
+            CheckItemTemplate("Hibernia vault", "housing_hib_vault", 1491, (int)eObjectType.HouseVault, 10000000, 0, 0, 0, 0, 3);
         }
 
         private static void CheckMerchantItemTemplates()
         {
-            if (!Properties.LOA
-            D
-            _HOUSING_ITE
-
+            if (!Properties.LOAD_HOUSING_ITEMS)
             {
                 return;
-
-                kers
-
-                ing keritems =
-                {
-                    se_deed", "housing_alb_vil
-                    l
-                    _deed", "housing_alb_man
-                    s
-                    on_deed",
-                    deed", "housing_cons
-                    i
-                    nment_deed",//"housing_deed
-                    _
-                    f_guild_transfer"
-                };
-                l
-                    b_ alblotmarkeritems)
-                ;
-
-
-                string[]
-                m
-                    dlotmarkeritems =
-
-                    {
-                        se_deed", "housing_mid_vil
-                        l
-                        _deed", "housing_mid_man
-                        s
-                        on_deed",
-                        deed", "housing_cons
-                        i
-                        nment_deed",//"housing_deed
-                        _
-                        f_guild_transfer"
-                    };
-                i
-                    d_ midlotmarkeritems)
-                ;
-
-
-                string[]
-                h
-                    blotmarkeritems =
-
-                    {
-                        se_deed", "housing_hib_vil
-                        l
-                        _deed", "housing_hib_man
-                        s
-                        on_deed",
-                        deed", "housing_cons
-                        i
-                        nment_deed",//"housing_deed
-                        _
-                        f_guild_transfer"
-                    };
-                i
-                    b_ hiblotmarkeritems)
-                ;
-
-
-                string[]
-                    c
-                stomlotmarkeritem
-                    s
-
-
-                se_deed", "housing_alb_vil
-                    l
-                _deed", "housing_alb_man
-                    s
-                on_deed",
-
-
-                se_deed", "housing_hib_vil
-                    l
-                _deed", "housing_hib_man
-                    s
-                on_deed",
-
-
-                se_deed", "housing_mid_vil
-                    l
-                _deed", "housing_mid_man
-                    s
-                on_deed",
-
-
-                deed", "housing_cons
-                    i
-                nment_deed", //"housing_dee
-                    d
-                of_guild_transfer"
             }
-            ;
-            u
-                st ", customlotmarker
-            i
-                tems);
 
-            //hook
-            p
-                ints
-            var
-                ind new List<str
-            "housi
-            g
-                has
-            ener
-            "
-                , "hou
-            s
-                ng g_enchanter", "hou
-                s
-            ng_emblemer", "
-            h
-                using_healer", "hou
-                s
-            ng_recharger", "ho
-                u
-            ing_apprentice_m
-                e
-            chant",
+            //lot markers
+            string[] alblotmarkeritems = {
+                                             "housing_alb_cottage_deed", "housing_alb_house_deed", "housing_alb_villa_deed", "housing_alb_mansion_deed",
+                                             "housing_porch_deed", "housing_porch_remove_deed", "housing_consignment_deed",//"housing_deed_of_guild_transfer"
+			                             };
+            CheckMerchantItems("housing_alb_lotmarker", alblotmarkeritems);
 
+            string[] midlotmarkeritems = {
+                                             "housing_mid_cottage_deed", "housing_mid_house_deed", "housing_mid_villa_deed", "housing_mid_mansion_deed",
+                                             "housing_porch_deed", "housing_porch_remove_deed", "housing_consignment_deed",//"housing_deed_of_guild_transfer"
+			                             };
+            CheckMerchantItems("housing_mid_lotmarker", midlotmarkeritems);
 
-            "housing_grandmaster_merch
-            an antation_merchant", "housing_p
-                o
-            son_dye_supplies", "housing_po
-                t
-            on_tincture_enchantment_suppl
-                i
-            s",
-            "housing_poison_potion_sup
-            pl axidermy_supplies", "housing_sie
-                g
-            craft_supplies", "housing_va
-                u
-            t_keeper",
-            "h
-            o
-                sing_dye_supply_master
-            "
+            string[] hiblotmarkeritems = {
+                                             "housing_hib_cottage_deed", "housing_hib_house_deed", "housing_hib_villa_deed", "housing_hib_mansion_deed",
+                                             "housing_porch_deed", "housing_porch_remove_deed", "housing_consignment_deed",//"housing_deed_of_guild_transfer"
+			                             };
+            CheckMerchantItems("housing_hib_lotmarker", hiblotmarkeritems);
+
+            string[] customlotmarkeritems = {
+                                             "housing_alb_cottage_deed", "housing_alb_house_deed", "housing_alb_villa_deed", "housing_alb_mansion_deed",
+                                             "housing_hib_cottage_deed", "housing_hib_house_deed", "housing_hib_villa_deed", "housing_hib_mansion_deed",
+                                             "housing_mid_cottage_deed", "housing_mid_house_deed", "housing_mid_villa_deed", "housing_mid_mansion_deed",
+                                             "housing_porch_deed", "housing_porch_remove_deed", "housing_consignment_deed", //"housing_deed_of_guild_transfer"
+			                             };
+            CheckMerchantItems("housing_custom_lotmarker", customlotmarkeritems);
+
             //hookpoints
-            i
-            nd d = new List<
-            "housi
-            g
-                has
-            ener
-            "
-                , "hou
-            s
-                ng g_enchanter", "hou
-                s
-            ng_emblemer", "
-            h
-                using_healer", "hou
-                s
-            ng_recharger", "ho
-                u
-            ing_mid_apprenti
-                c
-            _merchant",
+            var indoorNpcBase = new List<string> {
+                "housing_hastener", "housing_smith", "housing_enchanter", "housing_emblemer", "housing_healer", "housing_recharger", "housing_apprentice_merchant",
+                "housing_grandmaster_merchant", "housing_incantation_merchant", "housing_poison_dye_supplies", "housing_potion_tincture_enchantment_supplies",
+                "housing_poison_potion_supplies", "housing_taxidermy_supplies", "housing_siegecraft_supplies", "housing_vault_keeper",
+                "housing_dye_supply_master"
+            };
+            //hookpoints
+            var indoorNpcBaseMid = new List<string> {
+                "housing_hastener", "housing_smith", "housing_enchanter", "housing_emblemer", "housing_healer", "housing_recharger", "housing_mid_apprentice_merchant",
+                "housing_mid_grandmaster_merchant", "housing_incantation_merchant", "housing_poison_dye_supplies", "housing_mid_potion_tincture_enchantment_supplies",
+                "housing_poison_potion_supplies", "housing_taxidermy_supplies", "housing_siegecraft_supplies", "housing_vault_keeper",
+                "housing_dye_supply_master", "housing_mid_dye_tincture_enchantment_supplies"
+            };
+            //hookpoints
+            var indoorNpcBaseAlb = new List<string> {
+                "housing_hastener", "housing_smith", "housing_enchanter", "housing_emblemer", "housing_healer", "housing_recharger", "housing_alb_apprentice_merchant",
+                "housing_alb_grandmaster_merchant", "housing_incantation_merchant", "housing_poison_dye_supplies", "housing_alb_potion_tincture_enchantment_supplies",
+                "housing_poison_potion_supplies", "housing_taxidermy_supplies", "housing_siegecraft_supplies", "housing_vault_keeper",
+                "housing_dye_supply_master", "housing_alb_dye_tincture_enchantment_supplies"
+            };
+            //hookpoints
+            var indoorNpcBaseHib = new List<string> {
+                "housing_hastener", "housing_smith", "housing_enchanter", "housing_emblemer", "housing_healer", "housing_recharger", "housing_hib_apprentice_merchant",
+                "housing_hib_grandmaster_merchant", "housing_incantation_merchant", "housing_poison_dye_supplies", "housing_hib_potion_tincture_enchantment_supplies",
+                "housing_poison_potion_supplies", "housing_taxidermy_supplies", "housing_siegecraft_supplies", "housing_vault_keeper",
+                "housing_dye_supply_master", "housing_hib_dye_tincture_enchantment_supplies"
+            };
 
+            var indoorNpc = new List<string>(indoorNpcBase);
+            indoorNpc.AddRange(new[] { "housing_hib_teleporter", "housing_alb_teleporter", "housing_mid_teleporter" });
+            CheckMerchantItems("housing_indoor_npc", indoorNpc);
 
-            "housing_mid_grandmaster_m
-            er _incantation_merchant", "housing_p
-                o
-            son_dye_supplies", "housing_mi
-                d
-            potion_tincture_enchantment_s
-                u
-            plies",
-            "housing_poison_potion_sup
-            pl axidermy_supplies", "housing_sie
-                g
-            craft_supplies", "housing_va
-                u
-            t_keeper",
-            "h
-            o
-                sing_dye_supply_master
-            ",        e_tincture_enchantment_supp
-            l
-                es"
-        };
+            var indoorNpcAlb = new List<string>(indoorNpcBaseAlb);
+            indoorNpcAlb.AddRange(new[] { "housing_alb_teleporter" });
+            CheckMerchantItems("housing_indoor_alb_npc", indoorNpcAlb);
 
-        //hookpoints
-        private i
-            nd b = new List<
-        "housi
+            var indoorNpcHib = new List<string>(indoorNpcBaseHib);
+            indoorNpcHib.AddRange(new[] { "housing_hib_teleporter" });
+            CheckMerchantItems("housing_indoor_hib_npc", indoorNpcHib);
 
-        private g
-            has
+            var indoorNpcMid = new List<string>(indoorNpcBaseMid);
+            indoorNpcMid.AddRange(new[] { "housing_mid_teleporter" });
+            CheckMerchantItems("housing_indoor_mid_npc", indoorNpcMid);
 
-        ener
-        "
-        , "hou
+            string[] indoorbindstone = { "housing_hib_bindstone", "housing_mid_bindstone", "housing_alb_bindstone" };
+            CheckMerchantItems("housing_indoor_bindstone", indoorbindstone);
+            
+            string[] indoorbindstonemid = { "housing_mid_bindstone" };
+            CheckMerchantItems("housing_indoor_bindstone_mid", indoorbindstonemid);
+            
+            string[] indoorbindstonealb = { "housing_alb_bindstone" };
+            CheckMerchantItems("housing_indoor_bindstone_alb", indoorbindstonealb);
+            
+            string[] indoorbindstonehib = { "housing_hib_bindstone" };
+            CheckMerchantItems("housing_indoor_bindstone_hib", indoorbindstonehib);
 
-        private s
-            ng g_enchanter", "
+            string[] indoorcraft = { "housing_alchemy_table", "housing_forge", "housing_lathe" };
+            CheckMerchantItems("housing_indoor_craft", indoorcraft);
 
-        private hou
-            s
-
-        ng_emblemer", "
-
-        private h
-            using_healer", "
-
-        private hou
-            s
-
-        ng_recharger", "
-
-        private ho
-            u
-
-        private ing_alb_apprenti
-            c
-
-        _merchant",
-        "housing_alb_grandmaster_m
-        private er _incantation_merchant", "
-
-        private housing_p
-            o
-
-        son_dye_supplies", "
-
-        private housing_al
-            b
-
-        private potion_tincture_enchantment_s
-            u
-
-        plies",
-        "housing_poison_potion_sup
-        private pl axidermy_supplies", "
-
-        private housing_sie
-            g
-
-        craft_supplies", "
-
-        private housing_va
-            u
-
-        t_keeper",
-        "h
-
-        private o
-            sing_dye_supply_master
-
-        ",        e_tincture_enchantment_supp
-
-        private l
-            es"
-    };
-
-    //hookpoints
-    i
-    nd b = new List <
-        "housi
-    g
-        has
-    ener
-    "
-        , "hou
-    s
-        ng g_enchanter", "hou
-        s
-    ng_emblemer", "
-    h
-        using_healer", "hou
-        s
-    ng_recharger", "ho
-        u
-    ing_hib_apprenti
-        c
-    _merchant",
-
-
-    "housing_hib_grandmaster_m
-    er _incantation_merchant", "housing_p
-        o
-    son_dye_supplies", "housing_hi
-        b
-    potion_tincture_enchantment_s
-        u
-    plies",
-    "housing_poison_potion_sup
-    pl axidermy_supplies", "housing_sie
-        g
-    craft_supplies", "housing_va
-        u
-    t_keeper",
-    "h
-    o
-        sing_dye_supply_master
-    ",        e_tincture_enchantment_supp
-    l
-        es"
-};
-
-var indoorNpc = i
-n > se)
-    in
-oorN
-    p
-c.AddR
-    a
-n
-ge(new[]
-        {
-            "h
-            o
-            us porter", 
-            "
-            housing_
-            a
-            lb_
-            t
-            e
-            e
-            orter", "housing_mid_tel
-            e
-            orter" });
-            C
-            h
-            ckMerchantItems("housing
-            i
-            n
-            do oorNpc);
-            var indoorNpcAlb
-            =
-            new List<
-            s
-            ti cBa
-            eAlb);
-            indo
-            o
-            rNpcAl
-            b
-            .
-            AddRange(new[] {
-            "h        eleporter"
+            string[] indoorvault = { "housing_hib_vault", "housing_mid_vault", "housing_alb_vault" };
+            CheckMerchantItems("housing_indoor_vault", indoorvault);
+            string[] indoorvaultmid = { "housing_mid_vault" };
+            CheckMerchantItems("housing_indoor_vault_mid", indoorvaultmid);
+            string[] indoorvaultalb = { "housing_alb_vault" };
+            CheckMerchantItems("housing_indoor_vault_alb", indoorvaultalb);
+            string[] indoorvaulthib = { "housing_hib_vault" };
+            CheckMerchantItems("housing_indoor_vault_hib", indoorvaulthib);
         }
-    )
-    ;
 
-
-h
-ckMerchantItems("housing
-i
-    n
-do
-{
-    indoorNpcAlb)
-};
-
-
-var indoorNpcH
-    i
-        = new List<
-            s
-ti cBa
-eHib);
-
-
-indo
-    o
-rNpcHi
-b
-    .AddRange(new[]
+        private static void CheckMerchantItems(string merchantid, ICollection<string> itemids)
         {
-            "h        eleporter"
+            var merchantitems = DOLDB<MerchantItem>.SelectObjects(DB.Column("ItemListID").IsEqualTo(merchantid));
+
+            int slot = 0;
+            foreach (string itemid in itemids)
+            {
+                if (merchantitems.Any(x => x.ItemTemplateID == itemid))
+                {
+                    slot += 1;
+                    continue;
+                }
+
+                var newitem = new MerchantItem
+                {
+                    ItemListID = merchantid,
+                    ItemTemplateID = itemid,
+                    SlotPosition = (slot % 30),
+                    PageNumber = (slot / 30)
+                };
+
+                GameServer.Database.AddObject(newitem);
+                slot += 1;
+            }
         }
-    )
-    ;
 
-
-h
-ckMerchantItems("housing
-i
-    n
-do
-{
-    indoorNpcHib)
-};
-
-
-var indoorNpcM
-    i
-        = new List<
-            s
-ti cBa
-eMid);
-
-
-indo
-    o
-rNpcMi
-d
-    .AddRange(new[]
+        private static void CheckItemTemplate(string name, string id, int model, int objtype, int copper, int dps, int spd,
+                                              int bonus, int weight, int realm)
         {
-            "h        eleporter"
+            var templateitem = GameServer.Database.FindObjectByKey<ItemTemplate>(id);
+            if (templateitem != null)
+            {
+                return;
+            }
+
+            templateitem = new ItemTemplate
+            {
+                Name = name,
+                Model = model,
+                Level = 0,
+                Object_Type = objtype,
+                Id_nb = id,
+                IsPickable = true,
+                IsDropable = true,
+                DPS_AF = dps,
+                SPD_ABS = spd,
+                Hand = 0x0E,
+                Weight = weight,
+                Price = copper,
+                Bonus = bonus,
+                Realm = (byte)realm,
+                PackageID = "PlayerHousing"
+            };
+
+            GameServer.Database.AddObject(templateitem);
         }
-    )
-    ;
 
+        private static void CheckNPCTemplates()
+        {
+            if (!Properties.LOAD_HOUSING_NPC)
+            {
+                return;
+            }
 
-h
-ckMerchantItems("housing
-i
-    n
-do
-{
-    indoorNpcMid)
-};
+            // These are default npc's
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID, "DOL.GS.GameHastener", "Piper", "Hastener", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 1, "DOL.GS.Blacksmith", "Blacksmith", "Smith", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 2, "DOL.GS.Enchanter", "Enchanter", "Enchanter", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 3, "DOL.GS.EmblemNPC", "Guild Emblemer", "Emblemer", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 4, "DOL.GS.GameHealer", "Healer", "Healer", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 5, "DOL.GS.Recharger", "Recharger", "Recharger", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 6, "DOL.GS.GameNPC", "Realm Teleporter", "Teleporter", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 7, "DOL.GS.GameMerchant", "Apprentice Merchant", "Merchant", "0", "", "housing_apprentice");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 8, "DOL.GS.GameMerchant", "Grandmaster Merchant", "Merchant", "0", "", "housing_grandmaster");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 9, "DOL.GS.GameMerchant", "Incantation Merchant", "Merchant", "0", "", "housing_incantation");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 10, "DOL.GS.GameMerchant", "Bane Merchant", "Merchant", "0", "", "housing_poison_dye");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 11, "DOL.GS.GameMerchant", "Potion, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_potion_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 12, "DOL.GS.GameMerchant", "Poison and Potion Supplies", "Merchant", "0", "", "housing_poison_potion");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 13, "DOL.GS.GameMerchant", "Dye, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_dye_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 14, "DOL.GS.GameMerchant", "Taxidermy Supplies", "Merchant", "0", "", "housing_taxidermy");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 15, "DOL.GS.GameMerchant", "Siegecraft Supplies", "Merchant", "0", "", "housing_siegecraft");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 16, "DOL.GS.GameVaultKeeper", "Vault Keeper", "Vault Keeper", "0", "", "");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 17, "DOL.GS.GameMerchant", "Dye Supply Master", "Merchant", "0", "", "housing_dye");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 18, "DOL.GS.GameMerchant", "Grandmaster Merchant", "Merchant", "0", "", "housing_mid_grandmaster");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 19, "DOL.GS.GameMerchant", "Grandmaster Merchant", "Merchant", "0", "", "housing_alb_grandmaster");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 20, "DOL.GS.GameMerchant", "Grandmaster Merchant", "Merchant", "0", "", "housing_hib_grandmaster");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 30, "DOL.GS.GameMerchant", "Potion, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_mid_potion_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 31, "DOL.GS.GameMerchant", "Potion, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_alb_potion_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 32, "DOL.GS.GameMerchant", "Potion, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_hib_potion_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 36, "DOL.GS.GameMerchant", "Apprentice Merchant", "Merchant", "0", "", "housing_mid_apprentice");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 37, "DOL.GS.GameMerchant", "Apprentice Merchant", "Merchant", "0", "", "housing_alb_apprentice");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 38, "DOL.GS.GameMerchant", "Apprentice Merchant", "Merchant", "0", "", "housing_hib_apprentice");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 39, "DOL.GS.GameMerchant", "Dye, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_mid_dye_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 40, "DOL.GS.GameMerchant", "Dye, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_alb_dye_tincture_enchantment");
+            CheckNPCTemplate(Properties.HOUSING_STARTING_NPCTEMPLATE_ID + 41, "DOL.GS.GameMerchant", "Dye, Tincture, and Enchantment Supplies", "Merchant", "0", "", "housing_hib_dye_tincture_enchantment");
+        }
 
+        private static void CheckNPCTemplate(int templateID, string classType, string name, string guild, string model, string inventory, string merchantListID)
+        {
+            NpcTemplate template = NpcTemplateMgr.GetTemplate(templateID);
+            if (template != null)
+            {
+                return;
+            }
 
-string[] indoo
-r
-    indstone =
-    {
-        "o        ndston
-        e
-        "
-        "housing_mid_b
-        n
-        s
-        one", "housing_alb_bind
-        s
-        one" };
-        Che
-        c
-        MerchantItems("housing_
-        n
-        do ", indoorbindstone
-        )
-        ;
-        tring[] indoorb
-        i
-        n
-        _binds
-        t
-        o
-        e" };
-        h
-        c
-        MerchantItems("housing_
-        n
-        do _mid", indoorbinds
-        t
-        onemid);
-        string[] indoorb
-        i
-        n
-        _binds
-        t
-        o
-        e" };
-        h
-        c
-        MerchantItems("housing_
-        n
-        do _alb", indoorbinds
-        t
-        onealb);
-        string[] indoorb
-        i
-        n
-        _binds
-        t
-        o
-        e" };
-        h
-        c
-        MerchantItems("housing_
-        n
-        do _hib", indoorbinds
-        t
-        onehib);
-        string[]
-        ndoorcraft = { "ho
-        u
-        sn ble", 
-        "
-        h
-        using_forge
-        ,
-        "
-        ousing_lathe" };
-        CheckMercha
-        n
-        Items("housing_
-        n
-        do ndoorcraft);
-        string[] indoor
-        v
-        ult = { "ho
-        u
-        sn, "hou
-        s
-        i
-        g_mid_vault
-        ,
-        "
-        ousing_alb_vault" }
-        ;
-        CheckMe
-        r
-        hantItems("housing_
-        n
-        do ndoorvault);
-        string[] indoorv
-        a
-        ltmid = { "
-        h
-        ou lt" };
-        Chec
-        M
-        r
-        hantItems("housing_
-        n
-        do ", indoorvaultmid)
-        ;
-        string[] indo
-        o
-        vaultalb = { "
-        h
-        ou lt" };
-        Chec
-        M
-        r
-        hantItems("housing_
-        n
-        do ", indoorvaultalb)
-        ;
-        string[] indo
-        o
-        vaulthib = { "
-        h
-        ou lt" };
-        Chec
-        M
-        r
-        hantItems("housing_
-        n
-        do ", indoorvaulthib)
-        ;
+            DBNpcTemplate dbTemplate = new DBNpcTemplate
+            {
+                Name = name,
+                TemplateId = templateID,
+                ClassType = classType,
+                GuildName = guild,
+                Model = model,
+                Size = "50",
+                Level = "50",
+                ItemsListTemplateID = merchantListID,
+                EquipmentTemplateID = inventory,
+                PackageID = "Housing"
+            };
+
+            template = new NpcTemplate(dbTemplate);
+            template.SaveIntoDatabase();
+            NpcTemplateMgr.AddTemplate(template);
+        }
     }
-
-private static void CheckMerchantItems(string merchantid, ICollection<string> itemids)
-{
-    var mer
-    chan
-        ercha tI em.SelectOb
-        j
-    ects(DB.Co um n("ItemListID"
-    ).IsEqualTo(merchan td i
-    n
-    t
-        slot = ;
-
-
-    f or each(string ite
-    mid
-
-
-    if (me ch antitems.Any(x
-        => x.ItemTemplateI D = 
-
-
-    {
-        slot += 1;
-
-
-        ntinu;
-    }
-
-    var ne
-        witem = new Merchan ttem
-    {
-        ItemListID = mer
-        c
-            hantid
-
-
-        It
-            e
-        mTempl
-        a
-            eID = i
-        temid,
-
-        lotPosition =
-            lot %
-            30,
-
-
-        Pa
-            g
-        eN
-        u
-            mber =
-                slot / 30
-    }
-    ;
-
-
-    eSe
-    ver.
-        a
-        a
-    ba(newite
-        )
-        ;
-
-
-    slot +
-        = 
-}
-}
-
-private static void CheckItemTemplate(string name, string id, int model, int objtype, int copper, int dps,
-    int spd,
-    int bonus, int weight, int realm)
-{
-    e
-        FindObject
-    y
-    ey < I te mTempl
-        (te mp
-
-    lateite m = n
-    l
-        )
-
-
-    return;
-
-
-    It em Tem pl ate
-        a
-    m
-        del = m del
-        ,
-
-
-    Leve
-        l
-            = 0,
-        pe =
-            ob j
-        y
-    pe Id_nb = id,
-        I
-    Pick
-        ble = true,
-        I
-    s
-        ropabl
-            =
-            rue
-
-
-    D
-    P
-        _AF
-            = dps,
-        S
-    PD
-
-
-    Wei
-        ht = w
-    e
-    ght
-        er,
-        Bonus = b
-    o
-        nus,
-        Rea
-    l
-        m = (byte) re
-    a
-    l
-        m,
-        a
-    ckageID = "P
-    ay
-        rHou
-    si Game
-    Se eA plateitem);
-}
-
-private static void CheckNPCTemplates()
-
-
-i(!P op er
-ti NPC)
-
-
-re urn
-    / / hese ar d
-    lt
-kN PC empl t
-(Pr
-    o
-
-G_ NPCTEM
-L
-    TE_
-ID sten
-    r,  "P
-i
-", " ,
-"
-    ;
-
-te(Pr
-p
-rties.
-    H
-    EMPLA
-E
-ID + 1,
-    , "B        la        c
-s
-    i
-th",
-
-"Sm        it        h" ,
-
-Chec
-    N
-CTe pla e(Pro pert
-ie A
-RI TE_ID + 2,
-"
-DOL.GS.E
-    n
-chanter",
-
-"Enchanter",
-
-"
-"", "", "");
-
-
-Chec
-    NPCTemplate(Prope
-        r
-
-ties.HOUSING CT
-M
-    P
-LATE_ID +
-    3
-    , "DOL.GS.Emblem
-NP mb r", "0
-",                   NPCTemplate(Properties.HOUS        _NPCTEMPLATE_ID 
-    +
-    4, "DOL.G
-S
-    .GameHealer", "Healer", "Healer
-"
-"0", "", "");
-
-
-Che
-    c
-NPCTemplat
-    e
-Pro
-    p
-rt
-    i
-s.
-    H
-    OU G_NPCTEMPLATE_ID
-    + 5, "DOL.
-G
-S.Recharger", "Recharger", "Rec
-    a
-g
-    e
-", "0", "", "");
-
-
-Chec
-    k
-PCTempl
-    a
-e(P
-r
-    pe
-r
-    ie
-s
-    .H ING_NPCTEMPLATE_
-I
-D + 6, "DO
-L
-    .GS.GameNPC", "Realm Teleporter, 
-"
-T
-    leporter", "0", ""
-    ,
-"");
-
-
-CheckNP
-    C
-emp
-    l
-te
-(
-    ro
-p
-    er _STARTING_NPCTEM
-    P
-LATE_ID +
-    7
-    , "DOL.GS.GameMerchant", "Appre
-t
-    c
-e
-    Merchant", "Mercha
-    n
-", "0", "", "hou
-    s
-ng_apprent
-    i
-e")
-    ;
-
-
-emplate(Properti
-e
-s.HOUSING_
-    S
-TARTING_NPCTEMPLATE_ID + 8, "DO
-    .S
-    .ameMerchant", "Gran
-    d
-aster Me
-r
-    hant", "
-M
-    rch
-a
-    t"
-    ,
-"0
-"
-    , _grandmaster");
-
-
-CheckNPCTemplate(Properties.HOU
-I
-    G
-_
-    TARTING_NPCTEMPLAT
-E
-ID + 9, "DO
-L
-GS.GameMerc
-    h
-nt"
-    ,
-"I
-n
-    an
-t
-    at ", "Merchant", "
-0
-", "", "ho
-    u
-sing_incantation");
-
-C
-    e
-
-c
-    NPCTemplate(Prop
-        e
-
-ties.HOUSING_START
-    I
-G_NPCTEMPLAT
-    E
-ID
-    +
-    10
-    ,
-"D
-O
-L.ant", "Bane Merc
-h
-    ant", "Mer
-    c
-hant", "0", "", "housing_poison
-    d
-e
-"
-    ;
-CheckNP
-    C
-emplate(Properties.HO
-U
-    ING_STARTI
-N
-    _NP
-C
-    EM
-P
-ATE_ID + 11, "DOL.GS
-    .Ga "Potion, Tinctu
-r
-    e, and Enc
-    h
-antment Supplies", "Merchant", 
-0
-    ,
-
-", "housing_potion_ti
-    n
-ture_enchantment");
-
-
-Ch
-    e
-kNP
-    C
-em
-    p
-ate(Properties.HOUSIN
-G
-    _S EMPLATE_ID + 12,
-
-"DOL.GS.Ga
-m
-    eMerchant", "Poison and Potion
-    u
-p
-    l
-es", "Merchant", "0",
-
-", "housing_poison_pot
-    i
-n");
-
-
-Ch
-    e
-kNPCTemplate(Properti
-e
-s.TING_NPCTEMPLATE
-    _
-ID + 13, "
-D
-OL.GS.GameMerchant", "Dye, Tinc
-u
-    e,
-    nd Enchantment Suppli
-e
-", "Merchant", 
-"
-", "", "ho
-    u
-ing
-    _
-ye
-    _
-incture_enchantment"
-    )
-;
-CheckNPCTemplate
-(
-    Properties
-        .HOUSING_STARTING_NPCTEMPLATE_ID
-    +
-    14
-    ,
-    "DOL.GS.GameMerchant"
-    ,
-    "Taxidermy Supplies", "Merchant", "0", "", "
-h
-    using_taxi
-d
-    rmy
-"
-    ;
-
-
-CheckNPCTemplate(Properties
-    .HO NG_NPCTEMPLATE_I
-D
-    + 15, "DO
-L
-    .GS.GameMerchant", "Siegecraft
-    u
-pl
-    i
-s", "Merchant", "0", 
-"
-    , "housing_siegecraft");
-
-
-Che
-    c
-NPC
-    T
-mp
-    l
-te(Properties.HOUSING_S
-T
-    AR LATE_ID + 16, "D
-O
-L.GS.GameV
-    a
-ultKeeper", "Vault Keeper", "Va
-    l
-K
-    e
-per", "0", "", "");
-
-
-CheckNPCTemplate(Properties.HOUS
-I
-    G_STARTING
-_
-    PCT
-E
-    PL
-A
-E_ID + 17, "DOL.GS.GameMerchant",
-"
-Dy ter", "Merchant"
-    ,
-"0", "",
-"
-housing_dye");
-Chec
-    N
-CT
-    e
-plate(Properties.HOUS
-I
-    G_STARTING_NPCTEMPLA
-T
-_ID + 18,
-"
-OL.
-    G
-    .G
-    a
-eMerchant", "Grandm
-a
-    st,  "Merchant", "0
-"
-    , "", "hou
-s
-    ing_mid_grandmaster");
-
-
-C
-    h
-ckNPCTemplate(Propert
-i
-s.HOUSING_STARTING_NP
-    C
-EMPLATE_ID
-
-19
-    ,
-"D
-O
-    .GS.GameMerchant", "
-G
-    ra chant", "Merchan
-    t
-", "0", ""
-    ,
-"housing_alb_grandmaster");
-
-
-CheckNPCTemplate(Prop
-e
-ties.HOUSING_S
-    T
-RTING_NPCTEMPL
-    A
-E_I
-D
-    +
-    2
-    ,
-"
-DO chant", "Grandma
-    s
-ter Mercha
-n
-    t", "Merchant", "0", "", "housi
-    g
-hi
-    b
-grandmaster");
-
-
-CheckNPCTemplat
-    e
-Properties
-    .
-    OUS
-    I
-G_
-    S
-ARTING_NPCTEM
-    P
-LA "DOL.GS.GameMerc
-h
-    ant", "Pot
-i
-    on, Tincture, and Enchantment S
-p
-    li
-e
-", "Merchant", "0", "
-"
-"housing_mid_potion_t
-i
-    cture_ench
-a
-    tme
-n
-")
-    ;
-CheckNPCTempl
-    a
-te HOUSING_STARTING
-_
-    NPCTEMPLAT
-E
-_ID + 31, "DOL.GS.GameMerchant"
-
-Po
-t
-    on, Tincture, and Enc
-    h
-ntment Supplies", "Mer
-    c
-ant", "0",
-
-", 
-"
-ou
-    s
-ng_alb_potion_tincture_en
-    c
-ha CheckN
-
-P
-    CTemplate(
-        P
-            roperties.
-
-HOUSING_STARTING_NPCT
-    M
-LA
-    T
-_ID + 32, "DOL.GS.Gam
-e
-    erchant", "Potion, Tin
-c
-    ure, and E
-    n
-han
-    t
-en
-    t
-Supplies", "Merchant", "0
-"
-    , _hib_potion_tinc
-    t
-ure_enchan
-    t
-ment");
-CheckNPCTem
-    l
-te
-(
-    roperties.HOUSING_STA
-R
-ING_NPCTEMPLATE_ID + 36, "DOL.GS.GameMerchan
-t
-    , "Apprent
-i
-    e M
-    e
-ch
-    a
-t", "Merchant", "0", "", "housing_mid_app
-    r
-en CheckNPC
-
-T
-    emplate(Pr
-        o
-
-perties.HOUSING_STARTING_NPCTEM
-    L
-TE
-    _
-D + 37, "DOL.GS.GameM
-e
-    chant", "Apprentice Merchant", "Merchant", "
-0
-    , "", "hou
-s
-    ng_
-a
-    b_
-a
-    prentice");
-CheckNPCTemplate(
-    P
-ro ING_STARTING_NPC
-T
-EMPLATE_ID
-    + 38, "DOL.GS.GameMerchant", "A
-p
-    en
-t
-    ce Merchant", "Mercha
-    n
-", "0", "", "housing_hib_apprentice");
-
-
-Check
-    N
-CTe
-    m
-
-la
-    t
-    (Properties.HOUSING_STARTING_NPCTEMPLATE_
-        I
-
-D S.GameMerchant",
-
-"Dye, Tinc
-t
-    ure, and Enchantment Supplies",
-"
-er
-    c
-ant", "0", "", "housi
-    n
-_mid_dye_tincture_enc
-    h
-ntment");
-
-
-CheckNPCTemplate(Proper
-t
-    ie ARTING_NPCTEMPLA
-    T
-E_ID + 40,
-
-"DOL.GS.GameMerchant", "Dye, Ti
-c
-    ur
-e
-    and Enchantment Supp
-l
-    es", "Merchant", "0",
-
-", "housin
-    g
-alb
-    _
-ye
-    _
-incture_enchantment");
-
-
-kNPCTemplate(Pro
-p
-erties.HOU
-    S
-ING_STARTING_NPCTEMPLATE_ID + 4
-    ,
-"D
-O
-    .GS.GameMerchant", "D
-    y, Tincture, and Encha
-    n
-ment Suppl
-i
-    s",
-
-Me
-    r
-hant", "0", "", "housing
-    _
-hi re_enchantment")
-    ;
-
-}
-
-private static void CheckNPCTemplate(int templateID, string classType, string name, string guild, string model,
-    string inventory, string merchantListID)
-{
-    Npc plate = NpcTempl
-    at eM gr.GetTem
-        p
-    late(templateID);
-    if
-    m
-        la
-    t
-        != null)
-
-
-    return;
-
-
-    DBNpcTemplate dbTempl
-    ate
-    plate
-    {
-        Name = name,
-        T e
-        p
-            at
-        e
-            d = templateID,
-            Clas sT ype
-
-        cl
-            ssType,
-            Gu ldN am =
-            guil
-        d
-            ,
-
-
-        Model = model,
-
-        Si
-            Level =
-                "
-        50",
-
-
-        ItemsListTemplateID = mer
-        h
-            nt
-        L
-            ID,
-            E
-        q
-            ipmentTem la eID = nve
-        tory,
-
-
-        Pack
-            ageID =
-                "Hou
-        s
-            in
-    }
-    ;
-    template = new NpcT
-    emp
-        );
-    t
-        e
-    mpla te.SaveI
-        n
-    toDa ta base();
-    NpcTemp
-        a
-    eM r.ddT em l
-        at
-    e
-        (template);
-}
-}
 }
 
 /*
