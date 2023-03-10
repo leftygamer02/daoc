@@ -9,6 +9,7 @@ using DOL.GS.ServerProperties;
 
 namespace DOL.GS;
 
+/* Disabled functionality as it's not very classic/SI
 public class BountyManager
 
 {
@@ -468,3 +469,4 @@ public class BountyManager
         return temp;
     }
 }
+*/

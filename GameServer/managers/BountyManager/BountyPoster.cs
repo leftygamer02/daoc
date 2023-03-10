@@ -1,5 +1,6 @@
 namespace DOL.GS;
 
+/* Disabled functionality as it's not very classic/SI
 public class BountyPoster
 {
     public eRealm BountyRealm;
@@ -25,3 +26,4 @@ public class BountyPoster
     }
     
 }
+*/

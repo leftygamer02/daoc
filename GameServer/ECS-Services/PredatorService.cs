@@ -4,6 +4,7 @@ using ECS.Debug;
 
 namespace DOL.GS;
 
+/* Disabled functionality as it's not very classic/SI
 public class PredatorService
 {
     private const string SERVICE_NAME = "Predator Service";
@@ -81,3 +82,4 @@ public class PredatorService
         Diagnostics.StopPerfCounter(SERVICE_NAME);
     }
 }
+*/
