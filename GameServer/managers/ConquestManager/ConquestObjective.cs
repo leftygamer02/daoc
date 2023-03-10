@@ -8,6 +8,7 @@ using DOL.GS.PacketHandler;
 
 namespace DOL.GS;
 
+/* Disabled functionality as it's not very classic/SI
 public class ConquestObjective
 {
     public AbstractGameKeep Keep;
@@ -329,3 +330,4 @@ public class ConquestObjective
         ObjectiveFour.ResetContributors();
     }
 }
+*/

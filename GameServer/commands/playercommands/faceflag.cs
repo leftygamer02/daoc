@@ -27,6 +27,7 @@
 using System;
 using DOL.GS.PacketHandler;
 
+/* Disabled functionality as it's not very classic/SI
 namespace DOL.GS.Commands
 {
 	[CmdAttribute(
@@ -68,7 +69,7 @@ namespace DOL.GS.Commands
 				client.Out.SendMessage("Please enter a valid flag number.", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 				return;
 			}
-
+			
 			var flag = ConquestService.ConquestManager.ActiveObjective.GetObjective(flagnum);
 			Console.WriteLine($"flag {flag.FlagObject} | player region {client.Player.CurrentRegionID} | flag region {flag.FlagObject.CurrentRegionID}");
 
@@ -90,3 +91,4 @@ namespace DOL.GS.Commands
 		}
 	}
 }
+*/

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Server;
 
 namespace DOL.GS;
 
+/* Disabled functionality as it's not very classic/SI
 public class ConquestManager
 {
     private List<DBKeep> DBKeeps;
@@ -699,10 +700,11 @@ public class ConquestManager
         temp.Add("Killing players within the area of any conquest target will contribute towards the objective. Every 5 minutes, the global contribution will be tallied and updated.\n");
         temp.Add("The conquest target will change if any of the objectives are captured, or if the conquest time expires. " +
                  "If any of the objectives are captured, the attacking realm is immediately awarded an RP bonus based off of the total accumulated contribution.");
-        */
+        
 
         temp.Add("");
 
         return temp;
     }
 }
+*/

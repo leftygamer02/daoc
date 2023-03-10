@@ -10,6 +10,7 @@ using DOL.GS.PacketHandler;
 
 namespace DOL.GS;
 
+/* Disabled functionality as it's not very classic/SI
 public class SubObjective
 {
     private ushort FlagCaptureRadius = ServerProperties.Properties.FLAG_CAPTURE_RADIUS; //how far away can we capture flag from
@@ -224,3 +225,4 @@ public class SubObjective
         return null;
     }
 }
+*/
