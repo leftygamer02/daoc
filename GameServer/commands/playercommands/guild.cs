@@ -1082,7 +1082,13 @@ namespace DOL.GS.Commands
 						}
 					*/
 					#endregion BuyBanner (Disabled)
-						#region Summon
+					#region Summon (Disabled)
+					// --------------------------------------------------------------------------------
+					// SUMMON
+					// '/gc summon'
+					// Summons the guild banner if you have one
+					// --------------------------------------------------------------------------------
+					/* Disabled because it is not used for Eclipse
 					case "summon":
 						{
 							if (client.Player.Guild == null)
@@ -1135,7 +1141,8 @@ namespace DOL.GS.Commands
 							}
 							break;
 						}
-						#endregion
+					*/
+					#endregion Summon (Disabled)
 						#region Buff
 						// --------------------------------------------------------------------------------
 						// GUILD BUFF
