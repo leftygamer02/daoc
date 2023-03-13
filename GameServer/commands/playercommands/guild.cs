@@ -1391,7 +1391,13 @@ namespace DOL.GS.Commands
 							return;
 						}
 					#endregion Buff
-						#region Unsummon
+					#region Unsummon (Disabled)
+					// --------------------------------------------------------------------------------
+					// SUMMON
+					// '/gc unsummon'
+					// Removes the guild banner if you have one active
+					// --------------------------------------------------------------------------------
+					/* Disabled because it is not used for Eclipse
 					case "unsummon":
 						{
 							if (client.Player.Guild == null)
@@ -1429,8 +1435,9 @@ namespace DOL.GS.Commands
 								client.Out.SendMessage("You aren't carrying a banner!", eChatType.CT_System, eChatLoc.CL_SystemWindow);
 							}
 							break;
-						}
-						#endregion
+						} 
+					*/
+					#endregion Unsummon (Disabled)
 						#region Ranks
 					case "ranks":
 						{
