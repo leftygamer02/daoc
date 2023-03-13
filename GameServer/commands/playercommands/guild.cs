@@ -812,25 +812,38 @@ namespace DOL.GS.Commands
 						}
 						break;
 					#endregion RemoveAccount
-						#region Info
-						// --------------------------------------------------------------------------------
-						// INFO
-						// --------------------------------------------------------------------------------
+					#region Info
+					// --------------------------------------------------------------------------------
+					// INFO
+					// '/gc info'
+					// Displays all information regarding your guild, such as realm points, bounty points, guild level, web page, and more.
+					// --------------------------------------------------------------------------------
 					case "info":
 						{
 							bool typed = false;
 							if (args.Length != 3)
 								typed = true;
 
+							// Player must be a member of an existing guild to view guild info
 							if (client.Player.Guild == null)
 							{
 								if (!(args.Length == 3 && args[2] == "1"))
 								{
-									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.NotMember"), eChatType.CT_System, eChatLoc.CL_SystemWindow);
+									// Message: You must be a member of a guild to use any guild commands.
+									ChatUtil.SendTypeMessage((int)eMsg.Error, client, "Scripts.Player.Guild.NotMember", null);
 								}
 								return;
 							}
+							
+							// Player must have sufficient rank privileges in the guild to view its information
+							if (!client.Player.Guild.HasRank(client.Player, Guild.eRank.View))
+							{
+								// Message: You do not have high sufficient privileges in your guild to use that command.
+								ChatUtil.SendTypeMessage((int)eMsg.Error, client, "Scripts.Player.Guild.NoPrivileges", null);
+								return;
+							}
 
+							// Show guild information
 							if (typed)
 							{
 								/*
@@ -847,60 +860,115 @@ namespace DOL.GS.Commands
 								 * Alliance Message: xxx
 								 * Claimed Keep: xxx
 								 */
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoGuild", client.Player.Guild.Name), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoRPBPMP", client.Player.Guild.RealmPoints, client.Player.Guild.BountyPoints, client.Player.Guild.MeritPoints), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoGuildLevel", client.Player.Guild.GuildLevel), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoGDuesBank", client.Player.Guild.GetGuildDuesPercent().ToString() + "%", Money.GetString(long.Parse(client.Player.Guild.GetGuildBank().ToString()))), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+								
+								// Message: Guild Info for {0}:
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGuild", client.Player.Guild.Name);
+								// Message: Realm Points: {0} | Bounty Points: {1} | Merit Points: {2}
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoRPBPMP", client.Player.Guild.RealmPoints, client.Player.Guild.BountyPoints, client.Player.Guild.MeritPoints);
+								// Message: Guild Level: {0}
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGuildLevel", client.Player.Guild.GuildLevel);
 
-								client.Out.SendMessage(string.Format("Current Merit Bonus: {0}", Guild.BonusTypeToName(client.Player.Guild.BonusType)), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+								// Parse out the copper into types of coin for easier comprehension by players
+								
+								// First figure out plat and remove from total
+								var plat = Math.Round(client.Player.Guild.GetGuildBank() / 1000 / 100 / 100, 0);
+								if (plat < 1)
+									plat = 0;
+								var platString = plat.ToString("0");
+								
+								// Now figure out gold and do the same
+								var gold = Math.Round(client.Player.Guild.GetGuildBank() - (plat * 1000 * 100 * 100) / 100 / 100, 0);
+								if (gold < 1)
+									gold = 0;
+								var goldString = gold.ToString("0");
+								
+								// Now it's silver's turn
+								var silver = Math.Round(client.Player.Guild.GetGuildBank() - (plat * 1000 * 100 * 100) - (gold * 100 * 100) / 100, 0);
+								if (silver < 1)
+									silver = 0;
+								var silverString = silver.ToString("0");
+								
+								// Finally copper
+								var copper = Math.Round(client.Player.Guild.GetGuildBank() - (plat * 1000 * 100 * 100) - (gold * 100 * 100) - (silver * 100));
+								if (copper < 1)
+									copper = 0;
+								var copperString = copper.ToString("0");
 
-								if (client.Player.Guild.GuildBanner)
+								// Message: Dues: {0} | Guild Bank: {1} platinum, {2} gold, {3} silver, {4} copper
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGDuesBank", client.Player.Guild.GetGuildDuesPercent().ToString() + "%", platString, goldString, silverString, copperString);
+
+								// Message: Guild Bonus: {0}
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGBonusType", Guild.BonusTypeToName(client.Player.Guild.BonusType));
+
+								// Guild banner stuff
+								// Eclipse doesn't use this, so it's being commented out
+								// if (client.Player.Guild.GuildBanner)
+								// {
+									// Message: Guild Banner Status: {0}
+									// 	ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGBannerStatus", client.Player.Guild.GuildBannerStatus(client.Player));
+								// }
+								// else if (client.Player.Guild.GuildLevel >= 7)
+								// {
+								// 	TimeSpan lostTime = DateTime.Now.Subtract(client.Player.Guild.GuildBannerLostTime);
+
+								// 	if (lostTime.TotalMinutes < Properties.GUILD_BANNER_LOST_TIME)
+								// 	{
+										// Message: Guild Banner Status: Your banner has been lost to the enemy
+								// 		ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGBannerLostEnemy", null);
+								// 	}
+								// 	else
+								// 	{
+										// Message: Guild Banner Status: Banner available for purchase
+								// 		ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoGBannerAvailable", null);
+								// 	}
+								// }
+
+								// Message: Website: {0}
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoWebpage", client.Player.Guild.Webpage);
+								// Message: Contact Email: {0}
+								ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoCEmail", client.Player.Guild.Email);
+
+								// Make sure there is a message and the player has access to the guild channel (for some reason)
+								if (!Util.IsEmpty(client.Player.Guild.Motd) && client.Player.GuildRank.GcHear)
 								{
-									client.Out.SendMessage("Banner: " + client.Player.Guild.GuildBannerStatus(client.Player), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+									// Message: Guild Message: {0}
+									ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoMotd", client.Player.Guild.Motd);
 								}
-								else if (client.Player.Guild.GuildLevel >= 7)
+
+								// Make sure there is a message and the player has access to the guild officer channel
+								if (!Util.IsEmpty(client.Player.Guild.Omotd) && client.Player.GuildRank.OcHear)
 								{
-									TimeSpan lostTime = DateTime.Now.Subtract(client.Player.Guild.GuildBannerLostTime);
-
-									if (lostTime.TotalMinutes < Properties.GUILD_BANNER_LOST_TIME)
-									{
-										client.Out.SendMessage("Banner lost to the enemy", eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-									}
-									else
-									{
-										client.Out.SendMessage("Banner available for purchase", eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-									}
+									// Message: Officer Message: {0}
+									ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoOMotd", client.Player.Guild.Omotd);
 								}
 
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoWebpage", client.Player.Guild.Webpage), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-								client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoCEmail", client.Player.Guild.Email), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-
-								string motd = client.Player.Guild.Motd;
-								if (!Util.IsEmpty(motd) && client.Player.GuildRank.GcHear)
+								// Make sure there is a message and the player has access to the alliance chat channel
+								if (client.Player.Guild.alliance != null && client.Player.GuildRank.AcHear && !Util.IsEmpty(client.Player.Guild.alliance.Dballiance.Motd))
 								{
-									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoMotd", motd), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+									// Message: Alliance Message: {0}
+									ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.InfoaMotd", client.Player.Guild.alliance.Dballiance.Motd);
 								}
-
-								string omotd = client.Player.Guild.Omotd;
-								if (!Util.IsEmpty(omotd) && client.Player.GuildRank.OcHear)
-								{
-									client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoOMotd", omotd), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-								}
-
-								if (client.Player.Guild.alliance != null)
-								{
-									string amotd = client.Player.Guild.alliance.Dballiance.Motd;
-									if (!Util.IsEmpty(amotd) && client.Player.GuildRank.AcHear)
-									{
-										client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.InfoaMotd", amotd), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
-									}
-								}
+								
+								// If the guild has a claimed keep, then mention it
 								if (client.Player.Guild.ClaimedKeeps.Count > 0)
 								{
 									foreach (AbstractGameKeep keep in client.Player.Guild.ClaimedKeeps)
 									{
-										client.Out.SendMessage(LanguageMgr.GetTranslation(client.Account.Language, "Scripts.Player.Guild.Keep", keep.Name), eChatType.CT_Guild, eChatLoc.CL_SystemWindow);
+										// Message: Keeps Claimed: Your guild has currently claimed {0}.
+										ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.Keep", keep.Name);
 									}
+								}
+
+								// Show guild house number if they've got one
+								if (client.Player.Guild.GuildOwnsHouse)
+								{
+									// Message: Guild House #: {0}
+									ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.GuildHouse", client.Player.Guild.GuildHouseNumber);
+								}
+								else
+								{
+									// Message: Guild House #: {0}
+									ChatUtil.SendTypeMessage((int)eMsg.Guild, client, "Scripts.Player.Guild.GuildHouse", "None");
 								}
 							}
 							else
@@ -929,9 +997,10 @@ namespace DOL.GS.Commands
 											mes += ',' + client.Player.Guild.MeritPoints.ToString(); // Guild Merit Points
 											mes += ',' + housenum.ToString(); // Guild houseLot ?
 											mes += ',' + (client.Player.Guild.MemberOnlineCount + 1).ToString(); // online Guild member ?
-											mes += ',' + client.Player.Guild.GuildBannerStatus(client.Player); //"Banner available for purchase", "Missing banner buying permissions"
+											// mes += ',' + client.Player.Guild.GuildBannerStatus(client.Player); //"Banner available for purchase", "Missing banner buying permissions"
 											mes += ",\"" + client.Player.Guild.Motd + '\"'; // Guild Motd
 											mes += ",\"" + client.Player.Guild.Omotd + '\"'; // Guild oMotd
+											
 											client.Out.SendMessage(mes, eChatType.CT_SocialInterface, eChatLoc.CL_SystemWindow);
 											break;
 										}
@@ -949,7 +1018,7 @@ namespace DOL.GS.Commands
 							SendSocialWindowData(client, 1, 1, 2);
 							break;
 						}
-						#endregion
+					#endregion Info
 						#region Buybanner
 					case "buybanner":
 						{
