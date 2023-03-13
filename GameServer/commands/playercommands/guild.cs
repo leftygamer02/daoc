@@ -1019,7 +1019,13 @@ namespace DOL.GS.Commands
 							break;
 						}
 					#endregion Info
-						#region Buybanner
+					#region BuyBanner (Disabled)
+					// --------------------------------------------------------------------------------
+					// BUYBANNER
+					// '/gc buybanner'
+					// Spend points to buy a guild banner.
+					// --------------------------------------------------------------------------------
+					/* Disabled because it is not used for Eclipse
 					case "buybanner":
 						{
 							if (client.Player.Guild.GuildLevel < 7)
@@ -1074,7 +1080,8 @@ namespace DOL.GS.Commands
 
 							break;
 						}
-						#endregion
+					*/
+					#endregion BuyBanner (Disabled)
 						#region Summon
 					case "summon":
 						{
